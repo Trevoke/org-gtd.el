@@ -1,0 +1,11 @@
+This package sets the following variables:
+
+- ~org-agenda-files~
+- ~diary-file~
+- ~calendar-week-start-day~
+- ~org-todo-keywords~
+- ~org-log-done~
+
+This package modifies the following hooks:
+
+- ~calendar-today-visible-hook~
