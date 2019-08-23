@@ -103,3 +103,77 @@
 (org-defkey org-mode-map "\C-cr" 'org-refile)
 (org-defkey org-mode-map "\C-cs" 'org-gtd-refile)
 (org-defkey org-mode-map "\C-co" 'org-gtd-create-single-task-project)
+
+;; ---------
+
+(setq org-gtd-dir org-directory)
+(setq org-gtd-next (concat org-gtd-dir "test-next.org"))
+(setq org-gtd-projects (concat org-gtd-dir "test-projects.org"))
+(setq org-gtd-references (concat org-gtd-dir "test-references.org"))
+(setq org-gtd-incubate (concat org-gtd-dir "test-incubate.org"))
+(setq org-gtd-calendar (concat org-gtd-dir "test-calendar.org"))
+
+(setq org-refile-targets '((org-gtd-projects :maxlevel . 1)
+                           (org-gtd-calendar :maxlevel . 1)
+                           (org-gtd-next :maxlevel . 1)
+                           (org-gtd-incubate :maxlevel . 1)))
+
+;(add-to-list 'org-refile-targets `(,org-gtd-next :level 1))
+
+
+(defun org-gtd-process-inbox ()
+  (interactive)
+  (require 'winner)
+  (pop-to-buffer-same-window "test.org")
+  (delete-other-windows)
+  (org-map-entries
+   (lambda ()
+     (setq org-map-continue-from (org-element-property :begin (org-element-at-point)))
+     (org-narrow-to-element)
+     (org-gtd--process-inbox-item)
+     (widen)
+     (org-archive-subtree)))
+  (winner-undo))
+
+
+(define-suffix-command org-gtd--schedule ()
+  (interactive)
+  (org-schedule nil)
+  (org-refile nil nil `("One-off" ,org-gtd-calendar)))
+
+
+(define-suffix-command org-gtd--when-i-can ()
+  (interactive)
+  (org-todo "NEXT")
+  (org-refile nil nil `("" ,org-gtd-next)))
+
+(define-suffix-command org-gtd--quick-item ()
+  (interactive)
+  (org-todo "DONE")
+  (org-archive-subtree))
+
+(define-suffix-command org-gtd--trash ()
+  (interactive)
+  (org-todo "CANCELED")
+  (org-archive-subtree))
+
+(define-transient-command org-gtd--process-an-item ()
+  "this is my super duper docstring"
+  ["Actionable"
+   ;; actionable
+   ("q" "< 2 minutes, done!" org-gtd--quick-item)
+   ("n" "To do when I can" org-gtd--when-i-can)
+   ;("d" "Delegate" )
+   ("s" "Schedule" org-gtd--schedule)
+   ;("p" "Project" )
+   ]
+   ;; not actionable
+[  "Non actionable" ("t" "Trash" org-gtd--trash)
+    ;("i" "Incubate" )
+    ;("r" "Reference" )
+    ]
+
+  )
+
+
+;; (org-gtd-process-inbox)
