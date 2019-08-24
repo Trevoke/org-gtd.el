@@ -1,13 +1,34 @@
-(use-package org-edna
-  :config
-  (org-edna-load)
-  (setq org-edna-use-inheritance t))
+;;; org-gtd.el --- An implementation of GTD -*- lexical-binding: t; -*-
+;; Version: 0.1
+;; URL: https://github.com/trevoke/org-gtd
+;;; Commentary:
+;; This is not empty
+
+;;; Code:
+
+(require 'org-edna)
+(require 'transient)
+
+(setq org-edna-use-inheritance t)
+(org-edna-load)
+
+(global-set-key "\C-cc" 'org-capture)
+(global-set-key "\C-cl" 'org-store-link)
+(global-set-key "\C-ca" 'org-agenda)
+(global-set-key "\C-cb" 'org-switchb)
+(org-defkey org-mode-map "\C-cr" 'org-refile)
+(org-defkey org-mode-map "\C-cs" 'org-gtd-refile)
+(org-defkey org-mode-map "\C-co" 'org-gtd-create-single-task-project)
+
+
 
 (or org-gtd-directory
-    (customize-save-variable 'org-gtd-directory
-                             (file-name-as-directory (read-directory-name
-                                                      "What is the root GTD directory? "
-                                                      "~/"))))
+    (customize-save-variable
+     'org-gtd-directory
+     (file-name-as-directory (read-directory-name
+                              "What is the root GTD directory? "
+                              "~/"))))
+
 (setq org-gtd-agenda-directory (concat org-directory "agenda"))
 (setq org-agenda-files ('(org-gtd-agenda-directory)))
 (setq diary-file (concat org-agenda-directory "diary-file.org"))
@@ -50,11 +71,13 @@
                            ("Tickler.org" :maxlevel . 1)))
 
 (defun org-gtd-refile ()
+  "Custom refiling which includes setting a tag."
   (interactive)
   (org-set-tags-command)
   (org-refile))
 
 (defun org-gtd-create-single-task-project ()
+  "Obsolete: use the NEXT file instead."
   (interactive)
   (org-refile nil nil `("Projects.org" ,stag-gtd-projects))
   (find-file stag-gtd-projects)
@@ -96,14 +119,6 @@
                            ("TODO" "NEXT" "NEXTACTION")
                            nil ""))
 
-(global-set-key "\C-cc" 'org-capture)
-(global-set-key "\C-cl" 'org-store-link)
-(global-set-key "\C-ca" 'org-agenda)
-(global-set-key "\C-cb" 'org-switchb)
-(org-defkey org-mode-map "\C-cr" 'org-refile)
-(org-defkey org-mode-map "\C-cs" 'org-gtd-refile)
-(org-defkey org-mode-map "\C-co" 'org-gtd-create-single-task-project)
-
 ;; ---------
 
 (setq org-gtd-dir org-directory)
@@ -122,6 +137,7 @@
 
 
 (defun org-gtd-process-inbox ()
+  "Use this once a day: process every element in the inbox."
   (interactive)
   (require 'winner)
   (pop-to-buffer-same-window "test.org")
@@ -176,4 +192,6 @@
   )
 
 
-;; (org-gtd-process-inbox)
+(provide 'org-gtd)
+
+;;; org-gtd.el ends here
