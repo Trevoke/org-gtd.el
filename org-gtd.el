@@ -12,6 +12,29 @@
 (setq org-edna-use-inheritance t)
 (org-edna-load)
 
+(defgroup org-gtd nil "Make it your own GTD")
+
+(defcustom org-gtd-directory nil
+  "The directory where the org files for GTD will live. Ends with a /")
+
+(setq org-agenda-diary-file 'diary-file)
+(setq org-agenda-include-diary t)
+(setq org-agenda-restore-windows-after-quit t)
+(setq org-agenda-sticky t)
+(setq org-agenda-window-setup 'other-window)
+(setq org-agenda-skip-deadline-if-done t)
+(setq org-agenda-skip-scheduled-if-done t)
+(setq org-agenda-start-on-weekday nil)
+
+(setq calendar-week-start-day 1) ;; Monday
+
+(setq org-gtd-agenda-directory (concat (org-gtd--directory) "agenda"))
+(setq org-agenda-files ('(org-gtd-agenda-directory)))
+(setq diary-file (concat org-agenda-directory "diary-file.org"))
+(setq org-default-notes-file (concat (org-gtd--directory) "capture-fallback.org"))
+
+(add-hook 'calendar-today-visible-hook 'calendar-mark-today)
+
 (global-set-key "\C-cc" 'org-capture)
 (global-set-key "\C-cl" 'org-store-link)
 (global-set-key "\C-ca" 'org-agenda)
@@ -20,26 +43,24 @@
 (org-defkey org-mode-map "\C-cs" 'org-gtd-refile)
 (org-defkey org-mode-map "\C-co" 'org-gtd-create-single-task-project)
 
+(defun org-gtd-init ()
+  (interactive)
+  (customize-save-variable
+   'org-gtd-directory
+   (file-name-as-directory (read-directory-name
+                            "What is the root GTD directory? "
+                            "~/"))))
+
+(defun org-gtd--directory ()
+  (or org-gtd-directory (org-gtd-init)))
 
 
-(or org-gtd-directory
-    (customize-save-variable
-     'org-gtd-directory
-     (file-name-as-directory (read-directory-name
-                              "What is the root GTD directory? "
-                              "~/"))))
 
-(setq org-gtd-agenda-directory (concat org-directory "agenda"))
-(setq org-agenda-files ('(org-gtd-agenda-directory)))
-(setq diary-file (concat org-agenda-directory "diary-file.org"))
 
-(add-hook 'calendar-today-visible-hook 'calendar-mark-today)
-
-(setq calendar-week-start-day 1) ;; Monday
 
 (setq org-todo-keywords '( "TODO(t)" "NEXT(n)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)"))
 
-(setq org-default-notes-file (concat org-directory "capture-fallback.org"))
+
 
 
 (setq org-capture-templates
@@ -76,35 +97,6 @@
   (org-set-tags-command)
   (org-refile))
 
-(defun org-gtd-create-single-task-project ()
-  "Obsolete: use the NEXT file instead."
-  (interactive)
-  (org-refile nil nil `("Projects.org" ,stag-gtd-projects))
-  (find-file stag-gtd-projects)
-  (end-of-buffer)
-  (previous-line)
-  (kill-ring-save (point-at-bol) (point-at-eol))
-  (org-end-of-line)
-  (insert " [/]")
-  (next-line)
-  (org-end-of-line)
-  (org-return)
-  (org-yank)
-  (org-beginning-of-line)
-  (forward-word)
-  (backward-word)
-  (insert "TODO ")
-  (org-metaright)
-  (org-update-statistics-cookies t))
-
-(setq org-agenda-diary-file 'diary-file)
-(setq org-agenda-include-diary t)
-(setq org-agenda-restore-windows-after-quit t)
-(setq org-agenda-sticky t)
-(setq org-agenda-window-setup 'other-window)
-(setq org-agenda-skip-deadline-if-done t)
-(setq org-agenda-skip-scheduled-if-done t)
-(setq org-agenda-start-on-weekday nil)
 
 (setq org-agenda-custom-commands
       (quote
@@ -136,6 +128,8 @@
 ;(add-to-list 'org-refile-targets `(,org-gtd-next :level 1))
 
 
+;; TODO - update statistics cookies in project file
+;; (org-update-statistics-cookies t)
 (defun org-gtd-process-inbox ()
   "Use this once a day: process every element in the inbox."
   (interactive)
