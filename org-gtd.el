@@ -24,7 +24,7 @@
 
 (defvar org-gtd-projects (org-gtd--path org-gtd-projects-file))
 
-(setq org-agenda-files (`(,(org-gtd--directory))))
+(setq org-agenda-files `((',(org-gtd--directory))))
 (setq diary-file (org-gtd--path "diary-file.org"))
 (setq org-default-notes-file (org-gtd--path "capture-fallback.org"))
 
