@@ -17,6 +17,18 @@
 (defcustom org-gtd-directory nil
   "The directory where the org files for GTD will live. Ends with a /")
 
+(defcustom org-gtd-projects-file "Projects.org"
+  "Name of the file that holds the projects. Should end in .org")
+
+(defun org-gtd--path (file) (concat (org-gtd--directory) file))
+
+(defvar org-gtd-projects (org-gtd--path org-gtd-projects-file))
+
+(setq org-agenda-files (`(,(org-gtd--directory))))
+(setq diary-file (org-gtd--path "diary-file.org"))
+(setq org-default-notes-file (org-gtd--path "capture-fallback.org"))
+
+
 (setq org-agenda-diary-file 'diary-file)
 (setq org-agenda-include-diary t)
 (setq org-agenda-restore-windows-after-quit t)
@@ -28,12 +40,30 @@
 
 (setq calendar-week-start-day 1) ;; Monday
 
-(setq org-gtd-agenda-directory (concat (org-gtd--directory) "agenda"))
-(setq org-agenda-files ('(org-gtd-agenda-directory)))
-(setq diary-file (concat org-agenda-directory "diary-file.org"))
-(setq org-default-notes-file (concat (org-gtd--directory) "capture-fallback.org"))
+
 
 (add-hook 'calendar-today-visible-hook 'calendar-mark-today)
+
+(setq org-refile-use-outline-path 'file)
+(setq org-outline-path-complete-in-steps nil)
+(setq org-refile-allow-creating-parent-nodes t)
+(setq org-log-refile 'time)
+(setq org-refile-targets '(("Projects.org" :maxlevel . 1)
+                           ("Someday.org" :maxlevel . 1)
+                           ("Tickler.org" :maxlevel . 1)))
+
+(setq org-agenda-custom-commands
+      '(("n" "Agenda and all TODOs"
+         ((agenda "" nil)
+          (alltodo "" nil))
+         nil)
+        ("N" "All NEXT actions" todo "NEXT"
+         ((org-agenda-overriding-header "")))))
+
+(setq org-stuck-projects '("+LEVEL=1/-DONE"
+                           ("TODO" "NEXT" "NEXTACTION")
+                           nil ""))
+
 
 (global-set-key "\C-cc" 'org-capture)
 (global-set-key "\C-cl" 'org-store-link)
@@ -44,6 +74,7 @@
 (org-defkey org-mode-map "\C-co" 'org-gtd-create-single-task-project)
 
 (defun org-gtd-init ()
+  "Private function - initialize the org-gtd-directory variable."
   (interactive)
   (customize-save-variable
    'org-gtd-directory
@@ -52,6 +83,7 @@
                             "~/"))))
 
 (defun org-gtd--directory ()
+  "Private function - get or initialize the org-gtd-directory variable."
   (or org-gtd-directory (org-gtd-init)))
 
 
@@ -83,13 +115,6 @@
          :kill-buffer t)))
 
 
-(setq org-refile-use-outline-path 'file)
-(setq org-outline-path-complete-in-steps nil)
-(setq org-refile-allow-creating-parent-nodes t)
-(setq org-log-refile 'time)
-(setq org-refile-targets '(("Projects.org" :maxlevel . 1)
-                           ("Someday.org" :maxlevel . 1)
-                           ("Tickler.org" :maxlevel . 1)))
 
 (defun org-gtd-refile ()
   "Custom refiling which includes setting a tag."
@@ -97,19 +122,6 @@
   (org-set-tags-command)
   (org-refile))
 
-
-(setq org-agenda-custom-commands
-      (quote
-       (("n" "Agenda and all TODOs"
-         ((agenda "" nil)
-          (alltodo "" nil))
-         nil)
-        ("N" "All NEXT actions" todo "NEXT"
-         ((org-agenda-overriding-header ""))))))
-
-(setq org-stuck-projects '("+LEVEL=1/-DONE"
-                           ("TODO" "NEXT" "NEXTACTION")
-                           nil ""))
 
 ;; ---------
 
