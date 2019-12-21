@@ -229,9 +229,10 @@
    ;("p" "Project" org-gtd--project)
    ]
    ;; not actionable
-[  "Non actionable" ("t" "Trash" org-gtd--trash)
-    ;("i" "Incubate" )
-    ;("r" "Reference" )
+[  "Non actionable" ("g" "Garbage" org-gtd--garbage)
+    ;("l" "Later/Maybe" org-gtd--someday-maybe)
+    ;("t" "Tickler" org-gtd--tickler)
+    ;("r" "Reference" org-gtd--reference)
     ]
 
   )
