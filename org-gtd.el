@@ -51,9 +51,17 @@
 (defcustom org-gtd-tickler-file "Tickler.org"
   "Name of the file that holds the tickler. Should end in .org .")
 
-(defcustom org-gtd-incubate-file "Incubate.org"
-  "Name of the file that holds the deferred thoughts (let them incubate for a while). Should end in .org .")
+(defcustom org-gtd-someday-file "Someday.org"
+  "Name of the file holding deferred thoughts (come back to this someday). Should end in .org .")
 
+(defcustom org-gtd-incubate-file "Incubate.org"
+  "Name of the file that holds the projects that are being put together. Should end in .org .")
+
+(defcustom org-gtd-diary-file "diary.org"
+  "The name Emacs will use for its diary features. Follow `diary-file' to read up on it.")
+
+(defcustom org-gtd-fallback-file "capture-fallback.org"
+  "The file in which Emacs will store notes if not otherwise configured.")
 
 (defun org-gtd--path (file)
   "Private function. take FILE as the name of a file and return the full path assuming it is in the GTD framework."
@@ -62,44 +70,29 @@
 (defvar org-gtd-projects (org-gtd--path org-gtd-projects-file))
 
 (setq org-agenda-files `((',(org-gtd--directory))))
-(setq diary-file (org-gtd--path "diary-file.org"))
-(setq org-default-notes-file (org-gtd--path "capture-fallback.org"))
 
-
+(setq org-default-notes-file (org-gtd--path org-gtd-fallback-file))
+(setq diary-file (org-gtd--path org-gtd-diary-file))
 (setq org-agenda-diary-file 'diary-file)
+
+(defvar org-refile-targets '())
+(add-to-list 'org-refile-targets '((org-gtd-projects-file :maxlevel . 1)
+                                   (org-gtd-incubate-file :maxlevel . 1)
+                                   (org-gtd-tickler-file :maxlevel . 1)))
+
+
 (setq org-agenda-include-diary t)
-(setq org-agenda-restore-windows-after-quit t)
-(setq org-agenda-sticky t)
 (setq org-agenda-window-setup 'other-window)
 (setq org-agenda-skip-deadline-if-done t)
 (setq org-agenda-skip-scheduled-if-done t)
 (setq org-agenda-start-on-weekday nil)
-
-(setq calendar-week-start-day 1) ;; Monday
-
-
-
-(add-hook 'calendar-today-visible-hook 'calendar-mark-today)
+(setq org-agenda-span 'day)
 
 (setq org-refile-use-outline-path 'file)
 (setq org-outline-path-complete-in-steps nil)
 (setq org-refile-allow-creating-parent-nodes t)
 (setq org-log-refile 'time)
-(setq org-refile-targets '(("Projects.org" :maxlevel . 1)
-                           ("Someday.org" :maxlevel . 1)
-                           ("Tickler.org" :maxlevel . 1)))
 
-(setq org-agenda-custom-commands
-      '(("n" "Agenda and all TODOs"
-         ((agenda "" nil)
-          (alltodo "" nil))
-         nil)
-        ("N" "All NEXT actions" todo "NEXT"
-         ((org-agenda-overriding-header "")))))
-
-(setq org-stuck-projects '("+LEVEL=1/-DONE"
-                           ("TODO" "NEXT" "NEXTACTION")
-                           nil ""))
 
 
 (global-set-key "\C-cc" 'org-capture)
@@ -107,8 +100,8 @@
 (global-set-key "\C-ca" 'org-agenda)
 (global-set-key "\C-cb" 'org-switchb)
 (org-defkey org-mode-map "\C-cr" 'org-refile)
-(org-defkey org-mode-map "\C-cs" 'org-gtd-refile)
-(org-defkey org-mode-map "\C-co" 'org-gtd-create-single-task-project)
+
+
 
 (defun org-gtd-init ()
   "Private function - initialize the org-gtd-directory variable."
@@ -129,28 +122,37 @@
 
 (setq org-todo-keywords '( "TODO(t)" "NEXT(n)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)"))
 
-
-
-
 (setq org-capture-templates
-      '(
+      `(
         ("i" "Inbox"
-         entry (file "Inbox.org")
+         entry (file ,org-gtd-inbox-file)
          "* TODO %?\n  %i"
          :kill-buffer t)
         ("t" "Todo with link"
-         entry (file "Inbox.org")
+         entry (file ,org-gtd-inbox-file)
          "* TODO %?\n  %i\n  %a"
          :kill-buffer t)
         ("s" "Someday"
-         entry (file "Someday.org")
+         entry (file ,org-gtd-someday-file)
          "* %i%? \n %U"
          :kill-buffer t)
         ("r" "Remind me"
-         entry (file "Tickler.org")
+         entry (file ,org-gtd-tickler-file)
          "* TODO %?\nSCHEDULED: %^{Remind me on:}t"
          :kill-buffer t)))
 
+
+(setq org-agenda-custom-commands
+      '(("n" "Agenda and all TODOs"
+         ((agenda "" nil)
+          (alltodo "" nil))
+         nil)
+        ("N" "All NEXT actions" todo "NEXT"
+         ((org-agenda-overriding-header "")))))
+
+(setq org-stuck-projects '("+LEVEL=1/-DONE"
+                           ("TODO" "NEXT" "NEXTACTION")
+                           nil ""))
 
 
 (defun org-gtd-refile ()
@@ -222,9 +224,9 @@
    ;; actionable
    ("q" "< 2 minutes, done!" org-gtd--quick-item)
    ("n" "To do when I can" org-gtd--when-i-can)
-   ;("d" "Delegate" )
+   ;("d" "Delegate" org-gtd--delegate)
    ("s" "Schedule" org-gtd--schedule)
-   ;("p" "Project" )
+   ;("p" "Project" org-gtd--project)
    ]
    ;; not actionable
 [  "Non actionable" ("t" "Trash" org-gtd--trash)
