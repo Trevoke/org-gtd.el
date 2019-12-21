@@ -1,8 +1,33 @@
 ;;; org-gtd.el --- An implementation of GTD -*- lexical-binding: t; -*-
+
+;; Copyright (C) 2019-2020 Aldric Giacomoni
+
+;; Author: Dmitry Gutov <trevoke@gmail.com>
 ;; Version: 0.1
 ;; URL: https://github.com/trevoke/org-gtd
+;; Package-Requires: ((org-edna "1.0.2") (transient "20191206.1306"))
+
+;; This file is NOT part of GNU Emacs.
+
+;; GNU Emacs is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; GNU Emacs is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
+
 ;;; Commentary:
-;; This is not empty
+;; This is a highly opinionated, destructive implementation of GTD.
+;;
+;; Highly opinionated because it follows the pure idea of the GTD framework.
+;; Destructive because it overrides a number of org-level variables, so if you
+;; have some settings you want to keep, this might make you unhappy.
 
 ;;; Code:
 
@@ -15,12 +40,24 @@
 (defgroup org-gtd nil "Make it your own GTD")
 
 (defcustom org-gtd-directory nil
-  "The directory where the org files for GTD will live. Ends with a /")
+  "The directory where the org files for GTD will live. Ends with a / .")
 
 (defcustom org-gtd-projects-file "Projects.org"
-  "Name of the file that holds the projects. Should end in .org")
+  "Name of the file that holds the projects. Should end in .org .")
 
-(defun org-gtd--path (file) (concat (org-gtd--directory) file))
+(defcustom org-gtd-inbox-file "Inbox.org"
+  "Name of the file that holds the inbox. Should end in .org .")
+
+(defcustom org-gtd-tickler-file "Tickler.org"
+  "Name of the file that holds the tickler. Should end in .org .")
+
+(defcustom org-gtd-incubate-file "Incubate.org"
+  "Name of the file that holds the deferred thoughts (let them incubate for a while). Should end in .org .")
+
+
+(defun org-gtd--path (file)
+  "Private function. take FILE as the name of a file and return the full path assuming it is in the GTD framework."
+  (concat (org-gtd--directory) file))
 
 (defvar org-gtd-projects (org-gtd--path org-gtd-projects-file))
 
