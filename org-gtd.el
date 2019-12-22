@@ -40,48 +40,39 @@
 (defgroup org-gtd nil "Make it your own GTD")
 
 (defcustom org-gtd-directory nil
-  "The directory where the org files for GTD will live. Ends with a / .")
+  "The directory where the org files for GTD will live. Ends with a / ."
+  :risky t
+  :group 'org-gtd
+  :type 'directory)
 
 (defcustom org-gtd-projects-file "Projects.org"
-  "Name of the file that holds the projects. Should end in .org .")
+  "Name of the file that holds the projects. Should end in .org ."
+  :risky t
+  :group 'org-gtd
+  :type 'file
+  :set-after '(org-gtd-directory))
 
 (defcustom org-gtd-inbox-file "Inbox.org"
-  "Name of the file that holds the inbox. Should end in .org .")
+  "Name of the file that holds the inbox. Should end in .org ."
+  :risky t
+  :group 'org-gtd
+  :type 'file
+  :set-after '(org-gtd-directory))
 
 (defcustom org-gtd-tickler-file "Tickler.org"
-  "Name of the file that holds the tickler. Should end in .org .")
+  "Name of the file that holds the tickler. Should end in .org ."
+  :risky t
+  :group 'org-gtd
+  :type 'file
+  :set-after '(org-gtd-directory))
 
 (defcustom org-gtd-someday-file "Someday.org"
-  "Name of the file holding deferred thoughts (come back to this someday). Should end in .org .")
+  "Name of the file holding deferred thoughts (come back to this someday). Should end in .org ."
+  :risky t
+  :group 'org-gtd
+  :type 'file
+  :set-after '(org-gtd-directory))
 
-(defcustom org-gtd-incubate-file "Incubate.org"
-  "Name of the file that holds the projects that are being put together. Should end in .org .")
-
-(defcustom org-gtd-diary-file "diary.org"
-  "The name Emacs will use for its diary features. Follow `diary-file' to read up on it.")
-
-(defcustom org-gtd-fallback-file "capture-fallback.org"
-  "The file in which Emacs will store notes if not otherwise configured.")
-
-(defun org-gtd--path (file)
-  "Private function. take FILE as the name of a file and return the full path assuming it is in the GTD framework."
-  (concat (org-gtd--directory) file))
-
-(defvar org-gtd-projects (org-gtd--path org-gtd-projects-file))
-
-(setq org-agenda-files `((',(org-gtd--directory))))
-
-(setq org-default-notes-file (org-gtd--path org-gtd-fallback-file))
-(setq diary-file (org-gtd--path org-gtd-diary-file))
-(setq org-agenda-diary-file 'diary-file)
-
-(defvar org-refile-targets '())
-(add-to-list 'org-refile-targets '((org-gtd-projects-file :maxlevel . 1)
-                                   (org-gtd-incubate-file :maxlevel . 1)
-                                   (org-gtd-tickler-file :maxlevel . 1)))
-
-
-(setq org-agenda-include-diary t)
 (setq org-agenda-window-setup 'other-window)
 (setq org-agenda-skip-deadline-if-done t)
 (setq org-agenda-skip-scheduled-if-done t)
@@ -93,54 +84,7 @@
 (setq org-refile-allow-creating-parent-nodes t)
 (setq org-log-refile 'time)
 
-
-
-(global-set-key "\C-cc" 'org-capture)
-(global-set-key "\C-cl" 'org-store-link)
-(global-set-key "\C-ca" 'org-agenda)
-(global-set-key "\C-cb" 'org-switchb)
-(org-defkey org-mode-map "\C-cr" 'org-refile)
-
-
-
-(defun org-gtd-init ()
-  "Private function - initialize the org-gtd-directory variable."
-  (interactive)
-  (customize-save-variable
-   'org-gtd-directory
-   (file-name-as-directory (read-directory-name
-                            "What is the root GTD directory? "
-                            "~/"))))
-
-(defun org-gtd--directory ()
-  "Private function - get or initialize the org-gtd-directory variable."
-  (or org-gtd-directory (org-gtd-init)))
-
-
-
-
-
 (setq org-todo-keywords '( "TODO(t)" "NEXT(n)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)"))
-
-(setq org-capture-templates
-      `(
-        ("i" "Inbox"
-         entry (file ,org-gtd-inbox-file)
-         "* TODO %?\n  %i"
-         :kill-buffer t)
-        ("t" "Todo with link"
-         entry (file ,org-gtd-inbox-file)
-         "* TODO %?\n  %i\n  %a"
-         :kill-buffer t)
-        ("s" "Someday"
-         entry (file ,org-gtd-someday-file)
-         "* %i%? \n %U"
-         :kill-buffer t)
-        ("r" "Remind me"
-         entry (file ,org-gtd-tickler-file)
-         "* TODO %?\nSCHEDULED: %^{Remind me on:}t"
-         :kill-buffer t)))
-
 
 (setq org-agenda-custom-commands
       '(("n" "Agenda and all TODOs"
@@ -155,28 +99,58 @@
                            nil ""))
 
 
+(defun org-gtd-init ()
+  "Initialize the org-gtd package based on configuration."
+  (interactive)
+  (or org-gtd-directory
+      (customize-save-variable
+       'org-gtd-directory
+       (file-name-as-directory (read-directory-name
+                                "What is the root GTD directory? "
+                                "~/"))))
+
+  (defvar org-gtd-projects (org-gtd--path org-gtd-projects-file))
+
+  (setq org-agenda-files `((',(org-gtd--directory))))
+
+  (defvar org-refile-targets '())
+  (add-to-list 'org-refile-targets '((org-gtd-projects-file :maxlevel . 1)
+                                     (org-gtd-someday-file :maxlevel . 1)
+                                     (org-gtd-tickler-file :maxlevel . 1)))
+
+  (setq org-capture-templates
+        `(
+          ("i" "Inbox"
+           entry (file ,org-gtd-inbox-file)
+           "* TODO %?\n  %i"
+           :kill-buffer t)
+          ("t" "Todo with link"
+           entry (file ,org-gtd-inbox-file)
+           "* TODO %?\n  %i\n  %a"
+           :kill-buffer t)
+          ("s" "Someday"
+           entry (file ,org-gtd-someday-file)
+           "* %i%? \n %U"
+           :kill-buffer t)
+          ("r" "Remind me"
+           entry (file ,org-gtd-tickler-file)
+           "* TODO %?\nSCHEDULED: %^{Remind me on:}t"
+           :kill-buffer t))))
+
+(defun org-gtd--directory ()
+  "Private function - get or initialize the org-gtd-directory variable."
+  (or org-gtd-directory (org-gtd-init)))
+
+(defun org-gtd--path (file)
+  "Private function. take FILE as the name of a file and return the full path assuming it is in the GTD framework."
+  (concat (org-gtd--directory) file))
+
+
 (defun org-gtd-refile ()
   "Custom refiling which includes setting a tag."
   (interactive)
   (org-set-tags-command)
   (org-refile))
-
-
-;; ---------
-
-(setq org-gtd-dir org-directory)
-(setq org-gtd-next (concat org-gtd-dir "test-next.org"))
-(setq org-gtd-projects (concat org-gtd-dir "test-projects.org"))
-(setq org-gtd-references (concat org-gtd-dir "test-references.org"))
-(setq org-gtd-incubate (concat org-gtd-dir "test-incubate.org"))
-(setq org-gtd-calendar (concat org-gtd-dir "test-calendar.org"))
-
-(setq org-refile-targets '((org-gtd-projects :maxlevel . 1)
-                           (org-gtd-calendar :maxlevel . 1)
-                           (org-gtd-next :maxlevel . 1)
-                           (org-gtd-incubate :maxlevel . 1)))
-
-;(add-to-list 'org-refile-targets `(,org-gtd-next :level 1))
 
 
 ;; TODO - update statistics cookies in project file
@@ -185,7 +159,7 @@
   "Use this once a day: process every element in the inbox."
   (interactive)
   (require 'winner)
-  (pop-to-buffer-same-window "test.org")
+  (pop-to-buffer-same-window org-gtd-inbox-file)
   (delete-other-windows)
   (org-map-entries
    (lambda ()
@@ -224,16 +198,16 @@
    ;; actionable
    ("q" "< 2 minutes, done!" org-gtd--quick-item)
    ("n" "To do when I can" org-gtd--when-i-can)
-   ;("d" "Delegate" org-gtd--delegate)
-   ("s" "Schedule" org-gtd--schedule)
-   ;("p" "Project" org-gtd--project)
+   ("s" "To do at a given point in time" org-gtd--schedule)
+                                        ;("d" "Delegate" org-gtd--delegate)
+                                        ;("p" "Project: requires many steps" org-gtd--project)
    ]
-   ;; not actionable
-[  "Non actionable" ("g" "Garbage" org-gtd--garbage)
-    ;("l" "Later/Maybe" org-gtd--someday-maybe)
-    ;("t" "Tickler" org-gtd--tickler)
-    ;("r" "Reference" org-gtd--reference)
-    ]
+  ;; not actionable
+  ["Non actionable" ("g" "Garbage" org-gtd--garbage)
+                                        ;("l" "Later/Maybe" org-gtd--someday-maybe)
+                                        ;("t" "Tickler" org-gtd--tickler)
+                                        ;("r" "Reference" org-gtd--reference)
+   ]
 
   )
 
