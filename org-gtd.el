@@ -50,28 +50,32 @@
   :risky t
   :group 'org-gtd
   :type 'file
-  :set-after '(org-gtd-directory))
+  :set-after '(org-gtd-directory)
+  :set 'org-gtd--set-file-path)
 
 (defcustom org-gtd-inbox-file "Inbox.org"
   "Name of the file that holds the inbox. Should end in .org ."
   :risky t
   :group 'org-gtd
   :type 'file
-  :set-after '(org-gtd-directory))
+  :set-after '(org-gtd-directory)
+  :set 'org-gtd--set-file-path)
 
 (defcustom org-gtd-tickler-file "Tickler.org"
   "Name of the file that holds the tickler. Should end in .org ."
   :risky t
   :group 'org-gtd
   :type 'file
-  :set-after '(org-gtd-directory))
+  :set-after '(org-gtd-directory)
+  :set 'org-gtd--set-file-path)
 
 (defcustom org-gtd-someday-file "Someday.org"
   "Name of the file holding deferred thoughts (come back to this someday). Should end in .org ."
   :risky t
   :group 'org-gtd
   :type 'file
-  :set-after '(org-gtd-directory))
+  :set-after '(org-gtd-directory)
+  :set 'org-gtd--set-file-path)
 
 (setq org-agenda-window-setup 'other-window)
 (setq org-agenda-skip-deadline-if-done t)
@@ -102,21 +106,19 @@
 (defun org-gtd-init ()
   "Initialize the org-gtd package based on configuration."
   (interactive)
-  (or org-gtd-directory
-      (customize-save-variable
-       'org-gtd-directory
-       (file-name-as-directory (read-directory-name
-                                "What is the root GTD directory? "
-                                "~/"))))
+  (defvar org-gtd-directory)
+  (customize-save-variable 'org-gtd-directory
+                           (file-name-as-directory (read-directory-name
+                                                    "What is the root GTD directory? "
+                                                    "~/")))
 
   (defvar org-gtd-projects (org-gtd--path org-gtd-projects-file))
 
   (setq org-agenda-files `((',(org-gtd--directory))))
 
-  (defvar org-refile-targets '())
-  (add-to-list 'org-refile-targets '((org-gtd-projects-file :maxlevel . 1)
-                                     (org-gtd-someday-file :maxlevel . 1)
-                                     (org-gtd-tickler-file :maxlevel . 1)))
+  (setq org-refile-targets '((org-gtd-projects-file :maxlevel . 1)
+                             (org-gtd-someday-file :maxlevel . 1)
+                             (org-gtd-tickler-file :maxlevel . 1)))
 
   (setq org-capture-templates
         `(
@@ -145,6 +147,14 @@
   "Private function. take FILE as the name of a file and return the full path assuming it is in the GTD framework."
   (concat (org-gtd--directory) file))
 
+(defun org-gtd--set-file-path (filename value)
+  "Private function. takes FILENAME and VALUE."
+  (set-default filename value)
+  (let ((var (intern (replace-regexp-in-string
+                      "-file"
+                      ""
+                      (symbol-name filename)))))
+    (set var (org-gtd--path value))))
 
 (defun org-gtd-refile ()
   "Custom refiling which includes setting a tag."
@@ -165,7 +175,7 @@
    (lambda ()
      (setq org-map-continue-from (org-element-property :begin (org-element-at-point)))
      (org-narrow-to-element)
-     (org-gtd--process-inbox-item)
+     (org-gtd--process-an-item)
      (widen)
      (org-archive-subtree)))
   (winner-undo))
