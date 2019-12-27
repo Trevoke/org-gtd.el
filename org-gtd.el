@@ -156,30 +156,70 @@
            "* TODO %?\nSCHEDULED: %^{Remind me on:}t"
            :kill-buffer t))))
 
-(defun org-gtd-refile ()
-  "Custom refiling which includes setting a tag."
-  (interactive)
-  (org-set-tags-command)
-  (org-refile))
-
 ;; TODO - update statistics cookies in project file
 ;; (org-update-statistics-cookies t)
+;; (setq org-map-continue-from (org-element-property :begin (org-element-at-point)))
+;; (org-set-tags-command)
+
+  ;; (org-map-entries
+  ;;  (lambda ()
+
+  ;;    (org-narrow-to-element)
+  ;;    (org-gtd--process-an-item)
+  ;;    (widen)
+  ;;    (org-archive-subtree))
+  ;;  nil
+  ;;  `(,org-gtd-inbox))
+
 (defun org-gtd-process-inbox ()
   "Use this once a day: process every element in the inbox."
   (interactive)
-  (require 'winner)
-  (find-file org-gtd-inbox)
-  (delete-other-windows)
-  (org-map-entries
-   (lambda ()
-     (setq org-map-continue-from (org-element-property :begin (org-element-at-point)))
-     (org-narrow-to-element)
-     (org-gtd--process-an-item)
-     (widen)
-     (org-archive-subtree))
-   nil
-   `(,org-gtd-inbox))
-  (winner-undo))
+
+  (find-file "/tmp/inbox.org")
+  (setq org-gtd-inbox-buffer (get-file-buffer "/tmp/inbox.org"))
+  (set-buffer org-gtd-inbox-buffer)
+
+  (goto-char (point-min))
+  (org-next-visible-heading 1)
+  (org-narrow-to-element)
+  (org-gtd--process-inbox-element org-gtd-inbox-buffer)
+  (widen))
+
+(defun org-gtd--process-inbox-element (inbox-buffer)
+  (setq action
+        (read-multiple-choice
+         "What are we doing with this item?"
+         '((?q "quick" "quick item: < 2 minutes, done!")
+           (?p "project" "multiple steps required to completion")
+           (?s "schedule" "do this at a certain time")
+           (?d "delegate" "give it to someone")
+           (?w "whenever" "do this when possible")
+           (?g "garbage" "throw this away")
+           (?r "reference" "add this to the brain")
+           (?l "later" "remind me of this possibility at some point")
+           (?t "tickler" "I need to be reminded of this at a given time"))))
+  (case (car action)
+    (?q (org-gtd-quick-action))
+    (?p (project inbox-buffer)))
+  )
+
+(defun org-gtd-quick-action ()
+  (org-todo "DONE")
+  (org-archive-subtree))
+
+(defun project (inbox-buffer)
+  (setq org-gtd-project-buffer (get-buffer-create "*org-gtd-project*"))
+  (save-excursion
+    (set-buffer org-gtd-project-buffer)
+    (erase-buffer)
+    (display-buffer-same-window org-gtd-project-buffer '())
+    (insert-buffer inbox-buffer)
+    (recursive-edit)
+    (goto-char (point-min))
+    (org-refile nil nil '("" "/tmp/projects.org")))
+
+  (display-buffer-same-window inbox-buffer '())
+  (widen))
 
 
 (define-suffix-command org-gtd--schedule ()
@@ -193,33 +233,10 @@
   (org-todo "NEXT")
   (org-refile nil nil `("" ,org-gtd-next)))
 
-(define-suffix-command org-gtd--quick-item ()
-  (interactive)
-  (org-todo "DONE")
-  (org-archive-subtree))
-
 (define-suffix-command org-gtd--garbage ()
   (interactive)
   (org-todo "CANCELED")
   (org-archive-subtree))
-
-(define-transient-command org-gtd--process-an-item ()
-  "this is my super duper docstring"
-  ["Actionable"
-   ;; actionable
-   ("q" "< 2 minutes, done!" org-gtd--quick-item)
-   ("n" "To do when I can" org-gtd--when-i-can)
-   ("s" "To do at a given point in time" org-gtd--schedule)
-                                        ;("d" "Delegate" org-gtd--delegate)
-                                        ;("p" "Project: requires many steps" org-gtd--project)
-   ]
-  ;; not actionable
-  ["Non actionable"
-   ("g" "Garbage" org-gtd--garbage)
-                                        ;("l" "Later/Maybe" org-gtd--someday-maybe)
-                                        ;("t" "Tickler" org-gtd--tickler)
-                                        ;("r" "Reference" org-gtd--reference)
-   ])
 
 
 (provide 'org-gtd)
