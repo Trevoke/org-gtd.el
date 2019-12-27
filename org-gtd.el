@@ -39,43 +39,61 @@
 
 (defgroup org-gtd nil "Make it your own GTD")
 
+(defun org-gtd--directory ()
+  "Private function - get or initialize the org-gtd-directory variable."
+  (or org-gtd-directory (org-gtd-init)))
+
+(defun org-gtd--path (file)
+  "Private function. take FILE as the name of a file and return the full path assuming it is in the GTD framework."
+  (concat (org-gtd--directory) file))
+
+(defun org-gtd--set-file-path (filename value)
+  "Private function. takes FILENAME and VALUE."
+  (set-default filename value)
+  (let ((var (intern (replace-regexp-in-string
+                      "-file"
+                      ""
+                      (symbol-name filename)))))
+    (set var (org-gtd--path value))))
+
+
 (defcustom org-gtd-directory nil
-  "The directory where the org files for GTD will live. Ends with a / ."
+  "The directory where the org files for GTD will live. Ends with a /."
   :risky t
   :group 'org-gtd
   :type 'directory)
 
 (defcustom org-gtd-projects-file "Projects.org"
-  "Name of the file that holds the projects. Should end in .org ."
+  "Name of the file that holds the projects. Should end in .org."
   :risky t
   :group 'org-gtd
   :type 'file
   :set-after '(org-gtd-directory)
-  :set 'org-gtd--set-file-path)
+  :set #'org-gtd--set-file-path)
 
 (defcustom org-gtd-inbox-file "Inbox.org"
-  "Name of the file that holds the inbox. Should end in .org ."
+  "Name of the file that holds the inbox. Should end in .org."
   :risky t
   :group 'org-gtd
   :type 'file
   :set-after '(org-gtd-directory)
-  :set 'org-gtd--set-file-path)
+  :set #'org-gtd--set-file-path)
 
 (defcustom org-gtd-tickler-file "Tickler.org"
-  "Name of the file that holds the tickler. Should end in .org ."
+  "Name of the file that holds the tickler. Should end in .org."
   :risky t
   :group 'org-gtd
   :type 'file
   :set-after '(org-gtd-directory)
-  :set 'org-gtd--set-file-path)
+  :set #'org-gtd--set-file-path)
 
 (defcustom org-gtd-someday-file "Someday.org"
-  "Name of the file holding deferred thoughts (come back to this someday). Should end in .org ."
+  "Name of the file holding deferred thoughts (come back to this someday). Should end in .org."
   :risky t
   :group 'org-gtd
   :type 'file
   :set-after '(org-gtd-directory)
-  :set 'org-gtd--set-file-path)
+  :set #'org-gtd--set-file-path)
 
 (setq org-agenda-window-setup 'other-window)
 (setq org-agenda-skip-deadline-if-done t)
@@ -102,7 +120,6 @@
                            ("TODO" "NEXT" "NEXTACTION")
                            nil ""))
 
-
 (defun org-gtd-init ()
   "Initialize the org-gtd package based on configuration."
   (interactive)
@@ -116,45 +133,28 @@
 
   (setq org-agenda-files `((',(org-gtd--directory))))
 
-  (setq org-refile-targets '((org-gtd-projects-file :maxlevel . 1)
-                             (org-gtd-someday-file :maxlevel . 1)
-                             (org-gtd-tickler-file :maxlevel . 1)))
+  (setq org-refile-targets '((org-gtd-projects :maxlevel . 1)
+                             (org-gtd-someday :maxlevel . 1)
+                             (org-gtd-tickler :maxlevel . 1)))
 
   (setq org-capture-templates
         `(
           ("i" "Inbox"
-           entry (file ,org-gtd-inbox-file)
+           entry (file ,org-gtd-inbox)
            "* TODO %?\n  %i"
            :kill-buffer t)
           ("t" "Todo with link"
-           entry (file ,org-gtd-inbox-file)
+           entry (file ,org-gtd-inbox)
            "* TODO %?\n  %i\n  %a"
            :kill-buffer t)
           ("s" "Someday"
-           entry (file ,org-gtd-someday-file)
+           entry (file ,org-gtd-someday)
            "* %i%? \n %U"
            :kill-buffer t)
           ("r" "Remind me"
-           entry (file ,org-gtd-tickler-file)
+           entry (file ,org-gtd-tickler)
            "* TODO %?\nSCHEDULED: %^{Remind me on:}t"
            :kill-buffer t))))
-
-(defun org-gtd--directory ()
-  "Private function - get or initialize the org-gtd-directory variable."
-  (or org-gtd-directory (org-gtd-init)))
-
-(defun org-gtd--path (file)
-  "Private function. take FILE as the name of a file and return the full path assuming it is in the GTD framework."
-  (concat (org-gtd--directory) file))
-
-(defun org-gtd--set-file-path (filename value)
-  "Private function. takes FILENAME and VALUE."
-  (set-default filename value)
-  (let ((var (intern (replace-regexp-in-string
-                      "-file"
-                      ""
-                      (symbol-name filename)))))
-    (set var (org-gtd--path value))))
 
 (defun org-gtd-refile ()
   "Custom refiling which includes setting a tag."
@@ -162,14 +162,13 @@
   (org-set-tags-command)
   (org-refile))
 
-
 ;; TODO - update statistics cookies in project file
 ;; (org-update-statistics-cookies t)
 (defun org-gtd-process-inbox ()
   "Use this once a day: process every element in the inbox."
   (interactive)
   (require 'winner)
-  (pop-to-buffer-same-window org-gtd-inbox-file)
+  (find-file org-gtd-inbox)
   (delete-other-windows)
   (org-map-entries
    (lambda ()
@@ -177,7 +176,9 @@
      (org-narrow-to-element)
      (org-gtd--process-an-item)
      (widen)
-     (org-archive-subtree)))
+     (org-archive-subtree))
+   nil
+   `(,org-gtd-inbox))
   (winner-undo))
 
 
@@ -197,7 +198,7 @@
   (org-todo "DONE")
   (org-archive-subtree))
 
-(define-suffix-command org-gtd--trash ()
+(define-suffix-command org-gtd--garbage ()
   (interactive)
   (org-todo "CANCELED")
   (org-archive-subtree))
@@ -213,13 +214,12 @@
                                         ;("p" "Project: requires many steps" org-gtd--project)
    ]
   ;; not actionable
-  ["Non actionable" ("g" "Garbage" org-gtd--garbage)
+  ["Non actionable"
+   ("g" "Garbage" org-gtd--garbage)
                                         ;("l" "Later/Maybe" org-gtd--someday-maybe)
                                         ;("t" "Tickler" org-gtd--tickler)
                                         ;("r" "Reference" org-gtd--reference)
-   ]
-
-  )
+   ])
 
 
 (provide 'org-gtd)
