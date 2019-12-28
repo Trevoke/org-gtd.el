@@ -106,7 +106,12 @@
 (setq org-refile-allow-creating-parent-nodes t)
 (setq org-log-refile 'time)
 
-(setq org-todo-keywords '( "TODO(t)" "NEXT(n)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)"))
+(setq org-todo-keywords '("TODO(t)"
+                          "NEXT(n)"
+                          "WAIT(w@/!)"
+                          "|"
+                          "DONE(d!)"
+                          "CANCELED(c@)"))
 
 (setq org-agenda-custom-commands
       '(("n" "Agenda and all TODOs"
@@ -178,6 +183,7 @@
   (find-file "/tmp/inbox.org")
   (setq org-gtd-inbox-buffer (get-file-buffer "/tmp/inbox.org"))
   (set-buffer org-gtd-inbox-buffer)
+  (display-buffer-same-window org-gtd-inbox-buffer '())
 
   (goto-char (point-min))
   (org-next-visible-heading 1)
@@ -199,15 +205,57 @@
            (?l "later" "remind me of this possibility at some point")
            (?t "tickler" "I need to be reminded of this at a given time"))))
   (case (car action)
-    (?q (org-gtd-quick-action))
-    (?p (project inbox-buffer)))
+    (?q (org-gtd--quick-action))
+    (?p (org-gtd--project inbox-buffer))
+    (?s (org-gtd--schedule))
+    (?d (org-gtd--delegate))
+    (?w (org-gtd--whenever))
+    (?g (org-gtd--garbage))
+    (?r (org-gtd--reference))
+    (?l (org-gtd--later))
+    (?t (org-gtd--tickler))
+    )
   )
 
-(defun org-gtd-quick-action ()
+(defun org-gtd--tickler ()
+  (org-time-stamp)
+  (org-refile nil nil '("" "/tmp/tickler.org")))
+
+(defun org-gtd--later ()
+  (org-time-stamp)
+  (org-refile nil nil '("" "/tmp/someday.org")))
+
+(defun org-gtd--reference ()
+  (org-brain-add-resource nil nil "What's the link? " nil)
+  (org-todo "DONE")
+  (org-archive-subtree)
+  )
+
+(defun org-gtd--garbage ()
+  (org-todo "CANCELED")
+  (org-archive-subtree))
+
+(defun org-gtd--whenever ()
+  (org-set-tags)
+  (org-todo "NEXT")
+  (org-refile nil nil '("" "/tmp/single-actions.org")))
+
+(defun org-gtd--delegate ()
+  (org-todo "WAIT")
+  (org-set-property "DELEGATED_TO" (read-string "Who will do this? "))
+  (org-schedule 0)
+  (org-refile nil nil '("" "/tmp/delegated.org")))
+
+(defun org-gtd--schedule ()
+  (org-todo "TODO")
+  (org-schedule 0)
+  (org-refile nil nil '("" "/tmp/org-cal.org")))
+
+(defun org-gtd--quick-action ()
   (org-todo "DONE")
   (org-archive-subtree))
 
-(defun project (inbox-buffer)
+(defun org-gtd--project (inbox-buffer)
   (setq org-gtd-project-buffer (get-buffer-create "*org-gtd-project*"))
   (save-excursion
     (set-buffer org-gtd-project-buffer)
@@ -219,23 +267,6 @@
     (org-refile nil nil '("" "/tmp/projects.org")))
 
   (display-buffer-same-window inbox-buffer '())
-  (widen))
-
-
-(define-suffix-command org-gtd--schedule ()
-  (interactive)
-  (org-schedule nil)
-  (org-refile nil nil `("One-off" ,org-gtd-calendar)))
-
-
-(define-suffix-command org-gtd--when-i-can ()
-  (interactive)
-  (org-todo "NEXT")
-  (org-refile nil nil `("" ,org-gtd-next)))
-
-(define-suffix-command org-gtd--garbage ()
-  (interactive)
-  (org-todo "CANCELED")
   (org-archive-subtree))
 
 
