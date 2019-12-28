@@ -2,10 +2,10 @@
 
 ;; Copyright (C) 2019-2020 Aldric Giacomoni
 
-;; Author: Dmitry Gutov <trevoke@gmail.com>
+;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; Version: 0.1
 ;; URL: https://github.com/trevoke/org-gtd
-;; Package-Requires: ((org-edna "1.0.2") (transient "20191206.1306"))
+;; Package-Requires: ((org-edna "1.0.2") (org-brain "0.8"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -32,7 +32,6 @@
 ;;; Code:
 
 (require 'org-edna)
-(require 'transient)
 
 (setq org-edna-use-inheritance t)
 (org-edna-load)
@@ -57,6 +56,7 @@
     (set var (org-gtd--path value))))
 
 
+;; TODO changing the directory should change the value of all the paths
 (defcustom org-gtd-directory nil
   "The directory where the org files for GTD will live. Ends with a /."
   :risky t
@@ -94,6 +94,10 @@
   :type 'file
   :set-after '(org-gtd-directory)
   :set #'org-gtd--set-file-path)
+
+(defun org-gtd--project-buffer ()
+  "Private function. Get or create the buffer to transform an inbox item into a project."
+  (get-buffer-create "*org-gtd-project*"))
 
 (setq org-agenda-window-setup 'other-window)
 (setq org-agenda-skip-deadline-if-done t)
@@ -151,14 +155,6 @@
           ("t" "Todo with link"
            entry (file ,org-gtd-inbox)
            "* TODO %?\n  %i\n  %a"
-           :kill-buffer t)
-          ("s" "Someday"
-           entry (file ,org-gtd-someday)
-           "* %i%? \n %U"
-           :kill-buffer t)
-          ("r" "Remind me"
-           entry (file ,org-gtd-tickler)
-           "* TODO %?\nSCHEDULED: %^{Remind me on:}t"
            :kill-buffer t))))
 
 ;; TODO - update statistics cookies in project file
@@ -179,17 +175,16 @@
 (defun org-gtd-process-inbox ()
   "Use this once a day: process every element in the inbox."
   (interactive)
+  (let ((inbox-buffer (progn (find-file org-gtd-inbox)
+                             (get-file-buffer org-gtd-inbox))))
+    (set-buffer org-gtd-inbox-buffer)
+    (display-buffer-same-window org-gtd-inbox-buffer '())
 
-  (find-file "/tmp/inbox.org")
-  (setq org-gtd-inbox-buffer (get-file-buffer "/tmp/inbox.org"))
-  (set-buffer org-gtd-inbox-buffer)
-  (display-buffer-same-window org-gtd-inbox-buffer '())
-
-  (goto-char (point-min))
-  (org-next-visible-heading 1)
-  (org-narrow-to-element)
-  (org-gtd--process-inbox-element org-gtd-inbox-buffer)
-  (widen))
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (org-narrow-to-element)
+    (org-gtd--process-inbox-element inbox-buffer)
+    (widen)))
 
 (defun org-gtd--process-inbox-element (inbox-buffer)
   (setq action
@@ -219,11 +214,14 @@
 
 (defun org-gtd--tickler ()
   (org-time-stamp)
-  (org-refile nil nil '("" "/tmp/tickler.org")))
+  (org-refile nil nil `("" ,org-gtd-tickler)))
 
+;; TODO should be categorizable, e.g. to read, to watch, to eat
+;; so maybe let user choose where to refile in the someday file
+;; and maybe add tags
 (defun org-gtd--later ()
   (org-time-stamp)
-  (org-refile nil nil '("" "/tmp/someday.org")))
+  (org-refile nil nil `("" ,org-gtd-someday)))
 
 (defun org-gtd--reference ()
   (org-brain-add-resource nil nil "What's the link? " nil)
@@ -235,17 +233,24 @@
   (org-todo "CANCELED")
   (org-archive-subtree))
 
+;; TODO this file is not customizable yet
+;; And it's here because I think of the edna customization in projects
+;; as being file-wide but I think I can do it per-header
 (defun org-gtd--whenever ()
   (org-set-tags)
   (org-todo "NEXT")
   (org-refile nil nil '("" "/tmp/single-actions.org")))
 
+;; TODO is this a good idea? This could be non-private, could be applicable to single actions or actions in projects
+;; Maybe I don't create another file for this
+;; After all I can search by property across files
 (defun org-gtd--delegate ()
   (org-todo "WAIT")
   (org-set-property "DELEGATED_TO" (read-string "Who will do this? "))
   (org-schedule 0)
   (org-refile nil nil '("" "/tmp/delegated.org")))
 
+;; TODO this file isn't customizable
 (defun org-gtd--schedule ()
   (org-todo "TODO")
   (org-schedule 0)
@@ -256,15 +261,14 @@
   (org-archive-subtree))
 
 (defun org-gtd--project (inbox-buffer)
-  (setq org-gtd-project-buffer (get-buffer-create "*org-gtd-project*"))
   (save-excursion
-    (set-buffer org-gtd-project-buffer)
+    (set-buffer (org-gtd--project-buffer))
     (erase-buffer)
-    (display-buffer-same-window org-gtd-project-buffer '())
+    (display-buffer-same-window (org-gtd-project-buffer) '())
     (insert-buffer inbox-buffer)
     (recursive-edit)
     (goto-char (point-min))
-    (org-refile nil nil '("" "/tmp/projects.org")))
+    (org-refile nil nil `("" ,org-gtd-projects)))
 
   (display-buffer-same-window inbox-buffer '())
   (org-archive-subtree))
