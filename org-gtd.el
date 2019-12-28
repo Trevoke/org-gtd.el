@@ -25,7 +25,7 @@
 ;;; Commentary:
 ;; This is a highly opinionated, destructive implementation of GTD.
 ;;
-;; Highly opinionated because it follows the pure idea of the GTD framework.
+;; Highly opinionated because it aims to follow the pure idea of the GTD framework.
 ;; Destructive because it overrides a number of org-level variables, so if you
 ;; have some settings you want to keep, this might make you unhappy.
 
@@ -63,7 +63,7 @@
   :group 'org-gtd
   :type 'directory)
 
-(defcustom org-gtd-projects-file "Projects.org"
+(defcustom org-gtd-actionable-file "Actionable.org"
   "Name of the file that holds the projects. Should end in .org."
   :risky t
   :group 'org-gtd
@@ -79,8 +79,8 @@
   :set-after '(org-gtd-directory)
   :set #'org-gtd--set-file-path)
 
-(defcustom org-gtd-tickler-file "Tickler.org"
-  "Name of the file that holds the tickler. Should end in .org."
+(defcustom org-gtd-timely-file "Timely.org"
+  "Name of the file that holds the scheduled items, including reminders. Should end in .org."
   :risky t
   :group 'org-gtd
   :type 'file
@@ -138,13 +138,13 @@
                                                     "What is the root GTD directory? "
                                                     "~/")))
 
-  (defvar org-gtd-projects (org-gtd--path org-gtd-projects-file))
+  (defvar org-gtd-actionable (org-gtd--path org-gtd-projects-file))
 
   (setq org-agenda-files `((',(org-gtd--directory))))
 
-  (setq org-refile-targets '((org-gtd-projects :maxlevel . 1)
-                             (org-gtd-someday :maxlevel . 1)
-                             (org-gtd-tickler :maxlevel . 1)))
+  (setq org-refile-targets `((,org-gtd-actionable :maxlevel . 2)
+                             (,org-gtd-someday :maxlevel . 2)
+                             (,org-gtd-timely :maxlevel . 2)))
 
   (setq org-capture-templates
         `(
@@ -214,7 +214,7 @@
 
 (defun org-gtd--tickler ()
   (org-time-stamp)
-  (org-refile nil nil `("" ,org-gtd-tickler)))
+  (org-refile nil nil `("Reminders" ,org-gtd-timely)))
 
 ;; TODO should be categorizable, e.g. to read, to watch, to eat
 ;; so maybe let user choose where to refile in the someday file
@@ -236,25 +236,27 @@
 ;; TODO this file is not customizable yet
 ;; And it's here because I think of the edna customization in projects
 ;; as being file-wide but I think I can do it per-header
+;; Yes! I can!
+;; :PROPERTIES:
+;; :TRIGGER:  next-sibling todo!(NEXT)
+;; :END:
+;; as long as the inheritance flag is set to true
 (defun org-gtd--whenever ()
   (org-set-tags)
   (org-todo "NEXT")
-  (org-refile nil nil '("" "/tmp/single-actions.org")))
+  (org-refile nil nil `("One-Offs" ,org-gtd-actionable)))
 
-;; TODO is this a good idea? This could be non-private, could be applicable to single actions or actions in projects
-;; Maybe I don't create another file for this
-;; After all I can search by property across files
 (defun org-gtd--delegate ()
   (org-todo "WAIT")
   (org-set-property "DELEGATED_TO" (read-string "Who will do this? "))
   (org-schedule 0)
-  (org-refile nil nil '("" "/tmp/delegated.org")))
+  (org-refile nil nil `("Delegated" ,org-gtd-actionable)))
 
 ;; TODO this file isn't customizable
 (defun org-gtd--schedule ()
   (org-todo "TODO")
   (org-schedule 0)
-  (org-refile nil nil '("" "/tmp/org-cal.org")))
+  (org-refile nil nil `("Scheduled" ,org-gtd-timely)))
 
 (defun org-gtd--quick-action ()
   (org-todo "DONE")
@@ -268,7 +270,7 @@
     (insert-buffer inbox-buffer)
     (recursive-edit)
     (goto-char (point-min))
-    (org-refile nil nil `("" ,org-gtd-projects)))
+    (org-refile nil nil `("Projects" ,org-gtd-actionable)))
 
   (display-buffer-same-window inbox-buffer '())
   (org-archive-subtree))

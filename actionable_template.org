@@ -1,0 +1,18 @@
+#+STARTUP: overview indent align inlineimages hidestars
+#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CANCELED(c@)
+
+* One-Offs
+:PROPERTIES:
+:CATEGORY: One-Offs
+:END:
+
+* Delegated
+:PROPERTIES:
+:CATEGORY: Delegated
+:END:
+
+* Projects
+:PROPERTIES:
+:TRIGGER:  next-sibling todo!(NEXT)
+:CATEGORY: Projects
+:END:
