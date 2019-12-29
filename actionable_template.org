@@ -1,4 +1,4 @@
-#+STARTUP: overview indent align inlineimages hidestars
+#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
 #+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CANCELED(c@)
 
 * One-Offs

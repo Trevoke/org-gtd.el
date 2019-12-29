@@ -5,7 +5,7 @@
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; Version: 0.1
 ;; URL: https://github.com/trevoke/org-gtd
-;; Package-Requires: ((org-edna "1.0.2") (org-brain "0.8"))
+;; Package-Requires: ((org-edna "1.0.2") (org-brain "0.8") (f "0.20.0"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -36,15 +36,14 @@
 (setq org-edna-use-inheritance t)
 (org-edna-load)
 
-(defgroup org-gtd nil "Make it your own GTD")
-
-(defun org-gtd--directory ()
-  "Private function - get or initialize the org-gtd-directory variable."
-  (or org-gtd-directory (org-gtd-init)))
+(defconst org-gtd--package-path (f-dirname (f-this-file)))
 
 (defun org-gtd--path (file)
   "Private function. take FILE as the name of a file and return the full path assuming it is in the GTD framework."
-  (concat (org-gtd--directory) file))
+  (f-join org-gtd-directory file))
+
+(defun org-gtd--template-path (file)
+  (f-join org-gtd--package-path file))
 
 (defun org-gtd--set-file-path (filename value)
   "Private function. takes FILENAME and VALUE."
@@ -55,122 +54,119 @@
                       (symbol-name filename)))))
     (set var (org-gtd--path value))))
 
+(defun org-gtd--init-actionable-file (varname value)
+  "Private function. Create actionable.org file at desired location from built-in template."
+  (let ((action-buffer (find-file (org-gtd--set-file-path varname value))))
+    (with-current-buffer action-buffer
+      (insert-file-contents (org-gtd--template-path "actionable_template.org") nil nil nil t)
+      (save-buffer))
+    (kill-buffer action-buffer)))
 
-;; TODO changing the directory should change the value of all the paths
-(defcustom org-gtd-directory nil
+(defun org-gtd--init-inbox-file (varname value)
+  "Private function. Create actionable.org file at desired location from built-in template."
+  (let ((inbox-buffer (find-file (org-gtd--set-file-path varname value))))
+    (with-current-buffer inbox-buffer
+      (insert-file-contents (org-gtd--template-path "inbox_template.org") nil nil nil t)
+      (save-buffer))
+    (kill-buffer inbox-buffer)))
+
+(defun org-gtd--init-timely-file (varname value)
+  "Private function. Create actionable.org file at desired location from built-in template."
+  (let ((timely-buffer (find-file (org-gtd--set-file-path varname value))))
+    (with-current-buffer timely-buffer
+      (insert-file-contents (org-gtd--template-path "timely_template.org") nil nil nil t)
+      (save-buffer))
+    (kill-buffer timely-buffer)))
+
+(defun org-gtd--init-someday-file (varname value)
+  (let ((someday-buffer (find-file (org-gtd--set-file-path varname value))))
+    (with-current-buffer someday-buffer
+      (insert-file-contents (org-gtd--template-path "someday_template.org") nil nil nil t)
+      (save-buffer))
+    (kill-buffer someday-buffer)))
+
+(defgroup org-gtd nil "Customize the org-gtd package. After changing these values, call `org-gtd-init`.")
+
+;; TODO how to intelligently wire up the customize tools?
+(defcustom org-gtd-directory "~/gtd/"
   "The directory where the org files for GTD will live. Ends with a /."
-  :risky t
-  :group 'org-gtd
-  :type 'directory)
+  :risky t :group 'org-gtd :type 'directory)
 
 (defcustom org-gtd-actionable-file "Actionable.org"
   "Name of the file that holds the projects. Should end in .org."
-  :risky t
-  :group 'org-gtd
-  :type 'file
-  :set-after '(org-gtd-directory)
-  :set #'org-gtd--set-file-path)
+  :risky t :group 'org-gtd :type 'file)
 
 (defcustom org-gtd-inbox-file "Inbox.org"
   "Name of the file that holds the inbox. Should end in .org."
-  :risky t
-  :group 'org-gtd
-  :type 'file
-  :set-after '(org-gtd-directory)
-  :set #'org-gtd--set-file-path)
+  :risky t :group 'org-gtd :type 'file)
 
 (defcustom org-gtd-timely-file "Timely.org"
   "Name of the file that holds the scheduled items, including reminders. Should end in .org."
-  :risky t
-  :group 'org-gtd
-  :type 'file
-  :set-after '(org-gtd-directory)
-  :set #'org-gtd--set-file-path)
+  :risky t :group 'org-gtd :type 'file)
 
 (defcustom org-gtd-someday-file "Someday.org"
   "Name of the file holding deferred thoughts (come back to this someday). Should end in .org."
-  :risky t
-  :group 'org-gtd
-  :type 'file
-  :set-after '(org-gtd-directory)
-  :set #'org-gtd--set-file-path)
+  :risky t :group 'org-gtd :type 'file)
 
 (defun org-gtd--project-buffer ()
   "Private function. Get or create the buffer to transform an inbox item into a project."
   (get-buffer-create "*org-gtd-project*"))
 
-(setq org-agenda-window-setup 'other-window)
-(setq org-agenda-skip-deadline-if-done t)
-(setq org-agenda-skip-scheduled-if-done t)
-(setq org-agenda-start-on-weekday nil)
-(setq org-agenda-span 'day)
-
-(setq org-refile-use-outline-path 'file)
-(setq org-outline-path-complete-in-steps nil)
-(setq org-refile-allow-creating-parent-nodes t)
-(setq org-log-refile 'time)
-
-(setq org-todo-keywords '("TODO(t)"
-                          "NEXT(n)"
-                          "WAIT(w@/!)"
-                          "|"
-                          "DONE(d!)"
-                          "CANCELED(c@)"))
-
-(setq org-agenda-custom-commands
-      '(("n" "Agenda and all TODOs"
-         ((agenda "" nil)
-          (alltodo "" nil))
-         nil)
-        ("N" "All NEXT actions" todo "NEXT"
-         ((org-agenda-overriding-header "")))))
-
-(setq org-stuck-projects '("+LEVEL=1/-DONE"
-                           ("TODO" "NEXT" "NEXTACTION")
-                           nil ""))
+(defun org-gtd-show-all-next ()
+  "Show all the NEXT items in a single list"
+  (interactive)
+  (org-todo-list "NEXT"))
 
 (defun org-gtd-init ()
   "Initialize the org-gtd package based on configuration."
   (interactive)
-  (defvar org-gtd-directory)
-  (customize-save-variable 'org-gtd-directory
-                           (file-name-as-directory (read-directory-name
-                                                    "What is the root GTD directory? "
-                                                    "~/")))
 
-  (defvar org-gtd-actionable (org-gtd--path org-gtd-projects-file))
+  (org-gtd--init-actionable-file 'org-gtd-actionable-file org-gtd-actionable-file)
+  (org-gtd--init-inbox-file 'org-gtd-inbox-file org-gtd-inbox-file)
+  (org-gtd--init-someday-file 'org-gtd-someday-file org-gtd-someday-file)
+  (org-gtd--init-timely-file 'org-gtd-timely-file org-gtd-timely-file)
 
-  (setq org-agenda-files `((',(org-gtd--directory))))
+  (setq org-agenda-window-setup 'other-window)
+  (setq org-agenda-skip-deadline-if-done t)
+  (setq org-agenda-skip-scheduled-if-done t)
+  (setq org-agenda-start-on-weekday nil)
+  (setq org-agenda-span 'day)
 
-  (setq org-refile-targets `((,org-gtd-actionable :maxlevel . 2)
-                             (,org-gtd-someday :maxlevel . 2)
-                             (,org-gtd-timely :maxlevel . 2)))
+  (setq org-refile-use-outline-path 'file)
+  (setq org-outline-path-complete-in-steps nil)
+  (setq org-refile-allow-creating-parent-nodes t)
 
-  (setq org-capture-templates
-        `(
-          ("i" "Inbox"
-           entry (file ,org-gtd-inbox)
-           "* TODO %?\n  %i"
-           :kill-buffer t)
-          ("t" "Todo with link"
-           entry (file ,org-gtd-inbox)
-           "* TODO %?\n  %i\n  %a"
-           :kill-buffer t))))
+  (setq org-stuck-projects '("+LEVEL=1-notproject/-DONE"
+                             ("TODO" "NEXT" "WAIT")
+                             nil ""))
+
+  (setq org-agenda-files `((',org-gtd-directory)))
+
+  (setq org-refile-targets `((,org-gtd-someday :maxlevel . 2)))
+
+  (setq org-capture-templates `(("i" "Inbox"
+                                 entry (file ,org-gtd-inbox)
+                                 "* TODO %?\n  %i"
+                                 :kill-buffer t)
+                                ("t" "Todo with link"
+                                 entry (file ,org-gtd-inbox)
+                                 "* TODO %?\n  %i\n  %a"
+                                 :kill-buffer t))))
 
 ;; TODO - update statistics cookies in project file
 ;; (org-update-statistics-cookies t)
 ;; (setq org-map-continue-from (org-element-property :begin (org-element-at-point)))
 ;; (org-set-tags-command)
 
-  ;; (org-map-entries
-  ;;  (lambda ()
+;; (org-map-entries
+;;  (lambda ()
 
-  ;;    (org-narrow-to-element)
-  ;;    (org-gtd--process-an-item)
-  ;;    (widen)
-  ;;    (org-archive-subtree))
-  ;;  nil
-  ;;  `(,org-gtd-inbox))
+;;    (org-narrow-to-element)
+;;    (org-gtd--process-an-item)
+;;    (widen)
+;;    (org-archive-subtree))
+;;  nil
+;;  `(,org-gtd-inbox))
 
 (defun org-gtd-process-inbox ()
   "Use this once a day: process every element in the inbox."
@@ -233,14 +229,6 @@
   (org-todo "CANCELED")
   (org-archive-subtree))
 
-;; TODO this file is not customizable yet
-;; And it's here because I think of the edna customization in projects
-;; as being file-wide but I think I can do it per-header
-;; Yes! I can!
-;; :PROPERTIES:
-;; :TRIGGER:  next-sibling todo!(NEXT)
-;; :END:
-;; as long as the inheritance flag is set to true
 (defun org-gtd--whenever ()
   (org-set-tags)
   (org-todo "NEXT")
@@ -252,7 +240,6 @@
   (org-schedule 0)
   (org-refile nil nil `("Delegated" ,org-gtd-actionable)))
 
-;; TODO this file isn't customizable
 (defun org-gtd--schedule ()
   (org-todo "TODO")
   (org-schedule 0)
@@ -274,7 +261,6 @@
 
   (display-buffer-same-window inbox-buffer '())
   (org-archive-subtree))
-
 
 (provide 'org-gtd)
 
