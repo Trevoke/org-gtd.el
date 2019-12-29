@@ -173,8 +173,8 @@
   (interactive)
   (let ((inbox-buffer (progn (find-file org-gtd-inbox)
                              (get-file-buffer org-gtd-inbox))))
-    (set-buffer org-gtd-inbox-buffer)
-    (display-buffer-same-window org-gtd-inbox-buffer '())
+    (set-buffer inbox-buffer)
+    (display-buffer-same-window inbox-buffer '())
 
     (goto-char (point-min))
     (org-next-visible-heading 1)
