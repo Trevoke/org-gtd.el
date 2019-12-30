@@ -54,36 +54,28 @@
                       (symbol-name filename)))))
     (set var (org-gtd--path value))))
 
+(defun org-gtd--init-gtd-file (varname value gtd-type)
+  "Private function."
+  (let* ((file (org-gtd--set-file-path varname value))
+         (buffer (find-file file))
+         (template (concat (symbol-name gtd-type) "_template.org")))
+    (or (f-file-p file)
+        (with-current-buffer buffer
+          (insert-file-contents (org-gtd--template-path template) nil nil nil t)
+          (save-buffer)))
+    (kill-buffer buffer)))
+
 (defun org-gtd--init-actionable-file (varname value)
-  "Private function. Create actionable.org file at desired location from built-in template."
-  (let ((action-buffer (find-file (org-gtd--set-file-path varname value))))
-    (with-current-buffer action-buffer
-      (insert-file-contents (org-gtd--template-path "actionable_template.org") nil nil nil t)
-      (save-buffer))
-    (kill-buffer action-buffer)))
+  (org-gtd--init-gtd-file varname value 'actionable))
 
 (defun org-gtd--init-inbox-file (varname value)
-  "Private function. Create actionable.org file at desired location from built-in template."
-  (let ((inbox-buffer (find-file (org-gtd--set-file-path varname value))))
-    (with-current-buffer inbox-buffer
-      (insert-file-contents (org-gtd--template-path "inbox_template.org") nil nil nil t)
-      (save-buffer))
-    (kill-buffer inbox-buffer)))
-
-(defun org-gtd--init-timely-file (varname value)
-  "Private function. Create actionable.org file at desired location from built-in template."
-  (let ((timely-buffer (find-file (org-gtd--set-file-path varname value))))
-    (with-current-buffer timely-buffer
-      (insert-file-contents (org-gtd--template-path "timely_template.org") nil nil nil t)
-      (save-buffer))
-    (kill-buffer timely-buffer)))
+  (org-gtd--init-gtd-file varname value 'inbox))
 
 (defun org-gtd--init-someday-file (varname value)
-  (let ((someday-buffer (find-file (org-gtd--set-file-path varname value))))
-    (with-current-buffer someday-buffer
-      (insert-file-contents (org-gtd--template-path "someday_template.org") nil nil nil t)
-      (save-buffer))
-    (kill-buffer someday-buffer)))
+  (org-gtd--init-gtd-file varname value 'someday))
+
+(defun org-gtd--init-timely-file (varname value)
+  (org-gtd--init-gtd-file varname value 'timely))
 
 (defgroup org-gtd nil "Customize the org-gtd package. After changing these values, call `org-gtd-init`.")
 
@@ -143,7 +135,8 @@
   (setq org-agenda-files `((',org-gtd-directory)))
 
   (setq org-refile-targets `((,org-gtd-someday :maxlevel . 2)
-                             (,org-gtd-actionable :maxlevel . 1)))
+                             (,org-gtd-actionable :maxlevel . 1)
+                             (,org-gtd-timely :maxlevel . 1)))
 
   (setq org-capture-templates `(("i" "Inbox"
                                  entry (file ,org-gtd-inbox)
@@ -262,7 +255,11 @@
     (insert-buffer inbox-buffer)
     (recursive-edit)
     (goto-char (point-min))
-    (org-refile nil nil `("Projects" ,org-gtd-actionable nil nil)))
+    (let ((refile-target (find-if
+                          (lambda (refloc) (string-equal org-gtd-actionable
+                                                         (cadr refloc)))
+                          (org-refile-get-targets))))
+      (org-refile nil nil refile-target)))
 
   (display-buffer-same-window inbox-buffer '())
   (org-archive-subtree))
