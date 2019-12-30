@@ -142,7 +142,8 @@
 
   (setq org-agenda-files `((',org-gtd-directory)))
 
-  (setq org-refile-targets `((,org-gtd-someday :maxlevel . 2)))
+  (setq org-refile-targets `((,org-gtd-someday :maxlevel . 2)
+                             (,org-gtd-actionable :maxlevel . 1)))
 
   (setq org-capture-templates `(("i" "Inbox"
                                  entry (file ,org-gtd-inbox)
@@ -175,6 +176,7 @@
                              (get-file-buffer org-gtd-inbox))))
     (set-buffer inbox-buffer)
     (display-buffer-same-window inbox-buffer '())
+    (delete-other-windows)
 
     (goto-char (point-min))
     (org-next-visible-heading 1)
@@ -246,6 +248,7 @@
   (org-refile nil nil `("Scheduled" ,org-gtd-timely)))
 
 (defun org-gtd--quick-action ()
+  (widen)
   (org-todo "DONE")
   (org-archive-subtree))
 
@@ -253,14 +256,22 @@
   (save-excursion
     (set-buffer (org-gtd--project-buffer))
     (erase-buffer)
-    (display-buffer-same-window (org-gtd-project-buffer) '())
+    (org-mode)
+    (display-buffer-same-window (org-gtd--project-buffer) '())
+    (delete-other-windows)
     (insert-buffer inbox-buffer)
     (recursive-edit)
     (goto-char (point-min))
-    (org-refile nil nil `("Projects" ,org-gtd-actionable)))
+    (org-refile nil nil `("Projects" ,org-gtd-actionable nil nil)))
 
   (display-buffer-same-window inbox-buffer '())
   (org-archive-subtree))
+
+;; (
+;;  "Actionable.org/Projects"
+;;  "/Users/trevoke/gtd/Actionable.org"
+;;  "^\\(\\*+\\)\\(?: +\\(CANCELED\\|DONE\\|NEXT\\|TODO\\|WAIT\\)\\)?\\(?: +\\(\\[#.\\]\\)\\)?\\(?: +\\(?:\\[[0-9%/]+\\] *\\)*\\(Projects\\)\\(?: *\\[[0-9%/]+\\]\\)*\\)\\(?:[     ]+\\(:[[:alnum:]_@#%:]+:\\)\\)?[        ]*$"
+;;  264)
 
 (provide 'org-gtd)
 

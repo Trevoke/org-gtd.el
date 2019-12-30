@@ -1,1 +1,1 @@
-#+STARTUP: overview hidestars logrefile indent logdone
+#+STARTUP: overview hidestars logrefile indent
