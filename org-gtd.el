@@ -5,7 +5,7 @@
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; Version: 0.1
 ;; URL: https://github.com/trevoke/org-gtd
-;; Package-Requires: ((org-edna "1.0.2") (org-brain "0.8") (f "0.20.0"))
+;; Package-Requires: ((emacs "26.1") (org-edna "1.0.2") (org-brain "0.8") (f "0.20.0"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -40,26 +40,25 @@
 (defconst org-gtd--package-path (f-dirname (f-this-file)))
 
 (defun org-gtd--path (file)
-  "Private function. FILE is a filename. Returns the full path to it assuming it is in the GTD framework."
+  "Private function. FILE is a filename. Return the full path to it assuming it is in the GTD framework."
   (f-join org-gtd-directory file))
 
 (defun org-gtd--template-path (file)
-  "Private function. FILE is a template filename. Returns full path to it."
+  "Private function. FILE is a template filename. Return full path to it."
   (f-join org-gtd--package-path file))
 
 (defun org-gtd--set-file-path (filename value)
   "Private function. takes FILENAME and VALUE."
   (set-default filename value)
-  (let ((var (intern (replace-regexp-in-string
-                      "-file"
-                      ""
-                      (symbol-name filename)))))
+  (let ((var (intern (replace-regexp-in-string "-file"
+                                               ""
+                                               (symbol-name filename)))))
     (set var (org-gtd--path value))))
 
 (defun org-gtd--init-gtd-file (varname value gtd-type)
   "Private function. VARNAME and VALUE are things inherited from customize, and GTD-TYPE is one of `org-gtd--types'. Here be dragons."
   (unless (member gtd-type org-gtd--types)
-    (error "Unknown gtd-type argument."))
+    (error "Unknown gtd-type argument"))
   (let* ((file (org-gtd--set-file-path varname value))
          (buffer (find-file file))
          ;; TODO move the _template.org bit inside `org-gtd--template-path'.
@@ -86,7 +85,8 @@
   "Private function. VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
   (org-gtd--init-gtd-file varname value 'timely))
 
-(defgroup org-gtd nil "Customize the org-gtd package. After changing these values, call `org-gtd-init'.")
+(defgroup org-gtd nil "Customize the org-gtd package. After changing these values, call `org-gtd-init'."
+  :version 0.1 :group 'emacs)
 
 ;; TODO how to intelligently wire up the customize tools?
 (defcustom org-gtd-directory "~/gtd/"
@@ -114,7 +114,7 @@
   (get-buffer-create "*org-gtd-project*"))
 
 (defun org-gtd-show-all-next ()
-  "Show all the NEXT items in a single list"
+  "Show all the NEXT items in a single list."
   (interactive)
   (org-todo-list "NEXT"))
 
@@ -156,21 +156,6 @@
                                  "* TODO %?\n  %i\n  %a"
                                  :kill-buffer t))))
 
-;; TODO - update statistics cookies in project file
-;; (org-update-statistics-cookies t)
-;; (setq org-map-continue-from (org-element-property :begin (org-element-at-point)))
-;; (org-set-tags-command)
-
-;; (org-map-entries
-;;  (lambda ()
-
-;;    (org-narrow-to-element)
-;;    (org-gtd--process-an-item)
-;;    (widen)
-;;    (org-archive-subtree))
-;;  nil
-;;  `(,org-gtd-inbox))
-
 (defun org-gtd-process-inbox ()
   "Use this once a day: process every element in the inbox."
   (interactive)
@@ -180,39 +165,40 @@
     (display-buffer-same-window inbox-buffer '())
     (delete-other-windows)
 
-    (goto-char (point-min))
-    (org-next-visible-heading 1)
-    (org-narrow-to-element)
-    (org-gtd--process-inbox-element inbox-buffer)
-    (widen)))
+    (org-map-entries
+     (lambda ()
+       (setq org-map-continue-from (org-element-property :begin (org-element-at-point)))
+       (org-narrow-to-element)
+       (org-gtd--process-inbox-element inbox-buffer)
+       (widen)))))
 
 (defun org-gtd--process-inbox-element (inbox-buffer)
-  (setq action
-        (read-multiple-choice
-         "What are we doing with this item?"
-         '((?q "quick" "quick item: < 2 minutes, done!")
-           (?p "project" "multiple steps required to completion")
-           (?s "schedule" "do this at a certain time")
-           (?d "delegate" "give it to someone")
-           (?w "whenever" "do this when possible")
-           (?g "garbage" "throw this away")
-           (?r "reference" "add this to the brain")
-           (?l "later" "remind me of this possibility at some point")
-           (?t "tickler" "I need to be reminded of this at a given time"))))
-  (case (car action)
-    (?q (org-gtd--quick-action))
-    (?p (org-gtd--project inbox-buffer))
-    (?s (org-gtd--schedule))
-    (?d (org-gtd--delegate))
-    (?w (org-gtd--whenever))
-    (?g (org-gtd--garbage))
-    (?r (org-gtd--reference))
-    (?l (org-gtd--later))
-    (?t (org-gtd--tickler))
-    )
-  )
+  "Private function. INBOX-BUFFER is the buffer with the org gtd inbox."
+  (let ((action
+         (read-multiple-choice
+          "What are we doing with this item?"
+          '((?q "quick" "quick item: < 2 minutes, done!")
+            (?p "project" "multiple steps required to completion")
+            (?s "schedule" "do this at a certain time")
+            (?d "delegate" "give it to someone")
+            (?w "whenever" "do this when possible")
+            (?g "garbage" "throw this away")
+            (?r "reference" "add this to the brain")
+            (?l "later" "remind me of this possibility at some point")
+            (?t "tickler" "I need to be reminded of this at a given time")))))
+    (case (car action)
+      (?q (org-gtd--quick-action))
+      (?p (org-gtd--project inbox-buffer))
+      (?s (org-gtd--schedule))
+      (?d (org-gtd--delegate))
+      (?w (org-gtd--whenever))
+      (?g (org-gtd--garbage))
+      (?r (org-gtd--reference))
+      (?l (org-gtd--later))
+      (?t (org-gtd--tickler)))))
 
 (defun org-gtd--tickler ()
+  "Private function. Process element and move it to the tickler file."
   (move-end-of-line 1)
   (open-line 1)
   (next-line)
@@ -220,6 +206,7 @@
   (org-refile nil nil (org-gtd--refile-target ".*Reminders")))
 
 (defun org-gtd--later ()
+  "Private function. Process element and move it to the someday file."
   (move-end-of-line 1)
   (open-line 1)
   (next-line)
@@ -227,36 +214,42 @@
   (org-refile))
 
 (defun org-gtd--reference ()
+  "Private function. Process element and move it to the brain."
   (org-brain-add-resource nil nil "What's the link? " nil)
   (org-todo "DONE")
   (org-archive-subtree))
 
 (defun org-gtd--garbage ()
+  "Private function. Archive element."
   (org-todo "CANCELED")
   (org-archive-subtree))
 
 (defun org-gtd--whenever ()
+  "Private function. Process element and move it to the Actionable file."
   (org-set-tags-command)
   (org-todo "NEXT")
   (org-refile nil nil (org-gtd--refile-target ".*One-Offs")))
 
 (defun org-gtd--delegate ()
+  "Private function. Process element and move it to the Actionable file."
   (org-todo "WAIT")
   (org-set-property "DELEGATED_TO" (read-string "Who will do this? "))
   (org-schedule 0)
   (org-refile nil nil (org-gtd--refile-target ".*Delegated")))
 
 (defun org-gtd--schedule ()
+  "Private function. Process element and move it to the tickler file."
   (org-todo "TODO")
   (org-schedule 0)
-  (org-refile nil nil `("Scheduled" ,org-gtd-timely)))
+  (org-refile nil nil (org-gtd--refile-target ".*Scheduled")))
 
 (defun org-gtd--quick-action ()
-  (widen)
+  "Private function. Process element and archive it."
   (org-todo "DONE")
   (org-archive-subtree))
 
 (defun org-gtd--project (inbox-buffer)
+  "Private function. Process element and transform it into a project. INBOX-BUFFER is the buffer holding the org-gtd inbox."
   (save-excursion
     (set-buffer (org-gtd--project-buffer))
     (erase-buffer)
@@ -266,18 +259,21 @@
     (insert-buffer inbox-buffer)
     (recursive-edit)
     (goto-char (point-min))
-    (org-refile nil nil (org-gtd--refile-target ".*Projects"))
+    (org-refile nil nil (org-gtd--refile-target ".*Projects")))
+
+  (with-current-buffer (get-file-buffer org-gtd-actionable)
+    (org-update-statistics-cookies t))
 
   (display-buffer-same-window inbox-buffer '())
   (org-archive-subtree))
 
 (defun org-gtd--refile-target (heading-regexp)
-  "Private function. HEADING-REGEXP is a regular expression for one of the desired GTD refile locations. See `org-refile' "
-   (find-if
-    (lambda (rfloc)
-      (string-match heading-regexp
-                    (car rfloc)))
-    (org-refile-get-targets)))
+  "Private function. HEADING-REGEXP is a regular expression for one of the desired GTD refile locations. See `org-refile'."
+  (find-if
+   (lambda (rfloc)
+     (string-match heading-regexp
+                   (car rfloc)))
+   (org-refile-get-targets)))
 
 (provide 'org-gtd)
 
