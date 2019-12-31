@@ -32,6 +32,7 @@
 ;;; Code:
 
 (require 'org-edna)
+(require 'cl)
 
 (setq org-edna-use-inheritance t)
 (org-edna-load)
@@ -155,7 +156,7 @@
   "Private function. Process element and move it to the tickler file."
   (move-end-of-line 1)
   (open-line 1)
-  (next-line)
+  (forward-line)
   (org-time-stamp nil)
   (org-refile nil nil (org-gtd--refile-target ".*Reminders")))
 
@@ -163,7 +164,7 @@
   "Private function. Process element and move it to the someday file."
   (move-end-of-line 1)
   (open-line 1)
-  (next-line)
+  (forward-line)
   (org-time-stamp nil)
   (org-refile))
 
@@ -204,13 +205,12 @@
 
 (defun org-gtd--project (inbox-buffer)
   "Private function. Process element and transform it into a project. INBOX-BUFFER is the buffer holding the org-gtd inbox."
-  (save-excursion
-    (set-buffer (org-gtd--project-buffer))
+  (with-current-buffer (org-gtd--project-buffer)
     (erase-buffer)
     (org-mode)
     (display-buffer-same-window (org-gtd--project-buffer) '())
     (delete-other-windows)
-    (insert-buffer inbox-buffer)
+    (insert-buffer-substring inbox-buffer)
     (recursive-edit)
     (goto-char (point-min))
     (org-refile nil nil (org-gtd--refile-target ".*Projects")))
