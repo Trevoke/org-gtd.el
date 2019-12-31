@@ -25,7 +25,7 @@ In the meanwhile, clone this repo to ~~/.emacs.d/packages~ then add this to your
 
 #+begin_src emacs-lisp
 (add-to-list 'load-path "~/.emacs.d/packages")
-(load
+(require 'org-gtd)
 #+end_src
 
 * Configuring
