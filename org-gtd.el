@@ -39,52 +39,6 @@
 (defconst org-gtd--types '(actionable timely inbox someday))
 (defconst org-gtd--package-path (f-dirname (f-this-file)))
 
-(defun org-gtd--path (file)
-  "Private function. FILE is a filename. Return the full path to it assuming it is in the GTD framework."
-  (f-join org-gtd-directory file))
-
-(defun org-gtd--template-path (file)
-  "Private function. FILE is a template filename. Return full path to it."
-  (f-join org-gtd--package-path file))
-
-(defun org-gtd--set-file-path (filename value)
-  "Private function. takes FILENAME and VALUE."
-  (set-default filename value)
-  (let ((var (intern (replace-regexp-in-string "-file"
-                                               ""
-                                               (symbol-name filename)))))
-    (set var (org-gtd--path value))))
-
-(defun org-gtd--init-gtd-file (varname value gtd-type)
-  "Private function. VARNAME and VALUE are things inherited from customize, and GTD-TYPE is one of `org-gtd--types'. Here be dragons."
-  (unless (member gtd-type org-gtd--types)
-    (error "Unknown gtd-type argument"))
-  (let* ((file (org-gtd--set-file-path varname value))
-         (buffer (find-file file))
-         ;; TODO move the _template.org bit inside `org-gtd--template-path'.
-         (template (concat (symbol-name gtd-type) "_template.org")))
-    (or (f-file-p file)
-        (with-current-buffer buffer
-          (insert-file-contents (org-gtd--template-path template) nil nil nil t)
-          (save-buffer)))
-    (kill-buffer buffer)))
-
-(defun org-gtd--init-actionable-file (varname value)
-  "Private function. VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
-  (org-gtd--init-gtd-file varname value 'actionable))
-
-(defun org-gtd--init-inbox-file (varname value)
-  "Private function. VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
-  (org-gtd--init-gtd-file varname value 'inbox))
-
-(defun org-gtd--init-someday-file (varname value)
-  "Private function. VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
-  (org-gtd--init-gtd-file varname value 'someday))
-
-(defun org-gtd--init-timely-file (varname value)
-  "Private function. VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
-  (org-gtd--init-gtd-file varname value 'timely))
-
 (defgroup org-gtd nil "Customize the org-gtd package. After changing these values, call `org-gtd-init'."
   :version 0.1 :group 'emacs)
 
@@ -274,6 +228,55 @@
      (string-match heading-regexp
                    (car rfloc)))
    (org-refile-get-targets)))
+
+;; helper functions
+;; and dragons
+
+(defun org-gtd--path (file)
+  "Private function. FILE is a filename. Return the full path to it assuming it is in the GTD framework."
+  (f-join org-gtd-directory file))
+
+(defun org-gtd--template-path (file)
+  "Private function. FILE is a template filename. Return full path to it."
+  (f-join org-gtd--package-path file))
+
+(defun org-gtd--set-file-path (filename value)
+  "Private function. takes FILENAME and VALUE."
+  (set-default filename value)
+  (let ((var (intern (replace-regexp-in-string "-file"
+                                               ""
+                                               (symbol-name filename)))))
+    (set var (org-gtd--path value))))
+
+(defun org-gtd--init-gtd-file (varname value gtd-type)
+  "Private function. VARNAME and VALUE are things inherited from customize, and GTD-TYPE is one of `org-gtd--types'. Here be dragons."
+  (unless (member gtd-type org-gtd--types)
+    (error "Unknown gtd-type argument"))
+  (let* ((file (org-gtd--set-file-path varname value))
+         (buffer (find-file file))
+         ;; TODO move the _template.org bit inside `org-gtd--template-path'.
+         (template (concat (symbol-name gtd-type) "_template.org")))
+    (or (f-file-p file)
+        (with-current-buffer buffer
+          (insert-file-contents (org-gtd--template-path template) nil nil nil t)
+          (save-buffer)))
+    (kill-buffer buffer)))
+
+(defun org-gtd--init-actionable-file (varname value)
+  "Private function. VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
+  (org-gtd--init-gtd-file varname value 'actionable))
+
+(defun org-gtd--init-inbox-file (varname value)
+  "Private function. VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
+  (org-gtd--init-gtd-file varname value 'inbox))
+
+(defun org-gtd--init-someday-file (varname value)
+  "Private function. VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
+  (org-gtd--init-gtd-file varname value 'someday))
+
+(defun org-gtd--init-timely-file (varname value)
+  "Private function. VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
+  (org-gtd--init-gtd-file varname value 'timely))
 
 (provide 'org-gtd)
 

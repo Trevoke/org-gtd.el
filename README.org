@@ -1,3 +1,62 @@
+* org-gtd
+* Summary
+This package tries to replicate as closely as possible the GTD workflow (see GTD below).
+
+At this early stage of the code, the package is destructive. It will overwrite the following variables. The ones marked with a =(!)= are the ones that may affect you the most:
+
+- ~org-agenda-files~ (!)
+- ~org-agenda-skip-deadline-if-done~
+- ~org-agenda-skip-scheduled-if-done~
+- ~org-agenda-span~ (!)
+- ~org-agenda-start-on-weekday~ (!)
+- ~org-agenda-window-setup~
+- ~org-capture-templates~ (!)
+- ~org-outline-path-complete-in-steps~
+- ~org-refile-allow-creating-parent-nodes~
+- ~org-refile-targets~ (!)
+- ~org-refile-use-outline-path~
+- ~org-stuck-projects~
+
+* Installing
+
+This package will hopefully soon be on Melpa and Melpa Stable.
+
+In the meanwhile, clone this repo to ~~/.emacs.d/packages~ then add this to your config:
+
+#+begin_src emacs-lisp
+(add-to-list 'load-path "~/.emacs.d/packages")
+(load
+#+end_src
+
+* Configuring
+Either use ~M-x customize-group RET org-gtd RET~ or set the following variables:
+
+- ~org-gtd-directory~ : the path where the GTD files will live
+- ~org-gtd-actionable-file~ : name of the file holding projects. Ends in .org
+- ~org-gtd-inbox-file~ : name of the file holding unprocessed items. Ends in .org
+- ~org-gtd-someday-file~ : name of the file holding things to review and do someday. Ends in .org
+- ~org-gtd-timely-file~ : name of the file holding scheduled events. Ends in .org
+
+Then run ~(org-gtd-init)~. Run this function every time you change one of the above values.
+
+It is suggested that you bind a few keys:
+
+- ~(global-set-key "\C-cc" 'org-capture)~
+- ~(global-set-key "\C-ca" 'org-agenda)~
+- ~(global-set-key "\C-ci" 'org-gtd-process-inbox)~
+- ~(global-set-key "\C-cn" 'org-gtd-show-all-next)~
+* Using
+
+The three frequent actions from GTD map to emacs lisp actions this way:
+
+| GTD                  | action                  | suggested keybinding |
+|----------------------+-------------------------+----------------------|
+| Add to the inbox     | (org-capture)           | C-cc                 |
+| Process inbox        | (org-gtd-process-inbox) | C-ci                 |
+| See all next actions | (org-gtd-show-all-next) | C-cn                 |
+
+
+* GTD
 #+CAPTION: Courtesy of https://xebia.com/blog/peace-of-mind-in-a-state-of-overload/gtd_chart/
 #+NAME: The GTD Workflow
 [[file:gtd_chart.png]]
