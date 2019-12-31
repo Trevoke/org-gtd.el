@@ -36,13 +36,15 @@
 (setq org-edna-use-inheritance t)
 (org-edna-load)
 
+(defconst org-gtd--types '(actionable timely inbox someday))
 (defconst org-gtd--package-path (f-dirname (f-this-file)))
 
 (defun org-gtd--path (file)
-  "Private function. take FILE as the name of a file and return the full path assuming it is in the GTD framework."
+  "Private function. FILE is a filename. Returns the full path to it assuming it is in the GTD framework."
   (f-join org-gtd-directory file))
 
 (defun org-gtd--template-path (file)
+  "Private function. FILE is a template filename. Returns full path to it."
   (f-join org-gtd--package-path file))
 
 (defun org-gtd--set-file-path (filename value)
@@ -55,9 +57,12 @@
     (set var (org-gtd--path value))))
 
 (defun org-gtd--init-gtd-file (varname value gtd-type)
-  "Private function."
+  "Private function. VARNAME and VALUE are things inherited from customize, and GTD-TYPE is one of `org-gtd--types'. Here be dragons."
+  (unless (member gtd-type org-gtd--types)
+    (error "Unknown gtd-type argument."))
   (let* ((file (org-gtd--set-file-path varname value))
          (buffer (find-file file))
+         ;; TODO move the _template.org bit inside `org-gtd--template-path'.
          (template (concat (symbol-name gtd-type) "_template.org")))
     (or (f-file-p file)
         (with-current-buffer buffer
@@ -66,18 +71,22 @@
     (kill-buffer buffer)))
 
 (defun org-gtd--init-actionable-file (varname value)
+  "Private function. VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
   (org-gtd--init-gtd-file varname value 'actionable))
 
 (defun org-gtd--init-inbox-file (varname value)
+  "Private function. VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
   (org-gtd--init-gtd-file varname value 'inbox))
 
 (defun org-gtd--init-someday-file (varname value)
+  "Private function. VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
   (org-gtd--init-gtd-file varname value 'someday))
 
 (defun org-gtd--init-timely-file (varname value)
+  "Private function. VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
   (org-gtd--init-gtd-file varname value 'timely))
 
-(defgroup org-gtd nil "Customize the org-gtd package. After changing these values, call `org-gtd-init`.")
+(defgroup org-gtd nil "Customize the org-gtd package. After changing these values, call `org-gtd-init'.")
 
 ;; TODO how to intelligently wire up the customize tools?
 (defcustom org-gtd-directory "~/gtd/"
@@ -128,11 +137,11 @@
   (setq org-outline-path-complete-in-steps nil)
   (setq org-refile-allow-creating-parent-nodes t)
 
-  (setq org-stuck-projects '("+LEVEL=1-notproject/-DONE"
+  (setq org-stuck-projects '("+LEVEL=2-notproject/-DONE"
                              ("TODO" "NEXT" "WAIT")
                              nil ""))
 
-  (setq org-agenda-files `((',org-gtd-directory)))
+  (setq org-agenda-files `(,org-gtd-directory))
 
   (setq org-refile-targets `((,org-gtd-someday :maxlevel . 2)
                              (,org-gtd-actionable :maxlevel . 1)
@@ -204,36 +213,38 @@
   )
 
 (defun org-gtd--tickler ()
-  (org-time-stamp)
-  (org-refile nil nil `("Reminders" ,org-gtd-timely)))
+  (move-end-of-line 1)
+  (open-line 1)
+  (next-line)
+  (org-time-stamp nil)
+  (org-refile nil nil (org-gtd--refile-target ".*Reminders")))
 
-;; TODO should be categorizable, e.g. to read, to watch, to eat
-;; so maybe let user choose where to refile in the someday file
-;; and maybe add tags
 (defun org-gtd--later ()
-  (org-time-stamp)
-  (org-refile nil nil `("" ,org-gtd-someday)))
+  (move-end-of-line 1)
+  (open-line 1)
+  (next-line)
+  (org-time-stamp nil)
+  (org-refile))
 
 (defun org-gtd--reference ()
   (org-brain-add-resource nil nil "What's the link? " nil)
   (org-todo "DONE")
-  (org-archive-subtree)
-  )
+  (org-archive-subtree))
 
 (defun org-gtd--garbage ()
   (org-todo "CANCELED")
   (org-archive-subtree))
 
 (defun org-gtd--whenever ()
-  (org-set-tags)
+  (org-set-tags-command)
   (org-todo "NEXT")
-  (org-refile nil nil `("One-Offs" ,org-gtd-actionable)))
+  (org-refile nil nil (org-gtd--refile-target ".*One-Offs")))
 
 (defun org-gtd--delegate ()
   (org-todo "WAIT")
   (org-set-property "DELEGATED_TO" (read-string "Who will do this? "))
   (org-schedule 0)
-  (org-refile nil nil `("Delegated" ,org-gtd-actionable)))
+  (org-refile nil nil (org-gtd--refile-target ".*Delegated")))
 
 (defun org-gtd--schedule ()
   (org-todo "TODO")
@@ -255,20 +266,18 @@
     (insert-buffer inbox-buffer)
     (recursive-edit)
     (goto-char (point-min))
-    (let ((refile-target (find-if
-                          (lambda (refloc) (string-equal org-gtd-actionable
-                                                         (cadr refloc)))
-                          (org-refile-get-targets))))
-      (org-refile nil nil refile-target)))
+    (org-refile nil nil (org-gtd--refile-target ".*Projects"))
 
   (display-buffer-same-window inbox-buffer '())
   (org-archive-subtree))
 
-;; (
-;;  "Actionable.org/Projects"
-;;  "/Users/trevoke/gtd/Actionable.org"
-;;  "^\\(\\*+\\)\\(?: +\\(CANCELED\\|DONE\\|NEXT\\|TODO\\|WAIT\\)\\)?\\(?: +\\(\\[#.\\]\\)\\)?\\(?: +\\(?:\\[[0-9%/]+\\] *\\)*\\(Projects\\)\\(?: *\\[[0-9%/]+\\]\\)*\\)\\(?:[     ]+\\(:[[:alnum:]_@#%:]+:\\)\\)?[        ]*$"
-;;  264)
+(defun org-gtd--refile-target (heading-regexp)
+  "Private function. HEADING-REGEXP is a regular expression for one of the desired GTD refile locations. See `org-refile' "
+   (find-if
+    (lambda (rfloc)
+      (string-match heading-regexp
+                    (car rfloc)))
+    (org-refile-get-targets)))
 
 (provide 'org-gtd)
 
