@@ -1,3 +1,9 @@
+#+CAPTION: Courtesy of https://xebia.com/blog/peace-of-mind-in-a-state-of-overload/gtd_chart/
+#+NAME: The GTD Workflow
+[[file:gtd_chart.png]]
+
+
+
 This package sets the following variables:
 
 - ~org-agenda-files~
