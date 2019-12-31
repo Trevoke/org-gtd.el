@@ -47,14 +47,21 @@ It is suggested that you bind a few keys:
 - ~(global-set-key "\C-cn" 'org-gtd-show-all-next)~
 * Using
 
-The three frequent actions from GTD map to emacs lisp actions this way:
+The four frequent actions from GTD map to emacs lisp actions this way:
 
-| GTD                  | action                  | suggested keybinding |
-|----------------------+-------------------------+----------------------|
-| Add to the inbox     | (org-capture)           | C-cc                 |
-| Process inbox        | (org-gtd-process-inbox) | C-ci                 |
-| See all next actions | (org-gtd-show-all-next) | C-cn                 |
+| GTD                        | action                  | suggested keybinding |
+|----------------------------+-------------------------+----------------------|
+| Add to the inbox           | (org-capture)           | C-c c                |
+| Process inbox              | (org-gtd-process-inbox) | C-c i                |
+| See all next actions       | (org-gtd-show-all-next) | C-c n                |
+| See what's coming up today | (org-agenda)            | C-c a a              |
 
+
+TO NOTE, VERY IMPORTANT:
+
+A "project" is defined as an org heading with a set of children headings. The project heading should not have a TODO tag. The first child should have a NEXT tag. All other children should have a TODO tag.
+
+When you are processing the inbox and creating a project, emacs enters a recursive edit mode. This just means that, to tell emacs you are done creating the subtree, you have to press ~C-M-c~ to exit the recursive edit and go back to processing the inbox.
 
 * GTD
 #+CAPTION: Courtesy of https://xebia.com/blog/peace-of-mind-in-a-state-of-overload/gtd_chart/
