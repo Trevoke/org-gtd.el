@@ -29,7 +29,7 @@ In the meanwhile, clone this repo to ~~/.emacs.d/packages~ then add this to your
 #+end_src
 
 * Configuring
-Either use ~M-x customize-group RET org-gtd RET~ or set the following variables:
+Either use ~M-x customize-group RET org-gtd RET~ or set the following variables. If you do not set them, the files will end up in the `~/gtd` directory.
 
 - ~org-gtd-directory~ : the path where the GTD files will live
 - ~org-gtd-actionable-file~ : name of the file holding projects. Ends in .org
@@ -39,12 +39,16 @@ Either use ~M-x customize-group RET org-gtd RET~ or set the following variables:
 
 Then run ~(org-gtd-init)~. Run this function every time you change one of the above values.
 
+You'll need to configure [[https://github.com/Kungsgeten/org-brain][org-brain]] as well if you weren't using it before.
+
 It is suggested that you bind a few keys:
 
 - ~(global-set-key "\C-cc" 'org-capture)~
 - ~(global-set-key "\C-ca" 'org-agenda)~
 - ~(global-set-key "\C-ci" 'org-gtd-process-inbox)~
 - ~(global-set-key "\C-cn" 'org-gtd-show-all-next)~
+
+
 * Using
 
 The four frequent actions from GTD map to emacs lisp actions this way:
