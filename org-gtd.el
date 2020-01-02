@@ -46,23 +46,23 @@
 ;; TODO how to intelligently wire up the customize tools?
 (defcustom org-gtd-directory "~/gtd/"
   "The directory where the org files for GTD will live. Ends with a /."
-  :risky t :group 'org-gtd :type 'directory)
+  :type 'directory)
 
 (defcustom org-gtd-actionable-file "Actionable.org"
   "Name of the file that holds the projects. Should end in .org."
-  :risky t :group 'org-gtd :type 'file)
+  :type 'file)
 
 (defcustom org-gtd-inbox-file "Inbox.org"
   "Name of the file that holds the inbox. Should end in .org."
-  :risky t :group 'org-gtd :type 'file)
+  :type 'file)
 
 (defcustom org-gtd-timely-file "Timely.org"
   "Name of the file that holds the scheduled items, including reminders. Should end in .org."
-  :risky t :group 'org-gtd :type 'file)
+  :type 'file)
 
 (defcustom org-gtd-someday-file "Someday.org"
   "Name of the file holding deferred thoughts (come back to this someday). Should end in .org."
-  :risky t :group 'org-gtd :type 'file)
+  :type 'file)
 
 (defun org-gtd--project-buffer ()
   "Private function. Get or create the buffer to transform an inbox item into a project."
