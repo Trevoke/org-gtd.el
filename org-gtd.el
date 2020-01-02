@@ -114,8 +114,7 @@
 (defun org-gtd-process-inbox ()
   "Use this once a day: process every element in the inbox."
   (interactive)
-  (let ((inbox-buffer (progn (find-file org-gtd-inbox)
-			     (get-file-buffer org-gtd-inbox))))
+  (let ((inbox-buffer (find-file-noselect org-gtd-inbox)))
     (set-buffer inbox-buffer)
     (display-buffer-same-window inbox-buffer '())
     (delete-other-windows)
@@ -253,7 +252,7 @@
   (unless (member gtd-type org-gtd--types)
     (error "Unknown gtd-type argument"))
   (let* ((file (org-gtd--set-file-path varname value))
-	 (buffer (find-file file))
+	 (buffer (find-file-noselect file))
 	 ;; TODO move the _template.org bit inside `org-gtd--template-path'.
 	 (template (concat (symbol-name gtd-type) "_template.org")))
     (or (f-file-p file)
