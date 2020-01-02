@@ -65,7 +65,7 @@
   :type 'file)
 
 (defun org-gtd--project-buffer ()
-  "Private function. Get or create the buffer to transform an inbox item into a project."
+  "Get or create the buffer to transform an inbox item into a project."
   (get-buffer-create "*org-gtd-project*"))
 
 (defun org-gtd-show-all-next ()
@@ -127,7 +127,7 @@
        (widen)))))
 
 (defun org-gtd--process-inbox-element (inbox-buffer)
-  "Private function. INBOX-BUFFER is the buffer with the org gtd inbox."
+  "INBOX-BUFFER is the buffer with the org gtd inbox."
   (let ((action
 	 (read-multiple-choice
 	  "What are we doing with this item?"
@@ -152,7 +152,7 @@
       (?t (org-gtd--tickler)))))
 
 (defun org-gtd--tickler ()
-  "Private function. Process element and move it to the tickler file."
+  "Process element and move it to the tickler file."
   (move-end-of-line 1)
   (open-line 1)
   (forward-line)
@@ -160,7 +160,7 @@
   (org-refile nil nil (org-gtd--refile-target ".*Reminders")))
 
 (defun org-gtd--later ()
-  "Private function. Process element and move it to the someday file."
+  "Process element and move it to the someday file."
   (move-end-of-line 1)
   (open-line 1)
   (forward-line)
@@ -168,42 +168,42 @@
   (org-refile))
 
 (defun org-gtd--reference ()
-  "Private function. Process element and move it to the brain."
+  "Process element and move it to the brain."
   (org-brain-add-resource nil nil "What's the link? " nil)
   (org-todo "DONE")
   (org-archive-subtree))
 
 (defun org-gtd--garbage ()
-  "Private function. Archive element."
+  "Archive element."
   (org-todo "CANCELED")
   (org-archive-subtree))
 
 (defun org-gtd--whenever ()
-  "Private function. Process element and move it to the Actionable file."
+  "Process element and move it to the Actionable file."
   (org-set-tags-command)
   (org-todo "NEXT")
   (org-refile nil nil (org-gtd--refile-target ".*One-Offs")))
 
 (defun org-gtd--delegate ()
-  "Private function. Process element and move it to the Actionable file."
+  "Process element and move it to the Actionable file."
   (org-todo "WAIT")
   (org-set-property "DELEGATED_TO" (read-string "Who will do this? "))
   (org-schedule 0)
   (org-refile nil nil (org-gtd--refile-target ".*Delegated")))
 
 (defun org-gtd--schedule ()
-  "Private function. Process element and move it to the tickler file."
+  "Process element and move it to the tickler file."
   (org-todo "TODO")
   (org-schedule 0)
   (org-refile nil nil (org-gtd--refile-target ".*Scheduled")))
 
 (defun org-gtd--quick-action ()
-  "Private function. Process element and archive it."
+  "Process element and archive it."
   (org-todo "DONE")
   (org-archive-subtree))
 
 (defun org-gtd--project (inbox-buffer)
-  "Private function. Process element and transform it into a project. INBOX-BUFFER is the buffer holding the org-gtd inbox."
+  "Process element and transform it into a project. INBOX-BUFFER is the buffer holding the org-gtd inbox."
   (with-current-buffer (org-gtd--project-buffer)
     (erase-buffer)
     (org-mode)
@@ -221,7 +221,7 @@
   (org-archive-subtree))
 
 (defun org-gtd--refile-target (heading-regexp)
-  "Private function. HEADING-REGEXP is a regular expression for one of the desired GTD refile locations. See `org-refile'."
+  "HEADING-REGEXP is a regular expression for one of the desired GTD refile locations. See `org-refile'."
   (cl-find-if
    (lambda (rfloc)
      (string-match heading-regexp
@@ -232,15 +232,15 @@
 ;; and dragons
 
 (defun org-gtd--path (file)
-  "Private function. FILE is a filename. Return the full path to it assuming it is in the GTD framework."
+  "FILE is a filename. Return the full path to it assuming it is in the GTD framework."
   (f-join org-gtd-directory file))
 
 (defun org-gtd--template-path (file)
-  "Private function. FILE is a template filename. Return full path to it."
+  "FILE is a template filename. Return full path to it."
   (f-join org-gtd--package-path file))
 
 (defun org-gtd--set-file-path (filename value)
-  "Private function. takes FILENAME and VALUE."
+  "takes FILENAME and VALUE."
   (set-default filename value)
   (let ((var (intern (replace-regexp-in-string "-file"
 					       ""
@@ -248,7 +248,7 @@
     (set var (org-gtd--path value))))
 
 (defun org-gtd--init-gtd-file (varname value gtd-type)
-  "Private function. VARNAME and VALUE are things inherited from customize, and GTD-TYPE is one of `org-gtd--types'. Here be dragons."
+  "VARNAME and VALUE are things inherited from customize, and GTD-TYPE is one of `org-gtd--types'. Here be dragons."
   (unless (member gtd-type org-gtd--types)
     (error "Unknown gtd-type argument"))
   (let* ((file (org-gtd--set-file-path varname value))
@@ -262,19 +262,19 @@
     (kill-buffer buffer)))
 
 (defun org-gtd--init-actionable-file (varname value)
-  "Private function. VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
+  "VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
   (org-gtd--init-gtd-file varname value 'actionable))
 
 (defun org-gtd--init-inbox-file (varname value)
-  "Private function. VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
+  "VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
   (org-gtd--init-gtd-file varname value 'inbox))
 
 (defun org-gtd--init-someday-file (varname value)
-  "Private function. VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
+  "VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
   (org-gtd--init-gtd-file varname value 'someday))
 
 (defun org-gtd--init-timely-file (varname value)
-  "Private function. VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
+  "VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
   (org-gtd--init-gtd-file varname value 'timely))
 
 (provide 'org-gtd)
