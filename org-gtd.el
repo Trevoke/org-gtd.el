@@ -32,7 +32,7 @@
 ;;; Code:
 
 (require 'org-edna)
-(require 'cl)
+(require 'cl-lib)
 
 (setq org-edna-use-inheritance t)
 (org-edna-load)
@@ -130,18 +130,18 @@
 (defun org-gtd--process-inbox-element (inbox-buffer)
   "Private function. INBOX-BUFFER is the buffer with the org gtd inbox."
   (let ((action
-         (read-multiple-choice
-          "What are we doing with this item?"
-          '((?q "quick" "quick item: < 2 minutes, done!")
-            (?p "project" "multiple steps required to completion")
-            (?s "schedule" "do this at a certain time")
-            (?d "delegate" "give it to someone")
-            (?w "whenever" "do this when possible")
-            (?g "garbage" "throw this away")
-            (?r "reference" "add this to the brain")
-            (?l "later" "remind me of this possibility at some point")
-            (?t "tickler" "I need to be reminded of this at a given time")))))
-    (case (car action)
+	 (read-multiple-choice
+	  "What are we doing with this item?"
+	  '((?q "quick" "quick item: < 2 minutes, done!")
+	    (?p "project" "multiple steps required to completion")
+	    (?s "schedule" "do this at a certain time")
+	    (?d "delegate" "give it to someone")
+	    (?w "whenever" "do this when possible")
+	    (?g "garbage" "throw this away")
+	    (?r "reference" "add this to the brain")
+	    (?l "later" "remind me of this possibility at some point")
+	    (?t "tickler" "I need to be reminded of this at a given time")))))
+    (cl-case (car action)
       (?q (org-gtd--quick-action))
       (?p (org-gtd--project inbox-buffer))
       (?s (org-gtd--schedule))
@@ -223,10 +223,10 @@
 
 (defun org-gtd--refile-target (heading-regexp)
   "Private function. HEADING-REGEXP is a regular expression for one of the desired GTD refile locations. See `org-refile'."
-  (find-if
+  (cl-find-if
    (lambda (rfloc)
      (string-match heading-regexp
-                   (car rfloc)))
+		   (car rfloc)))
    (org-refile-get-targets)))
 
 ;; helper functions
