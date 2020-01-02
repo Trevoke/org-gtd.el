@@ -93,29 +93,29 @@
   (setq org-refile-allow-creating-parent-nodes t)
 
   (setq org-stuck-projects '("+LEVEL=2-notproject/-DONE"
-                             ("TODO" "NEXT" "WAIT")
-                             nil ""))
+			     ("TODO" "NEXT" "WAIT")
+			     nil ""))
 
   (setq org-agenda-files `(,org-gtd-directory))
 
   (setq org-refile-targets `((,org-gtd-someday :maxlevel . 2)
-                             (,org-gtd-actionable :maxlevel . 1)
-                             (,org-gtd-timely :maxlevel . 1)))
+			     (,org-gtd-actionable :maxlevel . 1)
+			     (,org-gtd-timely :maxlevel . 1)))
 
   (setq org-capture-templates `(("i" "Inbox"
-                                 entry (file ,org-gtd-inbox)
-                                 "* TODO %?\n  %i"
-                                 :kill-buffer t)
-                                ("t" "Todo with link"
-                                 entry (file ,org-gtd-inbox)
-                                 "* TODO %?\n  %i\n  %a"
-                                 :kill-buffer t))))
+				 entry (file ,org-gtd-inbox)
+				 "* TODO %?\n  %i"
+				 :kill-buffer t)
+				("t" "Todo with link"
+				 entry (file ,org-gtd-inbox)
+				 "* TODO %?\n  %i\n  %a"
+				 :kill-buffer t))))
 
 (defun org-gtd-process-inbox ()
   "Use this once a day: process every element in the inbox."
   (interactive)
   (let ((inbox-buffer (progn (find-file org-gtd-inbox)
-                             (get-file-buffer org-gtd-inbox))))
+			     (get-file-buffer org-gtd-inbox))))
     (set-buffer inbox-buffer)
     (display-buffer-same-window inbox-buffer '())
     (delete-other-windows)
@@ -244,8 +244,8 @@
   "Private function. takes FILENAME and VALUE."
   (set-default filename value)
   (let ((var (intern (replace-regexp-in-string "-file"
-                                               ""
-                                               (symbol-name filename)))))
+					       ""
+					       (symbol-name filename)))))
     (set var (org-gtd--path value))))
 
 (defun org-gtd--init-gtd-file (varname value gtd-type)
@@ -253,13 +253,13 @@
   (unless (member gtd-type org-gtd--types)
     (error "Unknown gtd-type argument"))
   (let* ((file (org-gtd--set-file-path varname value))
-         (buffer (find-file file))
-         ;; TODO move the _template.org bit inside `org-gtd--template-path'.
-         (template (concat (symbol-name gtd-type) "_template.org")))
+	 (buffer (find-file file))
+	 ;; TODO move the _template.org bit inside `org-gtd--template-path'.
+	 (template (concat (symbol-name gtd-type) "_template.org")))
     (or (f-file-p file)
-        (with-current-buffer buffer
-          (insert-file-contents (org-gtd--template-path template) nil nil nil t)
-          (save-buffer)))
+	(with-current-buffer buffer
+	  (insert-file-contents (org-gtd--template-path template) nil nil nil t)
+	  (save-buffer)))
     (kill-buffer buffer)))
 
 (defun org-gtd--init-actionable-file (varname value)
