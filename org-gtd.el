@@ -77,8 +77,34 @@
    (lambda ()
      (setq org-map-continue-from (org-element-property :begin (org-element-at-point)))
      (org-narrow-to-element)
+     (org-show-subtree)
      (org-gtd--process-inbox-element)
      (widen))))
+
+(defun org-gtd--process-inbox-element ()
+  "INBOX-BUFFER is the buffer with the org gtd inbox."
+  (let ((action
+	 (read-multiple-choice
+	  "What are we doing with this item?"
+	  '((?q "quick" "quick item: < 2 minutes, done!")
+	    (?p "project" "multiple steps required to completion")
+	    (?s "schedule" "do this at a certain time")
+	    (?d "delegate" "give it to someone")
+	    (?w "whenever" "do this when possible")
+	    (?g "garbage" "throw this away")
+	    (?r "reference" "add this to the brain")
+	    (?l "later" "remind me of this possibility at some point")
+	    (?t "tickler" "I need to be reminded of this at a given time")))))
+    (cl-case (car action)
+      (?q (org-gtd--quick-action))
+      (?p (org-gtd--project))
+      (?s (org-gtd--schedule))
+      (?d (org-gtd--delegate))
+      (?w (org-gtd--whenever))
+      (?g (org-gtd--garbage))
+      (?r (org-gtd--reference))
+      (?l (org-gtd--later))
+      (?t (org-gtd--tickler)))))
 
 (defun org-gtd--path (file)
   "Return the full path to FILE.org assuming it is in the GTD framework."
@@ -119,31 +145,6 @@
   "Get or create the buffer to transform an inbox item into a project."
   (get-buffer-create "*org-gtd-project*"))
 
-(defun org-gtd--process-inbox-element ()
-  "INBOX-BUFFER is the buffer with the org gtd inbox."
-  (let ((action
-	 (read-multiple-choice
-	  "What are we doing with this item?"
-	  '((?q "quick" "quick item: < 2 minutes, done!")
-	    (?p "project" "multiple steps required to completion")
-	    (?s "schedule" "do this at a certain time")
-	    (?d "delegate" "give it to someone")
-	    (?w "whenever" "do this when possible")
-	    (?g "garbage" "throw this away")
-	    (?r "reference" "add this to the brain")
-	    (?l "later" "remind me of this possibility at some point")
-	    (?t "tickler" "I need to be reminded of this at a given time")))))
-    (cl-case (car action)
-      (?q (org-gtd--quick-action))
-      (?p (org-gtd--project))
-      (?s (org-gtd--schedule))
-      (?d (org-gtd--delegate))
-      (?w (org-gtd--whenever))
-      (?g (org-gtd--garbage))
-      (?r (org-gtd--reference))
-      (?l (org-gtd--later))
-      (?t (org-gtd--tickler)))))
-
 (defun org-gtd--tickler ()
   "Process element and move it to the tickler file."
   (move-end-of-line 1)
@@ -158,7 +159,7 @@
   (open-line 1)
   (forward-line)
   (org-time-stamp nil)
-  (org-refile))
+  (org-refile nil nil (org-gtd--refile-target ".*Someday.*")))
 
 (defun org-gtd--reference ()
   "Process element and move it to the brain."
