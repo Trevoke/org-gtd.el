@@ -40,29 +40,52 @@
 (defconst org-gtd--types '(actionable timely inbox someday))
 (defconst org-gtd--package-path (f-dirname (f-this-file)))
 
-(defgroup org-gtd nil "Customize the org-gtd package. After changing these values, call `org-gtd-init'."
+(defconst org-gtd-actionable "actionable")
+(defconst org-gtd-inbox "inbox")
+(defconst org-gtd-someday "someday")
+(defconst org-gtd-timely "timely")
+
+(defgroup org-gtd nil "Customize the org-gtd package."
   :version 0.1 :group 'emacs)
 
-;; TODO how to intelligently wire up the customize tools?
 (defcustom org-gtd-directory "~/gtd/"
   "The directory where the org files for GTD will live. Ends with a /."
   :type 'directory)
 
-(defcustom org-gtd-actionable-file "Actionable.org"
-  "Name of the file that holds the projects. Should end in .org."
-  :type 'file)
+(defun org-gtd--path (file)
+  "Return the full path to FILE.org assuming it is in the GTD framework."
+  (f-join org-gtd-directory (concat file ".org")))
 
-(defcustom org-gtd-inbox-file "Inbox.org"
-  "Name of the file that holds the inbox. Should end in .org."
-  :type 'file)
+(defun org-gtd--template-path (file)
+  "Return full path to FILE_template.org."
+  (f-join org-gtd--package-path
+	  (concat file "_template.org")))
 
-(defcustom org-gtd-timely-file "Timely.org"
-  "Name of the file that holds the scheduled items, including reminders. Should end in .org."
-  :type 'file)
+(defun org-gtd--gtd-file (gtd-type)
+  "Return a buffer for GTD-TYPE.org. create the file and template first if it doesn't already exist."
+  (let* ((file-path (org-gtd--path org-gtd-actionable))
+	 (file-buffer (find-file-noselect file-path)))
+    (or (f-file-p file-path)
+	(with-current-buffer file-buffer
+	  (insert-file-contents (org-gtd--template-path org-gtd-actionable ) nil nil nil t)
+	  (save-buffer)))
+    (file-buffer)))
 
-(defcustom org-gtd-someday-file "Someday.org"
-  "Name of the file holding deferred thoughts (come back to this someday). Should end in .org."
-  :type 'file)
+(defun org-gtd--actionable ()
+  "Create or return the buffer for the actionable GTD buffer."
+  (org-gtd--gtd-file org-gtd-actionable))
+
+(defun org-gtd--inbox ()
+  "Create or return the buffer for the inbox GTD buffer."
+  (org-gtd--gtd-file org-gtd-inbox))
+
+(defun org-gtd--someday ()
+  "Create or return the buffer for the someday GTD buffer."
+  (org-gtd--gtd-file org-gtd-someday))
+
+(defun org-gtd--timely ()
+  "Create or return the buffer for the timely GTD buffer."
+  (org-gtd--gtd-file org-gtd-timely))
 
 (defun org-gtd--project-buffer ()
   "Get or create the buffer to transform an inbox item into a project."
@@ -76,21 +99,6 @@
 (defun org-gtd-init ()
   "Initialize the org-gtd package based on configuration."
   (interactive)
-
-  (org-gtd--init-actionable-file 'org-gtd-actionable-file org-gtd-actionable-file)
-  (org-gtd--init-inbox-file 'org-gtd-inbox-file org-gtd-inbox-file)
-  (org-gtd--init-someday-file 'org-gtd-someday-file org-gtd-someday-file)
-  (org-gtd--init-timely-file 'org-gtd-timely-file org-gtd-timely-file)
-
-  (setq org-agenda-window-setup 'other-window)
-  (setq org-agenda-skip-deadline-if-done t)
-  (setq org-agenda-skip-scheduled-if-done t)
-  (setq org-agenda-start-on-weekday nil)
-  (setq org-agenda-span 'day)
-
-  (setq org-refile-use-outline-path 'file)
-  (setq org-outline-path-complete-in-steps nil)
-  (setq org-refile-allow-creating-parent-nodes t)
 
   (setq org-stuck-projects '("+LEVEL=2-notproject/-DONE"
 			     ("TODO" "NEXT" "WAIT")
@@ -227,55 +235,6 @@
      (string-match heading-regexp
 		   (car rfloc)))
    (org-refile-get-targets)))
-
-;; helper functions
-;; and dragons
-
-(defun org-gtd--path (file)
-  "FILE is a filename. Return the full path to it assuming it is in the GTD framework."
-  (f-join org-gtd-directory file))
-
-(defun org-gtd--template-path (file)
-  "FILE is a template filename. Return full path to it."
-  (f-join org-gtd--package-path file))
-
-(defun org-gtd--set-file-path (filename value)
-  "takes FILENAME and VALUE."
-  (set-default filename value)
-  (let ((var (intern (replace-regexp-in-string "-file"
-					       ""
-					       (symbol-name filename)))))
-    (set var (org-gtd--path value))))
-
-(defun org-gtd--init-gtd-file (varname value gtd-type)
-  "VARNAME and VALUE are things inherited from customize, and GTD-TYPE is one of `org-gtd--types'. Here be dragons."
-  (unless (member gtd-type org-gtd--types)
-    (error "Unknown gtd-type argument"))
-  (let* ((file (org-gtd--set-file-path varname value))
-	 (buffer (find-file-noselect file))
-	 ;; TODO move the _template.org bit inside `org-gtd--template-path'.
-	 (template (concat (symbol-name gtd-type) "_template.org")))
-    (or (f-file-p file)
-	(with-current-buffer buffer
-	  (insert-file-contents (org-gtd--template-path template) nil nil nil t)
-	  (save-buffer)))
-    (kill-buffer buffer)))
-
-(defun org-gtd--init-actionable-file (varname value)
-  "VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
-  (org-gtd--init-gtd-file varname value 'actionable))
-
-(defun org-gtd--init-inbox-file (varname value)
-  "VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
-  (org-gtd--init-gtd-file varname value 'inbox))
-
-(defun org-gtd--init-someday-file (varname value)
-  "VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
-  (org-gtd--init-gtd-file varname value 'someday))
-
-(defun org-gtd--init-timely-file (varname value)
-  "VARNAME and VALUE get added to a symbol to initialize one of the org-gtd files."
-  (org-gtd--init-gtd-file varname value 'timely))
 
 (provide 'org-gtd)
 
