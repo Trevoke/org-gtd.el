@@ -68,7 +68,7 @@
 	(with-current-buffer file-buffer
 	  (insert-file-contents (org-gtd--template-path org-gtd-actionable ) nil nil nil t)
 	  (save-buffer)))
-    (file-buffer)))
+    file-buffer))
 
 (defun org-gtd--actionable ()
   "Create or return the buffer for the actionable GTD buffer."
@@ -94,6 +94,16 @@
   "Show all the NEXT items in a single list."
   (interactive)
   (org-todo-list "NEXT"))
+
+(defun org-gtd-show-stuck-projects ()
+  (interactive)
+  (let* ((user-stuck-projects org-stuck-projects)
+	 (org-stuck-projects '("+LEVEL=2-notproject/-DONE"
+			       ("TODO" "NEXT" "WAIT")
+			       nil ""))
+	 (stuck-projects-buffer (org-agenda-list-stuck-projects))
+	 (org-stuck-projects user-stuck-projects))
+    stuck-projects-buffer))
 
 (defun org-gtd-process-inbox ()
   "Use this once a day: process every element in the inbox."
@@ -206,23 +216,24 @@
 
 (defun org-gtd--refile-target (heading-regexp)
   "HEADING-REGEXP is a regular expression for one of the desired GTD refile locations. See `org-refile'."
-  (cl-find-if
-   (lambda (rfloc)
-     (string-match heading-regexp
-		   (car rfloc)))
-   (org-refile-get-targets)))
+  (let* ((user-refile-targets org-refile-targets)
+	 (org-refile-targets `((,(org-gtd--path org-gtd-someday) :maxlevel . 2)
+			     (,(org-gtd--path org-gtd-actionable) :maxlevel . 1)
+			     (,(org-gtd--path org-gtd-timely) :maxlevel . 1)))
+	 (results   (cl-find-if
+		     (lambda (rfloc)
+		       (string-match heading-regexp
+				     (car rfloc)))
+		     (org-refile-get-targets)))
+	 (org-refile-targets user-refile-targets))
+    results))
 
 (defun org-gtd-init ()
   "Initialize the org-gtd package based on configuration."
   (interactive)
 
-  (setq org-stuck-projects '("+LEVEL=2-notproject/-DONE"
-			     ("TODO" "NEXT" "WAIT")
-			     nil ""))
 
-  (setq org-refile-targets `((,org-gtd-someday :maxlevel . 2)
-			     (,org-gtd-actionable :maxlevel . 1)
-			     (,org-gtd-timely :maxlevel . 1)))
+
 )
 
 (provide 'org-gtd)
