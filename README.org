@@ -26,14 +26,11 @@ Finally, add this to your config:
 #+end_src
 
 ** Configuring
-*** Other packages
-You'll need to configure [[https://github.com/Kungsgeten/org-brain][org-brain]] as well if you weren't using it before.
 *** Variables specific to org-gtd
 Either use ~M-x customize-group RET org-gtd RET~ or set the following variables. If you do not set them, the files will end up in the `~/gtd` directory.
 
 - ~org-gtd-directory~ : the path where the GTD files will live
 *** Variables from org-mode
-**** org-stuck-projects
 **** org-agenda-files
 If you aren't using any files yet, add ~(setq org-agenda-files `(,org-gtd-directory))~.
 
@@ -56,24 +53,28 @@ We recommend the addition of the following two entries to your capture templates
 
 #+end_src
 *** Keybindings
-It is suggested that you bind a few keys:
+It is suggested that you bind a few functions to keys:
 
 - ~(global-set-key "\C-cc" 'org-capture)~
 - ~(global-set-key "\C-ca" 'org-agenda)~
 - ~(global-set-key "\C-ci" 'org-gtd-process-inbox)~
 - ~(global-set-key "\C-cn" 'org-gtd-show-all-next)~
+- ~(global-set-key "\C-cs" 'org-gtd-show-stuck-projects)~
 
 
+*** Other packages
+You'll need to configure [[https://github.com/Kungsgeten/org-brain][org-brain]] as well if you weren't using it before.
 ** Using
 
 The four frequent actions from GTD map to emacs lisp actions this way:
 
-| GTD                        | action                  | suggested keybinding |
-|----------------------------+-------------------------+----------------------|
-| Add to the inbox           | (org-capture)           | C-c c                |
-| Process inbox              | (org-gtd-process-inbox) | C-c i                |
-| See all next actions       | (org-gtd-show-all-next) | C-c n                |
-| See what's coming up today | (org-agenda)            | C-c a a              |
+| GTD                        | action                        | suggested keybinding |
+|----------------------------+-------------------------------+----------------------|
+| Add to the inbox           | (org-capture)                 | C-c c                |
+| Process inbox              | (org-gtd-process-inbox)       | C-c i                |
+| See all next actions       | (org-gtd-show-all-next)       | C-c n                |
+| See what's coming up today | (org-agenda)                  | C-c a a              |
+| See stuck projects         | (org-gtd-show-stuck-projects) | C-c s                |
 
 
 TO NOTE, VERY IMPORTANT:
@@ -81,5 +82,3 @@ TO NOTE, VERY IMPORTANT:
 A "project" is defined as an org heading with a set of children headings. The project heading should not have a TODO tag. The first child should have a NEXT tag. All other children should have a TODO tag.
 
 When you are processing the inbox and creating a project, emacs enters a recursive edit mode. This just means that, to tell emacs you are done creating the subtree, you have to press ~C-M-c~ to exit the recursive edit and go back to processing the inbox.
-
-** GTD
