@@ -51,6 +51,37 @@
   "The directory where the org files for GTD will live."
   :type 'directory)
 
+(defun org-gtd-show-all-next ()
+  "Show all the NEXT items in a single list."
+  (interactive)
+  (org-todo-list "NEXT"))
+
+(defun org-gtd-show-stuck-projects ()
+  (interactive)
+  (let* ((user-stuck-projects org-stuck-projects)
+	 (org-stuck-projects '("+LEVEL=2-notproject/-DONE"
+			       ("TODO" "NEXT" "WAIT")
+			       nil ""))
+	 (stuck-projects-buffer (org-agenda-list-stuck-projects))
+	 (org-stuck-projects user-stuck-projects))
+    stuck-projects-buffer))
+
+(defun org-gtd-process-inbox ()
+  "Use this once a day: process every element in the inbox."
+  (interactive)
+  (let ((inbox-buffer (org-gtd--inbox)))
+    (set-buffer inbox-buffer)
+    (display-buffer-same-window inbox-buffer '())
+    (delete-other-windows)
+
+    (org-map-entries
+     (lambda ()
+       (setq org-map-continue-from (org-element-property :begin (org-element-at-point)))
+       (org-narrow-to-element)
+       (org-gtd--process-inbox-element inbox-buffer)
+       (widen)))))
+
+
 (defun org-gtd--path (file)
   "Return the full path to FILE.org assuming it is in the GTD framework."
   (f-join org-gtd-directory (concat file ".org")))
@@ -89,36 +120,6 @@
 (defun org-gtd--project-buffer ()
   "Get or create the buffer to transform an inbox item into a project."
   (get-buffer-create "*org-gtd-project*"))
-
-(defun org-gtd-show-all-next ()
-  "Show all the NEXT items in a single list."
-  (interactive)
-  (org-todo-list "NEXT"))
-
-(defun org-gtd-show-stuck-projects ()
-  (interactive)
-  (let* ((user-stuck-projects org-stuck-projects)
-	 (org-stuck-projects '("+LEVEL=2-notproject/-DONE"
-			       ("TODO" "NEXT" "WAIT")
-			       nil ""))
-	 (stuck-projects-buffer (org-agenda-list-stuck-projects))
-	 (org-stuck-projects user-stuck-projects))
-    stuck-projects-buffer))
-
-(defun org-gtd-process-inbox ()
-  "Use this once a day: process every element in the inbox."
-  (interactive)
-  (let ((inbox-buffer (org-gtd--inbox)))
-    (set-buffer inbox-buffer)
-    (display-buffer-same-window inbox-buffer '())
-    (delete-other-windows)
-
-    (org-map-entries
-     (lambda ()
-       (setq org-map-continue-from (org-element-property :begin (org-element-at-point)))
-       (org-narrow-to-element)
-       (org-gtd--process-inbox-element inbox-buffer)
-       (widen)))))
 
 (defun org-gtd--process-inbox-element (inbox-buffer)
   "INBOX-BUFFER is the buffer with the org gtd inbox."
