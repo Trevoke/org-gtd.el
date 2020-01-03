@@ -49,7 +49,7 @@ We recommend the addition of the following two entries to your capture templates
                                 ("t" "Todo with link"
                                  entry (file ,(org-gtd--path org-gtd-inbox))
                                  "* TODO %?\n  %i\n  %a"
-                                 :kill-buffer t))))
+                                 :kill-buffer t)))
 
 #+end_src
 *** Keybindings

@@ -62,11 +62,11 @@
 
 (defun org-gtd--gtd-file (gtd-type)
   "Return a buffer for GTD-TYPE.org. create the file and template first if it doesn't already exist."
-  (let* ((file-path (org-gtd--path org-gtd-actionable))
+  (let* ((file-path (org-gtd--path gtd-type))
 	 (file-buffer (find-file-noselect file-path)))
     (or (f-file-p file-path)
 	(with-current-buffer file-buffer
-	  (insert-file-contents (org-gtd--template-path org-gtd-actionable ) nil nil nil t)
+	  (insert-file-contents (org-gtd--template-path gtd-type) nil nil nil t)
 	  (save-buffer)))
     file-buffer))
 
@@ -108,7 +108,7 @@
 (defun org-gtd-process-inbox ()
   "Use this once a day: process every element in the inbox."
   (interactive)
-  (let ((inbox-buffer (find-file-noselect org-gtd-inbox)))
+  (let ((inbox-buffer (org-gtd--inbox)))
     (set-buffer inbox-buffer)
     (display-buffer-same-window inbox-buffer '())
     (delete-other-windows)
@@ -228,13 +228,6 @@
 	 (org-refile-targets user-refile-targets))
     results))
 
-(defun org-gtd-init ()
-  "Initialize the org-gtd package based on configuration."
-  (interactive)
-
-
-
-)
 
 (provide 'org-gtd)
 
