@@ -69,18 +69,16 @@
 (defun org-gtd-process-inbox ()
   "Use this once a day: process every element in the inbox."
   (interactive)
-  (let ((inbox-buffer (org-gtd--inbox)))
-    (set-buffer inbox-buffer)
-    (display-buffer-same-window inbox-buffer '())
-    (delete-other-windows)
+  (set-buffer (org-gtd--inbox))
+  (display-buffer-same-window (org-gtd--inbox) '())
+  (delete-other-windows)
 
-    (org-map-entries
-     (lambda ()
-       (setq org-map-continue-from (org-element-property :begin (org-element-at-point)))
-       (org-narrow-to-element)
-       (org-gtd--process-inbox-element inbox-buffer)
-       (widen)))))
-
+  (org-map-entries
+   (lambda ()
+     (setq org-map-continue-from (org-element-property :begin (org-element-at-point)))
+     (org-narrow-to-element)
+     (org-gtd--process-inbox-element)
+     (widen))))
 
 (defun org-gtd--path (file)
   "Return the full path to FILE.org assuming it is in the GTD framework."
@@ -121,7 +119,7 @@
   "Get or create the buffer to transform an inbox item into a project."
   (get-buffer-create "*org-gtd-project*"))
 
-(defun org-gtd--process-inbox-element (inbox-buffer)
+(defun org-gtd--process-inbox-element ()
   "INBOX-BUFFER is the buffer with the org gtd inbox."
   (let ((action
 	 (read-multiple-choice
@@ -137,7 +135,7 @@
 	    (?t "tickler" "I need to be reminded of this at a given time")))))
     (cl-case (car action)
       (?q (org-gtd--quick-action))
-      (?p (org-gtd--project inbox-buffer))
+      (?p (org-gtd--project))
       (?s (org-gtd--schedule))
       (?d (org-gtd--delegate))
       (?w (org-gtd--whenever))
@@ -197,22 +195,22 @@
   (org-todo "DONE")
   (org-archive-subtree))
 
-(defun org-gtd--project (inbox-buffer)
+(defun org-gtd--project ()
   "Process element and transform it into a project. INBOX-BUFFER is the buffer holding the org-gtd inbox."
   (with-current-buffer (org-gtd--project-buffer)
     (erase-buffer)
     (org-mode)
     (display-buffer-same-window (org-gtd--project-buffer) '())
     (delete-other-windows)
-    (insert-buffer-substring inbox-buffer)
+    (insert-buffer-substring (org-gtd--inbox))
     (recursive-edit)
     (goto-char (point-min))
     (org-refile nil nil (org-gtd--refile-target ".*Projects")))
 
-  (with-current-buffer (get-file-buffer org-gtd-actionable)
+  (with-current-buffer (org-gtd--actionable)
     (org-update-statistics-cookies t))
 
-  (display-buffer-same-window inbox-buffer '())
+  (display-buffer-same-window (org-gtd--inbox) '())
   (org-archive-subtree))
 
 (defun org-gtd--refile-target (heading-regexp)
