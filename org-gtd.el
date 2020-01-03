@@ -37,7 +37,6 @@
 (setq org-edna-use-inheritance t)
 (org-edna-load)
 
-(defconst org-gtd--types '(actionable timely inbox someday))
 (defconst org-gtd--package-path (f-dirname (f-this-file)))
 
 (defconst org-gtd-actionable "actionable")
@@ -49,7 +48,7 @@
   :version 0.1 :group 'emacs)
 
 (defcustom org-gtd-directory "~/gtd/"
-  "The directory where the org files for GTD will live. Ends with a /."
+  "The directory where the org files for GTD will live."
   :type 'directory)
 
 (defun org-gtd--path (file)
@@ -95,29 +94,6 @@
   "Show all the NEXT items in a single list."
   (interactive)
   (org-todo-list "NEXT"))
-
-(defun org-gtd-init ()
-  "Initialize the org-gtd package based on configuration."
-  (interactive)
-
-  (setq org-stuck-projects '("+LEVEL=2-notproject/-DONE"
-			     ("TODO" "NEXT" "WAIT")
-			     nil ""))
-
-  (setq org-agenda-files `(,org-gtd-directory))
-
-  (setq org-refile-targets `((,org-gtd-someday :maxlevel . 2)
-			     (,org-gtd-actionable :maxlevel . 1)
-			     (,org-gtd-timely :maxlevel . 1)))
-
-  (setq org-capture-templates `(("i" "Inbox"
-				 entry (file ,org-gtd-inbox)
-				 "* TODO %?\n  %i"
-				 :kill-buffer t)
-				("t" "Todo with link"
-				 entry (file ,org-gtd-inbox)
-				 "* TODO %?\n  %i\n  %a"
-				 :kill-buffer t))))
 
 (defun org-gtd-process-inbox ()
   "Use this once a day: process every element in the inbox."
@@ -235,6 +211,19 @@
      (string-match heading-regexp
 		   (car rfloc)))
    (org-refile-get-targets)))
+
+(defun org-gtd-init ()
+  "Initialize the org-gtd package based on configuration."
+  (interactive)
+
+  (setq org-stuck-projects '("+LEVEL=2-notproject/-DONE"
+			     ("TODO" "NEXT" "WAIT")
+			     nil ""))
+
+  (setq org-refile-targets `((,org-gtd-someday :maxlevel . 2)
+			     (,org-gtd-actionable :maxlevel . 1)
+			     (,org-gtd-timely :maxlevel . 1)))
+)
 
 (provide 'org-gtd)
 
