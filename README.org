@@ -16,7 +16,7 @@ In the meanwhile:
 
 First, install org-edna, org-brain, and f (you may have f already)
 
-Then, clone this repo to ~~/.emacs.d/packages~
+Then, clone this repo to =~/.emacs.d/packages=
 
 Finally, add this to your config:
 
