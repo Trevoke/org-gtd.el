@@ -14,7 +14,7 @@ This package will hopefully soon be on Melpa and Melpa Stable.
 
 In the meanwhile:
 
-First, install org-edna, org-brain, and f (you may have f already)
+First, install ~org-edna~, ~org-brain~, and ~f~.
 
 Then, clone this repo to =~/.emacs.d/packages=
 
@@ -39,7 +39,7 @@ It is suggested that you bind a few functions to keys:
 *** Variables specific to org-gtd
 Either use ~M-x customize-group RET org-gtd RET~ or set the following variable.
 
-- ~org-gtd-directory~ : the path where the GTD files will live. The default value is ~~/gtd/~.
+- ~org-gtd-directory~ : the path where the GTD files will live. The default value is =~/gtd/=.
 *** Variables from org-mode
 **** org-agenda-files
 If you aren't using any files yet, add ~(setq org-agenda-files `(,org-gtd-directory))~.
@@ -107,4 +107,3 @@ A "project" is defined as an org heading with a set of children headings. The pr
 
 When you are processing the inbox and creating a project, emacs enters a recursive edit mode. This just means that, to tell emacs you are done creating the subtree, you have to press ~C-M-c~ to exit the recursive edit and go back to processing the inbox.
 *** TODO org-brain as reference store
-- State "TODO"       from "DONE"       [2020-01-04 Sat 12:48]
