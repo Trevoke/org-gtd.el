@@ -34,7 +34,7 @@
 (require 'org-edna)
 (require 'cl-lib)
 
-(setq org-edna-use-inheritance t)
+(setq org-edna-use-inheritance nil)
 (org-edna-load)
 
 (defconst org-gtd--package-path (f-dirname (f-this-file)))

@@ -26,10 +26,20 @@ Finally, add this to your config:
 #+end_src
 
 ** Configuring
-*** Variables specific to org-gtd
-Either use ~M-x customize-group RET org-gtd RET~ or set the following variables. If you do not set them, the files will end up in the `~/gtd` directory.
+*** Keybindings
+It is suggested that you bind a few functions to keys:
 
-- ~org-gtd-directory~ : the path where the GTD files will live
+- ~(global-set-key "\C-cc" 'org-capture)~
+- ~(global-set-key "\C-ca" 'org-agenda)~
+- ~(global-set-key "\C-ci" 'org-gtd-process-inbox)~
+- ~(global-set-key "\C-cn" 'org-gtd-show-all-next)~
+- ~(global-set-key "\C-cs" 'org-gtd-show-stuck-projects)~
+
+
+*** Variables specific to org-gtd
+Either use ~M-x customize-group RET org-gtd RET~ or set the following variable.
+
+- ~org-gtd-directory~ : the path where the GTD files will live. The default value is ~~/gtd/~.
 *** Variables from org-mode
 **** org-agenda-files
 If you aren't using any files yet, add ~(setq org-agenda-files `(,org-gtd-directory))~.
@@ -41,6 +51,7 @@ We recommend the addition of the following two entries to your capture templates
 - ~i~ just adds a simple entry
 - ~t~ adds an entry with a link to wherever you were in emacs when you decided to enter this todo
 
+If you already have capture templates, of course, add to the list, don't just overwrite it, as above.
 #+begin_src elisp
   (setq org-capture-templates `(("i" "Inbox"
                                  entry (file ,(org-gtd--path org-gtd-inbox))
@@ -52,18 +63,31 @@ We recommend the addition of the following two entries to your capture templates
                                  :kill-buffer t)))
 
 #+end_src
-*** Keybindings
-It is suggested that you bind a few functions to keys:
-
-- ~(global-set-key "\C-cc" 'org-capture)~
-- ~(global-set-key "\C-ca" 'org-agenda)~
-- ~(global-set-key "\C-ci" 'org-gtd-process-inbox)~
-- ~(global-set-key "\C-cn" 'org-gtd-show-all-next)~
-- ~(global-set-key "\C-cs" 'org-gtd-show-stuck-projects)~
-
-
 *** Other packages
-You'll need to configure [[https://github.com/Kungsgeten/org-brain][org-brain]] as well if you weren't using it before.
+**** org-brain
+[[https://github.com/Kungsgeten/org-brain][org-brain]] is used as the reference store. if you weren't using it before, you'll need to configure it. Here is my configuration for reference. Note that there is one fragile thing here: the ~org-gtd-directory~ variable has to exist and it has to end with a =/=.
+
+#+begin_src emacs-lisp
+  (use-package org-brain
+    :init
+    (setq org-brain-path (concat org-gtd-directory "brain"))
+    ;; For Evil users
+    ;; (with-eval-after-load 'evil
+    ;;   (evil-set-initial-state 'org-brain-visualize-mode 'emacs))
+    :config
+    (setq org-id-track-globally t)
+    (setq org-id-locations-file "~/.emacs.d/.org-id-locations")
+    (setq org-brain-visualize-default-choices 'all)
+    (setq org-brain-title-max-length 12))
+#+end_src
+**** org-edna
+~org-gtd~ needs ~org-edna~ to be loaded and using property inheritance, so you'll need to add this to your config file:
+
+#+begin_src emacs-lisp
+(setq org-edna-use-inheritance t)
+(org-edna-load)
+#+end_src
+
 ** Using
 
 The four frequent actions from GTD map to emacs lisp actions this way:
@@ -82,3 +106,5 @@ TO NOTE, VERY IMPORTANT:
 A "project" is defined as an org heading with a set of children headings. The project heading should not have a TODO tag. The first child should have a NEXT tag. All other children should have a TODO tag.
 
 When you are processing the inbox and creating a project, emacs enters a recursive edit mode. This just means that, to tell emacs you are done creating the subtree, you have to press ~C-M-c~ to exit the recursive edit and go back to processing the inbox.
+*** TODO org-brain as reference store
+- State "TODO"       from "DONE"       [2020-01-04 Sat 12:48]
