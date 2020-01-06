@@ -29,11 +29,11 @@ Finally, add this to your config:
 *** Keybindings
 It is suggested that you bind a few functions to keys:
 
-- ~(global-set-key "\C-cc" 'org-capture)~
-- ~(global-set-key "\C-ca" 'org-agenda)~
-- ~(global-set-key "\C-ci" 'org-gtd-process-inbox)~
-- ~(global-set-key "\C-cn" 'org-gtd-show-all-next)~
-- ~(global-set-key "\C-cs" 'org-gtd-show-stuck-projects)~
+- ~(global-set-key (kbd "C-c d c") 'org-capture)~
+- ~(global-set-key (kbd "C-c d a") 'org-agenda-list)~
+- ~(global-set-key (kbd "C-c d i") 'org-gtd-process-inbox)~
+- ~(global-set-key (kbd "C-c d n") 'org-gtd-show-all-next)~
+- ~(global-set-key (kbd "C-c d s") 'org-gtd-show-stuck-projects)~
 
 
 *** Variables specific to org-gtd
