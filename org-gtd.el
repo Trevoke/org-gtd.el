@@ -23,6 +23,7 @@
 ;; along with GNU Emacs.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
+
 ;; This is a highly opinionated, destructive implementation of GTD.
 ;;
 ;; Highly opinionated because it aims to follow the pure idea of the GTD framework.
@@ -31,11 +32,12 @@
 
 ;;; Code:
 
+(require 'f)
 (require 'org-edna)
 (require 'cl-lib)
+(require 'org-brain)
 
-(setq org-edna-use-inheritance nil)
-(org-edna-load)
+(defvar org-stuck-projects)
 
 (defconst org-gtd--package-path (f-dirname (f-this-file)))
 
@@ -57,6 +59,7 @@
   (org-todo-list "NEXT"))
 
 (defun org-gtd-show-stuck-projects ()
+  "Show all GTD projects that do not have an upcoming or waiting action."
   (interactive)
   (let* ((user-stuck-projects org-stuck-projects)
 	 (org-stuck-projects '("+LEVEL=2-notproject/-DONE"
