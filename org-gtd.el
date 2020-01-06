@@ -5,7 +5,7 @@
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; Version: 0.1
 ;; URL: https://github.com/trevoke/org-gtd
-;; Package-Requires: ((emacs "26.1") (org-edna "1.0.2") (org-brain "0.8") (f "0.20.0"))
+;; Package-Requires: ((emacs "26.1") (org-edna "1.0.2") (org-brain "0.8") (f "0.20.0") (org "9.3.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -24,17 +24,15 @@
 
 ;;; Commentary:
 
-;; This is a highly opinionated, destructive implementation of GTD.
-;;
-;; Highly opinionated because it aims to follow the pure idea of the GTD framework.
-;; Destructive because it overrides a number of org-level variables, so if you
-;; have some settings you want to keep, this might make you unhappy.
+;; This package aims to provide a pre-packaged GTD workflow.
+;; See README.org for more information.
 
 ;;; Code:
 
-(require 'f)
-(require 'org-edna)
 (require 'cl-lib)
+(require 'f)
+(require 'org)
+(require 'org-edna)
 (require 'org-brain)
 
 (defvar org-stuck-projects)
@@ -96,8 +94,7 @@
 	    (?w "whenever" "do this when possible")
 	    (?g "garbage" "throw this away")
 	    (?r "reference" "add this to the brain")
-	    (?l "later" "remind me of this possibility at some point")
-	    (?t "tickler" "I need to be reminded of this at a given time")))))
+	    (?l "later" "remind me of this possibility later")))))
     (cl-case (car action)
       (?q (org-gtd--quick-action))
       (?p (org-gtd--project))
@@ -106,8 +103,7 @@
       (?w (org-gtd--whenever))
       (?g (org-gtd--garbage))
       (?r (org-gtd--reference))
-      (?l (org-gtd--later))
-      (?t (org-gtd--tickler)))))
+      (?l (org-gtd--later)))))
 
 (defun org-gtd--path (file)
   "Return the full path to FILE.org assuming it is in the GTD framework."
@@ -148,14 +144,6 @@
   "Get or create the buffer to transform an inbox item into a project."
   (get-buffer-create "*org-gtd-project*"))
 
-(defun org-gtd--tickler ()
-  "Process element and move it to the tickler file."
-  (move-end-of-line 1)
-  (open-line 1)
-  (forward-line)
-  (org-time-stamp nil)
-  (org-refile nil nil (org-gtd--refile-target ".*Reminders")))
-
 (defun org-gtd--later ()
   "Process element and move it to the someday file."
   (move-end-of-line 1)
@@ -181,6 +169,8 @@
   (org-todo "NEXT")
   (org-refile nil nil (org-gtd--refile-target ".*One-Offs")))
 
+;; TODO function to get list of delegated items (all / by name / by date?)
+;; TODO how to show DELEGATED_TO in agenda?
 (defun org-gtd--delegate ()
   "Process element and move it to the Actionable file."
   (org-todo "WAIT")
@@ -217,6 +207,7 @@
   (display-buffer-same-window (org-gtd--inbox) '())
   (org-archive-subtree))
 
+;; why doesn't refile just work? am I returning a list? is that why?
 (defun org-gtd--refile-target (heading-regexp)
   "HEADING-REGEXP is a regular expression for one of the desired GTD refile locations. See `org-refile'."
   (let* ((user-refile-targets org-refile-targets)

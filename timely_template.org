@@ -6,8 +6,3 @@
 :PROPERTIES:
 :CATEGORY: Scheduled
 :END:
-
-* Reminders
-:PROPERTIES:
-:CATEGORY: Reminders
-:END:
