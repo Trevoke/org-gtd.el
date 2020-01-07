@@ -1,1 +1,2 @@
-#+STARTUP: overview hidestars logrefile indent
+#+STARTUP: overview hidestars logrefile indent logdone
+#+TODO: NEXT TODO WAIT | DONE CANCELED TRASH

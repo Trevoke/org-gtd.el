@@ -60,11 +60,11 @@
   "Show all GTD projects that do not have an upcoming or waiting action."
   (interactive)
   (let* ((user-stuck-projects org-stuck-projects)
-	 (org-stuck-projects '("+LEVEL=2-notproject/-DONE"
-			       ("TODO" "NEXT" "WAIT")
-			       nil ""))
-	 (stuck-projects-buffer (org-agenda-list-stuck-projects))
-	 (org-stuck-projects user-stuck-projects))
+         (org-stuck-projects '("+LEVEL=2-notproject/-DONE"
+                               ("TODO" "NEXT" "WAIT")
+                               nil ""))
+         (stuck-projects-buffer (org-agenda-list-stuck-projects))
+         (org-stuck-projects user-stuck-projects))
     stuck-projects-buffer))
 
 (defun org-gtd-process-inbox ()
@@ -83,18 +83,18 @@
      (widen))))
 
 (defun org-gtd--process-inbox-element ()
-  "INBOX-BUFFER is the buffer with the org gtd inbox."
+  "With mark on an org heading, choose which GTD action to take."
   (let ((action
-	 (read-multiple-choice
-	  "What are we doing with this item?"
-	  '((?q "quick" "quick item: < 2 minutes, done!")
-	    (?p "project" "multiple steps required to completion")
-	    (?s "schedule" "do this at a certain time")
-	    (?d "delegate" "give it to someone")
-	    (?w "whenever" "do this when possible")
-	    (?g "garbage" "throw this away")
-	    (?r "reference" "add this to the brain")
-	    (?l "later" "remind me of this possibility later")))))
+         (read-multiple-choice
+          "What are we doing with this item?"
+          '((?q "quick" "quick item: < 2 minutes, done!")
+            (?p "project" "multiple steps required to completion")
+            (?s "schedule" "do this at a certain time")
+            (?d "delegate" "give it to someone")
+            (?w "whenever" "do this when possible")
+            (?g "garbage" "throw this away")
+            (?r "reference" "add this to the brain")
+            (?l "later" "remind me of this possibility later")))))
     (cl-case (car action)
       (?q (org-gtd--quick-action))
       (?p (org-gtd--project))
@@ -112,16 +112,16 @@
 (defun org-gtd--template-path (file)
   "Return full path to FILE_template.org."
   (f-join org-gtd--package-path
-	  (concat file "_template.org")))
+          (concat file "_template.org")))
 
 (defun org-gtd--gtd-file (gtd-type)
   "Return a buffer for GTD-TYPE.org. create the file and template first if it doesn't already exist."
   (let* ((file-path (org-gtd--path gtd-type))
-	 (file-buffer (find-file-noselect file-path)))
+         (file-buffer (find-file-noselect file-path)))
     (or (f-file-p file-path)
-	(with-current-buffer file-buffer
-	  (insert-file-contents (org-gtd--template-path gtd-type) nil nil nil t)
-	  (save-buffer)))
+        (with-current-buffer file-buffer
+          (insert-file-contents (org-gtd--template-path gtd-type) nil nil nil t)
+          (save-buffer)))
     file-buffer))
 
 (defun org-gtd--actionable ()
@@ -146,10 +146,7 @@
 
 (defun org-gtd--later ()
   "Process element and move it to the someday file."
-  (move-end-of-line 1)
-  (open-line 1)
-  (forward-line)
-  (org-time-stamp nil)
+  (org-schedule 0)
   (org-refile nil nil (org-gtd--refile-target ".*Someday.*")))
 
 (defun org-gtd--reference ()
@@ -190,7 +187,7 @@
   (org-archive-subtree))
 
 (defun org-gtd--project ()
-  "Process element and transform it into a project. INBOX-BUFFER is the buffer holding the org-gtd inbox."
+  "Process element and transform it into a project."
   (with-current-buffer (org-gtd--project-buffer)
     (erase-buffer)
     (org-mode)
@@ -211,15 +208,15 @@
 (defun org-gtd--refile-target (heading-regexp)
   "HEADING-REGEXP is a regular expression for one of the desired GTD refile locations. See `org-refile'."
   (let* ((user-refile-targets org-refile-targets)
-	 (org-refile-targets `((,(org-gtd--path org-gtd-someday) :maxlevel . 2)
-			     (,(org-gtd--path org-gtd-actionable) :maxlevel . 1)
-			     (,(org-gtd--path org-gtd-timely) :maxlevel . 1)))
-	 (results   (cl-find-if
-		     (lambda (rfloc)
-		       (string-match heading-regexp
-				     (car rfloc)))
-		     (org-refile-get-targets)))
-	 (org-refile-targets user-refile-targets))
+         (org-refile-targets `((,(org-gtd--path org-gtd-someday) :maxlevel . 2)
+                               (,(org-gtd--path org-gtd-actionable) :maxlevel . 1)
+                               (,(org-gtd--path org-gtd-timely) :maxlevel . 1)))
+         (results   (cl-find-if
+                     (lambda (rfloc)
+                       (string-match heading-regexp
+                                     (car rfloc)))
+                     (org-refile-get-targets)))
+         (org-refile-targets user-refile-targets))
     results))
 
 
