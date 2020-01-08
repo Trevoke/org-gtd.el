@@ -51,6 +51,21 @@
   "The directory where the org files for GTD will live."
   :type 'directory)
 
+(defun org-gtd-process-inbox ()
+  "Use this once a day: process every element in the inbox."
+  (interactive)
+  (set-buffer (org-gtd--inbox))
+  (display-buffer-same-window (org-gtd--inbox) '())
+  (delete-other-windows)
+
+  (org-map-entries
+   (lambda ()
+     (setq org-map-continue-from (org-element-property :begin (org-element-at-point)))
+     (org-narrow-to-element)
+     (org-show-subtree)
+     (org-gtd--process-inbox-element)
+     (widen))))
+
 (defun org-gtd-show-all-next ()
   "Show all the NEXT items in a single list."
   (interactive)
@@ -66,21 +81,6 @@
          (stuck-projects-buffer (org-agenda-list-stuck-projects))
          (org-stuck-projects user-stuck-projects))
     stuck-projects-buffer))
-
-(defun org-gtd-process-inbox ()
-  "Use this once a day: process every element in the inbox."
-  (interactive)
-  (set-buffer (org-gtd--inbox))
-  (display-buffer-same-window (org-gtd--inbox) '())
-  (delete-other-windows)
-
-  (org-map-entries
-   (lambda ()
-     (setq org-map-continue-from (org-element-property :begin (org-element-at-point)))
-     (org-narrow-to-element)
-     (org-show-subtree)
-     (org-gtd--process-inbox-element)
-     (widen))))
 
 (defun org-gtd--process-inbox-element ()
   "With mark on an org heading, choose which GTD action to take."
