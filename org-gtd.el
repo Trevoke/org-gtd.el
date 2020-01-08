@@ -49,6 +49,12 @@
                                    nil
                                    ""))
 
+(defun org-gtd--refile-targets ()
+  "Return the refile targets specific to org-gtd."
+  `((,(org-gtd--path org-gtd-someday) :maxlevel . 2)
+    (,(org-gtd--path org-gtd-actionable) :maxlevel . 1)
+    (,(org-gtd--path org-gtd-timely) :maxlevel . 1)))
+
 (defgroup org-gtd nil "Customize the org-gtd package."
   :version 0.1 :group 'emacs)
 
@@ -68,6 +74,11 @@
   (set-buffer (org-gtd--inbox))
   (display-buffer-same-window (org-gtd--inbox) '())
   (delete-other-windows)
+
+  ;; laugh all you want, all this statefulness is killing me.
+  (org-gtd--actionable)
+  (org-gtd--timely)
+  (org-gtd--someday)
 
   (org-map-entries
    (lambda ()
@@ -203,6 +214,7 @@
     (display-buffer-same-window (org-gtd--project-buffer) '())
     (delete-other-windows)
     (insert-buffer-substring (org-gtd--inbox))
+    (org-todo 'none)
     (recursive-edit)
     (goto-char (point-min))
     (org-refile nil nil (org-gtd--refile-target ".*Projects")))
@@ -213,13 +225,10 @@
   (display-buffer-same-window (org-gtd--inbox) '())
   (org-archive-subtree))
 
-;; why doesn't refile just work? am I returning a list? is that why?
 (defun org-gtd--refile-target (heading-regexp)
   "HEADING-REGEXP is a regular expression for one of the desired GTD refile locations. See `org-refile'."
   (let* ((user-refile-targets org-refile-targets)
-         (org-refile-targets `((,(org-gtd--path org-gtd-someday) :maxlevel . 2)
-                               (,(org-gtd--path org-gtd-actionable) :maxlevel . 1)
-                               (,(org-gtd--path org-gtd-timely) :maxlevel . 1)))
+         (org-refile-targets (org-gtd--refile-targets))
          (results   (cl-find-if
                      (lambda (rfloc)
                        (string-match heading-regexp
