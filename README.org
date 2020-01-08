@@ -30,7 +30,7 @@ Finally, add this to your config:
 It is suggested that you bind a few functions to keys:
 
 #+begin_src emacs-lisp
-  (global-set-key (kbd "C-c d c") 'org-capture)
+  (global-set-key (kbd "C-c d c") 'org-gtd-capture)
   (global-set-key (kbd "C-c d a") 'org-agenda-list)
   (global-set-key (kbd "C-c d i") 'org-gtd-process-inbox)
   (global-set-key (kbd "C-c d n") 'org-gtd-show-all-next)

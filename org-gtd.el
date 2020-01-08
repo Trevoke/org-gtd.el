@@ -44,12 +44,23 @@
 (defconst org-gtd-someday "someday")
 (defconst org-gtd-timely "timely")
 
+(defconst org-gtd-stuck-projects '("+LEVEL=2-DONE+CATEGORY=\"Projects\""
+                                   ("TODO" "NEXT" "WAIT")
+                                   nil
+                                   ""))
+
 (defgroup org-gtd nil "Customize the org-gtd package."
   :version 0.1 :group 'emacs)
 
 (defcustom org-gtd-directory "~/gtd/"
   "The directory where the org files for GTD will live."
   :type 'directory)
+
+(defun org-gtd-capture ()
+  "Wrap `org-capture' to make sure the gtd inbox exists."
+  (interactive)
+  (kill-buffer (org-gtd--inbox))
+  (org-capture))
 
 (defun org-gtd-process-inbox ()
   "Use this once a day: process every element in the inbox."
@@ -75,9 +86,7 @@
   "Show all GTD projects that do not have an upcoming or waiting action."
   (interactive)
   (let* ((user-stuck-projects org-stuck-projects)
-         (org-stuck-projects '("+LEVEL=2-notproject/-DONE"
-                               ("TODO" "NEXT" "WAIT")
-                               nil ""))
+         (org-stuck-projects org-gtd-stuck-projects)
          (stuck-projects-buffer (org-agenda-list-stuck-projects))
          (org-stuck-projects user-stuck-projects))
     stuck-projects-buffer))
