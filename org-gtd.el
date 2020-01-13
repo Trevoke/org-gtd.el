@@ -252,7 +252,7 @@
   (interactive)
 
   (setq org-gtd-entries '() )
-  (org-map-entries (lambda () (push (org-element-at-point) stag-entries)) t 'tree)
+  (org-map-entries (lambda () (push (org-element-at-point) org-gtd-entries)) t 'tree)
 
   (setq org-gtd-rest (butlast org-gtd-entries))
 
@@ -269,7 +269,12 @@
 
 (defun org-gtd--project-is-complete ()
   "Return t if all project children are DONE, f if any aren't."
-  (org-map-entries ))
+  (setq org-gtd-entries '())
+  (org-map-entries (lambda () (push (org-element-property "TODO" (org-element-at-point)) org-gtd-entries)) t 'tree)
+
+  (setq org-gtd-rest (butlast org-gtd-entries))
+  (message "%s" org-gtd-rest)
+  (seq-every-p (lambda (x) (string-equal x "DONE")) org-gtd-rest))
 
 (provide 'org-gtd)
 
