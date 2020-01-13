@@ -45,9 +45,9 @@
 (defconst org-gtd-timely "timely")
 
 (defconst org-gtd-stuck-projects '("+LEVEL=2-DONE+CATEGORY=\"Projects\""
-                                   ("TODO" "NEXT" "WAIT")
-                                   nil
-                                   ""))
+				   ("TODO" "NEXT" "WAIT")
+				   nil
+				   ""))
 
 (defun org-gtd--refile-targets ()
   "Return the refile targets specific to org-gtd."
@@ -97,24 +97,34 @@
   "Show all GTD projects that do not have an upcoming or waiting action."
   (interactive)
   (let* ((user-stuck-projects org-stuck-projects)
-         (org-stuck-projects org-gtd-stuck-projects)
-         (stuck-projects-buffer (org-agenda-list-stuck-projects))
-         (org-stuck-projects user-stuck-projects))
+	 (org-stuck-projects org-gtd-stuck-projects)
+	 (stuck-projects-buffer (org-agenda-list-stuck-projects))
+	 (org-stuck-projects user-stuck-projects))
     stuck-projects-buffer))
+
+(defun org-gtd-archive-complete-projects ()
+  (interactive)
+  (org-map-entries
+   (lambda ()
+     (if (org-gtd--project-is-complete)
+	 (progn
+	   (setq org-map-continue-from (org-element-property :begin (org-element-at-point)))
+	   (org-archive-subtree-default))))
+   "+LEVEL=1"))
 
 (defun org-gtd--process-inbox-element ()
   "With mark on an org heading, choose which GTD action to take."
   (let ((action
-         (read-multiple-choice
-          "What are we doing with this item?"
-          '((?q "quick" "quick item: < 2 minutes, done!")
-            (?p "project" "multiple steps required to completion")
-            (?s "schedule" "do this at a certain time")
-            (?d "delegate" "give it to someone")
-            (?w "whenever" "do this when possible")
-            (?g "garbage" "throw this away")
-            (?r "reference" "add this to the brain")
-            (?l "later" "remind me of this possibility later")))))
+	 (read-multiple-choice
+	  "What are we doing with this item?"
+	  '((?q "quick" "quick item: < 2 minutes, done!")
+	    (?p "project" "multiple steps required to completion")
+	    (?s "schedule" "do this at a certain time")
+	    (?d "delegate" "give it to someone")
+	    (?w "whenever" "do this when possible")
+	    (?g "garbage" "throw this away")
+	    (?r "reference" "add this to the brain")
+	    (?l "later" "remind me of this possibility later")))))
     (cl-case (car action)
       (?q (org-gtd--quick-action))
       (?p (org-gtd--project))
@@ -132,16 +142,16 @@
 (defun org-gtd--template-path (file)
   "Return full path to FILE_template.org."
   (f-join org-gtd--package-path
-          (concat file "_template.org")))
+	  (concat file "_template.org")))
 
 (defun org-gtd--gtd-file (gtd-type)
   "Return a buffer for GTD-TYPE.org. create the file and template first if it doesn't already exist."
   (let* ((file-path (org-gtd--path gtd-type))
-         (file-buffer (find-file-noselect file-path)))
+	 (file-buffer (find-file-noselect file-path)))
     (or (f-file-p file-path)
-        (with-current-buffer file-buffer
-          (insert-file-contents (org-gtd--template-path gtd-type) nil nil nil t)
-          (save-buffer)))
+	(with-current-buffer file-buffer
+	  (insert-file-contents (org-gtd--template-path gtd-type) nil nil nil t)
+	  (save-buffer)))
     file-buffer))
 
 (defun org-gtd--actionable ()
@@ -228,13 +238,13 @@
 (defun org-gtd--refile-target (heading-regexp)
   "HEADING-REGEXP is a regular expression for one of the desired GTD refile locations. See `org-refile'."
   (let* ((user-refile-targets org-refile-targets)
-         (org-refile-targets (org-gtd--refile-targets))
-         (results   (cl-find-if
-                     (lambda (rfloc)
-                       (string-match heading-regexp
-                                     (car rfloc)))
-                     (org-refile-get-targets)))
-         (org-refile-targets user-refile-targets))
+	 (org-refile-targets (org-gtd--refile-targets))
+	 (results   (cl-find-if
+		     (lambda (rfloc)
+		       (string-match heading-regexp
+				     (car rfloc)))
+		     (org-refile-get-targets)))
+	 (org-refile-targets user-refile-targets))
     results))
 
 (defun org-gtd--nextify ()
@@ -250,12 +260,16 @@
       org-gtd-rest
       'headline
     (lambda (myelt)
+      ;; TODO can I get away with :begin instead of :post-affiliated here?
       (org-entry-put (org-element-property :post-affiliated myelt) "TODO" "TODO")))
 
   (setq org-gtd-entries (nreverse org-gtd-rest))
   (setq org-gtd-first (car org-gtd-entries))
   (org-entry-put (org-element-property :begin org-gtd-first) "TODO" "NEXT"))
 
+(defun org-gtd--project-is-complete ()
+  "Return t if all project children are DONE, f if any aren't."
+  (org-map-entries ))
 
 (provide 'org-gtd)
 
