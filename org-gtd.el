@@ -237,6 +237,25 @@
          (org-refile-targets user-refile-targets))
     results))
 
+(defun org-gtd--nextify ()
+  "Add NEXT and TODO as keywords on all the relevant headlines."
+  (interactive)
+
+  (setq org-gtd-entries '() )
+  (org-map-entries (lambda () (push (org-element-at-point) stag-entries)) t 'tree)
+
+  (setq org-gtd-rest (butlast org-gtd-entries))
+
+  (org-element-map
+      org-gtd-rest
+      'headline
+    (lambda (myelt)
+      (org-entry-put (org-element-property :post-affiliated myelt) "TODO" "TODO")))
+
+  (setq org-gtd-entries (nreverse org-gtd-rest))
+  (setq org-gtd-first (car org-gtd-entries))
+  (org-entry-put (org-element-property :begin org-gtd-first) "TODO" "NEXT"))
+
 
 (provide 'org-gtd)
 
