@@ -5,7 +5,7 @@
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; Version: 0.1
 ;; URL: https://github.com/trevoke/org-gtd
-;; Package-Requires: ((emacs "26.1") (org-edna "1.0.2") (org-brain "0.8") (f "0.20.0") (org "9.3.1"))
+;; Package-Requires: ((emacs "26.1") (org-edna "1.0.2") (org-brain "0.8") (f "0.20.0") (org "9.3.1") (org-agenda-property "1.3.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -34,6 +34,7 @@
 (require 'org)
 (require 'org-edna)
 (require 'org-brain)
+(require 'org-agenda-property)
 
 (defvar org-stuck-projects)
 
