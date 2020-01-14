@@ -251,33 +251,25 @@
 (defun org-gtd--nextify ()
   "Add NEXT and TODO as keywords on all the relevant headlines."
 
-  (setq org-gtd-entries '() )
-  (org-map-entries (lambda () (push (org-element-at-point) org-gtd-entries)) t 'tree)
-
-  (setq org-gtd-rest (butlast org-gtd-entries))
-
-  (org-element-map
-      org-gtd-rest
-      'headline
-    (lambda (myelt)
-      (org-entry-put (org-gtd--org-element-pom myelt) "TODO" "TODO")))
-
-  (setq org-gtd-entries (nreverse org-gtd-rest))
-  (setq org-gtd-first (car org-gtd-entries))
-  (org-entry-put (org-gtd--org-element-pom org-gtd-first) "TODO" "NEXT"))
+  (destructuring-bind
+      (first-entry . rest-entries)
+      (cdr (org-map-entries (lambda () (org-element-at-point) ) t 'tree))
+    (org-element-map
+        (reverse rest-entries)
+        'headline
+      (lambda (myelt)
+        (org-entry-put (org-gtd--org-element-pom myelt) "TODO" "TODO")))
+    (org-entry-put (org-gtd--org-element-pom first-entry) "TODO" "NEXT")))
 
 (defun org-gtd--project-complete-p ()
   "Return t if all project children are DONE, f if any aren't."
-  (setq org-gtd-entries '())
-  (org-map-entries (lambda ()
-                     (push
-                      (org-entry-get (org-gtd--org-element-pom (org-element-at-point)) "TODO")
-                      org-gtd-entries))
-                   t
-                   'tree)
-
-  (setq org-gtd-rest (butlast org-gtd-entries))
-  (seq-every-p (lambda (x) (string-equal x "DONE")) org-gtd-rest))
+  (let ((entries (cdr (org-map-entries
+                       (lambda ()
+                         (org-entry-get (org-gtd--org-element-pom (org-element-at-point))
+                                        "TODO"))
+                       t
+                       'tree))))
+    (seq-every-p (lambda (x) (string-equal x "DONE")) entries)))
 
 (defun org-gtd--org-element-pom (element)
   "Return buffer position for start of org ELEMENT."
