@@ -112,7 +112,7 @@
          (progn
            (setq org-map-continue-from (org-element-property :begin (org-element-at-point)))
            (org-archive-subtree-default))))
-   "+LEVEL=1"))
+   "+LEVEL=2+CATEGORY=\"Projects\""))
 
 (defun org-gtd--process-inbox-element ()
   "With mark on an org heading, choose which GTD action to take."
