@@ -69,28 +69,6 @@
   (kill-buffer (org-gtd--inbox))
   (org-capture))
 
-(defun org-gtd-process-inbox ()
-  "Use this once a day: process every element in the inbox."
-  (interactive)
-  (set-buffer (org-gtd--inbox))
-  (display-buffer-same-window (org-gtd--inbox) '())
-  (delete-other-windows)
-
-  ;; laugh all you want, all this statefulness is killing me.
-  (org-gtd--actionable)
-  (org-gtd--timely)
-  (org-gtd--someday)
-
-  (org-map-entries
-   (lambda ()
-     (setq org-map-continue-from (org-element-property
-				  :begin
-				  (org-element-at-point)))
-     (org-narrow-to-element)
-     (org-show-subtree)
-     (org-gtd--process-inbox-element)
-     (widen))))
-
 (defun org-gtd-show-all-next ()
   "Show all the NEXT items in a single list."
   (interactive)
@@ -118,11 +96,33 @@
 	   (org-archive-subtree-default))))
    "+LEVEL=2+CATEGORY=\"Projects\""))
 
+(defun org-gtd-process-inbox ()
+  "Use this once a day: process every element in the inbox."
+  (interactive)
+  (set-buffer (org-gtd--inbox))
+  (display-buffer-same-window (org-gtd--inbox) '())
+  (delete-other-windows)
+
+  ;; laugh all you want, all this statefulness is killing me.
+  (org-gtd--actionable)
+  (org-gtd--timely)
+  (org-gtd--someday)
+
+  (org-map-entries
+   (lambda ()
+     (setq org-map-continue-from (org-element-property
+				  :begin
+				  (org-element-at-point)))
+     (org-narrow-to-element)
+     (org-show-subtree)
+     (org-gtd--process-inbox-element)
+     (widen))))
+
 (defun org-gtd--process-inbox-element ()
   "With mark on an org heading, choose which GTD action to take."
   (let ((action
 	 (read-multiple-choice
-	  "What are we doing with this item?"
+	  "What kind of item is this?"
 	  '((?q "quick" "quick item: < 2 minutes, done!")
 	    (?p "project" "multiple steps required to completion")
 	    (?s "schedule" "do this at a certain time")
@@ -131,35 +131,29 @@
 	    (?g "garbage" "throw this away")
 	    (?r "reference" "add this to the brain")
 	    (?l "later" "remind me of this possibility later")))))
-    (cl-case (car action)
-      (?q (org-gtd--quick-action))
-      (?p (org-gtd--project))
-      (?s (org-gtd--schedule))
-      (?d (org-gtd--delegate))
-      (?w (org-gtd--whenever))
-      (?g (org-gtd--garbage))
-      (?r (org-gtd--reference))
-      (?l (org-gtd--later)))))
 
-(defun org-gtd--path (file)
-  "Return the full path to FILE.org assuming it is in the GTD framework."
-  (f-join org-gtd-directory (concat file ".org")))
+    (if (member (car action) '(?q ?g))
+	(org-gtd--no-further-action-required (car action))
+      (org-gtd--further-processing-required (car action)))))
 
-(defun org-gtd--template-path (file)
-  "Return full path to FILE_template.org."
-  (f-join org-gtd--package-path
-	  (concat file "_template.org")))
+(defun org-gtd--no-further-action-required (letter)
+  "The inbox item was either trash or a quick action. Handle it."
+  (cl-case letter
+    (?q (org-gtd--quick-action))
+    (?g (org-gtd--garbage))))
 
-(defun org-gtd--gtd-file (gtd-type)
-  "Return a buffer for GTD-TYPE.org. create the file and template first if it
-doesn't already exist."
-  (let* ((file-path (org-gtd--path gtd-type))
-	 (file-buffer (find-file-noselect file-path)))
-    (or (f-file-p file-path)
-	(with-current-buffer file-buffer
-	  (insert-file-contents (org-gtd--template-path gtd-type) nil nil nil t)
-	  (save-buffer)))
-    file-buffer))
+(defun org-gtd--further-processing-required (letter)
+  "Whatever the inbox item is requires additional user processing. Handle it."
+  (recursive-edit)
+  (goto-char (point-min))
+  (org-set-tags-command)
+  (cl-case (letter)
+    (?p (org-gtd--project))
+    (?s (org-gtd--schedule))
+    (?d (org-gtd--delegate))
+    (?w (org-gtd--whenever))
+    (?r (org-gtd--reference))
+    (?l (org-gtd--later))))
 
 (defun org-gtd--actionable ()
   "Create or return the buffer for the actionable GTD buffer."
@@ -199,7 +193,6 @@ doesn't already exist."
 
 (defun org-gtd--whenever ()
   "Process element and move it to the Actionable file."
-  (org-set-tags-command)
   (org-todo "NEXT")
   (org-refile nil nil (org-gtd--refile-target ".*One-Offs")))
 
@@ -225,22 +218,11 @@ doesn't already exist."
 
 (defun org-gtd--project ()
   "Process element and transform it into a project."
-  (with-current-buffer (org-gtd--project-buffer)
-    (erase-buffer)
-    (org-mode)
-    (display-buffer-same-window (org-gtd--project-buffer) '())
-    (delete-other-windows)
-    (insert-buffer-substring (org-gtd--inbox))
-    (org-todo 'none)
-    (recursive-edit)
-    (goto-char (point-min))
-    (org-refile nil nil (org-gtd--refile-target ".*Projects")))
+  (org-gtd--nextify)
+  (org-refile nil nil (org-gtd--refile-target ".*Projects"))
 
   (with-current-buffer (org-gtd--actionable)
-    (org-update-statistics-cookies t))
-
-  (display-buffer-same-window (org-gtd--inbox) '())
-  (org-archive-subtree))
+    (org-update-statistics-cookies t)))
 
 (defun org-gtd--refile-target (heading-regexp)
   "HEADING-REGEXP is a regular expression for one of the desired GTD refile
@@ -282,6 +264,26 @@ locations. See `org-refile'."
 (defun org-gtd--org-element-pom (element)
   "Return buffer position for start of org ELEMENT."
   (org-element-property :begin element))
+
+(defun org-gtd--path (file)
+  "Return the full path to FILE.org assuming it is in the GTD framework."
+  (f-join org-gtd-directory (concat file ".org")))
+
+(defun org-gtd--template-path (file)
+  "Return full path to FILE_template.org."
+  (f-join org-gtd--package-path
+	  (concat file "_template.org")))
+
+(defun org-gtd--gtd-file (gtd-type)
+  "Return a buffer for GTD-TYPE.org. create the file and template first if it
+doesn't already exist."
+  (let* ((file-path (org-gtd--path gtd-type))
+	 (file-buffer (find-file-noselect file-path)))
+    (or (f-file-p file-path)
+	(with-current-buffer file-buffer
+	  (insert-file-contents (org-gtd--template-path gtd-type) nil nil nil t)
+	  (save-buffer)))
+    file-buffer))
 
 (provide 'org-gtd)
 
