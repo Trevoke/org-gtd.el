@@ -170,11 +170,6 @@
   "Create or return the buffer for the someday GTD buffer."
   (org-gtd--gtd-file org-gtd-someday))
 
-;; TODO delete this
-(defun org-gtd--project-buffer ()
-  "Get or create the buffer to transform an inbox item into a project."
-  (get-buffer-create "*org-gtd-project*"))
-
 (defun org-gtd--later ()
   "Process element and move it to the someday file."
   (org-schedule 0)
