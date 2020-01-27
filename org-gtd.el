@@ -44,6 +44,12 @@
 (defconst org-gtd-inbox "inbox")
 (defconst org-gtd-someday "someday")
 
+(defconst org-gtd-actions   ".*Actions")
+(defconst org-gtd-delegated ".*Delegated")
+(defconst org-gtd-later     ".*Someday.*")
+(defconst org-gtd-scheduled ".*Scheduled")
+(defconst org-gtd-projects  ".*Projects")
+
 (defconst org-gtd-stuck-projects '("+LEVEL=2-DONE+CATEGORY=\"Projects\""
 				   ("TODO" "NEXT" "WAIT")
 				   nil
@@ -144,7 +150,7 @@
   (recursive-edit)
   (goto-char (point-min))
   (org-set-tags-command)
-  (cl-case (letter)
+  (cl-case letter
     (?p (org-gtd--project))
     (?s (org-gtd--schedule))
     (?d (org-gtd--delegate))
@@ -164,6 +170,7 @@
   "Create or return the buffer for the someday GTD buffer."
   (org-gtd--gtd-file org-gtd-someday))
 
+;; TODO delete this
 (defun org-gtd--project-buffer ()
   "Get or create the buffer to transform an inbox item into a project."
   (get-buffer-create "*org-gtd-project*"))
@@ -171,7 +178,7 @@
 (defun org-gtd--later ()
   "Process element and move it to the someday file."
   (org-schedule 0)
-  (org-refile nil nil (org-gtd--refile-target ".*Someday.*")))
+  (org-refile nil nil (org-gtd--refile-target org-gtd-later)))
 
 (defun org-gtd--reference ()
   "Process element and move it to the brain."
@@ -187,7 +194,7 @@
 (defun org-gtd--whenever ()
   "Process element and move it to the Actionable file."
   (org-todo "NEXT")
-  (org-refile nil nil (org-gtd--refile-target ".*One-Offs")))
+  (org-refile nil nil (org-gtd--refile-target org-gtd-actions)))
 
 ;; TODO function to get list of delegated items (all / by name / by date?)
 ;; TODO how to show DELEGATED_TO in agenda?
@@ -196,13 +203,13 @@
   (org-todo "WAIT")
   (org-set-property "DELEGATED_TO" (read-string "Who will do this? "))
   (org-schedule 0)
-  (org-refile nil nil (org-gtd--refile-target ".*Delegated")))
+  (org-refile nil nil (org-gtd--refile-target org-gtd-delegated)))
 
 (defun org-gtd--schedule ()
   "Process element and move it to the tickler file."
   (org-todo "TODO")
   (org-schedule 0)
-  (org-refile nil nil (org-gtd--refile-target ".*Scheduled")))
+  (org-refile nil nil (org-gtd--refile-target org-gtd-scheduled)))
 
 (defun org-gtd--quick-action ()
   "Process element and archive it."
@@ -212,7 +219,7 @@
 (defun org-gtd--project ()
   "Process element and transform it into a project."
   (org-gtd--nextify)
-  (org-refile nil nil (org-gtd--refile-target ".*Projects"))
+  (org-refile nil nil (org-gtd--refile-target org-gtd-projects))
 
   (with-current-buffer (org-gtd--actionable)
     (org-update-statistics-cookies t)))

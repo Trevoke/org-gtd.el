@@ -51,7 +51,7 @@ Okay! Scroll past if you want more detailed explanations.
                                  :kill-buffer t)))
 
   (setq org-agenda-property-list '("DELEGATED_TO"))
-  (setq org-agenda-property-position 'same-line)
+  (setq org-agenda-property-position 'next-line)
 
   (setq org-edna-use-inheritance t)
   (org-edna-load)
@@ -89,7 +89,7 @@ We recommend the addition of the following two entries to your capture templates
 - ~i~ just adds a simple entry
 - ~t~ adds an entry with a link to wherever you were in emacs when you decided to enter this todo
 
-If you already have capture templates, of course, add to the list, don't just overwrite it, as above.
+If you already have capture templates, of course, add to the list, don't just overwrite the setting.
 #+begin_src elisp
   (setq org-capture-templates `(("i" "Inbox"
                                  entry (file ,(org-gtd--path org-gtd-inbox))
@@ -107,7 +107,7 @@ This package displays headline properties in the agenda. We use it so you can qu
 
 #+begin_src emacs-lisp
 (setq org-agenda-property-list '("DELEGATED_TO"))
-(setq org-agenda-property-position 'same-line) ;; not necessary, my preference
+(setq org-agenda-property-position 'next-line) ;; not necessary, my preference
 #+end_src
 
 **** org-edna
