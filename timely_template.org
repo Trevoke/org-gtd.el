@@ -1,8 +1,0 @@
-#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
-#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CANCELED(c@)
-# This is where we store the actions that have to show up in your agenda at a given date.
-
-* Scheduled
-:PROPERTIES:
-:CATEGORY: Scheduled
-:END:

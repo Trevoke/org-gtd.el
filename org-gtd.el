@@ -43,7 +43,6 @@
 (defconst org-gtd-actionable "actionable")
 (defconst org-gtd-inbox "inbox")
 (defconst org-gtd-someday "someday")
-(defconst org-gtd-timely "timely")
 
 (defconst org-gtd-stuck-projects '("+LEVEL=2-DONE+CATEGORY=\"Projects\""
 				   ("TODO" "NEXT" "WAIT")
@@ -53,8 +52,7 @@
 (defun org-gtd--refile-targets ()
   "Return the refile targets specific to org-gtd."
   `((,(org-gtd--path org-gtd-someday) :maxlevel . 2)
-    (,(org-gtd--path org-gtd-actionable) :maxlevel . 1)
-    (,(org-gtd--path org-gtd-timely) :maxlevel . 1)))
+    (,(org-gtd--path org-gtd-actionable) :maxlevel . 1)))
 
 (defgroup org-gtd nil "Customize the org-gtd package."
   :version 0.1 :group 'emacs)
@@ -105,7 +103,6 @@
 
   ;; laugh all you want, all this statefulness is killing me.
   (org-gtd--actionable)
-  (org-gtd--timely)
   (org-gtd--someday)
 
   (org-map-entries
@@ -166,10 +163,6 @@
 (defun org-gtd--someday ()
   "Create or return the buffer for the someday GTD buffer."
   (org-gtd--gtd-file org-gtd-someday))
-
-(defun org-gtd--timely ()
-  "Create or return the buffer for the timely GTD buffer."
-  (org-gtd--gtd-file org-gtd-timely))
 
 (defun org-gtd--project-buffer ()
   "Get or create the buffer to transform an inbox item into a project."

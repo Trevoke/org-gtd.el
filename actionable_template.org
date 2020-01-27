@@ -1,15 +1,19 @@
 #+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
 #+TODO: NEXT(n) TODO(t) WAIT(w@) DELEGATED(e) | DONE(d) CANCELED(c@)
-# All the actionable files go in here.
 
-* One-Offs
+* Actions
 :PROPERTIES:
-:CATEGORY: One-Offs
+:CATEGORY: Action
 :END:
 
 * Delegated
 :PROPERTIES:
 :CATEGORY: Delegated
+:END:
+
+* Scheduled
+:PROPERTIES:
+:CATEGORY: Scheduled
 :END:
 
 * Projects
