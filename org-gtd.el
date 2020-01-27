@@ -55,6 +55,8 @@
 				   nil
 				   ""))
 
+(defconst org-gtd-complete-projects "+LEVEL=2+CATEGORY=\"Projects\"")
+
 (defun org-gtd--refile-targets ()
   "Return the refile targets specific to org-gtd."
   `((,(org-gtd--path org-gtd-someday) :maxlevel . 2)
@@ -98,7 +100,7 @@
 					:begin
 					(org-element-at-point)))
 	   (org-archive-subtree-default))))
-   "+LEVEL=2+CATEGORY=\"Projects\""))
+   org-gtd-complete-projects))
 
 (defun org-gtd-process-inbox ()
   "Use this once a day: process every element in the inbox."
@@ -119,7 +121,11 @@
      (org-narrow-to-element)
      (org-show-subtree)
      (org-gtd--process-inbox-element)
-     (widen))))
+     (widen)))
+
+  (mapcar
+   (lambda (buffer) (with-current-buffer buffer (save-buffer)))
+   `(,(org-gtd--actionable) ,(org-gtd--someday) ,(org-gtd--inbox))))
 
 (defun org-gtd--process-inbox-element ()
   "With mark on an org heading, choose which GTD action to take."
@@ -191,8 +197,6 @@
   (org-todo "NEXT")
   (org-refile nil nil (org-gtd--refile-target org-gtd-actions)))
 
-;; TODO function to get list of delegated items (all / by name / by date?)
-;; TODO how to show DELEGATED_TO in agenda?
 (defun org-gtd--delegate ()
   "Process element and move it to the Actionable file."
   (org-todo "WAIT")
