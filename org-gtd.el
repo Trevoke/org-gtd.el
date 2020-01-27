@@ -202,7 +202,7 @@
 
 (defun org-gtd--schedule ()
   "Process element and move it to the tickler file."
-  (org-todo "TODO")
+  (org-todo "NEXT")
   (org-schedule 0)
   (org-refile nil nil (org-gtd--refile-target org-gtd-scheduled)))
 
