@@ -105,6 +105,7 @@
 (defun org-gtd-process-inbox ()
   "Use this once a day: process every element in the inbox."
   (interactive)
+
   (set-buffer (org-gtd--inbox))
   (display-buffer-same-window (org-gtd--inbox) '())
   (delete-other-windows)
@@ -122,6 +123,8 @@
      (org-show-subtree)
      (org-gtd--process-inbox-element)
      (widen)))
+
+  (setq-local header-line-format nil)
 
   (mapcar
    (lambda (buffer) (with-current-buffer buffer (save-buffer)))
@@ -153,6 +156,7 @@
 
 (defun org-gtd--further-processing-required (letter)
   "Whatever the inbox item is requires additional user processing. Handle it."
+  (org-gtd-user-input-mode 1)
   (recursive-edit)
   (goto-char (point-min))
   (org-set-tags-command)
@@ -283,6 +287,28 @@ doesn't already exist."
 	  (insert-file-contents (org-gtd--template-path gtd-type) nil nil nil t)
 	  (save-buffer)))
     file-buffer))
+
+;;; Minor mode
+
+(defvar org-gtd-user-input-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "\C-c\C-c" #'org-gtd-finish-editing)
+    map)
+  "Keymap for `org-gtd-user-input-mode', a minor mode.")
+
+(defun org-gtd-finish-editing ()
+  "Get out of the manual edit flow."
+  (interactive)
+  (org-gtd-user-input-mode -1)
+  (exit-recursive-edit))
+
+(define-minor-mode org-gtd-user-input-mode
+  "Minor mode for special key bindings when editing an individual inbox item."
+  nil "GTD " org-gtd-user-input-mode-map
+  (setq-local header-line-format
+	      (substitute-command-keys
+	       "\\<org-gtd-user-input-mode-map>Edit inbox item. Finish \
+`\\[org-gtd-finish-editing]'.")))
 
 (provide 'org-gtd)
 

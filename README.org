@@ -156,7 +156,7 @@ You have a number of possible choices for each item you process, which I will qu
 *** Projects
 A "project" is defined as an org heading with a set of children headings. The project heading should not have a TODO tag. The first child should have a NEXT tag. All other children should have a TODO tag.
 
-When you are processing the inbox and creating a project, emacs enters a recursive edit mode. This just means that, to tell emacs you are done creating the subtree, you have to press ~C-M-c~ to exit the recursive edit and go back to processing the inbox.
+When you are processing the inbox and creating a project, emacs enters a recursive edit mode to let you define and refine the project. When finished, press ~C-c C-c~ to exit the recursive edit and go back to processing the inbox.
 ** p
 | GTD                        | action                        | suggested keybinding |
 |----------------------------+-------------------------------+----------------------|
