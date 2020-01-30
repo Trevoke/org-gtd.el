@@ -41,8 +41,8 @@
 (defconst org-gtd--package-path (f-dirname (f-this-file)))
 
 (defconst org-gtd-actionable "actionable")
-(defconst org-gtd-inbox "inbox")
-(defconst org-gtd-someday "someday")
+(defconst org-gtd-inbox      "inbox")
+(defconst org-gtd-someday    "someday")
 
 (defconst org-gtd-actions   ".*Actions")
 (defconst org-gtd-delegated ".*Delegated")
@@ -134,54 +134,31 @@
   "With mark on an org heading, choose which GTD action to take."
   (let ((action
 	 (read-multiple-choice
-	  "What kind of item is this?"
+	  "What to do with this item?"
 	  '((?q "quick" "quick item: < 2 minutes, done!")
+	    (?t "throw out" "this has no value to me")
 	    (?p "project" "multiple steps required to completion")
-	    (?s "schedule" "do this at a certain time")
-	    (?d "delegate" "give it to someone")
-	    (?w "whenever" "do this when possible")
-	    (?g "garbage" "throw this away")
-	    (?r "reference" "add this to the brain")
-	    (?l "later" "remind me of this possibility later")))))
+	    (?c "calendar" "do this at a certain time")
+	    (?d "delegate it" "give it to someone")
+	    (?s "single action" "do this when possible")
+	    (?a "archive" "add this to the brain")
+	    (?i "incubatable" "remind me of this possibility later")))))
 
-    (if (member (car action) '(?q ?g))
-	(org-gtd--no-further-action-required (car action))
-      (org-gtd--further-processing-required (car action)))))
-
-(defun org-gtd--no-further-action-required (letter)
-  "The inbox item was either trash or a quick action. Handle it."
-  (cl-case letter
-    (?q (org-gtd--quick-action))
-    (?g (org-gtd--garbage))))
-
-(defun org-gtd--further-processing-required (letter)
-  "Whatever the inbox item is requires additional user processing. Handle it."
-  (org-gtd-user-input-mode 1)
-  (recursive-edit)
-  (goto-char (point-min))
-  (org-set-tags-command)
-  (cl-case letter
-    (?p (org-gtd--project))
-    (?s (org-gtd--schedule))
-    (?d (org-gtd--delegate))
-    (?w (org-gtd--whenever))
-    (?r (org-gtd--reference))
-    (?l (org-gtd--later))))
-
-(defun org-gtd--actionable ()
-  "Create or return the buffer for the actionable GTD buffer."
-  (org-gtd--gtd-file org-gtd-actionable))
-
-(defun org-gtd--inbox ()
-  "Create or return the buffer for the inbox GTD buffer."
-  (org-gtd--gtd-file org-gtd-inbox))
-
-(defun org-gtd--someday ()
-  "Create or return the buffer for the someday GTD buffer."
-  (org-gtd--gtd-file org-gtd-someday))
+    (cl-case (car action)
+      (?q (org-gtd--quick-action))
+      (?g (org-gtd--trash))
+      (?p (org-gtd--project))
+      (?c (org-gtd--schedule))
+      (?d (org-gtd--delegate))
+      (?s (org-gtd--whenever))
+      (?a (org-gtd--reference))
+      (?i (org-gtd--later)))
 
 (defun org-gtd--later ()
   "Process element and move it to the someday file."
+  (org-gtd--edit-item)
+  (goto-char (point-min))
+  (org-set-tags-command)
   (org-schedule 0)
   (org-refile nil nil (org-gtd--refile-target org-gtd-later)))
 
@@ -191,18 +168,27 @@
   (org-todo "DONE")
   (org-archive-subtree))
 
-(defun org-gtd--garbage ()
+(defun org-gtd--trash ()
   "Archive element."
+  (org-gtd--edit-item)
+  (goto-char (point-min))
+  (org-set-tags-command)
   (org-todo "CANCELED")
   (org-archive-subtree))
 
 (defun org-gtd--whenever ()
   "Process element and move it to the Actionable file."
+  (org-gtd--edit-item)
+  (goto-char (point-min))
+  (org-set-tags-command)
   (org-todo "NEXT")
   (org-refile nil nil (org-gtd--refile-target org-gtd-actions)))
 
 (defun org-gtd--delegate ()
   "Process element and move it to the Actionable file."
+  (org-gtd--edit-item)
+  (goto-char (point-min))
+  (org-set-tags-command)
   (org-todo "WAIT")
   (org-set-property "DELEGATED_TO" (read-string "Who will do this? "))
   (org-schedule 0)
@@ -210,17 +196,26 @@
 
 (defun org-gtd--schedule ()
   "Process element and move it to the tickler file."
+  (org-gtd--edit-item)
+  (goto-char (point-min))
+  (org-set-tags-command)
   (org-todo "NEXT")
   (org-schedule 0)
   (org-refile nil nil (org-gtd--refile-target org-gtd-scheduled)))
 
 (defun org-gtd--quick-action ()
   "Process element and archive it."
+  (org-gtd--edit-item)
+  (goto-char (point-min))
+  (org-set-tags-command)
   (org-todo "DONE")
   (org-archive-subtree))
 
 (defun org-gtd--project ()
   "Process element and transform it into a project."
+  (org-gtd--edit-item)
+  (goto-char (point-min))
+  (org-set-tags-command)
   (org-gtd--nextify)
   (org-refile nil nil (org-gtd--refile-target org-gtd-projects))
 
@@ -287,6 +282,23 @@ doesn't already exist."
 	  (insert-file-contents (org-gtd--template-path gtd-type) nil nil nil t)
 	  (save-buffer)))
     file-buffer))
+
+(defun org-gtd--actionable ()
+  "Create or return the buffer for the actionable GTD buffer."
+  (org-gtd--gtd-file org-gtd-actionable))
+
+(defun org-gtd--inbox ()
+  "Create or return the buffer for the inbox GTD buffer."
+  (org-gtd--gtd-file org-gtd-inbox))
+
+(defun org-gtd--someday ()
+  "Create or return the buffer for the someday GTD buffer."
+  (org-gtd--gtd-file org-gtd-someday))
+
+(defun org-gtd--edit-item ()
+  "Friendly user interaction to refine the current inbox item"
+  (org-gtd-user-input-mode 1)
+  (recursive-edit))
 
 ;;; Minor mode
 
