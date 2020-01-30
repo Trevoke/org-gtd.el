@@ -141,20 +141,20 @@
 	    (?c "calendar" "do this at a certain time")
 	    (?d "delegate it" "give it to someone")
 	    (?s "single action" "do this when possible")
-	    (?a "archive" "add this to the brain")
-	    (?i "incubatable" "remind me of this possibility later")))))
+	    (?a "archive this knowledge" "add this to the brain")
+	    (?i "incubate it" "remind me of this possibility later")))))
 
     (cl-case (car action)
       (?q (org-gtd--quick-action))
-      (?g (org-gtd--trash))
+      (?t (org-gtd--trash))
       (?p (org-gtd--project))
-      (?c (org-gtd--schedule))
+      (?c (org-gtd--calendar))
       (?d (org-gtd--delegate))
-      (?s (org-gtd--whenever))
-      (?a (org-gtd--reference))
-      (?i (org-gtd--later)))
+      (?s (org-gtd--single-action))
+      (?a (org-gtd--archive))
+      (?i (org-gtd--incubate)))
 
-(defun org-gtd--later ()
+(defun org-gtd--incubate ()
   "Process element and move it to the someday file."
   (org-gtd--edit-item)
   (goto-char (point-min))
@@ -162,7 +162,7 @@
   (org-schedule 0)
   (org-refile nil nil (org-gtd--refile-target org-gtd-later)))
 
-(defun org-gtd--reference ()
+(defun org-gtd--archive ()
   "Process element and move it to the brain."
   (org-brain-add-resource nil nil "What's the link? " nil)
   (org-todo "DONE")
@@ -176,7 +176,7 @@
   (org-todo "CANCELED")
   (org-archive-subtree))
 
-(defun org-gtd--whenever ()
+(defun org-gtd--single-action ()
   "Process element and move it to the Actionable file."
   (org-gtd--edit-item)
   (goto-char (point-min))
@@ -194,7 +194,7 @@
   (org-schedule 0)
   (org-refile nil nil (org-gtd--refile-target org-gtd-delegated)))
 
-(defun org-gtd--schedule ()
+(defun org-gtd--calendar ()
   "Process element and move it to the tickler file."
   (org-gtd--edit-item)
   (goto-char (point-min))
