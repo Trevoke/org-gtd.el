@@ -46,7 +46,7 @@
 
 (defconst org-gtd-actions   ".*Actions")
 (defconst org-gtd-delegated ".*Delegated")
-(defconst org-gtd-later     ".*Someday.*")
+(defconst org-gtd-incubate  ".*Someday.*")
 (defconst org-gtd-scheduled ".*Scheduled")
 (defconst org-gtd-projects  ".*Projects")
 
@@ -142,7 +142,7 @@
 	    (?d "delegate it" "give it to someone")
 	    (?s "single action" "do this when possible")
 	    (?a "archive this knowledge" "add this to the brain")
-	    (?i "incubate it" "remind me of this possibility later")))))
+	    (?i "incubate it" "I'll come back to this later")))))
 
     (cl-case (car action)
       (?q (org-gtd--quick-action))
@@ -160,7 +160,7 @@
   (goto-char (point-min))
   (org-set-tags-command)
   (org-schedule 0)
-  (org-refile nil nil (org-gtd--refile-target org-gtd-later)))
+  (org-refile nil nil (org-gtd--refile-target org-gtd-incubate)))
 
 (defun org-gtd--archive ()
   "Process element and move it to the brain."
