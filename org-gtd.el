@@ -40,27 +40,27 @@
 
 (defconst org-gtd--package-path (f-dirname (f-this-file)))
 
-(defconst org-gtd-actionable "actionable")
-(defconst org-gtd-inbox      "inbox")
-(defconst org-gtd-someday    "someday")
+(defconst org-gtd-actionable-file-basename "actionable")
+(defconst org-gtd-inbox-file-basename      "inbox")
+(defconst org-gtd-incubate-file-basename    "incubate")
 
 (defconst org-gtd-actions   ".*Actions")
 (defconst org-gtd-delegated ".*Delegated")
-(defconst org-gtd-incubate  ".*Someday.*")
+(defconst org-gtd-incubate  ".*Incubate.*")
 (defconst org-gtd-scheduled ".*Scheduled")
 (defconst org-gtd-projects  ".*Projects")
 
 (defconst org-gtd-stuck-projects '("+LEVEL=2-DONE+CATEGORY=\"Projects\""
-				   ("TODO" "NEXT" "WAIT")
-				   nil
-				   ""))
+                                   ("TODO" "NEXT" "WAIT")
+                                   nil
+                                   ""))
 
 (defconst org-gtd-complete-projects "+LEVEL=2+CATEGORY=\"Projects\"")
 
 (defun org-gtd--refile-targets ()
   "Return the refile targets specific to org-gtd."
-  `((,(org-gtd--path org-gtd-someday) :maxlevel . 2)
-    (,(org-gtd--path org-gtd-actionable) :maxlevel . 1)))
+  `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)
+    (,(org-gtd--path org-gtd-actionable-file-basename) :maxlevel . 1)))
 
 (defgroup org-gtd nil "Customize the org-gtd package."
   :version 0.1 :group 'emacs)
@@ -84,9 +84,9 @@
   "Show all GTD projects that do not have an upcoming or waiting action."
   (interactive)
   (let* ((user-stuck-projects org-stuck-projects)
-	 (org-stuck-projects org-gtd-stuck-projects)
-	 (stuck-projects-buffer (org-agenda-list-stuck-projects))
-	 (org-stuck-projects user-stuck-projects))
+         (org-stuck-projects org-gtd-stuck-projects)
+         (stuck-projects-buffer (org-agenda-list-stuck-projects))
+         (org-stuck-projects user-stuck-projects))
     stuck-projects-buffer))
 
 (defun org-gtd-archive-complete-projects ()
@@ -95,11 +95,11 @@
   (org-map-entries
    (lambda ()
      (if (org-gtd--project-complete-p)
-	 (progn
-	   (setq org-map-continue-from (org-element-property
-					:begin
-					(org-element-at-point)))
-	   (org-archive-subtree-default))))
+         (progn
+           (setq org-map-continue-from (org-element-property
+                                        :begin
+                                        (org-element-at-point)))
+           (org-archive-subtree-default))))
    org-gtd-complete-projects))
 
 (defun org-gtd-process-inbox ()
@@ -112,13 +112,13 @@
 
   ;; laugh all you want, all this statefulness is killing me.
   (org-gtd--actionable)
-  (org-gtd--someday)
+  (org-gtd--incubate)
 
   (org-map-entries
    (lambda ()
      (setq org-map-continue-from (org-element-property
-				  :begin
-				  (org-element-at-point)))
+                                  :begin
+                                  (org-element-at-point)))
      (org-narrow-to-element)
      (org-show-subtree)
      (org-gtd--process-inbox-element)
@@ -128,21 +128,21 @@
 
   (mapcar
    (lambda (buffer) (with-current-buffer buffer (save-buffer)))
-   `(,(org-gtd--actionable) ,(org-gtd--someday) ,(org-gtd--inbox))))
+   `(,(org-gtd--actionable) ,(org-gtd--incubate) ,(org-gtd--inbox))))
 
 (defun org-gtd--process-inbox-element ()
   "With mark on an org heading, choose which GTD action to take."
   (let ((action
-	 (read-multiple-choice
-	  "What to do with this item?"
-	  '((?q "quick" "quick item: < 2 minutes, done!")
-	    (?t "throw out" "this has no value to me")
-	    (?p "project" "multiple steps required to completion")
-	    (?c "calendar" "do this at a certain time")
-	    (?d "delegate it" "give it to someone")
-	    (?s "single action" "do this when possible")
-	    (?a "archive this knowledge" "add this to the brain")
-	    (?i "incubate it" "I'll come back to this later")))))
+         (read-multiple-choice
+          "What to do with this item?"
+          '((?q "quick" "quick item: < 2 minutes, done!")
+            (?t "throw out" "this has no value to me")
+            (?p "project" "multiple steps required to completion")
+            (?c "calendar" "do this at a certain time")
+            (?d "delegate it" "give it to someone")
+            (?s "single action" "do this when possible")
+            (?a "archive this knowledge" "add this to the brain")
+            (?i "incubate it" "I'll come back to this later")))))
 
     (cl-case (car action)
       (?q (org-gtd--quick-action))
@@ -152,10 +152,10 @@
       (?d (org-gtd--delegate))
       (?s (org-gtd--single-action))
       (?a (org-gtd--archive))
-      (?i (org-gtd--incubate)))
+      (?i (org-gtd--incubate)))))
 
 (defun org-gtd--incubate ()
-  "Process element and move it to the someday file."
+  "Process element and move it to the incubate file."
   (org-gtd--edit-item)
   (goto-char (point-min))
   (org-set-tags-command)
@@ -226,13 +226,13 @@
   "HEADING-REGEXP is a regular expression for one of the desired GTD refile
 locations. See `org-refile'."
   (let* ((user-refile-targets org-refile-targets)
-	 (org-refile-targets (org-gtd--refile-targets))
-	 (results   (cl-find-if
-		     (lambda (rfloc)
-		       (string-match heading-regexp
-				     (car rfloc)))
-		     (org-refile-get-targets)))
-	 (org-refile-targets user-refile-targets))
+         (org-refile-targets (org-gtd--refile-targets))
+         (results   (cl-find-if
+                     (lambda (rfloc)
+                       (string-match heading-regexp
+                                     (car rfloc)))
+                     (org-refile-get-targets)))
+         (org-refile-targets user-refile-targets))
     results))
 
 (defun org-gtd--nextify ()
@@ -242,21 +242,21 @@ locations. See `org-refile'."
       (first-entry . rest-entries)
       (cdr (org-map-entries (lambda () (org-element-at-point)) t 'tree))
     (org-element-map
-	(reverse rest-entries)
-	'headline
+        (reverse rest-entries)
+        'headline
       (lambda (myelt)
-	(org-entry-put (org-gtd--org-element-pom myelt) "TODO" "TODO")))
+        (org-entry-put (org-gtd--org-element-pom myelt) "TODO" "TODO")))
     (org-entry-put (org-gtd--org-element-pom first-entry) "TODO" "NEXT")))
 
 (defun org-gtd--project-complete-p ()
   "Return t if all project children are DONE, f if any aren't."
   (let ((entries (cdr (org-map-entries
-		       (lambda ()
-			 (org-entry-get
-			  (org-gtd--org-element-pom (org-element-at-point))
-			  "TODO"))
-		       t
-		       'tree))))
+                       (lambda ()
+                         (org-entry-get
+                          (org-gtd--org-element-pom (org-element-at-point))
+                          "TODO"))
+                       t
+                       'tree))))
     (seq-every-p (lambda (x) (string-equal x "DONE")) entries)))
 
 (defun org-gtd--org-element-pom (element)
@@ -270,30 +270,30 @@ locations. See `org-refile'."
 (defun org-gtd--template-path (file)
   "Return full path to FILE_template.org."
   (f-join org-gtd--package-path
-	  (concat file "_template.org")))
+          (concat file "_template.org")))
 
 (defun org-gtd--gtd-file (gtd-type)
   "Return a buffer for GTD-TYPE.org. create the file and template first if it
 doesn't already exist."
   (let* ((file-path (org-gtd--path gtd-type))
-	 (file-buffer (find-file-noselect file-path)))
+         (file-buffer (find-file-noselect file-path)))
     (or (f-file-p file-path)
-	(with-current-buffer file-buffer
-	  (insert-file-contents (org-gtd--template-path gtd-type) nil nil nil t)
-	  (save-buffer)))
+        (with-current-buffer file-buffer
+          (insert-file-contents (org-gtd--template-path gtd-type) nil nil nil t)
+          (save-buffer)))
     file-buffer))
 
 (defun org-gtd--actionable ()
   "Create or return the buffer for the actionable GTD buffer."
-  (org-gtd--gtd-file org-gtd-actionable))
+  (org-gtd--gtd-file org-gtd-actionable-file-basename))
 
 (defun org-gtd--inbox ()
   "Create or return the buffer for the inbox GTD buffer."
-  (org-gtd--gtd-file org-gtd-inbox))
+  (org-gtd--gtd-file org-gtd-inbox-file-basename))
 
-(defun org-gtd--someday ()
-  "Create or return the buffer for the someday GTD buffer."
-  (org-gtd--gtd-file org-gtd-someday))
+(defun org-gtd--incubate ()
+  "Create or return the buffer for the incubate GTD buffer."
+  (org-gtd--gtd-file org-gtd-incubate-file-basename))
 
 (defun org-gtd--edit-item ()
   "Friendly user interaction to refine the current inbox item"
@@ -318,8 +318,8 @@ doesn't already exist."
   "Minor mode for special key bindings when editing an individual inbox item."
   nil "GTD " org-gtd-user-input-mode-map
   (setq-local header-line-format
-	      (substitute-command-keys
-	       "\\<org-gtd-user-input-mode-map>Edit inbox item. Finish \
+              (substitute-command-keys
+               "\\<org-gtd-user-input-mode-map>Edit inbox item. Finish \
 `\\[org-gtd-finish-editing]'.")))
 
 (provide 'org-gtd)
