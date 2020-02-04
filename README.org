@@ -6,6 +6,32 @@ This package tries to replicate as closely as possible the GTD workflow (see dia
 [[file:gtd_chart.png]]
 
 Image courtesy of https://xebia.com/blog/peace-of-mind-in-a-state-of-overload/gtd_chart/
+** Using
+
+I will assume you have used the suggested keybindings above for this explanation.
+
+GTD uses one basic axiom: everything that comes your way goes into the inbox. You do this with ~C-c d c~. Once that's done, of course, you have to actually process the inbox, which you do with ~C-c d i~.
+
+You have a number of possible choices for each item you process, which I will quickly go over. When you process the inbox, you will be greeted with an interface like this for each item:
+
+[[file:ogpi-1.png]]
+
+1. *Quick Action*  - You've taken care of this action just now. Choose this to mark the item as DONΕ and archive it.
+2. *Throw out*     - This is not actionable and it's not knowledge for later. Choose this to mark the item as CANCELED and archive it.
+3. *Project*       - This is a multi-step action. I'll describe how to handle these below.
+4. *Calendar*      - This is a single item to be done at a given date or time. You'll be presented with org-mode's date picker, then it'll refile the item. You'll find this in the agenda later.
+5. *Delegate*      - Let someone else do this. Write the name of the person doing it, and choose a time to check up on that item.
+6. *Single action* - This is a one-off to be done when possible. You can add tags to help you.
+7. *Reference*     - This is knowledge to be stored away. I'll describe how to handle these below.
+8. *Incubate*      - no action now, review later
+
+When processing each item you'll get a chance to add tags and other such metadata. ~org-gtd~ will add keywords (e.g. TODO, DONE) for you, so don't worry about them. Do the work that only you can do.
+
+*** Projects
+A "project" is defined as an org heading with a set of children headings.
+The package will add keywords as relevant.
+
+When you are processing the inbox and creating a project, emacs enters a recursive edit mode to let you define and refine the project. When finished, press ~C-c C-c~ to exit the recursive edit and go back to processing the inbox.
 ** Installing
 
 This package requires emacs 26.1 or higher.
@@ -42,11 +68,11 @@ Okay! Scroll past if you want more detailed explanations.
   (setq org-agenda-files `(,org-gtd-directory))
 
   (setq org-capture-templates `(("i" "Inbox"
-                                 entry (file ,(org-gtd--path org-gtd-inbox))
+                                 entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
                                  "* %?\n%U\n\n  %i"
                                  :kill-buffer t)
                                 ("t" "Todo with link"
-                                 entry (file ,(org-gtd--path org-gtd-inbox))
+                                 entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
                                  "* %?\n%U\n\n  %i\n  %a"
                                  :kill-buffer t)))
 
@@ -110,30 +136,3 @@ This package displays headline properties in the agenda. We use it so you can qu
 (setq org-edna-use-inheritance t)
 (org-edna-load)
 #+end_src
-
-** Using
-
-I will assume you have used the suggested keybindings above for this explanation.
-
-GTD uses one basic axiom: everything that comes your way goes into the inbox. You do this with ~C-c d c~. Once that's done, of course, you have to actually process the inbox, which you do with ~C-c d i~.
-
-You have a number of possible choices for each item you process, which I will quickly go over. When you process the inbox, you will be greeted with an interface like this for each item:
-
-[[file:ogpi-1.png]]
-
-1. *Quick Action*  - You've taken care of this action just now. Choose this to mark the item as DONΕ and archive it.
-2. *Throw out*     - This is not actionable and it's not knowledge for later. Choose this to mark the item as CANCELED and archive it.
-3. *Project*       - This is a multi-step action. I'll describe how to handle these below.
-4. *Calendar*      - This is a single item to be done at a given date or time. You'll be presented with org-mode's date picker, then it'll refile the item. You'll find this in the agenda later.
-5. *Delegate*      - Let someone else do this. Write the name of the person doing it, and choose a time to check up on that item.
-6. *Single action* - This is a one-off to be done when possible. You can add tags to help you.
-7. *Reference*     - This is knowledge to be stored away. I'll describe how to handle these below.
-8. *Incubate*      - no action now, review later
-
-When processing each item you'll get a chance to add tags and other such metadata. ~org-gtd~ will add keywords (e.g. TODO, DONE) for you, so don't worry about them. Do the work that only you can do.
-
-*** Projects
-A "project" is defined as an org heading with a set of children headings.
-The package will add keywords as relevant.
-
-When you are processing the inbox and creating a project, emacs enters a recursive edit mode to let you define and refine the project. When finished, press ~C-c C-c~ to exit the recursive edit and go back to processing the inbox.
