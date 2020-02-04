@@ -3,9 +3,9 @@
 ;; Copyright (C) 2019-2020 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
-;; Version: 0.1
+;; Version: 0.2
 ;; URL: https://github.com/trevoke/org-gtd
-;; Package-Requires: ((emacs "26.1") (org-edna "1.0.2") (org-brain "0.8") (f "0.20.0") (org "9.3.1") (org-agenda-property "1.3.1"))
+;; Package-Requires: ((emacs "26.1") (org-edna "1.0.2") (f "0.20.0") (org "9.3.1") (org-agenda-property "1.3.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -141,7 +141,7 @@
 	    (?c "calendar" "do this at a certain time")
 	    (?d "delegate it" "give it to someone")
 	    (?s "single action" "do this when possible")
-	    (?a "archive this knowledge" "add this to the brain")
+	    (?a "archive this knowledge" "Store this where you store knowledge")
 	    (?i "incubate it" "I'll come back to this later")))))
 
     (cl-case (car action)
@@ -163,8 +163,10 @@
   (org-refile nil nil (org-gtd--refile-target org-gtd-incubate)))
 
 (defun org-gtd--archive ()
-  "Process element and move it to the brain."
-  (org-brain-add-resource nil nil "What's the link? " nil)
+  "Process element - completely user-defined action. Store this as a reference.
+
+Do not remove the item from the inbox, it will be archived."
+  (org-gtd--edit-item)
   (org-todo "DONE")
   (org-archive-subtree))
 
@@ -262,6 +264,8 @@ locations. See `org-refile'."
 (defun org-gtd--org-element-pom (element)
   "Return buffer position for start of org ELEMENT."
   (org-element-property :begin element))
+
+;;; file management
 
 (defun org-gtd--path (file)
   "Return the full path to FILE.org assuming it is in the GTD framework."
