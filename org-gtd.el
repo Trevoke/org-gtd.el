@@ -72,7 +72,7 @@
 (defun org-gtd-capture ()
   "Wrap `org-capture' to make sure the gtd inbox exists."
   (interactive)
-  (kill-buffer (org-gtd--inbox))
+  (kill-buffer (org-gtd--inbox-file))
   (org-capture))
 
 (defun org-gtd-show-all-next ()
@@ -106,13 +106,13 @@
   "Use this once a day: process every element in the inbox."
   (interactive)
 
-  (set-buffer (org-gtd--inbox))
-  (display-buffer-same-window (org-gtd--inbox) '())
+  (set-buffer (org-gtd--inbox-file))
+  (display-buffer-same-window (org-gtd--inbox-file) '())
   (delete-other-windows)
 
   ;; laugh all you want, all this statefulness is killing me.
-  (org-gtd--actionable)
-  (org-gtd--incubate)
+  (org-gtd--actionable-file)
+  (org-gtd--incubate-file)
 
   (org-map-entries
    (lambda ()
@@ -128,7 +128,7 @@
 
   (mapcar
    (lambda (buffer) (with-current-buffer buffer (save-buffer)))
-   `(,(org-gtd--actionable) ,(org-gtd--incubate) ,(org-gtd--inbox))))
+   `(,(org-gtd--actionable-file) ,(org-gtd--incubate-file) ,(org-gtd--inbox-file))))
 
 (defun org-gtd--process-inbox-element ()
   "With mark on an org heading, choose which GTD action to take."
@@ -221,7 +221,7 @@ Do not remove the item from the inbox, it will be archived."
   (org-gtd--nextify)
   (org-refile nil nil (org-gtd--refile-target org-gtd-projects))
 
-  (with-current-buffer (org-gtd--actionable)
+  (with-current-buffer (org-gtd--actionable-file)
     (org-update-statistics-cookies t)))
 
 (defun org-gtd--refile-target (heading-regexp)
@@ -289,15 +289,15 @@ create the file and template first if it doesn't already exist."
 	  (save-buffer)))
     file-buffer))
 
-(defun org-gtd--actionable ()
+(defun org-gtd--actionable-file ()
   "Create or return the buffer for the actionable GTD buffer."
   (org-gtd--gtd-file org-gtd-actionable-file-basename))
 
-(defun org-gtd--inbox ()
+(defun org-gtd--inbox-file ()
   "Create or return the buffer for the inbox GTD buffer."
   (org-gtd--gtd-file org-gtd-inbox-file-basename))
 
-(defun org-gtd--incubate ()
+(defun org-gtd--incubate-file ()
   "Create or return the buffer for the incubate GTD buffer."
   (org-gtd--gtd-file org-gtd-incubate-file-basename))
 
