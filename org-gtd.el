@@ -225,8 +225,9 @@ Do not remove the item from the inbox, it will be archived."
     (org-update-statistics-cookies t)))
 
 (defun org-gtd--refile-target (heading-regexp)
-  "HEADING-REGEXP is a regular expression for one of the desired GTD refile
-locations. See `org-refile'."
+  "Refile to one of the `org-gtd' refile locations.
+
+HEADING-REGEXP is a regular expression. See `org-refile'."
   (let* ((user-refile-targets org-refile-targets)
 	 (org-refile-targets (org-gtd--refile-targets))
 	 (results   (cl-find-if
@@ -277,8 +278,9 @@ locations. See `org-refile'."
 	  (concat file "_template.org")))
 
 (defun org-gtd--gtd-file (gtd-type)
-  "Return a buffer for GTD-TYPE.org. create the file and template first if it
-doesn't already exist."
+  "Return a buffer for GTD-TYPE.org.
+
+create the file and template first if it doesn't already exist."
   (let* ((file-path (org-gtd--path gtd-type))
 	 (file-buffer (find-file-noselect file-path)))
     (or (f-file-p file-path)
@@ -300,7 +302,7 @@ doesn't already exist."
   (org-gtd--gtd-file org-gtd-incubate-file-basename))
 
 (defun org-gtd--edit-item ()
-  "Friendly user interaction to refine the current inbox item"
+  "Friendly user interaction to refine the current inbox item."
   (org-gtd-user-input-mode 1)
   (recursive-edit))
 
