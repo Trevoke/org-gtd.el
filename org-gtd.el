@@ -42,7 +42,7 @@
 
 (defconst org-gtd-actionable-file-basename "actionable")
 (defconst org-gtd-inbox-file-basename      "inbox")
-(defconst org-gtd-incubate-file-basename    "incubate")
+(defconst org-gtd-incubate-file-basename   "incubate")
 
 (defconst org-gtd-actions   ".*Actions")
 (defconst org-gtd-delegated ".*Delegated")
@@ -51,9 +51,9 @@
 (defconst org-gtd-projects  ".*Projects")
 
 (defconst org-gtd-stuck-projects '("+LEVEL=2-DONE+CATEGORY=\"Projects\""
-                                   ("TODO" "NEXT" "WAIT")
-                                   nil
-                                   ""))
+				   ("TODO" "NEXT" "WAIT")
+				   nil
+				   ""))
 
 (defconst org-gtd-complete-projects "+LEVEL=2+CATEGORY=\"Projects\"")
 
@@ -84,9 +84,9 @@
   "Show all GTD projects that do not have an upcoming or waiting action."
   (interactive)
   (let* ((user-stuck-projects org-stuck-projects)
-         (org-stuck-projects org-gtd-stuck-projects)
-         (stuck-projects-buffer (org-agenda-list-stuck-projects))
-         (org-stuck-projects user-stuck-projects))
+	 (org-stuck-projects org-gtd-stuck-projects)
+	 (stuck-projects-buffer (org-agenda-list-stuck-projects))
+	 (org-stuck-projects user-stuck-projects))
     stuck-projects-buffer))
 
 (defun org-gtd-archive-complete-projects ()
@@ -95,11 +95,11 @@
   (org-map-entries
    (lambda ()
      (if (org-gtd--project-complete-p)
-         (progn
-           (setq org-map-continue-from (org-element-property
-                                        :begin
-                                        (org-element-at-point)))
-           (org-archive-subtree-default))))
+	 (progn
+	   (setq org-map-continue-from (org-element-property
+					:begin
+					(org-element-at-point)))
+	   (org-archive-subtree-default))))
    org-gtd-complete-projects))
 
 (defun org-gtd-process-inbox ()
@@ -117,8 +117,8 @@
   (org-map-entries
    (lambda ()
      (setq org-map-continue-from (org-element-property
-                                  :begin
-                                  (org-element-at-point)))
+				  :begin
+				  (org-element-at-point)))
      (org-narrow-to-element)
      (org-show-subtree)
      (org-gtd--process-inbox-element)
@@ -133,16 +133,16 @@
 (defun org-gtd--process-inbox-element ()
   "With mark on an org heading, choose which GTD action to take."
   (let ((action
-         (read-multiple-choice
-          "What to do with this item?"
-          '((?q "quick" "quick item: < 2 minutes, done!")
-            (?t "throw out" "this has no value to me")
-            (?p "project" "multiple steps required to completion")
-            (?c "calendar" "do this at a certain time")
-            (?d "delegate it" "give it to someone")
-            (?s "single action" "do this when possible")
-            (?a "archive this knowledge" "add this to the brain")
-            (?i "incubate it" "I'll come back to this later")))))
+	 (read-multiple-choice
+	  "What to do with this item?"
+	  '((?q "quick" "quick item: < 2 minutes, done!")
+	    (?t "throw out" "this has no value to me")
+	    (?p "project" "multiple steps required to completion")
+	    (?c "calendar" "do this at a certain time")
+	    (?d "delegate it" "give it to someone")
+	    (?s "single action" "do this when possible")
+	    (?a "archive this knowledge" "add this to the brain")
+	    (?i "incubate it" "I'll come back to this later")))))
 
     (cl-case (car action)
       (?q (org-gtd--quick-action))
@@ -226,13 +226,13 @@
   "HEADING-REGEXP is a regular expression for one of the desired GTD refile
 locations. See `org-refile'."
   (let* ((user-refile-targets org-refile-targets)
-         (org-refile-targets (org-gtd--refile-targets))
-         (results   (cl-find-if
-                     (lambda (rfloc)
-                       (string-match heading-regexp
-                                     (car rfloc)))
-                     (org-refile-get-targets)))
-         (org-refile-targets user-refile-targets))
+	 (org-refile-targets (org-gtd--refile-targets))
+	 (results   (cl-find-if
+		     (lambda (rfloc)
+		       (string-match heading-regexp
+				     (car rfloc)))
+		     (org-refile-get-targets)))
+	 (org-refile-targets user-refile-targets))
     results))
 
 (defun org-gtd--nextify ()
@@ -242,21 +242,21 @@ locations. See `org-refile'."
       (first-entry . rest-entries)
       (cdr (org-map-entries (lambda () (org-element-at-point)) t 'tree))
     (org-element-map
-        (reverse rest-entries)
-        'headline
+	(reverse rest-entries)
+	'headline
       (lambda (myelt)
-        (org-entry-put (org-gtd--org-element-pom myelt) "TODO" "TODO")))
+	(org-entry-put (org-gtd--org-element-pom myelt) "TODO" "TODO")))
     (org-entry-put (org-gtd--org-element-pom first-entry) "TODO" "NEXT")))
 
 (defun org-gtd--project-complete-p ()
   "Return t if all project children are DONE, f if any aren't."
   (let ((entries (cdr (org-map-entries
-                       (lambda ()
-                         (org-entry-get
-                          (org-gtd--org-element-pom (org-element-at-point))
-                          "TODO"))
-                       t
-                       'tree))))
+		       (lambda ()
+			 (org-entry-get
+			  (org-gtd--org-element-pom (org-element-at-point))
+			  "TODO"))
+		       t
+		       'tree))))
     (seq-every-p (lambda (x) (string-equal x "DONE")) entries)))
 
 (defun org-gtd--org-element-pom (element)
@@ -270,17 +270,17 @@ locations. See `org-refile'."
 (defun org-gtd--template-path (file)
   "Return full path to FILE_template.org."
   (f-join org-gtd--package-path
-          (concat file "_template.org")))
+	  (concat file "_template.org")))
 
 (defun org-gtd--gtd-file (gtd-type)
   "Return a buffer for GTD-TYPE.org. create the file and template first if it
 doesn't already exist."
   (let* ((file-path (org-gtd--path gtd-type))
-         (file-buffer (find-file-noselect file-path)))
+	 (file-buffer (find-file-noselect file-path)))
     (or (f-file-p file-path)
-        (with-current-buffer file-buffer
-          (insert-file-contents (org-gtd--template-path gtd-type) nil nil nil t)
-          (save-buffer)))
+	(with-current-buffer file-buffer
+	  (insert-file-contents (org-gtd--template-path gtd-type) nil nil nil t)
+	  (save-buffer)))
     file-buffer))
 
 (defun org-gtd--actionable ()
@@ -318,8 +318,8 @@ doesn't already exist."
   "Minor mode for special key bindings when editing an individual inbox item."
   nil "GTD " org-gtd-user-input-mode-map
   (setq-local header-line-format
-              (substitute-command-keys
-               "\\<org-gtd-user-input-mode-map>Edit inbox item. Finish \
+	      (substitute-command-keys
+	       "\\<org-gtd-user-input-mode-map>Edit inbox item. Finish \
 `\\[org-gtd-finish-editing]'.")))
 
 (provide 'org-gtd)
