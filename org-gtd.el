@@ -240,7 +240,7 @@ HEADING-REGEXP is a regular expression. See `org-refile'."
 (defun org-gtd--nextify ()
   "Add NEXT and TODO as keywords on all the relevant headlines."
 
-  (destructuring-bind
+  (cl-destructuring-bind
       (first-entry . rest-entries)
       (cdr (org-map-entries (lambda () (org-element-at-point)) t 'tree))
     (org-element-map
