@@ -33,7 +33,6 @@
 (require 'f)
 (require 'org)
 (require 'org-edna)
-(require 'org-brain)
 (require 'org-agenda-property)
 
 (defvar org-stuck-projects)
