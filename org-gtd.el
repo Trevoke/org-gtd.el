@@ -200,7 +200,6 @@ Do not remove the item from the inbox, it will be archived."
   (org-gtd--edit-item)
   (goto-char (point-min))
   (org-set-tags-command)
-  (org-todo "NEXT")
   (org-schedule 0)
   (org-refile nil nil (org-gtd--refile-target org-gtd-scheduled)))
 
