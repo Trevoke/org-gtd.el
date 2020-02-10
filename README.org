@@ -50,7 +50,7 @@ This package will hopefully soon be on Melpa and Melpa Stable.
 
 In the meanwhile:
 
-First, install ~org-edna~, ~org-brain~, and ~f~.
+Check out the source code for dependencies and install them.
 
 Then, clone this repo to =~/.emacs.d/packages=
 
