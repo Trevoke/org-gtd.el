@@ -56,6 +56,49 @@
 
 (defconst org-gtd-complete-projects "+LEVEL=2+CATEGORY=\"Projects\"")
 
+(defconst org-gtd-inbox-template
+  "#+STARTUP: overview hidestars logrefile indent logdone
+#+TODO: NEXT TODO WAIT | DONE CANCELED TRASH
+#+begin_comment
+This is the inbox. Everything goes in here when you capture it.
+#+end_comment
+")
+
+(defconst org-gtd-actionable-template
+  "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
+#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CANCELED(c@)
+
+* Actions
+:PROPERTIES:
+:CATEGORY: Action
+:END:
+
+* Delegated
+:PROPERTIES:
+:CATEGORY: Delegated
+:END:
+
+* Scheduled
+:PROPERTIES:
+:CATEGORY: Scheduled
+:END:
+
+* Projects
+:PROPERTIES:
+:TRIGGER:  next-sibling todo!(NEXT)
+:CATEGORY: Projects
+:END:
+")
+
+(defconst org-gtd-incubate-template
+  "#+begin_comment
+# Here go the things you want to think about someday. Review this file as often
+# as you feel the need: every two months? Every six months? Every year?
+# It's suggested that you categorize the items in here somehow, such as:
+# "to read", "to buy", "to eat", etc - whatever works best for your mind!
+#+end_comment
+")
+
 (defun org-gtd--refile-targets ()
   "Return the refile targets specific to org-gtd."
   `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)
@@ -270,11 +313,6 @@ HEADING-REGEXP is a regular expression. See `org-refile'."
   "Return the full path to FILE.org assuming it is in the GTD framework."
   (f-join org-gtd-directory (concat file ".org")))
 
-(defun org-gtd--template-path (file)
-  "Return full path to FILE_template.org."
-  (f-join org-gtd--package-path
-	  (concat file "_template.org")))
-
 (defun org-gtd--gtd-file (gtd-type)
   "Return a buffer for GTD-TYPE.org.
 
@@ -283,7 +321,7 @@ create the file and template first if it doesn't already exist."
 	 (file-buffer (find-file-noselect file-path)))
     (or (f-file-p file-path)
 	(with-current-buffer file-buffer
-	  (insert-file-contents (org-gtd--template-path gtd-type) nil nil nil t)
+	  (insert (intern (string-join `("org-gtd-" ,gtd-type "-template"))))
 	  (save-buffer)))
     file-buffer))
 
