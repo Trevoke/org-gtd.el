@@ -92,10 +92,10 @@ This is the inbox. Everything goes in here when you capture it.
 
 (defconst org-gtd-incubate-template
   "#+begin_comment
-# Here go the things you want to think about someday. Review this file as often
-# as you feel the need: every two months? Every six months? Every year?
-# It's suggested that you categorize the items in here somehow, such as:
-# "to read", "to buy", "to eat", etc - whatever works best for your mind!
+Here go the things you want to think about someday. Review this file as often
+as you feel the need: every two months? Every six months? Every year?
+It's suggested that you categorize the items in here somehow, such as:
+\"to read\", \"to buy\", \"to eat\", etc - whatever works best for your mind!
 #+end_comment
 ")
 
