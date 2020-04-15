@@ -321,7 +321,10 @@ create the file and template first if it doesn't already exist."
 	 (file-buffer (find-file-noselect file-path)))
     (or (f-file-p file-path)
 	(with-current-buffer file-buffer
-	  (insert (intern (string-join `("org-gtd-" ,gtd-type "-template"))))
+	  (insert (symbol-value
+		   (intern
+		    (string-join
+		     `("org-gtd-" ,gtd-type "-template")))))
 	  (save-buffer)))
     file-buffer))
 
