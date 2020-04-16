@@ -8,11 +8,13 @@ This package tries to replicate as closely as possible the GTD workflow (see dia
 Image courtesy of https://xebia.com/blog/peace-of-mind-in-a-state-of-overload/gtd_chart/
 ** Using
 
-I will assume you have used the suggested keybindings above for this explanation.
+This package, and this readme, assume familiarity with GTD. There are many resources out there to learn how to use the framework. If you are new to GTD, this package may be unpleasant to use.
 
-GTD uses one basic axiom: everything that comes your way goes into the inbox. You do this with ~C-c d c~. Once that's done, of course, you have to actually process the inbox, which you do with ~C-c d p~.
+I will assume you have used the suggested keybindings below.
 
-You have a number of possible choices for each item you process, which I will quickly go over. When you process the inbox, you will be greeted with an interface like this for each item:
+GTD uses one basic axiom: everything that comes your way goes into the inbox. You do this with ~C-c d c~. You also have to regularly process the inbox, which you do with ~C-c d p~.
+
+You have a number of possible choices for each item you process, which I will quickly go over. When you process the inbox, you will see each inbox item, one at a time, with an interface letting you decide what to do with the item:
 
 [[file:doc/ogpi-1.png]]
 
@@ -25,11 +27,11 @@ You have a number of possible choices for each item you process, which I will qu
 - *Reference* :: This is knowledge to be stored away. I'll describe how to handle these below.
 - *Incubate* :: no action now, review later
 
-When processing each item you'll get a chance to add tags and other such metadata. ~org-gtd~ will add keywords (e.g. NEXT, TODO, DONE) for you, so don't worry about them. Do the work that only you can do.
+When processing each item you'll get a chance to add tags and other such metadata. This package will add keywords (e.g. NEXT, TODO, DONE) for you, so don't worry about them. Do the work that only you can do, and let this package handle the bookkeeping.
 
 *** Projects
 A "project" is defined as an org heading with a set of children headings.
-The package will add keywords as relevant.
+The package will add keywords (NEXT and TODO) as relevant.
 
 When you are processing the inbox and creating a project, emacs enters a recursive edit mode to let you define and refine the project. When finished, press ~C-c C-c~ to exit the recursive edit and go back to processing the inbox.
 *** Agenda
@@ -39,11 +41,12 @@ Here's what the agenda may look like when you've processed the inbox a bit.
 
 *** Show next actions
 
-One of the ways to see what's next for you to do is to see all the next actions ( ~M-x org-gtd-show-all-next~ ).
+One of the ways to see what's next for you to do is to see all the next actions ( ~C-c d n~ ).
 
 [[file:doc/show-all-next.png]]
+*** Projects without a NEXT item
+Sometimes things break. Use ~C-c d s~ to find all projects that don't have a NEXT item, which is to say, all projects that the package will not surface and help you finish.
 ** Installing
-
 This package requires emacs 26.1 or higher.
 *** MELPA, MELPA stable
 [[https://github.com/melpa/melpa/pull/6621][Pull request is open]].
@@ -108,6 +111,4 @@ For your convenience, here's a commented block.
   (setq org-agenda-property-list '("DELEGATED_TO"))
   ;; I think this makes the agenda easier to read
   (setq org-agenda-property-position 'next-line)
-
-
 #+end_src
