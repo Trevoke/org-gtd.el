@@ -16,14 +16,14 @@ You have a number of possible choices for each item you process, which I will qu
 
 [[file:doc/ogpi-1.png]]
 
-1. *Quick Action*  - You've taken care of this action just now. Choose this to mark the item as DONΕ and archive it.
-2. *Throw out*     - This is not actionable and it's not knowledge for later. Choose this to mark the item as CANCELED and archive it.
-3. *Project*       - This is a multi-step action. I'll describe how to handle these below.
-4. *Calendar*      - This is a single item to be done at a given date or time. You'll be presented with org-mode's date picker, then it'll refile the item. You'll find this in the agenda later.
-5. *Delegate*      - Let someone else do this. Write the name of the person doing it, and choose a time to check up on that item.
-6. *Single action* - This is a one-off to be done when possible. You can add tags to help you.
-7. *Reference*     - This is knowledge to be stored away. I'll describe how to handle these below.
-8. *Incubate*      - no action now, review later
+- *Quick Action* :: You've taken care of this action just now. Choose this to mark the item as DONΕ and archive it.
+- *Throw out* :: This is not actionable and it's not knowledge for later. Choose this to mark the item as CANCELED and archive it.
+- *Project* :: This is a multi-step action. I'll describe how to handle these below.
+- *Calendar* :: This is a single item to be done at a given date or time. You'll be presented with org-mode's date picker, then it'll refile the item. You'll find this in the agenda later.
+- *Delegate* :: Let someone else do this. Write the name of the person doing it, and choose a time to check up on that item.
+- *Single action* :: This is a one-off to be done when possible. You can add tags to help you.
+- *Reference* :: This is knowledge to be stored away. I'll describe how to handle these below.
+- *Incubate* :: no action now, review later
 
 When processing each item you'll get a chance to add tags and other such metadata. ~org-gtd~ will add keywords (e.g. TODO, DONE) for you, so don't worry about them. Do the work that only you can do.
 
