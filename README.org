@@ -10,7 +10,7 @@ Image courtesy of https://xebia.com/blog/peace-of-mind-in-a-state-of-overload/gt
 
 I will assume you have used the suggested keybindings above for this explanation.
 
-GTD uses one basic axiom: everything that comes your way goes into the inbox. You do this with ~C-c d c~. Once that's done, of course, you have to actually process the inbox, which you do with ~C-c d i~.
+GTD uses one basic axiom: everything that comes your way goes into the inbox. You do this with ~C-c d c~. Once that's done, of course, you have to actually process the inbox, which you do with ~C-c d p~.
 
 You have a number of possible choices for each item you process, which I will quickly go over. When you process the inbox, you will be greeted with an interface like this for each item:
 
@@ -25,7 +25,7 @@ You have a number of possible choices for each item you process, which I will qu
 - *Reference* :: This is knowledge to be stored away. I'll describe how to handle these below.
 - *Incubate* :: no action now, review later
 
-When processing each item you'll get a chance to add tags and other such metadata. ~org-gtd~ will add keywords (e.g. TODO, DONE) for you, so don't worry about them. Do the work that only you can do.
+When processing each item you'll get a chance to add tags and other such metadata. ~org-gtd~ will add keywords (e.g. NEXT, TODO, DONE) for you, so don't worry about them. Do the work that only you can do.
 
 *** Projects
 A "project" is defined as an org heading with a set of children headings.
@@ -45,11 +45,16 @@ One of the ways to see what's next for you to do is to see all the next actions 
 ** Installing
 
 This package requires emacs 26.1 or higher.
-
-This package will hopefully soon be on Melpa and Melpa Stable.
-
-In the meanwhile:
-
+*** MELPA, MELPA stable
+[[https://github.com/melpa/melpa/pull/6621][Pull request is open]].
+Content TK
+*** Using use-package with straight.el
+#+begin_src emacs-lisp
+  (use-package org-gtd
+    :after org
+    :straight (:host github :repo "trevoke/org-gtd.el" :branch "master"))
+#+end_src
+*** Manually
 Check out the source code for dependencies and install them.
 
 Then, clone this repo to =~/.emacs.d/packages=
@@ -60,89 +65,49 @@ Finally, add this to your config:
 (add-to-list 'load-path "~/.emacs.d/packages")
 (require 'org-gtd)
 #+end_src
-
 ** Configuring
+You can use ~M-x customize-group RET org-gtd RET~ if you like.
 
-*** I trust you let me just copy-paste the whole thing in my init file
-Okay! Scroll past if you want more detailed explanations.
-
+For your convenience, here's a commented block.
 #+begin_src emacs-lisp
-  (global-set-key (kbd "C-c d c") 'org-gtd-capture)
-  (global-set-key (kbd "C-c d a") 'org-agenda-list)
-  (global-set-key (kbd "C-c d i") 'org-gtd-process-inbox)
-  (global-set-key (kbd "C-c d n") 'org-gtd-show-all-next)
-  (global-set-key (kbd "C-c d s") 'org-gtd-show-stuck-projects)
 
-  (setq org-gtd-directory "~/gtd/")
+  ;; these are the interactive functions you're likely to want to use as you go about GTD.
+  (global-set-key (kbd "C-c d c") 'org-gtd-capture) ;; add item to inbox
+  (global-set-key (kbd "C-c d p") 'org-gtd-process-inbox) ;; process entire inbox
+  (global-set-key (kbd "C-c d a") 'org-agenda-list) ;; see what's on your plate today
+  (global-set-key (kbd "C-c d n") 'org-gtd-show-all-next) ;; see all NEXT items
+  (global-set-key (kbd "C-c d s") 'org-gtd-show-stuck-projects) ;; see projects that don't have a NEXT item
 
+  (setq org-gtd-directory "~/gtd/") ;; where org-gtd will put its files
+  ;; the above happens to also be the default location, if left uncustomized.
+
+  ;; assuming you don't have another setup, use this line as written
+  ;; otherwise, push the org-gtd-directory to your existing agenda files
   (setq org-agenda-files `(,org-gtd-directory))
 
-  (setq org-capture-templates `(("i" "Inbox"
+  ;; assuming you don't have existing capture templates
+  ;; otherwise, push these to your existing capture templates
+  ;; and of course, you can adjust the keys "i" and "l"
+  (setq org-capture-templates `(("i" "GTD item"
                                  entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
                                  "* %?\n%U\n\n  %i"
                                  :kill-buffer t)
-                                ("t" "Todo with link"
+                                ("l" "GTD item with link to where you are in emacs now"
                                  entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
                                  "* %?\n%U\n\n  %i\n  %a"
                                  :kill-buffer t)))
 
-  (setq org-agenda-property-list '("DELEGATED_TO"))
-  (setq org-agenda-property-position 'next-line)
-
+  ;; package: https://www.nongnu.org/org-edna-el/
+  ;; org-edna is used to make sure that when a project task gets DONE,
+  ;; the next TODO is automatically changed to NEXT.
   (setq org-edna-use-inheritance t)
   (org-edna-load)
-#+end_src
-*** Keybindings
-It is suggested that you bind a few functions to keys:
 
-#+begin_src emacs-lisp
-  (global-set-key (kbd "C-c d c") 'org-gtd-capture)
-  (global-set-key (kbd "C-c d a") 'org-agenda-list)
-  (global-set-key (kbd "C-c d i") 'org-gtd-process-inbox)
-  (global-set-key (kbd "C-c d n") 'org-gtd-show-all-next)
-  (global-set-key (kbd "C-c d s") 'org-gtd-show-stuck-projects)
-#+end_src
+  ;; package: https://github.com/Malabarba/org-agenda-property
+  ;; this is so you can see who an item was delegated to in the agenda
+  (setq org-agenda-property-list '("DELEGATED_TO"))
+  ;; I think this makes the agenda easier to read
+  (setq org-agenda-property-position 'next-line)
 
-*** Variables specific to org-gtd
-Either use ~M-x customize-group RET org-gtd RET~ or set the following variable.
 
-- ~org-gtd-directory~ : the path where the GTD files will live. The default value is =~/gtd/=.
-*** Variables from org-mode
-**** org-agenda-files
-If you aren't using any files yet, add ~(setq org-agenda-files `(,org-gtd-directory))~.
-
-If you have it configured, you need to add our directory to it: ~(add-to-list 'org-agenda-files org-gtd-directory)~
-**** org-capture-templates
-We recommend the addition of the following two entries to your capture templates.
-
-- ~i~ just adds a simple entry
-- ~t~ adds an entry with a link to wherever you were in emacs when you decided to enter this todo
-
-If you already have capture templates, of course, add to the list, don't just overwrite the setting.
-#+begin_src elisp
-  (setq org-capture-templates `(("i" "Inbox"
-                                 entry (file ,(org-gtd--path org-gtd-inbox))
-                                 "* %?\n%U\n\n  %i"
-                                 :kill-buffer t)
-                                ("t" "Todo with link"
-                                 entry (file ,(org-gtd--path org-gtd-inbox))
-                                 "* %?\n%U\n\n  %i\n  %a"
-                                 :kill-buffer t)))
-
-#+end_src
-*** Other packages
-**** org-agenda-property
-This package displays headline properties in the agenda. We use it so you can quickly see to whom you delegated a task.
-
-#+begin_src emacs-lisp
-(setq org-agenda-property-list '("DELEGATED_TO"))
-(setq org-agenda-property-position 'next-line) ;; not necessary, my preference
-#+end_src
-
-**** org-edna
-~org-gtd~ needs ~org-edna~ to be loaded and using property inheritance, so you'll need to add this to your config file:
-
-#+begin_src emacs-lisp
-(setq org-edna-use-inheritance t)
-(org-edna-load)
 #+end_src
