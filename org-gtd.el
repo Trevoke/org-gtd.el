@@ -53,7 +53,7 @@
 ;;
 ;; A "project" is defined as an org heading with a set of children headings.
 ;;
-;; When you are processing the inbox and creating a project, emacs enters a
+;; When you are processing the inbox and creating a project, Emacs enters a
 ;; recursive edit mode to let you define and refine the project.
 ;; When finished, press ~C-c c~ to exit the recursive edit and go back to
 ;; processing the inbox.
@@ -89,7 +89,7 @@
 ;;                                  entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
 ;;                                  "* %?\n%U\n\n  %i"
 ;;                                  :kill-buffer t)
-;;                                 ("l" "GTD item with link to where you are in emacs now"
+;;                                 ("l" "GTD item with link to where you are in Emacs now"
 ;;                                  entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
 ;;                                  "* %?\n%U\n\n  %i\n  %a"
 ;;                                  :kill-buffer t)))
