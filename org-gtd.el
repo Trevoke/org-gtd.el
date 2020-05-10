@@ -25,9 +25,9 @@
 ;;; Commentary:
 
 ;; This package tries to replicate as closely as possible the GTD workflow.
-;; This package, and this readme, assume familiarity with GTD. There are many
-;; resources out there to learn how to use the framework. If you are new to GTD,
-;; this package may be unpleasant to use.
+;; This package, and this readme, assume familiarity with GTD.  There are many
+;; resources out there to learn how to use the framework.  If you are new to
+;; GTD, this package may be unpleasant to use.
 ;;
 ;; Assuming the keybindings below are used, here is how you could use org-gtd:
 ;; GTD uses one basic axiom: everything that comes your way goes into the inbox.
@@ -37,18 +37,18 @@
 ;; When you process the inbox, you will see each inbox item, one at a time,
 ;; with an interface letting you decide what to do with the item:
 ;;
-;; - *Quick Action* :: You've taken care of this action just now. Choose this to mark the item as DONΕ and archive it.
-;; - *Throw out* :: This is not actionable and it's not knowledge for later. Choose this to mark the item as CANCELED and archive it.
-;; - *Project* :: This is a multi-step action. I'll describe how to handle these below.
-;; - *Calendar* :: This is a single item to be done at a given date or time. You'll be presented with org-mode's date picker, then it'll refile the item. You'll find this in the agenda later.
-;; - *Delegate* :: Let someone else do this. Write the name of the person doing it, and choose a time to check up on that item.
-;; - *Single action* :: This is a one-off to be done when possible. You can add tags to help you.
-;; - *Reference* :: This is knowledge to be stored away. I'll describe how to handle these below.
+;; - *Quick Action* :: You've taken care of this action just now.  Choose this to mark the item as DONΕ and archive it.
+;; - *Throw out* :: This is not actionable and it's not knowledge for later.  Choose this to mark the item as CANCELED and archive it.
+;; - *Project* :: This is a multi-step action.  I'll describe how to handle these below.
+;; - *Calendar* :: This is a single item to be done at a given date or time.  You'll be presented with org-mode's date picker, then it'll refile the item.  You'll find this in the agenda later.
+;; - *Delegate* :: Let someone else do this.  Write the name of the person doing it, and choose a time to check up on that item.
+;; - *Single action* :: This is a one-off to be done when possible.  You can add tags to help you.
+;; - *Reference* :: This is knowledge to be stored away.  I'll describe how to handle these below.
 ;; - *Incubate* :: no action now, review later
 ;;
 ;; When processing each item you'll get a chance to add tags and other such
-;; metadata. This package will add keywords (e.g. NEXT, TODO, DONE) for you,
-;; so don't worry about them. Do the work that only you can do, and let this
+;; metadata.  This package will add keywords (e.g. NEXT, TODO, DONE) for you,
+;; so don't worry about them.  Do the work that only you can do, and let this
 ;; package handle the bookkeeping.
 ;;
 ;; A "project" is defined as an org heading with a set of children headings.
@@ -61,7 +61,7 @@
 ;; One of the ways to see what's next for you to do is to see all the next
 ;; actions ( ~C-c d n~ ).
 ;;
-;; Sometimes things break. Use ~C-c d s~ to find all projects that don't have a
+;; Sometimes things break.  Use ~C-c d s~ to find all projects that don't have a
 ;; NEXT item, which is to say, all projects that the package will not surface
 ;; and help you finish.
 ;;
@@ -171,7 +171,7 @@ This is the inbox. Everything goes in here when you capture it.
 
 (defconst org-gtd-incubate-template
   "#+begin_comment
-Here go the things you want to think about someday. Review this file as often
+Here go the things you want to think about someday.  Review this file as often
 as you feel the need: every two months? Every six months? Every year?
 It's suggested that you categorize the items in here somehow, such as:
 \"to read\", \"to buy\", \"to eat\", etc - whatever works best for your mind!
@@ -284,7 +284,7 @@ It's suggested that you categorize the items in here somehow, such as:
   (org-refile nil nil (org-gtd--refile-target org-gtd-incubate)))
 
 (defun org-gtd--archive ()
-  "Process element - completely user-defined action. Store this as a reference.
+  "Process element - completely user-defined action.  Store this as a reference.
 
 Do not remove the item from the inbox, it will be archived."
   (org-gtd--edit-item)
@@ -347,7 +347,7 @@ Do not remove the item from the inbox, it will be archived."
 (defun org-gtd--refile-target (heading-regexp)
   "Refile to one of the `org-gtd' refile locations.
 
-HEADING-REGEXP is a regular expression. See `org-refile'."
+HEADING-REGEXP is a regular expression.  See `org-refile'."
   (let* ((user-refile-targets org-refile-targets)
          (org-refile-targets (org-gtd--refile-targets))
          (results   (cl-find-if
