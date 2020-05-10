@@ -1,2 +1,1 @@
-((emacs-lisp-mode
-  (indent-tabs-mode nil)))
+((nil . ((indent-tabs-mode . nil))))
