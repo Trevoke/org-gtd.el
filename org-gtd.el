@@ -174,7 +174,7 @@ This is the inbox. Everything goes in here when you capture it.
 Here go the things you want to think about someday.  Review this file as often
 as you feel the need: every two months? Every six months? Every year?
 It's suggested that you categorize the items in here somehow, such as:
-\"to read\", \"to buy\", \"to eat\", etc - whatever works best for your mind!
+\"to read\", \"to buy\", \"to eat\", etc. - whatever works best for your mind!
 #+end_comment
 ")
 
@@ -191,7 +191,7 @@ It's suggested that you categorize the items in here somehow, such as:
   :type 'directory)
 
 (defun org-gtd-capture ()
-  "Wrap `org-capture' to make sure the gtd inbox exists."
+  "Wrap `org-capture' to make sure the GTD inbox exists."
   (interactive)
   (kill-buffer (org-gtd--inbox-file))
   (org-capture))
@@ -386,7 +386,7 @@ HEADING-REGEXP is a regular expression.  See `org-refile'."
   "Return buffer position for start of org ELEMENT."
   (org-element-property :begin element))
 
-;;; file management
+;;; File management
 
 (defun org-gtd--path (file)
   "Return the full path to FILE.org assuming it is in the GTD framework."
@@ -395,7 +395,7 @@ HEADING-REGEXP is a regular expression.  See `org-refile'."
 (defun org-gtd--gtd-file (gtd-type)
   "Return a buffer for GTD-TYPE.org.
 
-create the file and template first if it doesn't already exist."
+Create the file and template first if it doesn't already exist."
   (let* ((file-path (org-gtd--path gtd-type))
          (file-buffer (find-file-noselect file-path)))
     (or (f-file-p file-path)
