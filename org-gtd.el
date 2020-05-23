@@ -108,13 +108,25 @@
 
 ;;; Code:
 
+;;;; Requirements
+
 (require 'cl-lib)
 (require 'f)
 (require 'org)
-(require 'org-edna)
 (require 'org-agenda-property)
+(require 'org-edna)
+
+;;;; Variables
+
+(defvar org-gtd-user-input-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "\C-c\C-c" #'org-gtd-finish-editing)
+    map)
+  "Keymap for `org-gtd-user-input-mode', a minor mode.")
 
 (defvar org-stuck-projects)
+
+;;;; Constants
 
 (defconst org-gtd--package-path (f-dirname (f-this-file)))
 
@@ -128,20 +140,12 @@
 (defconst org-gtd-scheduled ".*Scheduled")
 (defconst org-gtd-projects  ".*Projects")
 
+(defconst org-gtd-complete-projects "+LEVEL=2+CATEGORY=\"Projects\"")
+
 (defconst org-gtd-stuck-projects '("+LEVEL=2-DONE+CATEGORY=\"Projects\""
                                    ("TODO" "NEXT" "WAIT")
                                    nil
                                    ""))
-
-(defconst org-gtd-complete-projects "+LEVEL=2+CATEGORY=\"Projects\"")
-
-(defconst org-gtd-inbox-template
-  "#+STARTUP: overview hidestars logrefile indent logdone
-#+TODO: NEXT TODO WAIT | DONE CANCELED TRASH
-#+begin_comment
-This is the inbox. Everything goes in here when you capture it.
-#+end_comment
-")
 
 (defconst org-gtd-actionable-template
   "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
@@ -169,6 +173,14 @@ This is the inbox. Everything goes in here when you capture it.
 :END:
 ")
 
+(defconst org-gtd-inbox-template
+  "#+STARTUP: overview hidestars logrefile indent logdone
+#+TODO: NEXT TODO WAIT | DONE CANCELED TRASH
+#+begin_comment
+This is the inbox. Everything goes in here when you capture it.
+#+end_comment
+")
+
 (defconst org-gtd-incubate-template
   "#+begin_comment
 Here go the things you want to think about someday.  Review this file as often
@@ -178,37 +190,26 @@ It's suggested that you categorize the items in here somehow, such as:
 #+end_comment
 ")
 
-(defun org-gtd--refile-targets ()
-  "Return the refile targets specific to org-gtd."
-  `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)
-    (,(org-gtd--path org-gtd-actionable-file-basename) :maxlevel . 1)))
+;;;; Customizations
 
-(defgroup org-gtd nil "Customize the org-gtd package."
-  :version 0.1 :group 'emacs)
+(defgroup org-gtd nil
+  "Customize the `org-gtd' package."
+  :version 0.1
+  :group 'emacs)
 
 (defcustom org-gtd-directory "~/gtd/"
   "The directory where the org files for GTD will live."
   :type 'directory)
 
-(defun org-gtd-capture ()
-  "Wrap `org-capture' to make sure the GTD inbox exists."
-  (interactive)
-  (kill-buffer (org-gtd--inbox-file))
-  (org-capture))
+;;;; Commands
 
-(defun org-gtd-show-all-next ()
-  "Show all the NEXT items in a single list."
-  (interactive)
-  (org-todo-list "NEXT"))
-
-(defun org-gtd-show-stuck-projects ()
-  "Show all GTD projects that do not have an upcoming or waiting action."
-  (interactive)
-  (let* ((user-stuck-projects org-stuck-projects)
-         (org-stuck-projects org-gtd-stuck-projects)
-         (stuck-projects-buffer (org-agenda-list-stuck-projects))
-         (org-stuck-projects user-stuck-projects))
-    stuck-projects-buffer))
+(define-minor-mode org-gtd-user-input-mode
+  "Minor mode for special key bindings when editing an individual inbox item."
+  nil "GTD " org-gtd-user-input-mode-map
+  (setq-local header-line-format
+              (substitute-command-keys
+               "\\<org-gtd-user-input-mode-map>Edit inbox item. Finish \
+`\\[org-gtd-finish-editing]'.")))
 
 (defun org-gtd-archive-complete-projects ()
   "Archive all projects for which all children headlines are marked DONE."
@@ -222,6 +223,18 @@ It's suggested that you categorize the items in here somehow, such as:
                                         (org-element-at-point)))
            (org-archive-subtree-default))))
    org-gtd-complete-projects))
+
+(defun org-gtd-capture ()
+  "Wrap `org-capture' to make sure the GTD inbox exists."
+  (interactive)
+  (kill-buffer (org-gtd--inbox-file))
+  (org-capture))
+
+(defun org-gtd-finish-editing ()
+  "Get out of the manual edit flow."
+  (interactive)
+  (org-gtd-user-input-mode -1)
+  (exit-recursive-edit))
 
 (defun org-gtd-process-inbox ()
   "Use this once a day: process every element in the inbox."
@@ -251,6 +264,109 @@ It's suggested that you categorize the items in here somehow, such as:
    (lambda (buffer) (with-current-buffer buffer (save-buffer)))
    `(,(org-gtd--actionable-file) ,(org-gtd--incubate-file) ,(org-gtd--inbox-file))))
 
+(defun org-gtd-show-all-next ()
+  "Show all the NEXT items in a single list."
+  (interactive)
+  (org-todo-list "NEXT"))
+
+(defun org-gtd-show-stuck-projects ()
+  "Show all GTD projects that do not have an upcoming or waiting action."
+  (interactive)
+  (let* ((user-stuck-projects org-stuck-projects)
+         (org-stuck-projects org-gtd-stuck-projects)
+         (stuck-projects-buffer (org-agenda-list-stuck-projects))
+         (org-stuck-projects user-stuck-projects))
+    stuck-projects-buffer))
+
+;;;; Functions
+
+(defun org-gtd--actionable-file ()
+  "Create or return the buffer for the actionable GTD buffer."
+  (org-gtd--gtd-file org-gtd-actionable-file-basename))
+
+(defun org-gtd--archive ()
+  "Process element - completely user-defined action.  Store this as a reference.
+
+Do not remove the item from the inbox, it will be archived."
+  (org-gtd--edit-item)
+  (org-todo "DONE")
+  (org-archive-subtree))
+
+(defun org-gtd--calendar ()
+  "Process element and move it to the tickler file."
+  (org-gtd--edit-item)
+  (goto-char (point-min))
+  (org-set-tags-command)
+  (org-schedule 0)
+  (org-refile nil nil (org-gtd--refile-target org-gtd-scheduled)))
+
+(defun org-gtd--delegate ()
+  "Process element and move it to the Actionable file."
+  (org-gtd--edit-item)
+  (goto-char (point-min))
+  (org-set-tags-command)
+  (org-todo "WAIT")
+  (org-set-property "DELEGATED_TO" (read-string "Who will do this? "))
+  (org-schedule 0)
+  (org-refile nil nil (org-gtd--refile-target org-gtd-delegated)))
+
+(defun org-gtd--edit-item ()
+  "Friendly user interaction to refine the current inbox item."
+  (org-gtd-user-input-mode 1)
+  (recursive-edit))
+
+(defun org-gtd--gtd-file (gtd-type)
+  "Return a buffer for GTD-TYPE.org.
+
+Create the file and template first if it doesn't already exist."
+  (let* ((file-path (org-gtd--path gtd-type))
+         (file-buffer (find-file-noselect file-path)))
+    (or (f-file-p file-path)
+        (with-current-buffer file-buffer
+          (insert (symbol-value
+                   (intern
+                    (string-join
+                     `("org-gtd-" ,gtd-type "-template")))))
+          (save-buffer)))
+    file-buffer))
+
+(defun org-gtd--inbox-file ()
+  "Create or return the buffer for the inbox GTD buffer."
+  (org-gtd--gtd-file org-gtd-inbox-file-basename))
+
+(defun org-gtd--incubate ()
+  "Process element and move it to the incubate file."
+  (org-gtd--edit-item)
+  (goto-char (point-min))
+  (org-set-tags-command)
+  (org-schedule 0)
+  (org-refile nil nil (org-gtd--refile-target org-gtd-incubate)))
+
+(defun org-gtd--incubate-file ()
+  "Create or return the buffer for the incubate GTD buffer."
+  (org-gtd--gtd-file org-gtd-incubate-file-basename))
+
+(defun org-gtd--nextify ()
+  "Add NEXT and TODO as keywords on all the relevant headlines."
+
+  (cl-destructuring-bind
+      (first-entry . rest-entries)
+      (cdr (org-map-entries (lambda () (org-element-at-point)) t 'tree))
+    (org-element-map
+        (reverse rest-entries)
+        'headline
+      (lambda (myelt)
+        (org-entry-put (org-gtd--org-element-pom myelt) "TODO" "TODO")))
+    (org-entry-put (org-gtd--org-element-pom first-entry) "TODO" "NEXT")))
+
+(defun org-gtd--org-element-pom (element)
+  "Return buffer position for start of org ELEMENT."
+  (org-element-property :begin element))
+
+(defun org-gtd--path (file)
+  "Return the full path to FILE.org assuming it is in the GTD framework."
+  (f-join org-gtd-directory (concat file ".org")))
+
 (defun org-gtd--process-inbox-element ()
   "With mark on an org heading, choose which GTD action to take."
   (let ((action
@@ -275,55 +391,26 @@ It's suggested that you categorize the items in here somehow, such as:
       (?a (org-gtd--archive))
       (?i (org-gtd--incubate)))))
 
-(defun org-gtd--incubate ()
-  "Process element and move it to the incubate file."
+(defun org-gtd--project ()
+  "Process element and transform it into a project."
   (org-gtd--edit-item)
   (goto-char (point-min))
   (org-set-tags-command)
-  (org-schedule 0)
-  (org-refile nil nil (org-gtd--refile-target org-gtd-incubate)))
+  (org-gtd--nextify)
+  (org-refile nil nil (org-gtd--refile-target org-gtd-projects))
+  (with-current-buffer (org-gtd--actionable-file)
+    (org-update-statistics-cookies t)))
 
-(defun org-gtd--archive ()
-  "Process element - completely user-defined action.  Store this as a reference.
-
-Do not remove the item from the inbox, it will be archived."
-  (org-gtd--edit-item)
-  (org-todo "DONE")
-  (org-archive-subtree))
-
-(defun org-gtd--trash ()
-  "Archive element."
-  (org-gtd--edit-item)
-  (goto-char (point-min))
-  (org-set-tags-command)
-  (org-todo "CANCELED")
-  (org-archive-subtree))
-
-(defun org-gtd--single-action ()
-  "Process element and move it to the Actionable file."
-  (org-gtd--edit-item)
-  (goto-char (point-min))
-  (org-set-tags-command)
-  (org-todo "NEXT")
-  (org-refile nil nil (org-gtd--refile-target org-gtd-actions)))
-
-(defun org-gtd--delegate ()
-  "Process element and move it to the Actionable file."
-  (org-gtd--edit-item)
-  (goto-char (point-min))
-  (org-set-tags-command)
-  (org-todo "WAIT")
-  (org-set-property "DELEGATED_TO" (read-string "Who will do this? "))
-  (org-schedule 0)
-  (org-refile nil nil (org-gtd--refile-target org-gtd-delegated)))
-
-(defun org-gtd--calendar ()
-  "Process element and move it to the tickler file."
-  (org-gtd--edit-item)
-  (goto-char (point-min))
-  (org-set-tags-command)
-  (org-schedule 0)
-  (org-refile nil nil (org-gtd--refile-target org-gtd-scheduled)))
+(defun org-gtd--project-complete-p ()
+  "Return t if all project children are DONE, f if any aren't."
+  (let ((entries (cdr (org-map-entries
+                       (lambda ()
+                         (org-entry-get
+                          (org-gtd--org-element-pom (org-element-at-point))
+                          "TODO"))
+                       t
+                       'tree))))
+    (seq-every-p (lambda (x) (string-equal x "DONE")) entries)))
 
 (defun org-gtd--quick-action ()
   "Process element and archive it."
@@ -332,17 +419,6 @@ Do not remove the item from the inbox, it will be archived."
   (org-set-tags-command)
   (org-todo "DONE")
   (org-archive-subtree))
-
-(defun org-gtd--project ()
-  "Process element and transform it into a project."
-  (org-gtd--edit-item)
-  (goto-char (point-min))
-  (org-set-tags-command)
-  (org-gtd--nextify)
-  (org-refile nil nil (org-gtd--refile-target org-gtd-projects))
-
-  (with-current-buffer (org-gtd--actionable-file)
-    (org-update-statistics-cookies t)))
 
 (defun org-gtd--refile-target (heading-regexp)
   "Refile to one of the `org-gtd' refile locations.
@@ -358,93 +434,26 @@ HEADING-REGEXP is a regular expression.  See `org-refile'."
          (org-refile-targets user-refile-targets))
     results))
 
-(defun org-gtd--nextify ()
-  "Add NEXT and TODO as keywords on all the relevant headlines."
+(defun org-gtd--refile-targets ()
+  "Return the refile targets specific to org-gtd."
+  `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)
+    (,(org-gtd--path org-gtd-actionable-file-basename) :maxlevel . 1)))
 
-  (cl-destructuring-bind
-      (first-entry . rest-entries)
-      (cdr (org-map-entries (lambda () (org-element-at-point)) t 'tree))
-    (org-element-map
-        (reverse rest-entries)
-        'headline
-      (lambda (myelt)
-        (org-entry-put (org-gtd--org-element-pom myelt) "TODO" "TODO")))
-    (org-entry-put (org-gtd--org-element-pom first-entry) "TODO" "NEXT")))
+(defun org-gtd--single-action ()
+  "Process element and move it to the Actionable file."
+  (org-gtd--edit-item)
+  (goto-char (point-min))
+  (org-set-tags-command)
+  (org-todo "NEXT")
+  (org-refile nil nil (org-gtd--refile-target org-gtd-actions)))
 
-(defun org-gtd--project-complete-p ()
-  "Return t if all project children are DONE, f if any aren't."
-  (let ((entries (cdr (org-map-entries
-                       (lambda ()
-                         (org-entry-get
-                          (org-gtd--org-element-pom (org-element-at-point))
-                          "TODO"))
-                       t
-                       'tree))))
-    (seq-every-p (lambda (x) (string-equal x "DONE")) entries)))
-
-(defun org-gtd--org-element-pom (element)
-  "Return buffer position for start of org ELEMENT."
-  (org-element-property :begin element))
-
-;;; File management
-
-(defun org-gtd--path (file)
-  "Return the full path to FILE.org assuming it is in the GTD framework."
-  (f-join org-gtd-directory (concat file ".org")))
-
-(defun org-gtd--gtd-file (gtd-type)
-  "Return a buffer for GTD-TYPE.org.
-
-Create the file and template first if it doesn't already exist."
-  (let* ((file-path (org-gtd--path gtd-type))
-         (file-buffer (find-file-noselect file-path)))
-    (or (f-file-p file-path)
-        (with-current-buffer file-buffer
-          (insert (symbol-value
-                   (intern
-                    (string-join
-                     `("org-gtd-" ,gtd-type "-template")))))
-          (save-buffer)))
-    file-buffer))
-
-(defun org-gtd--actionable-file ()
-  "Create or return the buffer for the actionable GTD buffer."
-  (org-gtd--gtd-file org-gtd-actionable-file-basename))
-
-(defun org-gtd--inbox-file ()
-  "Create or return the buffer for the inbox GTD buffer."
-  (org-gtd--gtd-file org-gtd-inbox-file-basename))
-
-(defun org-gtd--incubate-file ()
-  "Create or return the buffer for the incubate GTD buffer."
-  (org-gtd--gtd-file org-gtd-incubate-file-basename))
-
-(defun org-gtd--edit-item ()
-  "Friendly user interaction to refine the current inbox item."
-  (org-gtd-user-input-mode 1)
-  (recursive-edit))
-
-;;; Minor mode
-
-(defvar org-gtd-user-input-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map "\C-c\C-c" #'org-gtd-finish-editing)
-    map)
-  "Keymap for `org-gtd-user-input-mode', a minor mode.")
-
-(defun org-gtd-finish-editing ()
-  "Get out of the manual edit flow."
-  (interactive)
-  (org-gtd-user-input-mode -1)
-  (exit-recursive-edit))
-
-(define-minor-mode org-gtd-user-input-mode
-  "Minor mode for special key bindings when editing an individual inbox item."
-  nil "GTD " org-gtd-user-input-mode-map
-  (setq-local header-line-format
-              (substitute-command-keys
-               "\\<org-gtd-user-input-mode-map>Edit inbox item. Finish \
-`\\[org-gtd-finish-editing]'.")))
+(defun org-gtd--trash ()
+  "Archive element."
+  (org-gtd--edit-item)
+  (goto-char (point-min))
+  (org-set-tags-command)
+  (org-todo "CANCELED")
+  (org-archive-subtree))
 
 (provide 'org-gtd)
 
