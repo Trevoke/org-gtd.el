@@ -465,7 +465,7 @@ Create the file and template first if it doesn't already exist."
   (let ((map (make-sparse-keymap)))
     (define-key map "\C-cc" #'org-gtd-finish-editing)
     map)
-  "Keymap for `org-gtd-user-input-mode', a minor mode.")
+  "Keymap for function `org-gtd-user-input-mode', a minor mode.")
 
 (defun org-gtd-finish-editing ()
   "Finalize the clarify process."
