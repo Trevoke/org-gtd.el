@@ -55,7 +55,7 @@
 ;;
 ;; When you are processing the inbox and creating a project, emacs enters a
 ;; recursive edit mode to let you define and refine the project.
-;; When finished, press ~C-c C-c~ to exit the recursive edit and go back to
+;; When finished, press ~C-c c~ to exit the recursive edit and go back to
 ;; processing the inbox.
 ;;
 ;; One of the ways to see what's next for you to do is to see all the next
@@ -428,7 +428,7 @@ create the file and template first if it doesn't already exist."
 
 (defvar org-gtd-user-input-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "\C-c\C-c" #'org-gtd-finish-editing)
+    (define-key map "\C-cc" #'org-gtd-finish-editing)
     map)
   "Keymap for `org-gtd-user-input-mode', a minor mode.")
 
