@@ -116,8 +116,6 @@
 
 (defvar org-stuck-projects)
 
-(defconst org-gtd--package-path (f-dirname (f-this-file)))
-
 (defconst org-gtd-actionable-file-basename "actionable"
   "Name of Org file listing all actionable items.")
 
