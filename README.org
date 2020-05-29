@@ -92,11 +92,11 @@ For your convenience, here's a commented block.
   ;; otherwise, push these to your existing capture templates
   ;; and of course, you can adjust the keys "i" and "l"
   (setq org-capture-templates `(("i" "GTD item"
-                                 entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
+                                 entry (file (lambda () (org-gtd--path org-gtd-inbox-file-basename)))
                                  "* %?\n%U\n\n  %i"
                                  :kill-buffer t)
                                 ("l" "GTD item with link to where you are in emacs now"
-                                 entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
+                                 entry (file  (lambda () (org-gtd--path org-gtd-inbox-file-basename)))
                                  "* %?\n%U\n\n  %i\n  %a"
                                  :kill-buffer t)))
 
