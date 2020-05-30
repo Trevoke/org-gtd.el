@@ -173,7 +173,7 @@ This is a list of four items, the same type as in `org-stuck-projects'.")
 
 * Projects
 :PROPERTIES:
-:TRIGGER:  next-sibling todo!(NEXT)
+:TRIGGER: next-sibling todo!(NEXT)
 :CATEGORY: Projects
 :END:
 "
@@ -244,15 +244,12 @@ Wraps the function `org-capture' to ensure the inbox exists."
   "Process the GTD inbox.
 Use this once a day and/or weekly as part of the weekly review."
   (interactive)
-
   (set-buffer (org-gtd--inbox-file))
   (display-buffer-same-window (org-gtd--inbox-file) '())
   (delete-other-windows)
-
-  ;; laugh all you want, all this statefulness is killing me.
+  ;; Laugh all you want, all this statefulness is killing me.
   (org-gtd--actionable-file)
   (org-gtd--incubate-file)
-
   (org-map-entries
    (lambda ()
      (setq org-map-continue-from (org-element-property
@@ -262,9 +259,7 @@ Use this once a day and/or weekly as part of the weekly review."
      (org-show-subtree)
      (org-gtd--process-inbox-element)
      (widen)))
-
   (setq-local header-line-format nil)
-
   (mapcar
    (lambda (buffer) (with-current-buffer buffer (save-buffer)))
    `(,(org-gtd--actionable-file) ,(org-gtd--incubate-file) ,(org-gtd--inbox-file))))
@@ -370,7 +365,6 @@ the inbox.  Refile to `org-gtd-incubate-file-basename'."
 (defun org-gtd--nextify ()
   "Add the NEXT keyword to the first action/task of the project.
 Add the TODO keyword to all subsequent actions/tasks."
-
   (cl-destructuring-bind
       (first-entry . rest-entries)
       (cdr (org-map-entries (lambda () (org-element-at-point)) t 'tree))
@@ -403,7 +397,6 @@ This assumes the file is located in `org-gtd-directory'."
             (?s "single action" "do this when possible")
             (?a "archive this knowledge" "Store this where you store knowledge")
             (?i "incubate it" "I'll come back to this later")))))
-
     (cl-case (car action)
       (?q (org-gtd--quick-action))
       (?t (org-gtd--trash))
@@ -424,7 +417,6 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-set-tags-command)
   (org-gtd--nextify)
   (org-refile nil nil (org-gtd--refile-target org-gtd-projects))
-
   (with-current-buffer (org-gtd--actionable-file)
     (org-update-statistics-cookies t)))
 
@@ -456,11 +448,11 @@ the inbox.  Mark it as done and archive."
   "Refile the HEADING-REGEXP item to one of the `org-gtd--refile-targets'."
   (let* ((user-refile-targets org-refile-targets)
          (org-refile-targets (org-gtd--refile-targets))
-         (results   (cl-find-if
-                     (lambda (rfloc)
-                       (string-match heading-regexp
-                                     (car rfloc)))
-                     (org-refile-get-targets)))
+         (results (cl-find-if
+                   (lambda (rfloc)
+                     (string-match heading-regexp
+                                   (car rfloc)))
+                   (org-refile-get-targets)))
          (org-refile-targets user-refile-targets))
     results))
 
