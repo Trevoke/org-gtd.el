@@ -120,7 +120,7 @@
 
 (defvar org-gtd-user-input-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "\C-cc" #'org-gtd-finish-editing)
+    (define-key map "\C-cc" #'org-gtd-clarify-finalize)
     map)
   "Keymap for function `org-gtd-user-input-mode', a minor mode.")
 
@@ -234,7 +234,7 @@ Wraps the function `org-capture' to ensure the inbox exists."
   (kill-buffer (org-gtd--inbox-file))
   (org-capture))
 
-(defun org-gtd-finish-editing ()
+(defun org-gtd-clarify-finalize ()
   "Finalize the clarify process."
   (interactive)
   (org-gtd-user-input-mode -1)
@@ -291,8 +291,8 @@ This assumes all GTD files are also agenda files."
   nil "GTD " org-gtd-user-input-mode-map
   (setq-local header-line-format
               (substitute-command-keys
-               "\\<org-gtd-user-input-mode-map>Edit inbox item. Finish \
-`\\[org-gtd-finish-editing]'.")))
+               "\\<org-gtd-user-input-mode-map>Clarify buffer.  Finish \
+`\\[org-gtd-clarify-finalize]'.")))
 
 (defun org-gtd--actionable-file ()
   "Create or return the buffer to the GTD actionable file."
@@ -300,7 +300,7 @@ This assumes all GTD files are also agenda files."
 
 (defun org-gtd--archive ()
   "Process GTD inbox item as a reference item."
-  (org-gtd--edit-item)
+  (org-gtd--clarify-item)
   (org-todo "DONE")
   (org-archive-subtree))
 
@@ -309,7 +309,7 @@ This assumes all GTD files are also agenda files."
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Refile to `org-gtd-actionable-file-basename'."
-  (org-gtd--edit-item)
+  (org-gtd--clarify-item)
   (goto-char (point-min))
   (org-set-tags-command)
   (org-schedule 0)
@@ -321,7 +321,7 @@ Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Set it as a waiting action and refile to
 `org-gtd-actionable-file-basename'."
-  (org-gtd--edit-item)
+  (org-gtd--clarify-item)
   (goto-char (point-min))
   (org-set-tags-command)
   (org-todo "WAIT")
@@ -329,7 +329,7 @@ the inbox.  Set it as a waiting action and refile to
   (org-schedule 0)
   (org-refile nil nil (org-gtd--refile-target org-gtd-delegated)))
 
-(defun org-gtd--edit-item ()
+(defun org-gtd--clarify-item ()
   "User interface to reflect on and clarify the current inbox item."
   (org-gtd-user-input-mode 1)
   (recursive-edit))
@@ -357,7 +357,7 @@ Create the file and template first if it doesn't already exist."
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Refile to `org-gtd-incubate-file-basename'."
-  (org-gtd--edit-item)
+  (org-gtd--clarify-item)
   (goto-char (point-min))
   (org-set-tags-command)
   (org-schedule 0)
@@ -419,7 +419,7 @@ This assumes the file is located in `org-gtd-directory'."
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Refile to `org-gtd-actionable-file-basename'."
-  (org-gtd--edit-item)
+  (org-gtd--clarify-item)
   (goto-char (point-min))
   (org-set-tags-command)
   (org-gtd--nextify)
@@ -446,7 +446,7 @@ marked with a done `org-todo-keyword'."
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Mark it as done and archive."
-  (org-gtd--edit-item)
+  (org-gtd--clarify-item)
   (goto-char (point-min))
   (org-set-tags-command)
   (org-todo "DONE")
@@ -475,7 +475,7 @@ Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Set as a NEXT action and refile to
 `org-gtd-actionable-file-basename'."
-  (org-gtd--edit-item)
+  (org-gtd--clarify-item)
   (goto-char (point-min))
   (org-set-tags-command)
   (org-todo "NEXT")
@@ -483,7 +483,7 @@ the inbox.  Set as a NEXT action and refile to
 
 (defun org-gtd--trash ()
   "Mark GTD inbox item as cancelled and archive it."
-  (org-gtd--edit-item)
+  (org-gtd--clarify-item)
   (goto-char (point-min))
   (org-set-tags-command)
   (org-todo "CANCELED")
