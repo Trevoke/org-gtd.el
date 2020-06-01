@@ -117,6 +117,8 @@
 (require 'org-element)
 (require 'org-agenda-property)
 (require 'org-edna)
+(require 'org-element)
+(require 'subr-x)
 
 ;;;; Variables
 
