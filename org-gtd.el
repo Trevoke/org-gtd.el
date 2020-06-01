@@ -219,12 +219,11 @@ Done here is any done `org-todo-keyword'."
   (interactive)
   (org-map-entries
    (lambda ()
-     (if (org-gtd--project-complete-p)
-         (progn
-           (setq org-map-continue-from (org-element-property
-                                        :begin
-                                        (org-element-at-point)))
-           (org-archive-subtree-default))))
+     (when (org-gtd--project-complete-p)
+       (setq org-map-continue-from (org-element-property
+                                    :begin
+                                    (org-element-at-point)))
+       (org-archive-subtree-default)))
    org-gtd-complete-projects))
 
 (defun org-gtd-capture (&optional GOTO KEYS)
