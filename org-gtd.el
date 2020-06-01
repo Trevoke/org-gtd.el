@@ -147,7 +147,7 @@
   "How to identify projects in the GTD system.")
 
 (defconst org-gtd-stuck-projects
-  '("+LEVEL=2-DONE+CATEGORY=\"Projects\"" ("TODO" "NEXT" "WAIT") nil "")
+  '("+LEVEL=2-TODO=\"DONE\"+CATEGORY=\"Projects\"" ("TODO" "NEXT" "WAIT") nil "")
   "How to identify stuck projects in the GTD system.
 This is a list of four items, the same type as in `org-stuck-projects'.")
 
