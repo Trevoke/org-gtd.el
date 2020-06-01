@@ -203,7 +203,7 @@ It's suggested that you categorize the items in here somehow, such as:
   "An implementation of GTD."
   :group 'org)
 
-(defcustom org-gtd-directory "~/gtd/"
+(defcustom org-gtd-directory "~/gtd"
   "Directory of Org based GTD files.
 This is the directory where to look for the files used in
 this Org-mode based GTD implementation."
