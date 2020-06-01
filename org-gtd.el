@@ -200,9 +200,8 @@ It's suggested that you categorize the items in here somehow, such as:
 ;;;; Customization
 
 (defgroup org-gtd nil
-  "Customize the org-gtd package."
-  :version 0.1
-  :group 'emacs)
+  "An implementation of GTD."
+  :group 'org)
 
 (defcustom org-gtd-directory "~/gtd/"
   "Directory of Org based GTD files.
