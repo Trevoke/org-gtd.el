@@ -110,6 +110,7 @@
 
 ;;;; Requirements
 
+(require 'subr-x)
 (require 'cl-lib)
 (require 'f)
 (require 'org)
@@ -118,10 +119,7 @@
 
 ;;;; Variables
 
-(defvar org-gtd-user-input-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map "\C-cc" #'org-gtd-clarify-finalize)
-    map)
+(defvar org-gtd-command-map (make-sparse-keymap)
   "Keymap for function `org-gtd-user-input-mode', a minor mode.")
 
 (defvar org-stuck-projects)
@@ -227,12 +225,12 @@ Done here is any done `org-todo-keyword'."
            (org-archive-subtree-default))))
    org-gtd-complete-projects))
 
-(defun org-gtd-capture ()
+(defun org-gtd-capture (&optional GOTO KEYS)
   "Capture something into the GTD inbox.
 Wraps the function `org-capture' to ensure the inbox exists."
   (interactive)
   (kill-buffer (org-gtd--inbox-file))
-  (org-capture))
+  (org-capture GOTO KEYS))
 
 (defun org-gtd-clarify-finalize ()
   "Finalize the clarify process."
@@ -283,10 +281,10 @@ This assumes all GTD files are also agenda files."
 
 (define-minor-mode org-gtd-user-input-mode
   "Minor mode for org-gtd."
-  nil "GTD " org-gtd-user-input-mode-map
+  nil "GTD " org-gtd-command-map
   (setq-local header-line-format
               (substitute-command-keys
-               "\\<org-gtd-user-input-mode-map>Clarify buffer.  Finish \
+               "\\<org-gtd-command-map>Clarify buffer.  Finish \
 `\\[org-gtd-clarify-finalize]'.")))
 
 (defun org-gtd--actionable-file ()
