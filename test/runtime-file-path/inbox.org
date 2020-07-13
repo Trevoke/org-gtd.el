@@ -1,5 +1,0 @@
-#+STARTUP: overview hidestars logrefile indent logdone
-#+TODO: NEXT TODO WAIT | DONE CANCELED TRASH
-#+begin_comment
-This is the inbox. Everything goes in here when you capture it.
-#+end_comment
