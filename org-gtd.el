@@ -114,6 +114,7 @@
 (require 'cl-lib)
 (require 'f)
 (require 'org)
+(require 'org-element)
 (require 'org-agenda-property)
 (require 'org-edna)
 
