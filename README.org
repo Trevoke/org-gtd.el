@@ -59,8 +59,16 @@ Sometimes things break. Use ~C-c d s~ to find all projects that don't have a NEX
 ** Installing
 This package requires emacs 26.1 or higher.
 *** MELPA, MELPA stable
-[[https://github.com/melpa/melpa/pull/6621][Pull request is open]].
-Content TK
+
+Follow directions to get MELPA / MELPA stable as a source, then:
+
+#+begin_src emacs-lisp
+  (use-package org-gtd
+    :after org
+    :pin melpa-stable)
+#+end_src
+
+
 *** Using use-package with straight.el
 #+begin_src emacs-lisp
   (use-package org-gtd
@@ -83,8 +91,7 @@ For your convenience, here's a commented elisp code block, assuming you are usin
 #+begin_src emacs-lisp
   (use-package org-gtd
     :after org
-    ;; if you are using straight to pull from github
-    :straight (:host github :repo "trevoke/org-gtd.el" :branch "master")
+    :pin melpa-stable ;; or :pin melpa as you prefer
     :custom
     ;; where org-gtd will put its files. This value is also the default one.
     (org-gtd-directory "~/gtd/")
