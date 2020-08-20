@@ -1,0 +1,8 @@
+* 1.0.2
+[2020-08-20 Thu]
+** Fix inability to refile to incubate
+While processing the inbox, it was impossible to refile to the incubate file properly.
+This release fixes that bug.
+
+To note:
+If you haven't yet, make sure you go to the incubate file and set up some categories for yourself, e.g. `* To Read`, `* To Eat`, etc. ~org-gtd~ currently handles up to two headline levels, so you could do `* To Read` and `** Horror` if you wanted
