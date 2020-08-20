@@ -15,7 +15,7 @@ jobs:
       matrix:
         emacs_version:
           # Add more lines like this if you want to test on different Emacs versions.
-          - 26.3
+          - 27.1
 
     steps:
     - name: Set up Emacs
