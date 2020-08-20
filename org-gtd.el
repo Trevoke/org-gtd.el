@@ -206,8 +206,8 @@ It's suggested that you categorize the items in here somehow, such as:
 
 (defcustom org-gtd-directory "~/gtd/"
   "Directory of Org based GTD files.
-This is just a default location to look for the files used in
-this Org mode implemented GTD system."
+This is the directory where to look for the files used in
+this Org-mode based GTD implementation."
   :type 'directory)
 
 ;;;; Commands
@@ -249,9 +249,8 @@ Use this once a day and/or weekly as part of the weekly review."
   (set-buffer (org-gtd--inbox-file))
   (display-buffer-same-window (org-gtd--inbox-file) '())
   (delete-other-windows)
-  ;; Laugh all you want, all this statefulness is killing me.
-  (org-gtd--actionable-file)
-  (org-gtd--incubate-file)
+
+  (org-gtd--find-or-create-and-save-files)
   (org-map-entries
    (lambda ()
      (setq org-map-continue-from (org-element-property
@@ -262,9 +261,7 @@ Use this once a day and/or weekly as part of the weekly review."
      (org-gtd--process-inbox-element)
      (widen)))
   (setq-local header-line-format nil)
-  (mapcar
-   (lambda (buffer) (with-current-buffer buffer (save-buffer)))
-   `(,(org-gtd--actionable-file) ,(org-gtd--incubate-file) ,(org-gtd--inbox-file))))
+  (org-gtd--find-or-create-and-save-files))
 
 (defun org-gtd-show-all-next ()
   "Show all next actions from all agenda files in a single list.
@@ -281,7 +278,40 @@ This assumes all GTD files are also agenda files."
          (org-stuck-projects user-stuck-projects))
     stuck-projects-buffer))
 
-;;;; Functions
+;;;; File work
+
+(defun org-gtd--find-or-create-and-save-files ()
+  (mapcar
+   (lambda (buffer) (with-current-buffer buffer (save-buffer) buffer))
+   `(,(org-gtd--actionable-file) ,(org-gtd--incubate-file) ,(org-gtd--inbox-file))))
+
+(defun org-gtd--inbox-file ()
+  "Create or return the buffer to the GTD inbox file."
+  (org-gtd--gtd-file org-gtd-inbox-file-basename))
+
+(defun org-gtd--actionable-file ()
+  "Create or return the buffer to the GTD actionable file."
+  (org-gtd--gtd-file org-gtd-actionable-file-basename))
+
+(defun org-gtd--incubate-file ()
+  "Create or return the buffer to the GTD incubate file."
+  (org-gtd--gtd-file org-gtd-incubate-file-basename))
+
+(defun org-gtd--gtd-file (gtd-type)
+  "Return a buffer to GTD-TYPE.org.
+Create the file and template first if it doesn't already exist."
+  (let* ((file-path (org-gtd--path gtd-type))
+         (file-buffer (find-file-noselect file-path)))
+    (or (f-file-p file-path)
+        (with-current-buffer file-buffer
+          (insert (symbol-value
+                   (intern
+                    (string-join
+                     `("org-gtd-" ,gtd-type "-template")))))
+          (save-buffer)))
+    file-buffer))
+
+;;;; Just a minor mode because keymaps are cool
 
 (define-minor-mode org-gtd-user-input-mode
   "Minor mode for org-gtd."
@@ -291,9 +321,7 @@ This assumes all GTD files are also agenda files."
                "\\<org-gtd-command-map>Clarify buffer.  Finish \
 `\\[org-gtd-clarify-finalize]'.")))
 
-(defun org-gtd--actionable-file ()
-  "Create or return the buffer to the GTD actionable file."
-  (org-gtd--gtd-file org-gtd-actionable-file-basename))
+;;;; actual GTD operations
 
 (defun org-gtd--archive ()
   "Process GTD inbox item as a reference item."
@@ -331,24 +359,6 @@ the inbox.  Set it as a waiting action and refile to
   (org-gtd-user-input-mode 1)
   (recursive-edit))
 
-(defun org-gtd--gtd-file (gtd-type)
-  "Return a buffer to GTD-TYPE.org.
-Create the file and template first if it doesn't already exist."
-  (let* ((file-path (org-gtd--path gtd-type))
-         (file-buffer (find-file-noselect file-path)))
-    (or (f-file-p file-path)
-        (with-current-buffer file-buffer
-          (insert (symbol-value
-                   (intern
-                    (string-join
-                     `("org-gtd-" ,gtd-type "-template")))))
-          (save-buffer)))
-    file-buffer))
-
-(defun org-gtd--inbox-file ()
-  "Create or return the buffer to the GTD inbox file."
-  (org-gtd--gtd-file org-gtd-inbox-file-basename))
-
 (defun org-gtd--incubate ()
   "Process GTD inbox item by incubating it.
 Allow the user apply user-defined tags from
@@ -358,11 +368,9 @@ the inbox.  Refile to `org-gtd-incubate-file-basename'."
   (goto-char (point-min))
   (org-set-tags-command)
   (org-schedule 0)
-  (org-refile nil nil (org-gtd--refile-target org-gtd-incubate)))
+  (org-gtd--refile-incubate))
 
-(defun org-gtd--incubate-file ()
-  "Create or return the buffer to the GTD incubate file."
-  (org-gtd--gtd-file org-gtd-incubate-file-basename))
+;;;; sorting things is hard I need to make multiple files
 
 (defun org-gtd--nextify ()
   "Add the NEXT keyword to the first action/task of the project.
@@ -446,22 +454,34 @@ the inbox.  Mark it as done and archive."
   (org-todo "DONE")
   (org-archive-subtree))
 
+(defun org-gtd--refile-incubate ()
+  (setq user-refile-targets org-refile-targets)
+  (setq org-refile-targets `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)))
+  (org-refile)
+  (setq org-refile-targets user-refile-targets))
+
 (defun org-gtd--refile-target (heading-regexp)
-  "Refile the HEADING-REGEXP item to one of the `org-gtd--refile-targets'."
-  (let* ((user-refile-targets org-refile-targets)
-         (org-refile-targets (org-gtd--refile-targets))
+  "Filters refile targets generated from `org-gtd--refile-targets' using HEADING-REGEXP."
+  (let* ((org-refile-targets (org-gtd--refile-targets))
          (results (cl-find-if
                    (lambda (rfloc)
                      (string-match heading-regexp
                                    (car rfloc)))
-                   (org-refile-get-targets)))
-         (org-refile-targets user-refile-targets))
+                   (org-refile-get-targets))))
     results))
 
 (defun org-gtd--refile-targets ()
   "Return the refile targets specific to org-gtd."
-  `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)
-    (,(org-gtd--path org-gtd-actionable-file-basename) :maxlevel . 1)))
+  (append (org-gtd--refile-incubate-targets) (org-gtd--refile-action-targets))
+  ;; `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)
+  ;;   (,(org-gtd--path org-gtd-actionable-file-basename) :maxlevel . 1))
+  )
+
+(defun org-gtd--refile-incubate-targets ()
+  `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)))
+
+(defun org-gtd--refile-action-targets ()
+  `((,(org-gtd--path org-gtd-actionable-file-basename) :maxlevel . 1)))
 
 (defun org-gtd--single-action ()
   "Process GTD inbox item as a single action.
