@@ -92,6 +92,7 @@ For your convenience, here's a commented elisp code block, assuming you are usin
   (use-package org-gtd
     :after org
     :pin melpa-stable ;; or :pin melpa as you prefer
+    :demand t ;; without this, the package won't be loaded, so org-agenda won't be configured
     :custom
     ;; where org-gtd will put its files. This value is also the default one.
     (org-gtd-directory "~/gtd/")
