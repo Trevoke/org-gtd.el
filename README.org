@@ -120,7 +120,9 @@ For your convenience, here's a commented elisp code block, assuming you are usin
     :after org-gtd ;; because we need to add the org-gtd directory to the agenda files
     ;; use as-is if you don't have an existing org-agenda setup
     ;; otherwise push the directory to the existing list
-    (org-agenda-files `(,org-gtd-directory)))
+    (org-agenda-files `(,org-gtd-directory))
+    ;; a useful view to see what can be accomplished today
+    (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "d") (todo "NEXT"))))))
 
     (use-package org-capture
       :ensure nil
