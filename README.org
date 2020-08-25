@@ -122,7 +122,7 @@ For your convenience, here's a commented elisp code block, assuming you are usin
     ;; otherwise push the directory to the existing list
     (org-agenda-files `(,org-gtd-directory))
     ;; a useful view to see what can be accomplished today
-    (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "d") (todo "NEXT"))))))
+    (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT"))))))
 
     (use-package org-capture
       :ensure nil
