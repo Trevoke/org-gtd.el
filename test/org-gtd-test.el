@@ -18,11 +18,13 @@
   :var ((ogt-target-dir (f-join (f-dirname (f-this-file)) "runtime-file-path")))
   (before-each
     (setq org-gtd-directory ogt-target-dir)
-    (ogt--clean-target-directory org-gtd-directory))
+    (ogt--clean-target-directory org-gtd-directory)
+    (setq org-agenda-files `(,ogt-target-dir)))
 
   (after-each
     (mapcar (lambda (buffer) (with-current-buffer buffer (save-buffer) (kill-buffer)))
-            (org-gtd--find-or-create-and-save-files)))
+            (org-gtd--find-or-create-and-save-files))
+    (setq org-agenda-files '()))
 
  (describe
      "Processing items"
@@ -33,6 +35,23 @@
                                     entry (file (lambda () (org-gtd--path org-gtd-inbox-file-basename)))
                                     "* %?\n%U\n\n  %i"
                                     :kill-buffer t))))
+
+   (it "shows item in agenda when done"
+     (org-gtd-capture nil "i")
+     (insert "single-action")
+     (org-capture-finalize)
+
+     (with-simulated-input '("s" "C-c c" "RET")
+                           (org-gtd-process-inbox))
+
+     (expect (with-current-buffer (org-gtd--actionable-file) (buffer-modified-p)) :to-equal nil)
+
+     (org-gtd-show-all-next)
+
+     (setq ogt-agenda-string (with-current-buffer "*Org Agenda*" (buffer-string)))
+
+
+     (expect (string-match "single-action" ogt-agenda-string) :to-be-truthy))
 
    (it "uses a keybinding to finish clarifying an item when point is on headline"
      (org-gtd-capture nil "i")
