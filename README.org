@@ -119,6 +119,7 @@ For your convenience, here's a commented elisp code block, assuming you are usin
   (use-package org-agenda
     :ensure nil ;; this is how you tell use-package to manage a sub-package
     :after org-gtd ;; because we need to add the org-gtd directory to the agenda files
+    :config
     ;; use as-is if you don't have an existing org-agenda setup
     ;; otherwise push the directory to the existing list
     (org-agenda-files `(,org-gtd-directory))
