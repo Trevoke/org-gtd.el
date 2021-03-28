@@ -224,7 +224,7 @@ Done here is any done `org-todo-keyword'."
        (org-archive-subtree-default)))
    org-gtd-complete-projects))
 
-(defun org-gtd-capture (&optional GOTO KEYS)
+(defun org-gtd-capture (&optional goto keys)
   "Capture something into the GTD inbox.
 
 Wraps the function `org-capture' to ensure the inbox exists.
