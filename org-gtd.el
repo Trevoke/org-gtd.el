@@ -200,13 +200,14 @@ It's suggested that you categorize the items in here somehow, such as:
 ;;;; Customization
 
 (defgroup org-gtd nil
-  "An implementation of GTD."
+  "An Org mode implementation of GTD."
+  :link '(url-link "https://github.com/Trevoke/org-gtd.el")
   :group 'org)
 
 (defcustom org-gtd-directory "~/gtd"
   "Directory of Org based GTD files.
 This is the directory where to look for the files used in
-this Org-mode based GTD implementation."
+this Org mode based GTD implementation."
   :type 'directory)
 
 ;;;; Commands
@@ -226,10 +227,8 @@ Done here is any done `org-todo-keyword'."
 
 (defun org-gtd-capture (&optional goto keys)
   "Capture something into the GTD inbox.
-
 Wraps the function `org-capture' to ensure the inbox exists.
-
-For GOTO and KEYS, see `org-capture' documentation for the variables of the same name."
+GOTO and KEYS are as in `org-capture'."
   (interactive)
   (kill-buffer (org-gtd--inbox-file))
   (org-capture GOTO KEYS))
@@ -247,7 +246,6 @@ Use this once a day and/or weekly as part of the weekly review."
   (set-buffer (org-gtd--inbox-file))
   (display-buffer-same-window (org-gtd--inbox-file) '())
   (delete-other-windows)
-
   (org-gtd--find-or-create-and-save-files)
   (org-map-entries
    (lambda ()
@@ -279,6 +277,7 @@ This assumes all GTD files are also agenda files."
 ;;;; File work
 
 (defun org-gtd--find-or-create-and-save-files ()
+  "Find or create the various GTD files."
   (mapcar
    (lambda (buffer) (with-current-buffer buffer (save-buffer) buffer))
    `(,(org-gtd--actionable-file) ,(org-gtd--incubate-file) ,(org-gtd--inbox-file))))
@@ -455,6 +454,8 @@ the inbox.  Mark it as done and archive."
   (org-archive-subtree))
 
 (defun org-gtd--refile-incubate ()
+  "Refile item to the incubate file.
+Don't override already defined user refile targets."
   (setq user-refile-targets org-refile-targets)
   (setq org-refile-targets `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)))
   (org-refile)
@@ -478,9 +479,11 @@ the inbox.  Mark it as done and archive."
   )
 
 (defun org-gtd--refile-incubate-targets ()
+  "Refile targets for items to incubate."
   `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)))
 
 (defun org-gtd--refile-action-targets ()
+  "Refile targets for actionable items."
   `((,(org-gtd--path org-gtd-actionable-file-basename) :maxlevel . 1)))
 
 (defun org-gtd--single-action ()
