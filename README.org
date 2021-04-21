@@ -109,10 +109,10 @@ For your convenience, here's a commented elisp code block, assuming you are usin
     (org-edna-load)
     :bind
     (("C-c d c" . org-gtd-capture) ;; add item to inbox
-    ("C-c d a" . org-agenda-list) ;; see what's on your plate today
-    ("C-c d p" . org-gtd-process-inbox) ;; process entire inbox
-    ("C-c d n" . org-gtd-show-all-next) ;; see all NEXT items
-    ("C-c d s" . org-gtd-show-stuck-projects)) ;; see projects that don't have a NEXT item
+     ("C-c d a" . org-agenda-list) ;; see what's on your plate today
+     ("C-c d p" . org-gtd-process-inbox) ;; process entire inbox
+     ("C-c d n" . org-gtd-show-all-next) ;; see all NEXT items
+     ("C-c d s" . org-gtd-show-stuck-projects)) ;; see projects that don't have a NEXT item
     :init
     (bind-key "C-c c" 'org-gtd-clarify-finalize)) ;; the keybinding to hit when you're done editing an item in the processing phase
 
@@ -126,15 +126,15 @@ For your convenience, here's a commented elisp code block, assuming you are usin
     ;; a useful view to see what can be accomplished today
     (setq org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT"))))))
 
-    (use-package org-capture
-      :ensure nil
-      ;; note that org-gtd has to be loaded before this
-      :after org-gtd
-      :config
-      ;; use as-is if you don't have an existing set of org-capture templates
-      ;; otherwise add to existing setup
-      ;; you can of course change the letters, too
-      (setq org-capture-templates `(("i" "Inbox"
+  (use-package org-capture
+    :ensure nil
+    ;; note that org-gtd has to be loaded before this
+    :after org-gtd
+    :config
+    ;; use as-is if you don't have an existing set of org-capture templates
+    ;; otherwise add to existing setup
+    ;; you can of course change the letters, too
+    (setq org-capture-templates `(("i" "Inbox"
                                    entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
                                    "* %?\n%U\n\n  %i"
                                    :kill-buffer t)
