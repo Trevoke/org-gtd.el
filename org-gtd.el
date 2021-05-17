@@ -153,7 +153,7 @@ This is a list of four items, the same type as in `org-stuck-projects'.")
 
 (defconst org-gtd-actionable-template
   "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
-#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CANCELED(c@)
+#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
 
 * Actions
 :PROPERTIES:
@@ -180,7 +180,7 @@ This is a list of four items, the same type as in `org-stuck-projects'.")
 
 (defconst org-gtd-inbox-template
   "#+STARTUP: overview hidestars logrefile indent logdone
-#+TODO: NEXT TODO WAIT | DONE CANCELED TRASH
+#+TODO: NEXT TODO WAIT | DONE CNCL
 #+begin_comment
 This is the inbox. Everything goes in here when you capture it.
 #+end_comment
@@ -502,7 +502,7 @@ the inbox.  Set as a NEXT action and refile to
   (org-gtd--clarify-item)
   (goto-char (point-min))
   (org-set-tags-command)
-  (org-todo "CANCELED")
+  (org-todo "CNCL")
   (org-archive-subtree))
 
 (provide 'org-gtd)
