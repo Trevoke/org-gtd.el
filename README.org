@@ -135,11 +135,11 @@ For your convenience, here's a commented elisp code block, assuming you are usin
     ;; otherwise add to existing setup
     ;; you can of course change the letters, too
     (setq org-capture-templates `(("i" "Inbox"
-                                   entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
+                                   entry (file (lambda () (org-gtd--path org-gtd-inbox-file-basename)))
                                    "* %?\n%U\n\n  %i"
                                    :kill-buffer t)
                                   ("l" "Todo with link"
-                                   entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
+                                   entry (file (lambda () (org-gtd--path org-gtd-inbox-file-basename)))
                                    "* %?\n%U\n\n  %i\n  %a"
                                    :kill-buffer t))))
 #+end_src
