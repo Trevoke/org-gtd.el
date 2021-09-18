@@ -43,7 +43,7 @@
       (insert "single-action")
       (org-capture-finalize)
 
-      (with-simulated-input '("s" "C-c c" "RET")
+      (with-simulated-input "s C-c c RET"
                             (org-gtd-process-inbox))
 
       (expect (with-current-buffer (org-gtd--actionable-file) (buffer-modified-p)) :to-equal nil)
@@ -60,7 +60,7 @@
       (insert "foobar")
       (org-capture-finalize)
 
-      (with-simulated-input '("s" "C-c c" "RET")
+      (with-simulated-input "s C-c c RET"
                             (org-gtd-process-inbox))
       (mapcar
        (lambda (buffer) (with-current-buffer buffer (save-buffer)))
@@ -82,4 +82,4 @@
         (save-buffer))
       (setq org-refile-targets (org-gtd--refile-incubate-targets))
       (setq target-names (mapcar 'car (org-refile-get-targets)))
-      (expect target-names :to-have-same-items-as '("To Eat" "To Read")))))
+      (expect target-names :to-have-same-items-as '("Auto-generated incubate headline" "To Eat" "To Read")))))
