@@ -123,6 +123,8 @@ as you feel the need: every two months? Every six months? Every year?
 It's suggested that you categorize the items in here somehow, such as:
 \"to read\", \"to buy\", \"to eat\", etc - whatever works best for your mind!
 #+end_comment
+
+* Auto-generated incubate headline
 "
   "Template for the GTD someday/maybe list.")
 

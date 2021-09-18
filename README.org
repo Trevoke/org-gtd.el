@@ -42,7 +42,19 @@ Finally, add this to your config:
 (require 'org-gtd)
 #+end_src
 ** Configuring
-For your convenience, here's a commented elisp code block, assuming you are using =(use-package)=.
+
+Here are four things you need to do before regular usage of ~org-gtd~:
+- decide on a directory for the ~org-gtd~ files. The default value is ~(setq org-gtd-directory "~/gtd/")~.
+- Execute ~M-S-: (org-gtd-find-or-create-and-save-files)~
+- Find the ~incubate.org~ file and add some incubation categories as top-level headlines. This is intended to be helpful when opening the file during your recurring reviews. For instance, I use things like this:
+  #+begin_quote
+  * To Read
+  * To Write
+  * To Play
+  * To Eat
+  * To Visit
+  #+end_quote
+- Read through and apply the block below, which explains many of the options you need to configure, assuming you are using =(use-package)=. The items are marked as REQUIRED if they must be present for the package to function properly.
 #+begin_src emacs-lisp
   (use-package org-gtd
     :after org
@@ -51,20 +63,19 @@ For your convenience, here's a commented elisp code block, assuming you are usin
     ;; without this, the package won't be loaded, so org-agenda won't be configured
     :demand t
     :custom
-    ;; where org-gtd will put its files. This value is also the default one.
+    ;; where org-gtd will put its files. This is the default value.
     (org-gtd-directory "~/gtd/")
     ;; package: https://github.com/Malabarba/org-agenda-property
+    ;; configure this package to your own tastes
     ;; this is so you can see who an item was delegated to in the agenda
-    (org-agenda-property-list '("DELEGATED_TO"))
-    ;; I think this makes the agenda easier to read
-    (org-agenda-property-position 'next-line)
+    (org-agenda-property-list '("DELEGATED_TO")) ;; REQUIRED
     ;; package: https://www.nongnu.org/org-edna-el/
     ;; org-edna is used to make sure that when a project task gets DONE,
     ;; the next TODO is automatically changed to NEXT.
-    (org-edna-use-inheritance t)
+    (org-edna-use-inheritance t) ;; REQUIRED
     :config
     ;; without this, org-edna won't trigger
-    (org-edna-mode 1)
+    (org-edna-mode 1) ;; REQUIRED
     :bind
     (("C-c d c" . org-gtd-capture) ;; add item to inbox
      ("C-c d a" . org-agenda-list) ;; see what's on your plate today
@@ -72,26 +83,27 @@ For your convenience, here's a commented elisp code block, assuming you are usin
      ("C-c d n" . org-gtd-show-all-next) ;; see all NEXT items
      ("C-c d s" . org-gtd-show-stuck-projects)) ;; see projects that don't have a NEXT item
     :init
-    (bind-key "C-c c" 'org-gtd-clarify-finalize)) ;; the keybinding to hit when you're done processing an inbox item
+    (bind-key "C-c c" 'org-gtd-clarify-finalize)) ;; the keybinding to hit when you're done processing an inbox item ;; REQUIRED
 
   (use-package org-agenda
     :ensure nil ;; this is how you tell use-package to manage a sub-package
-    :after org-gtd ;; because we need to add the org-gtd directory to the agenda files
+    :after org-gtd ;; we need to add the org-gtd directory to the agenda files
     :custom
     ;; use as-is if you don't have an existing org-agenda setup
     ;; otherwise push the directory to the existing list
-    (org-agenda-files `(,org-gtd-directory))
+    (org-agenda-files `(,org-gtd-directory)) ;; REQUIRED
     ;; a useful view to see what can be accomplished today
     (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT"))))))
 
   (use-package org-capture
     :ensure nil
-    ;; note that org-gtd has to be loaded before this
+    ;; org-gtd has to be loaded before this
     :after org-gtd
     :config
     ;; use as-is if you don't have an existing set of org-capture templates
     ;; otherwise add to existing setup
     ;; you can of course change the letters, too
+    ;; REQUIRED
     (setq org-capture-templates `(("i" "Inbox"
                                    entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
                                    "* %?\n%U\n\n  %i"
@@ -102,17 +114,6 @@ For your convenience, here's a commented elisp code block, assuming you are usin
                                    :kill-buffer t))))
 #+end_src
 ** Using
-*** Before first use
-- Decide on a directory for the files managed by ~org-gtd.el~. By default, the directory will be ~~/gtd/~. Store your choice in ~org-gtd-directory~.
-- Execute ~M-S-: (org-gtd-find-or-create-and-save-files)~
-- Find the ~incubate.org~ file and add some incubation categories as top-level headlines. This is intended to be helpful when opening the file during your recurring reviews. For instance, I use things like this:
-  #+begin_quote
-  * To Read
-  * To Write
-  * To Play
-  * To Eat
-  * To Visit
-  #+end_quote
 *** Regular use
 I will assume you have used the suggested keybindings above.
 
