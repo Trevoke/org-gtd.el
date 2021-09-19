@@ -14,19 +14,33 @@
   (with-current-buffer buffer
     (buffer-string)))
 
+(defun ogt--reset-var (symbl)
+  "Reset SYMBL to its standard value."
+  (set symbl (eval (car (get symbl 'standard-value)))))
+
+(defun ogt--reset-variables ()
+  "Remove all customizations related to org-gtd"
+  (ogt--reset-var 'org-agenda-files)
+  (ogt--reset-var 'org-gtd-process-item-hooks)
+)
+
 (describe
  "Org GTD"
- :var ((ogt-target-dir (f-join (f-dirname (f-this-file)) "runtime-file-path")))
+ :var ((ogt-target-dir
+        (f-join (f-dirname (f-this-file)) "runtime-file-path")))
+
  (before-each
   (setq org-gtd-directory ogt-target-dir)
   (ogt--clean-target-directory org-gtd-directory)
+  (setq org-gtd-process-item-hooks '('org-set-tags-command))
   (org-gtd-find-or-create-and-save-files)
   (setq org-agenda-files `(,ogt-target-dir)))
 
  (after-each
-  (mapcar (lambda (buffer) (with-current-buffer buffer (save-buffer) (kill-buffer)))
+  (mapcar (lambda (buffer)
+            (with-current-buffer buffer (kill-buffer)))
           (org-gtd-find-or-create-and-save-files))
-  (setq org-agenda-files '()))
+  (ogt--reset-variables))
 
  (describe
   "Processing items"
@@ -39,6 +53,7 @@
                                   :kill-buffer t))))
 
   (it "shows item in agenda when done"
+      (message "%s" org-gtd-process-item-hooks)
       (org-gtd-capture nil "i")
       (insert "single-action")
       (org-capture-finalize)

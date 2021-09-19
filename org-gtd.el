@@ -141,6 +141,11 @@ This is the directory where to look for the files used in
 this Org-mode based GTD implementation."
   :type 'directory)
 
+(defcustom org-gtd-process-item-hooks '('org-set-tags-command)
+  "Enhancements to add to each item as they get processed from the inbox."
+  :type 'hook
+  :options '('org-set-tags-command 'org-set-effort 'org-priority))
+
 ;;;; Commands
 
 (defun org-gtd-find-or-create-and-save-files ()
@@ -270,7 +275,7 @@ Allow the user apply user-defined tags from
 the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-gtd--clarify-item)
   (goto-char (point-min))
-  (org-set-tags-command)
+  (org-gtd--decorate-item)
   (org-schedule 0)
   (org-refile nil nil (org-gtd--refile-target org-gtd-scheduled)))
 
@@ -282,16 +287,11 @@ the inbox.  Set it as a waiting action and refile to
 `org-gtd-actionable-file-basename'."
   (org-gtd--clarify-item)
   (goto-char (point-min))
-  (org-set-tags-command)
+  (org-gtd--decorate-item)
   (org-todo "WAIT")
   (org-set-property "DELEGATED_TO" (read-string "Who will do this? "))
   (org-schedule 0)
   (org-refile nil nil (org-gtd--refile-target org-gtd-delegated)))
-
-(defun org-gtd--clarify-item ()
-  "User interface to reflect on and clarify the current inbox item."
-  (org-gtd-user-input-mode 1)
-  (recursive-edit))
 
 (defun org-gtd--incubate ()
   "Process GTD inbox item by incubating it.
@@ -300,11 +300,59 @@ Allow the user apply user-defined tags from
 the inbox.  Refile to `org-gtd-incubate-file-basename'."
   (org-gtd--clarify-item)
   (goto-char (point-min))
-  (org-set-tags-command)
+  (org-gtd--decorate-item)
   (org-schedule 0)
   (org-gtd--refile-incubate))
 
+(defun org-gtd--project ()
+  "Process GTD inbox item by transforming it into a project.
+Allow the user apply user-defined tags from
+`org-tag-persistent-alist', `org-tag-alist' or file-local tags in
+the inbox.  Refile to `org-gtd-actionable-file-basename'."
+  (org-gtd--clarify-item)
+  (goto-char (point-min))
+  (org-gtd--decorate-item)
+  (org-gtd--nextify)
+  (org-refile nil nil (org-gtd--refile-target org-gtd-projects))
+  (with-current-buffer (org-gtd--actionable-file)
+    (org-update-statistics-cookies t)))
+
+(defun org-gtd--quick-action ()
+  "Process GTD inbox item by doing it now.
+Allow the user apply user-defined tags from
+`org-tag-persistent-alist', `org-tag-alist' or file-local tags in
+the inbox.  Mark it as done and archive."
+  (org-gtd--clarify-item)
+  (goto-char (point-min))
+  (org-gtd--decorate-item)
+  (org-todo "DONE")
+  (org-archive-subtree))
+
+(defun org-gtd--single-action ()
+  "Process GTD inbox item as a single action.
+Allow the user apply user-defined tags from
+`org-tag-persistent-alist', `org-tag-alist' or file-local tags in
+the inbox.  Set as a NEXT action and refile to
+`org-gtd-actionable-file-basename'."
+  (org-gtd--clarify-item)
+  (goto-char (point-min))
+  (org-gtd--decorate-item)
+  (org-todo "NEXT")
+  (org-refile nil nil (org-gtd--refile-target org-gtd-actions)))
+
+(defun org-gtd--trash ()
+  "Mark GTD inbox item as cancelled and archive it."
+  (org-gtd--clarify-item)
+  (goto-char (point-min))
+  (org-gtd--decorate-item)
+  (org-todo "CANCELED")
+  (org-archive-subtree))
+
 ;;;; sorting things is hard I need to make multiple files
+
+(defun org-gtd--decorate-item ()
+  (dolist (hook org-gtd-process-items-hooks)
+    (funcall hook)))
 
 (defun org-gtd--nextify ()
   "Add the NEXT keyword to the first action/task of the project.
@@ -351,18 +399,10 @@ This assumes the file is located in `org-gtd-directory'."
       (?a (org-gtd--archive))
       (?i (org-gtd--incubate)))))
 
-(defun org-gtd--project ()
-  "Process GTD inbox item by transforming it into a project.
-Allow the user apply user-defined tags from
-`org-tag-persistent-alist', `org-tag-alist' or file-local tags in
-the inbox.  Refile to `org-gtd-actionable-file-basename'."
-  (org-gtd--clarify-item)
-  (goto-char (point-min))
-  (org-set-tags-command)
-  (org-gtd--nextify)
-  (org-refile nil nil (org-gtd--refile-target org-gtd-projects))
-  (with-current-buffer (org-gtd--actionable-file)
-    (org-update-statistics-cookies t)))
+(defun org-gtd--clarify-item ()
+  "User interface to reflect on and clarify the current inbox item."
+  (org-gtd-user-input-mode 1)
+  (recursive-edit))
 
 (defun org-gtd--project-complete-p ()
   "Return t if project complete, nil otherwise.
@@ -376,17 +416,6 @@ marked with a done `org-todo-keyword'."
                        t
                        'tree))))
     (seq-every-p (lambda (x) (string-equal x "DONE")) entries)))
-
-(defun org-gtd--quick-action ()
-  "Process GTD inbox item by doing it now.
-Allow the user apply user-defined tags from
-`org-tag-persistent-alist', `org-tag-alist' or file-local tags in
-the inbox.  Mark it as done and archive."
-  (org-gtd--clarify-item)
-  (goto-char (point-min))
-  (org-set-tags-command)
-  (org-todo "DONE")
-  (org-archive-subtree))
 
 (defun org-gtd--refile-incubate ()
   (setq user-refile-targets org-refile-targets)
@@ -416,26 +445,6 @@ the inbox.  Mark it as done and archive."
 
 (defun org-gtd--refile-action-targets ()
   `((,(org-gtd--path org-gtd-actionable-file-basename) :maxlevel . 1)))
-
-(defun org-gtd--single-action ()
-  "Process GTD inbox item as a single action.
-Allow the user apply user-defined tags from
-`org-tag-persistent-alist', `org-tag-alist' or file-local tags in
-the inbox.  Set as a NEXT action and refile to
-`org-gtd-actionable-file-basename'."
-  (org-gtd--clarify-item)
-  (goto-char (point-min))
-  (org-set-tags-command)
-  (org-todo "NEXT")
-  (org-refile nil nil (org-gtd--refile-target org-gtd-actions)))
-
-(defun org-gtd--trash ()
-  "Mark GTD inbox item as cancelled and archive it."
-  (org-gtd--clarify-item)
-  (goto-char (point-min))
-  (org-set-tags-command)
-  (org-todo "CANCELED")
-  (org-archive-subtree))
 
 (provide 'org-gtd)
 
