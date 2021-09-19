@@ -58,24 +58,21 @@ Here are four things you need to do before regular usage of ~org-gtd~:
 #+begin_src emacs-lisp
   (use-package org-gtd
     :after org
-    ;; or :pin melpa as you prefer
-    :pin melpa-stable
-    ;; without this, the package won't be loaded, so org-agenda won't be configured
+    ;; REQUIRED: load package, configure org-agenda
     :demand t
     :custom
     ;; where org-gtd will put its files. This is the default value.
     (org-gtd-directory "~/gtd/")
     ;; package: https://github.com/Malabarba/org-agenda-property
     ;; configure this package to your own tastes
-    ;; this is so you can see who an item was delegated to in the agenda
-    (org-agenda-property-list '("DELEGATED_TO")) ;; REQUIRED
+    ;; REQUIRED: see who an item was delegated to in the agenda
+    (org-agenda-property-list '("DELEGATED_TO"))
     ;; package: https://www.nongnu.org/org-edna-el/
-    ;; org-edna is used to make sure that when a project task gets DONE,
-    ;; the next TODO is automatically changed to NEXT.
-    (org-edna-use-inheritance t) ;; REQUIRED
+    ;; REQUIRED: change next TODO to NEXT in a project
+    (org-edna-use-inheritance t)
     :config
-    ;; without this, org-edna won't trigger
-    (org-edna-mode 1) ;; REQUIRED
+    ;; REQUIRED load org-edna minor mode
+    (org-edna-mode 1)
     :bind
     (("C-c d c" . org-gtd-capture) ;; add item to inbox
      ("C-c d a" . org-agenda-list) ;; see what's on your plate today
@@ -83,15 +80,16 @@ Here are four things you need to do before regular usage of ~org-gtd~:
      ("C-c d n" . org-gtd-show-all-next) ;; see all NEXT items
      ("C-c d s" . org-gtd-show-stuck-projects)) ;; see projects that don't have a NEXT item
     :init
-    (bind-key "C-c c" 'org-gtd-clarify-finalize)) ;; the keybinding to hit when you're done processing an inbox item ;; REQUIRED
+    ;; REQUIRED - keybinding when you're done processing an inbox item
+    (bind-key "C-c c" 'org-gtd-clarify-finalize))
 
   (use-package org-agenda
     :ensure nil ;; this is how you tell use-package to manage a sub-package
     :after org-gtd ;; we need to add the org-gtd directory to the agenda files
     :custom
-    ;; use as-is if you don't have an existing org-agenda setup
+    ;; REQUIRED use as-is if you don't have an existing org-agenda setup
     ;; otherwise push the directory to the existing list
-    (org-agenda-files `(,org-gtd-directory)) ;; REQUIRED
+    (org-agenda-files `(,org-gtd-directory))
     ;; a useful view to see what can be accomplished today
     (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT"))))))
 
@@ -100,10 +98,9 @@ Here are four things you need to do before regular usage of ~org-gtd~:
     ;; org-gtd has to be loaded before this
     :after org-gtd
     :config
-    ;; use as-is if you don't have an existing set of org-capture templates
-    ;; otherwise add to existing setup
-    ;; you can of course change the letters, too
-    ;; REQUIRED
+    ;; REQUIRED: getting items into the inbox goes through org-capture
+    ;; merge with your existing setup, choose your preferred letters
+    ;; as long as it's a headline item, you can change the rest.
     (setq org-capture-templates `(("i" "Inbox"
                                    entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
                                    "* %?\n%U\n\n  %i"
