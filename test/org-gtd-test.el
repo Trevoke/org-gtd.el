@@ -21,18 +21,15 @@
 (defun ogt--reset-variables ()
   "Remove all customizations related to org-gtd"
   (ogt--reset-var 'org-agenda-files)
-  (ogt--reset-var 'org-gtd-process-item-hooks)
-)
+  (ogt--reset-var 'org-gtd-process-item-hooks))
 
 (describe
  "Org GTD"
- :var ((ogt-target-dir
-        (f-join (f-dirname (f-this-file)) "runtime-file-path")))
+ :var ((ogt-target-dir (f-join (f-dirname (f-this-file)) "runtime-file-path")))
 
  (before-each
   (setq org-gtd-directory ogt-target-dir)
   (ogt--clean-target-directory org-gtd-directory)
-  (setq org-gtd-process-item-hooks '('org-set-tags-command))
   (org-gtd-find-or-create-and-save-files)
   (setq org-agenda-files `(,ogt-target-dir)))
 
@@ -52,31 +49,42 @@
                                   "* %?\n%U\n\n  %i"
                                   :kill-buffer t))))
 
-  (it "shows item in agenda when done"
-      (message "%s" org-gtd-process-item-hooks)
+  (it "uses configurable decorations on the processed items"
+      (setq org-gtd-process-item-hooks '(org-set-tags-command org-priority))
       (org-gtd-capture nil "i")
-      (insert "single-action")
+      (insert "single action")
       (org-capture-finalize)
 
-      (with-simulated-input "s C-c c RET"
-                            (org-gtd-process-inbox))
+      (with-simulated-input "s C-c c RET A RET" (org-gtd-process-inbox))
+
+      (org-gtd-show-all-next)
+      (setq ogt-agenda-string (ogt--get-string-from-buffer "*Org Agenda*"))
+
+      (message ogt-agenda-string)
+
+      (expect (string-match "NEXT \\[#A\\] single action" ogt-agenda-string) :to-be-truthy))
+
+  (it "shows item in agenda when done"
+      (org-gtd-capture nil "i")
+      (insert "single action")
+      (org-capture-finalize)
+
+      (with-simulated-input "s C-c c RET" (org-gtd-process-inbox))
 
       (expect (with-current-buffer (org-gtd--actionable-file) (buffer-modified-p)) :to-equal nil)
 
       (org-gtd-show-all-next)
+      (setq ogt-agenda-string (ogt--get-string-from-buffer "*Org Agenda*"))
 
-      (setq ogt-agenda-string (with-current-buffer "*Org Agenda*" (buffer-string)))
 
-
-      (expect (string-match "single-action" ogt-agenda-string) :to-be-truthy))
+      (expect (string-match "single action" ogt-agenda-string) :to-be-truthy))
 
   (it "uses a keybinding to finish clarifying an item when point is on headline"
       (org-gtd-capture nil "i")
       (insert "foobar")
       (org-capture-finalize)
 
-      (with-simulated-input "s C-c c RET"
-                            (org-gtd-process-inbox))
+      (with-simulated-input "s C-c c RET" (org-gtd-process-inbox))
       (mapcar
        (lambda (buffer) (with-current-buffer buffer (save-buffer)))
        `(,(org-gtd--actionable-file) ,(org-gtd--incubate-file) ,(org-gtd--inbox-file)))
