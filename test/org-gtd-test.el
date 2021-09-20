@@ -23,15 +23,38 @@
   (ogt--reset-var 'org-agenda-files)
   (ogt--reset-var 'org-gtd-process-item-hooks))
 
+(defun ogt--add-single-item ()
+  (org-gtd-capture nil "i")
+  (insert "single action")
+  (org-capture-finalize))
+
+(defconst ogt--project-text
+  "* Task 1
+* Task 2
+* Task 3")
+
+(defun ogt--add-and-process-project ()
+  (org-gtd-capture nil "i")
+  (insert "project headline")
+  (org-capture-finalize)
+  (with-simulated-input
+      ("p" "RET" (insert ogt--project-text) "C-c c RET")
+    (org-gtd-process-inbox)))
+
 (describe
  "Org GTD"
- :var ((ogt-target-dir (f-join (f-dirname (f-this-file)) "runtime-file-path")))
+ :var ((org-gtd-directory
+        (f-join (f-dirname (f-this-file)) "runtime-file-path")))
 
  (before-each
-  (setq org-gtd-directory ogt-target-dir)
   (ogt--clean-target-directory org-gtd-directory)
   (org-gtd-find-or-create-and-save-files)
-  (setq org-agenda-files `(,ogt-target-dir)))
+  (setq org-agenda-files `(,org-gtd-directory))
+  (define-key org-gtd-command-map (kbd "C-c c") #'org-gtd-clarify-finalize)
+  (setq org-capture-templates `(("i" "GTD item"
+                                 entry (file (lambda () (org-gtd--path org-gtd-inbox-file-basename)))
+                                 "* %?\n%U\n\n  %i"
+                                 :kill-buffer t))))
 
  (after-each
   (mapcar (lambda (buffer)
@@ -43,60 +66,44 @@
   "Processing items"
 
   (before-each
-   (define-key org-gtd-command-map (kbd "C-c c") #'org-gtd-clarify-finalize)
-   (setq org-capture-templates `(("i" "GTD item"
-                                  entry (file (lambda () (org-gtd--path org-gtd-inbox-file-basename)))
-                                  "* %?\n%U\n\n  %i"
-                                  :kill-buffer t))))
+   (ogt--add-single-item))
 
   (it "uses configurable decorations on the processed items"
       (setq org-gtd-process-item-hooks '(org-set-tags-command org-priority))
-      (org-gtd-capture nil "i")
-      (insert "single action")
-      (org-capture-finalize)
-
       (with-simulated-input "s C-c c RET A RET" (org-gtd-process-inbox))
 
       (org-gtd-show-all-next)
       (setq ogt-agenda-string (ogt--get-string-from-buffer "*Org Agenda*"))
 
-      (message ogt-agenda-string)
-
       (expect (string-match "NEXT \\[#A\\] single action" ogt-agenda-string) :to-be-truthy))
 
+
   (it "shows item in agenda when done"
-      (org-gtd-capture nil "i")
-      (insert "single action")
-      (org-capture-finalize)
-
       (with-simulated-input "s C-c c RET" (org-gtd-process-inbox))
-
       (expect (with-current-buffer (org-gtd--actionable-file) (buffer-modified-p)) :to-equal nil)
 
       (org-gtd-show-all-next)
       (setq ogt-agenda-string (ogt--get-string-from-buffer "*Org Agenda*"))
 
 
-      (expect (string-match "single action" ogt-agenda-string) :to-be-truthy))
+      (expect (string-match "single action" ogt-agenda-string) :to-be-truthy)))
 
-  (it "uses a keybinding to finish clarifying an item when point is on headline"
-      (org-gtd-capture nil "i")
-      (insert "foobar")
-      (org-capture-finalize)
+ (describe
+  "Managing projects"
 
-      (with-simulated-input "s C-c c RET" (org-gtd-process-inbox))
-      (mapcar
-       (lambda (buffer) (with-current-buffer buffer (save-buffer)))
-       `(,(org-gtd--actionable-file) ,(org-gtd--incubate-file) ,(org-gtd--inbox-file)))
+  (before-each
+   (ogt--add-and-process-project))
 
-      (expect (ogt--get-string-from-buffer (org-gtd--actionable-file)) :to-match "foobar")))
-
+  (it "marks all undone tasks of a canceled project as canceled"
+      (message (ogt--get-string-from-buffer "*Org Agenda*")))
+  )
 
  (describe
   "Finding a refile target"
 
   (it "finds the Actions heading in the actionable file"
-      (expect (car (org-gtd--refile-target org-gtd-actions)) :to-equal "Actions"))
+      (expect (car (org-gtd--refile-target org-gtd-actions))
+              :to-equal "Actions"))
 
   (it "finds the Incubate headings in the incubate file"
       (with-current-buffer (org-gtd--incubate-file)
