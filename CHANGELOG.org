@@ -1,3 +1,11 @@
+* 1.0.3
+[2021-09-19 Sun]
+** Massive readme revamp
+the readme was a cluttered mess, I've broken it down into a lot of subsections. I hope it will be easier to manage now.
+** org-gtd-process-item-hooks
+Based on an idea in https://github.com/Trevoke/org-gtd.el/discussions/54
+
+There's now an available variable that you can use to extend and customize the behavior of item processing. If you come up with cool ideas, share them!
 * 1.0.2
 [2020-08-20 Thu]
 ** Fix inability to refile to incubate
