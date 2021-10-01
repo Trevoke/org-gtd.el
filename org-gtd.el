@@ -158,15 +158,21 @@ this Org-mode based GTD implementation."
   "Archive all projects for which all actions/tasks are marked as done.
 Done here is any done `org-todo-keyword'."
   (interactive)
-  (org-map-entries
-   (lambda ()
-     (if (org-gtd--project-complete-p)
-         (progn
-           (setq org-map-continue-from (org-element-property
-                                        :begin
-                                        (org-element-at-point)))
-           (org-archive-subtree-default))))
-   org-gtd-complete-projects))
+  (let ((backup org-use-property-inheritance)
+        (org-use-property-inheritance "CATEGORY"))
+    (org-map-entries
+     (lambda ()
+       (let ((task-states (org-gtd--current-project-states)))
+         (message "%s" task-states)
+         (if (org-gtd--project-complete-p task-states)
+             (progn
+               (setq org-map-continue-from (org-element-property
+                                            :begin
+                                            (org-element-at-point)))
+               (org-archive-subtree-default)))))
+
+     org-gtd-complete-projects)
+    (setq org-use-property-inheritance backup)))
 
 (defun org-gtd-capture (&optional GOTO KEYS)
   "Capture something into the GTD inbox.
@@ -398,18 +404,28 @@ This assumes the file is located in `org-gtd-directory'."
   (org-gtd-user-input-mode 1)
   (recursive-edit))
 
-(defun org-gtd--project-complete-p ()
+(defun org-gtd--current-project-states ()
+  "Returns a list of the task states for the current project"
+  (cdr (org-map-entries
+        (lambda ()
+          (org-entry-get
+           (org-gtd--org-element-pom (org-element-at-point))
+           "TODO"))
+        t
+        'tree)))
+
+
+(defun org-gtd--project-complete-p (task-states)
   "Return t if project complete, nil otherwise.
-A project is considered complete when all its actions/tasks are
+A project is considered complete when all TASK-STATES are
 marked with a done `org-todo-keyword'."
-  (let ((entries (cdr (org-map-entries
-                       (lambda ()
-                         (org-entry-get
-                          (org-gtd--org-element-pom (org-element-at-point))
-                          "TODO"))
-                       t
-                       'tree))))
-    (seq-every-p (lambda (x) (string-equal x "DONE")) entries)))
+  (seq-every-p (lambda (x) (string-equal x "DONE")) task-states))
+
+(defun org-gtd--project-canceled-p (task-states)
+  "Return t if project canceled, nil otherwise.
+A project is considered canceled when the last of the TASK-STATES is
+marked with a canceled `org-todo-keyword'."
+  (string-equal "CANCELED" (car (last task-states))))
 
 (defun org-gtd--refile-incubate ()
   (setq user-refile-targets org-refile-targets)

@@ -53,20 +53,6 @@
       (expect (string-match "single action" ogt-agenda-string) :to-be-truthy)))
 
  (describe
-  "Managing projects"
-
-  (before-each (ogt--add-and-process-project))
-
-  (xit "marks all undone tasks of a canceled project as canceled"
-      (org-gtd-show-all-next)
-      ;; how do I cancel a project? easiest for user from agenda view.
-      (message (ogt--get-string-from-buffer ogt--next-buffer))
-      (message (ogt--get-string-from-buffer "actionable.org"))
-      (message (ogt--get-string-from-buffer "inbox.org"))
-      (expect t :to-be-truthy))
-  )
-
- (describe
   "Finding a refile target"
 
   (it "finds the Actions heading in the actionable file"
