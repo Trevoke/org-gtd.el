@@ -174,6 +174,20 @@ Done here is any done `org-todo-keyword'."
        org-gtd-complete-projects))
     (setq org-use-property-inheritance backup)))
 
+(defun org-gtd-cancel-project ()
+  "With point on top-level headline of the project, mark all undone tasks canceled."
+  (when (eq (current-buffer) (org-gtd--actionable-file))
+    (org-map-entries
+     (lambda ()
+       (when (and (org-entry-is-todo-p)
+                  (not (org-entry-is-done-p)))
+         (org-entry-put
+          (org-gtd--org-element-pom (org-element-at-point))
+          "TODO"
+          "CANCELED"))
+       )
+     nil
+     'tree)))
 
 (defun org-gtd-capture (&optional GOTO KEYS)
   "Capture something into the GTD inbox.

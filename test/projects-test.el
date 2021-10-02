@@ -29,13 +29,6 @@
           (org-gtd-find-or-create-and-save-files))
   (ogt--reset-variables))
 
- (xit "marks all undone tasks of a canceled project as canceled"
-      (org-gtd-show-all-next)
-      ;; how do I cancel a project? easiest for user from agenda view.
-      (message (ogt--get-string-from-buffer ogt--agenda-buffer))
-      (expect t :to-be-truthy))
-
-
  (it "gets a list of the task states"
      (with-current-buffer "actionable.org"
        (beginning-of-buffer)
@@ -65,6 +58,14 @@
      (org-gtd-archive-complete-projects)
      (let ((archived-projects (ogt--archived-projects-buffer-string)))
        (expect archived-projects :to-match ".*completed.*")
-       (expect archived-projects :to-match ".*canceled.*")
-       )
-     ))
+       (expect archived-projects :to-match ".*canceled.*")))
+
+ (it "marks all undone tasks of a canceled project as canceled"
+     (with-current-buffer (org-gtd--actionable-file)
+       (beginning-of-buffer)
+       (search-forward "project headline")
+       (org-gtd-cancel-project)
+       (org-gtd-archive-complete-projects)
+       (save-buffer))
+     (let ((archived-projects (ogt--archived-projects-buffer-string)))
+       (expect archived-projects :to-match ".*project headline.*"))))
