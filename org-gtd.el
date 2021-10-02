@@ -160,19 +160,20 @@ Done here is any done `org-todo-keyword'."
   (interactive)
   (let ((backup org-use-property-inheritance)
         (org-use-property-inheritance "CATEGORY"))
-    (org-map-entries
-     (lambda ()
-       (let ((task-states (org-gtd--current-project-states)))
-         (message "%s" task-states)
-         (if (org-gtd--project-complete-p task-states)
-             (progn
-               (setq org-map-continue-from (org-element-property
-                                            :begin
-                                            (org-element-at-point)))
-               (org-archive-subtree-default)))))
+    (with-current-buffer (org-gtd--actionable-file)
+      (org-map-entries
+       (lambda ()
+         (let ((task-states (org-gtd--current-project-states)))
+           (when (or (org-gtd--project-complete-p task-states)
+                     (org-gtd--project-canceled-p task-states))
+             (setq org-map-continue-from (org-element-property
+                                          :begin
+                                          (org-element-at-point)))
+             (org-archive-subtree-default))))
 
-     org-gtd-complete-projects)
+       org-gtd-complete-projects))
     (setq org-use-property-inheritance backup)))
+
 
 (defun org-gtd-capture (&optional GOTO KEYS)
   "Capture something into the GTD inbox.

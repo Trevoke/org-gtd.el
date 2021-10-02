@@ -52,7 +52,7 @@
        (expect (org-gtd--project-canceled-p only-random-task) :to-equal nil)))
 
  (it "archives completed and canceled projects"
-     (with-current-buffer "actionable.org"
+     (with-current-buffer (org-gtd--actionable-file)
        (beginning-of-buffer)
        (search-forward "project headline")
        (beginning-of-line)
@@ -64,7 +64,7 @@
        (save-buffer))
      (org-gtd-archive-complete-projects)
      (let ((archived-projects (ogt--archived-projects-buffer-string)))
-       (expect archived-projects :to-match "completed")
-       (expect archived-projects :to-match "canceled")
+       (expect archived-projects :to-match ".*completed.*")
+       (expect archived-projects :to-match ".*canceled.*")
        )
      ))
