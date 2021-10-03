@@ -29,8 +29,8 @@
 ;;
 ;; This package provides a system that allows you to capture incoming things
 ;; into an inbox, then process the inbox and categorize each item based on the
-;; GTD categories. It leverages org-agenda to show today's items as well as the
-;; NEXT items. It also has a simple project management system, which currently
+;; GTD categories.  It leverages org-agenda to show today's items as well as the
+;; NEXT items.  It also has a simple project management system, which currently
 ;; assumes all tasks in a project are sequential.
 ;;
 ;; For a comprehensive instruction manual, see the file `README.org'.
@@ -149,6 +149,7 @@ this Org-mode based GTD implementation."
 ;;;; Commands
 
 (defun org-gtd-find-or-create-and-save-files ()
+  "Call this function to bootstrap the files used by org-gtd."
   (interactive)
   (mapcar
    (lambda (buffer) (with-current-buffer buffer (save-buffer) buffer))
@@ -175,7 +176,7 @@ Done here is any done `org-todo-keyword'."
     (setq org-use-property-inheritance backup)))
 
 (defun org-gtd-cancel-project ()
-  "With point on top-level headline of the project, mark all undone tasks canceled."
+  "With point on primary headline of the project, mark all undone tasks canceled."
   (when (eq (current-buffer) (org-gtd--actionable-file))
     (org-map-entries
      (lambda ()
@@ -188,7 +189,7 @@ Done here is any done `org-todo-keyword'."
      'tree)))
 
 (defun org-gtd-agenda-cancel-project ()
-  "Cancel the project that has the highlighted task"
+  "Cancel the project that has the highlighted task."
   (interactive)
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)
@@ -206,12 +207,8 @@ Done here is any done `org-todo-keyword'."
          (widen)
          (goto-char pos)
          (org-up-heading-safe)
-         ;(setq ts (org-schedule arg time))
-         (org-gtd-cancel-project)
-         )
-       (org-agenda-show-tags)
-       ;(org-agenda-show-new-time marker ts " S")
-       ))))
+         (org-gtd-cancel-project))
+       (org-agenda-show-tags)))))
 
 
 (defun org-gtd-capture (&optional GOTO KEYS)
@@ -277,7 +274,7 @@ This assumes all GTD files are also agenda files."
   (org-gtd--gtd-file org-gtd-actionable-file-basename))
 
 (defun org-gtd--actionable-archive ()
-  "Create or return the buffer to the archive file for the actionable items"
+  "Create or return the buffer to the archive file for the actionable items."
   (let* ((filename (string-join `(,(buffer-file-name (org-gtd--actionable-file)) "archive") "_"))
         (archive-file (f-join org-gtd-directory filename)))
     (find-file archive-file)))
@@ -396,6 +393,7 @@ the inbox.  Set as a NEXT action and refile to
 ;;;; sorting things is hard I need to make multiple files
 
 (defun org-gtd--decorate-item ()
+  "Apply hooks to add metadata to a given GTD item."
   (goto-char (point-min))
   (dolist (hook org-gtd-process-item-hooks)
     (funcall hook)))
@@ -451,7 +449,7 @@ This assumes the file is located in `org-gtd-directory'."
   (recursive-edit))
 
 (defun org-gtd--current-project-states ()
-  "Returns a list of the task states for the current project"
+  "Return a list of the task states for the current project."
   (cdr (org-map-entries
         (lambda ()
           (org-entry-get
@@ -474,6 +472,7 @@ marked with a canceled `org-todo-keyword'."
   (string-equal "CANCELED" (car (last task-states))))
 
 (defun org-gtd--refile-incubate ()
+  "Refile an item to the incubate file."
   (setq user-refile-targets org-refile-targets)
   (setq org-refile-targets `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)))
   (org-refile)
@@ -481,12 +480,14 @@ marked with a canceled `org-todo-keyword'."
 
 (defun org-gtd--refile-target (heading-regexp)
   "Filters refile targets generated from `org-gtd--refile-targets' using HEADING-REGEXP."
-  (let* ((org-refile-targets (org-gtd--refile-targets))
+  (let* ((backup org-refile-targets)
+         (org-refile-targets (org-gtd--refile-targets))
          (results (cl-find-if
                    (lambda (rfloc)
                      (string-match heading-regexp
                                    (car rfloc)))
-                   (org-refile-get-targets))))
+                   (org-refile-get-targets)))
+         (org-refile-targets backup))
     results))
 
 (defun org-gtd--refile-targets ()
@@ -497,9 +498,11 @@ marked with a canceled `org-todo-keyword'."
   )
 
 (defun org-gtd--refile-incubate-targets ()
+  "Generate refile targets for incubation items."
   `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)))
 
 (defun org-gtd--refile-action-targets ()
+  "Generate refile targets for actionable items."
   `((,(org-gtd--path org-gtd-actionable-file-basename) :maxlevel . 1)))
 
 (provide 'org-gtd)
