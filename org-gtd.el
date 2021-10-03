@@ -474,7 +474,7 @@ marked with a canceled `org-todo-keyword'."
 (defun org-gtd--refile-incubate ()
   "Refile an item to the incubate file."
   (setq user-refile-targets org-refile-targets)
-  (setq org-refile-targets `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)))
+  (setq org-refile-targets (org-gtd--refile-incubate-targets))
   (org-refile)
   (setq org-refile-targets user-refile-targets))
 
@@ -492,10 +492,7 @@ marked with a canceled `org-todo-keyword'."
 
 (defun org-gtd--refile-targets ()
   "Return the refile targets specific to org-gtd."
-  (append (org-gtd--refile-incubate-targets) (org-gtd--refile-action-targets))
-  ;; `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)
-  ;;   (,(org-gtd--path org-gtd-actionable-file-basename) :maxlevel . 1))
-  )
+  (append (org-gtd--refile-incubate-targets) (org-gtd--refile-action-targets)))
 
 (defun org-gtd--refile-incubate-targets ()
   "Generate refile targets for incubation items."
