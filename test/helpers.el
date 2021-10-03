@@ -23,6 +23,18 @@
 
 (defconst ogt--agenda-buffer "*Org Agenda*")
 
+(defun ogt--prepare-filesystem-and-configure-emacs ()
+  "run before each test"
+  (setq org-gtd-directory (f-join default-directory "test"  "runtime-file-path"))
+  (ogt--clean-target-directory org-gtd-directory)
+  (org-gtd-find-or-create-and-save-files)
+  (define-key org-gtd-command-map (kbd "C-c c") #'org-gtd-clarify-finalize)
+  (setq org-agenda-files `(,org-gtd-directory)
+        org-capture-templates `(("i" "GTD item"
+                                 entry (file (lambda () (org-gtd--path org-gtd-inbox-file-basename)))
+                                 "* %?\n%U\n\n  %i"
+                                 :kill-buffer t))))
+
 (defun ogt--clean-target-directory (dir)
   (delete-directory dir t nil)
   (make-directory dir))
@@ -34,12 +46,7 @@
 
 (defun ogt--archived-projects-buffer-string ()
   "return string of items archived from actionable file"
-  (let* ((filename (string-join '("actionable.org" "archive") "_"))
-         (archive-file (f-join org-gtd-directory filename)))
-    (find-file archive-file)
-    (with-current-buffer filename
-      (save-buffer))
-    (ogt--get-string-from-buffer filename)))
+  (ogt--get-string-from-buffer (org-gtd--actionable-archive)))
 
 (defun ogt--reset-var (symbl)
   "Reset SYMBL to its standard value."
@@ -51,9 +58,22 @@
            '(org-agenda-files
              org-gtd-process-item-hooks
              org-capture-templates
-             org-refile-targets
-             target-names))
+             org-refile-targets))
     (ogt--reset-var var)))
+
+(defun ogt--close-and-delete-files ()
+  "Run after every test to clear external state"
+  (org-gtd-show-all-next)
+  (kill-buffer ogt--agenda-buffer)
+  (mapcar (lambda (buffer)
+            (let ((filename (buffer-file-name buffer)))
+              (with-current-buffer buffer (save-buffer))
+            (kill-buffer buffer)
+            (delete-file filename)))
+          `(,(org-gtd--actionable-archive)
+            ,(org-gtd--actionable-file)
+            ,(org-gtd--inbox-file)
+            ,(org-gtd--incubate-file))))
 
 (defun ogt--add-single-item ()
   (org-gtd-capture nil "i")

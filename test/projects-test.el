@@ -4,29 +4,16 @@
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
-(require 'f)
 
 (describe
  "Project management"
 
- :var ((org-gtd-directory
-        (f-join (f-dirname (f-this-file)) "runtime-file-path")))
-
  (before-each
-  (ogt--clean-target-directory org-gtd-directory)
-  (org-gtd-find-or-create-and-save-files)
-  (define-key org-gtd-command-map (kbd "C-c c") #'org-gtd-clarify-finalize)
-  (setq org-agenda-files `(,org-gtd-directory)
-        org-capture-templates `(("i" "GTD item"
-                                 entry (file (lambda () (org-gtd--path org-gtd-inbox-file-basename)))
-                                 "* %?\n%U\n\n  %i"
-                                 :kill-buffer t)))
+  (ogt--prepare-filesystem-and-configure-emacs)
   (ogt--add-and-process-project "project headline"))
 
  (after-each
-  (mapcar (lambda (buffer)
-            (with-current-buffer buffer (kill-buffer)))
-          (org-gtd-find-or-create-and-save-files))
+  (ogt--close-and-delete-files)
   (ogt--reset-variables))
 
  (it "gets a list of the task states"
@@ -67,5 +54,15 @@
        (org-gtd-cancel-project)
        (org-gtd-archive-complete-projects)
        (save-buffer))
+     (let ((archived-projects (ogt--archived-projects-buffer-string)))
+       (expect archived-projects :to-match ".*project headline.*")))
+
+ (it "marks all undone tasks of a canceled project as canceled through the agenda"
+     (org-gtd-show-all-next)
+     (with-current-buffer ogt--agenda-buffer
+       (beginning-of-buffer)
+       (search-forward "Task 1")
+       (org-gtd-agenda-cancel-project)
+       (org-gtd-archive-complete-projects))
      (let ((archived-projects (ogt--archived-projects-buffer-string)))
        (expect archived-projects :to-match ".*project headline.*"))))

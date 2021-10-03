@@ -183,11 +183,36 @@ Done here is any done `org-todo-keyword'."
                   (not (org-entry-is-done-p)))
          (org-entry-put
           (org-gtd--org-element-pom (org-element-at-point))
-          "TODO"
-          "CANCELED"))
-       )
+          "TODO" "CANCELED")))
      nil
      'tree)))
+
+(defun org-gtd-agenda-cancel-project ()
+  "Cancel the project that has the highlighted task"
+  (interactive)
+  (org-agenda-check-type t 'agenda 'todo 'tags 'search)
+  (org-agenda-check-no-diary)
+  (org-agenda-maybe-loop
+   #'org-gtd-agenda-cancel-project nil t nil
+   (let* ((marker (or (org-get-at-bol 'org-marker)
+                      (org-agenda-error)))
+          (type (marker-insertion-type marker))
+          (buffer (marker-buffer marker))
+          (pos (marker-position marker))
+          ts)
+     (set-marker-insertion-type marker t)
+     (org-with-remote-undo buffer
+       (with-current-buffer buffer
+         (widen)
+         (goto-char pos)
+         (org-up-heading-safe)
+         ;(setq ts (org-schedule arg time))
+         (org-gtd-cancel-project)
+         )
+       (org-agenda-show-tags)
+       ;(org-agenda-show-new-time marker ts " S")
+       ))))
+
 
 (defun org-gtd-capture (&optional GOTO KEYS)
   "Capture something into the GTD inbox.
@@ -250,6 +275,12 @@ This assumes all GTD files are also agenda files."
 (defun org-gtd--actionable-file ()
   "Create or return the buffer to the GTD actionable file."
   (org-gtd--gtd-file org-gtd-actionable-file-basename))
+
+(defun org-gtd--actionable-archive ()
+  "Create or return the buffer to the archive file for the actionable items"
+  (let* ((filename (string-join `(,(buffer-file-name (org-gtd--actionable-file)) "archive") "_"))
+        (archive-file (f-join org-gtd-directory filename)))
+    (find-file archive-file)))
 
 (defun org-gtd--incubate-file ()
   "Create or return the buffer to the GTD incubate file."
