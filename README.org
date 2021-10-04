@@ -192,6 +192,8 @@ A project is defined as "canceled" when its last task is marked as CANCELED.
 
 You can cancel a project by calling ~org-gtd-agenda-cancel-project~ from the agenda view, when the point is on the next task of the project.
 
+DO NOTE: it is surprisingly difficult to add a custom note when canceling, so if you want to add a note explaining why you canceled the project, you will have to do so manually.
+
 You can archive (move to the archive file, using the org-mode feature) completed and canceled projects by using ~org-gtd-archive-complete-projects~.
 *** Agenda
 Here's what the agenda may look like when you've processed the inbox a bit.
