@@ -1,11 +1,11 @@
 ;;; org-gtd.el --- An implementation of GTD -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2019-2020 Aldric Giacomoni
+;; Copyright (C) 2019-2021 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
-;; Version: 1.0.4
+;; Version: 1.1.0
 ;; Homepage: https://github.com/Trevoke/org-gtd.el
-;; Package-Requires: ((emacs "26.1") (org-edna "1.0.2") (f "0.20.0") (org "9.3.1") (org-agenda-property "1.3.1"))
+;; Package-Requires: ((emacs "26.1") (org-edna "1.1.2") (f "0.20.0") (org "9.3.1") (org-agenda-property "1.3.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -27,10 +27,12 @@
 ;; This package tries to replicate as closely as possible the GTD workflow.
 ;; This package assumes familiarity with GTD.
 ;;
+;; Upgrading? make sure you read the CHANGELOG.
+;;
 ;; This package provides a system that allows you to capture incoming things
 ;; into an inbox, then process the inbox and categorize each item based on the
-;; GTD categories. It leverages org-agenda to show today's items as well as the
-;; NEXT items. It also has a simple project management system, which currently
+;; GTD categories.  It leverages org-agenda to show today's items as well as the
+;; NEXT items.  It also has a simple project management system, which currently
 ;; assumes all tasks in a project are sequential.
 ;;
 ;; For a comprehensive instruction manual, see the file `README.org'.
@@ -132,23 +134,26 @@ It's suggested that you categorize the items in here somehow, such as:
 
 (defgroup org-gtd nil
   "Customize the org-gtd package."
-  :version 0.1
+  :version "0.1"
   :group 'emacs)
 
 (defcustom org-gtd-directory "~/gtd/"
   "Directory of Org based GTD files.
 This is the directory where to look for the files used in
 this Org-mode based GTD implementation."
+  :version "0.1"
   :type 'directory)
 
 (defcustom org-gtd-process-item-hooks '(org-set-tags-command)
   "Enhancements to add to each item as they get processed from the inbox."
+  :version "1.0.4"
   :type 'hook
   :options '(org-set-tags-command org-set-effort org-priority))
 
 ;;;; Commands
 
 (defun org-gtd-find-or-create-and-save-files ()
+  "Call this function to bootstrap the files used by org-gtd."
   (interactive)
   (mapcar
    (lambda (buffer) (with-current-buffer buffer (save-buffer) buffer))
@@ -158,15 +163,58 @@ this Org-mode based GTD implementation."
   "Archive all projects for which all actions/tasks are marked as done.
 Done here is any done `org-todo-keyword'."
   (interactive)
-  (org-map-entries
-   (lambda ()
-     (if (org-gtd--project-complete-p)
-         (progn
-           (setq org-map-continue-from (org-element-property
-                                        :begin
-                                        (org-element-at-point)))
-           (org-archive-subtree-default))))
-   org-gtd-complete-projects))
+  (let ((backup org-use-property-inheritance)
+        (org-use-property-inheritance "CATEGORY"))
+    (with-current-buffer (org-gtd--actionable-file)
+      (org-map-entries
+       (lambda ()
+         (let ((task-states (org-gtd--current-project-states)))
+           (when (or (org-gtd--project-complete-p task-states)
+                     (org-gtd--project-canceled-p task-states))
+             (setq org-map-continue-from (org-element-property
+                                          :begin
+                                          (org-element-at-point)))
+             (org-archive-subtree-default))))
+
+       org-gtd-complete-projects))
+    (setq org-use-property-inheritance backup)))
+
+(defun org-gtd-cancel-project ()
+  "With point on project heading, mark all undone tasks canceled."
+  (interactive)
+  (when (eq (current-buffer) (org-gtd--actionable-file))
+    (org-map-entries
+     (lambda ()
+       (when (org-gtd--incomplete-task-p)
+         (let ((org-inhibit-logging 'note))
+           (org-entry-put
+            (org-gtd--org-element-pom (org-element-at-point))
+            "TODO" "CANCELED"))))
+     nil
+     'tree)))
+
+(defun org-gtd-agenda-cancel-project ()
+  "Cancel the project that has the highlighted task."
+  (interactive)
+  (org-agenda-check-type t 'agenda 'todo 'tags 'search)
+  (org-agenda-check-no-diary)
+  (org-agenda-maybe-loop
+   #'org-gtd-agenda-cancel-project nil t nil
+   (let* ((marker (or (org-get-at-bol 'org-marker)
+                      (org-agenda-error)))
+          (type (marker-insertion-type marker))
+          (buffer (marker-buffer marker))
+          (pos (marker-position marker))
+          ts)
+     (set-marker-insertion-type marker t)
+     (org-with-remote-undo buffer
+       (with-current-buffer buffer
+         (widen)
+         (goto-char pos)
+         (org-up-heading-safe)
+         (org-gtd-cancel-project))
+       (org-agenda-show-tags)))))
+
 
 (defun org-gtd-capture (&optional GOTO KEYS)
   "Capture something into the GTD inbox.
@@ -222,19 +270,29 @@ This assumes all GTD files are also agenda files."
 
 ;;;; File work
 
+(defun org-gtd-inbox-path ()
+  "Return the full path to the inbox file."
+  (org-gtd--path org-gtd-inbox-file-basename))
+
 (defun org-gtd--inbox-file ()
   "Create or return the buffer to the GTD inbox file."
-  (org-gtd--gtd-file org-gtd-inbox-file-basename))
+  (org-gtd--gtd-file-buffer org-gtd-inbox-file-basename))
 
 (defun org-gtd--actionable-file ()
   "Create or return the buffer to the GTD actionable file."
-  (org-gtd--gtd-file org-gtd-actionable-file-basename))
+  (org-gtd--gtd-file-buffer org-gtd-actionable-file-basename))
+
+(defun org-gtd--actionable-archive ()
+  "Create or return the buffer to the archive file for the actionable items."
+  (let* ((filename (string-join `(,(buffer-file-name (org-gtd--actionable-file)) "archive") "_"))
+        (archive-file (f-join org-gtd-directory filename)))
+    (find-file archive-file)))
 
 (defun org-gtd--incubate-file ()
   "Create or return the buffer to the GTD incubate file."
-  (org-gtd--gtd-file org-gtd-incubate-file-basename))
+  (org-gtd--gtd-file-buffer org-gtd-incubate-file-basename))
 
-(defun org-gtd--gtd-file (gtd-type)
+(defun org-gtd--gtd-file-buffer (gtd-type)
   "Return a buffer to GTD-TYPE.org.
 Create the file and template first if it doesn't already exist."
   (let* ((file-path (org-gtd--path gtd-type))
@@ -344,6 +402,7 @@ the inbox.  Set as a NEXT action and refile to
 ;;;; sorting things is hard I need to make multiple files
 
 (defun org-gtd--decorate-item ()
+  "Apply hooks to add metadata to a given GTD item."
   (goto-char (point-min))
   (dolist (hook org-gtd-process-item-hooks)
     (funcall hook)))
@@ -398,47 +457,68 @@ This assumes the file is located in `org-gtd-directory'."
   (org-gtd-user-input-mode 1)
   (recursive-edit))
 
-(defun org-gtd--project-complete-p ()
+(defun org-gtd--current-project-states ()
+  "Return a list of the task states for the current project."
+  (cdr (org-map-entries
+        (lambda ()
+          (org-entry-get
+           (org-gtd--org-element-pom (org-element-at-point))
+           "TODO"))
+        t
+        'tree)))
+
+
+(defun org-gtd--project-complete-p (task-states)
   "Return t if project complete, nil otherwise.
-A project is considered complete when all its actions/tasks are
+A project is considered complete when all TASK-STATES are
 marked with a done `org-todo-keyword'."
-  (let ((entries (cdr (org-map-entries
-                       (lambda ()
-                         (org-entry-get
-                          (org-gtd--org-element-pom (org-element-at-point))
-                          "TODO"))
-                       t
-                       'tree))))
-    (seq-every-p (lambda (x) (string-equal x "DONE")) entries)))
+  (seq-every-p (lambda (x) (string-equal x "DONE")) task-states))
+
+(defun org-gtd--project-canceled-p (task-states)
+  "Return t if project canceled, nil otherwise.
+A project is considered canceled when the last of the TASK-STATES is
+marked with a canceled `org-todo-keyword'."
+  (string-equal "CANCELED" (car (last task-states))))
 
 (defun org-gtd--refile-incubate ()
+  "Refile an item to the incubate file."
   (setq user-refile-targets org-refile-targets)
-  (setq org-refile-targets `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)))
+  (setq org-refile-targets (org-gtd--refile-incubate-targets))
   (org-refile)
   (setq org-refile-targets user-refile-targets))
 
 (defun org-gtd--refile-target (heading-regexp)
   "Filters refile targets generated from `org-gtd--refile-targets' using HEADING-REGEXP."
-  (let* ((org-refile-targets (org-gtd--refile-targets))
+  (let* ((backup org-refile-targets)
+         (org-refile-targets (org-gtd--refile-targets))
          (results (cl-find-if
                    (lambda (rfloc)
                      (string-match heading-regexp
                                    (car rfloc)))
-                   (org-refile-get-targets))))
+                   (org-refile-get-targets)))
+         (org-refile-targets backup))
     results))
 
 (defun org-gtd--refile-targets ()
   "Return the refile targets specific to org-gtd."
-  (append (org-gtd--refile-incubate-targets) (org-gtd--refile-action-targets))
-  ;; `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)
-  ;;   (,(org-gtd--path org-gtd-actionable-file-basename) :maxlevel . 1))
-  )
+  (append (org-gtd--refile-incubate-targets) (org-gtd--refile-action-targets)))
 
 (defun org-gtd--refile-incubate-targets ()
+  "Generate refile targets for incubation items."
   `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)))
 
 (defun org-gtd--refile-action-targets ()
+  "Generate refile targets for actionable items."
   `((,(org-gtd--path org-gtd-actionable-file-basename) :maxlevel . 1)))
+
+(defun org-gtd--project-heading-p ()
+  "Determine if current heading is a project heading"
+  (not (org-entry-is-todo-p)))
+
+(defun org-gtd--incomplete-task-p ()
+  "Determine if current heading is a task that's not finished"
+  (and (org-entry-is-todo-p)
+       (not (org-entry-is-done-p))))
 
 (provide 'org-gtd)
 
