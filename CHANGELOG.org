@@ -1,3 +1,12 @@
+* 1.1.0
+[2021-10-03 Sun]
+** README
+There's a new public function, ~(org-gtd-inbox-path)~, you should use this in your configuration instead of ~(org-gtd--path org-gtd-inbox-file-basename)~.
+** canceling projects
+- projects can be canceled by calling ~(org-gtd-cancel-project)~ on the top headline of the project
+- projects can be canceled by calling ~(org-gtd-agenda-cancel-project)~ when the point is on the next task of the project on the agenda view.
+** archiving projects
+~(org-gtd-archive-complete-projects)~ now archives both completed and canceled projects.
 * 1.0.4
 [2021-09-19 Sun]
 ** Massive readme revamp

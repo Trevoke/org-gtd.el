@@ -1,11 +1,11 @@
 ;;; org-gtd.el --- An implementation of GTD -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2019-2020 Aldric Giacomoni
+;; Copyright (C) 2019-2021 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
-;; Version: 1.0.4
+;; Version: 1.1.0
 ;; Homepage: https://github.com/Trevoke/org-gtd.el
-;; Package-Requires: ((emacs "26.1") (org-edna "1.0.2") (f "0.20.0") (org "9.3.1") (org-agenda-property "1.3.1"))
+;; Package-Requires: ((emacs "26.1") (org-edna "1.1.2") (f "0.20.0") (org "9.3.1") (org-agenda-property "1.3.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -26,6 +26,8 @@
 
 ;; This package tries to replicate as closely as possible the GTD workflow.
 ;; This package assumes familiarity with GTD.
+;;
+;; Upgrading? make sure you read the CHANGELOG.
 ;;
 ;; This package provides a system that allows you to capture incoming things
 ;; into an inbox, then process the inbox and categorize each item based on the
@@ -132,17 +134,19 @@ It's suggested that you categorize the items in here somehow, such as:
 
 (defgroup org-gtd nil
   "Customize the org-gtd package."
-  :version 0.1
+  :version "0.1"
   :group 'emacs)
 
 (defcustom org-gtd-directory "~/gtd/"
   "Directory of Org based GTD files.
 This is the directory where to look for the files used in
 this Org-mode based GTD implementation."
+  :version "0.1"
   :type 'directory)
 
 (defcustom org-gtd-process-item-hooks '(org-set-tags-command)
   "Enhancements to add to each item as they get processed from the inbox."
+  :version "1.0.4"
   :type 'hook
   :options '(org-set-tags-command org-set-effort org-priority))
 
@@ -177,6 +181,7 @@ Done here is any done `org-todo-keyword'."
 
 (defun org-gtd-cancel-project ()
   "With point on primary headline of the project, mark all undone tasks canceled."
+  (interactive)
   (when (eq (current-buffer) (org-gtd--actionable-file))
     (org-map-entries
      (lambda ()
@@ -265,13 +270,17 @@ This assumes all GTD files are also agenda files."
 
 ;;;; File work
 
+(defun org-gtd-inbox-path ()
+  "Return the full path to the inbox file."
+  (org-gtd--path org-gtd-inbox-file-basename))
+
 (defun org-gtd--inbox-file ()
   "Create or return the buffer to the GTD inbox file."
-  (org-gtd--gtd-file org-gtd-inbox-file-basename))
+  (org-gtd--gtd-file-buffer org-gtd-inbox-file-basename))
 
 (defun org-gtd--actionable-file ()
   "Create or return the buffer to the GTD actionable file."
-  (org-gtd--gtd-file org-gtd-actionable-file-basename))
+  (org-gtd--gtd-file-buffer org-gtd-actionable-file-basename))
 
 (defun org-gtd--actionable-archive ()
   "Create or return the buffer to the archive file for the actionable items."
@@ -281,9 +290,9 @@ This assumes all GTD files are also agenda files."
 
 (defun org-gtd--incubate-file ()
   "Create or return the buffer to the GTD incubate file."
-  (org-gtd--gtd-file org-gtd-incubate-file-basename))
+  (org-gtd--gtd-file-buffer org-gtd-incubate-file-basename))
 
-(defun org-gtd--gtd-file (gtd-type)
+(defun org-gtd--gtd-file-buffer (gtd-type)
   "Return a buffer to GTD-TYPE.org.
 Create the file and template first if it doesn't already exist."
   (let* ((file-path (org-gtd--path gtd-type))
