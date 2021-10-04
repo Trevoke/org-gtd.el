@@ -180,16 +180,16 @@ Done here is any done `org-todo-keyword'."
     (setq org-use-property-inheritance backup)))
 
 (defun org-gtd-cancel-project ()
-  "With point on primary headline of the project, mark all undone tasks canceled."
+  "With point on project heading, mark all undone tasks canceled."
   (interactive)
   (when (eq (current-buffer) (org-gtd--actionable-file))
     (org-map-entries
      (lambda ()
-       (when (and (org-entry-is-todo-p)
-                  (not (org-entry-is-done-p)))
-         (org-entry-put
-          (org-gtd--org-element-pom (org-element-at-point))
-          "TODO" "CANCELED")))
+       (when (org-gtd--incomplete-task-p)
+         (let ((org-inhibit-logging 'note))
+           (org-entry-put
+            (org-gtd--org-element-pom (org-element-at-point))
+            "TODO" "CANCELED"))))
      nil
      'tree)))
 
@@ -510,6 +510,15 @@ marked with a canceled `org-todo-keyword'."
 (defun org-gtd--refile-action-targets ()
   "Generate refile targets for actionable items."
   `((,(org-gtd--path org-gtd-actionable-file-basename) :maxlevel . 1)))
+
+(defun org-gtd--project-heading-p ()
+  "Determine if current heading is a project heading"
+  (not (org-entry-is-todo-p)))
+
+(defun org-gtd--incomplete-task-p ()
+  "Determine if current heading is a task that's not finished"
+  (and (org-entry-is-todo-p)
+       (not (org-entry-is-done-p))))
 
 (provide 'org-gtd)
 
