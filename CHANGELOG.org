@@ -1,3 +1,7 @@
+* 1.1.1
+[2021-10-06 Wed]
+** Bugfix in project canceling
+The system would effectively skip over headings. Had to disable ~org-edna-mode~ while Ι am changing the states to CANCELED.
 * 1.1.0
 [2021-10-03 Sun]
 ** README

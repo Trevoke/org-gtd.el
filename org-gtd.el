@@ -3,7 +3,7 @@
 ;; Copyright (C) 2019-2021 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
-;; Version: 1.1.0
+;; Version: 1.1.1
 ;; Homepage: https://github.com/Trevoke/org-gtd.el
 ;; Package-Requires: ((emacs "26.1") (org-edna "1.1.2") (f "0.20.0") (org "9.3.1") (org-agenda-property "1.3.1"))
 
@@ -183,15 +183,15 @@ Done here is any done `org-todo-keyword'."
   "With point on project heading, mark all undone tasks canceled."
   (interactive)
   (when (eq (current-buffer) (org-gtd--actionable-file))
+   (org-edna-mode -1)
     (org-map-entries
      (lambda ()
        (when (org-gtd--incomplete-task-p)
          (let ((org-inhibit-logging 'note))
-           (org-entry-put
-            (org-gtd--org-element-pom (org-element-at-point))
-            "TODO" "CANCELED"))))
+           (org-todo "CANCELED"))))
      nil
-     'tree)))
+     'tree)
+    (org-edna-mode 1)))
 
 (defun org-gtd-agenda-cancel-project ()
   "Cancel the project that has the highlighted task."
