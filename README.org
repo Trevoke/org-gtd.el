@@ -111,6 +111,8 @@ And I recommend adding this agenda custom command to make your life easier.
 using org-capture makes adding items to the inbox really simple.
 You can configure this however you want, the only true requirement for org-gtd to work is that what you capture into the inbox have a top-level headline.
 
+Note! Since we are calling a function from the ~org-gtd~ package here, it is important that the package be loaded before this line of configuration is executed. If for whatever reason this is a problem for you, you can use something like ~entry (file (lambda () (org-gtd-inbox-path)))~ instead.
+
 #+begin_src emacs-lisp
   (setq org-capture-templates
         `(("i" "Inbox"
