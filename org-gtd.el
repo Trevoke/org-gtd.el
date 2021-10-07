@@ -123,8 +123,9 @@ It's suggested that you categorize the items in here somehow, such as:
 
 (defgroup org-gtd nil
   "Customize the org-gtd package."
+  :link '(url-link "https://github.com/Trevoke/org-gtd.el")
   :version "0.1"
-  :group 'emacs)
+  :group 'org)
 
 (defcustom org-gtd-directory "~/gtd/"
   "Directory of Org based GTD files.
@@ -148,7 +149,7 @@ this Org-mode based GTD implementation."
    (lambda (buffer) (with-current-buffer buffer (save-buffer) buffer))
    `(,(org-gtd--actionable-file) ,(org-gtd--incubate-file) ,(org-gtd--inbox-file))))
 
-(defun org-gtd-capture (&optional GOTO KEYS)
+(defun org-gtd-capture (&optional goto keys)
   "Capture something into the GTD inbox.
 
 Wraps the function `org-capture' to ensure the inbox exists.
@@ -156,7 +157,7 @@ Wraps the function `org-capture' to ensure the inbox exists.
 For GOTO and KEYS, see `org-capture' documentation for the variables of the same name."
   (interactive)
   (kill-buffer (org-gtd--inbox-file))
-  (org-capture GOTO KEYS))
+  (org-capture goto keys))
 
 (defun org-gtd-clarify-finalize ()
   "Finalize the clarify process."
