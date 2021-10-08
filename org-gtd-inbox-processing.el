@@ -143,7 +143,7 @@ the inbox.  Set as a NEXT action and refile to
   "Mark GTD inbox item as cancelled and archive it."
   (org-gtd--clarify-item)
   (org-gtd--decorate-item)
-  (org-todo "CANCELED")
+  (org-todo "CNCL")
   (org-archive-subtree))
 
 (defun org-gtd--process-inbox-element ()

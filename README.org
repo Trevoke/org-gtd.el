@@ -13,6 +13,8 @@ This package provides a system that allows you to capture incoming things into a
 Image courtesy of https://xebia.com/blog/peace-of-mind-in-a-state-of-overload/gtd_chart/
 ** Updating ~org-gtd~
 Please read the [[CHANGELOG.org][CHANGELOG]].
+*** 2.0.0 <- 1.1.x
+- rename CANCELED to CNCL
 ** Installing
 This package requires emacs 26.1 or higher.
 *** MELPA, MELPA stable
@@ -165,7 +167,7 @@ You have a number of possible choices for each item you process, which I will qu
 [[file:doc/ogpi-1.png]]
 
 - *Quick Action* :: You've taken care of this action just now. Choose this to mark the item as DONΕ and archive it.
-- *Throw out* :: This is not actionable and it's not knowledge for later. Choose this to mark the item as CANCELED and archive it.
+- *Throw out* :: This is not actionable and it's not knowledge for later. Choose this to mark the item as CNCL and archive it.
 - *Project* :: This is a multi-step action. I'll describe how to handle these below.
 - *Calendar* :: This is a single item to be done at a given date or time. You'll be presented with org-mode's date picker, then it'll refile the item. You'll find this in the agenda later.
 - *Delegate* :: Let someone else do this. Write the name of the person doing it, and choose a time to check up on that item.
@@ -191,7 +193,7 @@ A "project" is defined as a top-level org heading with a set of second-level org
 As indicated above, when you are finished creating your headline structure, hit your chosen keybinding to exit the edit mode and move on to processing the next item.
 
 A project is defined as "completed" when all its tasks are marked as DONE.
-A project is defined as "canceled" when its last task is marked as CANCELED.
+A project is defined as "canceled" when its last task is marked as CNCL.
 
 You can cancel a project by calling ~org-gtd-agenda-cancel-project~ from the agenda view, when the point is on the next task of the project.
 

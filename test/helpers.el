@@ -18,8 +18,8 @@
 (defconst ogt--canceled-project
   "** canceled
 *** DONE Task 1
-*** CANCELED Task 2
-*** CANCELED Task 3")
+*** CNCL Task 2
+*** CNCL Task 3")
 
 (defconst ogt--agenda-buffer "*Org Agenda*")
 

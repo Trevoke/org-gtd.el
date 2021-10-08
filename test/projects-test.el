@@ -24,9 +24,9 @@
          (expect task-states :to-equal '("NEXT" "TODO" "TODO")))))
 
  (it "recognizes a project as canceled if the last task is canceled"
-     (let ((last-one '("DONE" "DONE" "CANCELED"))
-           (last-two '("DONE" "CANCELED" "CANCELED"))
-           (only-random-task '("DONE" "CANCELED" "NEXT")))
+     (let ((last-one '("DONE" "DONE" "CNCL"))
+           (last-two '("DONE" "CNCL" "CNCL"))
+           (only-random-task '("DONE" "CNCL" "NEXT")))
        (expect (org-gtd--project-canceled-p last-one) :to-equal t)
        (expect (org-gtd--project-canceled-p last-two) :to-equal t)
        (expect (org-gtd--project-canceled-p only-random-task) :to-equal nil)))

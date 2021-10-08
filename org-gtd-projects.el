@@ -57,7 +57,7 @@ Done here is any done `org-todo-keyword'."
      (lambda ()
        (when (org-gtd--incomplete-task-p)
          (let ((org-inhibit-logging 'note))
-           (org-todo "CANCELED"))))
+           (org-todo "CNCL"))))
      nil
      'tree)
     (org-edna-mode 1)))
@@ -95,7 +95,7 @@ marked with a done `org-todo-keyword'."
   "Return t if project canceled, nil otherwise.
 A project is considered canceled when the last of the TASK-STATES is
 marked with a canceled `org-todo-keyword'."
-  (string-equal "CANCELED" (car (last task-states))))
+  (string-equal "CNCL" (car (last task-states))))
 
 (defun org-gtd--project-heading-p ()
   "Determine if current heading is a project heading"

@@ -52,6 +52,27 @@
 (require 'org-gtd-agenda)
 (require 'org-gtd-inbox-processing)
 
+;;;; Customization
+
+(defgroup org-gtd nil
+  "Customize the org-gtd package."
+  :link '(url-link "https://github.com/Trevoke/org-gtd.el")
+  :version "0.1"
+  :group 'org)
+
+(defcustom org-gtd-directory "~/gtd/"
+  "Directory of Org based GTD files.
+This is the directory where to look for the files used in
+this Org-mode based GTD implementation."
+  :version "0.1"
+  :type 'directory)
+
+(defcustom org-gtd-process-item-hooks '(org-set-tags-command)
+  "Enhancements to add to each item as they get processed from the inbox."
+  :version "1.0.4"
+  :type 'hook
+  :options '(org-set-tags-command org-set-effort org-priority))
+
 ;;;; Constants
 
 (defconst org-gtd-actionable-file-basename "actionable"
@@ -71,7 +92,7 @@
 
 (defconst org-gtd-actionable-template
   "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
-#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CANCELED(c@)
+#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
 
 * Actions
 :PROPERTIES:
@@ -98,7 +119,7 @@
 
 (defconst org-gtd-inbox-template
   "#+STARTUP: overview hidestars logrefile indent logdone
-#+TODO: NEXT TODO WAIT | DONE CANCELED TRASH
+#+TODO: NEXT TODO WAIT | DONE CNCL TRASH
 #+begin_comment
 This is the inbox. Everything goes in here when you capture it.
 #+end_comment
@@ -116,27 +137,6 @@ It's suggested that you categorize the items in here somehow, such as:
 * Auto-generated incubate headline
 "
   "Template for the GTD someday/maybe list.")
-
-;;;; Customization
-
-(defgroup org-gtd nil
-  "Customize the org-gtd package."
-  :link '(url-link "https://github.com/Trevoke/org-gtd.el")
-  :version "0.1"
-  :group 'org)
-
-(defcustom org-gtd-directory "~/gtd/"
-  "Directory of Org based GTD files.
-This is the directory where to look for the files used in
-this Org-mode based GTD implementation."
-  :version "0.1"
-  :type 'directory)
-
-(defcustom org-gtd-process-item-hooks '(org-set-tags-command)
-  "Enhancements to add to each item as they get processed from the inbox."
-  :version "1.0.4"
-  :type 'hook
-  :options '(org-set-tags-command org-set-effort org-priority))
 
 ;;;; Commands
 
