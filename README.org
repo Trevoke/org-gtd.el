@@ -141,7 +141,7 @@ Here are the public functions ~org-gtd~ provides for you.
 | org-gtd-inbox-path                    | full path to org-gtd inbox file (not interactive) |
 
 
-Here's what Ι have bound, for instance.
+Here's what Ι have bound, for instance. (this is using the ~use-package~ API).
 
 #+begin_src emacs-lisp
   (("C-c d c" . org-gtd-capture)
@@ -151,7 +151,8 @@ Here's what Ι have bound, for instance.
    ("C-c d s" . org-gtd-show-stuck-projects))
 
   ;; this is used in a very specific minor mode, so you can have a pretty common keybinding.
-  (bind-key "C-c c" 'org-gtd-clarify-finalize))
+  :bind (:map org-gtd-command-map
+                ("C-c c" . org-gtd-clarify-finalize))
 #+end_src
 ** Using
 *** Regular use

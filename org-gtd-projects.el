@@ -28,13 +28,6 @@
   "+LEVEL=2+CATEGORY=\"Projects\""
   "How to identify projects in the GTD system.")
 
-(defvar org-stuck-projects)
-
-(defconst org-gtd-stuck-projects
-  '("+LEVEL=2-TODO=\"DONE\"+CATEGORY=\"Projects\"" ("NEXT" "WAIT") nil "")
-  "How to identify stuck projects in the GTD system.
-This is a list of four items, the same type as in `org-stuck-projects'.")
-
 (defun org-gtd-archive-complete-projects ()
   "Archive all projects for which all actions/tasks are marked as done.
 Done here is any done `org-todo-keyword'."
@@ -68,37 +61,6 @@ Done here is any done `org-todo-keyword'."
      nil
      'tree)
     (org-edna-mode 1)))
-
-(defun org-gtd-agenda-cancel-project ()
-  "Cancel the project that has the highlighted task."
-  (interactive)
-  (org-agenda-check-type t 'agenda 'todo 'tags 'search)
-  (org-agenda-check-no-diary)
-  (org-agenda-maybe-loop
-   #'org-gtd-agenda-cancel-project nil t nil
-   (let* ((marker (or (org-get-at-bol 'org-marker)
-                      (org-agenda-error)))
-          (type (marker-insertion-type marker))
-          (buffer (marker-buffer marker))
-          (pos (marker-position marker))
-          ts)
-     (set-marker-insertion-type marker t)
-     (org-with-remote-undo buffer
-       (with-current-buffer buffer
-         (widen)
-         (goto-char pos)
-         (org-up-heading-safe)
-         (org-gtd-cancel-project))
-       (org-agenda-show-tags)))))
-
-(defun org-gtd-show-stuck-projects ()
-  "Show all projects that do not have a next action."
-  (interactive)
-  (let* ((user-stuck-projects org-stuck-projects)
-         (org-stuck-projects org-gtd-stuck-projects)
-         (stuck-projects-buffer (org-agenda-list-stuck-projects))
-         (org-stuck-projects user-stuck-projects))
-    stuck-projects-buffer))
 
 (defun org-gtd--nextify ()
   "Add the NEXT keyword to the first action/task of the project.
