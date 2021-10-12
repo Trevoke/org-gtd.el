@@ -86,6 +86,6 @@
   (insert label)
   (org-capture-finalize)
   (with-simulated-input
-      ("p" "M-> RET" (insert ogt--project-text) "C-c c RET")
+      ("p" "M-> RET" (insert ogt--project-text) "C-c c RET ORG_GTD_PROJECTS RET")
     (org-gtd-process-inbox))
   (org-gtd-find-or-create-and-save-files))

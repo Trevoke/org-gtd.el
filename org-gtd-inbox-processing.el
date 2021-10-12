@@ -114,7 +114,8 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-gtd--clarify-item)
   (org-gtd--decorate-item)
   (org-gtd--nextify)
-  (org-refile nil nil (org-gtd--refile-target org-gtd-projects))
+  ;(org-refile nil nil (org-gtd--refile-target org-gtd-projects))
+  (org-gtd--refile-project)
   (with-current-buffer (org-gtd--actionable-file)
     (org-update-statistics-cookies t)))
 

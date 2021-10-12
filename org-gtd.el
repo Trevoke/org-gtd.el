@@ -109,7 +109,7 @@ this Org-mode based GTD implementation."
 :CATEGORY: Scheduled
 :END:
 
-* Projects
+* ORG_GTD_PROJECTS
 :PROPERTIES:
 :TRIGGER: next-sibling todo!(NEXT)
 :CATEGORY: Projects
@@ -214,6 +214,21 @@ This assumes the file is located in `org-gtd-directory'."
   (setq org-refile-targets (org-gtd--refile-incubate-targets))
   (org-refile)
   (setq org-refile-targets user-refile-targets))
+
+(defun org-gtd--refile-project ()
+  "Refile a project"
+  (let* ((backup org-refile-targets)
+         (backup-outline-path org-refile-use-outline-path)
+         (org-refile-use-outline-path nil)
+         (org-refile-targets '(
+                               (org-agenda-files
+                                :regexp . "ORG_GTD_PROJECTS"
+                                )
+                               ))
+         (targets (org-refile nil nil nil "Refile project to: "))
+         (org-refile-targets backup)
+         (org-refile-use-outline-path backup-outline-path))
+    targets))
 
 (defun org-gtd--refile-target (heading-regexp)
   "Filters refile targets generated from `org-gtd--refile-targets' using HEADING-REGEXP."
