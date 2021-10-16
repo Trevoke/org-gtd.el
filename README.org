@@ -62,8 +62,8 @@ Finally, add this to your config:
 #+end_src
 ** Configuring
 *** Before first use
-Here are four things you need to do before regular usage of ~org-gtd~:
-- decide on a directory for the ~org-gtd~ files. The default value is ~(setq org-gtd-directory "~/gtd/")~.
+Here is what you need to do before regular usage of ~org-gtd~:
+- read the [[*configuration options for org-gtd][configuration options for org-gtd]] section.
 - Execute ~M-S-: (org-gtd-find-or-create-and-save-files)~
 - Find the ~incubate.org~ file and add some incubation categories as top-level headlines. This is intended to be helpful when opening the file during your recurring reviews. For instance, I use things like this:
   #+begin_src org-mode
@@ -200,6 +200,15 @@ You can cancel a project by calling ~org-gtd-agenda-cancel-project~ from the age
 DO NOTE: it is surprisingly difficult to add a custom note when canceling, so if you want to add a note explaining why you canceled the project, you will have to do so manually.
 
 You can archive (move to the archive file, using the org-mode feature) completed and canceled projects by using ~org-gtd-archive-complete-projects~.
+
+**** Multiple files / refile targets
+If you would like to add a new refile targets, it's simple. Add a top-level heading and make sure it has the following properties drawer:
+#+begin_src org-mode
+:PROPERTIES:
+:TRIGGER: next-sibling todo!(NEXT)
+:ORG_GTD: Projects
+:END:
+#+end_src
 *** Agenda
 Here's what the agenda may look like when you've processed the inbox a bit.
 

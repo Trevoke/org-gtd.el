@@ -24,8 +24,8 @@
 ;;
 ;;; Code:
 
-(defconst org-gtd-complete-projects
-  "+LEVEL=2+CATEGORY=\"Projects\""
+(defconst org-gtd-projects-headline-definition
+  "+LEVEL=2+ORG_GTD=\"Projects\""
   "How to identify projects in the GTD system.")
 
 (defun org-gtd-archive-complete-projects ()
@@ -33,7 +33,7 @@
 Done here is any done `org-todo-keyword'."
   (interactive)
   (let ((backup org-use-property-inheritance)
-        (org-use-property-inheritance "CATEGORY"))
+        (org-use-property-inheritance "ORG_GTD"))
     (with-current-buffer (org-gtd--actionable-file)
       (org-map-entries
        (lambda ()
@@ -45,7 +45,7 @@ Done here is any done `org-todo-keyword'."
                                           (org-element-at-point)))
              (org-archive-subtree-default))))
 
-       org-gtd-complete-projects))
+       org-gtd-projects-headline-definition))
     (setq org-use-property-inheritance backup)))
 
 (defun org-gtd-cancel-project ()

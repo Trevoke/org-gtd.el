@@ -48,30 +48,10 @@
 (require 'org-element)
 (require 'org-agenda-property)
 (require 'org-edna)
+(require 'org-gtd-customize)
 (require 'org-gtd-projects)
 (require 'org-gtd-agenda)
 (require 'org-gtd-inbox-processing)
-
-;;;; Customization
-
-(defgroup org-gtd nil
-  "Customize the org-gtd package."
-  :link '(url-link "https://github.com/Trevoke/org-gtd.el")
-  :version "0.1"
-  :group 'org)
-
-(defcustom org-gtd-directory "~/gtd/"
-  "Directory of Org based GTD files.
-This is the directory where to look for the files used in
-this Org-mode based GTD implementation."
-  :version "0.1"
-  :type 'directory)
-
-(defcustom org-gtd-process-item-hooks '(org-set-tags-command)
-  "Enhancements to add to each item as they get processed from the inbox."
-  :version "1.0.4"
-  :type 'hook
-  :options '(org-set-tags-command org-set-effort org-priority))
 
 ;;;; Constants
 
@@ -96,23 +76,23 @@ this Org-mode based GTD implementation."
 
 * Actions
 :PROPERTIES:
-:CATEGORY: Action
+:ORG_GTD: Action
 :END:
 
 * Delegated
 :PROPERTIES:
-:CATEGORY: Delegated
+:ORG_GTD: Delegated
 :END:
 
 * Scheduled
 :PROPERTIES:
-:CATEGORY: Scheduled
+:ORG_GTD: Scheduled
 :END:
 
-* ORG_GTD_PROJECTS
+* Projects
 :PROPERTIES:
 :TRIGGER: next-sibling todo!(NEXT)
-:CATEGORY: Projects
+:ORG_GTD: Projects
 :END:
 "
   "Template for the GTD actionable list.")
@@ -215,31 +195,34 @@ This assumes the file is located in `org-gtd-directory'."
   (org-refile)
   (setq org-refile-targets user-refile-targets))
 
+(defun org-gtd--project-group-p ()
+  (string-equal "Projects" (org-element-property :ORG_GTD (org-element-at-point))))
+
+(defmacro with-org-gtd-context (&rest body)
+  "Override org variables for org-gtd and evaluate BODY there like `progn'."
+  (declare (debug t))
+  `(let ((org-refile-use-outline-path nil)
+         (org-odd-levels-only nil)
+         (org-refile-target-verify-function 'org-gtd--project-group-p)
+         (org-agenda-files `(,org-gtd-directory))
+         (org-refile-targets '((org-agenda-files :level . 1))))
+     (unwind-protect
+         (progn ,@body))))
+
 (defun org-gtd--refile-project ()
   "Refile a project"
-  (let* ((backup org-refile-targets)
-         (backup-outline-path org-refile-use-outline-path)
-         (org-refile-use-outline-path nil)
-         (org-refile-targets '(
-                               (org-agenda-files
-                                :regexp . "ORG_GTD_PROJECTS"
-                                )
-                               ))
-         (targets (org-refile nil nil nil "Refile project to: "))
-         (org-refile-targets backup)
-         (org-refile-use-outline-path backup-outline-path))
-    targets))
+  (with-org-gtd-context
+   (org-refile nil nil nil "Refile project to: ")))
 
 (defun org-gtd--refile-target (heading-regexp)
   "Filters refile targets generated from `org-gtd--refile-targets' using HEADING-REGEXP."
-  (let* ((backup org-refile-targets)
-         (org-refile-targets (org-gtd--refile-targets))
+  (let* ((org-refile-targets (org-gtd--refile-targets))
          (results (cl-find-if
                    (lambda (rfloc)
                      (string-match heading-regexp
                                    (car rfloc)))
                    (org-refile-get-targets)))
-         (org-refile-targets backup))
+         )
     results))
 
 (defun org-gtd--refile-targets ()

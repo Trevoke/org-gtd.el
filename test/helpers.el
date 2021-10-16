@@ -23,17 +23,35 @@
 
 (defconst ogt--agenda-buffer "*Org Agenda*")
 
-(defun ogt--prepare-filesystem-and-configure-emacs ()
-  "run before each test"
+(defconst ogt--base-project-heading
+  "* AdditionalHeading
+:PROPERTIES:
+:ORG_GTD: Projects
+:END:
+")
+
+(defun ogt--configure-emacs ()
   (setq org-gtd-directory (f-join default-directory "test"  "runtime-file-path"))
-  (ogt--clean-target-directory org-gtd-directory)
-  (org-gtd-find-or-create-and-save-files)
   (define-key org-gtd-command-map (kbd "C-c c") #'org-gtd-clarify-finalize)
   (setq org-agenda-files `(,org-gtd-directory)
         org-capture-templates `(("i" "GTD item"
-                                 entry (file (lambda () (org-gtd--path org-gtd-inbox-file-basename)))
+                                 entry (file (lambda () (org-gtd-inbox-path)))
                                  "* %?\n%U\n\n  %i"
                                  :kill-buffer t))))
+
+(defun create-additional-project-target-in-org-gtd-directory (filename)
+  (let* ((file (f-join org-gtd-directory (format "%s.org" filename)))
+         (buffer (find-file file)))
+    (with-current-buffer buffer
+      (insert ogt--base-project-heading)
+      (save-buffer))
+    buffer))
+
+(defun ogt--prepare-filesystem ()
+  "run before each test"
+
+  (ogt--clean-target-directory org-gtd-directory)
+  (org-gtd-find-or-create-and-save-files))
 
 (defun ogt--clean-target-directory (dir)
   (delete-directory dir t nil)
@@ -44,36 +62,31 @@
   (with-current-buffer buffer
     (buffer-string)))
 
-(defun ogt--archived-projects-buffer-string ()
-  "return string of items archived from actionable file"
-  (ogt--get-string-from-buffer (org-gtd--actionable-archive)))
-
 (defun ogt--reset-var (symbl)
   "Reset SYMBL to its standard value."
   (set symbl (eval (car (get symbl 'standard-value)))))
-
-(defun ogt--reset-variables ()
-  "Remove all customizations related to org-gtd"
-  (dolist (var
-           '(org-agenda-files
-             org-gtd-process-item-hooks
-             org-capture-templates
-             org-refile-targets))
-    (ogt--reset-var var)))
 
 (defun ogt--close-and-delete-files ()
   "Run after every test to clear external state"
   (org-gtd-show-all-next)
   (kill-buffer ogt--agenda-buffer)
   (mapcar (lambda (buffer)
-            (let ((filename (buffer-file-name buffer)))
-              (with-current-buffer buffer (save-buffer))
-            (kill-buffer buffer)
-            (delete-file filename)))
+            (ogt--clear-file-and-buffer buffer))
           `(,(org-gtd--actionable-archive)
             ,(org-gtd--actionable-file)
             ,(org-gtd--inbox-file)
             ,(org-gtd--incubate-file))))
+
+(defun ogt--clear-file-and-buffer (buffer)
+  (if (bufferp buffer)
+      (let ((filename (buffer-file-name buffer)))
+        (with-current-buffer buffer (save-buffer))
+        (kill-buffer buffer)
+        (delete-file filename))))
+
+(defun ogt--archived-projects-buffer-string ()
+  "return string of items archived from actionable file"
+  (ogt--get-string-from-buffer (org-gtd--actionable-archive)))
 
 (defun ogt--add-single-item ()
   (org-gtd-capture nil "i")
@@ -86,6 +99,6 @@
   (insert label)
   (org-capture-finalize)
   (with-simulated-input
-      ("p" "M-> RET" (insert ogt--project-text) "C-c c RET ORG_GTD_PROJECTS RET")
+      ("p" "M-> RET" (insert ogt--project-text) "C-c c RET TAB RET")
     (org-gtd-process-inbox))
   (org-gtd-find-or-create-and-save-files))

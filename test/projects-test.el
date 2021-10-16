@@ -8,13 +8,14 @@
 (describe
  "Project management"
 
+ (before-all (ogt--configure-emacs))
+
  (before-each
-  (ogt--prepare-filesystem-and-configure-emacs)
+  (ogt--prepare-filesystem)
   (ogt--add-and-process-project "project headline"))
 
  (after-each
-  (ogt--close-and-delete-files)
-  (ogt--reset-variables))
+  (ogt--close-and-delete-files))
 
  (it "gets a list of the task states"
      (with-current-buffer "actionable.org"
@@ -40,35 +41,19 @@
        (expect archived-projects :to-match ".*canceled.*")))
 
  (describe
-  "processing project"
-
-  (it
-   "offers refiling targets"
-   (let ((new-buffer (find-file (f-join org-gtd-directory "more-projects.org"))))
-     (with-current-buffer new-buffer
-       (insert "* ORG_GTD_PROJECTS")
-       (save-buffer))
-     (with-temp-buffer
-       (insert "* choose-refile-target")
-       (with-simulated-input "more-projects.org RET"
-                             (org-gtd--refile-project)))
-     (expect (with-current-buffer new-buffer (buffer-string))
-             :to-match
-             ".*choose-refile-target.*"))
-   (with-current-buffer new-buffer
-     (delete-file (buffer-file-name))
-     (kill-buffer))
-   ))
-
- (describe
   "canceling projects"
+
   (it "recognizes a project as canceled if the last task is canceled"
       (let ((last-one '("DONE" "DONE" "CNCL"))
             (last-two '("DONE" "CNCL" "CNCL"))
             (only-random-task '("DONE" "CNCL" "NEXT")))
-        (expect (org-gtd--project-canceled-p last-one) :to-equal t)
-        (expect (org-gtd--project-canceled-p last-two) :to-equal t)
-        (expect (org-gtd--project-canceled-p only-random-task) :to-equal nil)))
+        (expect (org-gtd--project-canceled-p last-one)
+                :to-equal t)
+        (expect (org-gtd--project-canceled-p last-two)
+                :to-equal t)
+        (expect (org-gtd--project-canceled-p only-random-task)
+                :to-equal nil)))
+
   (it "marks all undone tasks of a canceled project as canceled"
       (with-current-buffer (org-gtd--actionable-file)
         (beginning-of-buffer)
@@ -87,5 +72,4 @@
         (org-gtd-agenda-cancel-project)
         (org-gtd-archive-complete-projects))
       (let ((archived-projects (ogt--archived-projects-buffer-string)))
-        (expect archived-projects :to-match ".*project headline.*")))
-  ))
+        (expect archived-projects :to-match ".*project headline.*")))))
