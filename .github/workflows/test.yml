@@ -15,13 +15,14 @@ jobs:
       matrix:
         emacs_version:
           # Add more lines like this if you want to test on different Emacs versions.
+          - 27.2
           - 27.1
           - 26.3
           - 26.1
 
     steps:
     - name: Set up Emacs
-      uses: purcell/setup-emacs@master
+      uses: purcell/setup-emacs@v3.0
       with:
         version: ${{matrix.emacs_version}}
 
