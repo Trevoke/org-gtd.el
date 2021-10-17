@@ -70,6 +70,13 @@
 (defconst org-gtd-scheduled ".*Scheduled")
 (defconst org-gtd-projects  ".*Projects")
 
+(defconst org-gtd-projects-template
+  "* Projects
+:PROPERTIES:
+:TRIGGER: next-sibling todo!(NEXT)
+:ORG_GTD: Projects
+:END:")
+
 (defconst org-gtd-actionable-template
   "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
 #+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
@@ -198,7 +205,7 @@ This assumes the file is located in `org-gtd-directory'."
 (defun org-gtd--project-group-p ()
   (string-equal "Projects" (org-element-property :ORG_GTD (org-element-at-point))))
 
-(defmacro with-org-gtd-context (&rest body)
+(defmacro with-org-gtd-project-context (&rest body)
   "Override org variables for org-gtd and evaluate BODY there like `progn'."
   (declare (debug t))
   `(let ((org-refile-use-outline-path nil)
@@ -211,8 +218,16 @@ This assumes the file is located in `org-gtd-directory'."
 
 (defun org-gtd--refile-project ()
   "Refile a project"
-  (with-org-gtd-context
+  (with-org-gtd-project-context
+   (org-gtd--ensure-project-refile-target-exists)
    (org-refile nil nil nil "Refile project to: ")))
+
+(defun org-gtd--ensure-project-refile-target-exists ()
+  "Create a file in `org-gtd-directory' with a `org-gtd' project target
+unless one exists.`"
+  (with-org-gtd-project-context
+   (unless (org-refile-get-targets)
+     (org-gtd--gtd-file-buffer "projects"))))
 
 (defun org-gtd--refile-target (heading-regexp)
   "Filters refile targets generated from `org-gtd--refile-targets' using HEADING-REGEXP."

@@ -54,7 +54,6 @@ Use this once a day and/or weekly as part of the weekly review."
   (display-buffer-same-window (org-gtd--inbox-file) '())
   (delete-other-windows)
 
-  (org-gtd-find-or-create-and-save-files)
   (org-map-entries
    (lambda ()
      (setq org-map-continue-from (org-element-property
