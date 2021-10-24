@@ -66,6 +66,29 @@ Use this once a day and/or weekly as part of the weekly review."
   (setq-local header-line-format nil)
   (org-gtd-find-or-create-and-save-files))
 
+(defun org-gtd--process-inbox-element ()
+  "With point on an item, choose which GTD action to take."
+  (let ((action
+         (read-multiple-choice
+          "What to do with this item?"
+          '((?q "quick" "quick item: < 2 minutes, done!")
+            (?t "throw out" "this has no value to me")
+            (?p "project" "multiple steps required to completion")
+            (?c "calendar" "do this at a certain time")
+            (?d "delegate it" "give it to someone")
+            (?s "single action" "do this when possible")
+            (?a "archive this knowledge" "Store this where you store knowledge")
+            (?i "incubate it" "I'll come back to this later")))))
+    (cl-case (car action)
+      (?q (org-gtd--quick-action))
+      (?t (org-gtd--trash))
+      (?p (org-gtd--project))
+      (?c (org-gtd--calendar))
+      (?d (org-gtd--delegate))
+      (?s (org-gtd--single-action))
+      (?a (org-gtd--archive))
+      (?i (org-gtd--incubate)))))
+
 (defun org-gtd--archive ()
   "Process GTD inbox item as a reference item."
   (org-gtd--clarify-item)
@@ -145,29 +168,6 @@ the inbox.  Set as a NEXT action and refile to
   (org-gtd--decorate-item)
   (org-todo "CNCL")
   (org-archive-subtree))
-
-(defun org-gtd--process-inbox-element ()
-  "With point on an item, choose which GTD action to take."
-  (let ((action
-         (read-multiple-choice
-          "What to do with this item?"
-          '((?q "quick" "quick item: < 2 minutes, done!")
-            (?t "throw out" "this has no value to me")
-            (?p "project" "multiple steps required to completion")
-            (?c "calendar" "do this at a certain time")
-            (?d "delegate it" "give it to someone")
-            (?s "single action" "do this when possible")
-            (?a "archive this knowledge" "Store this where you store knowledge")
-            (?i "incubate it" "I'll come back to this later")))))
-    (cl-case (car action)
-      (?q (org-gtd--quick-action))
-      (?t (org-gtd--trash))
-      (?p (org-gtd--project))
-      (?c (org-gtd--calendar))
-      (?d (org-gtd--delegate))
-      (?s (org-gtd--single-action))
-      (?a (org-gtd--archive))
-      (?i (org-gtd--incubate)))))
 
 (defun org-gtd--decorate-item ()
   "Apply hooks to add metadata to a given GTD item."
