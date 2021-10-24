@@ -48,6 +48,7 @@
 (require 'org-element)
 (require 'org-agenda-property)
 (require 'org-edna)
+(require 'org-gtd-files)
 (require 'org-gtd-customize)
 (require 'org-gtd-projects)
 (require 'org-gtd-agenda)
@@ -55,84 +56,13 @@
 
 ;;;; Constants
 
-(defconst org-gtd-actionable-file-basename "actionable"
-  "Name of Org file listing all actionable items.")
-
-(defconst org-gtd-inbox-file-basename "inbox"
-  "Name of Org file listing all captured items.")
-
-(defconst org-gtd-incubate-file-basename "incubate"
-  "Name of Org file listing all someday/maybe items.")
-
 (defconst org-gtd-actions   ".*Actions")
 (defconst org-gtd-delegated ".*Delegated")
 (defconst org-gtd-incubate  ".*Incubate.*")
 (defconst org-gtd-scheduled ".*Scheduled")
 (defconst org-gtd-projects  ".*Projects")
 
-(defconst org-gtd-projects-template
-  "* Projects
-:PROPERTIES:
-:TRIGGER: next-sibling todo!(NEXT)
-:ORG_GTD: Projects
-:END:")
-
-(defconst org-gtd-actionable-template
-  "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
-#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
-
-* Actions
-:PROPERTIES:
-:ORG_GTD: Action
-:END:
-
-* Delegated
-:PROPERTIES:
-:ORG_GTD: Delegated
-:END:
-
-* Scheduled
-:PROPERTIES:
-:ORG_GTD: Scheduled
-:END:
-
-* Projects
-:PROPERTIES:
-:TRIGGER: next-sibling todo!(NEXT)
-:ORG_GTD: Projects
-:END:
-"
-  "Template for the GTD actionable list.")
-
-(defconst org-gtd-inbox-template
-  "#+STARTUP: overview hidestars logrefile indent logdone
-#+TODO: NEXT TODO WAIT | DONE CNCL TRASH
-#+begin_comment
-This is the inbox. Everything goes in here when you capture it.
-#+end_comment
-"
-  "Template for the GTD inbox.")
-
-(defconst org-gtd-incubate-template
-  "#+begin_comment
-Here go the things you want to think about someday. Review this file as often
-as you feel the need: every two months? Every six months? Every year?
-It's suggested that you categorize the items in here somehow, such as:
-\"to read\", \"to buy\", \"to eat\", etc - whatever works best for your mind!
-#+end_comment
-
-* Auto-generated incubate headline
-"
-  "Template for the GTD someday/maybe list.")
-
 ;;;; Commands
-
-(defun org-gtd-find-or-create-and-save-files ()
-  "Call this function to bootstrap the files used by org-gtd."
-  (interactive)
-  (mapcar
-   (lambda (buffer) (with-current-buffer buffer (save-buffer) buffer))
-   `(,(org-gtd--actionable-file) ,(org-gtd--incubate-file) ,(org-gtd--inbox-file))))
 
 (defun org-gtd-capture (&optional goto keys)
   "Capture something into the GTD inbox.
@@ -146,54 +76,11 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the same
 
 ;;;; File work
 
-(defun org-gtd-inbox-path ()
-  "Return the full path to the inbox file."
-  (org-gtd--path org-gtd-inbox-file-basename))
-
-(defun org-gtd--inbox-file ()
-  "Create or return the buffer to the GTD inbox file."
-  (org-gtd--gtd-file-buffer org-gtd-inbox-file-basename))
-
-(defun org-gtd--actionable-file ()
-  "Create or return the buffer to the GTD actionable file."
-  (org-gtd--gtd-file-buffer org-gtd-actionable-file-basename))
-
-(defun org-gtd--actionable-archive ()
-  "Create or return the buffer to the archive file for the actionable items."
-  (let* ((filename (string-join `(,(buffer-file-name (org-gtd--actionable-file)) "archive") "_"))
-        (archive-file (f-join org-gtd-directory filename)))
-    (find-file archive-file)))
-
-(defun org-gtd--incubate-file ()
-  "Create or return the buffer to the GTD incubate file."
-  (org-gtd--gtd-file-buffer org-gtd-incubate-file-basename))
-
-(defun org-gtd--gtd-file-buffer (gtd-type)
-  "Return a buffer to GTD-TYPE.org.
-Create the file and template first if it doesn't already exist."
-  (let* ((file-path (org-gtd--path gtd-type))
-         (file-buffer (find-file-noselect file-path)))
-    (or (f-file-p file-path)
-        (with-current-buffer file-buffer
-          (org-mode)
-          (insert (symbol-value
-                   (intern
-                    (string-join
-                     `("org-gtd-" ,gtd-type "-template")))))
-          (org-mode-restart)
-          (save-buffer)))
-    file-buffer))
-
 ;;;; sorting things is hard I need to make multiple files
 
 (defun org-gtd--org-element-pom (element)
   "Return buffer position for start of Org ELEMENT."
   (org-element-property :begin element))
-
-(defun org-gtd--path (file)
-  "Return the full path to FILE.org.
-This assumes the file is located in `org-gtd-directory'."
-  (f-join org-gtd-directory (concat file ".org")))
 
 (defun org-gtd--refile-incubate ()
   "Refile an item to the incubate file."

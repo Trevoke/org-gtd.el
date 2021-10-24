@@ -100,5 +100,13 @@
   (org-capture-finalize)
   (with-simulated-input
       ("p" "M-> RET" (insert ogt--project-text) "C-c c RET TAB RET")
-    (org-gtd-process-inbox))
-  (org-gtd-find-or-create-and-save-files))
+    (org-gtd-process-inbox)))
+
+(defun ogt--add-and-process-scheduled-item (label)
+  "LABEL is the project label."
+  (org-gtd-capture nil "i")
+  (insert label)
+  (org-capture-finalize)
+  (with-simulated-input
+      ("c" "C-c c RET RET")
+    (org-gtd-process-inbox)))

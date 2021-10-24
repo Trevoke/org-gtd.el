@@ -95,6 +95,18 @@ Use this once a day and/or weekly as part of the weekly review."
   (org-todo "DONE")
   (org-archive-subtree))
 
+(defun org-gtd--project ()
+  "Process GTD inbox item by transforming it into a project.
+Allow the user apply user-defined tags from
+`org-tag-persistent-alist', `org-tag-alist' or file-local tags in
+the inbox.  Refile to `org-gtd-actionable-file-basename'."
+  (org-gtd--clarify-item)
+  (org-gtd--decorate-item)
+  (org-gtd--nextify)
+  (org-gtd--refile-project)
+  (with-current-buffer (org-gtd--actionable-file)
+    (org-update-statistics-cookies t)))
+
 (defun org-gtd--calendar ()
   "Process GTD inbox item by scheduling it.
 Allow the user apply user-defined tags from
@@ -103,6 +115,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-gtd--clarify-item)
   (org-gtd--decorate-item)
   (org-schedule 0)
+  (org-gtd--refile-scheduled-item)
   (org-refile nil nil (org-gtd--refile-target org-gtd-scheduled)))
 
 (defun org-gtd--delegate ()
@@ -127,19 +140,6 @@ the inbox.  Refile to `org-gtd-incubate-file-basename'."
   (org-gtd--decorate-item)
   (org-schedule 0)
   (org-gtd--refile-incubate))
-
-(defun org-gtd--project ()
-  "Process GTD inbox item by transforming it into a project.
-Allow the user apply user-defined tags from
-`org-tag-persistent-alist', `org-tag-alist' or file-local tags in
-the inbox.  Refile to `org-gtd-actionable-file-basename'."
-  (org-gtd--clarify-item)
-  (org-gtd--decorate-item)
-  (org-gtd--nextify)
-  ;(org-refile nil nil (org-gtd--refile-target org-gtd-projects))
-  (org-gtd--refile-project)
-  (with-current-buffer (org-gtd--actionable-file)
-    (org-update-statistics-cookies t)))
 
 (defun org-gtd--quick-action ()
   "Process GTD inbox item by doing it now.
