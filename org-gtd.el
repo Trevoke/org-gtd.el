@@ -49,6 +49,7 @@
 (require 'org-agenda-property)
 (require 'org-edna)
 (require 'org-gtd-files)
+(require 'org-gtd-refile)
 (require 'org-gtd-customize)
 (require 'org-gtd-projects)
 (require 'org-gtd-agenda)
@@ -74,70 +75,9 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the same
   (kill-buffer (org-gtd--inbox-file))
   (org-capture goto keys))
 
-;;;; File work
-
-;;;; sorting things is hard I need to make multiple files
-
 (defun org-gtd--org-element-pom (element)
   "Return buffer position for start of Org ELEMENT."
   (org-element-property :begin element))
-
-(defun org-gtd--refile-incubate ()
-  "Refile an item to the incubate file."
-  (setq user-refile-targets org-refile-targets)
-  (setq org-refile-targets (org-gtd--refile-incubate-targets))
-  (org-refile)
-  (setq org-refile-targets user-refile-targets))
-
-(defun org-gtd--project-group-p ()
-  (string-equal "Projects" (org-element-property :ORG_GTD (org-element-at-point))))
-
-(defmacro with-org-gtd-project-context (&rest body)
-  "Override org variables for org-gtd and evaluate BODY there like `progn'."
-  (declare (debug t))
-  `(let ((org-refile-use-outline-path nil)
-         (org-odd-levels-only nil)
-         (org-refile-target-verify-function 'org-gtd--project-group-p)
-         (org-agenda-files `(,org-gtd-directory))
-         (org-refile-targets '((org-agenda-files :level . 1))))
-     (unwind-protect
-         (progn ,@body))))
-
-(defun org-gtd--refile-project ()
-  "Refile a project"
-  (with-org-gtd-project-context
-   (org-gtd--ensure-project-refile-target-exists)
-   (org-refile nil nil nil "Refile project to: ")))
-
-(defun org-gtd--ensure-project-refile-target-exists ()
-  "Create a file in `org-gtd-directory' with a `org-gtd' project target
-unless one exists.`"
-  (with-org-gtd-project-context
-   (unless (org-refile-get-targets)
-     (org-gtd--gtd-file-buffer "projects"))))
-
-(defun org-gtd--refile-target (heading-regexp)
-  "Filters refile targets generated from `org-gtd--refile-targets' using HEADING-REGEXP."
-  (let* ((org-refile-targets (org-gtd--refile-targets))
-         (results (cl-find-if
-                   (lambda (rfloc)
-                     (string-match heading-regexp
-                                   (car rfloc)))
-                   (org-refile-get-targets)))
-         )
-    results))
-
-(defun org-gtd--refile-targets ()
-  "Return the refile targets specific to org-gtd."
-  (append (org-gtd--refile-incubate-targets) (org-gtd--refile-action-targets)))
-
-(defun org-gtd--refile-incubate-targets ()
-  "Generate refile targets for incubation items."
-  `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)))
-
-(defun org-gtd--refile-action-targets ()
-  "Generate refile targets for actionable items."
-  `((,(org-gtd--path org-gtd-actionable-file-basename) :maxlevel . 1)))
 
 (provide 'org-gtd)
 

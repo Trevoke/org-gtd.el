@@ -38,11 +38,23 @@
 #+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)")
 
 (defconst org-gtd-projects-template
-  "* Projects
+  "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
+#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
+* Projects
 :PROPERTIES:
 :TRIGGER: next-sibling todo!(NEXT)
 :ORG_GTD: Projects
-:END:")
+:END:
+")
+
+(defconst org-gtd-scheduled-template
+  "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
+#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
+* Scheduled
+:PROPERTIES:
+:ORG_GTD: Scheduled
+:END:
+")
 
 (defconst org-gtd-actionable-template
   "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
