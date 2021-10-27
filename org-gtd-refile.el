@@ -26,10 +26,30 @@
 
 (defun org-gtd--refile-incubate ()
   "Refile an item to the incubate file."
-  (setq user-refile-targets org-refile-targets)
-  (setq org-refile-targets (org-gtd--refile-incubate-targets))
-  (org-refile)
-  (setq org-refile-targets user-refile-targets))
+  (with-org-gtd-incubated-context
+   (org-gtd--ensure-incubated-refile-target-exists)
+   (org-refile nil nil nil "Refile incubated item to: ")))
+
+(defun org-gtd--incubated-group-p ()
+  (string-equal "Incubated" (org-element-property :ORG_GTD (org-element-at-point))))
+
+(defmacro with-org-gtd-incubated-context (&rest body)
+  "Override org variables for org-gtd and evaluate BODY there like `progn'."
+  (declare (debug t))
+  `(let ((org-refile-use-outline-path nil)
+         (org-odd-levels-only nil)
+         (org-refile-target-verify-function 'org-gtd--incubated-group-p)
+         (org-agenda-files `(,org-gtd-directory))
+         (org-refile-targets '((org-agenda-files :level . 1))))
+     (unwind-protect
+         (progn ,@body))))
+
+(defun org-gtd--ensure-incubated-refile-target-exists ()
+  "Create a file in `org-gtd-directory' with a `org-gtd' incubated target
+unless one exists.`"
+  (with-org-gtd-incubated-context
+   (unless (org-refile-get-targets)
+     (org-gtd--gtd-file-buffer "incubated"))))
 
 (defun org-gtd--refile-project ()
   "Refile a project"

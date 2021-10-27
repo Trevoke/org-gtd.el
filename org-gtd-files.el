@@ -101,15 +101,37 @@ This is the inbox. Everything goes in here when you capture it.
 "
   "Template for the GTD inbox.")
 
-(defconst org-gtd-incubate-template
-  "#+begin_comment
+(defconst org-gtd-incubated-template
+  "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
+#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
+#+begin_comment
 Here go the things you want to think about someday. Review this file as often
 as you feel the need: every two months? Every six months? Every year?
 It's suggested that you categorize the items in here somehow, such as:
 \"to read\", \"to buy\", \"to eat\", etc - whatever works best for your mind!
 #+end_comment
 
-* Auto-generated incubate headline
+* Incubate
+:PROPERTIES:
+:ORG_GTD: Incubated
+:END:
+"
+  "Template for the GTD someday/maybe list.")
+
+(defconst org-gtd-incubate-template
+  "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
+#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
+#+begin_comment
+Here go the things you want to think about someday. Review this file as often
+as you feel the need: every two months? Every six months? Every year?
+It's suggested that you categorize the items in here somehow, such as:
+\"to read\", \"to buy\", \"to eat\", etc - whatever works best for your mind!
+#+end_comment
+
+* Incubate
+:PROPERTIES:
+:ORG_GTD: Incubated
+:END:
 "
   "Template for the GTD someday/maybe list.")
 

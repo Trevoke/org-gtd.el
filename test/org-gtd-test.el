@@ -58,4 +58,4 @@
       (let ((ogt-target-names (mapcar 'car (org-refile-get-targets))))
         (expect ogt-target-names
                 :to-have-same-items-as
-                '("Auto-generated incubate headline" "To Eat" "To Read"))))))
+                '("Incubate" "To Eat" "To Read"))))))

@@ -40,4 +40,14 @@
        (expect (buffer-string)
                :to-match
                ".*delegated\\.org.*"))
+     (kill-buffer "*Directory*"))
+
+  (it "for a incubated item"
+     (ogt--add-and-process-incubated-item "incubated headline")
+     (with-simulated-input "!" (save-some-buffers))
+     (list-directory org-gtd-directory)
+     (with-current-buffer "*Directory*"
+       (expect (buffer-string)
+               :to-match
+               ".*incubated\\.org.*"))
      (kill-buffer "*Directory*")))

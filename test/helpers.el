@@ -111,9 +111,17 @@
                         (org-gtd-process-inbox)))
 
 (defun ogt--add-and-process-delegated-item (label)
-  "LABEL is the scheduled label."
+  "LABEL is the delegated label."
   (org-gtd-capture nil "i")
   (insert label)
   (org-capture-finalize)
   (with-simulated-input "d C-c c RET Someone RET RET TAB RET"
+                        (org-gtd-process-inbox)))
+
+(defun ogt--add-and-process-incubated-item (label)
+  "LABEL is the incubated label."
+  (org-gtd-capture nil "i")
+  (insert label)
+  (org-capture-finalize)
+  (with-simulated-input "i C-c c RET RET TAB RET"
                         (org-gtd-process-inbox)))
