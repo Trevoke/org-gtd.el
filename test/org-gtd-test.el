@@ -37,25 +37,4 @@
 
       (let ((ogt-agenda-string (ogt--get-string-from-buffer ogt--agenda-buffer)))
         (expect (string-match "single action" ogt-agenda-string)
-                :to-be-truthy))))
-
- (describe
-  "Finding a refile target"
-
-  (it "finds the Actions heading in the actionable file"
-      (org-gtd-show-all-next)
-      (expect (car (org-gtd--refile-target org-gtd-actions))
-              :to-equal
-              "Actions"))
-
-  (it "finds the Incubate headings in the incubate file"
-      (org-gtd-show-all-next)
-      (with-current-buffer (org-gtd--incubate-file)
-        (goto-char (point-max))
-        (insert "* To Read\n* To Eat\n")
-        (save-buffer))
-      (setq org-refile-targets (org-gtd--refile-incubate-targets))
-      (let ((ogt-target-names (mapcar 'car (org-refile-get-targets))))
-        (expect ogt-target-names
-                :to-have-same-items-as
-                '("Incubate" "To Eat" "To Read"))))))
+                :to-be-truthy)))))
