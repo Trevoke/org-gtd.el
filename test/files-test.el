@@ -30,4 +30,14 @@
        (expect (buffer-string)
                :to-match
                ".*scheduled\\.org.*"))
+     (kill-buffer "*Directory*"))
+
+ (it "for a delegated item"
+     (ogt--add-and-process-delegated-item "delegated headline")
+     (with-simulated-input "!" (save-some-buffers))
+     (list-directory org-gtd-directory)
+     (with-current-buffer "*Directory*"
+       (expect (buffer-string)
+               :to-match
+               ".*delegated\\.org.*"))
      (kill-buffer "*Directory*")))

@@ -62,8 +62,7 @@ unless one exists.`"
   "Refile a project"
   (with-org-gtd-scheduled-context
    (org-gtd--ensure-scheduled-refile-target-exists)
-   (message "%s" (org-refile-get-targets))
-   (org-refile nil nil nil "Refile project to: ")))
+   (org-refile nil nil nil "Refile scheduled item to: ")))
 
 (defun org-gtd--scheduled-group-p ()
   (string-equal "Scheduled" (org-element-property :ORG_GTD (org-element-at-point))))
@@ -85,6 +84,33 @@ unless one exists.`"
   (with-org-gtd-scheduled-context
    (unless (org-refile-get-targets)
      (org-gtd--gtd-file-buffer "scheduled"))))
+
+(defun org-gtd--refile-delegated-item ()
+  "Refile a project"
+  (with-org-gtd-delegated-context
+   (org-gtd--ensure-delegated-refile-target-exists)
+   (org-refile nil nil nil "Refile delegated item to: ")))
+
+(defun org-gtd--delegated-group-p ()
+  (string-equal "Delegated" (org-element-property :ORG_GTD (org-element-at-point))))
+
+(defmacro with-org-gtd-delegated-context (&rest body)
+  "Override org variables for org-gtd and evaluate BODY there like `progn'."
+  (declare (debug t))
+  `(let ((org-refile-use-outline-path nil)
+         (org-odd-levels-only nil)
+         (org-refile-target-verify-function 'org-gtd--delegated-group-p)
+         (org-agenda-files `(,org-gtd-directory))
+         (org-refile-targets '((org-agenda-files :level . 1))))
+     (unwind-protect
+         (progn ,@body))))
+
+(defun org-gtd--ensure-delegated-refile-target-exists ()
+  "Create a file in `org-gtd-directory' with a `org-gtd' delegated target
+unless one exists.`"
+  (with-org-gtd-delegated-context
+   (unless (org-refile-get-targets)
+     (org-gtd--gtd-file-buffer "delegated"))))
 
 (defun org-gtd--refile-target (heading-regexp)
   "Filters refile targets generated from `org-gtd--refile-targets' using HEADING-REGEXP."

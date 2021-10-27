@@ -100,7 +100,7 @@
   (org-capture-finalize)
   (with-simulated-input
    ("p" "M-> RET" (insert ogt--project-text) "C-c c RET TAB RET")
-    (org-gtd-process-inbox)))
+   (org-gtd-process-inbox)))
 
 (defun ogt--add-and-process-scheduled-item (label)
   "LABEL is the scheduled label."
@@ -108,6 +108,12 @@
   (insert label)
   (org-capture-finalize)
   (with-simulated-input "c C-c c RET RET TAB RET"
-      (with-current-buffer (org-gtd--inbox-file)
-        (message (buffer-string)))
-      (org-gtd-process-inbox)))
+                        (org-gtd-process-inbox)))
+
+(defun ogt--add-and-process-delegated-item (label)
+  "LABEL is the scheduled label."
+  (org-gtd-capture nil "i")
+  (insert label)
+  (org-capture-finalize)
+  (with-simulated-input "d C-c c RET Someone RET RET TAB RET"
+                        (org-gtd-process-inbox)))

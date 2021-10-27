@@ -56,6 +56,15 @@
 :END:
 ")
 
+(defconst org-gtd-delegated-template
+  "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
+#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
+* Delegated
+:PROPERTIES:
+:ORG_GTD: Delegated
+:END:
+")
+
 (defconst org-gtd-actionable-template
   "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
 #+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
