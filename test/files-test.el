@@ -50,4 +50,14 @@
        (expect (buffer-string)
                :to-match
                ".*incubated\\.org.*"))
+     (kill-buffer "*Directory*"))
+
+  (it "for a single action"
+     (ogt--add-and-process-single-action "single action")
+     (with-simulated-input "!" (save-some-buffers))
+     (list-directory org-gtd-directory)
+     (with-current-buffer "*Directory*"
+       (expect (buffer-string)
+               :to-match
+               ".*action\\.org.*"))
      (kill-buffer "*Directory*")))

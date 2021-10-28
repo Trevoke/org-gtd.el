@@ -125,3 +125,11 @@
   (org-capture-finalize)
   (with-simulated-input "i C-c c RET RET TAB RET"
                         (org-gtd-process-inbox)))
+
+(defun ogt--add-and-process-single-action (label)
+  "LABEL is the incubated label."
+  (org-gtd-capture nil "i")
+  (insert label)
+  (org-capture-finalize)
+  (with-simulated-input "i C-c c RET RET TAB RET"
+                        (org-gtd-process-inbox)))
