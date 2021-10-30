@@ -50,8 +50,7 @@
 (defun ogt--prepare-filesystem ()
   "run before each test"
 
-  (ogt--clean-target-directory org-gtd-directory)
-  (org-gtd-find-or-create-and-save-files))
+  (ogt--clean-target-directory org-gtd-directory))
 
 (defun ogt--clean-target-directory (dir)
   (delete-directory dir t nil)
@@ -72,7 +71,7 @@
   (kill-buffer ogt--agenda-buffer)
   (mapcar (lambda (buffer)
             (ogt--clear-file-and-buffer buffer))
-          `(,(org-gtd--actionable-archive)
+          `(,(org-gtd--projects-archive)
             ,(org-gtd--actionable-file)
             ,(org-gtd--inbox-file)
             ,(org-gtd--incubate-file))))
@@ -86,7 +85,7 @@
 
 (defun ogt--archived-projects-buffer-string ()
   "return string of items archived from actionable file"
-  (ogt--get-string-from-buffer (org-gtd--actionable-archive)))
+  (ogt--get-string-from-buffer (org-gtd--projects-archive)))
 
 (defun ogt--add-single-item ()
   (org-gtd-capture nil "i")
@@ -131,5 +130,5 @@
   (org-gtd-capture nil "i")
   (insert label)
   (org-capture-finalize)
-  (with-simulated-input "i C-c c RET RET TAB RET"
+  (with-simulated-input "s C-c c RET TAB RET"
                         (org-gtd-process-inbox)))

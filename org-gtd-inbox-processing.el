@@ -63,8 +63,7 @@ Use this once a day and/or weekly as part of the weekly review."
      (org-show-subtree)
      (org-gtd--process-inbox-element)
      (widen)))
-  (setq-local header-line-format nil)
-  (org-gtd-find-or-create-and-save-files))
+  (setq-local header-line-format nil))
 
 (defun org-gtd--process-inbox-element ()
   "With point on an item, choose which GTD action to take."
@@ -104,6 +103,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-gtd--decorate-item)
   (org-gtd--nextify)
   (org-gtd--refile-project)
+  ;; TODO update statistics more intelligently, probably in inbox
   (with-current-buffer (org-gtd--actionable-file)
     (org-update-statistics-cookies t)))
 
@@ -159,7 +159,7 @@ the inbox.  Set as a NEXT action and refile to
   (org-gtd--clarify-item)
   (org-gtd--decorate-item)
   (org-todo "NEXT")
-  (org-refile nil nil (org-gtd--refile-target org-gtd-actions)))
+  (org-gtd--refile-single-action))
 
 (defun org-gtd--trash ()
   "Mark GTD inbox item as cancelled and archive it."

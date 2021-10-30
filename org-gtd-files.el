@@ -24,9 +24,6 @@
 ;;
 ;;; Code:
 
-(defconst org-gtd-actionable-file-basename "actionable"
-  "Name of Org file listing all actionable items.")
-
 (defconst org-gtd-inbox-file-basename "inbox"
   "Name of Org file listing all captured items.")
 
@@ -64,6 +61,15 @@
 :ORG_GTD: Delegated
 :END:
 ")
+
+(defconst org-gtd-action-template
+  "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
+#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
+
+* Actions
+:PROPERTIES:
+:ORG_GTD: Action
+:END:")
 
 (defconst org-gtd-actionable-template
   "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
@@ -135,13 +141,6 @@ It's suggested that you categorize the items in here somehow, such as:
 "
   "Template for the GTD someday/maybe list.")
 
-(defun org-gtd-find-or-create-and-save-files ()
-  "Call this function to bootstrap the files used by org-gtd."
-  (interactive)
-  (mapcar
-   (lambda (buffer) (with-current-buffer buffer (save-buffer) buffer))
-   `(,(org-gtd--actionable-file) ,(org-gtd--incubate-file) ,(org-gtd--inbox-file))))
-
 (defun org-gtd--path (file)
   "Return the full path to FILE.org.
 This assumes the file is located in `org-gtd-directory'."
@@ -155,13 +154,17 @@ This assumes the file is located in `org-gtd-directory'."
   "Create or return the buffer to the GTD inbox file."
   (org-gtd--gtd-file-buffer org-gtd-inbox-file-basename))
 
+(defun org-gtd--projects-file ()
+  "Create or return the buffer to the default GTD projects file."
+  (org-gtd--gtd-file-buffer "projects"))
+
 (defun org-gtd--actionable-file ()
   "Create or return the buffer to the GTD actionable file."
-  (org-gtd--gtd-file-buffer org-gtd-actionable-file-basename))
+  (org-gtd--gtd-file-buffer "action"))
 
-(defun org-gtd--actionable-archive ()
+(defun org-gtd--projects-archive ()
   "Create or return the buffer to the archive file for the actionable items."
-  (let* ((filename (string-join `(,(buffer-file-name (org-gtd--actionable-file)) "archive") "_"))
+  (let* ((filename (string-join `(,(buffer-file-name (org-gtd--projects-file)) "archive") "_"))
         (archive-file (f-join org-gtd-directory filename)))
     (find-file archive-file)))
 

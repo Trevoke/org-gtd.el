@@ -64,7 +64,6 @@ Finally, add this to your config:
 *** Before first use
 Here is what you need to do before regular usage of ~org-gtd~:
 - read the [[*configuration options for org-gtd][configuration options for org-gtd]] section.
-- Execute ~M-S-: (org-gtd-find-or-create-and-save-files)~
 - Find the ~incubate.org~ file and add some incubation categories as top-level headlines. This is intended to be helpful when opening the file during your recurring reviews. For instance, I use things like this:
   #+begin_src org-mode
 * To Read
@@ -124,14 +123,13 @@ Note! Since we are calling a function from the ~org-gtd~ package here, it is imp
           ("l" "Todo with link"
            entry (file ,(org-gtd-inbox-path))
            "* %?\n%U\n\n  %i\n  %a"
-           :kill-buffer t))))
+           :kill-buffer t)))
 #+end_src
 *** Interactive functions
 Here are the public functions ~org-gtd~ provides for you.
 
 | name                                  | description                                       |
 |---------------------------------------+---------------------------------------------------|
-| org-gtd-find-or-create-and-save-files | before first use only                             |
 | org-gtd-capture                       | add an item to the inbox                          |
 | org-gtd-process-inbox                 | process all items in inbox                        |
 | org-gtd-clarify-finalize              | finish processing an item                         |

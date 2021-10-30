@@ -19,11 +19,11 @@
  (describe
   "Finding a refile target"
 
-  (it "finds the Actions heading in the actionable file"
+  (it "finds the Project target"
       (org-gtd-show-all-next)
-      (expect (car (org-gtd--refile-target org-gtd-actions))
+      (expect (caar (with-org-gtd-project-context (org-refile-get-targets)))
               :to-equal
-              "Actions"))
+              "Projects"))
 
   (it "finds the Incubate headings in the incubate file"
       (org-gtd-show-all-next)

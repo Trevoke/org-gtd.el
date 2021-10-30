@@ -18,20 +18,18 @@
   (ogt--close-and-delete-files))
 
  (it "gets a list of the task states"
-     (with-current-buffer "actionable.org"
+     (with-current-buffer (org-gtd--projects-file)
        (beginning-of-buffer)
        (search-forward "project headline")
        (let ((task-states (org-gtd--current-project-states)))
          (expect task-states :to-equal '("NEXT" "TODO" "TODO")))))
 
  (it "archives completed and canceled projects"
-     (with-current-buffer (org-gtd--actionable-file)
-       (beginning-of-buffer)
-       (search-forward "project headline")
-       (beginning-of-line)
+     (with-current-buffer (org-gtd--projects-file)
+       (end-of-buffer)
        (newline)
-       (previous-line)
        (insert ogt--canceled-project)
+       (end-of-buffer)
        (newline)
        (insert ogt--completed-project)
        (save-buffer))
@@ -55,7 +53,7 @@
                 :to-equal nil)))
 
   (it "marks all undone tasks of a canceled project as canceled"
-      (with-current-buffer (org-gtd--actionable-file)
+      (with-current-buffer (org-gtd--projects-file)
         (beginning-of-buffer)
         (search-forward "project headline")
         (org-gtd-cancel-project)

@@ -32,27 +32,24 @@
   "Archive all projects for which all actions/tasks are marked as done.
 Done here is any done `org-todo-keyword'."
   (interactive)
-  (let ((backup org-use-property-inheritance)
-        (org-use-property-inheritance "ORG_GTD"))
-    (with-current-buffer (org-gtd--actionable-file)
-      (org-map-entries
-       (lambda ()
-         (let ((task-states (org-gtd--current-project-states)))
-           (when (or (org-gtd--project-complete-p task-states)
-                     (org-gtd--project-canceled-p task-states))
-             (setq org-map-continue-from (org-element-property
-                                          :begin
-                                          (org-element-at-point)))
-             (org-archive-subtree-default))))
-
-       org-gtd-projects-headline-definition))
-    (setq org-use-property-inheritance backup)))
+  (let ((org-use-property-inheritance "ORG_GTD")
+        (org-agenda-files `(,org-gtd-directory)))
+    (org-map-entries
+     (lambda ()
+       (let ((task-states (org-gtd--current-project-states)))
+         (when (or (org-gtd--project-complete-p task-states)
+                   (org-gtd--project-canceled-p task-states))
+           (setq org-map-continue-from (org-element-property
+                                        :begin
+                                        (org-element-at-point)))
+           (org-archive-subtree-default))))
+     org-gtd-projects-headline-definition
+     'agenda)))
 
 (defun org-gtd-cancel-project ()
   "With point on project heading, mark all undone tasks canceled."
   (interactive)
-  (when (eq (current-buffer) (org-gtd--actionable-file))
-    (org-edna-mode -1)
+  (org-edna-mode -1)
     (org-map-entries
      (lambda ()
        (when (org-gtd--incomplete-task-p)
@@ -60,7 +57,7 @@ Done here is any done `org-todo-keyword'."
            (org-todo "CNCL"))))
      nil
      'tree)
-    (org-edna-mode 1)))
+    (org-edna-mode 1))
 
 (defun org-gtd--nextify ()
   "Add the NEXT keyword to the first action/task of the project.
@@ -105,5 +102,9 @@ marked with a canceled `org-todo-keyword'."
   "Determine if current heading is a task that's not finished"
   (and (org-entry-is-todo-p)
        (not (org-entry-is-done-p))))
+
+(defun org-gtd--org-element-pom (element)
+  "Return buffer position for start of Org ELEMENT."
+  (org-element-property :begin element))
 
 (provide 'org-gtd-projects)

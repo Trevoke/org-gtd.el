@@ -21,7 +21,7 @@
 
   (it "uses configurable decorations on the processed items"
       (let ((org-gtd-process-item-hooks '(org-set-tags-command org-priority)))
-        (with-simulated-input "s C-c c RET A RET" (org-gtd-process-inbox)))
+        (with-simulated-input "s C-c c RET A RET TAB RET" (org-gtd-process-inbox)))
 
       (org-gtd-show-all-next)
       (let ((ogt-agenda-string (ogt--get-string-from-buffer ogt--agenda-buffer)))
@@ -30,8 +30,8 @@
 
 
   (it "shows item in agenda when done"
-      (with-simulated-input "s C-c c RET" (org-gtd-process-inbox))
-      (expect (buffer-modified-p (org-gtd--actionable-file)) :to-equal nil)
+      (with-simulated-input "s C-c c RET TAB RET" (org-gtd-process-inbox))
+      (expect (buffer-modified-p (org-gtd--actionable-file)) :to-equal t)
 
       (org-gtd-show-all-next)
 

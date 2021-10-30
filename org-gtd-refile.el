@@ -24,6 +24,33 @@
 ;;
 ;;; Code:
 
+(defun org-gtd--refile-single-action ()
+  "Refile an item to the single action file."
+  (with-org-gtd-single-action-context
+   (org-gtd--ensure-single-action-refile-target-exists)
+   (org-refile nil nil nil "Refile single action to: ")))
+
+(defun org-gtd--single-action-group-p ()
+  (string-equal "Action" (org-element-property :ORG_GTD (org-element-at-point))))
+
+(defmacro with-org-gtd-single-action-context (&rest body)
+  "Override org variables for org-gtd and evaluate BODY there like `progn'."
+  (declare (debug t))
+  `(let ((org-refile-use-outline-path nil)
+         (org-odd-levels-only nil)
+         (org-refile-target-verify-function 'org-gtd--single-action-group-p)
+         (org-agenda-files `(,org-gtd-directory))
+         (org-refile-targets '((org-agenda-files :level . 1))))
+     (unwind-protect
+         (progn ,@body))))
+
+(defun org-gtd--ensure-single-action-refile-target-exists ()
+  "Create a file in `org-gtd-directory' with a `org-gtd' single action target
+unless one exists.`"
+  (with-org-gtd-single-action-context
+   (unless (org-refile-get-targets)
+     (org-gtd--gtd-file-buffer "action"))))
+
 (defun org-gtd--refile-incubate ()
   "Refile an item to the incubate file."
   (with-org-gtd-incubated-context

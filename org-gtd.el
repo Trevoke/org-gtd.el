@@ -55,16 +55,6 @@
 (require 'org-gtd-agenda)
 (require 'org-gtd-inbox-processing)
 
-;;;; Constants
-
-(defconst org-gtd-actions   ".*Actions")
-(defconst org-gtd-delegated ".*Delegated")
-(defconst org-gtd-incubate  ".*Incubate.*")
-(defconst org-gtd-scheduled ".*Scheduled")
-(defconst org-gtd-projects  ".*Projects")
-
-;;;; Commands
-
 (defun org-gtd-capture (&optional goto keys)
   "Capture something into the GTD inbox.
 
@@ -74,10 +64,6 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the same
   (interactive)
   (kill-buffer (org-gtd--inbox-file))
   (org-capture goto keys))
-
-(defun org-gtd--org-element-pom (element)
-  "Return buffer position for start of Org ELEMENT."
-  (org-element-property :begin element))
 
 (provide 'org-gtd)
 
