@@ -39,7 +39,7 @@
                                  "* %?\n%U\n\n  %i"
                                  :kill-buffer t))))
 
-(defun create-additional-project-target-in-org-gtd-directory (filename)
+(defun create-additional-project-target (filename)
   (let* ((file (f-join org-gtd-directory (format "%s.org" filename)))
          (buffer (find-file file)))
     (with-current-buffer buffer
@@ -49,7 +49,6 @@
 
 (defun ogt--prepare-filesystem ()
   "run before each test"
-
   (ogt--clean-target-directory org-gtd-directory))
 
 (defun ogt--clean-target-directory (dir)
@@ -71,10 +70,10 @@
   (kill-buffer ogt--agenda-buffer)
   (mapcar (lambda (buffer)
             (ogt--clear-file-and-buffer buffer))
-          `(,(org-gtd--projects-archive)
-            ,(org-gtd--actionable-file)
+          `(,(org-gtd--default-projects-archive)
+            ,(org-gtd--default-action-file)
             ,(org-gtd--inbox-file)
-            ,(org-gtd--incubate-file))))
+            ,(org-gtd--default-incubate-file))))
 
 (defun ogt--clear-file-and-buffer (buffer)
   (if (bufferp buffer)
@@ -85,7 +84,7 @@
 
 (defun ogt--archived-projects-buffer-string ()
   "return string of items archived from actionable file"
-  (ogt--get-string-from-buffer (org-gtd--projects-archive)))
+  (ogt--get-string-from-buffer (org-gtd--default-projects-archive)))
 
 (defun ogt--add-single-item ()
   (org-gtd-capture nil "i")

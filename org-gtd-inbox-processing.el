@@ -104,7 +104,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-gtd--nextify)
   (org-gtd--refile-project)
   ;; TODO update statistics more intelligently, probably in inbox
-  (with-current-buffer (org-gtd--actionable-file)
+  (with-current-buffer (org-gtd--default-action-file)
     (org-update-statistics-cookies t)))
 
 (defun org-gtd--calendar ()
@@ -134,7 +134,7 @@ the inbox.  Set it as a waiting action and refile to
   "Process GTD inbox item by incubating it.
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
-the inbox.  Refile to `org-gtd-incubate-file-basename'."
+the inbox.  Refile to any org-gtd incubate target (see manual)."
   (org-gtd--clarify-item)
   (org-gtd--decorate-item)
   (org-schedule 0)

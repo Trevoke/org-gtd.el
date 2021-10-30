@@ -27,9 +27,6 @@
 (defconst org-gtd-inbox-file-basename "inbox"
   "Name of Org file listing all captured items.")
 
-(defconst org-gtd-incubate-file-basename "incubate"
-  "Name of Org file listing all someday/maybe items.")
-
 (defconst org-gtd-file-header
     "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
 #+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)")
@@ -124,23 +121,6 @@ It's suggested that you categorize the items in here somehow, such as:
 "
   "Template for the GTD someday/maybe list.")
 
-(defconst org-gtd-incubate-template
-  "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
-#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
-#+begin_comment
-Here go the things you want to think about someday. Review this file as often
-as you feel the need: every two months? Every six months? Every year?
-It's suggested that you categorize the items in here somehow, such as:
-\"to read\", \"to buy\", \"to eat\", etc - whatever works best for your mind!
-#+end_comment
-
-* Incubate
-:PROPERTIES:
-:ORG_GTD: Incubated
-:END:
-"
-  "Template for the GTD someday/maybe list.")
-
 (defun org-gtd--path (file)
   "Return the full path to FILE.org.
 This assumes the file is located in `org-gtd-directory'."
@@ -148,29 +128,29 @@ This assumes the file is located in `org-gtd-directory'."
 
 (defun org-gtd-inbox-path ()
   "Return the full path to the inbox file."
-  (org-gtd--path org-gtd-inbox-file-basename))
+  (org-gtd--path org-gtd-inbox))
 
 (defun org-gtd--inbox-file ()
   "Create or return the buffer to the GTD inbox file."
-  (org-gtd--gtd-file-buffer org-gtd-inbox-file-basename))
+  (org-gtd--gtd-file-buffer org-gtd-inbox))
 
-(defun org-gtd--projects-file ()
+(defun org-gtd--default-projects-file ()
   "Create or return the buffer to the default GTD projects file."
-  (org-gtd--gtd-file-buffer "projects"))
+  (org-gtd--gtd-file-buffer org-gtd-projects))
 
-(defun org-gtd--actionable-file ()
+(defun org-gtd--default-action-file ()
   "Create or return the buffer to the GTD actionable file."
-  (org-gtd--gtd-file-buffer "action"))
+  (org-gtd--gtd-file-buffer org-gtd-action))
 
-(defun org-gtd--projects-archive ()
+(defun org-gtd--default-projects-archive ()
   "Create or return the buffer to the archive file for the actionable items."
-  (let* ((filename (string-join `(,(buffer-file-name (org-gtd--projects-file)) "archive") "_"))
+  (let* ((filename (string-join `(,(buffer-file-name (org-gtd--default-projects-file)) "archive") "_"))
         (archive-file (f-join org-gtd-directory filename)))
     (find-file archive-file)))
 
-(defun org-gtd--incubate-file ()
+(defun org-gtd--default-incubate-file ()
   "Create or return the buffer to the GTD incubate file."
-  (org-gtd--gtd-file-buffer org-gtd-incubate-file-basename))
+  (org-gtd--gtd-file-buffer org-gtd-incubated))
 
 (defun org-gtd--gtd-file-buffer (gtd-type)
   "Return a buffer to GTD-TYPE.org.

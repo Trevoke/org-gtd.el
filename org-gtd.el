@@ -48,12 +48,22 @@
 (require 'org-element)
 (require 'org-agenda-property)
 (require 'org-edna)
+
+
+(defconst org-gtd-incubated "incubated")
+(defconst org-gtd-inbox "inbox")
+(defconst org-gtd-projects "projects")
+(defconst org-gtd-action "action")
+
+
 (require 'org-gtd-files)
 (require 'org-gtd-refile)
 (require 'org-gtd-customize)
 (require 'org-gtd-projects)
 (require 'org-gtd-agenda)
 (require 'org-gtd-inbox-processing)
+
+
 
 (defun org-gtd-capture (&optional goto keys)
   "Capture something into the GTD inbox.

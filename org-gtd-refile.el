@@ -49,7 +49,7 @@
 unless one exists.`"
   (with-org-gtd-single-action-context
    (unless (org-refile-get-targets)
-     (org-gtd--gtd-file-buffer "action"))))
+     (org-gtd--default-action-file))))
 
 (defun org-gtd--refile-incubate ()
   "Refile an item to the incubate file."
@@ -76,7 +76,7 @@ unless one exists.`"
 unless one exists.`"
   (with-org-gtd-incubated-context
    (unless (org-refile-get-targets)
-     (org-gtd--gtd-file-buffer "incubated"))))
+     (org-gtd--default-incubate-file))))
 
 (defun org-gtd--refile-project ()
   "Refile a project"
@@ -103,7 +103,7 @@ unless one exists.`"
 unless one exists.`"
   (with-org-gtd-project-context
    (unless (org-refile-get-targets)
-     (org-gtd--gtd-file-buffer "projects"))))
+     (org-gtd--default-projects-file))))
 
 (defun org-gtd--refile-scheduled-item ()
   "Refile a project"
@@ -158,27 +158,5 @@ unless one exists.`"
   (with-org-gtd-delegated-context
    (unless (org-refile-get-targets)
      (org-gtd--gtd-file-buffer "delegated"))))
-
-(defun org-gtd--refile-target (heading-regexp)
-  "Filters refile targets generated from `org-gtd--refile-targets' using HEADING-REGEXP."
-  (let* ((org-refile-targets (org-gtd--refile-targets))
-         (results (cl-find-if
-                   (lambda (rfloc)
-                     (string-match heading-regexp
-                                   (car rfloc)))
-                   (org-refile-get-targets))))
-    results))
-
-(defun org-gtd--refile-targets ()
-  "Return the refile targets specific to org-gtd."
-  (append (org-gtd--refile-incubate-targets) (org-gtd--refile-action-targets)))
-
-(defun org-gtd--refile-incubate-targets ()
-  "Generate refile targets for incubation items."
-  `((,(org-gtd--path org-gtd-incubate-file-basename) :maxlevel . 2)))
-
-(defun org-gtd--refile-action-targets ()
-  "Generate refile targets for actionable items."
-  `((,(org-gtd--path org-gtd-actionable-file-basename) :maxlevel . 1)))
 
 (provide 'org-gtd-refile)
