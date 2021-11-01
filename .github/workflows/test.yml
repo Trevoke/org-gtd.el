@@ -14,7 +14,6 @@ jobs:
     strategy:
       matrix:
         emacs_version:
-          # Add more lines like this if you want to test on different Emacs versions.
           - 27.1
           - 26.3
           - 26.1
@@ -33,5 +32,4 @@ jobs:
 
     - name: Test the project
       run: |
-        eldev prepare
         eldev -p -dtT test
