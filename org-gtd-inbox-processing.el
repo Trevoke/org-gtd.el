@@ -102,6 +102,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-gtd--clarify-item)
   (org-gtd--decorate-item)
   (org-gtd--nextify)
+;  (org-gtd--refile org-gtd-projects)
   (org-gtd--refile-project)
   ;; TODO update statistics more intelligently, probably in inbox
   (with-current-buffer (org-gtd--default-action-file)

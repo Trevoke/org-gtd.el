@@ -24,9 +24,6 @@
 ;;
 ;;; Code:
 
-(defconst org-gtd-inbox-file-basename "inbox"
-  "Name of Org file listing all captured items.")
-
 (defconst org-gtd-file-header
     "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
 #+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)")
@@ -59,16 +56,7 @@
 :END:
 ")
 
-(defconst org-gtd-action-template
-  "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
-#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
-
-* Actions
-:PROPERTIES:
-:ORG_GTD: Action
-:END:")
-
-(defconst org-gtd-actionable-template
+(defconst org-gtd-actions-template
   "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
 #+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
 
@@ -76,24 +64,7 @@
 :PROPERTIES:
 :ORG_GTD: Action
 :END:
-
-* Delegated
-:PROPERTIES:
-:ORG_GTD: Delegated
-:END:
-
-* Scheduled
-:PROPERTIES:
-:ORG_GTD: Scheduled
-:END:
-
-* Projects
-:PROPERTIES:
-:TRIGGER: next-sibling todo!(NEXT)
-:ORG_GTD: Projects
-:END:
-"
-  "Template for the GTD actionable list.")
+")
 
 (defconst org-gtd-inbox-template
   "#+STARTUP: overview hidestars logrefile indent logdone
@@ -121,6 +92,7 @@ It's suggested that you categorize the items in here somehow, such as:
 "
   "Template for the GTD someday/maybe list.")
 
+
 (defun org-gtd--path (file)
   "Return the full path to FILE.org.
 This assumes the file is located in `org-gtd-directory'."
@@ -140,7 +112,7 @@ This assumes the file is located in `org-gtd-directory'."
 
 (defun org-gtd--default-action-file ()
   "Create or return the buffer to the GTD actionable file."
-  (org-gtd--gtd-file-buffer org-gtd-action))
+  (org-gtd--gtd-file-buffer org-gtd-actions))
 
 (defun org-gtd--default-projects-archive ()
   "Create or return the buffer to the archive file for the actionable items."
@@ -151,6 +123,12 @@ This assumes the file is located in `org-gtd-directory'."
 (defun org-gtd--default-incubate-file ()
   "Create or return the buffer to the GTD incubate file."
   (org-gtd--gtd-file-buffer org-gtd-incubated))
+
+(defun org-gtd--default-delegated-file ()
+  (org-gtd--gtd-file-buffer org-gtd-delegated))
+
+(defun org-gtd--default-scheduled-file ()
+  (org-gtd--gtd-file-buffer org-gtd-scheduled))
 
 (defun org-gtd--gtd-file-buffer (gtd-type)
   "Return a buffer to GTD-TYPE.org.

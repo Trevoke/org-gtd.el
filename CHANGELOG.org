@@ -1,6 +1,8 @@
 * 2.0.0
 ** [ACTION REQUIRED] state CANCELED rename to CNCL
 Fits the four-letter pattern better. You'll need to do a search-and-replace in the files managed by ~org-gtd~, replacing "CANCELED" by "CNCL".
+** Support for many refile targets
+The code now looks for a heading property called ~ORG_GTD~ with possible values: ~Action~, ~Incubated~, ~Projects~, ~Scheduled~, ~Delegated~.
 * 1.1.1
 [2021-10-06 Wed]
 ** Bugfix in project canceling

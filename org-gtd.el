@@ -49,12 +49,12 @@
 (require 'org-agenda-property)
 (require 'org-edna)
 
-
-(defconst org-gtd-incubated "incubated")
 (defconst org-gtd-inbox "inbox")
+(defconst org-gtd-incubated "incubated")
 (defconst org-gtd-projects "projects")
-(defconst org-gtd-action "action")
-
+(defconst org-gtd-actions "actions")
+(defconst org-gtd-delegated "delegated")
+(defconst org-gtd-scheduled "scheduled")
 
 (require 'org-gtd-files)
 (require 'org-gtd-refile)

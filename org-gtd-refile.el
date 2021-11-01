@@ -24,14 +24,56 @@
 ;;
 ;;; Code:
 
-(defun org-gtd--refile-single-action ()
+(defconst org-gtd-refile-properties
+  (let ((myhash (make-hash-table :test 'equal)))
+    (puthash org-gtd-actions "Action" myhash)
+    (puthash org-gtd-incubated "Incubated" myhash)
+    (puthash org-gtd-delegated "Delegated" myhash)
+    (puthash org-gtd-projects "Projects" myhash)
+    (puthash org-gtd-scheduled "Scheduled" myhash)
+    myhash))
+
+(defconst org-gtd-refile-filter-function
+  (let ((myhash (make-hash-table :test 'eq)))
+    (puthash org-gtd-actions 'org-gtd--single-action-group-p myhash)
+    (puthash org-gtd-incubated 'org-gtd--incubated-group-p myhash)
+    (puthash org-gtd-delegated 'org-gtd--delegated-group-p myhash)
+    (puthash org-gtd-projects 'org-gtd--projects-group-p myhash)
+    (puthash org-gtd-scheduled 'org-gtd--scheduled-group-p myhash)
+    myhash))
+
+(defun org-gtd--group-p (type)
+  (string-equal (org-gtd--group org-gtd-actions)
+                (org-element-property :ORG_GTD (org-element-at-point))))
+
+(defun org-gtd--group (type)
+  (gethash type org-gtd-refile-properties))
+
+(defun org-gtd--refile (type)
   "Refile an item to the single action file."
-  (with-org-gtd-single-action-context
-   (org-gtd--ensure-single-action-refile-target-exists)
-   (org-refile nil nil nil "Refile single action to: ")))
+  (with-org-gtd-context type
+                        (unless (org-refile-get-targets) (org-gtd--gtd-file-buffer type))
+                        (org-refile nil nil nil "Refile single action to:"))
+  ;; (with-org-gtd-single-action-context
+  ;;  (org-gtd--ensure-single-action-refile-target-exists)
+  ;;  (org-refile nil nil nil "Refile single action to: "))
+  )
+
+(defun org-gtd--refile-single-action ()
+  (org-gtd--refile org-gtd-actions))
 
 (defun org-gtd--single-action-group-p ()
-  (string-equal "Action" (org-element-property :ORG_GTD (org-element-at-point))))
+  (org-gtd--group-p org-gtd-actions))
+
+(defmacro with-org-gtd-context (type &rest body)
+  (declare (debug t))
+  `(let ((org-refile-use-outline-path nil)
+         (org-odd-levels-only nil)
+         (org-refile-target-verify-function (lambda () (org-gtd--group-p ,type)))
+         (org-agenda-files `(,org-gtd-directory))
+         (org-refile-targets '((org-agenda-files :level . 1))))
+     (unwind-protect
+         (progn ,@body))))
 
 (defmacro with-org-gtd-single-action-context (&rest body)
   "Override org variables for org-gtd and evaluate BODY there like `progn'."
@@ -106,7 +148,7 @@ unless one exists.`"
      (org-gtd--default-projects-file))))
 
 (defun org-gtd--refile-scheduled-item ()
-  "Refile a project"
+  "Refile a scheduled item"
   (with-org-gtd-scheduled-context
    (org-gtd--ensure-scheduled-refile-target-exists)
    (org-refile nil nil nil "Refile scheduled item to: ")))
@@ -130,7 +172,7 @@ unless one exists.`"
 unless one exists.`"
   (with-org-gtd-scheduled-context
    (unless (org-refile-get-targets)
-     (org-gtd--gtd-file-buffer "scheduled"))))
+     (org-gtd--default-scheduled-file))))
 
 (defun org-gtd--refile-delegated-item ()
   "Refile a project"
@@ -157,6 +199,6 @@ unless one exists.`"
 unless one exists.`"
   (with-org-gtd-delegated-context
    (unless (org-refile-get-targets)
-     (org-gtd--gtd-file-buffer "delegated"))))
+     (org-gtd--default-delegated-file))))
 
 (provide 'org-gtd-refile)

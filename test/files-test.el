@@ -59,5 +59,5 @@
      (with-current-buffer "*Directory*"
        (expect (buffer-string)
                :to-match
-               ".*action\\.org.*"))
+               ".*actions\\.org.*"))
      (kill-buffer "*Directory*")))
