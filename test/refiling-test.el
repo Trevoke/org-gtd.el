@@ -21,7 +21,7 @@
 
   (it "finds the Project target"
       (org-gtd-show-all-next)
-      (expect (caar (with-org-gtd-project-context (org-refile-get-targets)))
+      (expect (caar (with-org-gtd-context org-gtd-projects (org-refile-get-targets)))
               :to-equal
               "Projects"))
 
@@ -38,7 +38,7 @@
 :ORG_GTD: Incubated
 :END:")
         (save-buffer))
-      (with-org-gtd-incubated-context
+      (with-org-gtd-context org-gtd-incubated
        (let ((ogt-target-names (mapcar 'car (org-refile-get-targets))))
          (expect ogt-target-names
                  :to-have-same-items-as
@@ -56,7 +56,7 @@
            (point-min)
            (with-simulated-input
             "AdditionalHeading RET"
-            (org-gtd--refile-project)))
+            (org-gtd--refile org-gtd-projects)))
 
          (expect (with-current-buffer new-buffer (buffer-string))
                  :to-match
