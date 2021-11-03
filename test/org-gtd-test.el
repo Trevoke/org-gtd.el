@@ -18,7 +18,6 @@
 
   (before-each (ogt--add-single-item))
 
-
   (it "uses configurable decorations on the processed items"
       (let ((org-gtd-process-item-hooks '(org-set-tags-command org-priority)))
         (with-simulated-input "s C-c c RET A RET TAB RET" (org-gtd-process-inbox)))
