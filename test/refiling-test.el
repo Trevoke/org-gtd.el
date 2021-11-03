@@ -27,7 +27,7 @@
 
   (it "finds the Incubate headings in the incubate file"
       (org-gtd-show-all-next)
-      (with-current-buffer (org-gtd--default-incubate-file)
+      (with-current-buffer (org-gtd--default-incubated-file)
         (goto-char (point-max))
         (insert "* To Read
 :PROPERTIES:

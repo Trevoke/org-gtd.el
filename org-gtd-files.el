@@ -24,9 +24,19 @@
 ;;
 ;;; Code:
 
+(defconst org-gtd-inbox-template
+  "#+STARTUP: overview hidestars logrefile indent logdone
+#+TODO: NEXT TODO WAIT | DONE CNCL TRASH
+#+begin_comment
+This is the inbox. Everything goes in here when you capture it.
+#+end_comment
+"
+  "Template for the GTD inbox.")
+
 (defconst org-gtd-file-header
     "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
-#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)")
+#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
+")
 
 (defconst org-gtd-projects-template
   "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
@@ -39,46 +49,28 @@
 ")
 
 (defconst org-gtd-scheduled-template
-  "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
-#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
-* Scheduled
+  "* Scheduled
 :PROPERTIES:
 :ORG_GTD: Scheduled
 :END:
 ")
 
 (defconst org-gtd-delegated-template
-  "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
-#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
-* Delegated
+  "* Delegated
 :PROPERTIES:
 :ORG_GTD: Delegated
 :END:
 ")
 
 (defconst org-gtd-actions-template
-  "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
-#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
-
-* Actions
+  "* Actions
 :PROPERTIES:
 :ORG_GTD: Action
 :END:
 ")
 
-(defconst org-gtd-inbox-template
-  "#+STARTUP: overview hidestars logrefile indent logdone
-#+TODO: NEXT TODO WAIT | DONE CNCL TRASH
-#+begin_comment
-This is the inbox. Everything goes in here when you capture it.
-#+end_comment
-"
-  "Template for the GTD inbox.")
-
 (defconst org-gtd-incubated-template
-  "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
-#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
-#+begin_comment
+  "#+begin_comment
 Here go the things you want to think about someday. Review this file as often
 as you feel the need: every two months? Every six months? Every year?
 It's suggested that you categorize the items in here somehow, such as:
@@ -92,6 +84,14 @@ It's suggested that you categorize the items in here somehow, such as:
 "
   "Template for the GTD someday/maybe list.")
 
+(defconst org-gtd--file-template
+  (let ((myhash (make-hash-table :test 'equal)))
+    (puthash org-gtd-actions org-gtd-actions-template myhash)
+    (puthash org-gtd-delegated org-gtd-delegated-template myhash)
+    (puthash org-gtd-scheduled org-gtd-scheduled-template myhash)
+    (puthash org-gtd-projects org-gtd-projects-template myhash)
+    (puthash org-gtd-incubated org-gtd-incubated-template myhash)
+    myhash))
 
 (defun org-gtd--path (file)
   "Return the full path to FILE.org.
@@ -120,7 +120,7 @@ This assumes the file is located in `org-gtd-directory'."
         (archive-file (f-join org-gtd-directory filename)))
     (find-file archive-file)))
 
-(defun org-gtd--default-incubate-file ()
+(defun org-gtd--default-incubated-file ()
   "Create or return the buffer to the GTD incubate file."
   (org-gtd--gtd-file-buffer org-gtd-incubated))
 
@@ -131,19 +131,16 @@ This assumes the file is located in `org-gtd-directory'."
   (org-gtd--gtd-file-buffer org-gtd-scheduled))
 
 (defun org-gtd--gtd-file-buffer (gtd-type)
-  "Return a buffer to GTD-TYPE.org.
-Create the file and template first if it doesn't already exist."
-  (let* ((file-path (org-gtd--path gtd-type))
-         (file-buffer (find-file-noselect file-path)))
-    (or (f-file-p file-path)
-        (with-current-buffer file-buffer
-          (org-mode)
-          (insert (symbol-value
-                   (intern
-                    (string-join
-                     `("org-gtd-" ,gtd-type "-template")))))
-          (org-mode-restart)
-          (save-buffer)))
-    file-buffer))
+  (let ((file-path (org-gtd--path gtd-type)))
+    (unless (f-file-p file-path)
+      (with-current-buffer (find-file-noselect file-path)
+        (if (string-equal org-gtd-inbox gtd-type)
+            (insert org-gtd-inbox-template)
+          (insert org-gtd-file-header)
+          (insert (gethash gtd-type org-gtd--file-template)))
+        (org-mode-restart)
+        (save-buffer)
+        (current-buffer)))
+    (find-file-noselect file-path)))
 
 (provide 'org-gtd-files)

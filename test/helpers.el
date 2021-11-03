@@ -73,7 +73,7 @@
           `(,(org-gtd--default-projects-archive)
             ,(org-gtd--default-action-file)
             ,(org-gtd--inbox-file)
-            ,(org-gtd--default-incubate-file))))
+            ,(org-gtd--default-incubated-file))))
 
 (defun ogt--clear-file-and-buffer (buffer)
   (if (bufferp buffer)
