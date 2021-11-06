@@ -24,15 +24,6 @@
 ;;
 ;;; Code:
 
-(defconst org-gtd--refile-properties
-  (let ((myhash (make-hash-table :test 'equal)))
-    (puthash org-gtd-actions "Action" myhash)
-    (puthash org-gtd-incubated "Incubated" myhash)
-    (puthash org-gtd-delegated "Delegated" myhash)
-    (puthash org-gtd-projects "Projects" myhash)
-    (puthash org-gtd-scheduled "Scheduled" myhash)
-    myhash))
-
 (defconst org-gtd--refile-prompt
   (let ((myhash (make-hash-table :test 'equal)))
     (puthash org-gtd-actions "Refile single action to: " myhash)
@@ -46,8 +37,7 @@
   "Refile an item to the single action file."
   (with-org-gtd-context type
                         (unless (org-refile-get-targets) (org-gtd--gtd-file-buffer type))
-                        (org-refile nil nil nil (org-gtd--refile-prompt type))
-                        ))
+                        (org-refile nil nil nil (org-gtd--refile-prompt type))))
 
 (defmacro with-org-gtd-context (type &rest body)
   (declare (debug t))

@@ -15,11 +15,39 @@
 
  (describe
   "finished work"
+
+  (it "archives completed and canceled projects"
+      (ogt--add-and-process-project "project headline")
+      (with-current-buffer (org-gtd--default-projects-file)
+        (end-of-buffer)
+        (newline)
+        (insert ogt--canceled-project)
+        (end-of-buffer)
+        (newline)
+        (insert ogt--completed-project)
+        (save-buffer))
+      (org-gtd-archive-completed-items)
+      (org-gtd-archive-finished-projects-2)
+      (let ((archived-projects (ogt--archived-projects-buffer-string)))
+        (expect archived-projects :to-match ".*completed.*")
+        (expect archived-projects :to-match ".*canceled.*")))
+
   (it "on a single action"
 
-      (ogt--add-and-process-single-action)
-      ;; insert a single action
-      ;; insert / complete another single action
-      ;; run a new command that archives completed actions
-      ;; see that the completed action is archived, and the other one isn't
-      )))
+      (ogt--add-and-process-single-action "one")
+      (ogt--save-all-buffers)
+      (ogt--add-and-process-single-action "two")
+      (ogt--save-all-buffers)
+      (with-current-buffer (org-gtd--default-action-file)
+        (beginning-of-buffer)
+        (search-forward "NEXT one")
+        (org-todo "DONE"))
+      (org-gtd-archive-completed-items)
+      (ogt--save-all-buffers)
+      (with-current-buffer (org-gtd--default-action-file)
+        (expect (buffer-string)
+                :to-match
+                ".*two.*")
+        (expect (buffer-string)
+                :not :to-match
+                ".* DONE one.*")))))

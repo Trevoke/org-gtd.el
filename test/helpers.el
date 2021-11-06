@@ -70,8 +70,10 @@
   (kill-buffer ogt--agenda-buffer)
   (mapcar (lambda (buffer)
             (ogt--clear-file-and-buffer buffer))
-          `(,(org-gtd--default-projects-archive)
+          `(,(ogt--default-projects-archive)
             ,(org-gtd--default-action-file)
+            ,(org-gtd--default-delegated-file)
+            ,(org-gtd--default-scheduled-file)
             ,(org-gtd--inbox-file)
             ,(org-gtd--default-incubated-file))))
 
@@ -82,9 +84,18 @@
         (kill-buffer buffer)
         (delete-file filename))))
 
+(defun ogt--default-projects-archive ()
+  "Create or return the buffer to the archive file for the actionable items."
+  (let* ((filename (string-join `(,(buffer-file-name (org-gtd--default-projects-file)) "archive") "_"))
+        (archive-file (f-join org-gtd-directory filename)))
+    (find-file archive-file)))
+
 (defun ogt--archived-projects-buffer-string ()
   "return string of items archived from actionable file"
-  (ogt--get-string-from-buffer (org-gtd--default-projects-archive)))
+  (ogt--get-string-from-buffer (ogt--default-projects-archive)))
+
+(defun ogt--save-all-buffers ()
+  (with-simulated-input "!" (save-some-buffers)))
 
 (defun ogt--add-single-item ()
   (org-gtd-capture nil "i")
@@ -125,7 +136,7 @@
                         (org-gtd-process-inbox)))
 
 (defun ogt--add-and-process-single-action (label)
-  "LABEL is the incubated label."
+  "LABEL is the single action label."
   (org-gtd-capture nil "i")
   (insert label)
   (org-capture-finalize)

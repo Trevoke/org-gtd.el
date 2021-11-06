@@ -20,7 +20,7 @@
 
   (it "uses configurable decorations on the processed items"
       (let ((org-gtd-process-item-hooks '(org-set-tags-command org-priority)))
-        (with-simulated-input "s C-c c RET A RET TAB RET" (org-gtd-process-inbox)))
+        (with-simulated-input "s C-c c RET A TAB RET" (org-gtd-process-inbox)))
 
       (org-gtd-show-all-next)
       (let ((ogt-agenda-string (ogt--get-string-from-buffer ogt--agenda-buffer)))

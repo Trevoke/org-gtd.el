@@ -128,17 +128,17 @@ Note! Since we are calling a function from the ~org-gtd~ package here, it is imp
 *** Interactive functions
 Here are the public functions ~org-gtd~ provides for you.
 
-| name                                  | description                                       |
-|---------------------------------------+---------------------------------------------------|
-| org-gtd-capture                       | add an item to the inbox                          |
-| org-gtd-process-inbox                 | process all items in inbox                        |
-| org-gtd-clarify-finalize              | finish processing an item                         |
-| org-gtd-show-all-next                 | show all actions marked NEXT                      |
-| org-gtd-show-stuck-projects           | show projects without a NEXT action               |
-| org-gtd-cancel-project                | cancel project from project headline              |
-| org-gtd-agenda-cancel-project         | cancel project from agenda view                   |
-| org-gtd-archive-complete-projects     | move complete/canceled projects to archive file   |
-| org-gtd-inbox-path                    | full path to org-gtd inbox file (not interactive) |
+| name                            | description                                       |
+|---------------------------------+---------------------------------------------------|
+| org-gtd-capture                 | add an item to the inbox                          |
+| org-gtd-process-inbox           | process all items in inbox                        |
+| org-gtd-clarify-finalize        | finish processing an item                         |
+| org-gtd-show-all-next           | show all actions marked NEXT                      |
+| org-gtd-show-stuck-projects     | show projects without a NEXT action               |
+| org-gtd-cancel-project          | cancel project from project headline              |
+| org-gtd-agenda-cancel-project   | cancel project from agenda view                   |
+| org-gtd-archive-completed-items | move complete/canceled items to archive file      |
+| org-gtd-inbox-path              | full path to org-gtd inbox file (not interactive) |
 
 
 Here's what Ι have bound, for instance. (this is using the ~use-package~ API).
@@ -197,7 +197,7 @@ You can cancel a project by calling ~org-gtd-agenda-cancel-project~ from the age
 
 DO NOTE: it is surprisingly difficult to add a custom note when canceling, so if you want to add a note explaining why you canceled the project, you will have to do so manually.
 
-You can archive (move to the archive file, using the org-mode feature) completed and canceled projects by using ~org-gtd-archive-complete-projects~.
+You can archive (move to the archive file, using the org-mode feature) completed and canceled projects by using ~org-gtd-archive-completed-items~.
 
 **** Multiple files / refile targets
 If you would like to add a new refile targets, it's simple. Add a top-level heading and make sure it has the following properties drawer:

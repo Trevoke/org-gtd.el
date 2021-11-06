@@ -71,7 +71,7 @@
   "when there isn't a refile target"
   (it "for a project"
       (ogt--add-and-process-project "project headline")
-      (with-simulated-input "!" (save-some-buffers))
+      (ogt--save-all-buffers)
       (list-directory org-gtd-directory)
       (with-current-buffer "*Directory*"
         (expect (buffer-string)
@@ -81,7 +81,7 @@
 
   (it "for a scheduled item"
       (ogt--add-and-process-scheduled-item "scheduled headline")
-      (with-simulated-input "!" (save-some-buffers))
+      (ogt--save-all-buffers)
       (list-directory org-gtd-directory)
       (with-current-buffer "*Directory*"
         (expect (buffer-string)
@@ -91,7 +91,7 @@
 
   (it "for a delegated item"
       (ogt--add-and-process-delegated-item "delegated headline")
-      (with-simulated-input "!" (save-some-buffers))
+      (ogt--save-all-buffers)
       (list-directory org-gtd-directory)
       (with-current-buffer "*Directory*"
         (expect (buffer-string)
@@ -101,7 +101,7 @@
 
   (it "for a incubated item"
       (ogt--add-and-process-incubated-item "incubated headline")
-      (with-simulated-input "!" (save-some-buffers))
+      (ogt--save-all-buffers)
       (list-directory org-gtd-directory)
       (with-current-buffer "*Directory*"
         (expect (buffer-string)
@@ -111,7 +111,7 @@
 
   (it "for a single action"
       (ogt--add-and-process-single-action "single action")
-      (with-simulated-input "!" (save-some-buffers))
+      (ogt--save-all-buffers)
       (list-directory org-gtd-directory)
       (with-current-buffer "*Directory*"
         (expect (buffer-string)

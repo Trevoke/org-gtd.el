@@ -23,20 +23,6 @@
        (let ((task-states (org-gtd--current-project-states)))
          (expect task-states :to-equal '("NEXT" "TODO" "TODO")))))
 
- (it "archives completed and canceled projects"
-     (with-current-buffer (org-gtd--default-projects-file)
-       (end-of-buffer)
-       (newline)
-       (insert ogt--canceled-project)
-       (end-of-buffer)
-       (newline)
-       (insert ogt--completed-project)
-       (save-buffer))
-     (org-gtd-archive-complete-projects)
-     (let ((archived-projects (ogt--archived-projects-buffer-string)))
-       (expect archived-projects :to-match ".*completed.*")
-       (expect archived-projects :to-match ".*canceled.*")))
-
  (describe
   "canceling projects"
 
@@ -56,7 +42,7 @@
         (beginning-of-buffer)
         (search-forward "project headline")
         (org-gtd-cancel-project)
-        (org-gtd-archive-complete-projects)
+        (org-gtd-archive-completed-items)
         (save-buffer))
       (let ((archived-projects (ogt--archived-projects-buffer-string)))
         (expect archived-projects :to-match ".*project headline.*")))
@@ -67,6 +53,6 @@
         (beginning-of-buffer)
         (search-forward "Task 1")
         (org-gtd-agenda-cancel-project)
-        (org-gtd-archive-complete-projects))
+        (org-gtd-archive-completed-items))
       (let ((archived-projects (ogt--archived-projects-buffer-string)))
         (expect archived-projects :to-match ".*project headline.*")))))

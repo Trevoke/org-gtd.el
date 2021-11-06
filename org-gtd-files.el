@@ -73,7 +73,7 @@ This is the inbox. Everything goes in here when you capture it.
   "#+begin_comment
 Here go the things you want to think about someday. Review this file as often
 as you feel the need: every two months? Every six months? Every year?
-It's suggested that you categorize the items in here somehow, such as:
+Add your own categories as necessary, with the ORG_GTD property, such as
 \"to read\", \"to buy\", \"to eat\", etc - whatever works best for your mind!
 #+end_comment
 
@@ -93,11 +93,6 @@ It's suggested that you categorize the items in here somehow, such as:
     (puthash org-gtd-incubated org-gtd-incubated-template myhash)
     myhash))
 
-(defun org-gtd--path (file)
-  "Return the full path to FILE.org.
-This assumes the file is located in `org-gtd-directory'."
-  (f-join org-gtd-directory (concat file ".org")))
-
 (defun org-gtd-inbox-path ()
   "Return the full path to the inbox file."
   (org-gtd--path org-gtd-inbox))
@@ -114,12 +109,6 @@ This assumes the file is located in `org-gtd-directory'."
   "Create or return the buffer to the GTD actionable file."
   (org-gtd--gtd-file-buffer org-gtd-actions))
 
-(defun org-gtd--default-projects-archive ()
-  "Create or return the buffer to the archive file for the actionable items."
-  (let* ((filename (string-join `(,(buffer-file-name (org-gtd--default-projects-file)) "archive") "_"))
-        (archive-file (f-join org-gtd-directory filename)))
-    (find-file archive-file)))
-
 (defun org-gtd--default-incubated-file ()
   "Create or return the buffer to the GTD incubate file."
   (org-gtd--gtd-file-buffer org-gtd-incubated))
@@ -129,6 +118,11 @@ This assumes the file is located in `org-gtd-directory'."
 
 (defun org-gtd--default-scheduled-file ()
   (org-gtd--gtd-file-buffer org-gtd-scheduled))
+
+(defun org-gtd--path (file)
+  "Return the full path to FILE.org.
+This assumes the file is located in `org-gtd-directory'."
+  (f-join org-gtd-directory (concat file ".org")))
 
 (defun org-gtd--gtd-file-buffer (gtd-type)
   (let ((file-path (org-gtd--path gtd-type)))

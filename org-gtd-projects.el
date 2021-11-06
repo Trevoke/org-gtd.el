@@ -24,28 +24,6 @@
 ;;
 ;;; Code:
 
-(defconst org-gtd-projects-headline-definition
-  "+LEVEL=2+ORG_GTD=\"Projects\""
-  "How to identify projects in the GTD system.")
-
-(defun org-gtd-archive-complete-projects ()
-  "Archive all projects for which all actions/tasks are marked as done.
-Done here is any done `org-todo-keyword'."
-  (interactive)
-  (let ((org-use-property-inheritance "ORG_GTD")
-        (org-agenda-files `(,org-gtd-directory)))
-    (org-map-entries
-     (lambda ()
-       (let ((task-states (org-gtd--current-project-states)))
-         (when (or (org-gtd--project-complete-p task-states)
-                   (org-gtd--project-canceled-p task-states))
-           (setq org-map-continue-from (org-element-property
-                                        :begin
-                                        (org-element-at-point)))
-           (org-archive-subtree-default))))
-     org-gtd-projects-headline-definition
-     'agenda)))
-
 (defun org-gtd-cancel-project ()
   "With point on project heading, mark all undone tasks canceled."
   (interactive)

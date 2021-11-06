@@ -56,13 +56,42 @@
 (defconst org-gtd-delegated "delegated")
 (defconst org-gtd-scheduled "scheduled")
 
+(defconst org-gtd--refile-properties
+  (let ((myhash (make-hash-table :test 'equal)))
+    (puthash org-gtd-actions "Action" myhash)
+    (puthash org-gtd-incubated "Incubated" myhash)
+    (puthash org-gtd-delegated "Delegated" myhash)
+    (puthash org-gtd-projects "Projects" myhash)
+    (puthash org-gtd-scheduled "Scheduled" myhash)
+    myhash))
+
+(defconst org-gtd-actions-definition
+  "+LEVEL=1+ORG_GTD=\"Action\""
+  "How to identify single actions in the GTD system.")
+
+(defconst org-gtd-incubated-definition
+  "+LEVEL=1+ORG_GTD=\"Incubated\""
+  "How to identify incubated items in the GTD system.")
+
+(defconst org-gtd-delegated-definition
+  "+LEVEL=1+ORG_GTD=\"Delegated\""
+  "How to identify delegated items in the GTD system.")
+
+(defconst org-gtd-scheduled-definition
+  "+LEVEL=1+ORG_GTD=\"Scheduled\""
+  "How to identify scheduled items in the GTD system.")
+
+(defconst org-gtd-projects-definition
+  "+LEVEL=2+ORG_GTD=\"Projects\""
+  "How to identify projects in the GTD system.")
+
+(require 'org-gtd-archive)
 (require 'org-gtd-files)
 (require 'org-gtd-refile)
 (require 'org-gtd-customize)
 (require 'org-gtd-projects)
 (require 'org-gtd-agenda)
 (require 'org-gtd-inbox-processing)
-
 
 
 (defun org-gtd-capture (&optional goto keys)
