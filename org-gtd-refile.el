@@ -33,22 +33,20 @@
     (puthash org-gtd-scheduled "Refile scheduled item to: " myhash)
     myhash))
 
-(defun org-gtd--refile (type)
-  "Refile an item to the single action file."
-  (with-org-gtd-context type
-                        (unless (org-refile-get-targets) (org-gtd--gtd-file-buffer type))
-                        (org-refile nil nil nil (org-gtd--refile-prompt type))))
-
-(defmacro with-org-gtd-context (type &rest body)
+(defmacro with-org-gtd-refile (type &rest body)
   (declare (debug t))
-  `(let ((org-refile-use-outline-path nil)
-         (org-odd-levels-only nil)
-         (org-refile-target-verify-function (lambda () (org-gtd--group-p ,type)))
-         (org-agenda-files `(,org-gtd-directory))
+  `(let ((org-refile-target-verify-function (lambda () (org-gtd--group-p ,type)))
          (org-refile-targets '((org-agenda-files :level . 1))))
      (unwind-protect
          (progn ,@body))))
 
+(defun org-gtd--refile (type)
+  "Refile an item to the single action file."
+  (with-org-gtd-context
+   (with-org-gtd-refile
+    type
+    (unless (org-refile-get-targets) (org-gtd--gtd-file-buffer type))
+    (org-refile nil nil nil (org-gtd--refile-prompt type)))))
 
 (defun org-gtd--group-p (type)
   (string-equal (org-gtd--group type)

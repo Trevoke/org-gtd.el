@@ -93,7 +93,6 @@
 (require 'org-gtd-agenda)
 (require 'org-gtd-inbox-processing)
 
-
 (defun org-gtd-capture (&optional goto keys)
   "Capture something into the GTD inbox.
 
@@ -103,6 +102,15 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the same
   (interactive)
   (kill-buffer (org-gtd--inbox-file))
   (org-capture goto keys))
+
+(defmacro with-org-gtd-context (&rest body)
+  (declare (debug t))
+  `(let ((org-refile-use-outline-path nil)
+         (org-stuck-projects org-gtd-stuck-projects)
+         (org-odd-levels-only nil)
+         (org-agenda-files `(,org-gtd-directory)))
+     (unwind-protect
+         (progn ,@body))))
 
 (provide 'org-gtd)
 
