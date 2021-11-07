@@ -16,6 +16,9 @@
  (describe
   "finished work"
 
+  (it "I dunno"
+      (ogt--add-and-process-project "foo"))
+
   (it "archives completed and canceled projects"
       (ogt--add-and-process-project "project headline")
       (with-current-buffer (org-gtd--default-projects-file)

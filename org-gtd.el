@@ -85,10 +85,10 @@
   "+LEVEL=1&+ORG_GTD=\"Projects\""
   "How to identify projects in the GTD system.")
 
+(require 'org-gtd-customize)
 (require 'org-gtd-archive)
 (require 'org-gtd-files)
 (require 'org-gtd-refile)
-(require 'org-gtd-customize)
 (require 'org-gtd-projects)
 (require 'org-gtd-agenda)
 (require 'org-gtd-inbox-processing)
@@ -101,7 +101,11 @@ Wraps the function `org-capture' to ensure the inbox exists.
 For GOTO and KEYS, see `org-capture' documentation for the variables of the same name."
   (interactive)
   (kill-buffer (org-gtd--inbox-file))
-  (org-capture goto keys))
+
+  (let ((org-capture-templates org-gtd-capture-templates))
+    (message "%s" org-capture-templates)
+    (message (caar org-capture-templates))
+    (org-capture goto keys)))
 
 (defmacro with-org-gtd-context (&rest body)
   (declare (debug t))

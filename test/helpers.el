@@ -33,11 +33,7 @@
 (defun ogt--configure-emacs ()
   (setq org-gtd-directory (f-join default-directory "test"  "runtime-file-path"))
   (define-key org-gtd-command-map (kbd "C-c c") #'org-gtd-clarify-finalize)
-  (setq org-agenda-files `(,org-gtd-directory)
-        org-capture-templates `(("i" "GTD item"
-                                 entry (file (lambda () (org-gtd-inbox-path)))
-                                 "* %?\n%U\n\n  %i"
-                                 :kill-buffer t))))
+  (setq org-agenda-files `(,org-gtd-directory)))
 
 (defun create-additional-project-target (filename)
   (let* ((file (f-join org-gtd-directory (format "%s.org" filename)))

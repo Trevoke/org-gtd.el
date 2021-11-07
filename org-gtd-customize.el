@@ -27,20 +27,36 @@
 (defgroup org-gtd nil
   "Customize the org-gtd package."
   :link '(url-link "https://github.com/Trevoke/org-gtd.el")
-  :version "0.1"
+  :package-version "0.1"
   :group 'org)
 
 (defcustom org-gtd-directory "~/gtd/"
   "Directory of Org based GTD files.
 This is the directory where to look for the files used in
 this Org-mode based GTD implementation."
-  :version "0.1"
+  :group 'org-gtd
+  :package-version "0.1"
   :type 'directory)
 
 (defcustom org-gtd-process-item-hooks '(org-set-tags-command)
   "Enhancements to add to each item as they get processed from the inbox."
-  :version "1.0.4"
+  :group 'org-gtd
+  :package-version "1.0.4"
   :type 'hook
   :options '(org-set-tags-command org-set-effort org-priority))
+
+(defcustom org-gtd-capture-templates
+  '(("i" "Inbox"
+     entry (file (lambda () (org-gtd-inbox-path)))
+                 "* %?\n%U\n\n  %i"
+                 :kill-buffer t)
+     ("t" "Todo with link"
+      entry (file (lambda () (org-gtd-inbox-path)))
+      "* %?\n%U\n\n  %i\n  %a"
+      :kill-buffer t))
+  "Capture templates to be used when adding something to the inbox"
+  :group 'org-gtd
+  :type 'sexp
+  :package-version "2.0.0")
 
 (provide 'org-gtd-customize)
