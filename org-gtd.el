@@ -66,23 +66,23 @@
     myhash))
 
 (defconst org-gtd-actions-definition
-  "+LEVEL=1+ORG_GTD=\"Action\""
+  "+LEVEL=1&+ORG_GTD=\"Action\""
   "How to identify single actions in the GTD system.")
 
 (defconst org-gtd-incubated-definition
-  "+LEVEL=1+ORG_GTD=\"Incubated\""
+  "+LEVEL=1&+ORG_GTD=\"Incubated\""
   "How to identify incubated items in the GTD system.")
 
 (defconst org-gtd-delegated-definition
-  "+LEVEL=1+ORG_GTD=\"Delegated\""
+  "+LEVEL=1&+ORG_GTD=\"Delegated\""
   "How to identify delegated items in the GTD system.")
 
 (defconst org-gtd-scheduled-definition
-  "+LEVEL=1+ORG_GTD=\"Scheduled\""
+  "+LEVEL=1&+ORG_GTD=\"Scheduled\""
   "How to identify scheduled items in the GTD system.")
 
 (defconst org-gtd-projects-definition
-  "+LEVEL=2+ORG_GTD=\"Projects\""
+  "+LEVEL=1&+ORG_GTD=\"Projects\""
   "How to identify projects in the GTD system.")
 
 (require 'org-gtd-archive)
