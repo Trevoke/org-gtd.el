@@ -26,17 +26,6 @@
  (describe
   "canceling projects"
 
-  (it "recognizes a project as canceled if the last task is canceled"
-      (let ((last-one '("DONE" "DONE" "CNCL"))
-            (last-two '("DONE" "CNCL" "CNCL"))
-            (only-random-task '("DONE" "CNCL" "NEXT")))
-        (expect (org-gtd--project-canceled-p last-one)
-                :to-equal t)
-        (expect (org-gtd--project-canceled-p last-two)
-                :to-equal t)
-        (expect (org-gtd--project-canceled-p only-random-task)
-                :to-equal nil)))
-
   (it "marks all undone tasks of a canceled project as canceled"
       (with-current-buffer (org-gtd--default-projects-file)
         (beginning-of-buffer)

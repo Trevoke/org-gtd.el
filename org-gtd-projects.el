@@ -61,18 +61,6 @@ Add the TODO keyword to all subsequent actions/tasks."
         t
         'tree)))
 
-(defun org-gtd--project-complete-p (task-states)
-  "Return t if project complete, nil otherwise.
-A project is considered complete when all TASK-STATES are
-marked with a done `org-todo-keyword'."
-  (seq-every-p (lambda (x) (string-equal x "DONE")) task-states))
-
-(defun org-gtd--project-canceled-p (task-states)
-  "Return t if project canceled, nil otherwise.
-A project is considered canceled when the last of the TASK-STATES is
-marked with a canceled `org-todo-keyword'."
-  (string-equal "CNCL" (car (last task-states))))
-
 (defun org-gtd--project-heading-p ()
   "Determine if current heading is a project heading"
   (not (org-entry-is-todo-p)))

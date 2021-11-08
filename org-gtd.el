@@ -80,10 +80,9 @@ Wraps the function `org-capture' to ensure the inbox exists.
 
 For GOTO and KEYS, see `org-capture' documentation for the variables of the same name."
   (interactive)
-  (kill-buffer (org-gtd--inbox-file))
-
   (with-org-gtd-context
-   (org-capture goto keys)))
+      (kill-buffer (org-gtd--inbox-file))
+      (org-capture goto keys)))
 
 (defmacro with-org-gtd-context (&rest body)
   (declare (debug t) (indent 2))
