@@ -67,7 +67,6 @@
             (ogt--clear-file-and-buffer buffer))
           `(,(ogt--default-projects-archive)
             ,(org-gtd--default-action-file)
-            ,(org-gtd--default-delegated-file)
             ,(org-gtd--default-scheduled-file)
             ,(org-gtd--inbox-file)
             ,(org-gtd--default-incubated-file))))

@@ -51,7 +51,7 @@
       (with-current-buffer (org-gtd--default-delegated-file)
         (expect (buffer-string)
                 :to-match
-                ".*:ORG_GTD: Delegated.*")))
+                ".*:ORG_GTD: Actions.*")))
 
   (it "for the default incubated file"
       (with-current-buffer (org-gtd--default-incubated-file)
@@ -63,7 +63,7 @@
       (with-current-buffer (org-gtd--default-action-file)
         (expect (buffer-string)
                 :to-match
-                ".*:ORG_GTD: Action.*")))
+                ".*:ORG_GTD: Actions.*")))
 
   )
 
@@ -96,7 +96,7 @@
       (with-current-buffer "*Directory*"
         (expect (buffer-string)
                 :to-match
-                ".*delegated\\.org.*"))
+                ".*actions\\.org.*"))
       (kill-buffer "*Directory*"))
 
   (it "for a incubated item"

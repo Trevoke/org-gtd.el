@@ -129,7 +129,7 @@ the inbox.  Set it as a waiting action and refile to
   (org-todo "WAIT")
   (org-set-property "DELEGATED_TO" (read-string "Who will do this? "))
   (org-schedule 0)
-  (org-gtd--refile org-gtd-delegated))
+  (org-gtd--refile org-gtd-actions))
 
 (defun org-gtd--incubate ()
   "Process GTD inbox item by incubating it.

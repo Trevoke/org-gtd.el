@@ -31,7 +31,6 @@
   (with-org-gtd-context
    (mapcar 'org-gtd--archive-done `(,org-gtd-actions-definition
                                     ,org-gtd-incubated-definition
-                                    ,org-gtd-delegated-definition
                                     ,org-gtd-scheduled-definition
                                     ,org-gtd-projects-definition))))
 

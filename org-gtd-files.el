@@ -55,17 +55,10 @@ This is the inbox. Everything goes in here when you capture it.
 :END:
 ")
 
-(defconst org-gtd-delegated-template
-  "* Delegated
-:PROPERTIES:
-:ORG_GTD: Delegated
-:END:
-")
-
 (defconst org-gtd-actions-template
   "* Actions
 :PROPERTIES:
-:ORG_GTD: Action
+:ORG_GTD: Actions
 :END:
 ")
 
@@ -87,7 +80,6 @@ Add your own categories as necessary, with the ORG_GTD property, such as
 (defconst org-gtd--file-template
   (let ((myhash (make-hash-table :test 'equal)))
     (puthash org-gtd-actions org-gtd-actions-template myhash)
-    (puthash org-gtd-delegated org-gtd-delegated-template myhash)
     (puthash org-gtd-scheduled org-gtd-scheduled-template myhash)
     (puthash org-gtd-projects org-gtd-projects-template myhash)
     (puthash org-gtd-incubated org-gtd-incubated-template myhash)
@@ -114,7 +106,7 @@ Add your own categories as necessary, with the ORG_GTD property, such as
   (org-gtd--gtd-file-buffer org-gtd-incubated))
 
 (defun org-gtd--default-delegated-file ()
-  (org-gtd--gtd-file-buffer org-gtd-delegated))
+  (org-gtd--gtd-file-buffer org-gtd-actions))
 
 (defun org-gtd--default-scheduled-file ()
   (org-gtd--gtd-file-buffer org-gtd-scheduled))
