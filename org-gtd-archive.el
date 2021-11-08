@@ -42,38 +42,6 @@
    (format org-gtd-item-match (gethash subset org-gtd--refile-properties))
    'agenda))
 
-(defun org-gtd-archive-subtree (&optional find-done)
-  "Move the current subtree to the archive.
-The archive can be a certain top-level heading in the current
-file, or in a different file.  The tree will be moved to that
-location, the subtree heading be marked DONE, and the current
-time will be added.
-
-When called with a single prefix argument FIND-DONE, find whole
-trees without any open TODO items and archive them (after getting
-confirmation from the user).  When called with a double prefix
-argument, find whole trees with timestamps before today and
-archive them (after getting confirmation from the user).  If the
-cursor is not at a headline when these commands are called, try
-all level 1 trees.  If the cursor is on a headline, only try the
-direct children of this heading.
-
-This file copied and pasted shamelessly from org-archive"
-  (interactive)
-  (if (and (org-region-active-p) org-loop-over-headlines-in-active-region)
-      (let ((cl (if (eq org-loop-over-headlines-in-active-region 'start-level)
-                    'region-start-level 'region))
-            org-loop-over-headlines-in-active-region)
-        (org-map-entries
-         `(progn (setq org-map-continue-from (progn (org-back-to-heading) (point)))
-                 (org-gtd-archive-subtree ,find-done))
-         org-loop-over-headlines-in-active-region
-         cl (if (org-invisible-p) (org-end-of-subtree nil t))))
-    (org-gtd--archive-all-done)
-    (org-reveal)
-    (if (looking-at "^[ \t]*$")
-        (outline-next-visible-heading 1))))
-
 (defun org-gtd--archive-all-done (&optional tag)
   "Archive sublevels of the current tree without open TODO items.
 If the cursor is not on a headline, try all level 1 trees.  If
