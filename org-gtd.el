@@ -65,22 +65,6 @@
     (puthash org-gtd-scheduled "Scheduled" myhash)
     myhash))
 
-(defconst org-gtd-actions-definition
-  "+LEVEL=1&+ORG_GTD=\"Actions\""
-  "How to identify single actions in the GTD system.")
-
-(defconst org-gtd-incubated-definition
-  "+LEVEL=1&+ORG_GTD=\"Incubated\""
-  "How to identify incubated items in the GTD system.")
-
-(defconst org-gtd-scheduled-definition
-  "+LEVEL=1&+ORG_GTD=\"Scheduled\""
-  "How to identify scheduled items in the GTD system.")
-
-(defconst org-gtd-projects-definition
-  "+LEVEL=1&+ORG_GTD=\"Projects\""
-  "How to identify projects in the GTD system.")
-
 (require 'org-gtd-customize)
 (require 'org-gtd-archive)
 (require 'org-gtd-files)

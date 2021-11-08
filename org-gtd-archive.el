@@ -26,18 +26,20 @@
 
 (require 'org-archive)
 
+(defconst org-gtd-item-match "+LEVEL=1&+ORG_GTD=\"%s\"")
+
 (defun org-gtd-archive-completed-items ()
   (interactive)
   (with-org-gtd-context
-   (mapcar 'org-gtd--archive-done `(,org-gtd-actions-definition
-                                    ,org-gtd-incubated-definition
-                                    ,org-gtd-scheduled-definition
-                                    ,org-gtd-projects-definition))))
+   (mapcar 'org-gtd--archive-done `(,org-gtd-actions
+                                    ,org-gtd-incubated
+                                    ,org-gtd-scheduled
+                                    ,org-gtd-projects))))
 
 (defun org-gtd--archive-done (subset)
   (org-map-entries
    (lambda () (org-gtd--archive-all-done))
-   subset
+   (format org-gtd-item-match (gethash subset org-gtd--refile-properties))
    'agenda))
 
 (defun org-gtd-archive-subtree (&optional find-done)
