@@ -45,6 +45,7 @@
 (require 'cl-lib)
 (require 'f)
 (require 'org)
+(require 'org-capture)
 (require 'org-element)
 (require 'org-agenda-property)
 (require 'org-edna)
@@ -102,15 +103,19 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the same
   (interactive)
   (kill-buffer (org-gtd--inbox-file))
 
-  (let ((org-capture-templates org-gtd-capture-templates))
-    (org-capture goto keys)))
+  (with-org-gtd-context
+   (org-capture goto keys)))
 
 (defmacro with-org-gtd-context (&rest body)
-  (declare (debug t))
-  `(let ((org-refile-use-outline-path nil)
-         (org-stuck-projects org-gtd-stuck-projects)
-         (org-odd-levels-only nil)
-         (org-agenda-files `(,org-gtd-directory)))
+  (declare (debug t) (indent 2))
+  `(let* ((org-use-property-inheritance "ORG_GTD")
+          (org-archive-location (funcall org-gtd-archive-location))
+          (org-capture-templates org-gtd-capture-templates)
+          (org-stuck-projects org-gtd-stuck-projects)
+          (org-refile-use-outline-path nil)
+          (org-stuck-projects org-gtd-stuck-projects)
+          (org-odd-levels-only nil)
+          (org-agenda-files `(,org-gtd-directory)))
      (unwind-protect
          (progn ,@body))))
 

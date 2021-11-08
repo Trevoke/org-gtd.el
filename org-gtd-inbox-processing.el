@@ -54,15 +54,16 @@ Use this once a day and/or weekly as part of the weekly review."
   (display-buffer-same-window (org-gtd--inbox-file) '())
   (delete-other-windows)
 
-  (org-map-entries
-   (lambda ()
-     (setq org-map-continue-from (org-element-property
-                                  :begin
-                                  (org-element-at-point)))
-     (org-narrow-to-element)
-     (org-show-subtree)
-     (org-gtd--process-inbox-element)
-     (widen)))
+  (with-org-gtd-context
+      (org-map-entries
+       (lambda ()
+         (setq org-map-continue-from (org-element-property
+                                      :begin
+                                      (org-element-at-point)))
+         (org-narrow-to-element)
+         (org-show-subtree)
+         (org-gtd--process-inbox-element)
+         (widen))))
   (setq-local header-line-format nil))
 
 (defun org-gtd--process-inbox-element ()

@@ -32,8 +32,7 @@
 
 (defun ogt--configure-emacs ()
   (setq org-gtd-directory (f-join default-directory "test"  "runtime-file-path"))
-  (define-key org-gtd-command-map (kbd "C-c c") #'org-gtd-clarify-finalize)
-  (setq org-agenda-files `(,org-gtd-directory)))
+  (define-key org-gtd-command-map (kbd "C-c c") #'org-gtd-clarify-finalize))
 
 (defun create-additional-project-target (filename)
   (let* ((file (f-join org-gtd-directory (format "%s.org" filename)))
@@ -82,11 +81,13 @@
 
 (defun ogt--default-projects-archive ()
   "Create or return the buffer to the archive file for the actionable items."
-  (let* ((filename (string-join `(,(buffer-file-name (org-gtd--default-projects-file)) "archive") "_"))
-        (archive-file (f-join org-gtd-directory filename)))
-    (find-file archive-file)))
+  (with-current-buffer (org-gtd--inbox-file)
+    (find-file
+     (car (with-org-gtd-context
+              (org-archive--compute-location
+               (funcall org-gtd-archive-location)))))))
 
-(defun ogt--archived-projects-buffer-string ()
+(defun ogt--archive-string ()
   "return string of items archived from actionable file"
   (ogt--get-string-from-buffer (ogt--default-projects-archive)))
 

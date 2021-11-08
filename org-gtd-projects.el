@@ -28,14 +28,15 @@
   "With point on project heading, mark all undone tasks canceled."
   (interactive)
   (org-edna-mode -1)
-    (org-map-entries
-     (lambda ()
-       (when (org-gtd--incomplete-task-p)
-         (let ((org-inhibit-logging 'note))
-           (org-todo "CNCL"))))
-     nil
-     'tree)
-    (org-edna-mode 1))
+  (with-org-gtd-context
+      (org-map-entries
+       (lambda ()
+         (when (org-gtd--incomplete-task-p)
+           (let ((org-inhibit-logging 'note))
+             (org-todo "CNCL"))))
+       nil
+       'tree))
+  (org-edna-mode 1))
 
 (defun org-gtd--nextify ()
   "Add the NEXT keyword to the first action/task of the project.

@@ -45,6 +45,15 @@ this Org-mode based GTD implementation."
   :type 'hook
   :options '(org-set-tags-command org-set-effort org-priority))
 
+(defcustom org-gtd-archive-location
+  (lambda ()
+   (let ((year (number-to-string (caddr (calendar-current-date)))))
+     (string-join `("gtd_archive_" ,year "::datetree/"))))
+  "Function to generate archive location for org gtd"
+  :group 'org-gtd
+  :type 'sexp
+  :package-version "2.0.0")
+
 (defcustom org-gtd-capture-templates
   '(("i" "Inbox"
      entry (file (lambda () (org-gtd-inbox-path)))

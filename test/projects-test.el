@@ -44,7 +44,7 @@
         (org-gtd-cancel-project)
         (org-gtd-archive-completed-items)
         (save-buffer))
-      (let ((archived-projects (ogt--archived-projects-buffer-string)))
+      (let ((archived-projects (ogt--archive-string)))
         (expect archived-projects :to-match ".*project headline.*")))
 
   (it "marks all undone tasks of a canceled project as canceled through the agenda"
@@ -54,5 +54,5 @@
         (search-forward "Task 1")
         (org-gtd-agenda-cancel-project)
         (org-gtd-archive-completed-items))
-      (let ((archived-projects (ogt--archived-projects-buffer-string)))
+      (let ((archived-projects (ogt--archive-string)))
         (expect archived-projects :to-match ".*project headline.*")))))

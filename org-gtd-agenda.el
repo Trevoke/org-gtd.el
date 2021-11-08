@@ -36,7 +36,8 @@ This is a list of four items, the same type as in `org-stuck-projects'.")
   "Show all next actions from all agenda files in a single list.
 This assumes all GTD files are also agenda files."
   (interactive)
-  (org-todo-list "NEXT"))
+  (with-org-gtd-context
+      (org-todo-list "NEXT")))
 
 (defun org-gtd-agenda-cancel-project ()
   "Cancel the project that has the highlighted task."
@@ -63,10 +64,7 @@ This assumes all GTD files are also agenda files."
 (defun org-gtd-show-stuck-projects ()
   "Show all projects that do not have a next action."
   (interactive)
-  (let* ((user-stuck-projects org-stuck-projects)
-         (org-stuck-projects org-gtd-stuck-projects)
-         (stuck-projects-buffer (org-agenda-list-stuck-projects))
-         (org-stuck-projects user-stuck-projects))
-    stuck-projects-buffer))
+  (with-org-gtd-context
+      (org-agenda-list-stuck-projects)))
 
 (provide 'org-gtd-agenda)

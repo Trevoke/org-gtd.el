@@ -38,15 +38,14 @@
   `(let ((org-refile-target-verify-function (lambda () (org-gtd--group-p ,type)))
          (org-refile-targets '((org-agenda-files :level . 1))))
      (unwind-protect
-         (progn ,@body))))
+         (with-org-gtd-context (progn ,@body)))))
 
 (defun org-gtd--refile (type)
   "Refile an item to the single action file."
-  (with-org-gtd-context
-   (with-org-gtd-refile
-    type
-    (unless (org-refile-get-targets) (org-gtd--gtd-file-buffer type))
-    (org-refile nil nil nil (org-gtd--refile-prompt type)))))
+  (with-org-gtd-refile
+   type
+   (unless (org-refile-get-targets) (org-gtd--gtd-file-buffer type))
+   (org-refile nil nil nil (org-gtd--refile-prompt type))))
 
 (defun org-gtd--group-p (type)
   (string-equal (org-gtd--group type)

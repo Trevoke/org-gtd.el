@@ -16,10 +16,6 @@
  (describe
   "finished work"
 
-  (it "this test runs code that breaks for some reason"
-      (ignore-errors
-        (ogt--add-and-process-project "foo")))
-
   (it "archives completed and canceled projects"
       (ogt--add-and-process-project "project headline")
       (with-current-buffer (org-gtd--default-projects-file)
@@ -31,7 +27,7 @@
         (insert ogt--completed-project)
         (save-buffer))
       (org-gtd-archive-completed-items)
-      (let ((archived-projects (ogt--archived-projects-buffer-string)))
+      (let ((archived-projects (ogt--archive-string)))
         (expect archived-projects :to-match ".*completed.*")
         (expect archived-projects :to-match ".*canceled.*"))))
 

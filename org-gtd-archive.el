@@ -24,16 +24,16 @@
 ;;
 ;;; Code:
 
+(require 'org-archive)
+
 (defun org-gtd-archive-completed-items ()
   (interactive)
-  (let ((org-use-property-inheritance "ORG_GTD")
-        (org-agenda-files `(,org-gtd-directory)))
-
-    (mapcar 'org-gtd--archive-done `(,org-gtd-actions-definition
-                                ,org-gtd-incubated-definition
-                                ,org-gtd-delegated-definition
-                                ,org-gtd-scheduled-definition
-                                ,org-gtd-projects-definition))))
+  (with-org-gtd-context
+   (mapcar 'org-gtd--archive-done `(,org-gtd-actions-definition
+                                    ,org-gtd-incubated-definition
+                                    ,org-gtd-delegated-definition
+                                    ,org-gtd-scheduled-definition
+                                    ,org-gtd-projects-definition))))
 
 (defun org-gtd--archive-done (subset)
   (org-map-entries
