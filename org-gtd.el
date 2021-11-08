@@ -103,8 +103,6 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the same
   (kill-buffer (org-gtd--inbox-file))
 
   (let ((org-capture-templates org-gtd-capture-templates))
-    (message "%s" org-capture-templates)
-    (message (caar org-capture-templates))
     (org-capture goto keys)))
 
 (defmacro with-org-gtd-context (&rest body)
