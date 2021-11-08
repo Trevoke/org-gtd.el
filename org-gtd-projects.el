@@ -61,10 +61,6 @@ Add the TODO keyword to all subsequent actions/tasks."
         t
         'tree)))
 
-(defun org-gtd--project-heading-p ()
-  "Determine if current heading is a project heading"
-  (not (org-entry-is-todo-p)))
-
 (defun org-gtd--incomplete-task-p ()
   "Determine if current heading is a task that's not finished"
   (and (org-entry-is-todo-p)
