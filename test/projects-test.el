@@ -24,9 +24,9 @@
          (expect task-states :to-equal '("NEXT" "TODO" "TODO")))))
 
  (describe
-  "canceling projects"
+  "marks all undone tasks of a canceled project as canceled"
 
-  (it "marks all undone tasks of a canceled project as canceled"
+  (it "when on the heading"
       (with-current-buffer (org-gtd--default-projects-file)
         (beginning-of-buffer)
         (search-forward "project headline")
@@ -36,7 +36,7 @@
       (let ((archived-projects (ogt--archive-string)))
         (expect archived-projects :to-match ".*project headline.*")))
 
-  (it "marks all undone tasks of a canceled project as canceled through the agenda"
+  (it "on a task in the agenda"
       (org-gtd-show-all-next)
       (with-current-buffer ogt--agenda-buffer
         (beginning-of-buffer)
