@@ -73,6 +73,27 @@
 (require 'org-gtd-agenda)
 (require 'org-gtd-inbox-processing)
 
+;;;###autoload
+(define-minor-mode org-gtd-mode
+  "global minor mode to force org-agenda to be bounded to the org-gtd settings"
+  :lighter " GTD"
+  :global t
+  (if org-gtd-mode
+      (org-gtd--override-agenda)
+    (org-gtd--restore-agenda)))
+
+(defun org-gtd--wrap (fun &rest r)
+  (with-org-gtd-context (apply fun r)))
+
+(defun org-gtd--override-agenda ()
+  (advice-add 'org-agenda :around #'org-gtd--wrap)
+  (advice-add 'org-agenda-list-stuck-projects :around #'org-gtd--wrap))
+
+(defun org-gtd--restore-agenda ()
+  (advice-remove 'org-agenda #'org-gtd--wrap)
+  (advice-remove 'org-agenda-list-stuck-projects #'org-gtd--wrap))
+
+;;;###autoload
 (defun org-gtd-capture (&optional goto keys)
   "Capture something into the GTD inbox.
 
@@ -89,11 +110,15 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the same
   `(let* ((org-use-property-inheritance "ORG_GTD")
           (org-archive-location (funcall org-gtd-archive-location))
           (org-capture-templates org-gtd-capture-templates)
-          (org-stuck-projects org-gtd-stuck-projects)
           (org-refile-use-outline-path nil)
           (org-stuck-projects org-gtd-stuck-projects)
           (org-odd-levels-only nil)
-          (org-agenda-files `(,org-gtd-directory)))
+          (org-agenda-files `(,org-gtd-directory))
+          (org-agenda-property-list '("DELEGATED_TO"))
+          ;(org-agenda-buffer-name "*Org Agenda(g)*")
+          (org-agenda-custom-commands
+           '(("g" "Scheduled today and all NEXT items"
+              ((agenda "" ((org-agenda-span 1))) (todo "NEXT"))))))
      (unwind-protect
          (progn ,@body))))
 
