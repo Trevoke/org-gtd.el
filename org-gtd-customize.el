@@ -68,4 +68,12 @@ this Org-mode based GTD implementation."
   :type 'sexp
   :package-version "2.0.0")
 
+(defcustom org-gtd-agenda-custom-commands
+  '(("g" "Scheduled today and all NEXT items"
+     ((agenda "" ((org-agenda-span 1))) (todo "NEXT|WAIT"))))
+  "agenda custom commands to be used for org-gtd"
+  :group 'org-gtd
+  :type 'sexp
+  :package-version "2.0.0")
+
 (provide 'org-gtd-customize)

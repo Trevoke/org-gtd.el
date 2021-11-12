@@ -116,9 +116,7 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the same
           (org-agenda-files `(,org-gtd-directory))
           (org-agenda-property-list '("DELEGATED_TO"))
           ;(org-agenda-buffer-name "*Org Agenda(g)*")
-          (org-agenda-custom-commands
-           '(("g" "Scheduled today and all NEXT items"
-              ((agenda "" ((org-agenda-span 1))) (todo "NEXT"))))))
+          (org-agenda-custom-commands org-gtd-agenda-custom-commands))
      (unwind-protect
          (progn ,@body))))
 
