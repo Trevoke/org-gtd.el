@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t; -*-
 
-(load "test/helpers.el")
+(load "test/helpers/setup.el")
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -18,10 +18,10 @@
       (with-current-buffer (org-gtd--inbox-file)
         (expect (buffer-string)
                 :to-match
-                ".*This is the inbox.*")
+                "This is the inbox")
         (expect (buffer-string)
                 :to-match
-                ".*\\#\\+STARTUP: overview hidestars logrefile indent logdone.*")))
+                "#\\+STARTUP: overview hidestars logrefile indent logdone")))
 
   (it "has a shared header for the processed files"
       (dolist (buffer `(,(org-gtd--default-projects-file)
@@ -32,38 +32,38 @@
         (with-current-buffer buffer
           (expect (buffer-string)
                   :to-match
-                  ".*\\#\\+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
-\\#\\+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@).*"))))
+                  "#\\+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
+#\\+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)"))))
 
   (it "for the default projects file"
       (with-current-buffer (org-gtd--default-projects-file)
         (expect (buffer-string)
                 :to-match
-                ".*:ORG_GTD: Projects.*")))
+                ":ORG_GTD: Projects")))
 
   (it "for the default scheduled file"
       (with-current-buffer (org-gtd--default-scheduled-file)
         (expect (buffer-string)
                 :to-match
-                ".*:ORG_GTD: Scheduled.*")))
+                ":ORG_GTD: Scheduled")))
 
   (it "for the default delegated file"
       (with-current-buffer (org-gtd--default-delegated-file)
         (expect (buffer-string)
                 :to-match
-                ".*:ORG_GTD: Actions.*")))
+                ":ORG_GTD: Actions")))
 
   (it "for the default incubated file"
       (with-current-buffer (org-gtd--default-incubated-file)
         (expect (buffer-string)
                 :to-match
-                ".*:ORG_GTD: Incubated.*")))
+                ":ORG_GTD: Incubated")))
 
   (it "for the default action file"
       (with-current-buffer (org-gtd--default-action-file)
         (expect (buffer-string)
                 :to-match
-                ".*:ORG_GTD: Actions.*")))
+                ":ORG_GTD: Actions")))
 
   )
 
@@ -76,7 +76,7 @@
       (with-current-buffer "*Directory*"
         (expect (buffer-string)
                 :to-match
-                ".*projects\\.org.*"))
+                "projects\\.org"))
       (kill-buffer "*Directory*"))
 
   (it "for a scheduled item"
@@ -86,7 +86,7 @@
       (with-current-buffer "*Directory*"
         (expect (buffer-string)
                 :to-match
-                ".*scheduled\\.org.*"))
+                "scheduled\\.org"))
       (kill-buffer "*Directory*"))
 
   (it "for a delegated item"
@@ -96,7 +96,7 @@
       (with-current-buffer "*Directory*"
         (expect (buffer-string)
                 :to-match
-                ".*actions\\.org.*"))
+                "actions\\.org"))
       (kill-buffer "*Directory*"))
 
   (it "for a incubated item"
@@ -106,7 +106,7 @@
       (with-current-buffer "*Directory*"
         (expect (buffer-string)
                 :to-match
-                ".*incubated\\.org.*"))
+                "incubated\\.org"))
       (kill-buffer "*Directory*"))
 
   (it "for a single action"
@@ -116,5 +116,5 @@
       (with-current-buffer "*Directory*"
         (expect (buffer-string)
                 :to-match
-                ".*actions\\.org.*"))
+                "actions\\.org"))
       (kill-buffer "*Directory*"))))

@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t; -*-
 
-(load "test/helpers.el")
+(load "test/helpers/setup.el")
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -28,8 +28,8 @@
         (save-buffer))
       (org-gtd-archive-completed-items)
       (let ((archived-projects (ogt--archive-string)))
-        (expect archived-projects :to-match ".*completed.*")
-        (expect archived-projects :to-match ".*canceled.*"))))
+        (expect archived-projects :to-match "completed")
+        (expect archived-projects :to-match "canceled"))))
 
  (it "on a single action"
 
@@ -46,7 +46,7 @@
      (with-current-buffer (org-gtd--default-action-file)
        (expect (buffer-string)
                :to-match
-               ".*two.*")
+               "two")
        (expect (buffer-string)
                :not :to-match
-               ".* DONE one.*"))))
+               " DONE one"))))

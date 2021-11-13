@@ -105,6 +105,17 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the same
       (kill-buffer (org-gtd--inbox-file))
       (org-capture goto keys)))
 
+(defun org-gtd-delegate ()
+  (interactive)
+  (let ((delegated-to (read-string "Who will do this? "))
+        (org-inhibit-logging 'note))
+    (org-set-property "DELEGATED_TO" delegated-to)
+    (org-todo "WAIT")
+    (org-schedule 0)
+    (save-excursion
+      (goto-char (org-log-beginning t))
+      (insert (format "programmatically delegated to %s\n" delegated-to)))))
+
 (defmacro with-org-gtd-context (&rest body)
   (declare (debug t) (indent 2))
   `(let* ((org-use-property-inheritance "ORG_GTD")

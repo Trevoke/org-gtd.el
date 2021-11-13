@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t; -*-
 
-(load "test/helpers.el")
+(load "test/helpers/setup.el")
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -34,7 +34,7 @@
         (org-gtd-archive-completed-items)
         (save-buffer))
       (let ((archived-projects (ogt--archive-string)))
-        (expect archived-projects :to-match ".*project headline.*")))
+        (expect archived-projects :to-match "project headline")))
 
   (it "on a task in the agenda"
       (org-gtd-show-all-next)
@@ -44,4 +44,4 @@
         (org-gtd-agenda-cancel-project)
         (org-gtd-archive-completed-items))
       (let ((archived-projects (ogt--archive-string)))
-        (expect archived-projects :to-match ".*project headline.*")))))
+        (expect archived-projects :to-match "project headline")))))

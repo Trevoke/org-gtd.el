@@ -126,9 +126,7 @@ the inbox.  Set it as a waiting action and refile to
 `org-gtd-actionable-file-basename'."
   (org-gtd--clarify-item)
   (org-gtd--decorate-item)
-  (org-todo "WAIT")
-  (org-set-property "DELEGATED_TO" (read-string "Who will do this? "))
-  (org-schedule 0)
+  (org-gtd-delegate)
   (org-gtd--refile org-gtd-actions))
 
 (defun org-gtd--incubate ()

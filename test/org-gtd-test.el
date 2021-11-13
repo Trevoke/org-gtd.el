@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t; -*-
 
-(load "test/helpers.el")
+(load "test/helpers/setup.el")
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)

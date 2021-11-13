@@ -1,34 +1,7 @@
-(defconst ogt--project-text
-  "** Task 1
-** Task 2
-** Task 3")
-
-(defconst ogt--project-to-cancel
-  "** cancel me
-*** DONE Task 1
-*** NEXT Task 2
-*** TODO Task 3")
-
-(defconst ogt--completed-project
-  "** completed
-*** DONE Task 1
-*** DONE Task 2
-*** DONE Task 3")
-
-(defconst ogt--canceled-project
-  "** canceled
-*** DONE Task 1
-*** CNCL Task 2
-*** CNCL Task 3")
+(load "test/helpers/project.el")
+(load "test/helpers/processing.el")
 
 (defconst ogt--agenda-buffer "*Org Agenda*")
-
-(defconst ogt--base-project-heading
-  "* AdditionalHeading
-:PROPERTIES:
-:ORG_GTD: Projects
-:END:
-")
 
 (defun ogt--configure-emacs ()
   (setq org-gtd-directory (f-join default-directory "test"  "runtime-file-path"))
@@ -93,48 +66,7 @@
 (defun ogt--save-all-buffers ()
   (with-simulated-input "!" (save-some-buffers)))
 
-(defun ogt--add-single-item ()
+(defun ogt--add-single-item (&optional label)
   (org-gtd-capture nil "i")
-  (insert "single action")
+  (insert (or label "single action"))
   (org-capture-finalize))
-
-(defun ogt--add-and-process-project (label)
-  "LABEL is the project label."
-  (org-gtd-capture nil "i")
-  (insert label)
-  (org-capture-finalize)
-  (with-simulated-input
-   ("p" "M-> RET" (insert ogt--project-text) "C-c c RET TAB RET")
-   (org-gtd-process-inbox)))
-
-(defun ogt--add-and-process-scheduled-item (label)
-  "LABEL is the scheduled label."
-  (org-gtd-capture nil "i")
-  (insert label)
-  (org-capture-finalize)
-  (with-simulated-input "c C-c c RET RET TAB RET"
-                        (org-gtd-process-inbox)))
-
-(defun ogt--add-and-process-delegated-item (label)
-  "LABEL is the delegated label."
-  (org-gtd-capture nil "i")
-  (insert label)
-  (org-capture-finalize)
-  (with-simulated-input "d C-c c RET Someone RET RET TAB RET"
-                        (org-gtd-process-inbox)))
-
-(defun ogt--add-and-process-incubated-item (label)
-  "LABEL is the incubated label."
-  (org-gtd-capture nil "i")
-  (insert label)
-  (org-capture-finalize)
-  (with-simulated-input "i C-c c RET RET TAB RET"
-                        (org-gtd-process-inbox)))
-
-(defun ogt--add-and-process-single-action (label)
-  "LABEL is the single action label."
-  (org-gtd-capture nil "i")
-  (insert label)
-  (org-capture-finalize)
-  (with-simulated-input "s C-c c RET TAB RET"
-                        (org-gtd-process-inbox)))

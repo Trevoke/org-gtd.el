@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t; -*-
 
-(load "test/helpers.el")
+(load "test/helpers/setup.el")
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -61,7 +61,7 @@
 
         (expect (with-current-buffer new-buffer (buffer-string))
                 :to-match
-                ".*choose-refile-target.*")
+                "choose-refile-target")
 
         (ogt--clear-file-and-buffer new-buffer)
         (ogt--clear-file-and-buffer temp-buffer)))))

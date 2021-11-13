@@ -39,6 +39,27 @@ This assumes all GTD files are also agenda files."
   (with-org-gtd-context
       (org-todo-list "NEXT")))
 
+(defun org-gtd-agenda-delegate-task ()
+  "Delegate current agenda task."
+  (interactive)
+  (org-agenda-check-type t 'agenda 'todo 'tags 'search)
+  (org-agenda-check-no-diary)
+  (org-agenda-maybe-loop
+   #'org-gtd-delegate nil t nil
+   (let* ((marker (or (org-get-at-bol 'org-marker)
+                      (org-agenda-error)))
+          (type (marker-insertion-type marker))
+          (buffer (marker-buffer marker))
+          (pos (marker-position marker))
+          ts)
+     (set-marker-insertion-type marker t)
+     (org-with-remote-undo buffer
+       (with-current-buffer buffer
+         (widen)
+         (goto-char pos)
+         (org-gtd-delegate))
+       (org-agenda-show-tags)))))
+
 (defun org-gtd-agenda-cancel-project ()
   "Cancel the project that has the highlighted task."
   (interactive)
