@@ -40,12 +40,14 @@
   (org-gtd-user-input-mode 1)
   (recursive-edit))
 
+;;;###autoload
 (defun org-gtd-clarify-finalize ()
   "Finalize the clarify process."
   (interactive)
   (org-gtd-user-input-mode -1)
   (exit-recursive-edit))
 
+;;;###autoload
 (defun org-gtd-process-inbox ()
   "Process the GTD inbox.
 Use this once a day and/or weekly as part of the weekly review."

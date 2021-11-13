@@ -66,6 +66,22 @@
     myhash))
 
 (require 'org-gtd-customize)
+
+(defmacro with-org-gtd-context (&rest body)
+  (declare (debug t) (indent 2))
+  `(let* ((org-use-property-inheritance "ORG_GTD")
+          (org-archive-location (funcall org-gtd-archive-location))
+          (org-capture-templates org-gtd-capture-templates)
+          (org-refile-use-outline-path nil)
+          (org-stuck-projects org-gtd-stuck-projects)
+          (org-odd-levels-only nil)
+          (org-agenda-files `(,org-gtd-directory))
+          (org-agenda-property-list '("DELEGATED_TO"))
+          ;(org-agenda-buffer-name "*Org Agenda(g)*")
+          (org-agenda-custom-commands org-gtd-agenda-custom-commands))
+     (unwind-protect
+         (progn ,@body))))
+
 (require 'org-gtd-archive)
 (require 'org-gtd-files)
 (require 'org-gtd-refile)
@@ -105,6 +121,7 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the same
       (kill-buffer (org-gtd--inbox-file))
       (org-capture goto keys)))
 
+;;;###autoload
 (defun org-gtd-delegate ()
   (interactive)
   (let ((delegated-to (read-string "Who will do this? "))
@@ -116,20 +133,7 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the same
       (goto-char (org-log-beginning t))
       (insert (format "programmatically delegated to %s\n" delegated-to)))))
 
-(defmacro with-org-gtd-context (&rest body)
-  (declare (debug t) (indent 2))
-  `(let* ((org-use-property-inheritance "ORG_GTD")
-          (org-archive-location (funcall org-gtd-archive-location))
-          (org-capture-templates org-gtd-capture-templates)
-          (org-refile-use-outline-path nil)
-          (org-stuck-projects org-gtd-stuck-projects)
-          (org-odd-levels-only nil)
-          (org-agenda-files `(,org-gtd-directory))
-          (org-agenda-property-list '("DELEGATED_TO"))
-          ;(org-agenda-buffer-name "*Org Agenda(g)*")
-          (org-agenda-custom-commands org-gtd-agenda-custom-commands))
-     (unwind-protect
-         (progn ,@body))))
+
 
 (provide 'org-gtd)
 

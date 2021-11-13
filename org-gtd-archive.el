@@ -28,6 +28,7 @@
 
 (defconst org-gtd-item-match "+LEVEL=1&+ORG_GTD=\"%s\"")
 
+;;;###autoload
 (defun org-gtd-archive-completed-items ()
   (interactive)
   (with-org-gtd-context

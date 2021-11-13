@@ -24,6 +24,7 @@
 ;;
 ;;; Code:
 
+;;;###autoload
 (defun org-gtd-cancel-project ()
   "With point on project heading, mark all undone tasks canceled."
   (interactive)
