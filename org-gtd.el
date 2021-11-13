@@ -67,6 +67,7 @@
 
 (require 'org-gtd-customize)
 
+;;;###autoload
 (defmacro with-org-gtd-context (&rest body)
   (declare (debug t) (indent 2))
   `(let* ((org-use-property-inheritance "ORG_GTD")

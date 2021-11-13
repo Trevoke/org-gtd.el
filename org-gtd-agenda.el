@@ -25,7 +25,6 @@
 ;;; Code:
 
 (require 'org-agenda)
-(require 'org-gtd-projects)
 
 (defconst org-gtd-stuck-projects
   '("+LEVEL=2&+ORG_GTD=\"Projects\"" ("NEXT" "WAIT") nil "")
