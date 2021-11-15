@@ -1,4 +1,4 @@
-;;; org-gtd-mode --- global minor mode for org-gtd -*- lexical-binding: t; coding: utf-8 -*-
+;;; org-gtd-mode.el --- global minor mode for org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2021 Aldric Giacomoni
 
@@ -45,4 +45,4 @@
   (advice-remove 'org-agenda-list-stuck-projects #'org-gtd--wrap))
 
 (provide 'org-gtd-mode)
-;;; org-gtd-mode ends here
+;;; org-gtd-mode.el ends here

@@ -57,7 +57,7 @@
           (point-min)
           (with-simulated-input
            "AdditionalHeading RET"
-           (org-gtd--refile org-gtd-projects)))
+           (org-gtd-refile--do org-gtd-projects)))
 
         (expect (with-current-buffer new-buffer (buffer-string))
                 :to-match

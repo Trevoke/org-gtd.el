@@ -1,4 +1,4 @@
-;;; org-gtd-customize --- Custom variables for org-gtd -*- lexical-binding: t; coding: utf-8 -*-
+;;; org-gtd-customize.el --- Custom variables for org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2021 Aldric Giacomoni
 
@@ -77,4 +77,4 @@ this Org-mode based GTD implementation."
   :package-version "2.0.0")
 
 (provide 'org-gtd-customize)
-;;; org-gtd-customize ends here
+;;; org-gtd-customize.el ends here

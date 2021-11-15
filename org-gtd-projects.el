@@ -1,4 +1,4 @@
-;;; org-gtd-projects --- project management in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
+;;; org-gtd-projects.el --- project management in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2021 Aldric Giacomoni
 
@@ -39,7 +39,7 @@
        'tree))
   (org-edna-mode 1))
 
-(defun org-gtd--nextify ()
+(defun org-gtd-projects--nextify ()
   "Add the NEXT keyword to the first action/task of the project.
 Add the TODO keyword to all subsequent actions/tasks."
   (cl-destructuring-bind
@@ -72,4 +72,4 @@ Add the TODO keyword to all subsequent actions/tasks."
   (org-element-property :begin element))
 
 (provide 'org-gtd-projects)
-;;; org-gtd-projects ends here
+;;; org-gtd-projects.el ends here

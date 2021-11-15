@@ -1,4 +1,4 @@
-;;; org-gtd-refile --- refiling logic for org gtd -*- lexical-binding: t; coding: utf-8 -*-
+;;; org-gtd-refile.el --- refiling logic for org gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2021 Aldric Giacomoni
 
@@ -24,7 +24,7 @@
 ;;
 ;;; Code:
 
-(defconst org-gtd--refile-prompt
+(defconst org-gtd-refile--prompt
   (let ((myhash (make-hash-table :test 'equal)))
     (puthash org-gtd-actions "Refile single action to: " myhash)
     (puthash org-gtd-incubated "Refile incubated item to: " myhash)
@@ -33,29 +33,29 @@
     (puthash org-gtd-calendar "Refile calendar item to: " myhash)
     myhash))
 
-(defmacro with-org-gtd-refile (type &rest body)
-  (declare (debug t))
-  `(let ((org-refile-target-verify-function (lambda () (org-gtd--group-p ,type)))
-         (org-refile-targets '((org-agenda-files :level . 1))))
-     (unwind-protect
-         (with-org-gtd-context (progn ,@body)))))
-
-(defun org-gtd--refile (type)
+(defun org-gtd-refile--do (type)
   "Refile an item to the single action file."
   (with-org-gtd-refile
    type
    (unless (org-refile-get-targets) (org-gtd--gtd-file-buffer type))
-   (org-refile nil nil nil (org-gtd--refile-prompt type))))
+   (org-refile nil nil nil (org-gtd-refile--prompt type))))
 
-(defun org-gtd--group-p (type)
-  (string-equal (org-gtd--group type)
+(defmacro with-org-gtd-refile (type &rest body)
+  (declare (debug t))
+  `(let ((org-refile-target-verify-function (lambda () (org-gtd-refile--group-p ,type)))
+         (org-refile-targets '((org-agenda-files :level . 1))))
+     (unwind-protect
+         (with-org-gtd-context (progn ,@body)))))
+
+(defun org-gtd-refile--group-p (type)
+  (string-equal (org-gtd-refile--group type)
                 (org-element-property :ORG_GTD (org-element-at-point))))
 
-(defun org-gtd--group (type)
+(defun org-gtd-refile--group (type)
   (gethash type org-gtd--properties))
 
-(defun org-gtd--refile-prompt (type)
-  (gethash type org-gtd--refile-prompt))
+(defun org-gtd-refile--prompt (type)
+  (gethash type org-gtd-refile--prompt))
 
 (provide 'org-gtd-refile)
-;;; org-gtd-refile ends here
+;;; org-gtd-refile.el ends here

@@ -1,4 +1,4 @@
-;;; org-gtd-inbox-processing --- Code to process inbox -*- lexical-binding: t; coding: utf-8 -*-
+;;; org-gtd-inbox-processing.el --- Code to process inbox -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2021 Aldric Giacomoni
 
@@ -104,8 +104,8 @@ Allow the user apply user-defined tags from
 the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-gtd--clarify-item)
   (org-gtd--decorate-item)
-  (org-gtd--nextify)
-  (org-gtd--refile org-gtd-projects)
+  (org-gtd-projects--nextify)
+  (org-gtd-refile--do org-gtd-projects)
   ;; TODO update statistics more intelligently, probably in inbox
   (with-current-buffer (org-gtd--default-action-file)
     (org-update-statistics-cookies t)))
@@ -118,7 +118,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-gtd--clarify-item)
   (org-gtd--decorate-item)
   (org-schedule 0)
-  (org-gtd--refile org-gtd-calendar))
+  (org-gtd-refile--do org-gtd-calendar))
 
 (defun org-gtd--delegate ()
   "Process GTD inbox item by delegating it.
@@ -129,7 +129,7 @@ the inbox.  Set it as a waiting action and refile to
   (org-gtd--clarify-item)
   (org-gtd--decorate-item)
   (org-gtd-delegate)
-  (org-gtd--refile org-gtd-actions))
+  (org-gtd-refile--do org-gtd-actions))
 
 (defun org-gtd--incubate ()
   "Process GTD inbox item by incubating it.
@@ -139,7 +139,7 @@ the inbox.  Refile to any org-gtd incubate target (see manual)."
   (org-gtd--clarify-item)
   (org-gtd--decorate-item)
   (org-schedule 0)
-  (org-gtd--refile org-gtd-incubated))
+  (org-gtd-refile--do org-gtd-incubated))
 
 (defun org-gtd--quick-action ()
   "Process GTD inbox item by doing it now.
@@ -160,7 +160,7 @@ the inbox.  Set as a NEXT action and refile to
   (org-gtd--clarify-item)
   (org-gtd--decorate-item)
   (org-todo "NEXT")
-  (org-gtd--refile org-gtd-actions))
+  (org-gtd-refile--do org-gtd-actions))
 
 (defun org-gtd--trash ()
   "Mark GTD inbox item as cancelled and archive it."
@@ -176,4 +176,4 @@ the inbox.  Set as a NEXT action and refile to
     (funcall hook)))
 
 (provide 'org-gtd-inbox-processing)
-;;; org-gtd-inbox-processing ends here
+;;; org-gtd-inbox-processing.el ends here
