@@ -32,6 +32,14 @@
 This is a list of four items, the same type as in `org-stuck-projects'.")
 
 ;;;###autoload
+(defun org-gtd-show-stuck-projects ()
+  "Show all projects that do not have a next action."
+  (interactive)
+  (with-org-gtd-context
+      (org-agenda-list-stuck-projects)))
+
+
+;;;###autoload
 (defun org-gtd-show-all-next ()
   "Show all next actions from all agenda files in a single list.
 This assumes all GTD files are also agenda files."
@@ -83,13 +91,6 @@ This assumes all GTD files are also agenda files."
          (org-up-heading-safe)
          (org-gtd-cancel-project))
        (org-agenda-show-tags)))))
-
-;;;###autoload
-(defun org-gtd-show-stuck-projects ()
-  "Show all projects that do not have a next action."
-  (interactive)
-  (with-org-gtd-context
-      (org-agenda-list-stuck-projects)))
 
 (provide 'org-gtd-agenda)
 ;;; org-gtd-agenda ends here
