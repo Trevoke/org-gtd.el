@@ -1,4 +1,4 @@
-;;; org-gtd.el --- An implementation of GTD -*- lexical-binding: t; -*-
+;;; org-gtd.el --- An implementation of GTD -*- lexical-binding: t; coding: utf-8 -*-
 
 ;; Copyright (C) 2019-2021 Aldric Giacomoni
 
@@ -136,5 +136,4 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the same
 
 
 (provide 'org-gtd)
-
 ;;; org-gtd.el ends here

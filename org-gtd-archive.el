@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; -*-
+;;; org-gtd-archive --- Logic to archive tasks -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2021 Aldric Giacomoni
 
@@ -107,3 +107,4 @@ This function was shamelessly copied-and-modified from org-archive.
     (message "%d trees archived" cntarch)))
 
 (provide 'org-gtd-archive)
+;;; org-gtd-archive ends here

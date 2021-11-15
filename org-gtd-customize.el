@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; -*-
+;;; org-gtd-customize --- Custom variables for org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2021 Aldric Giacomoni
 
@@ -49,7 +49,7 @@ this Org-mode based GTD implementation."
   (lambda ()
    (let ((year (number-to-string (caddr (calendar-current-date)))))
      (string-join `("gtd_archive_" ,year "::datetree/"))))
-  "Function to generate archive location for org gtd"
+  "Function to generate archive location for org gtd."
   :group 'org-gtd
   :type 'sexp
   :package-version "2.0.0")
@@ -63,7 +63,7 @@ this Org-mode based GTD implementation."
       entry (file (lambda () (org-gtd-inbox-path)))
       "* %?\n%U\n\n  %i\n  %a"
       :kill-buffer t))
-  "Capture templates to be used when adding something to the inbox"
+  "Capture templates to be used when adding something to the inbox."
   :group 'org-gtd
   :type 'sexp
   :package-version "2.0.0")
@@ -71,9 +71,10 @@ this Org-mode based GTD implementation."
 (defcustom org-gtd-agenda-custom-commands
   '(("g" "Scheduled today and all NEXT items"
      ((agenda "" ((org-agenda-span 1))) (todo "NEXT|WAIT"))))
-  "agenda custom commands to be used for org-gtd"
+  "Agenda custom commands to be used for org-gtd."
   :group 'org-gtd
   :type 'sexp
   :package-version "2.0.0")
 
 (provide 'org-gtd-customize)
+;;; org-gtd-customize ends here

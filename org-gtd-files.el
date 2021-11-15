@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; -*-
+;;; org-gtd-files --- File management for org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2021 Aldric Giacomoni
 
@@ -130,3 +130,4 @@ This assumes the file is located in `org-gtd-directory'."
     (find-file-noselect file-path)))
 
 (provide 'org-gtd-files)
+;;; org-gtd-files ends here

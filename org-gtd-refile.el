@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; -*-
+;;; org-gtd-refile --- refiling logic for org gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2021 Aldric Giacomoni
 
@@ -58,3 +58,4 @@
   (gethash type org-gtd--refile-prompt))
 
 (provide 'org-gtd-refile)
+;;; org-gtd-refile ends here

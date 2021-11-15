@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; -*-
+;;; org-gtd-inbox-processing --- Code to process inbox -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2021 Aldric Giacomoni
 
@@ -176,3 +176,4 @@ the inbox.  Set as a NEXT action and refile to
     (funcall hook)))
 
 (provide 'org-gtd-inbox-processing)
+;;; org-gtd-inbox-processing ends here

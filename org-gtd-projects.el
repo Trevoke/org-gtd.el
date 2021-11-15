@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; -*-
+;;; org-gtd-projects --- project management in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2021 Aldric Giacomoni
 
@@ -72,3 +72,4 @@ Add the TODO keyword to all subsequent actions/tasks."
   (org-element-property :begin element))
 
 (provide 'org-gtd-projects)
+;;; org-gtd-projects ends here

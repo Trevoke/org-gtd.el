@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; -*-
+;;; org-gtd-agenda --- Manage the agenda view -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2021 Aldric Giacomoni
 
@@ -92,3 +92,4 @@ This assumes all GTD files are also agenda files."
       (org-agenda-list-stuck-projects)))
 
 (provide 'org-gtd-agenda)
+;;; org-gtd-agenda ends here
