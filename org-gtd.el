@@ -57,7 +57,7 @@
 (defconst org-gtd-delegated "delegated")
 (defconst org-gtd-calendar "calendar")
 
-(defconst org-gtd--refile-properties
+(defconst org-gtd--properties
   (let ((myhash (make-hash-table :test 'equal)))
     (puthash org-gtd-actions "Actions" myhash)
     (puthash org-gtd-incubated "Incubated" myhash)
@@ -88,26 +88,7 @@
 (require 'org-gtd-projects)
 (require 'org-gtd-agenda)
 (require 'org-gtd-inbox-processing)
-
-;;;###autoload
-(define-minor-mode org-gtd-mode
-  "global minor mode to force org-agenda to be bounded to the org-gtd settings"
-  :lighter " GTD"
-  :global t
-  (if org-gtd-mode
-      (org-gtd--override-agenda)
-    (org-gtd--restore-agenda)))
-
-(defun org-gtd--wrap (fun &rest r)
-  (with-org-gtd-context (apply fun r)))
-
-(defun org-gtd--override-agenda ()
-  (advice-add 'org-agenda :around #'org-gtd--wrap)
-  (advice-add 'org-agenda-list-stuck-projects :around #'org-gtd--wrap))
-
-(defun org-gtd--restore-agenda ()
-  (advice-remove 'org-agenda #'org-gtd--wrap)
-  (advice-remove 'org-agenda-list-stuck-projects #'org-gtd--wrap))
+(require 'org-gtd-mode)
 
 ;;;###autoload
 (defun org-gtd-capture (&optional goto keys)

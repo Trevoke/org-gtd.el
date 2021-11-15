@@ -40,7 +40,7 @@
 (defun org-gtd--archive-done (subset)
   (org-map-entries
    (lambda () (org-gtd--archive-all-done))
-   (format org-gtd-item-match (gethash subset org-gtd--refile-properties))
+   (format org-gtd-item-match (gethash subset org-gtd--properties))
    'agenda))
 
 (defun org-gtd--archive-all-done (&optional tag)

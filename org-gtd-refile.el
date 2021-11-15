@@ -52,7 +52,7 @@
                 (org-element-property :ORG_GTD (org-element-at-point))))
 
 (defun org-gtd--group (type)
-  (gethash type org-gtd--refile-properties))
+  (gethash type org-gtd--properties))
 
 (defun org-gtd--refile-prompt (type)
   (gethash type org-gtd--refile-prompt))
