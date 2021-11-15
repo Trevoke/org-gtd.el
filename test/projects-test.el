@@ -16,13 +16,6 @@
 
  (after-each (ogt--close-and-delete-files))
 
- (it "gets a list of the task states"
-     (with-current-buffer (org-gtd--default-projects-file)
-       (beginning-of-buffer)
-       (search-forward "project headline")
-       (let ((task-states (org-gtd--current-project-states)))
-         (expect task-states :to-equal '("NEXT" "TODO" "TODO")))))
-
  (describe
   "marks all undone tasks of a canceled project as canceled"
 

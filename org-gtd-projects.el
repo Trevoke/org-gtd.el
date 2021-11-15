@@ -24,21 +24,6 @@
 ;;
 ;;; Code:
 
-;;;###autoload
-(defun org-gtd-cancel-project ()
-  "With point on project heading, mark all undone tasks canceled."
-  (interactive)
-  (org-edna-mode -1)
-  (with-org-gtd-context
-      (org-map-entries
-       (lambda ()
-         (when (org-gtd--incomplete-task-p)
-           (let ((org-inhibit-logging 'note))
-             (org-todo "CNCL"))))
-       nil
-       'tree))
-  (org-edna-mode 1))
-
 (defun org-gtd-projects--nextify ()
   "Add the NEXT keyword to the first action/task of the project.
 Add the TODO keyword to all subsequent actions/tasks."
@@ -49,25 +34,15 @@ Add the TODO keyword to all subsequent actions/tasks."
         (reverse rest-entries)
         'headline
       (lambda (myelt)
-        (org-entry-put (org-gtd--org-element-pom myelt) "TODO" "TODO")))
-    (org-entry-put (org-gtd--org-element-pom first-entry) "TODO" "NEXT")))
+        (org-entry-put (org-gtd-projects--org-element-pom myelt) "TODO" "TODO")))
+    (org-entry-put (org-gtd-projects--org-element-pom first-entry) "TODO" "NEXT")))
 
-(defun org-gtd--current-project-states ()
-  "Return a list of the task states for the current project."
-  (cdr (org-map-entries
-        (lambda ()
-          (org-entry-get
-           (org-gtd--org-element-pom (org-element-at-point))
-           "TODO"))
-        t
-        'tree)))
-
-(defun org-gtd--incomplete-task-p ()
+(defun org-gtd-projects--incomplete-task-p ()
   "Determine if current heading is a task that's not finished"
   (and (org-entry-is-todo-p)
        (not (org-entry-is-done-p))))
 
-(defun org-gtd--org-element-pom (element)
+(defun org-gtd-projects--org-element-pom (element)
   "Return buffer position for start of Org ELEMENT."
   (org-element-property :begin element))
 

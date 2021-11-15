@@ -82,6 +82,7 @@
      (unwind-protect
          (progn ,@body))))
 
+(require 'org-gtd-clarify)
 (require 'org-gtd-archive)
 (require 'org-gtd-files)
 (require 'org-gtd-refile)
@@ -114,7 +115,20 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the same
       (goto-char (org-log-beginning t))
       (insert (format "programmatically delegated to %s\n" delegated-to)))))
 
-
+;;;###autoload
+(defun org-gtd-cancel-project ()
+  "With point on topmost project heading, mark all undone tasks canceled."
+  (interactive)
+  (org-edna-mode -1)
+  (with-org-gtd-context
+      (org-map-entries
+       (lambda ()
+         (when (org-gtd-projects--incomplete-task-p)
+           (let ((org-inhibit-logging 'note))
+             (org-todo "CNCL"))))
+       nil
+       'tree))
+  (org-edna-mode 1))
 
 (provide 'org-gtd)
 ;;; org-gtd.el ends here
