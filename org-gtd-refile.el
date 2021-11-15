@@ -30,7 +30,7 @@
     (puthash org-gtd-incubated "Refile incubated item to: " myhash)
     (puthash org-gtd-delegated "Refile delegated item to: " myhash)
     (puthash org-gtd-projects "Refile project to: " myhash)
-    (puthash org-gtd-scheduled "Refile scheduled item to: " myhash)
+    (puthash org-gtd-calendar "Refile calendar item to: " myhash)
     myhash))
 
 (defmacro with-org-gtd-refile (type &rest body)

@@ -28,7 +28,7 @@
                         ,(org-gtd--default-action-file)
                         ,(org-gtd--default-incubated-file)
                         ,(org-gtd--default-delegated-file)
-                        ,(org-gtd--default-scheduled-file)))
+                        ,(org-gtd--default-calendar-file)))
         (with-current-buffer buffer
           (expect (buffer-string)
                   :to-match
@@ -41,11 +41,11 @@
                 :to-match
                 ":ORG_GTD: Projects")))
 
-  (it "for the default scheduled file"
-      (with-current-buffer (org-gtd--default-scheduled-file)
+  (it "for the default calendar file"
+      (with-current-buffer (org-gtd--default-calendar-file)
         (expect (buffer-string)
                 :to-match
-                ":ORG_GTD: Scheduled")))
+                ":ORG_GTD: Calendar")))
 
   (it "for the default delegated file"
       (with-current-buffer (org-gtd--default-delegated-file)
@@ -79,14 +79,14 @@
                 "projects\\.org"))
       (kill-buffer "*Directory*"))
 
-  (it "for a scheduled item"
-      (ogt--add-and-process-scheduled-item "scheduled headline")
+  (it "for a calendar item"
+      (ogt--add-and-process-calendar-item "calendar headline")
       (ogt--save-all-buffers)
       (list-directory org-gtd-directory)
       (with-current-buffer "*Directory*"
         (expect (buffer-string)
                 :to-match
-                "scheduled\\.org"))
+                "calendar\\.org"))
       (kill-buffer "*Directory*"))
 
   (it "for a delegated item"

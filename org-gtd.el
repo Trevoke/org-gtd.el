@@ -55,14 +55,14 @@
 (defconst org-gtd-projects "projects")
 (defconst org-gtd-actions "actions")
 (defconst org-gtd-delegated "delegated")
-(defconst org-gtd-scheduled "scheduled")
+(defconst org-gtd-calendar "calendar")
 
 (defconst org-gtd--refile-properties
   (let ((myhash (make-hash-table :test 'equal)))
     (puthash org-gtd-actions "Actions" myhash)
     (puthash org-gtd-incubated "Incubated" myhash)
     (puthash org-gtd-projects "Projects" myhash)
-    (puthash org-gtd-scheduled "Scheduled" myhash)
+    (puthash org-gtd-calendar "Calendar" myhash)
     myhash))
 
 (require 'org-gtd-customize)
@@ -78,7 +78,6 @@
           (org-odd-levels-only nil)
           (org-agenda-files `(,org-gtd-directory))
           (org-agenda-property-list '("DELEGATED_TO"))
-          ;(org-agenda-buffer-name "*Org Agenda(g)*")
           (org-agenda-custom-commands org-gtd-agenda-custom-commands))
      (unwind-protect
          (progn ,@body))))

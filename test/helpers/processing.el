@@ -7,8 +7,8 @@
    ("p" "M-> RET" (insert ogt--project-text) "C-c c RET TAB RET")
    (org-gtd-process-inbox)))
 
-(defun ogt--add-and-process-scheduled-item (label)
-  "LABEL is the scheduled label."
+(defun ogt--add-and-process-calendar-item (label)
+  "LABEL is the calendared item label."
   (org-gtd-capture nil "i")
   (insert label)
   (org-capture-finalize)

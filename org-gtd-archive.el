@@ -34,7 +34,7 @@
   (with-org-gtd-context
    (mapcar 'org-gtd--archive-done `(,org-gtd-actions
                                     ,org-gtd-incubated
-                                    ,org-gtd-scheduled
+                                    ,org-gtd-calendar
                                     ,org-gtd-projects))))
 
 (defun org-gtd--archive-done (subset)

@@ -48,10 +48,10 @@ This is the inbox. Everything goes in here when you capture it.
 :END:
 ")
 
-(defconst org-gtd-scheduled-template
-  "* Scheduled
+(defconst org-gtd-calendar-template
+  "* Calendar
 :PROPERTIES:
-:ORG_GTD: Scheduled
+:ORG_GTD: Calendar
 :END:
 ")
 
@@ -80,7 +80,7 @@ Add your own categories as necessary, with the ORG_GTD property, such as
 (defconst org-gtd--file-template
   (let ((myhash (make-hash-table :test 'equal)))
     (puthash org-gtd-actions org-gtd-actions-template myhash)
-    (puthash org-gtd-scheduled org-gtd-scheduled-template myhash)
+    (puthash org-gtd-calendar org-gtd-calendar-template myhash)
     (puthash org-gtd-projects org-gtd-projects-template myhash)
     (puthash org-gtd-incubated org-gtd-incubated-template myhash)
     myhash))
@@ -108,8 +108,8 @@ Add your own categories as necessary, with the ORG_GTD property, such as
 (defun org-gtd--default-delegated-file ()
   (org-gtd--gtd-file-buffer org-gtd-actions))
 
-(defun org-gtd--default-scheduled-file ()
-  (org-gtd--gtd-file-buffer org-gtd-scheduled))
+(defun org-gtd--default-calendar-file ()
+  (org-gtd--gtd-file-buffer org-gtd-calendar))
 
 (defun org-gtd--path (file)
   "Return the full path to FILE.org.

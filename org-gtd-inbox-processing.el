@@ -118,7 +118,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-gtd--clarify-item)
   (org-gtd--decorate-item)
   (org-schedule 0)
-  (org-gtd--refile org-gtd-scheduled))
+  (org-gtd--refile org-gtd-calendar))
 
 (defun org-gtd--delegate ()
   "Process GTD inbox item by delegating it.
