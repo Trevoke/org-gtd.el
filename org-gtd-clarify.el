@@ -25,26 +25,26 @@
 ;;; Code:
 
 (defvar org-gtd-clarify-map (make-sparse-keymap)
-  "Keymap for function `org-gtd-user-input-mode', a minor mode.")
+  "Keymap for function `org-gtd-clarify-user-input-mode', a minor mode.")
 
-(define-minor-mode org-gtd-user-input-mode
+(define-minor-mode org-gtd-clarify-user-input-mode
   "Minor mode for org-gtd."
   nil "GTD " org-gtd-clarify-map
   (setq-local header-line-format
               (substitute-command-keys
-               "\\<org-gtd-command-map>Clarify buffer.  Finish \
+               "\\<org-gtd-clarify-map>Clarify buffer.  Finish \
 `\\[org-gtd-clarify-finalize]'.")))
 
 (defun org-gtd-clarify--clarify-item ()
   "User interface to reflect on and clarify the current inbox item."
-  (org-gtd-user-input-mode 1)
+  (org-gtd-clarify-user-input-mode 1)
   (recursive-edit))
 
 ;;;###autoload
 (defun org-gtd-clarify-finalize ()
   "Finalize the clarify process."
   (interactive)
-  (org-gtd-user-input-mode -1)
+  (org-gtd-clarify-user-input-mode -1)
   (exit-recursive-edit))
 
 (provide 'org-gtd-clarify)

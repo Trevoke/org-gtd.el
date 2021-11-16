@@ -49,6 +49,7 @@
 (require 'org-element)
 (require 'org-agenda-property)
 (require 'org-edna)
+(require 'org-gtd-customize)
 
 (defconst org-gtd-inbox "inbox")
 (defconst org-gtd-incubated "incubated")
@@ -64,8 +65,6 @@
     (puthash org-gtd-projects "Projects" myhash)
     (puthash org-gtd-calendar "Calendar" myhash)
     myhash))
-
-(require 'org-gtd-customize)
 
 ;;;###autoload
 (defmacro with-org-gtd-context (&rest body)

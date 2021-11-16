@@ -24,29 +24,6 @@
 ;;
 ;;; Code:
 
-(defvar org-gtd-command-map (make-sparse-keymap)
-  "Keymap for function `org-gtd-user-input-mode', a minor mode.")
-
-(define-minor-mode org-gtd-user-input-mode
-  "Minor mode for org-gtd."
-  nil "GTD " org-gtd-command-map
-  (setq-local header-line-format
-              (substitute-command-keys
-               "\\<org-gtd-command-map>Clarify buffer.  Finish \
-`\\[org-gtd-clarify-finalize]'.")))
-
-(defun org-gtd--clarify-item ()
-  "User interface to reflect on and clarify the current inbox item."
-  (org-gtd-user-input-mode 1)
-  (recursive-edit))
-
-;;;###autoload
-(defun org-gtd-clarify-finalize ()
-  "Finalize the clarify process."
-  (interactive)
-  (org-gtd-user-input-mode -1)
-  (exit-recursive-edit))
-
 ;;;###autoload
 (defun org-gtd-process-inbox ()
   "Process the GTD inbox.
@@ -93,7 +70,7 @@ Use this once a day and/or weekly as part of the weekly review."
 
 (defun org-gtd--archive ()
   "Process GTD inbox item as a reference item."
-  (org-gtd--clarify-item)
+  (org-gtd-clarify--clarify-item)
   (org-todo "DONE")
   (org-archive-subtree))
 
@@ -102,7 +79,7 @@ Use this once a day and/or weekly as part of the weekly review."
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Refile to `org-gtd-actionable-file-basename'."
-  (org-gtd--clarify-item)
+  (org-gtd-clarify--clarify-item)
   (org-gtd--decorate-item)
   (org-gtd-projects--nextify)
   (org-gtd-refile--do org-gtd-projects)
@@ -115,7 +92,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Refile to `org-gtd-actionable-file-basename'."
-  (org-gtd--clarify-item)
+  (org-gtd-clarify--clarify-item)
   (org-gtd--decorate-item)
   (org-schedule 0)
   (org-gtd-refile--do org-gtd-calendar))
@@ -126,7 +103,7 @@ Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Set it as a waiting action and refile to
 `org-gtd-actionable-file-basename'."
-  (org-gtd--clarify-item)
+  (org-gtd-clarify--clarify-item)
   (org-gtd--decorate-item)
   (org-gtd-delegate)
   (org-gtd-refile--do org-gtd-actions))
@@ -136,7 +113,7 @@ the inbox.  Set it as a waiting action and refile to
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Refile to any org-gtd incubate target (see manual)."
-  (org-gtd--clarify-item)
+  (org-gtd-clarify--clarify-item)
   (org-gtd--decorate-item)
   (org-schedule 0)
   (org-gtd-refile--do org-gtd-incubated))
@@ -146,7 +123,7 @@ the inbox.  Refile to any org-gtd incubate target (see manual)."
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Mark it as done and archive."
-  (org-gtd--clarify-item)
+  (org-gtd-clarify--clarify-item)
   (org-gtd--decorate-item)
   (org-todo "DONE")
   (org-archive-subtree))
@@ -157,14 +134,14 @@ Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Set as a NEXT action and refile to
 `org-gtd-actionable-file-basename'."
-  (org-gtd--clarify-item)
+  (org-gtd-clarify--clarify-item)
   (org-gtd--decorate-item)
   (org-todo "NEXT")
   (org-gtd-refile--do org-gtd-actions))
 
 (defun org-gtd--trash ()
   "Mark GTD inbox item as cancelled and archive it."
-  (org-gtd--clarify-item)
+  (org-gtd-clarify--clarify-item)
   (org-gtd--decorate-item)
   (org-todo "CNCL")
   (org-archive-subtree))

@@ -4,8 +4,8 @@
 (defconst ogt--agenda-buffer "*Org Agenda*")
 
 (defun ogt--configure-emacs ()
-  (setq org-gtd-directory (f-join default-directory "test"  "runtime-file-path"))
-  (define-key org-gtd-command-map (kbd "C-c c") #'org-gtd-clarify-finalize))
+  (setq org-gtd-directory (make-temp-file "org-gtd" t))
+  (define-key org-gtd-clarify-map (kbd "C-c c") #'org-gtd-clarify-finalize))
 
 (defun create-additional-project-target (filename)
   (let* ((file (f-join org-gtd-directory (format "%s.org" filename)))
