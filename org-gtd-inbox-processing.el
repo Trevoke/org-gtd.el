@@ -24,27 +24,6 @@
 ;;
 ;;; Code:
 
-;;;###autoload
-(defun org-gtd-process-inbox ()
-  "Process the GTD inbox.
-Use this once a day and/or weekly as part of the weekly review."
-  (interactive)
-  (set-buffer (org-gtd--inbox-file))
-  (display-buffer-same-window (org-gtd--inbox-file) '())
-  (delete-other-windows)
-
-  (with-org-gtd-context
-      (org-map-entries
-       (lambda ()
-         (setq org-map-continue-from (org-element-property
-                                      :begin
-                                      (org-element-at-point)))
-         (org-narrow-to-element)
-         (org-show-subtree)
-         (org-gtd--process-inbox-element)
-         (widen))))
-  (setq-local header-line-format nil))
-
 (defun org-gtd--process-inbox-element ()
   "With point on an item, choose which GTD action to take."
   (let ((action
