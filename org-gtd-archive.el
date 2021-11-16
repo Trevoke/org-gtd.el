@@ -32,30 +32,30 @@
 (defun org-gtd-archive-completed-items ()
   (interactive)
   (with-org-gtd-context
-   (mapcar 'org-gtd--archive-done `(,org-gtd-actions
-                                    ,org-gtd-incubated
-                                    ,org-gtd-calendar
-                                    ,org-gtd-projects))))
+   (mapcar 'org-gtd-archive--archive-done `(,org-gtd-actions
+                                            ,org-gtd-incubated
+                                            ,org-gtd-calendar
+                                            ,org-gtd-projects))))
 
-(defun org-gtd--archive-done (subset)
+(defun org-gtd-archive--archive-done (subset)
   (org-map-entries
-   (lambda () (org-gtd--archive-all-done))
+   (lambda () (org-gtd-archive--archive-all-done))
    (format org-gtd-item-match (gethash subset org-gtd--properties))
    'agenda))
 
-(defun org-gtd--archive-all-done (&optional tag)
+(defun org-gtd-archive--archive-all-done (&optional tag)
   "Archive sublevels of the current tree without open TODO items.
 If the cursor is not on a headline, try all level 1 trees.  If
 it is on a headline, try all direct children.
 When TAG is non-nil, don't move trees, but mark them with the ARCHIVE tag."
-  (org-gtd--archive-all-matches-no-confirm
+  (org-gtd-archive--archive-all-matches-no-confirm
    (lambda (_beg end)
      (let ((case-fold-search nil))
        (unless (re-search-forward org-not-done-heading-regexp end t)
          "no open TODO items")))
    tag))
 
-(defun org-gtd--archive-all-matches-no-confirm (predicate &optional tag)
+(defun org-gtd-archive--archive-all-matches-no-confirm (predicate &optional tag)
   "Archive sublevels of the current tree that match PREDICATE.
 
 PREDICATE is a function of two arguments, BEG and END, which

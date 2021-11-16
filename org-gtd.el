@@ -129,5 +129,21 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the same
        'tree))
   (org-edna-mode 1))
 
+;;;###autoload
+(defun org-gtd-show-stuck-projects ()
+  "Show all projects that do not have a next action."
+  (interactive)
+  (with-org-gtd-context
+      (org-agenda-list-stuck-projects)))
+
+
+;;;###autoload
+(defun org-gtd-show-all-next ()
+  "Show all next actions from all agenda files in a single list.
+This assumes all GTD files are also agenda files."
+  (interactive)
+  (with-org-gtd-context
+      (org-todo-list "NEXT")))
+
 (provide 'org-gtd)
 ;;; org-gtd.el ends here
