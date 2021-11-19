@@ -22,7 +22,7 @@
        (beginning-of-buffer)
        (search-forward "delegateme")
        (with-simulated-input "That SPC Guy RET RET"
-                             (org-gtd-agenda-delegate-task)))
+                             (org-gtd-agenda-delegate)))
      (kill-buffer org-agenda-buffer-name)
 
      (ogt--save-all-buffers)

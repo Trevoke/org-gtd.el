@@ -32,13 +32,38 @@
 This is a list of four items, the same type as in `org-stuck-projects'.")
 
 ;;;###autoload
-(defun org-gtd-agenda-delegate-task ()
+(defun org-gtd-agenda-projectify ()
   "Delegate current agenda task."
   (interactive)
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)
   (org-agenda-maybe-loop
-   #'org-gtd-delegate nil t nil
+   #'org-gtd-agenda-projectify nil t nil
+   (let* ((marker (or (org-get-at-bol 'org-marker)
+                      (org-agenda-error)))
+          (type (marker-insertion-type marker))
+          (buffer (marker-buffer marker))
+          (pos (marker-position marker))
+          ts)
+     (set-marker-insertion-type marker t)
+     (org-with-remote-undo buffer
+       (with-current-buffer buffer
+         (widen)
+         (goto-char pos)
+         (org-narrow-to-element)
+         (org-show-subtree)
+         (org-gtd--project)
+         (widen))
+       (org-agenda-show-tags)))))
+
+;;;###autoload
+(defun org-gtd-agenda-delegate ()
+  "Delegate current agenda task."
+  (interactive)
+  (org-agenda-check-type t 'agenda 'todo 'tags 'search)
+  (org-agenda-check-no-diary)
+  (org-agenda-maybe-loop
+   #'org-gtd-agenda-delegate nil t nil
    (let* ((marker (or (org-get-at-bol 'org-marker)
                       (org-agenda-error)))
           (type (marker-insertion-type marker))

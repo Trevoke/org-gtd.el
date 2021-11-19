@@ -61,10 +61,12 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-gtd-clarify--clarify-item)
   (org-gtd--decorate-item)
   (org-gtd-projects--nextify)
-  (org-gtd-refile--do org-gtd-projects)
-  ;; TODO update statistics more intelligently, probably in inbox
-  (with-current-buffer (org-gtd--default-action-file)
-    (org-update-statistics-cookies t)))
+  (beginning-of-buffer)
+  (forward-word)
+  (backward-word)
+  (insert "[/] ")
+  (org-update-statistics-cookies t)
+  (org-gtd-refile--do org-gtd-projects))
 
 (defun org-gtd--calendar ()
   "Process GTD inbox item by scheduling it.
