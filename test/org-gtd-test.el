@@ -28,7 +28,7 @@
                 :to-be-truthy)))
 
   (it "shows item in agenda when done"
-      (with-simulated-input "s C-c c RET TAB RET" (org-gtd-process-inbox))
+      (with-simulated-input "s C-c c TAB RET" (org-gtd-process-inbox))
       (expect (buffer-modified-p (org-gtd--default-action-file)) :to-equal t)
 
       (org-gtd-show-all-next)
