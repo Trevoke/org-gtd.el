@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (load "test/helpers/setup.el")
+(load "test/helpers/utils.el")
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -32,7 +33,6 @@
         (expect archived-projects :to-match "canceled"))))
 
  (it "on a single action"
-
      (ogt--add-and-process-single-action "one")
      (ogt--save-all-buffers)
      (ogt--add-and-process-single-action "two")
@@ -49,4 +49,20 @@
                "two")
        (expect (buffer-string)
                :not :to-match
-               " DONE one"))))
+               " DONE one")))
+
+ (xit "does not archive repeating scheduled items"
+     (let* ((temporary-file-directory org-gtd-directory)
+           (gtd-file (make-temp-file "foo" nil ".org" (org-file-contents "test/fixtures/gtd-file.org"))))
+       (org-gtd-archive-completed-items)
+       (with-current-buffer (find-file-noselect gtd-file)
+         (expect (buffer-string) :to-match "repeating item")
+         (expect (buffer-string) :not :to-match "write a nice test"))))
+
+ (xit "does not archive undone incubated items"
+     (let* ((temporary-file-directory org-gtd-directory)
+           (gtd-file (make-temp-file "foo" nil ".org" (org-file-contents "test/fixtures/gtd-file.org"))))
+       (org-gtd-archive-completed-items)
+       (with-current-buffer (find-file-noselect gtd-file)
+         (expect (buffer-string) :to-match "For later")
+         (expect (buffer-string) :not :to-match "not worth thinking about")))))

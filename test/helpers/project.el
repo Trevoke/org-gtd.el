@@ -4,19 +4,19 @@
 ** Task 3")
 
 (defconst ogt--project-to-cancel
-  "** cancel me
+  "** [1/3] cancel me
 *** DONE Task 1
 *** NEXT Task 2
 *** TODO Task 3")
 
 (defconst ogt--completed-project
-  "** completed
+  "** [3/3] completed
 *** DONE Task 1
 *** DONE Task 2
 *** DONE Task 3")
 
 (defconst ogt--canceled-project
-  "** canceled
+  "** [3/3] canceled
 *** DONE Task 1
 *** CNCL Task 2
 *** CNCL Task 3")

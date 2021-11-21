@@ -39,9 +39,7 @@ This is the inbox. Everything goes in here when you capture it.
 ")
 
 (defconst org-gtd-projects-template
-  "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
-#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
-* Projects
+  "* Projects
 :PROPERTIES:
 :TRIGGER: next-sibling todo!(NEXT)
 :ORG_GTD: Projects

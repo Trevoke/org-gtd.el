@@ -66,8 +66,3 @@
 
 (defun ogt--save-all-buffers ()
   (with-simulated-input "!" (save-some-buffers)))
-
-(defun ogt--add-single-item (&optional label)
-  (org-gtd-capture nil "i")
-  (insert (or label "single action"))
-  (org-capture-finalize))

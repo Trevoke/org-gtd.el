@@ -26,7 +26,15 @@
 
 (require 'org-archive)
 
-(defconst org-gtd-item-match "+LEVEL=1&+ORG_GTD=\"%s\"")
+(defconst org-gtd-item-match "+LEVEL=%s&+ORG_GTD=\"%s\"")
+
+(defconst org-gtd-archive-matches
+  (let ((myhash (make-hash-table :test 'equal)))
+    (puthash org-gtd-actions "+LEVEL=1&+ORG_GTD=\"Actions\"" myhash)
+    (puthash org-gtd-calendar "+LEVEL=2&+ORG_GTD=\"Calendar\"/-DONE-CNCL" myhash)
+    (puthash org-gtd-projects "+LEVEL=1&+ORG_GTD=\"Projects\"" myhash )
+    (puthash org-gtd-incubated "+LEVEL=2&+ORG_GTD=\"Incubated\"" myhash)
+    myhash))
 
 ;;;###autoload
 (defun org-gtd-archive-completed-items ()
@@ -40,7 +48,7 @@
 (defun org-gtd-archive--archive-done (subset)
   (org-map-entries
    (lambda () (org-gtd-archive--archive-all-done))
-   (format org-gtd-item-match (gethash subset org-gtd--properties))
+   (gethash subset org-gtd-archive-matches)
    'agenda))
 
 (defun org-gtd-archive--archive-all-done (&optional tag)

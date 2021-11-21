@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (load "test/helpers/setup.el")
+(load "test/helpers/utils.el")
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -63,58 +64,31 @@
       (with-current-buffer (org-gtd--default-action-file)
         (expect (buffer-string)
                 :to-match
-                ":ORG_GTD: Actions")))
-
-  )
+                ":ORG_GTD: Actions"))))
 
  (describe
   "when there isn't a refile target"
   (it "for a project"
       (ogt--add-and-process-project "project headline")
       (ogt--save-all-buffers)
-      (list-directory org-gtd-directory)
-      (with-current-buffer "*Directory*"
-        (expect (buffer-string)
-                :to-match
-                "projects\\.org"))
-      (kill-buffer "*Directory*"))
+      (expect (ogt--org-dir-buffer-string) :to-match "projects\\.org"))
 
   (it "for a calendar item"
       (ogt--add-and-process-calendar-item "calendar headline")
       (ogt--save-all-buffers)
-      (list-directory org-gtd-directory)
-      (with-current-buffer "*Directory*"
-        (expect (buffer-string)
-                :to-match
-                "calendar\\.org"))
-      (kill-buffer "*Directory*"))
+      (expect (ogt--org-dir-buffer-string) :to-match "calendar\\.org"))
 
   (it "for a delegated item"
       (ogt--add-and-process-delegated-item "delegated headline")
       (ogt--save-all-buffers)
-      (list-directory org-gtd-directory)
-      (with-current-buffer "*Directory*"
-        (expect (buffer-string)
-                :to-match
-                "actions\\.org"))
-      (kill-buffer "*Directory*"))
+      (expect (ogt--org-dir-buffer-string) :to-match "actions\\.org"))
 
   (it "for a incubated item"
       (ogt--add-and-process-incubated-item "incubated headline")
       (ogt--save-all-buffers)
-      (list-directory org-gtd-directory)
-      (with-current-buffer "*Directory*"
-        (expect (buffer-string)
-                :to-match
-                "incubated\\.org"))
-      (kill-buffer "*Directory*"))
+      (expect (ogt--org-dir-buffer-string) :to-match "incubated\\.org"))
 
   (it "for a single action"
       (ogt--add-and-process-single-action "single action")
       (ogt--save-all-buffers)
-      (list-directory org-gtd-directory)
-      (with-current-buffer "*Directory*"
-        (expect (buffer-string)
-                :to-match
-                "actions\\.org"))
-      (kill-buffer "*Directory*"))))
+      (expect (ogt--org-dir-buffer-string) :to-match "actions\\.org"))))

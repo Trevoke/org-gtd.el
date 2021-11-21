@@ -50,10 +50,13 @@ This is a list of four items, the same type as in `org-stuck-projects'.")
        (with-current-buffer buffer
          (widen)
          (goto-char pos)
+         (org-up-element)
          (org-narrow-to-element)
          (org-show-subtree)
+         (display-buffer-same-window buffer '())
          (org-gtd--project)
-         (widen))
+         (widen)
+         (winner-undo))
        (org-agenda-show-tags)))))
 
 ;;;###autoload

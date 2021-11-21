@@ -1,0 +1,71 @@
+#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
+#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
+
+* Projects
+:PROPERTIES:
+:TRIGGER: next-sibling todo!(NEXT)
+:ORG_GTD: Projects
+:END:
+
+** [0/3] Unstarted project
+
+*** NEXT Task 1
+
+*** TODO Task 2
+
+*** TODO Task 3
+
+
+** [1/3] cancel me
+*** DONE Task 1
+*** NEXT Task 2
+*** TODO Task 3
+
+** [3/3] canceled
+*** DONE Task 1
+*** CNCL Task 2
+*** CNCL Task 3
+
+* Calendar
+:PROPERTIES:
+:ORG_GTD: Calendar
+:END:
+
+** DONE write a nice test
+SCHEDULED: <2021-11-20 Sat>
+
+** probably overdue by now
+SCHEDULED: <2021-11-18 Thu>
+
+** repeating item
+SCHEDULED: <2021-12-04 Sat>
+:PROPERTIES:
+:STYLE:    habit
+:LAST_REPEAT: [2021-11-20 Sat 16:52]
+:END:
+
+
+- State "DONE"       from ""           [2021-11-20 Sat 16:52]
+- State "DONE"       from ""           [2021-11-20 Sat 16:51]
+* Actions
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+
+** NEXT Do this soon
+
+** WAIT Wait for someone
+
+- State "WAIT"       from "NEXT"       [2021-11-20 Sat 16:42] \\
+  wait for me
+** DONE this is done
+** CNCL this is canceled
+
+* Incubate
+:PROPERTIES:
+:ORG_GTD: Incubated
+:END:
+** For later
+SCHEDULED: <2037-02-19 Thu>
+** CNCL not worth thinking about
+SCHEDULED: <2021-11-21 Sun>
