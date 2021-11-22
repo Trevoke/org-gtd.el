@@ -51,7 +51,7 @@
                :not :to-match
                " DONE one")))
 
- (xit "does not archive repeating scheduled items"
+ (it "does not archive repeating scheduled items"
      (let* ((temporary-file-directory org-gtd-directory)
            (gtd-file (make-temp-file "foo" nil ".org" (org-file-contents "test/fixtures/gtd-file.org"))))
        (org-gtd-archive-completed-items)
@@ -59,7 +59,7 @@
          (expect (buffer-string) :to-match "repeating item")
          (expect (buffer-string) :not :to-match "write a nice test"))))
 
- (xit "does not archive undone incubated items"
+ (it "does not archive undone incubated items"
      (let* ((temporary-file-directory org-gtd-directory)
            (gtd-file (make-temp-file "foo" nil ".org" (org-file-contents "test/fixtures/gtd-file.org"))))
        (org-gtd-archive-completed-items)
