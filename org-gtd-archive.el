@@ -29,7 +29,6 @@
 (defun org-gtd-archive-complete-projects ()
   "Archive all projects for which all actions/tasks are marked as done.
 Done here is any done `org-todo-keyword'."
-  (interactive)
   (org-map-entries
    (lambda ()
      (let ((task-states (org-gtd--current-project-states)))
