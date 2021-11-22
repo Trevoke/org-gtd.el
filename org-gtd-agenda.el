@@ -31,6 +31,11 @@
   "How to identify stuck projects in the GTD system.
 This is a list of four items, the same type as in `org-stuck-projects'.")
 
+(defun org-gtd-daily-agenda ()
+  (interactive)
+  (with-org-gtd-context
+   (org-agenda nil "g")))
+
 ;;;###autoload
 (defun org-gtd-agenda-projectify ()
   "Delegate current agenda task."
