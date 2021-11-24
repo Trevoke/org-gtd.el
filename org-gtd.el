@@ -243,9 +243,8 @@ Use this once a day and/or weekly as part of the weekly review."
   (org-gtd-find-or-create-and-save-files)
   (org-map-entries
    (lambda ()
-     (setq org-map-continue-from (org-element-property
-                                  :begin
-                                  (org-element-at-point)))
+     (setq org-map-continue-from (point-min))
+     
      (org-narrow-to-element)
      (org-show-subtree)
      (org-gtd--process-inbox-element)
