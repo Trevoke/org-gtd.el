@@ -156,7 +156,6 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the same
   (with-org-gtd-context
       (org-agenda-list-stuck-projects)))
 
-
 ;;;###autoload
 (defun org-gtd-show-all-next ()
   "Show all next actions from all agenda files in a single list.
