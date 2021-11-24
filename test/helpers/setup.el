@@ -51,18 +51,3 @@
         (with-current-buffer buffer (save-buffer))
         (kill-buffer buffer)
         (delete-file filename))))
-
-(defun ogt--default-projects-archive ()
-  "Create or return the buffer to the archive file for the actionable items."
-  (with-current-buffer (org-gtd--inbox-file)
-    (find-file
-     (car (with-org-gtd-context
-              (org-archive--compute-location
-               (funcall org-gtd-archive-location)))))))
-
-(defun ogt--archive-string ()
-  "return string of items archived from actionable file"
-  (ogt--get-string-from-buffer (ogt--default-projects-archive)))
-
-(defun ogt--save-all-buffers ()
-  (with-simulated-input "!" (save-some-buffers)))
