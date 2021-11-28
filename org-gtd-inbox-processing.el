@@ -24,41 +24,48 @@
 ;;
 ;;; Code:
 
-(defun org-gtd--process-inbox-element ()
-  "With point on an item, choose which GTD action to take."
-  (let ((action
-         (read-multiple-choice
-          "What to do with this item?"
-          '((?q "quick" "quick item: < 2 minutes, done!")
-            (?t "throw out" "this has no value to me")
-            (?p "project" "multiple steps required to completion")
-            (?c "calendar" "do this at a certain time")
-            (?d "delegate it" "give it to someone")
-            (?s "single action" "do this when possible")
-            (?a "archive this knowledge" "Store this where you store knowledge")
-            (?i "incubate it" "I'll come back to this later")))))
-    (cl-case (car action)
-      (?q (org-gtd--quick-action))
-      (?t (org-gtd--trash))
-      (?p (org-gtd--project))
-      (?c (org-gtd--calendar))
-      (?d (org-gtd--delegate))
-      (?s (org-gtd--single-action))
-      (?a (org-gtd--archive))
-      (?i (org-gtd--incubate)))))
+(defvar org-gtd-process-map (make-sparse-keymap)
+  "Keymap for `org-gtd-process-mode', a minor mode.")
+
+(define-minor-mode org-gtd-process-mode
+  "Minor mode for org-gtd."
+  nil " GPR" org-gtd-process-map
+  :global nil
+  (if org-gtd-process-mode
+      (setq-local
+       header-line-format
+       (substitute-command-keys
+        "\\<org-gtd-process-map>Clarify item.  Finish `\\[org-gtd-choose]'."))
+    (setq-local header-line-format nil)))
+
+(require 'transient)
+(transient-define-prefix org-gtd-choose ()
+  ["Actionable"
+   ("p" "project" org-gtd--project)
+   ("q" "quick" org-gtd--quick-action)
+   ("c" "calendar" org-gtd--calendar)
+   ("d" "delegate" org-gtd--delegate)
+   ("s" "single" org-gtd--single-action)]
+  ["Non-actionable"
+   ("t" "trash" org-gtd--trash)
+   ("a" "archive" org-gtd--archive)
+   ("i" "incubate" org-gtd--incubate)]
+  ["Org GTD"
+   ("x" "exit early" org-gtd--stop-processing)])
 
 (defun org-gtd--archive ()
   "Process GTD inbox item as a reference item."
-  (org-gtd-clarify--clarify-item)
+  (interactive)
   (org-todo "DONE")
-  (org-archive-subtree))
+  (org-archive-subtree)
+  (org-gtd-process-inbox))
 
 (defun org-gtd--project ()
   "Process GTD inbox item by transforming it into a project.
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Refile to `org-gtd-actionable-file-basename'."
-  (org-gtd-clarify--clarify-item)
+  (interactive)
   (org-gtd--decorate-item)
   (org-gtd-projects--nextify)
   (beginning-of-buffer)
@@ -66,17 +73,19 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (backward-word)
   (insert "[/] ")
   (org-update-statistics-cookies t)
-  (org-gtd-refile--do org-gtd-projects))
+  (org-gtd-refile--do org-gtd-projects)
+  (org-gtd-process-inbox))
 
 (defun org-gtd--calendar ()
   "Process GTD inbox item by scheduling it.
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Refile to `org-gtd-actionable-file-basename'."
-  (org-gtd-clarify--clarify-item)
+  (interactive)
   (org-gtd--decorate-item)
   (org-schedule 0)
-  (org-gtd-refile--do org-gtd-calendar))
+  (org-gtd-refile--do org-gtd-calendar)
+  (org-gtd-process-inbox))
 
 (defun org-gtd--delegate ()
   "Process GTD inbox item by delegating it.
@@ -84,30 +93,34 @@ Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Set it as a waiting action and refile to
 `org-gtd-actionable-file-basename'."
-  (org-gtd-clarify--clarify-item)
+  (interactive)
   (org-gtd--decorate-item)
   (org-gtd-delegate)
-  (org-gtd-refile--do org-gtd-actions))
+  (org-gtd-refile--do org-gtd-actions)
+  (org-gtd-process-inbox))
 
 (defun org-gtd--incubate ()
   "Process GTD inbox item by incubating it.
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Refile to any org-gtd incubate target (see manual)."
-  (org-gtd-clarify--clarify-item)
+  (interactive)
   (org-gtd--decorate-item)
   (org-schedule 0)
-  (org-gtd-refile--do org-gtd-incubated))
+  (org-gtd-refile--do org-gtd-incubated)
+  (org-gtd-process-inbox))
 
 (defun org-gtd--quick-action ()
   "Process GTD inbox item by doing it now.
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Mark it as done and archive."
-  (org-gtd-clarify--clarify-item)
+  (interactive)
+  (org-back-to-heading)
   (org-gtd--decorate-item)
   (org-todo "DONE")
-  (org-archive-subtree))
+  (org-archive-subtree)
+  (org-gtd-process-inbox))
 
 (defun org-gtd--single-action ()
   "Process GTD inbox item as a single action.
@@ -115,17 +128,25 @@ Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Set as a NEXT action and refile to
 `org-gtd-actionable-file-basename'."
-  (org-gtd-clarify--clarify-item)
+  (interactive)
   (org-gtd--decorate-item)
   (org-todo "NEXT")
-  (org-gtd-refile--do org-gtd-actions))
+  (org-gtd-refile--do org-gtd-actions)
+  (org-gtd-process-inbox))
 
 (defun org-gtd--trash ()
   "Mark GTD inbox item as cancelled and archive it."
-  (org-gtd-clarify--clarify-item)
+  (interactive)
   (org-gtd--decorate-item)
   (org-todo "CNCL")
-  (org-archive-subtree))
+  (org-archive-subtree)
+  (org-gtd-process-inbox))
+
+(defun org-gtd--stop-processing ()
+  (interactive)
+  (widen)
+  (org-gtd-process-mode nil)
+  (whitespace-cleanup))
 
 (defun org-gtd--decorate-item ()
   "Apply hooks to add metadata to a given GTD item."

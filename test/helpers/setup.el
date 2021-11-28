@@ -6,7 +6,7 @@
 (defun ogt--configure-emacs ()
   (setq org-gtd-directory (make-temp-file "org-gtd" t))
   (setq org-gtd-process-item-hooks '())
-  (define-key org-gtd-clarify-map (kbd "C-c c") #'org-gtd-clarify-finalize))
+  (define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose))
 
 (defun create-additional-project-target (filename)
   (let* ((file (f-join org-gtd-directory (format "%s.org" filename)))

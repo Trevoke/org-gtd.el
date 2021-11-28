@@ -81,7 +81,6 @@
      (unwind-protect
          (progn ,@body))))
 
-(require 'org-gtd-clarify)
 (require 'org-gtd-archive)
 (require 'org-gtd-files)
 (require 'org-gtd-refile)
@@ -92,23 +91,22 @@
 
 ;;;###autoload
 (defun org-gtd-process-inbox ()
-  "Process the GTD inbox.
-Use this once a day and/or weekly as part of the weekly review."
+  "Process the GTD inbox."
   (interactive)
   (set-buffer (org-gtd--inbox-file))
   (display-buffer-same-window (org-gtd--inbox-file) '())
   (delete-other-windows)
 
-  (with-org-gtd-context
-      (org-map-entries
-       (lambda ()
-         (setq org-map-continue-from (point-min))
+  (org-gtd-process-mode t)
 
-         (org-narrow-to-element)
-         (org-show-subtree)
-         (org-gtd--process-inbox-element)
-         (widen))))
-  (setq-local header-line-format nil))
+  (condition-case err
+      (progn
+        (widen)
+        (goto-char (point-min))
+        (org-next-visible-heading 1)
+        (org-back-to-heading)
+        (org-narrow-to-subtree))
+    (user-error (org-gtd--stop-processing))))
 
 ;;;###autoload
 (defun org-gtd-capture (&optional goto keys)
