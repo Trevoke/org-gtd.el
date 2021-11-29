@@ -6,31 +6,32 @@
 (defun ogt--add-and-process-project (label)
   "LABEL is the project label."
   (ogt--add-single-item label)
-  (with-simulated-input
-      ("M-> RET" (insert ogt--project-text) "C-c c p TAB RET")
-    (org-gtd-process-inbox)))
+  (org-gtd-process-inbox)
+  (execute-kbd-macro (kbd "M-> RET"))
+  (insert ogt--project-text)
+  (execute-kbd-macro (kbd "C-c c p TAB RET"))
+  )
 
 (defun ogt--add-and-process-calendar-item (label)
   "LABEL is the calendared item label."
   (ogt--add-single-item label)
-  (with-simulated-input "c C-c c RET TAB RET"
-    (org-gtd-process-inbox)))
+  (org-gtd-process-inbox)
+  (execute-kbd-macro (kbd "C-c c c RET TAB RET")))
 
 (defun ogt--add-and-process-delegated-item (label)
   "LABEL is the delegated label."
   (ogt--add-single-item label)
-  (with-simulated-input "d C-c c RET Someone RET TAB RET"
-    (org-gtd-process-inbox)))
+  (org-gtd-process-inbox)
+  (execute-kbd-macro (kbd "C-c c d RET Someone RET TAB RET")))
 
 (defun ogt--add-and-process-incubated-item (label)
   "LABEL is the incubated label."
   (ogt--add-single-item label)
-  (with-simulated-input "i C-c c RET TAB RET"
-    (org-gtd-process-inbox)))
+  (org-gtd-process-inbox)
+  (execute-kbd-macro (kbd "C-c c i RET TAB RET")))
 
 (defun ogt--add-and-process-single-action (label)
   "LABEL is the single action label."
   (ogt--add-single-item label)
-
-  (with-simulated-input "C-c c s TAB RET"
-    (org-gtd-process-inbox)))
+  (org-gtd-process-inbox)
+  (execute-kbd-macro (kbd "C-c c s TAB RET")))

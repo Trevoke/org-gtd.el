@@ -8,7 +8,7 @@
 (defun ogt--default-projects-archive ()
   "Create or return the buffer to the archive file for the actionable items."
   (with-current-buffer (org-gtd--inbox-file)
-    (find-file
+    (find-file-noselect
      (car (with-org-gtd-context
               (org-archive--compute-location
                (funcall org-gtd-archive-location)))))))
