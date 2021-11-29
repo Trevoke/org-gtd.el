@@ -36,14 +36,14 @@
 (advice-remove 'package-installed-p 'package-from-archive)
 
 (use-package org-gtd
-  :after (org f org-edna org-agenda-property transient)
+  ;:after (org f org-edna org-agenda-property transient)
   :demand t
-  :load-path "/home/trevoke/src/projects/org-gtd/"
+  :load-path "/home/stag/src/projects/org-gtd.el/"
   :bind
   (("C-c d c" . org-gtd-capture)
-   ("C-c d p" . org-gtd-process-inbox))
-  :init
-  (bind-key "C-c c" 'org-gtd-clarify-finalize))
+   ("C-c d p" . org-gtd-process-inbox)
+   (:map org-gtd-process-map
+         ("C-c c" . org-gtd-choose))))
 
 (use-package org-agenda
   :after org-gtd

@@ -41,11 +41,6 @@
 
     (execute-kbd-macro (kbd "C-c c c RET TAB RET"))
 
-    ;; one more because there's an additional one in the inbox from the test setup
-    ;(execute-kbd-macro (kbd "C-c c i RET TAB RET"))
-
-    (ogt--save-all-buffers)
-
     (dotimes (x 8)
       (ogt--add-single-item (format "single action %s" x)))
 
@@ -72,12 +67,9 @@
     (execute-kbd-macro (kbd "C-c c s TAB RET"))
 
     (with-current-buffer (org-gtd--inbox-file)
-      (widen)
-      (message (buffer-string))
       (expect (buffer-string)
               :not :to-match
-              "single action"))
-    )
+              "single action")))
 
   (it "uses configurable decorations on the processed items"
     (let ((org-gtd-process-item-hooks '(org-set-tags-command org-priority)))

@@ -123,7 +123,7 @@ This assumes the file is located in `org-gtd-directory'."
           (insert org-gtd-file-header)
           (insert (gethash gtd-type org-gtd--file-template)))
         (org-mode-restart)
-        (save-buffer)
+        (basic-save-buffer)
         (current-buffer)))
     (find-file-noselect file-path)))
 
