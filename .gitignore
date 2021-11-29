@@ -1,5 +1,7 @@
 # Added automatically by `eldev init'.
 /.eldev
 /Eldev-local
-/dev/
+/dev/.emacs.d
+/dev/gtd
+/.emacs~
 test/runtime-file-path
