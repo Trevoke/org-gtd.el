@@ -23,10 +23,12 @@
 (use-package f)
 (use-package org-edna)
 (use-package org-agenda-property)
+(use-package transient)
 
+(advice-add 'package-installed-p :around 'package-from-archive)
 (use-package org
   :pin "gnu"
-  :ensure org-plus-contrib
+                                        ;:ensure org-plus-contrib
   :init
   (setq org-directory ".")
   (setq org-id-track-globally t)
@@ -34,14 +36,14 @@
 (advice-remove 'package-installed-p 'package-from-archive)
 
 (use-package org-gtd
-	     :after (org f org-edna org-agenda-property)
-	     :demand t
-	     :load-path "/home/trevoke/src/projects/org-gtd/"
-             :bind
-             (("C-c d c" . org-gtd-capture)
-              ("C-c d p" . org-gtd-process-inbox))
-	     :init
-	     (bind-key "C-c c" 'org-gtd-clarify-finalize))
+  :after (org f org-edna org-agenda-property transient)
+  :demand t
+  :load-path "/home/trevoke/src/projects/org-gtd/"
+  :bind
+  (("C-c d c" . org-gtd-capture)
+   ("C-c d p" . org-gtd-process-inbox))
+  :init
+  (bind-key "C-c c" 'org-gtd-clarify-finalize))
 
 (use-package org-agenda
   :after org-gtd
