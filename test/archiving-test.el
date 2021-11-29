@@ -26,7 +26,7 @@
         (end-of-buffer)
         (newline)
         (insert ogt--completed-project)
-        (save-buffer))
+        (basic-save-buffer))
       (org-gtd-archive-completed-items)
       (let ((archived-projects (ogt--archive-string)))
         (expect archived-projects :to-match "completed")

@@ -1,20 +1,15 @@
 (load "test/helpers/project.el")
 (load "test/helpers/processing.el")
+(load "test/helpers/utils.el")
 
 (defconst ogt--agenda-buffer "*Org Agenda*")
 
 (defun ogt--configure-emacs ()
-  (setq org-gtd-directory (make-temp-file "org-gtd" t))
-  (setq org-gtd-process-item-hooks '())
-  (define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose))
+  (setq org-gtd-directory (make-temp-file "org-gtd" t)
+        org-gtd-process-item-hooks '()
+        org-gtd-refile-to-any-target nil)
 
-(defun create-additional-project-target (filename)
-  (let* ((file (f-join org-gtd-directory (format "%s.org" filename)))
-         (buffer (find-file file)))
-    (with-current-buffer buffer
-      (insert ogt--base-project-heading)
-      (save-buffer))
-    buffer))
+  (define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose))
 
 (defun ogt--prepare-filesystem ()
   "run before each test"
@@ -48,6 +43,6 @@
 (defun ogt--clear-file-and-buffer (buffer)
   (if (bufferp buffer)
       (let ((filename (buffer-file-name buffer)))
-        (with-current-buffer buffer (save-buffer))
+        (with-current-buffer buffer (basic-save-buffer))
         (kill-buffer buffer)
         (delete-file filename))))

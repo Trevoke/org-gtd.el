@@ -19,3 +19,11 @@
 
 (defun ogt--save-all-buffers ()
   (with-simulated-input "!" (save-some-buffers)))
+
+(defun create-additional-project-target (filename)
+  (let* ((file (f-join org-gtd-directory (format "%s.org" filename)))
+         (buffer (find-file-noselect file)))
+    (with-current-buffer buffer
+      (insert ogt--base-project-heading)
+      (basic-save-buffer))
+    buffer))

@@ -25,7 +25,7 @@
         (search-forward "project headline")
         (org-gtd-cancel-project)
         (org-gtd-archive-completed-items)
-        (save-buffer))
+        (basic-save-buffer))
       (let ((archived-projects (ogt--archive-string)))
         (expect archived-projects :to-match "project headline")))
 

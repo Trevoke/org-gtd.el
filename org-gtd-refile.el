@@ -35,13 +35,15 @@
 
 (defun org-gtd-refile--do (type)
   "Refile an item to the single action file."
-  (with-org-gtd-refile
-   type
-   (unless (org-refile-get-targets) (org-gtd--gtd-file-buffer type))
-   (org-refile nil nil nil (org-gtd-refile--prompt type))))
+  (with-org-gtd-refile type
+      (unless (org-refile-get-targets) (org-gtd--gtd-file-buffer type))
+    (message "%s" (org-refile-get-targets))
+    (if org-gtd-refile-to-any-target
+        (org-refile nil nil (car (org-refile-get-targets)))
+      (org-refile nil nil nil (org-gtd-refile--prompt type)))))
 
 (defmacro with-org-gtd-refile (type &rest body)
-  (declare (debug t))
+  (declare (debug t) (indent 2))
   `(let ((org-refile-target-verify-function (lambda () (org-gtd-refile--group-p ,type)))
          (org-refile-targets '((org-agenda-files :level . 1))))
      (unwind-protect

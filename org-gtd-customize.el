@@ -76,5 +76,11 @@ this Org-mode based GTD implementation."
   :type 'sexp
   :package-version "2.0.0")
 
+(defcustom org-gtd-refile-to-any-target t
+  "Set this to true if you do not need to choose where to refile processed items"
+  :group 'org-gtd
+  :type 'boolean
+  :package-version "2.0.0")
+
 (provide 'org-gtd-customize)
 ;;; org-gtd-customize.el ends here
