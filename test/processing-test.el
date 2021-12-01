@@ -6,13 +6,12 @@
 (require 'buttercup)
 (require 'with-simulated-input)
 
-(describe
-    "Processing items"
+(describe "Processing items"
 
-  (before-all (ogt--configure-emacs))
-
-  (before-each (ogt--prepare-filesystem)
-               (ogt--add-single-item))
+  (before-each
+    (ogt--configure-emacs)
+    (ogt--prepare-filesystem)
+    (ogt--add-single-item))
   (after-each (ogt--close-and-delete-files))
 
   (it "processes all the elements"

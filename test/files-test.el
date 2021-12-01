@@ -6,16 +6,15 @@
 (require 'buttercup)
 (require 'with-simulated-input)
 
-(describe
- "Create a default file"
+(describe "Create a default file"
 
- (before-all (ogt--configure-emacs))
- (before-each (ogt--clean-target-directory org-gtd-directory))
- (after-each (ogt--close-and-delete-files))
+  (before-each
+    (ogt--configure-emacs)
+    (ogt--prepare-filesystem))
+  (after-each (ogt--close-and-delete-files))
 
- (describe
-  "with default content"
-  (it "for the inbox"
+  (describe "with default content"
+    (it "for the inbox"
       (with-current-buffer (org-gtd--inbox-file)
         (expect (buffer-string)
                 :to-match
@@ -24,7 +23,7 @@
                 :to-match
                 "#\\+STARTUP: overview hidestars logrefile indent logdone")))
 
-  (it "has a shared header for the processed files"
+    (it "has a shared header for the processed files"
       (dolist (buffer `(,(org-gtd--default-projects-file)
                         ,(org-gtd--default-action-file)
                         ,(org-gtd--default-incubated-file)
@@ -36,59 +35,59 @@
                   "#\\+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
 #\\+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)"))))
 
-  (it "for the default projects file"
+    (it "for the default projects file"
       (with-current-buffer (org-gtd--default-projects-file)
         (expect (buffer-string)
                 :to-match
                 ":ORG_GTD: Projects")))
 
-  (it "for the default calendar file"
+    (it "for the default calendar file"
       (with-current-buffer (org-gtd--default-calendar-file)
         (expect (buffer-string)
                 :to-match
                 ":ORG_GTD: Calendar")))
 
-  (it "for the default delegated file"
+    (it "for the default delegated file"
       (with-current-buffer (org-gtd--default-delegated-file)
         (expect (buffer-string)
                 :to-match
                 ":ORG_GTD: Actions")))
 
-  (it "for the default incubated file"
+    (it "for the default incubated file"
       (with-current-buffer (org-gtd--default-incubated-file)
         (expect (buffer-string)
                 :to-match
                 ":ORG_GTD: Incubated")))
 
-  (it "for the default action file"
+    (it "for the default action file"
       (with-current-buffer (org-gtd--default-action-file)
         (expect (buffer-string)
                 :to-match
                 ":ORG_GTD: Actions"))))
 
- (describe
-  "when there isn't a refile target"
-  (it "for a project"
+  (describe
+      "when there isn't a refile target"
+    (it "for a project"
       (ogt--add-and-process-project "project headline")
       (ogt--save-all-buffers)
       (expect (ogt--org-dir-buffer-string) :to-match "projects\\.org"))
 
-  (it "for a calendar item"
+    (it "for a calendar item"
       (ogt--add-and-process-calendar-item "calendar headline")
       (ogt--save-all-buffers)
       (expect (ogt--org-dir-buffer-string) :to-match "calendar\\.org"))
 
-  (it "for a delegated item"
+    (it "for a delegated item"
       (ogt--add-and-process-delegated-item "delegated headline")
       (ogt--save-all-buffers)
       (expect (ogt--org-dir-buffer-string) :to-match "actions\\.org"))
 
-  (it "for a incubated item"
+    (it "for a incubated item"
       (ogt--add-and-process-incubated-item "incubated headline")
       (ogt--save-all-buffers)
       (expect (ogt--org-dir-buffer-string) :to-match "incubated\\.org"))
 
-  (it "for a single action"
+    (it "for a single action"
       (ogt--add-and-process-single-action "single action")
       (ogt--save-all-buffers)
       (expect (ogt--org-dir-buffer-string) :to-match "actions\\.org"))))

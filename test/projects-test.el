@@ -5,21 +5,18 @@
 (require 'buttercup)
 (require 'with-simulated-input)
 
-(describe
- "Project management"
+(describe "Project management"
 
- (before-all (ogt--configure-emacs))
+  (before-each
+    (ogt--configure-emacs)
+    (ogt--prepare-filesystem)
+    (ogt--add-and-process-project "project headline"))
 
- (before-each
-  (ogt--prepare-filesystem)
-  (ogt--add-and-process-project "project headline"))
+  (after-each (ogt--close-and-delete-files))
 
- (after-each (ogt--close-and-delete-files))
+  (describe "marks all undone tasks of a canceled project as canceled"
 
- (describe
-  "marks all undone tasks of a canceled project as canceled"
-
-  (it "when on the heading"
+    (it "when on the heading"
       (with-current-buffer (org-gtd--default-projects-file)
         (beginning-of-buffer)
         (search-forward "project headline")
@@ -29,7 +26,7 @@
       (let ((archived-projects (ogt--archive-string)))
         (expect archived-projects :to-match "project headline")))
 
-  (it "on a task in the agenda"
+    (it "on a task in the agenda"
       (org-gtd-show-all-next)
       (with-current-buffer ogt--agenda-buffer
         (beginning-of-buffer)
