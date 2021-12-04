@@ -5,8 +5,8 @@
     (kill-buffer "*Directory*")
     ogt-files))
 
-(defun ogt--default-projects-archive ()
-  "Create or return the buffer to the archive file for the actionable items."
+(defun ogt--archive ()
+  "Create or return the buffer to the archive file."
   (with-current-buffer (org-gtd--inbox-file)
     (find-file-noselect
      (car (with-org-gtd-context
@@ -15,7 +15,7 @@
 
 (defun ogt--archive-string ()
   "return string of items archived from actionable file"
-  (ogt--get-string-from-buffer (ogt--default-projects-archive)))
+  (ogt--get-string-from-buffer (ogt--archive)))
 
 (defun ogt--save-all-buffers ()
   (with-simulated-input "!" (save-some-buffers)))

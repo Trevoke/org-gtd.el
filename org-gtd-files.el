@@ -75,6 +75,8 @@ Add your own categories as necessary, with the ORG_GTD property, such as
 "
   "Template for the GTD someday/maybe list.")
 
+(defconst org-gtd-default-file-name "org-gtd-tasks")
+
 (defconst org-gtd--file-template
   (let ((myhash (make-hash-table :test 'equal)))
     (puthash org-gtd-actions org-gtd-actions-template myhash)
@@ -89,11 +91,31 @@ Add your own categories as necessary, with the ORG_GTD property, such as
 
 (defun org-gtd--inbox-file ()
   "Create or return the buffer to the GTD inbox file."
-  (org-gtd--gtd-file-buffer org-gtd-inbox))
+  (let ((file-path (org-gtd--path org-gtd-inbox)))
+    (unless (f-file-p file-path)
+      (with-current-buffer (find-file-noselect file-path)
+        (insert org-gtd-inbox-template)
+        (org-mode-restart)
+        (basic-save-buffer)
+        (current-buffer)))
+    (find-file-noselect file-path)))
 
-(defun org-gtd--default-projects-file ()
-  "Create or return the buffer to the default GTD projects file."
-  (org-gtd--gtd-file-buffer org-gtd-projects))
+(defun org-gtd--default-file (&optional missing-gtd-category)
+  "Create or return the buffer to the default GTD file."
+  ;; todo:
+  ;; if there's no file, create one and add the header
+  ;; open the file, add newline, then add correct header for missing category
+  (let ((file-path (org-gtd--path org-gtd-default-file-name)))
+    (unless (f-file-p file-path)
+      (with-current-buffer (find-file-noselect file-path)
+        (insert org-gtd-file-header)
+        (insert (gethash gtd-type org-gtd--file-template))
+        (org-mode-restart)
+        (basic-save-buffer)
+        (current-buffer)))
+    (find-file-noselect file-path))
+  (org-gtd--gtd-file-buffer org-gtd-projects)
+  )
 
 (defun org-gtd--default-action-file ()
   "Create or return the buffer to the GTD actionable file."

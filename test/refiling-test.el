@@ -22,7 +22,7 @@
         (insert "* foobar")
         (org-gtd-refile--do org-gtd-projects))
 
-      (with-current-buffer (org-gtd--default-projects-file)
+      (with-current-buffer (org-gtd--default-file)
         (expect (buffer-string) :to-match "foobar"))))
 
   (describe "Finding a refile target"
@@ -35,7 +35,7 @@
               "Projects"))
 
     (it "finds the Incubate headings in the incubate file"
-      (with-current-buffer (org-gtd--default-incubated-file)
+      (with-current-buffer (org-gtd--default-file)
         (goto-char (point-max))
         (insert "* To Read
 :PROPERTIES:

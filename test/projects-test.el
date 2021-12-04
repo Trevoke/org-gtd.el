@@ -17,7 +17,7 @@
   (describe "marks all undone tasks of a canceled project as canceled"
 
     (it "when on the heading"
-      (with-current-buffer (org-gtd--default-projects-file)
+      (with-current-buffer (org-gtd--default-file)
         (beginning-of-buffer)
         (search-forward "project headline")
         (org-gtd-cancel-project)

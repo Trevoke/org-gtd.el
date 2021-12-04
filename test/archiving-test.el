@@ -17,7 +17,7 @@
 
     (it "archives completed and canceled projects"
       (ogt--add-and-process-project "project headline")
-      (with-current-buffer (org-gtd--default-projects-file)
+      (with-current-buffer (org-gtd--default-file)
         (end-of-buffer)
         (newline)
         (insert ogt--canceled-project)
@@ -38,14 +38,14 @@
     (with-current-buffer (org-gtd--inbox-file)
       (widen)
       (buffer-string))
-    (with-current-buffer (org-gtd--default-action-file)
+    (with-current-buffer (org-gtd--default-file)
       (message (buffer-string))
       (beginning-of-buffer)
       (search-forward "NEXT one")
       (org-todo "DONE"))
     (org-gtd-archive-completed-items)
     (ogt--save-all-buffers)
-    (with-current-buffer (org-gtd--default-action-file)
+    (with-current-buffer (org-gtd--default-file)
       (expect (buffer-string)
               :to-match
               "two")
