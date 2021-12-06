@@ -15,17 +15,16 @@
   (it "can be done through the agenda and show on the agenda"
     (ogt--add-and-process-single-action "delegateme")
     (ogt--save-all-buffers)
-    (org-gtd-mode)
-    (org-agenda nil "g")
-    (with-current-buffer org-agenda-buffer-name
+    (org-gtd-daily-agenda)
+    (with-current-buffer org-agenda-buffer
       (beginning-of-buffer)
       (search-forward "delegateme")
       (with-simulated-input "That SPC Guy RET RET"
         (org-gtd-agenda-delegate)))
-    (kill-buffer org-agenda-buffer-name)
 
     (ogt--save-all-buffers)
-    (org-agenda nil "g")
-    (with-current-buffer org-agenda-buffer-name
+    ;(org-agenda nil "g")
+    (org-gtd-daily-agenda)
+    (with-current-buffer org-agenda-buffer
       (expect (buffer-string) :to-match "WAIT ")
       (expect (buffer-string) :to-match "That Guy"))))

@@ -2,8 +2,6 @@
 (load "test/helpers/processing.el")
 (load "test/helpers/utils.el")
 
-(defconst ogt--agenda-buffer "*Org Agenda*")
-
 (defun ogt--configure-emacs ()
   (setq org-gtd-directory (make-temp-file "org-gtd" t)
         org-gtd-process-item-hooks '()
@@ -19,25 +17,15 @@
   (delete-directory dir t nil)
   (make-directory dir))
 
-(defun ogt--get-string-from-buffer (buffer)
-  "Return buffer's content."
-  (with-current-buffer buffer
-    (buffer-string)))
-
 (defun ogt--reset-var (symbl)
   "Reset SYMBL to its standard value."
   (set symbl (eval (car (get symbl 'standard-value)))))
 
 (defun ogt--close-and-delete-files ()
-  "Run after every test to clear external state"
-  (org-gtd-show-all-next)
-  (kill-buffer ogt--agenda-buffer)
-  (mapcar (lambda (buffer)
-            (ogt--clear-file-and-buffer buffer))
-          `(,(ogt--default-projects-archive)
-            ,(org-gtd--default-file)
-            ,(org-gtd--inbox-file)
-            )))
+  "Run after every test to clear open buffers state"
+  (kill-matching-buffers ".*\\.org" nil t)
+  (kill-matching-buffers ".*Agenda.*" nil t)
+  )
 
 (defun ogt--clear-file-and-buffer (buffer)
   (if (bufferp buffer)

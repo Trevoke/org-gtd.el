@@ -27,8 +27,8 @@
         (expect archived-projects :to-match "project headline")))
 
     (it "on a task in the agenda"
-      (org-gtd-show-all-next)
-      (with-current-buffer ogt--agenda-buffer
+      (org-gtd-daily-agenda)
+      (with-current-buffer org-agenda-buffer
         (beginning-of-buffer)
         (search-forward "Task 1")
         (org-gtd-agenda-cancel-project)

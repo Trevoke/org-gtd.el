@@ -27,3 +27,8 @@
       (insert ogt--base-project-heading)
       (basic-save-buffer))
     buffer))
+
+(defun ogt--get-string-from-buffer (buffer)
+  "Return buffer's content."
+  (with-current-buffer buffer
+    (buffer-string)))

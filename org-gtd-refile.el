@@ -24,6 +24,51 @@
 ;;
 ;;; Code:
 
+(defconst org-gtd-projects-template
+  "* Projects
+:PROPERTIES:
+:TRIGGER: next-sibling todo!(NEXT)
+:ORG_GTD: Projects
+:END:
+")
+
+(defconst org-gtd-calendar-template
+  "* Calendar
+:PROPERTIES:
+:ORG_GTD: Calendar
+:END:
+")
+
+(defconst org-gtd-actions-template
+  "* Actions
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+")
+
+(defconst org-gtd-incubated-template
+  "#+begin_comment
+Here go the things you want to think about someday. Review this file as often
+as you feel the need: every two months? Every six months? Every year?
+Add your own categories as necessary, with the ORG_GTD property, such as
+\"to read\", \"to buy\", \"to eat\", etc - whatever works best for your mind!
+#+end_comment
+
+* Incubate
+:PROPERTIES:
+:ORG_GTD: Incubated
+:END:
+"
+  "Template for the GTD someday/maybe list.")
+
+(defconst org-gtd--file-template
+  (let ((myhash (make-hash-table :test 'equal)))
+    (puthash org-gtd-actions org-gtd-actions-template myhash)
+    (puthash org-gtd-calendar org-gtd-calendar-template myhash)
+    (puthash org-gtd-projects org-gtd-projects-template myhash)
+    (puthash org-gtd-incubated org-gtd-incubated-template myhash)
+    myhash))
+
 (defconst org-gtd-refile--prompt
   (let ((myhash (make-hash-table :test 'equal)))
     (puthash org-gtd-actions "Refile single action to: " myhash)
@@ -36,7 +81,7 @@
 (defun org-gtd-refile--do (type)
   "Refile an item to the single action file."
   (with-org-gtd-refile type
-    (unless (org-refile-get-targets) (org-gtd--gtd-file-buffer type))
+    (unless (org-refile-get-targets) (org-gtd-refile--add-target type))
     (if org-gtd-refile-to-any-target
         (org-refile nil nil (car (org-refile-get-targets)))
       (org-refile nil nil nil (org-gtd-refile--prompt type)))))
@@ -47,6 +92,13 @@
          (org-refile-targets '((org-agenda-files :level . 1))))
      (unwind-protect
          (with-org-gtd-context (progn ,@body)))))
+
+(defun org-gtd-refile--add-target (gtd-type)
+  (with-current-buffer (org-gtd--default-file)
+    (end-of-buffer)
+    (newline)
+    (insert (gethash gtd-type org-gtd--file-template))
+    (basic-save-buffer)))
 
 (defun org-gtd-refile--group-p (type)
   (string-equal (org-gtd-refile--group type)

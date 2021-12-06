@@ -9,8 +9,7 @@
   (org-gtd-process-inbox)
   (execute-kbd-macro (kbd "M-> RET"))
   (insert ogt--project-text)
-  (execute-kbd-macro (kbd "C-c c p TAB RET"))
-  )
+  (execute-kbd-macro (kbd "C-c cp TAB RET")))
 
 (defun ogt--add-and-process-calendar-item (label)
   "LABEL is the calendared item label."

@@ -75,18 +75,17 @@
       (org-gtd-process-inbox)
       (execute-kbd-macro (kbd "C-c c s RET A TAB RET")))
 
-    (org-gtd-show-all-next)
-    (let ((ogt-agenda-string (ogt--get-string-from-buffer ogt--agenda-buffer)))
+    (org-gtd-daily-agenda)
+    (let ((ogt-agenda-string (ogt--get-string-from-buffer org-agenda-buffer)))
       (expect (string-match "NEXT \\[#A\\] single action" ogt-agenda-string)
               :to-be-truthy)))
 
   (it "shows item in agenda when done"
     (org-gtd-process-inbox)
     (execute-kbd-macro (kbd "C-c c s TAB RET"))
-    (expect (buffer-modified-p (org-gtd--default-action-file)) :to-equal t)
+    (expect (buffer-modified-p (org-gtd--default-file)) :to-equal t)
 
-    (org-gtd-show-all-next)
-
-    (let ((ogt-agenda-string (ogt--get-string-from-buffer ogt--agenda-buffer)))
+    (org-gtd-daily-agenda)
+    (let ((ogt-agenda-string (ogt--get-string-from-buffer org-agenda-buffer)))
       (expect (string-match "single action" ogt-agenda-string)
               :to-be-truthy))))

@@ -25,7 +25,7 @@
       (with-current-buffer (org-gtd--default-file)
         (expect (buffer-string) :to-match "foobar"))))
 
-  (describe "Finding a refile target"
+  (describe "finding a refile target"
 
     (it "finds the Project target"
       (expect (caar (with-org-gtd-refile
@@ -51,7 +51,7 @@
         (let ((ogt-target-names (mapcar 'car (org-refile-get-targets))))
           (expect ogt-target-names
                   :to-have-same-items-as
-                  '("Incubate" "To Eat" "To Read"))))))
+                  '("To Eat" "To Read"))))))
 
   (describe "And I have multiple files as possible targets"
 
