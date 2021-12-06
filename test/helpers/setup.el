@@ -7,8 +7,6 @@
         org-gtd-process-item-hooks '()
         org-gtd-refile-to-any-target nil)
 
-  (message "!!!!! %s" org-gtd-directory)
-
   (define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose))
 
 (defun ogt--prepare-filesystem ()
