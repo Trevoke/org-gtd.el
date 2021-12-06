@@ -76,7 +76,7 @@
       (execute-kbd-macro (kbd "C-c c s RET A TAB RET")))
 
     (org-gtd-daily-agenda)
-    (let ((ogt-agenda-string (ogt--get-string-from-buffer org-agenda-buffer)))
+    (let ((ogt-agenda-string (ogt--buffer-string org-agenda-buffer)))
       (expect (string-match "NEXT \\[#A\\] single action" ogt-agenda-string)
               :to-be-truthy)))
 
@@ -86,6 +86,6 @@
     (expect (buffer-modified-p (org-gtd--default-file)) :to-equal t)
 
     (org-gtd-daily-agenda)
-    (let ((ogt-agenda-string (ogt--get-string-from-buffer org-agenda-buffer)))
+    (let ((ogt-agenda-string (ogt--buffer-string org-agenda-buffer)))
       (expect (string-match "single action" ogt-agenda-string)
               :to-be-truthy))))

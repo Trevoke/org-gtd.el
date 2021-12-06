@@ -16,7 +16,19 @@
 
   (describe "marks all undone tasks of a canceled project as canceled"
 
+    (it "on a task in the agenda"
+      (org-gtd-daily-agenda)
+      (with-current-buffer org-agenda-buffer
+        (beginning-of-buffer)
+        (search-forward "Task 1")
+        (org-gtd-agenda-cancel-project)
+        (org-gtd-archive-completed-items))
+      (let ((archived-projects (ogt--archive-string)))
+        (expect archived-projects :to-match "project headline")))
+
     (it "when on the heading"
+      (setq org-gtd-directory (make-temp-file "org-gtd" t))
+      (ogt--add-and-process-project "project headline")
       (with-current-buffer (org-gtd--default-file)
         (beginning-of-buffer)
         (search-forward "project headline")
@@ -26,12 +38,4 @@
       (let ((archived-projects (ogt--archive-string)))
         (expect archived-projects :to-match "project headline")))
 
-    (it "on a task in the agenda"
-      (org-gtd-daily-agenda)
-      (with-current-buffer org-agenda-buffer
-        (beginning-of-buffer)
-        (search-forward "Task 1")
-        (org-gtd-agenda-cancel-project)
-        (org-gtd-archive-completed-items))
-      (let ((archived-projects (ogt--archive-string)))
-        (expect archived-projects :to-match "project headline")))))
+    ))

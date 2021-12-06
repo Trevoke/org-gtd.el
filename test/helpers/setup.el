@@ -7,11 +7,14 @@
         org-gtd-process-item-hooks '()
         org-gtd-refile-to-any-target nil)
 
+  (message "!!!!! %s" org-gtd-directory)
+
   (define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose))
 
 (defun ogt--prepare-filesystem ()
   "run before each test"
-  (ogt--clean-target-directory org-gtd-directory))
+  ;(ogt--clean-target-directory org-gtd-directory)
+  )
 
 (defun ogt--clean-target-directory (dir)
   (delete-directory dir t nil)

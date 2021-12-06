@@ -15,7 +15,7 @@
 
 (defun ogt--archive-string ()
   "return string of items archived from actionable file"
-  (ogt--get-string-from-buffer (ogt--archive)))
+  (ogt--buffer-string (ogt--archive)))
 
 (defun ogt--save-all-buffers ()
   (with-simulated-input "!" (save-some-buffers)))
@@ -28,7 +28,7 @@
       (basic-save-buffer))
     buffer))
 
-(defun ogt--get-string-from-buffer (buffer)
+(defun ogt--buffer-string (buffer)
   "Return buffer's content."
   (with-current-buffer buffer
     (buffer-string)))

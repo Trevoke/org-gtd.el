@@ -23,7 +23,6 @@
         (org-gtd-agenda-delegate)))
 
     (ogt--save-all-buffers)
-    ;(org-agenda nil "g")
     (org-gtd-daily-agenda)
     (with-current-buffer org-agenda-buffer
       (expect (buffer-string) :to-match "WAIT ")
