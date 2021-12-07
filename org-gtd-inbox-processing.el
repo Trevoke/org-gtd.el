@@ -152,7 +152,9 @@ the inbox.  Set as a NEXT action and refile to
   "Apply hooks to add metadata to a given GTD item."
   (goto-char (point-min))
   (dolist (hook org-gtd-process-item-hooks)
-    (funcall hook)))
+    (save-excursion
+      (save-restriction
+        (funcall hook)))))
 
 (provide 'org-gtd-inbox-processing)
 ;;; org-gtd-inbox-processing.el ends here
