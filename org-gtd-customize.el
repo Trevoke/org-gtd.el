@@ -63,19 +63,16 @@ into a datetree."
   :package-version "2.0.0")
 
 (defcustom org-gtd-capture-templates
-  '(("i" "Inbox"
-     entry (file (lambda () (org-gtd-inbox-path)))
-                 "* %?\n%U\n\n  %i"
-                 :kill-buffer t)
-     ("t" "Todo with link"
-      entry (file (lambda () (org-gtd-inbox-path)))
-      "* %?\n%U\n\n  %i\n  %a"
-      :kill-buffer t))
+  '(("i" "Inbox" "* %?\n%U\n\n  %i")
+    ("l" "Inbox with link" "* %?\n%U\n\n  %i\n  %a"))
   "Capture templates to be used when adding something to the inbox.
 
-The safe thing to modify here is the string template. Make sure there is a
-top-level heading in your template (it starts with a single asterisk) or org-gtd
-cannot be guaranteed to work well."
+This is a list of lists. Each list is composed of three elements:
+
+(KEYS DESCRIPTION TEMPLATE)
+see `org-capture-templates' for the definition of each of those items.
+Make the sure the template starts with a single asterisk to denote a top-level
+heading, or the behavior of org-gtd is undefined."
   :group 'org-gtd
   :type 'sexp
   :package-version "2.0.0")
@@ -83,7 +80,13 @@ cannot be guaranteed to work well."
 (defcustom org-gtd-agenda-custom-commands
   '(("g" "Scheduled today and all NEXT items"
      ((agenda "" ((org-agenda-span 1))) (todo "NEXT|WAIT"))))
-  "Agenda custom commands to be used for org-gtd."
+  "Agenda custom commands to be used for org-gtd.
+
+The provided default is to show the agenda for today and all TODOs marked as
+NEXT or WAIT. See documentation for `org-agenda-custom-commands' to customize this further.
+
+NOTE! The function `org-gtd-daily-agenda' assumes the 'g' shortcut exists.
+It's recommended you add to this list without modifying this first entry."
   :group 'org-gtd
   :type 'sexp
   :package-version "2.0.0")
@@ -92,7 +95,7 @@ cannot be guaranteed to work well."
   "Set this to true if you do not need to choose where to refile processed items.
 
 Defaults to true to carry over pre-2.0 behavior. You will need to change this
-settig if you follow the instructions to add your own refile targets."
+setting if you follow the instructions to add your own refile targets."
   :group 'org-gtd
   :type 'boolean
   :package-version "2.0.0")

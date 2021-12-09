@@ -71,7 +71,10 @@
   (declare (debug t) (indent 2))
   `(let* ((org-use-property-inheritance "ORG_GTD")
           (org-archive-location (funcall org-gtd-archive-location))
-          (org-capture-templates org-gtd-capture-templates)
+          (org-capture-templates (seq-concatenate
+                                  'list
+                                  (org-gtd--capture-templates)
+                                  org-capture-templates))
           (org-refile-use-outline-path nil)
           (org-stuck-projects org-gtd-stuck-projects)
           (org-odd-levels-only nil)
@@ -82,6 +85,7 @@
          (progn ,@body))))
 
 (require 'org-gtd-archive)
+(require 'org-gtd-capture)
 (require 'org-gtd-files)
 (require 'org-gtd-refile)
 (require 'org-gtd-projects)
@@ -107,18 +111,6 @@
         (org-back-to-heading)
         (org-narrow-to-subtree))
     (user-error (org-gtd--stop-processing))))
-
-;;;###autoload
-(defun org-gtd-capture (&optional goto keys)
-  "Capture something into the GTD inbox.
-
-Wraps the function `org-capture' to ensure the inbox exists.
-
-For GOTO and KEYS, see `org-capture' documentation for the variables of the same name."
-  (interactive)
-  (with-org-gtd-context
-      (org-gtd--inbox-file)
-      (org-capture goto keys)))
 
 ;;;###autoload
 (defun org-gtd-delegate ()
