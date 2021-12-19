@@ -24,6 +24,8 @@
 ;;
 ;;; Code:
 
+(require 'org-agenda)
+
 ;;;###autoload
 (define-minor-mode org-gtd-mode
   "global minor mode to force org-agenda to be bounded to the org-gtd settings"
@@ -36,13 +38,21 @@
 (defun org-gtd--wrap (fun &rest r)
   (with-org-gtd-context (apply fun r)))
 
+(defconst org-gtd--agenda-functions
+  (seq-filter #'commandp (mapcar #'car (apropos "org-agenda-")))
+  "List of commands available to the user through org-agenda.
+
+Org-gtd wraps these functions with its own context when org-gtd-mode is enabled.")
+
 (defun org-gtd--override-agenda ()
-  (advice-add 'org-agenda :around #'org-gtd--wrap)
-  (advice-add 'org-agenda-list-stuck-projects :around #'org-gtd--wrap))
+  (mapc
+   (lambda (x) (advice-add x :around #'org-gtd--wrap))
+   org-gtd--agenda-functions))
 
 (defun org-gtd--restore-agenda ()
-  (advice-remove 'org-agenda #'org-gtd--wrap)
-  (advice-remove 'org-agenda-list-stuck-projects #'org-gtd--wrap))
+  (mapc
+   (lambda (x) (advice-remove x #'org-gtd--wrap))
+   org-gtd--agenda-functions))
 
 (provide 'org-gtd-mode)
 ;;; org-gtd-mode.el ends here

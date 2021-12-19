@@ -12,7 +12,7 @@ This package provides a system that allows you to capture incoming things into a
 
 Image courtesy of https://xebia.com/blog/peace-of-mind-in-a-state-of-overload/gtd_chart/
 ** Updating ~org-gtd~
-Please read the [[CHANGELOG.org][CHANGELOG]].
+Please read the [[./CHANGELOG.org][CHANGELOG]].
 *** 2.0.0 <- 1.1.x
 - rename CANCELED to CNCL
 ** Installing
@@ -65,13 +65,13 @@ Finally, add this to your config:
 Here is what you need to do before regular usage of ~org-gtd~:
 - read the [[*configuration options for org-gtd][configuration options for org-gtd]] section.
 - Find the ~incubate.org~ file and add some incubation categories as top-level headlines. This is intended to be helpful when opening the file during your recurring reviews. For instance, I use things like this:
-  #+begin_src org-mode
+  #+begin_quote
 * To Read
 * To Write
 * To Play
 * To Eat
 * To Visit
-  #+end_src
+  #+end_quote
 *** configuration options for org-gtd
 **** org-gtd-directory
 This is the directory where ~org-gtd~ will put the files it manages. This code includes the default value.
