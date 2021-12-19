@@ -38,10 +38,17 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the same
       (org-capture goto keys)))
 
 (defun org-gtd--capture-templates ()
+  "Private function.
+
+Return valid `org-capture' templates based on `org-gtd-capture-templates'."
   (mapcar #'org-gtd--gen-capture-templates
           org-gtd-capture-templates))
 
 (defun org-gtd--gen-capture-templates (template)
+  "Private function.
+
+Given an `org-capture-template' TEMPLATE string, generate a valid
+org-gtd-capture item."
   (cl-destructuring-bind (key description template-string) template
     `(,key ,description entry
            (file (lambda () (org-gtd-inbox-path)))

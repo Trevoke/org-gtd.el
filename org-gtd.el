@@ -68,6 +68,7 @@
 
 ;;;###autoload
 (defmacro with-org-gtd-context (&rest body)
+  "Wrap any BODY in this macro to inherit the org-gtd settings for your logic."
   (declare (debug t) (indent 2))
   `(let* ((org-use-property-inheritance "ORG_GTD")
           (org-archive-location (funcall org-gtd-archive-location))
@@ -114,6 +115,7 @@
 
 ;;;###autoload
 (defun org-gtd-delegate ()
+  "Delegate item at point."
   (interactive)
   (let ((delegated-to (read-string "Who will do this? "))
         (org-inhibit-logging 'note))

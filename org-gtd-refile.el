@@ -79,7 +79,9 @@ Add your own categories as necessary, with the ORG_GTD property, such as
     myhash))
 
 (defun org-gtd-refile--do (type)
-  "Refile an item to the single action file."
+  "Refile an item to the single action file.
+
+TYPE is one of the org-gtd action types.  This is a private function."
   (with-org-gtd-refile type
     (unless (org-refile-get-targets) (org-gtd-refile--add-target type))
     (if org-gtd-refile-to-any-target
@@ -87,6 +89,9 @@ Add your own categories as necessary, with the ORG_GTD property, such as
       (org-refile nil nil nil (org-gtd-refile--prompt type)))))
 
 (defmacro with-org-gtd-refile (type &rest body)
+  "Macro to refile specifically within org-gtd context.
+
+TYPE is the org-gtd action type.  BODY is the rest of the code."
   (declare (debug t) (indent 1))
   `(let ((org-refile-target-verify-function (lambda () (org-gtd-refile--group-p ,type)))
          (org-refile-targets '((org-agenda-files :level . 1))))
@@ -94,6 +99,9 @@ Add your own categories as necessary, with the ORG_GTD property, such as
          (with-org-gtd-context (progn ,@body)))))
 
 (defun org-gtd-refile--add-target (gtd-type)
+  "Private function used to create a missing org-gtd refile target.
+
+GTD-TYPE is an action type."
   (with-current-buffer (org-gtd--default-file)
     (end-of-buffer)
     (newline)
@@ -101,13 +109,16 @@ Add your own categories as necessary, with the ORG_GTD property, such as
     (basic-save-buffer)))
 
 (defun org-gtd-refile--group-p (type)
+  "Determine whether the current heading is of a given gtd TYPE."
   (string-equal (org-gtd-refile--group type)
                 (org-element-property :ORG_GTD (org-element-at-point))))
 
 (defun org-gtd-refile--group (type)
+  "What kind of gtd group is TYPE."
   (gethash type org-gtd--properties))
 
 (defun org-gtd-refile--prompt (type)
+  "What is the right refile prompt for this gtd TYPE."
   (gethash type org-gtd-refile--prompt))
 
 (provide 'org-gtd-refile)

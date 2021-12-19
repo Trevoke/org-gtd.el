@@ -28,7 +28,7 @@
 
 ;;;###autoload
 (define-minor-mode org-gtd-mode
-  "global minor mode to force org-agenda to be bounded to the org-gtd settings"
+  "Global minor mode to bound `org-agenda' to the org-gtd settings."
   :lighter " GTD"
   :global t
   (if org-gtd-mode
@@ -36,20 +36,31 @@
     (org-gtd--restore-agenda)))
 
 (defun org-gtd--wrap (fun &rest r)
+  "Private function.
+
+Programmatic wrapper to add org-gtd context to any FUN using `defadvice'.
+Argument R is there to be passed through."
   (with-org-gtd-context (apply fun r)))
 
 (defconst org-gtd--agenda-functions
   (seq-filter #'commandp (mapcar #'car (apropos "org-agenda-")))
-  "List of commands available to the user through org-agenda.
+  "List of commands available to the user through `org-agenda'.
 
-Org-gtd wraps these functions with its own context when org-gtd-mode is enabled.")
+Org-gtd wraps these functions with its own context when `org-gtd-mode'
+is enabled.")
 
 (defun org-gtd--override-agenda ()
+  "Private function.
+
+`org-gtd-mode' uses this to `defadvice' all `org-agenda' commands."
   (mapc
    (lambda (x) (advice-add x :around #'org-gtd--wrap))
    org-gtd--agenda-functions))
 
 (defun org-gtd--restore-agenda ()
+  "Private function.
+
+`org-gtd-mode' uses this to stop overriding all the `org-agenda' behavior."
   (mapc
    (lambda (x) (advice-remove x #'org-gtd--wrap))
    org-gtd--agenda-functions))

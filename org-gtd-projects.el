@@ -26,6 +26,7 @@
 
 (defun org-gtd-projects--nextify ()
   "Add the NEXT keyword to the first action/task of the project.
+
 Add the TODO keyword to all subsequent actions/tasks."
   (cl-destructuring-bind
       (first-entry . rest-entries)
@@ -38,7 +39,7 @@ Add the TODO keyword to all subsequent actions/tasks."
     (org-entry-put (org-gtd-projects--org-element-pom first-entry) "TODO" "NEXT")))
 
 (defun org-gtd-projects--incomplete-task-p ()
-  "Determine if current heading is a task that's not finished"
+  "Determine if current heading is a task that's not finished."
   (and (org-entry-is-todo-p)
        (not (org-entry-is-done-p))))
 

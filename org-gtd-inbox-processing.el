@@ -143,6 +143,9 @@ the inbox.  Set as a NEXT action and refile to
   (org-gtd-process-inbox))
 
 (defun org-gtd--stop-processing ()
+  "Private function.
+
+Stop processing the inbox."
   (interactive)
   (widen)
   (org-gtd-process-mode nil)

@@ -29,9 +29,11 @@
 (defconst org-gtd-stuck-projects
   '("+LEVEL=2&+ORG_GTD=\"Projects\"" ("NEXT" "WAIT") nil "")
   "How to identify stuck projects in the GTD system.
+
 This is a list of four items, the same type as in `org-stuck-projects'.")
 
 (defun org-gtd-daily-agenda ()
+  "Display `org-agenda' customized by org-gtd."
   (interactive)
   (with-org-gtd-context
    (org-agenda nil "g")))
