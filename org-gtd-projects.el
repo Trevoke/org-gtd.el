@@ -24,6 +24,28 @@
 ;;
 ;;; Code:
 
+;;;###autoload
+(defun org-gtd-cancel-project ()
+  "With point on topmost project heading, mark all undone tasks canceled."
+  (interactive)
+  (org-edna-mode -1)
+  (with-org-gtd-context
+      (org-map-entries
+       (lambda ()
+         (when (org-gtd-projects--incomplete-task-p)
+           (let ((org-inhibit-logging 'note))
+             (org-todo "CNCL"))))
+       nil
+       'tree))
+  (org-edna-mode 1))
+
+;;;###autoload
+(defun org-gtd-show-stuck-projects ()
+  "Show all projects that do not have a next action."
+  (interactive)
+  (with-org-gtd-context
+      (org-agenda-list-stuck-projects)))
+
 (defun org-gtd-projects--nextify ()
   "Add the NEXT keyword to the first action/task of the project.
 

@@ -17,7 +17,7 @@
   (describe "marks all undone tasks of a canceled project as canceled"
 
     (it "on a task in the agenda"
-      (org-gtd-daily-agenda)
+      (org-gtd-agenda-daily)
       (with-current-buffer org-agenda-buffer
         (beginning-of-buffer)
         (search-forward "Task 1")

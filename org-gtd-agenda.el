@@ -32,15 +32,24 @@
 
 This is a list of four items, the same type as in `org-stuck-projects'.")
 
-(defun org-gtd-daily-agenda ()
+(defun org-gtd-agenda-daily ()
   "Display `org-agenda' customized by org-gtd."
   (interactive)
   (with-org-gtd-context
    (org-agenda nil "g")))
 
+(defun org-gtd-show-all-next ()
+  "Show all next actions from all agenda files in a single list.
+This assumes all GTD files are also agenda files."
+  (interactive)
+  (with-org-gtd-context
+      (org-todo-list "NEXT")))
+
 ;;;###autoload
 (defun org-gtd-agenda-projectify ()
-  "Delegate current agenda task."
+  "Transform the current agenda item into a gtd project.
+
+This function is intended to be used on incubated items that come up."
   (interactive)
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)

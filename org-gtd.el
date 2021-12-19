@@ -95,25 +95,6 @@
 (require 'org-gtd-mode)
 
 ;;;###autoload
-(defun org-gtd-process-inbox ()
-  "Process the GTD inbox."
-  (interactive)
-  (set-buffer (org-gtd--inbox-file))
-  (display-buffer-same-window (org-gtd--inbox-file) '())
-  (delete-other-windows)
-
-  (org-gtd-process-mode t)
-
-  (condition-case err
-      (progn
-        (widen)
-        (goto-char (point-min))
-        (org-next-visible-heading 1)
-        (org-back-to-heading)
-        (org-narrow-to-subtree))
-    (user-error (org-gtd--stop-processing))))
-
-;;;###autoload
 (defun org-gtd-delegate ()
   "Delegate item at point."
   (interactive)
@@ -125,36 +106,6 @@
     (save-excursion
       (goto-char (org-log-beginning t))
       (insert (format "programmatically delegated to %s\n" delegated-to)))))
-
-;;;###autoload
-(defun org-gtd-cancel-project ()
-  "With point on topmost project heading, mark all undone tasks canceled."
-  (interactive)
-  (org-edna-mode -1)
-  (with-org-gtd-context
-      (org-map-entries
-       (lambda ()
-         (when (org-gtd-projects--incomplete-task-p)
-           (let ((org-inhibit-logging 'note))
-             (org-todo "CNCL"))))
-       nil
-       'tree))
-  (org-edna-mode 1))
-
-;;;###autoload
-(defun org-gtd-show-stuck-projects ()
-  "Show all projects that do not have a next action."
-  (interactive)
-  (with-org-gtd-context
-      (org-agenda-list-stuck-projects)))
-
-;;;###autoload
-(defun org-gtd-show-all-next ()
-  "Show all next actions from all agenda files in a single list.
-This assumes all GTD files are also agenda files."
-  (interactive)
-  (with-org-gtd-context
-      (org-todo-list "NEXT")))
 
 (provide 'org-gtd)
 ;;; org-gtd.el ends here

@@ -97,7 +97,7 @@ The provided default is to show the agenda for today and all TODOs marked as
 NEXT or WAIT.  See documentation for `org-agenda-custom-commands' to customize
 this further.
 
-NOTE! The function `org-gtd-daily-agenda' assumes the 'g' shortcut exists.
+NOTE! The function `org-gtd-agenda-daily' assumes the 'g' shortcut exists.
 It's recommended you add to this list without modifying this first entry.  You
 can leverage this customization feature with `org-gtd-mode' or by wrapping your
 own custom functions with `with-org-gtd-context'."

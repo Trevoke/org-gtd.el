@@ -27,6 +27,7 @@
 (defvar org-gtd-process-map (make-sparse-keymap)
   "Keymap for `org-gtd-process-mode', a minor mode.")
 
+;;;###autoload
 (define-minor-mode org-gtd-process-mode
   "Minor mode for org-gtd."
   nil " GPR" org-gtd-process-map
@@ -52,6 +53,25 @@
    ("i" "incubate" org-gtd--incubate)]
   ["Org GTD"
    ("x" "exit early" org-gtd--stop-processing)])
+
+;;;###autoload
+(defun org-gtd-process-inbox ()
+  "Process the GTD inbox."
+  (interactive)
+  (set-buffer (org-gtd--inbox-file))
+  (display-buffer-same-window (org-gtd--inbox-file) '())
+  (delete-other-windows)
+
+  (org-gtd-process-mode t)
+
+  (condition-case err
+      (progn
+        (widen)
+        (goto-char (point-min))
+        (org-next-visible-heading 1)
+        (org-back-to-heading)
+        (org-narrow-to-subtree))
+    (user-error (org-gtd--stop-processing))))
 
 (defun org-gtd--archive ()
   "Process GTD inbox item as a reference item."
