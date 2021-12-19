@@ -44,6 +44,7 @@
 (require 'subr-x)
 (require 'cl-lib)
 (require 'f)
+(require 'transient)
 (require 'org)
 (require 'org-capture)
 (require 'org-element)

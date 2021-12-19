@@ -24,6 +24,8 @@
 ;;
 ;;; Code:
 
+(require 'transient)
+
 (defvar org-gtd-process-map (make-sparse-keymap)
   "Keymap for `org-gtd-process-mode', a minor mode.")
 
@@ -39,7 +41,6 @@
         "\\<org-gtd-process-map>Clarify item.  Finish `\\[org-gtd-choose]'."))
     (setq-local header-line-format nil)))
 
-(require 'transient)
 (transient-define-prefix org-gtd-choose ()
   ["Actionable"
    ("p" "project" org-gtd--project)
