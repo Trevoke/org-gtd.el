@@ -88,6 +88,7 @@ TYPE is one of the org-gtd action types.  This is a private function."
         (org-refile nil nil (car (org-refile-get-targets)))
       (org-refile nil nil nil (org-gtd-refile--prompt type)))))
 
+;;;###autoload
 (defmacro with-org-gtd-refile (type &rest body)
   "Macro to refile specifically within org-gtd context.
 
