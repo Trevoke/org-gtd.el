@@ -6,91 +6,76 @@ This package, and this readme, assume familiarity with GTD. There are many resou
 
 This package provides a system that allows you to capture incoming things into an inbox, then process the inbox and categorize each item based on the GTD categories. It leverages org-agenda to show today's items as well as the NEXT items. It also has a simple project management system, which currently assumes all tasks in a project are sequential.
 
-#+CAPTION: Courtesy of https://xebia.com/blog/peace-of-mind-in-a-state-of-overload/gtd_chart/
-#+NAME: The GTD Workflow
-[[file:doc/gtd_chart.png]]
+#+begin_src
 
-Image courtesy of https://xebia.com/blog/peace-of-mind-in-a-state-of-overload/gtd_chart/
+                                    ┌───────┐
+                                    │"STUFF"│
+                                    └──┬────┘
+                                       │
+                                    ┌──▼────┐
+                                    │IN BOX │
+                                    └──┬────┘
+                                       │                Eliminate    ┌─────────┐
+                                       │              ┌─────────────►│  Trash  │
+                                   ┌───▼────────┐     │              └─────────┘
+                                   │ What is it?│     │
+                                   └───┬────────┘     │ Incubate     ┌─────────┐
+                                       │              │              │ Someday/│
+                                       │              ├─────────────►│ Maybe   │
+┌──────────┐  YES (Multi-Step)    ┌────▼────────┐ NO  │              └─────────┘
+│ Projects │◄─────────────────────┤   Is it     ├─────┤ File
+└─┬────▲───┤                      │ Actionable? │     │              ┌─────────┐
+  │    │   └────────────────────┐ └──────┬──────┘     └─────────────►│Reference│
+  │    │      Review for Actions│        │                           └─────────┘
+┌─▼────┴───┐                    │        │YES
+│ Planning │                    └───────►│
+└──────────┘                             │
+                                  ┌──────▼─────┐     Less than
+                  Delegate        │ What's the │     2 minutes     ┌────────┐
+                     ┌────────────┤Next Action?├──────────────────►│ DO IT  │
+                     │            └───────┬────┘                   └────────┘
+                     │                    │
+                     │                    │  FOR ME
+                     │                    │           Specific Date or Time
+                     │                    ├────────────────────────────┐
+                     │              ASAP  │                            │
+                ┌────▼─────┐           ┌──▼───────┐              ┌─────▼────┐
+                │          │           │          │              │          │
+                │          │           │          │              │          │
+                │          │           │          │              │          │
+                │          │           │          │              │          │
+                │          │           │          │              │          │
+                └──────────┘           └──────────┘              └──────────┘
+                 Waiting For           Next Actions                 Calendar
+#+end_src
+
 ** Updating ~org-gtd~
 Please read the [[./CHANGELOG.org][CHANGELOG]].
 *** 2.0.0 <- 1.1.x
 - rename CANCELED to CNCL
 ** Installing
-This package requires emacs 26.1 or higher.
+This package requires emacs 27.1 or higher.
 *** MELPA, MELPA stable
-
 This package is on MELPA and MELPA stable under the name ~org-gtd~.
-
 *** use-package
-If you're using use-package, here's how you'll want to chain the load order.
-The above configuration options will fit quite nicely in here, too, conveniently.
-
+Just make sure this is loaded after ~org-mode~ like so.
 #+begin_src emacs-lisp
   (use-package org-gtd
     :after org
     :demand t)
-
-  ;; this allows you use `(,org-gtd-directory) for your agenda files
-  (use-package org-agenda
-    :ensure nil
-    :after org-gtd)
-
-  ;; this allows you to use (org-gtd-inbox-path) for your capture destinations
-  (use-package org-capture
-    :ensure nil
-    :after org-gtd)
-
-#+end_src
-
-*** Using use-package with straight.el
-Make sure you match the dependency load order from the previous headline.
-#+begin_src emacs-lisp
-  (use-package org-gtd
-    :after org
-    :straight (:host github :repo "trevoke/org-gtd.el" :branch "master"))
 #+end_src
 *** Manually
 Check out the source code for dependencies and install them.
-
 Then, clone this repo to =~/.emacs.d/packages=
-
 Finally, add this to your config:
-
 #+begin_src emacs-lisp
 (add-to-list 'load-path "~/.emacs.d/packages")
 (require 'org-gtd)
 #+end_src
 ** Configuring
-*** Before first use
-Here is what you need to do before regular usage of ~org-gtd~:
-- read the [[*configuration options for org-gtd][configuration options for org-gtd]] section.
-- Find the ~incubate.org~ file and add some incubation categories as top-level headlines. This is intended to be helpful when opening the file during your recurring reviews. For instance, I use things like this:
-  #+begin_quote
-* To Read
-* To Write
-* To Play
-* To Eat
-* To Visit
-  #+end_quote
 *** configuration options for org-gtd
-**** org-gtd-directory
-This is the directory where ~org-gtd~ will put the files it manages. This code includes the default value.
-#+begin_src emacs-lisp
-  (setq org-gtd-directory "~/gtd/")
-#+end_src
-**** org-gtd-process-item-hooks
-This is a list of decorations you can add to the items when you're done processing them. Examples of functions you could add: ~org-set-effort~, ~org-priority~. This code is the default value.
-#+begin_src emacs-lisp
-(setq org-gtd-process-item-hooks '(org-set-tags-command))
-#+end_src
+The best way to find out about the configuration options for org-gtd is to see the customize group: ~M-x customize-group RET org-gtd~.
 *** required configuration of sub-packages
-**** org-agenda-property
-package: https://github.com/Malabarba/org-agenda-property
-
-REQUIRED: see who an item was delegated to in the agenda
-#+begin_src emacs-lisp
-  (setq org-agenda-property-list '("DELEGATED_TO"))
-#+end_src
 **** org-edna
 package: https://www.nongnu.org/org-edna-el/
 
@@ -99,34 +84,8 @@ REQUIRED: automatically change next TODO to NEXT in a project when you've finish
 (setq org-edna-use-inheritance t)
 (org-edna-mode 1)
 #+end_src
-**** org-agenda
-You need to add the org-gtd-directory to the org-agenda so that you can then leverage org-agenda as part of your GTD flow.
-
-And I recommend adding this agenda custom command to make your life easier.
-#+begin_src emacs-lisp
-  (setq org-agenda-files `(,org-gtd-directory))
-  ;; a useful view to see what can be accomplished today
-  (setq org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT"))))))
-#+end_src
-**** org-capture
-using org-capture makes adding items to the inbox really simple.
-You can configure this however you want, the only true requirement for org-gtd to work is that what you capture into the inbox have a top-level headline.
-
-Note! Since we are calling a function from the ~org-gtd~ package here, it is important that the package be loaded before this line of configuration is executed. If for whatever reason this is a problem for you, you can use something like ~entry (file (lambda () (org-gtd-inbox-path)))~ instead.
-
-#+begin_src emacs-lisp
-  (setq org-capture-templates
-        `(("i" "Inbox"
-           entry (file ,(org-gtd-inbox-path))
-           "* %?\n%U\n\n  %i"
-           :kill-buffer t)
-          ("l" "Todo with link"
-           entry (file ,(org-gtd-inbox-path))
-           "* %?\n%U\n\n  %i\n  %a"
-           :kill-buffer t)))
-#+end_src
-*** Interactive functions
-Here are the public functions ~org-gtd~ provides for you.
+*** Commands
+Here are the commands ~org-gtd~ provides for you.
 
 | name                            | description                                       |
 |---------------------------------+---------------------------------------------------|
@@ -162,7 +121,7 @@ GTD uses one basic axiom: everything that comes your way goes into the inbox. Yo
 
 You have a number of possible choices for each item you process, which I will quickly go over. When you process the inbox, you will see each inbox item, one at a time, with an interface letting you decide what to do with the item (shown below with ~C-h~ for extra information):
 
-[[file:doc/ogpi-1.png]]
+[[file:doc/processing-menu.png]]
 
 - *Quick Action* :: You've taken care of this action just now. Choose this to mark the item as DONΕ and archive it.
 - *Throw out* :: This is not actionable and it's not knowledge for later. Choose this to mark the item as CNCL and archive it.
@@ -179,16 +138,12 @@ When processing each item, the following will happen:
 3. when you move on to the next item, =org-gtd= will add keywords (NEXT, TODO, DONE, etc.) in order to handle the bookkeeping and get you set up with org-agenda and the other provided org-gtd functions.
 
 *** Projects
-A "project" is defined as a top-level org heading with a set of second-level org headings. When you choose "project" and enter the editing mode, create such a headline structure, like in the example just below.
+A "project" is defined as a top-level org heading with a set of second-level org headings. When you choose "project" and enter the editing mode, create such a headline structure, like in the following example.
 
-#+begin_src org-mode
-* project name
-** first task
-** second task
-** last task
-#+end_src
+#+NAME: project as you clarify it.
+[[file:doc/project-processing.png][file:doc/project-processing.png]]
 
-As indicated above, when you are finished creating your headline structure, hit your chosen keybinding to exit the edit mode and move on to processing the next item.
+As indicated above, when you are finished creating your headline structure, hit your chosen keybinding to exit the edit mode (in the above screenshot, ~C-c c~) and move on to processing the next item.
 
 A project is defined as "completed" when all its tasks are marked as DONE.
 A project is defined as "canceled" when its last task is marked as CNCL.

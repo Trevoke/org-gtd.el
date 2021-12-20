@@ -58,7 +58,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(transient org f org-agenda-property org-edna org-plus-contrib use-package)))
+   '(camcorder transient org f org-agenda-property org-edna org-plus-contrib use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
