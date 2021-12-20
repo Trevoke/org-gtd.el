@@ -26,6 +26,7 @@
 
 (require 'transient)
 
+;;;###autoload
 (defvar org-gtd-process-map (make-sparse-keymap)
   "Keymap for `org-gtd-process-mode', a minor mode.")
 
