@@ -42,7 +42,6 @@
         "\\<org-gtd-process-map>Clarify item.  Finish `\\[org-gtd-choose]'."))
     (setq-local header-line-format nil)))
 
-;;;###autoload
 (transient-define-prefix org-gtd-choose ()
   ["Actionable"
    ("p" "project" org-gtd--project)
