@@ -42,8 +42,8 @@ Programmatic wrapper to add org-gtd context to any FUN using `defadvice'.
 Argument R is there to be passed through."
   (with-org-gtd-context (apply fun r)))
 
-(defconst org-gtd--agenda-functions
-  (seq-filter #'commandp (mapcar #'car (apropos "org-agenda-")))
+(defconst org-gtd--agenda-functions (apropos-internal "org-agenda" #'commandp)
+
   "List of commands available to the user through `org-agenda'.
 
 Org-gtd wraps these functions with its own context when `org-gtd-mode'
