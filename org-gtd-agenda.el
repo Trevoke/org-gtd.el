@@ -32,12 +32,14 @@
 
 This is a list of four items, the same type as in `org-stuck-projects'.")
 
+;;;###autoload
 (defun org-gtd-agenda-daily ()
   "Display `org-agenda' customized by org-gtd."
   (interactive)
   (with-org-gtd-context
    (org-agenda nil "g")))
 
+;;;###autoload
 (defun org-gtd-show-all-next ()
   "Show all next actions from all agenda files in a single list.
 This assumes all GTD files are also agenda files."

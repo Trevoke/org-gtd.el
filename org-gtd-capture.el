@@ -25,6 +25,7 @@
 ;;; Code:
 
 (require 'org-capture)
+
 ;;;###autoload
 (defun org-gtd-capture (&optional goto keys)
   "Capture something into the GTD inbox.

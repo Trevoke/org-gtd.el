@@ -42,6 +42,7 @@
         "\\<org-gtd-process-map>Clarify item.  Finish `\\[org-gtd-choose]'."))
     (setq-local header-line-format nil)))
 
+;;;###autoload
 (transient-define-prefix org-gtd-choose ()
   ["Actionable"
    ("p" "project" org-gtd--project)
@@ -75,6 +76,7 @@
         (org-narrow-to-subtree))
     (user-error (org-gtd--stop-processing))))
 
+;;;###autoload
 (defun org-gtd--archive ()
   "Process GTD inbox item as a reference item."
   (interactive)
@@ -82,6 +84,7 @@
   (org-archive-subtree)
   (org-gtd-process-inbox))
 
+;;;###autoload
 (defun org-gtd--project ()
   "Process GTD inbox item by transforming it into a project.
 Allow the user apply user-defined tags from
@@ -98,6 +101,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-gtd-refile--do org-gtd-projects)
   (org-gtd-process-inbox))
 
+;;;###autoload
 (defun org-gtd--calendar ()
   "Process GTD inbox item by scheduling it.
 Allow the user apply user-defined tags from
@@ -109,6 +113,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-gtd-refile--do org-gtd-calendar)
   (org-gtd-process-inbox))
 
+;;;###autoload
 (defun org-gtd--delegate ()
   "Process GTD inbox item by delegating it.
 Allow the user apply user-defined tags from
@@ -121,6 +126,7 @@ the inbox.  Set it as a waiting action and refile to
   (org-gtd-refile--do org-gtd-actions)
   (org-gtd-process-inbox))
 
+;;;###autoload
 (defun org-gtd--incubate ()
   "Process GTD inbox item by incubating it.
 Allow the user apply user-defined tags from
@@ -132,6 +138,7 @@ the inbox.  Refile to any org-gtd incubate target (see manual)."
   (org-gtd-refile--do org-gtd-incubated)
   (org-gtd-process-inbox))
 
+;;;###autoload
 (defun org-gtd--quick-action ()
   "Process GTD inbox item by doing it now.
 Allow the user apply user-defined tags from
@@ -144,6 +151,7 @@ the inbox.  Mark it as done and archive."
   (org-archive-subtree)
   (org-gtd-process-inbox))
 
+;;;###autoload
 (defun org-gtd--single-action ()
   "Process GTD inbox item as a single action.
 Allow the user apply user-defined tags from
@@ -156,6 +164,7 @@ the inbox.  Set as a NEXT action and refile to
   (org-gtd-refile--do org-gtd-actions)
   (org-gtd-process-inbox))
 
+;;;###autoload
 (defun org-gtd--trash ()
   "Mark GTD inbox item as cancelled and archive it."
   (interactive)
@@ -164,6 +173,7 @@ the inbox.  Set as a NEXT action and refile to
   (org-archive-subtree)
   (org-gtd-process-inbox))
 
+;;;###autoload
 (defun org-gtd--stop-processing ()
   "Private function.
 
