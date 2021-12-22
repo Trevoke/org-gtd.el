@@ -1,15 +1,40 @@
 This is README.info, produced by makeinfo version 6.7 from README.texi.
 
+INFO-DIR-SECTION Emacs
+START-INFO-DIR-ENTRY
+* Org GTD: (org-gtd).   An opinionated GTD flow implemented in org-mode.
+END-INFO-DIR-ENTRY
+
 
-File: README.info,  Node: Top,  Next: org-gtd,  Up: (dir)
+File: README.info,  Node: Top,  Next: Org GTD,  Up: (dir)
+
+Org GTD User Manual
+*******************
+
+Org GTD is an attempt to implement the GTD flow described in the GTD
+book as faithfully as possible.
+
+This manual is for Org GtD version 2.0.
+
+     Copyright (C) 2018-2021 Aldric Giacomoni <trevoke@gmail.com>
+
+     You can redistribute this document and/or modify it under the terms
+     of the GNU General Public License as published by the Free Software
+     Foundation, either version 3 of the License, or (at your option)
+     any later version.
+
+     This document is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
 
 * Menu:
 
-* org-gtd::
+* Org GTD::
 
 — The Detailed Node Listing —
 
-org-gtd
+Org GTD
 
 * Summary::
 * Updating org-gtd::
@@ -22,17 +47,20 @@ Updating ‘org-gtd’
 
 * 2.0.0 <- 1.1.x: 200 <- 11x.
 
+
 Installing
 
 * MELPA, MELPA stable: MELPA MELPA stable.
 * use-package::
 * Manually::
 
+
 Configuring
 
 * configuration options for org-gtd::
 * required configuration of sub-packages::
 * Commands::
+
 
 Using
 
@@ -41,15 +69,17 @@ Using
 * Agenda::
 * Show next actions::
 
+
 Troubleshooting
 
 * Projects without a NEXT item::
 
 
-
-File: README.info,  Node: org-gtd,  Prev: Top,  Up: Top
 
-1 org-gtd
+
+File: README.info,  Node: Org GTD,  Prev: Top,  Up: Top
+
+1 Org GTD
 *********
 
 * Menu:
@@ -62,7 +92,7 @@ File: README.info,  Node: org-gtd,  Prev: Top,  Up: Top
 * Troubleshooting::
 
 
-File: README.info,  Node: Summary,  Next: Updating org-gtd,  Up: org-gtd
+File: README.info,  Node: Summary,  Next: Updating org-gtd,  Up: Org GTD
 
 1.1 Summary
 ===========
@@ -70,9 +100,9 @@ File: README.info,  Node: Summary,  Next: Updating org-gtd,  Up: org-gtd
 This package tries to replicate as closely as possible the GTD workflow
 (see diagram below).
 
-   This package, and this readme, assume familiarity with GTD.  There
-are many resources out there to learn how to use the framework.  If you
-are new to GTD, this package may be unpleasant to use.
+   This package, and this documentation, assume familiarity with GTD.
+There are many resources out there to learn how to use the framework.
+If you are new to GTD, this package may be unpleasant to use.
 
    This package provides a system that allows you to capture incoming
 things into an inbox, then process the inbox and categorize each item
@@ -121,7 +151,7 @@ sequential.
                       Waiting For           Next Actions                 Calendar
 
 
-File: README.info,  Node: Updating org-gtd,  Next: Installing,  Prev: Summary,  Up: org-gtd
+File: README.info,  Node: Updating org-gtd,  Next: Installing,  Prev: Summary,  Up: Org GTD
 
 1.2 Updating ‘org-gtd’
 ======================
@@ -139,7 +169,7 @@ File: README.info,  Node: 200 <- 11x,  Up: Updating org-gtd
    • rename CANCELED to CNCL
 
 
-File: README.info,  Node: Installing,  Next: Configuring,  Prev: Updating org-gtd,  Up: org-gtd
+File: README.info,  Node: Installing,  Next: Configuring,  Prev: Updating org-gtd,  Up: Org GTD
 
 1.3 Installing
 ==============
@@ -182,7 +212,7 @@ config:
      (require 'org-gtd)
 
 
-File: README.info,  Node: Configuring,  Next: Using,  Prev: Installing,  Up: org-gtd
+File: README.info,  Node: Configuring,  Next: Using,  Prev: Installing,  Up: Org GTD
 
 1.4 Configuring
 ===============
@@ -208,14 +238,22 @@ File: README.info,  Node: required configuration of sub-packages,  Next: Command
 1.4.2 required configuration of sub-packages
 --------------------------------------------
 
-  1. org-edna
+* Menu:
 
-     package: <https://www.nongnu.org/org-edna-el/>
+* org-edna::
 
-     REQUIRED: automatically change next TODO to NEXT in a project when
-     you’ve finished the current task.
-          (setq org-edna-use-inheritance t)
-          (org-edna-mode 1)
+
+File: README.info,  Node: org-edna,  Up: required configuration of sub-packages
+
+org-edna
+........
+
+package: <https://www.nongnu.org/org-edna-el/>
+
+   REQUIRED: automatically change next TODO to NEXT in a project when
+you’ve finished the current task.
+     (setq org-edna-use-inheritance t)
+     (org-edna-mode 1)
 
 
 File: README.info,  Node: Commands,  Prev: required configuration of sub-packages,  Up: Configuring
@@ -239,7 +277,7 @@ Here are the commands ‘org-gtd’ provides for you.
                    ("C-c c" . org-gtd-clarify-finalize))
 
 
-File: README.info,  Node: Using,  Next: Troubleshooting,  Prev: Configuring,  Up: org-gtd
+File: README.info,  Node: Using,  Next: Troubleshooting,  Prev: Configuring,  Up: Org GTD
 
 1.5 Using
 =========
@@ -338,15 +376,22 @@ project, you will have to do so manually.
 feature) completed and canceled projects by using
 ‘org-gtd-archive-completed-items’.
 
-  1. Multiple files / refile targets
+* Menu:
 
-     If you would like to add a new refile targets, it’s simple.  Add a
-     top-level heading and make sure it has the following properties
-     drawer:
-          :PROPERTIES:
-          :TRIGGER: next-sibling todo!(NEXT)
-          :ORG_GTD: Projects
-          :END:
+* Multiple files / refile targets::
+
+
+File: README.info,  Node: Multiple files / refile targets,  Up: Projects
+
+Multiple files / refile targets
+...............................
+
+If you would like to add a new refile targets, it’s simple.  Add a
+top-level heading and make sure it has the following properties drawer:
+     :PROPERTIES:
+     :TRIGGER: next-sibling todo!(NEXT)
+     :ORG_GTD: Projects
+     :END:
 
 
 File: README.info,  Node: Agenda,  Next: Show next actions,  Prev: Projects,  Up: Using
@@ -371,7 +416,7 @@ actions ( ‘C-c d n’ ).
  [image src="doc/show-all-next.png" ]
 
 
-File: README.info,  Node: Troubleshooting,  Prev: Using,  Up: org-gtd
+File: README.info,  Node: Troubleshooting,  Prev: Using,  Up: Org GTD
 
 1.6 Troubleshooting
 ===================
@@ -393,28 +438,28 @@ not surface and help you finish.
 
 
 Tag Table:
-Node: Top73
-Node: org-gtd665
-Node: Summary849
-Node: Updating org-gtd5577
-Node: 200 <- 11x5763
-Node: Installing5901
-Node: MELPA MELPA stable6158
-Node: use-package6369
-Node: Manually6607
-Node: Configuring6937
-Node: configuration options for org-gtd7162
-Node: required configuration of sub-packages7511
-Ref: org-edna7752
-Node: Commands8001
-Node: Using8678
-Node: Regular use8864
-Node: Projects11084
-Ref: Multiple files / refile targets12330
-Node: Agenda12633
-Node: Show next actions12866
-Node: Troubleshooting13132
-Node: Projects without a NEXT item13289
+Node: Top210
+Node: Org GTD1555
+Node: Summary1739
+Node: Updating org-gtd6472
+Node: 200 <- 11x6658
+Node: Installing6796
+Node: MELPA MELPA stable7053
+Node: use-package7264
+Node: Manually7502
+Node: Configuring7832
+Node: configuration options for org-gtd8057
+Node: required configuration of sub-packages8406
+Node: org-edna8665
+Node: Commands8984
+Node: Using9661
+Node: Regular use9847
+Node: Projects12067
+Node: Multiple files / refile targets13354
+Node: Agenda13730
+Node: Show next actions13963
+Node: Troubleshooting14229
+Node: Projects without a NEXT item14386
 
 End Tag Table
 

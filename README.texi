@@ -1,31 +1,58 @@
 \input texinfo    @c -*- texinfo -*-
 @c %**start of header
 @setfilename README.info
-@settitle
+@settitle Org GTD User Manual
 @documentencoding UTF-8
 @documentlanguage en
 @c %**end of header
 
+@dircategory Emacs
+@direntry
+* Org GTD: (org-gtd).   An opinionated GTD flow implemented in org-mode.
+@end direntry
+
 @finalout
 @titlepage
-@title
-@author trevoke
+@title Org GTD User Manual
+@subtitle for version 2.0
+@author Aldric Giacomoni
 @end titlepage
 
 @contents
 
 @ifnottex
 @node Top
-@top
+@top Org GTD User Manual
+
+Org GTD is an attempt to implement the GTD flow described in the GTD
+book as faithfully as possible.
+
+@noindent
+This manual is for Org GtD version 2.0.
+
+@quotation
+Copyright (C) 2018-2021 Aldric Giacomoni <trevoke@@gmail.com>
+
+You can redistribute this document and/or modify it under the terms
+of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any
+later version.
+
+This document is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE@.  See the GNU
+General Public License for more details.
+
+@end quotation
 @end ifnottex
 
 @menu
-* org-gtd::
+* Org GTD::
 
 @detailmenu
 --- The Detailed Node Listing ---
 
-org-gtd
+Org GTD
 
 * Summary::
 * Updating @code{org-gtd}::
@@ -38,17 +65,20 @@ Updating @code{org-gtd}
 
 * 2.0.0 <- 1.1.x: 200 <- 11x.
 
+
 Installing
 
 * MELPA, MELPA stable: MELPA MELPA stable.
 * use-package::
 * Manually::
 
+
 Configuring
 
 * configuration options for org-gtd::
 * required configuration of sub-packages::
 * Commands::
+
 
 Using
 
@@ -57,15 +87,17 @@ Using
 * Agenda::
 * Show next actions::
 
+
 Troubleshooting
 
 * Projects without a NEXT item::
 
+
 @end detailmenu
 @end menu
 
-@node org-gtd
-@chapter org-gtd
+@node Org GTD
+@chapter Org GTD
 
 @menu
 * Summary::
@@ -81,7 +113,7 @@ Troubleshooting
 
 This package tries to replicate as closely as possible the GTD workflow (see diagram below).
 
-This package, and this readme, assume familiarity with GTD@. There are many resources out there to learn how to use the framework. If you are new to GTD, this package may be unpleasant to use.
+This package, and this documentation, assume familiarity with GTD@. There are many resources out there to learn how to use the framework. If you are new to GTD, this package may be unpleasant to use.
 
 This package provides a system that allows you to capture incoming things into an inbox, then process the inbox and categorize each item based on the GTD categories. It leverages org-agenda to show today's items as well as the NEXT items. It also has a simple project management system, which currently assumes all tasks in a project are sequential.
 @example
@@ -193,10 +225,12 @@ The best way to find out about the configuration options for org-gtd is to see t
 @node required configuration of sub-packages
 @subsection required configuration of sub-packages
 
-@enumerate
-@item
-@anchor{org-edna}org-edna
+@menu
+* org-edna::
+@end menu
 
+@node org-edna
+@unnumberedsubsubsec org-edna
 
 package: @uref{https://www.nongnu.org/org-edna-el/}
 
@@ -205,7 +239,6 @@ REQUIRED: automatically change next TODO to NEXT in a project when you've finish
 (setq org-edna-use-inheritance t)
 (org-edna-mode 1)
 @end lisp
-@end enumerate
 
 @node Commands
 @subsection Commands
@@ -294,10 +327,12 @@ DO NOTE: it is surprisingly difficult to add a custom note when canceling, so if
 
 You can archive (move to the archive file, using the org-mode feature) completed and canceled projects by using @code{org-gtd-archive-completed-items}.
 
-@enumerate
-@item
-@anchor{Multiple files / refile targets}Multiple files / refile targets
+@menu
+* Multiple files / refile targets::
+@end menu
 
+@node Multiple files / refile targets
+@unnumberedsubsubsec Multiple files / refile targets
 
 If you would like to add a new refile targets, it's simple. Add a top-level heading and make sure it has the following properties drawer:
 @example
@@ -306,7 +341,6 @@ If you would like to add a new refile targets, it's simple. Add a top-level head
 :ORG_GTD: Projects
 :END:
 @end example
-@end enumerate
 
 @node Agenda
 @subsection Agenda

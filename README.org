@@ -1,8 +1,46 @@
-* org-gtd
+#+TITLE: Org GTD User Manual
+:PREAMBLE:
+#+AUTHOR: Aldric Giacomoni
+#+EMAIL: trevoke@gmail.com
+#+DATE: 2015-{{{year}}}
+#+LANGUAGE: en
+
+#+TEXINFO_DIR_CATEGORY: Emacs
+#+TEXINFO_DIR_TITLE: Org GTD: (org-gtd).
+#+TEXINFO_DIR_DESC: An opinionated GTD flow implemented in org-mode.
+#+SUBTITLE: for version 2.0
+
+#+TEXINFO_DEFFN: t
+#+OPTIONS: H:4 num:3 toc:2
+#+PROPERTY: header-args :eval never
+#+MACRO: year (eval (format-time-string "%Y"))
+
+Org GTD is an attempt to implement the GTD flow described in the GTD
+book as faithfully as possible.
+
+#+TEXINFO: @noindent
+This manual is for Org GtD version 2.0.
+
+#+BEGIN_QUOTE
+Copyright (C) 2018-{{{year}}} Aldric Giacomoni <trevoke@gmail.com>
+
+You can redistribute this document and/or modify it under the terms
+of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any
+later version.
+
+This document is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+#+END_QUOTE
+:END:
+
+* Org GTD
 ** Summary
 This package tries to replicate as closely as possible the GTD workflow (see diagram below).
 
-This package, and this readme, assume familiarity with GTD. There are many resources out there to learn how to use the framework. If you are new to GTD, this package may be unpleasant to use.
+This package, and this documentation, assume familiarity with GTD. There are many resources out there to learn how to use the framework. If you are new to GTD, this package may be unpleasant to use.
 
 This package provides a system that allows you to capture incoming things into an inbox, then process the inbox and categorize each item based on the GTD categories. It leverages org-agenda to show today's items as well as the NEXT items. It also has a simple project management system, which currently assumes all tasks in a project are sequential.
 #+begin_example
