@@ -1,34 +1,48 @@
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
+;; (defvar bootstrap-version)
+;; (let ((bootstrap-file
+;;        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+;;       (bootstrap-version 5))
+;;   (unless (file-exists-p bootstrap-file)
+;;     (with-current-buffer
+;;         (url-retrieve-synchronously
+;;          "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+;;          'silent 'inhibit-cookies)
+;;       (goto-char (point-max))
+;;       (eval-print-last-sexp)))
+;;   (load bootstrap-file nil 'nomessage))
 
-(straight-use-package '(org-gtd :type git :host github :repo "trevoke/org-gtd.el" :branch "2.0.0"))
+(require 'package)
+
+(unless (package-installed-p 'quelpa)
+  (with-temp-buffer
+    (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
+    (eval-buffer)
+    (quelpa-self-upgrade)))
+
+(quelpa
+ '(quelpa-use-package
+   :fetcher git
+   :url "https://github.com/quelpa/quelpa-use-package.git"))
+(require 'quelpa-use-package)
+
+(use-package org-edna)
+(use-package org)
+
+(use-package org-gtd
+               :quelpa (org-gtd :fetcher github-ssh :repo
+               "trevoke/org-gtd.el" :branch "2.0.0"))
 
 (show-paren-mode)
 
-;; (straight-use-package 'use-package)
-;; (setq use-package-always-demand t
-;;       straight-use-package-by-default t)
-
-
-
-;; (use-package org-gtd
-;;   :after 'org
-;;   :straight (:type git :host github :repo "trevoke/org-gtd.el" :branch "2.0.0"))
-
-
-;; :bind
-  ;; (("C-c d c" . org-gtd-capture)
-  ;;  ("C-c d p" . org-gtd-process-inbox)
-  ;;  ("C-c d a" . org-gtd-agenda-daily)
-  ;;  :map org-gtd-process-map
-  ;;        ("C-c c" . org-gtd-choose)))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages '(org-gtd quelpa-use-package)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )

@@ -1,0 +1,337 @@
+\input texinfo    @c -*- texinfo -*-
+@c %**start of header
+@setfilename README.info
+@settitle
+@documentencoding UTF-8
+@documentlanguage en
+@c %**end of header
+
+@finalout
+@titlepage
+@title
+@author trevoke
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top
+@end ifnottex
+
+@menu
+* org-gtd::
+
+@detailmenu
+--- The Detailed Node Listing ---
+
+org-gtd
+
+* Summary::
+* Updating @code{org-gtd}::
+* Installing::
+* Configuring::
+* Using::
+* Troubleshooting::
+
+Updating @code{org-gtd}
+
+* 2.0.0 <- 1.1.x: 200 <- 11x.
+
+Installing
+
+* MELPA, MELPA stable: MELPA MELPA stable.
+* use-package::
+* Manually::
+
+Configuring
+
+* configuration options for org-gtd::
+* required configuration of sub-packages::
+* Commands::
+
+Using
+
+* Regular use::
+* Projects::
+* Agenda::
+* Show next actions::
+
+Troubleshooting
+
+* Projects without a NEXT item::
+
+@end detailmenu
+@end menu
+
+@node org-gtd
+@chapter org-gtd
+
+@menu
+* Summary::
+* Updating @code{org-gtd}::
+* Installing::
+* Configuring::
+* Using::
+* Troubleshooting::
+@end menu
+
+@node Summary
+@section Summary
+
+This package tries to replicate as closely as possible the GTD workflow (see diagram below).
+
+This package, and this readme, assume familiarity with GTD@. There are many resources out there to learn how to use the framework. If you are new to GTD, this package may be unpleasant to use.
+
+This package provides a system that allows you to capture incoming things into an inbox, then process the inbox and categorize each item based on the GTD categories. It leverages org-agenda to show today's items as well as the NEXT items. It also has a simple project management system, which currently assumes all tasks in a project are sequential.
+@example
+                                    ┌───────┐
+                                    │"STUFF"│
+                                    └──┬────┘
+                                       │
+                                    ┌──▼────┐
+                                    │IN BOX │
+                                    └──┬────┘
+                                       │                Eliminate    ┌─────────┐
+                                       │              ┌─────────────►│  Trash  │
+                                   ┌───▼────────┐     │              └─────────┘
+                                   │ What is it?│     │
+                                   └───┬────────┘     │ Incubate     ┌─────────┐
+                                       │              │              │ Someday/│
+                                       │              ├─────────────►│ Maybe   │
+┌──────────┐  YES (Multi-Step)    ┌────▼────────┐ NO  │              └─────────┘
+│ Projects │◄─────────────────────┤   Is it     ├─────┤ File
+└─┬────▲───┤                      │ Actionable? │     │              ┌─────────┐
+  │    │   └────────────────────┐ └──────┬──────┘     └─────────────►│Reference│
+  │    │      Review for Actions│        │                           └─────────┘
+┌─▼────┴───┐                    │        │YES
+│ Planning │                    └───────►│
+└──────────┘                             │
+                                  ┌──────▼─────┐     Less than
+                  Delegate        │ What's the │     2 minutes     ┌────────┐
+                     ┌────────────┤Next Action?├──────────────────►│ DO IT  │
+                     │            └───────┬────┘                   └────────┘
+                     │                    │
+                     │                    │  FOR ME
+                     │                    │           Specific Date or Time
+                     │                    ├────────────────────────────┐
+                     │              ASAP  │                            │
+                ┌────▼─────┐           ┌──▼───────┐              ┌─────▼────┐
+                │          │           │          │              │          │
+                │          │           │          │              │          │
+                │          │           │          │              │          │
+                │          │           │          │              │          │
+                │          │           │          │              │          │
+                └──────────┘           └──────────┘              └──────────┘
+                 Waiting For           Next Actions                 Calendar
+@end example
+
+@node Updating @code{org-gtd}
+@section Updating @code{org-gtd}
+
+@menu
+* 2.0.0 <- 1.1.x: 200 <- 11x.
+@end menu
+
+@node 200 <- 11x
+@subsection 2.0.0 <- 1.1.x
+
+@itemize
+@item
+rename CANCELED to CNCL
+@end itemize
+
+@node Installing
+@section Installing
+
+This package requires emacs 27.1 or higher.
+
+@menu
+* MELPA, MELPA stable: MELPA MELPA stable.
+* use-package::
+* Manually::
+@end menu
+
+@node MELPA MELPA stable
+@subsection MELPA, MELPA stable
+
+This package is on MELPA and MELPA stable under the name @code{org-gtd}.
+
+@node use-package
+@subsection use-package
+
+Just make sure this is loaded after @code{org-mode} like so.
+@lisp
+(use-package org-gtd :after org)
+@end lisp
+
+@node Manually
+@subsection Manually
+
+Check out the source code for dependencies and install them.
+Then, clone this repo to @samp{~/.emacs.d/packages}
+Finally, add this to your config:
+@lisp
+(add-to-list 'load-path "~/.emacs.d/packages")
+(require 'org-gtd)
+@end lisp
+
+@node Configuring
+@section Configuring
+
+@menu
+* configuration options for org-gtd::
+* required configuration of sub-packages::
+* Commands::
+@end menu
+
+@node configuration options for org-gtd
+@subsection configuration options for org-gtd
+
+The best way to find out about the configuration options for org-gtd is to see the customize group: @code{M-x customize-group RET org-gtd}.
+
+@node required configuration of sub-packages
+@subsection required configuration of sub-packages
+
+@enumerate
+@item
+@anchor{org-edna}org-edna
+
+
+package: @uref{https://www.nongnu.org/org-edna-el/}
+
+REQUIRED: automatically change next TODO to NEXT in a project when you've finished the current task.
+@lisp
+(setq org-edna-use-inheritance t)
+(org-edna-mode 1)
+@end lisp
+@end enumerate
+
+@node Commands
+@subsection Commands
+
+Here are the commands @code{org-gtd} provides for you.
+
+Here's what Ι have bound, for instance. (this is using the @code{use-package} API).
+
+@lisp
+(("C-c d c" . org-gtd-capture)
+ ("C-c d a" . org-agenda-list)
+ ("C-c d p" . org-gtd-process-inbox)
+ ("C-c d n" . org-gtd-show-all-next)
+ ("C-c d s" . org-gtd-show-stuck-projects))
+
+;; this is used in a very specific minor mode, so you can have a pretty common keybinding.
+:bind (:map org-gtd-command-map
+              ("C-c c" . org-gtd-clarify-finalize))
+@end lisp
+
+@node Using
+@section Using
+
+@menu
+* Regular use::
+* Projects::
+* Agenda::
+* Show next actions::
+@end menu
+
+@node Regular use
+@subsection Regular use
+
+I will assume you have used the suggested keybindings above.
+
+GTD uses one basic axiom: everything that comes your way goes into the inbox. You do this with @code{C-c d c}. You also have to regularly process the inbox, which you do with @code{C-c d p}.
+
+You have a number of possible choices for each item you process, which I will quickly go over. When you process the inbox, you will see each inbox item, one at a time, with an interface letting you decide what to do with the item (shown below with @code{C-h} for extra information):
+
+@image{doc/processing-menu,,,,png}
+
+@table @asis
+@item @strong{Quick Action}
+You've taken care of this action just now. Choose this to mark the item as DONΕ and archive it.
+@item @strong{Throw out}
+This is not actionable and it's not knowledge for later. Choose this to mark the item as CNCL and archive it.
+@item @strong{Project}
+This is a multi-step action. I'll describe how to handle these below.
+@item @strong{Calendar}
+This is a single item to be done at a given date or time. You'll be presented with org-mode's date picker, then it'll refile the item. You'll find this in the agenda later.
+@item @strong{Delegate}
+Let someone else do this. Write the name of the person doing it, and choose a time to check up on that item.
+@item @strong{Single action}
+This is a one-off to be done when possible. You can add tags to help you.
+@item @strong{Reference}
+This is knowledge to be stored away. I'll describe how to handle these below.
+@item @strong{Incubate}
+no action now, review later
+@end table
+
+When processing each item, the following will happen:
+@enumerate
+@item
+You'll enter an editing mode where you can refine the wording, create additional sub-headlines, add your own tags and other such metadata
+@item
+You'll hit a keybinding of your choice (recommended: @code{C-c c}, see config below) to confirm your work and move on to the next item
+@item
+when you move on to the next item, @samp{org-gtd} will add keywords (NEXT, TODO, DONE, etc.) in order to handle the bookkeeping and get you set up with org-agenda and the other provided org-gtd functions.
+@end enumerate
+
+@node Projects
+@subsection Projects
+
+A "project" is defined as a top-level org heading with a set of second-level org headings. When you choose "project" and enter the editing mode, create such a headline structure, like in the following example.
+
+@uref{doc/project-processing.png, file:doc/project-processing.png}
+
+As indicated above, when you are finished creating your headline structure, hit your chosen keybinding to exit the edit mode (in the above screenshot, @code{C-c c}) and move on to processing the next item.
+
+A project is defined as "completed" when all its tasks are marked as DONE@.
+A project is defined as "canceled" when its last task is marked as CNCL@.
+
+You can cancel a project by calling @code{org-gtd-agenda-cancel-project} from the agenda view, when the point is on the next task of the project.
+
+DO NOTE: it is surprisingly difficult to add a custom note when canceling, so if you want to add a note explaining why you canceled the project, you will have to do so manually.
+
+You can archive (move to the archive file, using the org-mode feature) completed and canceled projects by using @code{org-gtd-archive-completed-items}.
+
+@enumerate
+@item
+@anchor{Multiple files / refile targets}Multiple files / refile targets
+
+
+If you would like to add a new refile targets, it's simple. Add a top-level heading and make sure it has the following properties drawer:
+@example
+:PROPERTIES:
+:TRIGGER: next-sibling todo!(NEXT)
+:ORG_GTD: Projects
+:END:
+@end example
+@end enumerate
+
+@node Agenda
+@subsection Agenda
+
+Here's what the agenda may look like when you've processed the inbox a bit.
+
+@image{doc/agenda,,,,png}
+
+@node Show next actions
+@subsection Show next actions
+
+One of the ways to see what's next for you to do is to see all the next actions ( @code{C-c d n} ).
+
+@image{doc/show-all-next,,,,png}
+
+@node Troubleshooting
+@section Troubleshooting
+
+@menu
+* Projects without a NEXT item::
+@end menu
+
+@node Projects without a NEXT item
+@subsection Projects without a NEXT item
+
+Sometimes things break. Use @code{C-c d s} to find all projects that don't have a NEXT item, which is to say, all projects that the package will not surface and help you finish.
+
+@bye
