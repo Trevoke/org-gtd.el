@@ -6,10 +6,9 @@
 #+LANGUAGE: en
 
 #+TEXINFO_DIR_CATEGORY: Emacs
-#+TEXINFO_DIR_TITLE: Org GTD: (org-gtd).
-#+TEXINFO_DIR_DESC: An opinionated GTD flow implemented in org-mode.
+#+TEXINFO_DIR_TITLE: Org GTD: (org-gtd)
+#+TEXINFO_DIR_DESC: An opinionated GTD flow implemented in org-mode
 #+SUBTITLE: for version 2.0
-
 #+TEXINFO_DEFFN: t
 #+OPTIONS: H:4 num:3 toc:2
 #+PROPERTY: header-args :eval never
@@ -21,7 +20,14 @@ book as faithfully as possible.
 #+TEXINFO: @noindent
 This manual is for Org GtD version 2.0.
 
-#+BEGIN_QUOTE
+@copying
+
+:END:
+
+* Copying
+:PROPERTIES:
+:copying:  t
+:END:
 Copyright (C) 2018-{{{year}}} Aldric Giacomoni <trevoke@gmail.com>
 
 You can redistribute this document and/or modify it under the terms
@@ -33,8 +39,6 @@ This document is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 General Public License for more details.
-#+END_QUOTE
-:END:
 
 * Org GTD
 ** Summary

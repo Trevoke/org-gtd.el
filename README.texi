@@ -6,6 +6,20 @@
 @documentlanguage en
 @c %**end of header
 
+@copying
+Copyright (C) 2018-2021 Aldric Giacomoni <trevoke@@gmail.com>
+
+You can redistribute this document and/or modify it under the terms
+of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any
+later version.
+
+This document is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE@.  See the GNU
+General Public License for more details.
+@end copying
+
 @dircategory Emacs
 @direntry
 * Org GTD: (org-gtd).   An opinionated GTD flow implemented in org-mode.
@@ -16,6 +30,9 @@
 @title Org GTD User Manual
 @subtitle for version 2.0
 @author Aldric Giacomoni
+@page
+@vskip 0pt plus 1filll
+@insertcopying
 @end titlepage
 
 @contents
@@ -30,20 +47,7 @@ book as faithfully as possible.
 @noindent
 This manual is for Org GtD version 2.0.
 
-@quotation
-Copyright (C) 2018-2021 Aldric Giacomoni <trevoke@@gmail.com>
-
-You can redistribute this document and/or modify it under the terms
-of the GNU General Public License as published by the Free Software
-Foundation, either version 3 of the License, or (at your option) any
-later version.
-
-This document is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE@.  See the GNU
-General Public License for more details.
-
-@end quotation
+@@copying
 @end ifnottex
 
 @menu

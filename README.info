@@ -1,5 +1,16 @@
 This is README.info, produced by makeinfo version 6.7 from README.texi.
 
+Copyright (C) 2018-2021 Aldric Giacomoni <trevoke@gmail.com>
+
+   You can redistribute this document and/or modify it under the terms
+of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any
+later version.
+
+   This document is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
 INFO-DIR-SECTION Emacs
 START-INFO-DIR-ENTRY
 * Org GTD: (org-gtd).   An opinionated GTD flow implemented in org-mode.
@@ -16,17 +27,7 @@ book as faithfully as possible.
 
 This manual is for Org GtD version 2.0.
 
-     Copyright (C) 2018-2021 Aldric Giacomoni <trevoke@gmail.com>
-
-     You can redistribute this document and/or modify it under the terms
-     of the GNU General Public License as published by the Free Software
-     Foundation, either version 3 of the License, or (at your option)
-     any later version.
-
-     This document is distributed in the hope that it will be useful,
-     but WITHOUT ANY WARRANTY; without even the implied warranty of
-     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+   @copying
 
 * Menu:
 
@@ -438,28 +439,28 @@ not surface and help you finish.
 
 
 Tag Table:
-Node: Top210
-Node: Org GTD1595
-Node: Summary1819
-Node: Updating org-gtd6552
-Node: 200 <- 11x6738
-Node: Installing6876
-Node: MELPA MELPA stable7133
-Node: use-package7344
-Node: Manually7582
-Node: Configuring7912
-Node: configuration options for org-gtd8137
-Node: required configuration of sub-packages8486
-Node: org-edna8745
-Node: Commands9064
-Node: Using9741
-Node: Regular use9927
-Node: Projects12147
-Node: Multiple files / refile targets13434
-Node: Agenda13810
-Node: Show next actions14043
-Node: Troubleshooting14309
-Node: Projects without a NEXT item14466
+Node: Top734
+Node: Org GTD1568
+Node: Summary1792
+Node: Updating org-gtd6525
+Node: 200 <- 11x6711
+Node: Installing6849
+Node: MELPA MELPA stable7106
+Node: use-package7317
+Node: Manually7555
+Node: Configuring7885
+Node: configuration options for org-gtd8110
+Node: required configuration of sub-packages8459
+Node: org-edna8718
+Node: Commands9037
+Node: Using9714
+Node: Regular use9900
+Node: Projects12120
+Node: Multiple files / refile targets13407
+Node: Agenda13783
+Node: Show next actions14016
+Node: Troubleshooting14282
+Node: Projects without a NEXT item14439
 
 End Tag Table
 
