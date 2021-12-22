@@ -36,7 +36,7 @@ This manual is for Org GtD version 2.0.
 
 Org GTD
 
-* Summary::
+* Summary::                      quick intro to GTD
 * Updating org-gtd::
 * Installing::
 * Configuring::
@@ -84,7 +84,7 @@ File: README.info,  Node: Org GTD,  Prev: Top,  Up: Top
 
 * Menu:
 
-* Summary::
+* Summary::                      quick intro to GTD
 * Updating org-gtd::
 * Installing::
 * Configuring::
@@ -439,27 +439,27 @@ not surface and help you finish.
 
 Tag Table:
 Node: Top210
-Node: Org GTD1555
-Node: Summary1739
-Node: Updating org-gtd6472
-Node: 200 <- 11x6658
-Node: Installing6796
-Node: MELPA MELPA stable7053
-Node: use-package7264
-Node: Manually7502
-Node: Configuring7832
-Node: configuration options for org-gtd8057
-Node: required configuration of sub-packages8406
-Node: org-edna8665
-Node: Commands8984
-Node: Using9661
-Node: Regular use9847
-Node: Projects12067
-Node: Multiple files / refile targets13354
-Node: Agenda13730
-Node: Show next actions13963
-Node: Troubleshooting14229
-Node: Projects without a NEXT item14386
+Node: Org GTD1595
+Node: Summary1819
+Node: Updating org-gtd6552
+Node: 200 <- 11x6738
+Node: Installing6876
+Node: MELPA MELPA stable7133
+Node: use-package7344
+Node: Manually7582
+Node: Configuring7912
+Node: configuration options for org-gtd8137
+Node: required configuration of sub-packages8486
+Node: org-edna8745
+Node: Commands9064
+Node: Using9741
+Node: Regular use9927
+Node: Projects12147
+Node: Multiple files / refile targets13434
+Node: Agenda13810
+Node: Show next actions14043
+Node: Troubleshooting14309
+Node: Projects without a NEXT item14466
 
 End Tag Table
 

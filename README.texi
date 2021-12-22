@@ -54,7 +54,7 @@ General Public License for more details.
 
 Org GTD
 
-* Summary::
+* Summary::                      quick intro to GTD
 * Updating @code{org-gtd}::
 * Installing::
 * Configuring::
@@ -100,7 +100,7 @@ Troubleshooting
 @chapter Org GTD
 
 @menu
-* Summary::
+* Summary::                      quick intro to GTD
 * Updating @code{org-gtd}::
 * Installing::
 * Configuring::

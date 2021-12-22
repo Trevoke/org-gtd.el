@@ -24,6 +24,7 @@
 ;;
 ;;; Code:
 
+(require 'winner)
 (require 'org-agenda)
 
 (defconst org-gtd-stuck-projects

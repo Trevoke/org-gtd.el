@@ -38,6 +38,9 @@ General Public License for more details.
 
 * Org GTD
 ** Summary
+:PROPERTIES:
+:DESCRIPTION: quick intro to GTD
+:END:
 This package tries to replicate as closely as possible the GTD workflow (see diagram below).
 
 This package, and this documentation, assume familiarity with GTD. There are many resources out there to learn how to use the framework. If you are new to GTD, this package may be unpleasant to use.
