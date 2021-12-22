@@ -1,4 +1,4 @@
-This is README.info, produced by makeinfo version 6.7 from README.texi.
+This is org-gtd.info, produced by makeinfo version 6.7 from README.texi.
 
 Copyright (C) 2018-2021 Aldric Giacomoni <trevoke@gmail.com>
 
@@ -17,7 +17,7 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
-File: README.info,  Node: Top,  Next: Org GTD,  Up: (dir)
+File: org-gtd.info,  Node: Top,  Next: Org GTD,  Up: (dir)
 
 Org GTD User Manual
 *******************
@@ -78,7 +78,7 @@ Troubleshooting
 
 
 
-File: README.info,  Node: Org GTD,  Prev: Top,  Up: Top
+File: org-gtd.info,  Node: Org GTD,  Prev: Top,  Up: Top
 
 1 Org GTD
 *********
@@ -93,7 +93,7 @@ File: README.info,  Node: Org GTD,  Prev: Top,  Up: Top
 * Troubleshooting::
 
 
-File: README.info,  Node: Summary,  Next: Updating org-gtd,  Up: Org GTD
+File: org-gtd.info,  Node: Summary,  Next: Updating org-gtd,  Up: Org GTD
 
 1.1 Summary
 ===========
@@ -152,7 +152,7 @@ sequential.
                       Waiting For           Next Actions                 Calendar
 
 
-File: README.info,  Node: Updating org-gtd,  Next: Installing,  Prev: Summary,  Up: Org GTD
+File: org-gtd.info,  Node: Updating org-gtd,  Next: Installing,  Prev: Summary,  Up: Org GTD
 
 1.2 Updating ‘org-gtd’
 ======================
@@ -162,7 +162,7 @@ File: README.info,  Node: Updating org-gtd,  Next: Installing,  Prev: Summary,  
 * 2.0.0 <- 1.1.x: 200 <- 11x.
 
 
-File: README.info,  Node: 200 <- 11x,  Up: Updating org-gtd
+File: org-gtd.info,  Node: 200 <- 11x,  Up: Updating org-gtd
 
 1.2.1 2.0.0 <- 1.1.x
 --------------------
@@ -170,7 +170,7 @@ File: README.info,  Node: 200 <- 11x,  Up: Updating org-gtd
    • rename CANCELED to CNCL
 
 
-File: README.info,  Node: Installing,  Next: Configuring,  Prev: Updating org-gtd,  Up: Org GTD
+File: org-gtd.info,  Node: Installing,  Next: Configuring,  Prev: Updating org-gtd,  Up: Org GTD
 
 1.3 Installing
 ==============
@@ -184,7 +184,7 @@ This package requires emacs 27.1 or higher.
 * Manually::
 
 
-File: README.info,  Node: MELPA MELPA stable,  Next: use-package,  Up: Installing
+File: org-gtd.info,  Node: MELPA MELPA stable,  Next: use-package,  Up: Installing
 
 1.3.1 MELPA, MELPA stable
 -------------------------
@@ -192,7 +192,7 @@ File: README.info,  Node: MELPA MELPA stable,  Next: use-package,  Up: Installin
 This package is on MELPA and MELPA stable under the name ‘org-gtd’.
 
 
-File: README.info,  Node: use-package,  Next: Manually,  Prev: MELPA MELPA stable,  Up: Installing
+File: org-gtd.info,  Node: use-package,  Next: Manually,  Prev: MELPA MELPA stable,  Up: Installing
 
 1.3.2 use-package
 -----------------
@@ -201,7 +201,7 @@ Just make sure this is loaded after ‘org-mode’ like so.
      (use-package org-gtd :after org)
 
 
-File: README.info,  Node: Manually,  Prev: use-package,  Up: Installing
+File: org-gtd.info,  Node: Manually,  Prev: use-package,  Up: Installing
 
 1.3.3 Manually
 --------------
@@ -213,7 +213,7 @@ config:
      (require 'org-gtd)
 
 
-File: README.info,  Node: Configuring,  Next: Using,  Prev: Installing,  Up: Org GTD
+File: org-gtd.info,  Node: Configuring,  Next: Using,  Prev: Installing,  Up: Org GTD
 
 1.4 Configuring
 ===============
@@ -225,7 +225,7 @@ File: README.info,  Node: Configuring,  Next: Using,  Prev: Installing,  Up: Org
 * Commands::
 
 
-File: README.info,  Node: configuration options for org-gtd,  Next: required configuration of sub-packages,  Up: Configuring
+File: org-gtd.info,  Node: configuration options for org-gtd,  Next: required configuration of sub-packages,  Up: Configuring
 
 1.4.1 configuration options for org-gtd
 ---------------------------------------
@@ -234,7 +234,7 @@ The best way to find out about the configuration options for org-gtd is
 to see the customize group: ‘M-x customize-group RET org-gtd’.
 
 
-File: README.info,  Node: required configuration of sub-packages,  Next: Commands,  Prev: configuration options for org-gtd,  Up: Configuring
+File: org-gtd.info,  Node: required configuration of sub-packages,  Next: Commands,  Prev: configuration options for org-gtd,  Up: Configuring
 
 1.4.2 required configuration of sub-packages
 --------------------------------------------
@@ -244,7 +244,7 @@ File: README.info,  Node: required configuration of sub-packages,  Next: Command
 * org-edna::
 
 
-File: README.info,  Node: org-edna,  Up: required configuration of sub-packages
+File: org-gtd.info,  Node: org-edna,  Up: required configuration of sub-packages
 
 org-edna
 ........
@@ -257,7 +257,7 @@ you’ve finished the current task.
      (org-edna-mode 1)
 
 
-File: README.info,  Node: Commands,  Prev: required configuration of sub-packages,  Up: Configuring
+File: org-gtd.info,  Node: Commands,  Prev: required configuration of sub-packages,  Up: Configuring
 
 1.4.3 Commands
 --------------
@@ -278,7 +278,7 @@ Here are the commands ‘org-gtd’ provides for you.
                    ("C-c c" . org-gtd-clarify-finalize))
 
 
-File: README.info,  Node: Using,  Next: Troubleshooting,  Prev: Configuring,  Up: Org GTD
+File: org-gtd.info,  Node: Using,  Next: Troubleshooting,  Prev: Configuring,  Up: Org GTD
 
 1.5 Using
 =========
@@ -291,7 +291,7 @@ File: README.info,  Node: Using,  Next: Troubleshooting,  Prev: Configuring,  Up
 * Show next actions::
 
 
-File: README.info,  Node: Regular use,  Next: Projects,  Up: Using
+File: org-gtd.info,  Node: Regular use,  Next: Projects,  Up: Using
 
 1.5.1 Regular use
 -----------------
@@ -346,7 +346,7 @@ what to do with the item (shown below with ‘C-h’ for extra information):
      functions.
 
 
-File: README.info,  Node: Projects,  Next: Agenda,  Prev: Regular use,  Up: Using
+File: org-gtd.info,  Node: Projects,  Next: Agenda,  Prev: Regular use,  Up: Using
 
 1.5.2 Projects
 --------------
@@ -382,7 +382,7 @@ feature) completed and canceled projects by using
 * Multiple files / refile targets::
 
 
-File: README.info,  Node: Multiple files / refile targets,  Up: Projects
+File: org-gtd.info,  Node: Multiple files / refile targets,  Up: Projects
 
 Multiple files / refile targets
 ...............................
@@ -395,7 +395,7 @@ top-level heading and make sure it has the following properties drawer:
      :END:
 
 
-File: README.info,  Node: Agenda,  Next: Show next actions,  Prev: Projects,  Up: Using
+File: org-gtd.info,  Node: Agenda,  Next: Show next actions,  Prev: Projects,  Up: Using
 
 1.5.3 Agenda
 ------------
@@ -406,7 +406,7 @@ bit.
  [image src="doc/agenda.png" ]
 
 
-File: README.info,  Node: Show next actions,  Prev: Agenda,  Up: Using
+File: org-gtd.info,  Node: Show next actions,  Prev: Agenda,  Up: Using
 
 1.5.4 Show next actions
 -----------------------
@@ -417,7 +417,7 @@ actions ( ‘C-c d n’ ).
  [image src="doc/show-all-next.png" ]
 
 
-File: README.info,  Node: Troubleshooting,  Prev: Using,  Up: Org GTD
+File: org-gtd.info,  Node: Troubleshooting,  Prev: Using,  Up: Org GTD
 
 1.6 Troubleshooting
 ===================
@@ -427,7 +427,7 @@ File: README.info,  Node: Troubleshooting,  Prev: Using,  Up: Org GTD
 * Projects without a NEXT item::
 
 
-File: README.info,  Node: Projects without a NEXT item,  Up: Troubleshooting
+File: org-gtd.info,  Node: Projects without a NEXT item,  Up: Troubleshooting
 
 1.6.1 Projects without a NEXT item
 ----------------------------------
@@ -439,28 +439,28 @@ not surface and help you finish.
 
 
 Tag Table:
-Node: Top734
-Node: Org GTD1568
-Node: Summary1792
-Node: Updating org-gtd6525
-Node: 200 <- 11x6711
-Node: Installing6849
-Node: MELPA MELPA stable7106
-Node: use-package7317
-Node: Manually7555
-Node: Configuring7885
-Node: configuration options for org-gtd8110
-Node: required configuration of sub-packages8459
-Node: org-edna8718
-Node: Commands9037
-Node: Using9714
-Node: Regular use9900
-Node: Projects12120
-Node: Multiple files / refile targets13407
-Node: Agenda13783
-Node: Show next actions14016
-Node: Troubleshooting14282
-Node: Projects without a NEXT item14439
+Node: Top735
+Node: Org GTD1570
+Node: Summary1795
+Node: Updating org-gtd6529
+Node: 200 <- 11x6716
+Node: Installing6855
+Node: MELPA MELPA stable7113
+Node: use-package7325
+Node: Manually7564
+Node: Configuring7895
+Node: configuration options for org-gtd8121
+Node: required configuration of sub-packages8471
+Node: org-edna8731
+Node: Commands9051
+Node: Using9729
+Node: Regular use9916
+Node: Projects12137
+Node: Multiple files / refile targets13425
+Node: Agenda13802
+Node: Show next actions14036
+Node: Troubleshooting14303
+Node: Projects without a NEXT item14461
 
 End Tag Table
 
