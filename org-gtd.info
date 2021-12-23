@@ -386,8 +386,7 @@ this item.
    You have a number of possible choices for each item you process.
 Subsections will explain how Org GTD handles each one.
 
- [image src="doc/processing-menu.png" ]
-
+[doc/processing-menu]
 *[Q]uick Action*
      Quick action.  Do it now, then choose this to mark the item as DONΕ
      and archive it.
@@ -471,8 +470,7 @@ File: org-gtd.info,  Node: Accessing NEXT and scheduled actions,  Next: Cleaning
 Here’s what the agenda may look like when you’ve processed the inbox a
 bit.
 
- [image src="doc/agenda.png" ]
-
+[doc/agenda]
 * Menu:
 
 * Show next actions::
@@ -486,8 +484,7 @@ File: org-gtd.info,  Node: Show next actions,  Up: Accessing NEXT and scheduled 
 One of the ways to see what’s next for you to do is to see all the next
 actions ( ‘C-c d n’ ).
 
- [image src="doc/show-all-next.png" ]
-
+[doc/show-all-next]
 
 File: org-gtd.info,  Node: Cleaning up / archiving completed work,  Next: Multiple files / refile targets,  Prev: Accessing NEXT and scheduled actions,  Up: Using Org GTD
 
@@ -560,13 +557,13 @@ Node: Recommended key bindings10268
 Node: Using Org GTD11636
 Node: Adding things to the inbox12324
 Node: Processing the inbox13139
-Node: Projects15631
-Node: Accessing NEXT and scheduled actions16853
-Node: Show next actions17246
-Node: Cleaning up / archiving completed work17529
-Node: Multiple files / refile targets18391
-Node: Troubleshooting18826
-Node: Projects without a NEXT item18984
+Node: Projects15610
+Node: Accessing NEXT and scheduled actions16832
+Node: Show next actions17204
+Node: Cleaning up / archiving completed work17466
+Node: Multiple files / refile targets18328
+Node: Troubleshooting18763
+Node: Projects without a NEXT item18921
 
 End Tag Table
 

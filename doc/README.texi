@@ -1,6 +1,6 @@
 \input texinfo    @c -*- texinfo -*-
 @c %**start of header
-@setfilename org-gtd.info
+@setfilename ../org-gtd.info
 @settitle Org GTD User Manual
 @documentencoding UTF-8
 @documentlanguage en

@@ -8,7 +8,7 @@
 #+TEXINFO_DIR_CATEGORY: Emacs
 #+TEXINFO_DIR_TITLE: Org GTD: (org-gtd)
 #+TEXINFO_DIR_DESC: An opinionated GTD flow implemented in org-mode
-#+TEXINFO_FILENAME: org-gtd.info
+#+TEXINFO_FILENAME: ../org-gtd.info
 #+SUBTITLE: for version 2.0
 #+TEXINFO_DEFFN: t
 #+OPTIONS: H:4 num:3 toc:2
