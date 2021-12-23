@@ -32,8 +32,8 @@
   :lighter " GTD"
   :global t
   (if org-gtd-mode
-      (org-gtd--override-agenda)
-    (org-gtd--restore-agenda)))
+      (org-gtd--enable-org-gtd-mode)
+    (org-gtd--disable-org-gtd-mode)))
 
 (defun org-gtd--wrap (fun &rest r)
   "Private function.
@@ -49,21 +49,31 @@ Argument R is there to be passed through."
 Org-gtd wraps these functions with its own context when `org-gtd-mode'
 is enabled.")
 
-(defun org-gtd--override-agenda ()
+(defun org-gtd--enable-org-gtd-mode ()
   "Private function.
 
-`org-gtd-mode' uses this to `defadvice' all `org-agenda' commands."
+`org-gtd-mode' uses this to override a number of settings in emacs.
+Disabling the mode reverts the settings to their previous values.
+It should be safe to turn this on if you do not have extensive `org-mode'
+configuration."
   (mapc
    (lambda (x) (advice-add x :around #'org-gtd--wrap))
-   org-gtd--agenda-functions))
+   org-gtd--agenda-functions)
+  (setq org-gtd-edna-inheritance org-edna-use-inheritance
+        org-gtd-edna org-edna-mode)
+  (setq org-edna-use-inheritance 1)
+  (org-edna-mode 1))
 
-(defun org-gtd--restore-agenda ()
+(defun org-gtd--disable-org-gtd-mode ()
   "Private function.
 
-`org-gtd-mode' uses this to stop overriding all the `org-agenda' behavior."
+`org-gtd-mode' uses this to restore the overridden settings to their
+previous values."
   (mapc
    (lambda (x) (advice-remove x #'org-gtd--wrap))
-   org-gtd--agenda-functions))
+   org-gtd--agenda-functions)
+  (setq org-edna-use-inheritance org-gtd-edna-inheritance)
+  (org-edna-mode org-gtd-edna))
 
 (provide 'org-gtd-mode)
 ;;; org-gtd-mode.el ends here

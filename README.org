@@ -21,10 +21,7 @@ book as faithfully as possible.
 #+TEXINFO: @noindent
 This manual is for Org GtD version 2.0.
 
-@copying
-
 :END:
-
 * Copying
 :PROPERTIES:
 :copying:  t
@@ -48,7 +45,7 @@ General Public License for more details.
 :END:
 This package tries to replicate as closely as possible the GTD workflow (see diagram below).
 
-This package, and this documentation, assume familiarity with GTD. There are many resources out there to learn how to use the framework. If you are new to GTD, this package may be unpleasant to use.
+This package, and this documentation, assume familiarity with the flow of GTD as described in the book.
 
 This package provides a system that allows you to capture incoming things into an inbox, then process the inbox and categorize each item based on the GTD categories. It leverages org-agenda to show today's items as well as the NEXT items. It also has a simple project management system, which currently assumes all tasks in a project are sequential.
 #+begin_example
@@ -59,18 +56,18 @@ This package provides a system that allows you to capture incoming things into a
                                     ┌──▼────┐
                                     │IN BOX │
                                     └──┬────┘
-                                       │                Eliminate    ┌─────────┐
-                                       │              ┌─────────────►│  Trash  │
-                                   ┌───▼────────┐     │              └─────────┘
-                                   │ What is it?│     │
-                                   └───┬────────┘     │ Incubate     ┌─────────┐
-                                       │              │              │ Someday/│
-                                       │              ├─────────────►│ Maybe   │
-┌──────────┐  YES (Multi-Step)    ┌────▼────────┐ NO  │              └─────────┘
-│ Projects │◄─────────────────────┤   Is it     ├─────┤ File
-└─┬────▲───┤                      │ Actionable? │     │              ┌─────────┐
-  │    │   └────────────────────┐ └──────┬──────┘     └─────────────►│Reference│
-  │    │      Review for Actions│        │                           └─────────┘
+                                       │               Eliminate   ┌─────────┐
+                                       │             ┌────────────►│  Trash  │
+                                   ┌───▼───────┐     │             └─────────┘
+                                   │What is it?│     │
+                                   └───┬───────┘     │             ┌─────────┐
+                                       │             │ Incubate    │ Someday/│
+                                       │             ├────────────►│ Maybe   │
+┌──────────┐  YES (Multi-Step)    ┌────▼────────┐ NO │             └─────────┘
+│ Projects │◄─────────────────────┤   Is it     ├────┤
+└─┬────▲───┤                      │ Actionable? │    │ File        ┌─────────┐
+  │    │   └────────────────────┐ └──────┬──────┘    └────────────►│Reference│
+  │    │      Review for Actions│        │                         └─────────┘
 ┌─▼────┴───┐                    │        │YES
 │ Planning │                    └───────►│
 └──────────┘                             │
@@ -91,13 +88,20 @@ This package provides a system that allows you to capture incoming things into a
                 │          │           │          │              │          │
                 └──────────┘           └──────────┘              └──────────┘
                  Waiting For           Next Actions                 Calendar
+
 #+end_example
-** Updating ~org-gtd~
+** Upgrading
+:PROPERTIES:
+:DESCRIPTION: How to upgrade your local setup across major versions
+:END:
 *** 2.0.0 <- 1.1.x
 - rename CANCELED to CNCL
 ** Installing
+:PROPERTIES:
+:DESCRIPTION: Get Org GTD in your emacs
+:END:
 This package requires emacs 27.1 or higher.
-*** MELPA, MELPA stable
+
 This package is on MELPA and MELPA stable under the name ~org-gtd~.
 *** use-package
 Just make sure this is loaded after ~org-mode~ like so.
@@ -106,28 +110,57 @@ Just make sure this is loaded after ~org-mode~ like so.
 #+end_src
 *** Manually
 Check out the source code for dependencies and install them.
-Then, clone this repo to =~/.emacs.d/packages=
+Then, clone this repo to a directory of your choice, e.g. =~/.emacs.d/packages=.
 Finally, add this to your config:
 #+begin_src emacs-lisp
 (add-to-list 'load-path "~/.emacs.d/packages")
 (require 'org-gtd)
 #+end_src
 ** Configuring
-*** configuration options for org-gtd
-The best way to find out about the configuration options for org-gtd is to see the customize group: ~M-x customize-group RET org-gtd~.
+:PROPERTIES:
+:DESCRIPTION: Required and optional system configuration
+:END:
+*** The easy way
+Just turn on ~org-gtd-mode~ (~M-x org-gtd-mode~). This will set up emacs, Org mode, and Org GTD's dependencies. Turn off ~org-gtd-mode~ to restore emacs to pre-org-gtd settings.
+
+Note, you should still head over to the [[*Recommended key bindings]] section.
 *** required configuration of sub-packages
 **** org-edna
 package: https://www.nongnu.org/org-edna-el/
 
-REQUIRED: automatically change next TODO to NEXT in a project when you've finished the current task.
+This is one of the dependencies. This setting change is REQUIRED. It automatically changes the next TODO heading to NEXT in a project when you've finished the current task.
+
+You do not need to make this change if you choose to toggle ~org-gtd-mode~.
 #+begin_src emacs-lisp
 (setq org-edna-use-inheritance t)
 (org-edna-mode 1)
 #+end_src
-*** Commands
-Here are the commands ~org-gtd~ provides for you.
+*** configuration options for org-gtd
+The best way to find out about the configuration options for org-gtd is to see the customize group: ~M-x customize-group RET org-gtd~. They are all optional because they all come with default values.
 
-Here's what Ι have bound, for instance. (this is using the ~use-package~ API).
+The only one you may want to change before starting to use Org GTD is ~org-gtd-directory~, which is the directory that Org GTD
+will look to for everything it needs to do.
+*** Recommended key bindings
+
+There's an important keymap you'll want to make the flow of processing the inbox smoother. I suggest ~C-c c~.
+
+#+begin_src elisp
+(define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose)
+#+end_src
+
+- org-gtd-agenda-cancel-project
+- org-gtd-agenda-daily
+- org-gtd-agenda-delegate
+- org-gtd-agenda-projectify
+- org-gtd-archive-completed-items
+- org-gtd-cancel-project
+- org-gtd-capture
+- org-gtd-choose
+- org-gtd-delegate
+- org-gtd-mode
+- org-gtd-process-inbox
+- org-gtd-show-all-next
+- org-gtd-show-stuck-projects
 
 #+begin_src emacs-lisp
   (("C-c d c" . org-gtd-capture)
@@ -137,7 +170,7 @@ Here's what Ι have bound, for instance. (this is using the ~use-package~ API).
    ("C-c d s" . org-gtd-show-stuck-projects))
 
   ;; this is used in a very specific minor mode, so you can have a pretty common keybinding.
-  :bind (:map org-gtd-command-map
+  :bind (:map org-gtd-process-map
                 ("C-c c" . org-gtd-clarify-finalize))
 #+end_src
 ** Using
