@@ -386,7 +386,8 @@ this item.
    You have a number of possible choices for each item you process.
 Subsections will explain how Org GTD handles each one.
 
-[doc/processing-menu]
+ [image src="processing-menu.png" ]
+
 *[Q]uick Action*
      Quick action.  Do it now, then choose this to mark the item as DONΕ
      and archive it.
@@ -557,13 +558,13 @@ Node: Recommended key bindings10268
 Node: Using Org GTD11636
 Node: Adding things to the inbox12324
 Node: Processing the inbox13139
-Node: Projects15610
-Node: Accessing NEXT and scheduled actions16832
-Node: Show next actions17204
-Node: Cleaning up / archiving completed work17466
-Node: Multiple files / refile targets18328
-Node: Troubleshooting18763
-Node: Projects without a NEXT item18921
+Node: Projects15627
+Node: Accessing NEXT and scheduled actions16849
+Node: Show next actions17221
+Node: Cleaning up / archiving completed work17483
+Node: Multiple files / refile targets18345
+Node: Troubleshooting18780
+Node: Projects without a NEXT item18938
 
 End Tag Table
 

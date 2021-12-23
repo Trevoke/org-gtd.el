@@ -210,7 +210,7 @@ When you are done refining it, call ~M-x org-gtd-choose~ (or hit your keybinding
 
 You have a number of possible choices for each item you process. Subsections will explain how Org GTD handles each one.
 
-[[file:doc/processing-menu.png]]
+[[file:processing-menu.png]]
 
 - *[Q]uick Action* :: Quick action. Do it now, then choose this to mark the item as DONΕ and archive it.
 - *[T]rash* :: This is not actionable and it's not knowledge for later. Choose this to mark the item as CNCL and archive it.
