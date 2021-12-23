@@ -50,6 +50,8 @@ This manual is for Org GtD version 2.0.
 
 @menu
 * Org GTD::
+* Using Org GTD::                How Org GTD maps to the GTD flow
+* Troubleshooting::
 
 @detailmenu
 --- The Detailed Node Listing ---
@@ -60,8 +62,6 @@ Org GTD
 * Upgrading::                    How to upgrade your local setup across major versions
 * Installing::                   Get Org GTD in your emacs
 * Configuring::                  Required and optional system configuration
-* Using::
-* Troubleshooting::
 
 Upgrading
 
@@ -82,18 +82,27 @@ Configuring
 * Recommended key bindings::
 
 
-Using
+Using Org GTD
 
-* Regular use::
+* Adding things to the inbox::
+* Processing the inbox::
+* Accessing NEXT and scheduled actions::
+* Cleaning up / archiving completed work::
+* Multiple files / refile targets::
+
+Processing the inbox
+
 * Projects::
-* Agenda::
+
+
+Accessing NEXT and scheduled actions
+
 * Show next actions::
 
 
 Troubleshooting
 
 * Projects without a NEXT item::
-
 
 @end detailmenu
 @end menu
@@ -106,8 +115,6 @@ Troubleshooting
 * Upgrading::                    How to upgrade your local setup across major versions
 * Installing::                   Get Org GTD in your emacs
 * Configuring::                  Required and optional system configuration
-* Using::
-* Troubleshooting::
 @end menu
 
 @node Summary
@@ -247,43 +254,40 @@ You do not need to make this change if you choose to toggle @code{org-gtd-mode}.
 @node configuration options for org-gtd
 @subsection configuration options for org-gtd
 
-The best way to find out about the configuration options for org-gtd is to see the customize group: @code{M-x customize-group RET org-gtd}. They are all optional because they all come with default values.
+The most direct way to find out about the configuration options for org-gtd is to see the customize group: @code{M-x customize-group RET org-gtd}. They are all optional because they all come with default values.
 
 The only one you may want to change before starting to use Org GTD is @code{org-gtd-directory}, which is the directory that Org GTD
 will look to for everything it needs to do.
 
+The configuration options will also be mentioned in the relevant subsections of @ref{Using Org GTD}.
+
 @node Recommended key bindings
 @subsection Recommended key bindings
 
-There's an important keymap you'll want to make the flow of processing the inbox smoother. I suggest @code{C-c c}.
+There's an important keymap you'll want to make the flow of processing the inbox smoother. To limit impact on your emacs configuration, there is a specific keymap you can use. The function you'll want to bind is @code{org-gtd-choose}. I suggest @code{C-c c}, as in the following example.
 
 @lisp
 (define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose)
 @end lisp
 
+The GTD flow can be roughly split into a top-level steps. I suggest using @code{"C-c d"} as a key chord for these in the global keymap.
+
+First, capture into the inbox. :
+
 @itemize
 @item
 org-gtd-agenda-cancel-project
-@item
-org-gtd-agenda-daily
 @item
 org-gtd-agenda-delegate
 @item
 org-gtd-agenda-projectify
 @item
-org-gtd-archive-completed-items
-@item
 org-gtd-cancel-project
 @item
-org-gtd-capture
-@item
-org-gtd-choose
-@item
 org-gtd-delegate
+
 @item
-org-gtd-mode
-@item
-org-gtd-process-inbox
+org-gtd-agenda-daily
 @item
 org-gtd-show-all-next
 @item
@@ -302,55 +306,88 @@ org-gtd-show-stuck-projects
               ("C-c c" . org-gtd-clarify-finalize))
 @end lisp
 
-@node Using
-@section Using
+@node Using Org GTD
+@chapter Using Org GTD
+
+Here are the categories of actions from GTD that we have to be able to handle:
+
+@itemize
+@item
+adding things to the inbox
+@item
+processing the inbox
+@item
+accessing NEXT and scheduled actions
+@item
+cleaning up / archiving completed work
+@end itemize
+
+Other elements of GTD, such as reviews, are currently unimplemented: as the user, you can simply open the files to review things for now.
 
 @menu
-* Regular use::
-* Projects::
-* Agenda::
-* Show next actions::
+* Adding things to the inbox::
+* Processing the inbox::
+* Accessing NEXT and scheduled actions::
+* Cleaning up / archiving completed work::
+* Multiple files / refile targets::
 @end menu
 
-@node Regular use
-@subsection Regular use
+@node Adding things to the inbox
+@section Adding things to the inbox
 
-I will assume you have used the suggested keybindings above.
+The inbox is a file called @code{inbox.org} in the directory stored in the variable @code{org-gtd-directory}. By default this variable is @code{~/gtd}.
 
-GTD uses one basic axiom: everything that comes your way goes into the inbox. You do this with @code{C-c d c}. You also have to regularly process the inbox, which you do with @code{C-c d p}.
+Org GTD provides one function to capture items: @code{M-x org-gtd-capture}. In my setup I have this booked globally as such:
 
-You have a number of possible choices for each item you process, which I will quickly go over. When you process the inbox, you will see each inbox item, one at a time, with an interface letting you decide what to do with the item (shown below with @code{C-h} for extra information):
+@lisp
+(global-set-key "C-c d c" #'org-gtd-capture)
+@end lisp
+
+This function overrides @code{org-capture} and uses the variable @code{org-gtd-capture-templates} to define org-gtd-specific capture templates. By default it comes with two templates, one to just capture a new item, and one to capture an item with a link to the file where you were when you started the capture.
+
+@node Processing the inbox
+@section Processing the inbox
+
+Processing the inbox means taking everything in the inbox, one at a time, and refining/categorizing them so they are instantly useful when you are looking at available next / scheduled actions.
+
+You can start processing the inbox with @code{org-gtd-process-inbox}. This will select the inbox buffer and hide everything but the first item in the inbox, then give you control to refine it.
+
+When you are done refining it, call @code{M-x org-gtd-choose} (or hit your keybinding for it, see @ref{Recommended key bindings}). This will open a transient menu to let you choose how Org GTD should categorize this item.
+
+You have a number of possible choices for each item you process. Subsections will explain how Org GTD handles each one.
 
 @image{doc/processing-menu,,,,png}
 
 @table @asis
-@item @strong{Quick Action}
-You've taken care of this action just now. Choose this to mark the item as DONΕ and archive it.
-@item @strong{Throw out}
+@item @strong{[Q]uick Action}
+Quick action. Do it now, then choose this to mark the item as DONΕ and archive it.
+@item @strong{[T]rash}
 This is not actionable and it's not knowledge for later. Choose this to mark the item as CNCL and archive it.
-@item @strong{Project}
+@item @strong{[P]roject}
 This is a multi-step action. I'll describe how to handle these below.
-@item @strong{Calendar}
+@item @strong{[C]alendar}
 This is a single item to be done at a given date or time. You'll be presented with org-mode's date picker, then it'll refile the item. You'll find this in the agenda later.
-@item @strong{Delegate}
+@item @strong{[D]elegate}
 Let someone else do this. Write the name of the person doing it, and choose a time to check up on that item.
-@item @strong{Single action}
-This is a one-off to be done when possible. You can add tags to help you.
-@item @strong{Reference}
-This is knowledge to be stored away. I'll describe how to handle these below.
-@item @strong{Incubate}
+@item @strong{[S]ingle action}
+This is a one-off to be done when possible.
+@item @strong{[A]rchive}
+This is knowledge to be stored away.
+@item @strong{[I]ncubate}
 no action now, review later
 @end table
 
-When processing each item, the following will happen:
-@enumerate
-@item
-You'll enter an editing mode where you can refine the wording, create additional sub-headlines, add your own tags and other such metadata
-@item
-You'll hit a keybinding of your choice (recommended: @code{C-c c}, see config below) to confirm your work and move on to the next item
-@item
-when you move on to the next item, @samp{org-gtd} will add keywords (NEXT, TODO, DONE, etc.) in order to handle the bookkeeping and get you set up with org-agenda and the other provided org-gtd functions.
-@end enumerate
+In addition you have @strong{[X]} for "exit early", which you can use to stop processing the inbox and restore emacs to its non-inbox-processing state.
+
+After the item-type-specific behavior, you will have the option to add custom decorations to each item, based on how you prefer to think about (filter, find, etc.) the items when you do GTD@.
+
+The decorations are tracked in @code{org-gtd-process-item-hooks}, a list of functions. By default there is one element in the list, to add tags to the item.
+
+This process will continue, item after item, until you hit @strong{x} to exit early or until you run out of items to process.
+
+@menu
+* Projects::
+@end menu
 
 @node Projects
 @subsection Projects
@@ -370,27 +407,16 @@ DO NOTE: it is surprisingly difficult to add a custom note when canceling, so if
 
 You can archive (move to the archive file, using the org-mode feature) completed and canceled projects by using @code{org-gtd-archive-completed-items}.
 
-@menu
-* Multiple files / refile targets::
-@end menu
-
-@node Multiple files / refile targets
-@unnumberedsubsubsec Multiple files / refile targets
-
-If you would like to add a new refile targets, it's simple. Add a top-level heading and make sure it has the following properties drawer:
-@example
-:PROPERTIES:
-:TRIGGER: next-sibling todo!(NEXT)
-:ORG_GTD: Projects
-:END:
-@end example
-
-@node Agenda
-@subsection Agenda
+@node Accessing NEXT and scheduled actions
+@section Accessing NEXT and scheduled actions
 
 Here's what the agenda may look like when you've processed the inbox a bit.
 
 @image{doc/agenda,,,,png}
+
+@menu
+* Show next actions::
+@end menu
 
 @node Show next actions
 @subsection Show next actions
@@ -399,15 +425,35 @@ One of the ways to see what's next for you to do is to see all the next actions 
 
 @image{doc/show-all-next,,,,png}
 
+@node Cleaning up / archiving completed work
+@section Cleaning up / archiving completed work
+
+Doing this without user intervention is tricky, as it makes undoing actions more complicated. As such, Org GTD provides a function that will go through the @code{org-gtd-directory} files, find the headings that belong to Org GTD (see @ref{Multiple files / refile targets}), and archive the finished items.
+
+The variable @code{org-gtd-archive-location} hosts a @strong{function} that returns a string matching the @code{org-archive-location} definition. It is a function in order to make the filename entirely dynamic.
+
+The function to archive everything is @code{M-x org-gtd-archive-completed-items}.
+
+@node Multiple files / refile targets
+@section Multiple files / refile targets
+
+If you would like to add new refile targets, it's simple. Add a top-level heading and make sure it has the following properties drawer.
+@example
+:PROPERTIES:
+:TRIGGER: next-sibling todo!(NEXT)
+:ORG_GTD: Projects
+:END:
+@end example
+
 @node Troubleshooting
-@section Troubleshooting
+@chapter Troubleshooting
 
 @menu
 * Projects without a NEXT item::
 @end menu
 
 @node Projects without a NEXT item
-@subsection Projects without a NEXT item
+@section Projects without a NEXT item
 
 Sometimes things break. Use @code{C-c d s} to find all projects that don't have a NEXT item, which is to say, all projects that the package will not surface and help you finish.
 

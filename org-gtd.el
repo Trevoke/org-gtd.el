@@ -108,7 +108,5 @@
       (goto-char (org-log-beginning t))
       (insert (format "programmatically delegated to %s\n" delegated-to)))))
 
-
-
 (provide 'org-gtd)
 ;;; org-gtd.el ends here
