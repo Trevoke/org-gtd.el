@@ -104,7 +104,7 @@ TYPE is the org-gtd action type.  BODY is the rest of the code."
 
 GTD-TYPE is an action type."
   (with-current-buffer (org-gtd--default-file)
-    (end-of-buffer)
+    (goto-char (point-max))
     (newline)
     (insert (gethash gtd-type org-gtd--file-template))
     (basic-save-buffer)))

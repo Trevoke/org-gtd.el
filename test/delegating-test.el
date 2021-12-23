@@ -17,7 +17,7 @@
     (ogt--save-all-buffers)
     (org-gtd-agenda-daily)
     (with-current-buffer org-agenda-buffer
-      (beginning-of-buffer)
+      (goto-char (point-min))
       (search-forward "delegateme")
       (with-simulated-input "That SPC Guy RET RET"
         (org-gtd-agenda-delegate)))

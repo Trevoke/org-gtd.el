@@ -19,7 +19,7 @@
     (it "on a task in the agenda"
       (org-gtd-agenda-daily)
       (with-current-buffer org-agenda-buffer
-        (beginning-of-buffer)
+        (goto-char (point-min))
         (search-forward "Task 1")
         (org-gtd-agenda-cancel-project)
         (org-gtd-archive-completed-items))
@@ -30,7 +30,7 @@
       (setq org-gtd-directory (make-temp-file "org-gtd" t))
       (ogt--add-and-process-project "project headline")
       (with-current-buffer (org-gtd--default-file)
-        (beginning-of-buffer)
+        (goto-char (point-min))
         (search-forward "project headline")
         (org-gtd-cancel-project)
         (org-gtd-archive-completed-items)

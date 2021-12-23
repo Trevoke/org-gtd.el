@@ -92,7 +92,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (interactive)
   (org-gtd--decorate-item)
   (org-gtd-projects--nextify)
-  (beginning-of-buffer)
+  (goto-char (point-min))
   (forward-word)
   (backward-word)
   (insert "[/] ")
