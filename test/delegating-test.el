@@ -15,7 +15,7 @@
   (it "can be done through the agenda and show on the agenda"
     (ogt--add-and-process-single-action "delegateme")
     (ogt--save-all-buffers)
-    (org-gtd-agenda-daily)
+    (org-gtd-engage)
     (with-current-buffer org-agenda-buffer
       (goto-char (point-min))
       (search-forward "delegateme")
@@ -23,7 +23,7 @@
         (org-gtd-agenda-delegate)))
 
     (ogt--save-all-buffers)
-    (org-gtd-agenda-daily)
+    (org-gtd-engage)
     (with-current-buffer org-agenda-buffer
       (expect (buffer-string) :to-match "WAIT ")
       (expect (buffer-string) :to-match "That Guy"))))

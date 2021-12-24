@@ -47,14 +47,7 @@
 ")
 
 (defconst org-gtd-incubated-template
-  "#+begin_comment
-Here go the things you want to think about someday. Review this file as often
-as you feel the need: every two months? Every six months? Every year?
-Add your own categories as necessary, with the ORG_GTD property, such as
-\"to read\", \"to buy\", \"to eat\", etc - whatever works best for your mind!
-#+end_comment
-
-* Incubate
+  "* Incubate
 :PROPERTIES:
 :ORG_GTD: Incubated
 :END:

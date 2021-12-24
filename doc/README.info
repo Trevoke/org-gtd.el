@@ -1,4 +1,4 @@
-This is org-gtd.info, produced by makeinfo version 6.7 from README.texi.
+This is README.info, produced by makeinfo version 6.7 from README.texi.
 
 Copyright (C) 2018-2021 Aldric Giacomoni <trevoke@gmail.com>
 
@@ -17,7 +17,7 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
-File: org-gtd.info,  Node: Top,  Next: Org GTD,  Up: (dir)
+File: README.info,  Node: Top,  Next: Org GTD,  Up: (dir)
 
 Org GTD User Manual
 *******************
@@ -56,7 +56,7 @@ Installing
 Configuring
 
 * The easy way::
-* Required configuration of sub-packages::
+* required configuration of sub-packages::
 * configuration options for org-gtd::
 * Recommended key bindings::
 
@@ -65,31 +65,18 @@ Using Org GTD
 
 * Adding things to the inbox::
 * Processing the inbox::
-* Engaging with your GTD items::
+* Accessing NEXT and scheduled actions::
 * Cleaning up / archiving completed work::
 * Multiple files / refile targets::
 
 Processing the inbox
 
-* Quick action::
-* Trash::
-* Calendar::
-* Delegate::
-* Single action::
-* Archive::
-* Incubate::
 * Projects::
 
 
-Engaging with your GTD items
+Accessing NEXT and scheduled actions
 
-* Interacting with org-agenda::
-
-
-Multiple files / refile targets
-
-* New project heading::
-* Other headings::
+* Show next actions::
 
 
 Troubleshooting
@@ -98,7 +85,7 @@ Troubleshooting
 
 
 
-File: org-gtd.info,  Node: Org GTD,  Next: Using Org GTD,  Prev: Top,  Up: Top
+File: README.info,  Node: Org GTD,  Next: Using Org GTD,  Prev: Top,  Up: Top
 
 1 Org GTD
 *********
@@ -111,7 +98,7 @@ File: org-gtd.info,  Node: Org GTD,  Next: Using Org GTD,  Prev: Top,  Up: Top
 * Configuring::                  Required and optional system configuration
 
 
-File: org-gtd.info,  Node: Summary,  Next: Upgrading,  Up: Org GTD
+File: README.info,  Node: Summary,  Next: Upgrading,  Up: Org GTD
 
 1.1 Summary
 ===========
@@ -170,7 +157,7 @@ sequential.
 
 
 
-File: org-gtd.info,  Node: Upgrading,  Next: Installing,  Prev: Summary,  Up: Org GTD
+File: README.info,  Node: Upgrading,  Next: Installing,  Prev: Summary,  Up: Org GTD
 
 1.2 Upgrading
 =============
@@ -180,7 +167,7 @@ File: org-gtd.info,  Node: Upgrading,  Next: Installing,  Prev: Summary,  Up: Or
 * 2.0.0 <- 1.1.x: 200 <- 11x.
 
 
-File: org-gtd.info,  Node: 200 <- 11x,  Up: Upgrading
+File: README.info,  Node: 200 <- 11x,  Up: Upgrading
 
 1.2.1 2.0.0 <- 1.1.x
 --------------------
@@ -188,7 +175,7 @@ File: org-gtd.info,  Node: 200 <- 11x,  Up: Upgrading
    • rename CANCELED to CNCL
 
 
-File: org-gtd.info,  Node: Installing,  Next: Configuring,  Prev: Upgrading,  Up: Org GTD
+File: README.info,  Node: Installing,  Next: Configuring,  Prev: Upgrading,  Up: Org GTD
 
 1.3 Installing
 ==============
@@ -203,7 +190,7 @@ This package requires emacs 27.1 or higher.
 * Manually::
 
 
-File: org-gtd.info,  Node: use-package,  Next: Manually,  Up: Installing
+File: README.info,  Node: use-package,  Next: Manually,  Up: Installing
 
 1.3.1 use-package
 -----------------
@@ -212,7 +199,7 @@ Just make sure this is loaded after ‘org-mode’ like so.
      (use-package org-gtd :after org)
 
 
-File: org-gtd.info,  Node: Manually,  Prev: use-package,  Up: Installing
+File: README.info,  Node: Manually,  Prev: use-package,  Up: Installing
 
 1.3.2 Manually
 --------------
@@ -224,7 +211,7 @@ clone this repo to a directory of your choice, e.g.
      (require 'org-gtd)
 
 
-File: org-gtd.info,  Node: Configuring,  Prev: Installing,  Up: Org GTD
+File: README.info,  Node: Configuring,  Prev: Installing,  Up: Org GTD
 
 1.4 Configuring
 ===============
@@ -232,12 +219,12 @@ File: org-gtd.info,  Node: Configuring,  Prev: Installing,  Up: Org GTD
 * Menu:
 
 * The easy way::
-* Required configuration of sub-packages::
+* required configuration of sub-packages::
 * configuration options for org-gtd::
 * Recommended key bindings::
 
 
-File: org-gtd.info,  Node: The easy way,  Next: Required configuration of sub-packages,  Up: Configuring
+File: README.info,  Node: The easy way,  Next: required configuration of sub-packages,  Up: Configuring
 
 1.4.1 The easy way
 ------------------
@@ -250,9 +237,9 @@ restore emacs to pre-org-gtd settings.
 bindings:: section.
 
 
-File: org-gtd.info,  Node: Required configuration of sub-packages,  Next: configuration options for org-gtd,  Prev: The easy way,  Up: Configuring
+File: README.info,  Node: required configuration of sub-packages,  Next: configuration options for org-gtd,  Prev: The easy way,  Up: Configuring
 
-1.4.2 Required configuration of sub-packages
+1.4.2 required configuration of sub-packages
 --------------------------------------------
 
 * Menu:
@@ -260,7 +247,7 @@ File: org-gtd.info,  Node: Required configuration of sub-packages,  Next: config
 * org-edna::
 
 
-File: org-gtd.info,  Node: org-edna,  Up: Required configuration of sub-packages
+File: README.info,  Node: org-edna,  Up: required configuration of sub-packages
 
 org-edna
 ........
@@ -277,7 +264,7 @@ you’ve finished the current task.
      (org-edna-mode 1)
 
 
-File: org-gtd.info,  Node: configuration options for org-gtd,  Next: Recommended key bindings,  Prev: Required configuration of sub-packages,  Up: Configuring
+File: README.info,  Node: configuration options for org-gtd,  Next: Recommended key bindings,  Prev: required configuration of sub-packages,  Up: Configuring
 
 1.4.3 configuration options for org-gtd
 ---------------------------------------
@@ -295,7 +282,7 @@ for everything it needs to do.
 subsections of *note Using Org GTD::.
 
 
-File: org-gtd.info,  Node: Recommended key bindings,  Prev: configuration options for org-gtd,  Up: Configuring
+File: README.info,  Node: Recommended key bindings,  Prev: configuration options for org-gtd,  Up: Configuring
 
 1.4.4 Recommended key bindings
 ------------------------------
@@ -307,18 +294,33 @@ is a specific keymap you can use.  The function you’ll want to bind is
 
      (define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose)
 
-   For other keybindings, do what you need.  My bindings use ‘C-c d’ as
-a prefix, i.e.:
+   The GTD flow can be roughly split into a top-level steps.  I suggest
+using ‘"C-c d"’ as a key chord for these in the global keymap.
 
-‘C-c d c’
-     ‘org-gtd-capture’
-‘C-c d e’
-     ‘org-gtd-engage’
+   First, capture into the inbox.  :
 
-   etc.
+   • org-gtd-agenda-cancel-project
+   • org-gtd-agenda-delegate
+   • org-gtd-agenda-projectify
+   • org-gtd-cancel-project
+   • org-gtd-delegate
+
+   • org-gtd-engage
+   • org-gtd-show-all-next
+   • org-gtd-show-stuck-projects
+
+     (("C-c d c" . org-gtd-capture)
+      ("C-c d a" . org-agenda-list)
+      ("C-c d p" . org-gtd-process-inbox)
+      ("C-c d n" . org-gtd-show-all-next)
+      ("C-c d s" . org-gtd-show-stuck-projects))
+
+     ;; this is used in a very specific minor mode, so you can have a pretty common keybinding.
+     :bind (:map org-gtd-process-map
+                   ("C-c c" . org-gtd-clarify-finalize))
 
 
-File: org-gtd.info,  Node: Using Org GTD,  Next: Troubleshooting,  Prev: Org GTD,  Up: Top
+File: README.info,  Node: Using Org GTD,  Next: Troubleshooting,  Prev: Org GTD,  Up: Top
 
 2 Using Org GTD
 ***************
@@ -328,7 +330,7 @@ handle:
 
    • adding things to the inbox
    • processing the inbox
-   • Engage with your GTD system
+   • accessing NEXT and scheduled actions
    • cleaning up / archiving completed work
 
    Other elements of GTD, such as reviews, are currently unimplemented:
@@ -338,12 +340,12 @@ as the user, you can simply open the files to review things for now.
 
 * Adding things to the inbox::
 * Processing the inbox::
-* Engaging with your GTD items::
+* Accessing NEXT and scheduled actions::
 * Cleaning up / archiving completed work::
 * Multiple files / refile targets::
 
 
-File: org-gtd.info,  Node: Adding things to the inbox,  Next: Processing the inbox,  Up: Using Org GTD
+File: README.info,  Node: Adding things to the inbox,  Next: Processing the inbox,  Up: Using Org GTD
 
 2.1 Adding things to the inbox
 ==============================
@@ -363,7 +365,7 @@ a new item, and one to capture an item with a link to the file where you
 were when you started the capture.
 
 
-File: org-gtd.info,  Node: Processing the inbox,  Next: Engaging with your GTD items,  Prev: Adding things to the inbox,  Up: Using Org GTD
+File: README.info,  Node: Processing the inbox,  Next: Accessing NEXT and scheduled actions,  Prev: Adding things to the inbox,  Up: Using Org GTD
 
 2.2 Processing the inbox
 ========================
@@ -426,90 +428,12 @@ exit early or until you run out of items to process.
 
 * Menu:
 
-* Quick action::
-* Trash::
-* Calendar::
-* Delegate::
-* Single action::
-* Archive::
-* Incubate::
 * Projects::
 
 
-File: org-gtd.info,  Node: Quick action,  Next: Trash,  Up: Processing the inbox
+File: README.info,  Node: Projects,  Up: Processing the inbox
 
-2.2.1 Quick action
-------------------
-
-When you choose quick action, you indicate that not much more tracking
-is necessary.  This item is automatically marked as DONE and archived,
-then Org GTD moves on to the next item.
-
-
-File: org-gtd.info,  Node: Trash,  Next: Calendar,  Prev: Quick action,  Up: Processing the inbox
-
-2.2.2 Trash
------------
-
-When you choose trash, the item is automatically marked as CNCL and
-archived, then Org GTD moves on to the next item.
-
-
-File: org-gtd.info,  Node: Calendar,  Next: Delegate,  Prev: Trash,  Up: Processing the inbox
-
-2.2.3 Calendar
---------------
-
-When you you choose calendar, you will be asked to select a date (and
-time if you choose to add it), then Org GTD moves on to the next item.
-
-
-File: org-gtd.info,  Node: Delegate,  Next: Single action,  Prev: Calendar,  Up: Processing the inbox
-
-2.2.4 Delegate
---------------
-
-When you choose delegate, you’ll be asked for a name to whom to delegate
-this to, and a date on which to check in with the person.  Org GTD
-automatically marks this item as "WAIT", then Org GTD moves on to the
-next item.
-
-
-File: org-gtd.info,  Node: Single action,  Next: Archive,  Prev: Delegate,  Up: Processing the inbox
-
-2.2.5 Single action
--------------------
-
-When you choose single action, Org GTD will mark it as a NEXT item, then
-Org GTD moves on to the next item.
-
-
-File: org-gtd.info,  Node: Archive,  Next: Incubate,  Prev: Single action,  Up: Processing the inbox
-
-2.2.6 Archive
--------------
-
-When you choose archive, Org GTD will assume you have done what you
-needed to do to store this (e.g.  put the information in org roam, bbdb,
-or wherever you will store it), then marks the item as DONE and archives
-it.  Org GTD then moves on to the next item.
-
-
-File: org-gtd.info,  Node: Incubate,  Next: Projects,  Prev: Archive,  Up: Processing the inbox
-
-2.2.7 Incubate
---------------
-
-Incubating an item is similar to simply scheduling one, though the idea
-is that you want to be reminded of it much later, and be able to review
-your incubated items separately.  So, all this will really do is make
-you choose a date at which you want to be reminded of this, then it’ll
-be refiled under an incubated target.
-
-
-File: org-gtd.info,  Node: Projects,  Prev: Incubate,  Up: Processing the inbox
-
-2.2.8 Projects
+2.2.1 Projects
 --------------
 
 A "project" is defined as a top-level org heading with a set of
@@ -517,13 +441,11 @@ second-level org headings.  When you choose "project" and enter the
 editing mode, create such a headline structure, like in the following
 example.
 
-     * Project heading
-     ** First task
-     ** Second task
-     ** Third task
+   file:doc/project-processing.png (doc/project-processing.png)
 
-   Then call ‘M-x org-gtd-choose’ or hit your chosen keybinding, tell
-Org GTD you chose a project, and move on with your life.
+   As indicated above, when you are finished creating your headline
+structure, hit your chosen keybinding to exit the edit mode (in the
+above screenshot, ‘C-c c’) and move on to processing the next item.
 
    A project is defined as "completed" when all its tasks are marked as
 DONE.  A project is defined as "canceled" when its last task is marked
@@ -536,57 +458,38 @@ from the agenda view, when the point is on the next task of the project.
 canceling, so if you want to add a note explaining why you canceled the
 project, you will have to do so manually.
 
+   You can archive (move to the archive file, using the org-mode
+feature) completed and canceled projects by using
+‘org-gtd-archive-completed-items’.
+
 
-File: org-gtd.info,  Node: Engaging with your GTD items,  Next: Cleaning up / archiving completed work,  Prev: Processing the inbox,  Up: Using Org GTD
+File: README.info,  Node: Accessing NEXT and scheduled actions,  Next: Cleaning up / archiving completed work,  Prev: Processing the inbox,  Up: Using Org GTD
 
-2.3 Engaging with your GTD items
-================================
+2.3 Accessing NEXT and scheduled actions
+========================================
 
-You can see a list of all NEXT actions, and scheduled actions, with ‘M-x
-org-gtd-engage’ .  This opens an ‘org-agenda’ view.
+Here’s what the agenda may look like when you’ve processed the inbox a
+bit.
 
-   The variable ‘org-gtd-agenda-custom-commands’ has the settings to
-define what gets shown in that function.
-
-   You can define other functions by adding new custom commands to the
-above, and defining your own functions like so, where "x" is whatever
-your defined key is.
-
-     (defun my-agenda ()
-       (with-org-gtd-context
-           (org-agenda nil "x")))
-
-   You can call ‘org-gtd-show-all-next’ to only see NEXT actions,
-nothing scheduled.
+ [image src="doc/agenda.png" ]
 
 * Menu:
 
-* Interacting with org-agenda::
+* Show next actions::
 
 
-File: org-gtd.info,  Node: Interacting with org-agenda,  Up: Engaging with your GTD items
+File: README.info,  Node: Show next actions,  Up: Accessing NEXT and scheduled actions
 
-2.3.1 Interacting with org-agenda
----------------------------------
+2.3.1 Show next actions
+-----------------------
 
-Since Org provides the agenda, it is a convenient base of operations for
-interacting with things that come up through ‘org-gtd-engage’.
+One of the ways to see what’s next for you to do is to see all the next
+actions ( ‘C-c d n’ ).
 
-   Here are the actions available to you:
-
-‘M-x org-gtd-agenda-cancel-project’
-     When the point is on a project action, this command will cancel the
-     remaining actions in the project.
-‘M-x org-gtd-agenda-delegate’
-     When the point is on an action, this will properly delegate the
-     action to someone else.
-‘M-x org-gtd-agenda-projectify’
-     This is intended to be used on an incubated item that has come up.
-     Behavior in other situations has not been tested.  This will
-     properly let you transform an incubated item into a project.
+ [image src="doc/show-all-next.png" ]
 
 
-File: org-gtd.info,  Node: Cleaning up / archiving completed work,  Next: Multiple files / refile targets,  Prev: Engaging with your GTD items,  Up: Using Org GTD
+File: README.info,  Node: Cleaning up / archiving completed work,  Next: Multiple files / refile targets,  Prev: Accessing NEXT and scheduled actions,  Up: Using Org GTD
 
 2.4 Cleaning up / archiving completed work
 ==========================================
@@ -605,113 +508,65 @@ a function in order to make the filename entirely dynamic.
 org-gtd-archive-completed-items’.
 
 
-File: org-gtd.info,  Node: Multiple files / refile targets,  Prev: Cleaning up / archiving completed work,  Up: Using Org GTD
+File: README.info,  Node: Multiple files / refile targets,  Prev: Cleaning up / archiving completed work,  Up: Using Org GTD
 
 2.5 Multiple files / refile targets
 ===================================
 
 If you would like to add new refile targets, it’s simple.  Add a
-top-level heading in any ‘.org’ file (including a new one) in
-‘org-gtd-directory’ and make sure it has the following properties
-drawer.
-
-* Menu:
-
-* New project heading::
-* Other headings::
-
-
-File: org-gtd.info,  Node: New project heading,  Next: Other headings,  Up: Multiple files / refile targets
-
-2.5.1 New project heading
--------------------------
-
+top-level heading and make sure it has the following properties drawer.
      :PROPERTIES:
      :TRIGGER: next-sibling todo!(NEXT)
      :ORG_GTD: Projects
      :END:
 
 
-File: org-gtd.info,  Node: Other headings,  Prev: New project heading,  Up: Multiple files / refile targets
-
-2.5.2 Other headings
---------------------
-
-Create a new top-level heading in any ‘.org’ file (including a new one)
-and make sure it has an ORG_GTD property as such.
-     :PROPERTIES:
-     :ORG_GTD: Action
-     :END:
-
-   The ORG_GTD properties are set as follows, except for Projects (see
-*note New project heading::):
-
-Scheduled actions
-     ‘ORG_GTD: Calendar’
-Incubated actions
-     ‘ORG_GTD: Incubated’
-Single & Delegated actions
-     ‘ORG_GTD: Actions’
-
-
-File: org-gtd.info,  Node: Troubleshooting,  Prev: Using Org GTD,  Up: Top
+File: README.info,  Node: Troubleshooting,  Prev: Using Org GTD,  Up: Top
 
 3 Troubleshooting
 *****************
-
-‘org-edna’ needs to be configured, see *note Required configuration of
-sub-packages::.
 
 * Menu:
 
 * Projects without a NEXT item::
 
 
-File: org-gtd.info,  Node: Projects without a NEXT item,  Up: Troubleshooting
+File: README.info,  Node: Projects without a NEXT item,  Up: Troubleshooting
 
 3.1 Projects without a NEXT item
 ================================
 
-Sometimes things break.  Use ‘M-x org-gtd-show-stuck-projects’ to find
-all projects that don’t have a NEXT item, which is to say, all projects
-that the package will not surface and help you finish.
+Sometimes things break.  Use ‘C-c d s’ to find all projects that don’t
+have a NEXT item, which is to say, all projects that the package will
+not surface and help you finish.
 
 
 
 Tag Table:
-Node: Top735
-Node: Org GTD2147
-Node: Summary2534
-Node: Upgrading7128
-Node: 200 <- 11x7286
-Node: Installing7418
-Node: use-package7702
-Node: Manually7914
-Node: Configuring8280
-Node: The easy way8525
-Node: Required configuration of sub-packages8953
-Node: org-edna9217
-Node: configuration options for org-gtd9694
-Node: Recommended key bindings10436
-Node: Using Org GTD11164
-Node: Adding things to the inbox11835
-Node: Processing the inbox12650
-Node: Quick action15226
-Node: Trash15532
-Node: Calendar15777
-Node: Delegate16047
-Node: Single action16407
-Node: Archive16661
-Node: Incubate17054
-Node: Projects17510
-Node: Engaging with your GTD items18534
-Node: Interacting with org-agenda19389
-Node: Cleaning up / archiving completed work20260
-Node: Multiple files / refile targets21114
-Node: New project heading21581
-Node: Other headings21839
-Node: Troubleshooting22424
-Node: Projects without a NEXT item22674
+Node: Top734
+Node: Org GTD1977
+Node: Summary2363
+Node: Upgrading6956
+Node: 200 <- 11x7113
+Node: Installing7244
+Node: use-package7527
+Node: Manually7738
+Node: Configuring8103
+Node: The easy way8347
+Node: required configuration of sub-packages8774
+Node: org-edna9037
+Node: configuration options for org-gtd9513
+Node: Recommended key bindings10254
+Node: Using Org GTD11615
+Node: Adding things to the inbox12302
+Node: Processing the inbox13116
+Node: Projects15603
+Node: Accessing NEXT and scheduled actions16824
+Node: Show next actions17216
+Node: Cleaning up / archiving completed work17498
+Node: Multiple files / refile targets18359
+Node: Troubleshooting18793
+Node: Projects without a NEXT item18950
 
 End Tag Table
 

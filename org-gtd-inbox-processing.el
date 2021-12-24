@@ -42,19 +42,27 @@
         "\\<org-gtd-process-map>Clarify item.  Finish `\\[org-gtd-choose]'."))
     (setq-local header-line-format nil)))
 
+
 (transient-define-prefix org-gtd-choose ()
+  "Choose how to categorize the current item.
+
+Note that this function is intended to be used only during inbox processing.
+Each action continues inbox processing, so you may put your emacs in an
+undefined state."
   ["Actionable"
-   ("p" "project" org-gtd--project)
-   ("q" "quick" org-gtd--quick-action)
-   ("c" "calendar" org-gtd--calendar)
-   ("d" "delegate" org-gtd--delegate)
-   ("s" "single" org-gtd--single-action)]
+   [("p" "Project (multi-step)" org-gtd--project)]
+   [("d" "Delegate" org-gtd--delegate)
+    ("c" "Calendar" org-gtd--calendar)]
+   [("q" "Quick action" org-gtd--quick-action)
+    ("s" "Single action" org-gtd--single-action)]]
   ["Non-actionable"
-   ("t" "trash" org-gtd--trash)
-   ("a" "archive" org-gtd--archive)
-   ("i" "incubate" org-gtd--incubate)]
+   [("i" "Incubate" org-gtd--incubate)
+    ("a" "Archive this knowledge" org-gtd--archive)]
+   [("t" "Trash" org-gtd--trash)]]
   ["Org GTD"
-   ("x" "exit early" org-gtd--stop-processing)])
+   ("x"
+    "Exit. Stop processing the inbox for now."
+    org-gtd--stop-processing)])
 
 ;;;###autoload
 (defun org-gtd-process-inbox ()

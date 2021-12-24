@@ -34,7 +34,7 @@
 This is a list of four items, the same type as in `org-stuck-projects'.")
 
 ;;;###autoload
-(defun org-gtd-agenda-daily ()
+(defun org-gtd-engage ()
   "Display `org-agenda' customized by org-gtd."
   (interactive)
   (with-org-gtd-context

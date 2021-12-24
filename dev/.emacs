@@ -25,8 +25,10 @@
    :url "https://github.com/quelpa/quelpa-use-package.git"))
 (require 'quelpa-use-package)
 
-(use-package org-edna)
-(use-package org)
+;; (use-package org)
+
+;; (use-package org-edna)
+
 
 (use-package org-gtd
                :quelpa (org-gtd :fetcher github-ssh :repo
