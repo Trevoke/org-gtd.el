@@ -128,46 +128,45 @@ based on the GTD categories.  It leverages org-agenda to show today’s
 items as well as the NEXT items.  It also has a simple project
 management system, which currently assumes all tasks in a project are
 sequential.
-                                         ┌───────┐
-                                         │"STUFF"│
-                                         └──┬────┘
-                                            │
-                                         ┌──▼────┐
-                                         │IN BOX │
-                                         └──┬────┘
-                                            │               Eliminate   ┌─────────┐
-                                            │             ┌────────────►│  Trash  │
-                                        ┌───▼───────┐     │             └─────────┘
-                                        │What is it?│     │
-                                        └───┬───────┘     │             ┌─────────┐
-                                            │             │ Incubate    │ Someday/│
-                                            │             ├────────────►│ Maybe   │
-     ┌──────────┐  YES (Multi-Step)    ┌────▼────────┐ NO │             └─────────┘
-     │ Projects │◄─────────────────────┤   Is it     ├────┤
-     └─┬────▲───┤                      │ Actionable? │    │ File        ┌─────────┐
-       │    │   └────────────────────┐ └──────┬──────┘    └────────────►│Reference│
-       │    │      Review for Actions│        │                         └─────────┘
-     ┌─▼────┴───┐                    │        │YES
-     │ Planning │                    └───────►│
-     └──────────┘                             │
-                                       ┌──────▼─────┐     Less than
-                       Delegate        │ What's the │     2 minutes     ┌────────┐
-                          ┌────────────┤Next Action?├──────────────────►│ DO IT  │
-                          │            └───────┬────┘                   └────────┘
-                          │                    │
-                          │                    │  FOR ME
-                          │                    │           Specific Date or Time
-                          │                    ├────────────────────────────┐
-                          │              ASAP  │                            │
-                     ┌────▼─────┐           ┌──▼───────┐              ┌─────▼────┐
-                     │          │           │          │              │          │
-                     │          │           │          │              │          │
-                     │          │           │          │              │          │
-                     │          │           │          │              │          │
-                     │          │           │          │              │          │
-                     └──────────┘           └──────────┘              └──────────┘
+                                         +-------+
+                                         |"STUFF"|
+                                         +--+----+
+                                            |
+                                         +--v----+
+                                         |IN BOX |
+                                         +--+----+
+                                            |               Eliminate  +----------+
+                                            |             +------------>   Trash  |
+                                        +---v-------+     |            +----------+
+                                        |What is it?|     |
+                                        +---+-------+     |            +----------+
+                                            |             | Incubate   |  Someday/|
+                                            |             +------------>  Maybe   |
+     +----------+  YES (Multi-Step)   +-----v-------+  NO |            +----------+
+     | Projects <---------------------+    Is it    +-----+
+     +-+----^---+                     |  Actionable?|     | File       +----------+
+       |    |   +----------------+    +------+------+     +------------>Reference |
+       |    |        Review For  |           |                         +----------+
+     +-v----+---+     Actions    |           | YES
+     | Planning |                +----------->
+     +----------+                            |
+                                       +-----v------+     Less than
+                       Delegate        | What's the |     2 minutes     +--------+
+                          +------------+Next Action?+-------------------> DO IT  |
+                          |            +-------+----+                   +--------+
+                          |                    |
+                          |                    |  FOR ME
+                          |                    |           Specific Date or Time
+                          |                    +----------------------------+
+                          |              ASAP  |                            |
+                     +----v-----+           +--v-------+              +-----v----+
+                     |          |           |          |              |          |
+                     |          |           |          |              |          |
+                     |          |           |          |              |          |
+                     |          |           |          |              |          |
+                     |          |           |          |              |          |
+                     +----------+           +----------+              +----------+
                       Waiting For           Next Actions                 Calendar
-
 
 
 File: org-gtd.info,  Node: Upgrading,  Next: Installing,  Prev: Summary,  Up: Org GTD
@@ -185,7 +184,101 @@ File: org-gtd.info,  Node: 200 <- 11x,  Up: Upgrading
 1.2.1 2.0.0 <- 1.1.x
 --------------------
 
-   • rename CANCELED to CNCL
+* Menu:
+
+* states::
+* Configuration::
+* Headings::
+* Key bindings::
+
+
+File: org-gtd.info,  Node: states,  Next: Configuration,  Up: 200 <- 11x
+
+*TODO* states
+.............
+
+You need to rename CANCELED to CNCL.
+
+
+File: org-gtd.info,  Node: Configuration,  Next: Headings,  Prev: states,  Up: 200 <- 11x
+
+Configuration
+.............
+
+Org GTD now handles dependency loading more intelligently, so you no
+longer need the overly complicated setup of ‘org-gtd’, ‘org-agenda’ and
+‘org-capure’ in your config for dependency loading.  You now only need
+‘org-gtd’.  If you are using ‘use-package’ then the following is the
+minimal config required.
+
+     (use-package org-gtd :after 'org)
+
+   You no longer need to configure ‘org-agenda-property-list’ yourself.
+Org GTD now manages the context with a macro, ‘with-org-gtd-context’.
+
+   You no longer need to configure ‘org-agenda-files’.  Same reason as
+above.
+
+   You no longer need to configure ‘org-agenda-custom-commands’.  Now
+there’s ‘org-gtd-agenda-custom-commands’ to take the relay - see the
+variable documentation for more information.
+
+   The org-capture templates are now simplified and managed by
+‘org-gtd-capture-templates’.  If you did not change the default
+configuration, then you can just remove what you had.  Read the variable
+documentaton for further information.
+
+
+File: org-gtd.info,  Node: Headings,  Next: Key bindings,  Prev: Configuration,  Up: 200 <- 11x
+
+Headings
+........
+
+Org GTD no longer uses the name of the heading to figure out how to
+refile things, and which headings are useful.  Instead it uses a custom
+Org property called ORG_GTD. This means you are free to rename the
+existing headings whatever you want, but you DO need to make some
+adjustments to your current files.
+
+   If you would like to add new refile targets, it’s simple, follow
+these instructions.
+
+   For projects, make sure the heading has the following two properties.
+     :PROPERTIES:
+     :TRIGGER: next-sibling todo!(NEXT)
+     :ORG_GTD: Projects
+     :END:
+
+   For other headings, make sure there is an ORG_GTD property, like for
+the project, above.
+
+   The other ORG_GTD properties are set as follows.  Note that Single
+and Delegated actions are together now, so you can merge those headings
+if you want.
+
+Scheduled actions
+     ‘ORG_GTD: Calendar’
+Single & Delegated actions
+     ‘ORG_GTD: Actions’
+Incubated actions
+     ‘ORG_GTD: Incubated’
+
+   For incubated actions, version 1.x of Org GTD asked for second-level
+heading, such as ‘*To Read’.  No more - these are now top-level
+headings, exactly as described above, with a heading property of
+‘ORG_GTD: Incubated’.
+
+
+File: org-gtd.info,  Node: Key bindings,  Prev: Headings,  Up: 200 <- 11x
+
+Key bindings
+............
+
+Version 1.x of Org GTD recommended a binding for
+‘org-gtd-clarify-finalize’.  This binding must now be set as follows
+(replace the keybinding with one of your choice):
+
+     (define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose)
 
 
 File: org-gtd.info,  Node: Installing,  Next: Configuring,  Prev: Upgrading,  Up: Org GTD
@@ -610,10 +703,8 @@ File: org-gtd.info,  Node: Multiple files / refile targets,  Prev: Cleaning up /
 2.5 Multiple files / refile targets
 ===================================
 
-If you would like to add new refile targets, it’s simple.  Add a
-top-level heading in any ‘.org’ file (including a new one) in
-‘org-gtd-directory’ and make sure it has the following properties
-drawer.
+If you would like to add new refile targets, it’s simple, follow these
+instructions.
 
 * Menu:
 
@@ -626,6 +717,9 @@ File: org-gtd.info,  Node: New project heading,  Next: Other headings,  Up: Mult
 2.5.1 New project heading
 -------------------------
 
+Add a top-level heading in any ‘.org’ file (including a new one) in
+‘org-gtd-directory’ and make sure it has the following properties
+drawer.
      :PROPERTIES:
      :TRIGGER: next-sibling todo!(NEXT)
      :ORG_GTD: Projects
@@ -682,36 +776,40 @@ Tag Table:
 Node: Top735
 Node: Org GTD2147
 Node: Summary2534
-Node: Upgrading7128
-Node: 200 <- 11x7286
-Node: Installing7418
-Node: use-package7702
-Node: Manually7914
-Node: Configuring8280
-Node: The easy way8525
-Node: Required configuration of sub-packages8953
-Node: org-edna9217
-Node: configuration options for org-gtd9694
-Node: Recommended key bindings10436
-Node: Using Org GTD11164
-Node: Adding things to the inbox11835
-Node: Processing the inbox12650
-Node: Quick action15226
-Node: Trash15532
-Node: Calendar15777
-Node: Delegate16047
-Node: Single action16407
-Node: Archive16661
-Node: Incubate17054
-Node: Projects17510
-Node: Engaging with your GTD items18534
-Node: Interacting with org-agenda19389
-Node: Cleaning up / archiving completed work20260
-Node: Multiple files / refile targets21114
-Node: New project heading21581
-Node: Other headings21839
-Node: Troubleshooting22424
-Node: Projects without a NEXT item22674
+Node: Upgrading5969
+Node: 200 <- 11x6127
+Node: states6296
+Node: Configuration6439
+Node: Headings7600
+Node: Key bindings8917
+Node: Installing9264
+Node: use-package9548
+Node: Manually9760
+Node: Configuring10126
+Node: The easy way10371
+Node: Required configuration of sub-packages10799
+Node: org-edna11063
+Node: configuration options for org-gtd11540
+Node: Recommended key bindings12282
+Node: Using Org GTD13010
+Node: Adding things to the inbox13681
+Node: Processing the inbox14496
+Node: Quick action17072
+Node: Trash17378
+Node: Calendar17623
+Node: Delegate17893
+Node: Single action18253
+Node: Archive18507
+Node: Incubate18900
+Node: Projects19356
+Node: Engaging with your GTD items20380
+Node: Interacting with org-agenda21235
+Node: Cleaning up / archiving completed work22106
+Node: Multiple files / refile targets22960
+Node: New project heading23303
+Node: Other headings23711
+Node: Troubleshooting24296
+Node: Projects without a NEXT item24546
 
 End Tag Table
 

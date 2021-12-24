@@ -94,7 +94,50 @@ This package provides a system that allows you to capture incoming things into a
 :DESCRIPTION: How to upgrade your local setup across major versions
 :END:
 *** 2.0.0 <- 1.1.x
-- rename CANCELED to CNCL
+**** TODO states
+You need to rename CANCELED to CNCL.
+**** Configuration
+Org GTD now handles dependency loading more intelligently, so you no longer need the overly complicated setup of ~org-gtd~, ~org-agenda~ and ~org-capure~ in your config for dependency loading. You now only need ~org-gtd~. If you are using ~use-package~ then the following is the minimal config required.
+
+#+begin_src elisp
+  (use-package org-gtd :after 'org)
+#+end_src
+
+You no longer need to configure ~org-agenda-property-list~ yourself. Org GTD now manages the context with a macro, ~with-org-gtd-context~.
+
+You no longer need to configure ~org-agenda-files~. Same reason as above.
+
+You no longer need to configure ~org-agenda-custom-commands~. Now there's ~org-gtd-agenda-custom-commands~ to take the relay - see the variable documentation for more information.
+
+The org-capture templates are now simplified and managed by ~org-gtd-capture-templates~. If you did not change the default configuration, then you can just remove what you had. Read the variable documentaton for further information.
+**** Headings
+Org GTD no longer uses the name of the heading to figure out how to refile things, and which headings are useful. Instead it uses a custom Org property called ORG_GTD. This means you are free to rename the existing headings whatever you want, but you DO need to make some adjustments to your current files.
+
+If you would like to add new refile targets, it's simple, follow these instructions.
+
+For projects, make sure the heading has the following two properties.
+#+begin_src org-mode
+:PROPERTIES:
+:TRIGGER: next-sibling todo!(NEXT)
+:ORG_GTD: Projects
+:END:
+#+end_src
+
+For other headings, make sure there is an ORG_GTD property, like for the project, above.
+
+The other ORG_GTD properties are set as follows. Note that Single and Delegated actions are together now, so you can merge those headings if you want.
+
+- Scheduled actions :: =ORG_GTD: Calendar=
+- Single & Delegated actions :: =ORG_GTD: Actions=
+- Incubated actions :: =ORG_GTD: Incubated=
+
+For incubated actions, version 1.x of Org GTD asked for second-level heading, such as ~*To Read~. No more - these are now top-level headings, exactly as described above, with a heading property of ~ORG_GTD: Incubated~.
+**** Key bindings
+Version 1.x of Org GTD recommended a binding for ~org-gtd-clarify-finalize~. This binding must now be set as follows (replace the keybinding with one of your choice):
+
+#+begin_src elisp
+  (define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose)
+#+end_src
 ** Installing
 :PROPERTIES:
 :DESCRIPTION: Get Org GTD in your emacs
@@ -275,8 +318,9 @@ The variable ~org-gtd-archive-location~ hosts a *function* that returns a string
 
 The function to archive everything is ~M-x org-gtd-archive-completed-items~.
 ** Multiple files / refile targets
-If you would like to add new refile targets, it's simple. Add a top-level heading in any ~.org~ file (including a new one) in ~org-gtd-directory~ and make sure it has the following properties drawer.
+If you would like to add new refile targets, it's simple, follow these instructions.
 *** New project heading
+Add a top-level heading in any ~.org~ file (including a new one) in ~org-gtd-directory~ and make sure it has the following properties drawer.
 #+begin_src org-mode
 :PROPERTIES:
 :TRIGGER: next-sibling todo!(NEXT)

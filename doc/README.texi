@@ -139,46 +139,45 @@ This package, and this documentation, assume familiarity with the flow of GTD as
 
 This package provides a system that allows you to capture incoming things into an inbox, then process the inbox and categorize each item based on the GTD categories. It leverages org-agenda to show today's items as well as the NEXT items. It also has a simple project management system, which currently assumes all tasks in a project are sequential.
 @example
-                                    ┌───────┐
-                                    │"STUFF"│
-                                    └──┬────┘
-                                       │
-                                    ┌──▼────┐
-                                    │IN BOX │
-                                    └──┬────┘
-                                       │               Eliminate   ┌─────────┐
-                                       │             ┌────────────►│  Trash  │
-                                   ┌───▼───────┐     │             └─────────┘
-                                   │What is it?│     │
-                                   └───┬───────┘     │             ┌─────────┐
-                                       │             │ Incubate    │ Someday/│
-                                       │             ├────────────►│ Maybe   │
-┌──────────┐  YES (Multi-Step)    ┌────▼────────┐ NO │             └─────────┘
-│ Projects │◄─────────────────────┤   Is it     ├────┤
-└─┬────▲───┤                      │ Actionable? │    │ File        ┌─────────┐
-  │    │   └────────────────────┐ └──────┬──────┘    └────────────►│Reference│
-  │    │      Review for Actions│        │                         └─────────┘
-┌─▼────┴───┐                    │        │YES
-│ Planning │                    └───────►│
-└──────────┘                             │
-                                  ┌──────▼─────┐     Less than
-                  Delegate        │ What's the │     2 minutes     ┌────────┐
-                     ┌────────────┤Next Action?├──────────────────►│ DO IT  │
-                     │            └───────┬────┘                   └────────┘
-                     │                    │
-                     │                    │  FOR ME
-                     │                    │           Specific Date or Time
-                     │                    ├────────────────────────────┐
-                     │              ASAP  │                            │
-                ┌────▼─────┐           ┌──▼───────┐              ┌─────▼────┐
-                │          │           │          │              │          │
-                │          │           │          │              │          │
-                │          │           │          │              │          │
-                │          │           │          │              │          │
-                │          │           │          │              │          │
-                └──────────┘           └──────────┘              └──────────┘
+                                    +-------+
+                                    |"STUFF"|
+                                    +--+----+
+                                       |
+                                    +--v----+
+                                    |IN BOX |
+                                    +--+----+
+                                       |               Eliminate  +----------+
+                                       |             +------------>   Trash  |
+                                   +---v-------+     |            +----------+
+                                   |What is it?|     |
+                                   +---+-------+     |            +----------+
+                                       |             | Incubate   |  Someday/|
+                                       |             +------------>  Maybe   |
++----------+  YES (Multi-Step)   +-----v-------+  NO |            +----------+
+| Projects <---------------------+    Is it    +-----+
++-+----^---+                     |  Actionable?|     | File       +----------+
+  |    |   +----------------+    +------+------+     +------------>Reference |
+  |    |        Review For  |           |                         +----------+
++-v----+---+     Actions    |           | YES
+| Planning |                +----------->
++----------+                            |
+                                  +-----v------+     Less than
+                  Delegate        | What's the |     2 minutes     +--------+
+                     +------------+Next Action?+-------------------> DO IT  |
+                     |            +-------+----+                   +--------+
+                     |                    |
+                     |                    |  FOR ME
+                     |                    |           Specific Date or Time
+                     |                    +----------------------------+
+                     |              ASAP  |                            |
+                +----v-----+           +--v-------+              +-----v----+
+                |          |           |          |              |          |
+                |          |           |          |              |          |
+                |          |           |          |              |          |
+                |          |           |          |              |          |
+                |          |           |          |              |          |
+                +----------+           +----------+              +----------+
                  Waiting For           Next Actions                 Calendar
-
 @end example
 
 @node Upgrading
@@ -191,10 +190,73 @@ This package provides a system that allows you to capture incoming things into a
 @node 200 <- 11x
 @subsection 2.0.0 <- 1.1.x
 
-@itemize
-@item
-rename CANCELED to CNCL
-@end itemize
+@menu
+* states::
+* Configuration::
+* Headings::
+* Key bindings::
+@end menu
+
+@node states
+@unnumberedsubsubsec @strong{TODO} states
+
+You need to rename CANCELED to CNCL@.
+
+@node Configuration
+@unnumberedsubsubsec Configuration
+
+Org GTD now handles dependency loading more intelligently, so you no longer need the overly complicated setup of @code{org-gtd}, @code{org-agenda} and @code{org-capure} in your config for dependency loading. You now only need @code{org-gtd}. If you are using @code{use-package} then the following is the minimal config required.
+
+@lisp
+(use-package org-gtd :after 'org)
+@end lisp
+
+You no longer need to configure @code{org-agenda-property-list} yourself. Org GTD now manages the context with a macro, @code{with-org-gtd-context}.
+
+You no longer need to configure @code{org-agenda-files}. Same reason as above.
+
+You no longer need to configure @code{org-agenda-custom-commands}. Now there's @code{org-gtd-agenda-custom-commands} to take the relay - see the variable documentation for more information.
+
+The org-capture templates are now simplified and managed by @code{org-gtd-capture-templates}. If you did not change the default configuration, then you can just remove what you had. Read the variable documentaton for further information.
+
+@node Headings
+@unnumberedsubsubsec Headings
+
+Org GTD no longer uses the name of the heading to figure out how to refile things, and which headings are useful. Instead it uses a custom Org property called ORG@math{_GTD}. This means you are free to rename the existing headings whatever you want, but you DO need to make some adjustments to your current files.
+
+If you would like to add new refile targets, it's simple, follow these instructions.
+
+For projects, make sure the heading has the following two properties.
+@example
+:PROPERTIES:
+:TRIGGER: next-sibling todo!(NEXT)
+:ORG_GTD: Projects
+:END:
+@end example
+
+For other headings, make sure there is an ORG@math{_GTD} property, like for the project, above.
+
+The other ORG@math{_GTD} properties are set as follows. Note that Single and Delegated actions are together now, so you can merge those headings if you want.
+
+@table @asis
+@item Scheduled actions
+@samp{ORG_GTD: Calendar}
+@item Single & Delegated actions
+@samp{ORG_GTD: Actions}
+@item Incubated actions
+@samp{ORG_GTD: Incubated}
+@end table
+
+For incubated actions, version 1.x of Org GTD asked for second-level heading, such as @code{*To Read}. No more - these are now top-level headings, exactly as described above, with a heading property of @code{ORG_GTD: Incubated}.
+
+@node Key bindings
+@unnumberedsubsubsec Key bindings
+
+Version 1.x of Org GTD recommended a binding for @code{org-gtd-clarify-finalize}. This binding must now be set as follows (replace the keybinding with one of your choice):
+
+@lisp
+(define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose)
+@end lisp
 
 @node Installing
 @section Installing
@@ -490,7 +552,7 @@ The function to archive everything is @code{M-x org-gtd-archive-completed-items}
 @node Multiple files / refile targets
 @section Multiple files / refile targets
 
-If you would like to add new refile targets, it's simple. Add a top-level heading in any @code{.org} file (including a new one) in @code{org-gtd-directory} and make sure it has the following properties drawer.
+If you would like to add new refile targets, it's simple, follow these instructions.
 
 @menu
 * New project heading::
@@ -500,6 +562,7 @@ If you would like to add new refile targets, it's simple. Add a top-level headin
 @node New project heading
 @subsection New project heading
 
+Add a top-level heading in any @code{.org} file (including a new one) in @code{org-gtd-directory} and make sure it has the following properties drawer.
 @example
 :PROPERTIES:
 :TRIGGER: next-sibling todo!(NEXT)
