@@ -406,8 +406,6 @@ When you are done refining it, call @code{M-x org-gtd-choose} (or hit your keybi
 
 You have a number of possible choices for each item you process. Subsections will explain how Org GTD handles each one.
 
-@image{processing-menu,,,,png}
-
 @table @asis
 @item @strong{[Q]uick Action}
 Quick action. Do it now, then choose this to mark the item as DONΕ and archive it.

@@ -1,4 +1,5 @@
-This is org-gtd.info, produced by makeinfo version 6.7 from README.texi.
+This is org-gtd.info, produced by makeinfo version 6.7 from
+org-gtd.texi.
 
 Copyright (C) 2018-2021 Aldric Giacomoni <trevoke@gmail.com>
 
@@ -477,8 +478,6 @@ this item.
    You have a number of possible choices for each item you process.
 Subsections will explain how Org GTD handles each one.
 
- [image src="processing-menu.png" ]
-
 *[Q]uick Action*
      Quick action.  Do it now, then choose this to mark the item as DONΕ
      and archive it.
@@ -773,43 +772,43 @@ that the package will not surface and help you finish.
 
 
 Tag Table:
-Node: Top735
-Node: Org GTD2147
-Node: Summary2534
-Node: Upgrading5969
-Node: 200 <- 11x6127
-Node: states6296
-Node: Configuration6439
-Node: Headings7600
-Node: Key bindings8917
-Node: Installing9264
-Node: use-package9548
-Node: Manually9760
-Node: Configuring10126
-Node: The easy way10371
-Node: Required configuration of sub-packages10799
-Node: org-edna11063
-Node: configuration options for org-gtd11540
-Node: Recommended key bindings12282
-Node: Using Org GTD13010
-Node: Adding things to the inbox13681
-Node: Processing the inbox14496
-Node: Quick action17072
-Node: Trash17378
-Node: Calendar17623
-Node: Delegate17893
-Node: Single action18253
-Node: Archive18507
-Node: Incubate18900
-Node: Projects19356
-Node: Engaging with your GTD items20380
-Node: Interacting with org-agenda21235
-Node: Cleaning up / archiving completed work22106
-Node: Multiple files / refile targets22960
-Node: New project heading23303
-Node: Other headings23711
-Node: Troubleshooting24296
-Node: Projects without a NEXT item24546
+Node: Top736
+Node: Org GTD2148
+Node: Summary2535
+Node: Upgrading5970
+Node: 200 <- 11x6128
+Node: states6297
+Node: Configuration6440
+Node: Headings7601
+Node: Key bindings8918
+Node: Installing9265
+Node: use-package9549
+Node: Manually9761
+Node: Configuring10127
+Node: The easy way10372
+Node: Required configuration of sub-packages10800
+Node: org-edna11064
+Node: configuration options for org-gtd11541
+Node: Recommended key bindings12283
+Node: Using Org GTD13011
+Node: Adding things to the inbox13682
+Node: Processing the inbox14497
+Node: Quick action17034
+Node: Trash17340
+Node: Calendar17585
+Node: Delegate17855
+Node: Single action18215
+Node: Archive18469
+Node: Incubate18862
+Node: Projects19318
+Node: Engaging with your GTD items20342
+Node: Interacting with org-agenda21197
+Node: Cleaning up / archiving completed work22068
+Node: Multiple files / refile targets22922
+Node: New project heading23265
+Node: Other headings23673
+Node: Troubleshooting24258
+Node: Projects without a NEXT item24508
 
 End Tag Table
 
