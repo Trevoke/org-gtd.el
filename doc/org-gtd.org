@@ -51,19 +51,19 @@ This package provides a system that allows you to capture incoming things into a
 #+begin_example
                                     +-------+
                                     |"STUFF"|
-                                    +--+----+
-                                       |
-                                    +--v----+
+                                    +---+---+
+                                        |
+                                    +---v---+
                                     |IN BOX |
-                                    +--+----+
-                                       |               Eliminate  +----------+
-                                       |             +------------>   Trash  |
-                                   +---v-------+     |            +----------+
+                                    +---+----+
+                                        |              Eliminate  +----------+
+                                        |            +------------>   Trash  |
+                                   +----v------+     |            +----------+
                                    |What is it?|     |
-                                   +---+-------+     |            +----------+
-                                       |             | Incubate   |  Someday/|
-                                       |             +------------>  Maybe   |
-+----------+  YES (Multi-Step)   +-----v-------+  NO |            +----------+
+                                   +----+------+     |            +----------+
+                                        |            | Incubate   |  Someday/|
+                                        |            +------------>  Maybe   |
++----------+  YES (Multi-Step)   +------v------+  NO |            +----------+
 | Projects <---------------------+    Is it    +-----+
 +-+----^---+                     |  Actionable?|     | File       +----------+
   |    |   +----------------+    +------+------+     +------------>Reference |
@@ -94,8 +94,6 @@ This package provides a system that allows you to capture incoming things into a
 :DESCRIPTION: How to upgrade your local setup across major versions
 :END:
 *** 2.0.0 <- 1.1.x
-**** TODO states
-You need to rename CANCELED to CNCL.
 **** Configuration
 Org GTD now handles dependency loading more intelligently, so you no longer need the overly complicated setup of ~org-gtd~, ~org-agenda~ and ~org-capure~ in your config for dependency loading. You now only need ~org-gtd~. If you are using ~use-package~ then the following is the minimal config required.
 
@@ -103,14 +101,87 @@ Org GTD now handles dependency loading more intelligently, so you no longer need
   (use-package org-gtd :after 'org)
 #+end_src
 
-You no longer need to configure ~org-agenda-property-list~ yourself. Org GTD now manages the context with a macro, ~with-org-gtd-context~.
+You no longer need to configure ~org-agenda-property-list~ yourself. Org GTD now manages the context with a macro, ~with-org-gtd-context~. Any prior configuration of this subpackage can be handled as you did before.
 
-You no longer need to configure ~org-agenda-files~. Same reason as above.
+You no longer need to configure ~org-agenda-files~. Same reason as above. This allows you to use org-gtd without destroying your previous setup, and makes it easier to try org-gtd and then get rid of it if you don't like it.
 
 You no longer need to configure ~org-agenda-custom-commands~. Now there's ~org-gtd-agenda-custom-commands~ to take the relay - see the variable documentation for more information.
 
 The org-capture templates are now simplified and managed by ~org-gtd-capture-templates~. If you did not change the default configuration, then you can just remove what you had. Read the variable documentaton for further information.
-**** Headings
+***** Example upgrade
+My org-gtd config for 1.x was:
+#+begin_src elisp
+  (use-package org-gtd
+    :after org
+    :demand t
+    :pin melpa
+    :custom
+    (org-gtd-directory stag-org-gtd-directory)
+    (org-agenda-property-list '("DELEGATED_TO"))
+    (org-edna-use-inheritance t)
+    :config
+    (org-edna-load)
+    :bind
+    (("C-c d c" . org-gtd-capture)
+     ("C-c d a" . org-agenda-list)
+     ("C-c d p" . org-gtd-process-inbox)
+     ("C-c d n" . org-gtd-show-all-next)
+     ("C-c d s" . org-gtd-show-stuck-projects)
+     :map org-gtd-process-map
+     ("C-c c" . org-gtd-choose)))
+
+
+  (use-package org-agenda
+    :ensure nil
+    :no-require t
+    :after (org-gtd)
+    :custom
+    (org-agenda-skip-deadline-if-done t)
+    (org-agenda-skip-scheduled-if-done t)
+    (org-agenda-files `(,org-gtd-directory))
+    (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT"))))))
+
+  (use-package org-capture
+    :ensure nil
+    :after org-gtd
+    :config
+    (setq org-capture-templates `(("i" "Inbox"
+                                 entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
+                                 "* %?\n%U\n\n  %i"
+                                 :kill-buffer t)
+                                ("t" "Todo with link"
+                                 entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
+                                 "* %?\n%U\n\n  %i\n  %a"
+                                 :kill-buffer t))))
+#+end_src
+
+And my config for 2.0 is:
+#+begin_src elisp
+  (use-package org-gtd
+    :after org
+    :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
+                     :branch "2.0.0" :upgrade t)
+    :demand t
+    :custom
+    (org-gtd-directory stag-org-gtd-directory)
+    (org-edna-use-inheritance t)
+    :config
+    (org-edna-mode)
+    :bind
+    (("C-c d c" . org-gtd-capture)
+     ("C-c d e" . org-gtd-engage)
+     ("C-c d p" . org-gtd-process-inbox)
+     ("C-c d n" . org-gtd-show-all-next)
+     ("C-c d s" . org-gtd-show-stuck-projects)
+     :map org-gtd-process-map
+     ("C-c c" . org-gtd-choose)))
+#+end_src
+**** Relevant commands with new names
+- ~org-agenda-list~ -> ~org-gtd-engage~
+- ~org-gtd-clarify-finalize~ -> ~org-gtd-choose~ (see the section on Key bindings below)
+**** heading states (TODO, etc.)
+You need to rename CANCELED to CNCL. a simple string replace in the ~org-gtd-directory~ will do the trick.
+**** Differentiating GTD types of items
 Org GTD no longer uses the name of the heading to figure out how to refile things, and which headings are useful. Instead it uses a custom Org property called ORG_GTD. This means you are free to rename the existing headings whatever you want, but you DO need to make some adjustments to your current files.
 
 If you would like to add new refile targets, it's simple, follow these instructions.
@@ -132,6 +203,8 @@ The other ORG_GTD properties are set as follows. Note that Single and Delegated 
 - Incubated actions :: =ORG_GTD: Incubated=
 
 For incubated actions, version 1.x of Org GTD asked for second-level heading, such as ~*To Read~. No more - these are now top-level headings, exactly as described above, with a heading property of ~ORG_GTD: Incubated~.
+**** Multiple refile targets
+There is a new variable, ~org-gtd-refile-to-any-target~. By default this variable is set to true. This means that Org GTD will refile to whatever the first target it finds is. *THIS INCLUDES INCUBATED TARGETS*.
 **** Key bindings
 Version 1.x of Org GTD recommended a binding for ~org-gtd-clarify-finalize~. This binding must now be set as follows (replace the keybinding with one of your choice):
 
