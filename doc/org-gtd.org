@@ -204,7 +204,17 @@ The other ORG_GTD properties are set as follows. Note that Single and Delegated 
 
 For incubated actions, version 1.x of Org GTD asked for second-level heading, such as ~*To Read~. No more - these are now top-level headings, exactly as described above, with a heading property of ~ORG_GTD: Incubated~.
 **** Multiple refile targets
-There is a new variable, ~org-gtd-refile-to-any-target~. By default this variable is set to true. This means that Org GTD will refile to whatever the first target it finds is. *THIS INCLUDES INCUBATED TARGETS*.
+There is a new variable, ~org-gtd-refile-to-any-target~. By default this variable is set to ~t~. This means that Org GTD will refile to whatever the first target it finds is. This is the default value because it most closely matches the behavior for version 1.x.
+*THIS BEHAVIOR ALSO APPLIES TO INCUBATE REFILE TARGETS*. Therefore, if you have multiple incubated refile targets, you will need to set this variable to ~nil~, or change to a single refile target. You can e.g. set a custom property to describe the kind of incubated item it is, if it is useful to you, something like:
+
+#+begin_example
+,* Incubated
+,** Buy a boat
+SCHEDULED: <2035-06-01 Fri>
+:PROPERTIES:
+:INCUBATE: big financial investment
+:END:
+#+end_example
 **** Key bindings
 Version 1.x of Org GTD recommended a binding for ~org-gtd-clarify-finalize~. This binding must now be set as follows (replace the keybinding with one of your choice):
 

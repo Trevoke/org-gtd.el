@@ -20,7 +20,7 @@
 
       (with-current-buffer temp-buffer
         (insert "* foobar")
-        (org-gtd-refile--do org-gtd-projects))
+        (org-gtd--refile org-gtd-projects))
 
       (with-current-buffer (org-gtd--default-file)
         (expect (buffer-string) :to-match "foobar"))))
@@ -64,7 +64,7 @@
           (point-min)
           (with-simulated-input
               "AdditionalHeading RET"
-            (org-gtd-refile--do org-gtd-projects)))
+            (org-gtd--refile org-gtd-projects)))
 
         (expect (with-current-buffer new-buffer (buffer-string))
                 :to-match

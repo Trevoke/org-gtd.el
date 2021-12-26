@@ -71,7 +71,7 @@
     (puthash org-gtd-calendar "Refile calendar item to: " myhash)
     myhash))
 
-(defun org-gtd-refile--do (type)
+(defun org-gtd--refile (type)
   "Refile an item to the single action file.
 
 TYPE is one of the org-gtd action types.  This is a private function."

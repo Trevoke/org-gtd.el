@@ -141,19 +141,19 @@ This package provides a system that allows you to capture incoming things into a
 @example
                                     +-------+
                                     |"STUFF"|
-                                    +--+----+
-                                       |
-                                    +--v----+
+                                    +---+---+
+                                        |
+                                    +---v---+
                                     |IN BOX |
-                                    +--+----+
-                                       |               Eliminate  +----------+
-                                       |             +------------>   Trash  |
-                                   +---v-------+     |            +----------+
+                                    +---+----+
+                                        |              Eliminate  +----------+
+                                        |            +------------>   Trash  |
+                                   +----v------+     |            +----------+
                                    |What is it?|     |
-                                   +---+-------+     |            +----------+
-                                       |             | Incubate   |  Someday/|
-                                       |             +------------>  Maybe   |
-+----------+  YES (Multi-Step)   +-----v-------+  NO |            +----------+
+                                   +----+------+     |            +----------+
+                                        |            | Incubate   |  Someday/|
+                                        |            +------------>  Maybe   |
++----------+  YES (Multi-Step)   +------v------+  NO |            +----------+
 | Projects <---------------------+    Is it    +-----+
 +-+----^---+                     |  Actionable?|     | File       +----------+
   |    |   +----------------+    +------+------+     +------------>Reference |
@@ -191,16 +191,13 @@ This package provides a system that allows you to capture incoming things into a
 @subsection 2.0.0 <- 1.1.x
 
 @menu
-* states::
 * Configuration::
-* Headings::
+* Relevant commands with new names::
+* heading states (TODO, etc.): heading states (TODO etc).
+* Differentiating GTD types of items::
+* Multiple refile targets::
 * Key bindings::
 @end menu
-
-@node states
-@unnumberedsubsubsec @strong{TODO} states
-
-You need to rename CANCELED to CNCL@.
 
 @node Configuration
 @unnumberedsubsubsec Configuration
@@ -211,16 +208,105 @@ Org GTD now handles dependency loading more intelligently, so you no longer need
 (use-package org-gtd :after 'org)
 @end lisp
 
-You no longer need to configure @code{org-agenda-property-list} yourself. Org GTD now manages the context with a macro, @code{with-org-gtd-context}.
+You no longer need to configure @code{org-agenda-property-list} yourself. Org GTD now manages the context with a macro, @code{with-org-gtd-context}. Any prior configuration of this subpackage can be handled as you did before.
 
-You no longer need to configure @code{org-agenda-files}. Same reason as above.
+You no longer need to configure @code{org-agenda-files}. Same reason as above. This allows you to use org-gtd without destroying your previous setup, and makes it easier to try org-gtd and then get rid of it if you don't like it.
 
 You no longer need to configure @code{org-agenda-custom-commands}. Now there's @code{org-gtd-agenda-custom-commands} to take the relay - see the variable documentation for more information.
 
 The org-capture templates are now simplified and managed by @code{org-gtd-capture-templates}. If you did not change the default configuration, then you can just remove what you had. Read the variable documentaton for further information.
 
-@node Headings
-@unnumberedsubsubsec Headings
+@itemize
+@item
+@anchor{Example upgrade}Example upgrade
+
+
+My org-gtd config for 1.x was:
+@lisp
+(use-package org-gtd
+  :after org
+  :demand t
+  :pin melpa
+  :custom
+  (org-gtd-directory stag-org-gtd-directory)
+  (org-agenda-property-list '("DELEGATED_TO"))
+  (org-edna-use-inheritance t)
+  :config
+  (org-edna-load)
+  :bind
+  (("C-c d c" . org-gtd-capture)
+   ("C-c d a" . org-agenda-list)
+   ("C-c d p" . org-gtd-process-inbox)
+   ("C-c d n" . org-gtd-show-all-next)
+   ("C-c d s" . org-gtd-show-stuck-projects)
+   :map org-gtd-process-map
+   ("C-c c" . org-gtd-choose)))
+
+
+(use-package org-agenda
+  :ensure nil
+  :no-require t
+  :after (org-gtd)
+  :custom
+  (org-agenda-skip-deadline-if-done t)
+  (org-agenda-skip-scheduled-if-done t)
+  (org-agenda-files `(,org-gtd-directory))
+  (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT"))))))
+
+(use-package org-capture
+  :ensure nil
+  :after org-gtd
+  :config
+  (setq org-capture-templates `(("i" "Inbox"
+                               entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
+                               "* %?\n%U\n\n  %i"
+                               :kill-buffer t)
+                              ("t" "Todo with link"
+                               entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
+                               "* %?\n%U\n\n  %i\n  %a"
+                               :kill-buffer t))))
+@end lisp
+
+And my config for 2.0 is:
+@lisp
+(use-package org-gtd
+  :after org
+  :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
+                   :branch "2.0.0" :upgrade t)
+  :demand t
+  :custom
+  (org-gtd-directory stag-org-gtd-directory)
+  (org-edna-use-inheritance t)
+  :config
+  (org-edna-mode)
+  :bind
+  (("C-c d c" . org-gtd-capture)
+   ("C-c d e" . org-gtd-engage)
+   ("C-c d p" . org-gtd-process-inbox)
+   ("C-c d n" . org-gtd-show-all-next)
+   ("C-c d s" . org-gtd-show-stuck-projects)
+   :map org-gtd-process-map
+   ("C-c c" . org-gtd-choose)))
+@end lisp
+@end itemize
+
+@node Relevant commands with new names
+@unnumberedsubsubsec Relevant commands with new names
+
+@itemize
+@item
+@code{org-agenda-list} -> @code{org-gtd-engage}
+@item
+@code{org-gtd-clarify-finalize} -> @code{org-gtd-choose} (see the section on Key bindings below)
+@end itemize
+
+@node heading states (TODO etc)
+@unnumberedsubsubsec heading states (TODO, etc.)
+
+You need to rename CANCELED to CNCL@. a simple string replace in the @code{org-gtd-directory} will do the trick.
+
+@node Differentiating GTD types of items
+@unnumberedsubsubsec Differentiating GTD types of items
 
 Org GTD no longer uses the name of the heading to figure out how to refile things, and which headings are useful. Instead it uses a custom Org property called ORG@math{_GTD}. This means you are free to rename the existing headings whatever you want, but you DO need to make some adjustments to your current files.
 
@@ -248,6 +334,21 @@ The other ORG@math{_GTD} properties are set as follows. Note that Single and Del
 @end table
 
 For incubated actions, version 1.x of Org GTD asked for second-level heading, such as @code{*To Read}. No more - these are now top-level headings, exactly as described above, with a heading property of @code{ORG_GTD: Incubated}.
+
+@node Multiple refile targets
+@unnumberedsubsubsec Multiple refile targets
+
+There is a new variable, @code{org-gtd-refile-to-any-target}. By default this variable is set to @code{t}. This means that Org GTD will refile to whatever the first target it finds is. This is the default value because it most closely matches the behavior for version 1.x.
+@strong{THIS BEHAVIOR ALSO APPLIES TO INCUBATE REFILE TARGETS}. Therefore, if you have multiple incubated refile targets, you will need to set this variable to @code{nil}, or change to a single refile target. You can e.g. set a custom property to describe the kind of incubated item it is, if it is useful to you, something like:
+
+@example
+* Incubated
+** Buy a boat
+SCHEDULED: <2035-06-01 Fri>
+:PROPERTIES:
+:INCUBATE: big financial investment
+:END:
+@end example
 
 @node Key bindings
 @unnumberedsubsubsec Key bindings

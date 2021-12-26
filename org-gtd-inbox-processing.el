@@ -105,7 +105,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (backward-word)
   (insert "[/] ")
   (org-update-statistics-cookies t)
-  (org-gtd-refile--do org-gtd-projects)
+  (org-gtd--refile org-gtd-projects)
   (org-gtd-process-inbox))
 
 ;;;###autoload
@@ -117,7 +117,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (interactive)
   (org-gtd--decorate-item)
   (org-schedule 0)
-  (org-gtd-refile--do org-gtd-calendar)
+  (org-gtd--refile org-gtd-calendar)
   (org-gtd-process-inbox))
 
 ;;;###autoload
@@ -130,7 +130,7 @@ the inbox.  Set it as a waiting action and refile to
   (interactive)
   (org-gtd--decorate-item)
   (org-gtd-delegate)
-  (org-gtd-refile--do org-gtd-actions)
+  (org-gtd--refile org-gtd-actions)
   (org-gtd-process-inbox))
 
 ;;;###autoload
@@ -142,7 +142,7 @@ the inbox.  Refile to any org-gtd incubate target (see manual)."
   (interactive)
   (org-gtd--decorate-item)
   (org-schedule 0)
-  (org-gtd-refile--do org-gtd-incubated)
+  (org-gtd--refile org-gtd-incubated)
   (org-gtd-process-inbox))
 
 ;;;###autoload
@@ -168,7 +168,7 @@ the inbox.  Set as a NEXT action and refile to
   (interactive)
   (org-gtd--decorate-item)
   (org-todo "NEXT")
-  (org-gtd-refile--do org-gtd-actions)
+  (org-gtd--refile org-gtd-actions)
   (org-gtd-process-inbox))
 
 ;;;###autoload
