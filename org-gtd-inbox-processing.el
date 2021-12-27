@@ -188,7 +188,7 @@ the inbox.  Set as a NEXT action and refile to
 Stop processing the inbox."
   (interactive)
   (widen)
-  (org-gtd-process-mode nil)
+  (org-gtd-process-mode -1)
   (whitespace-cleanup))
 
 (defun org-gtd--decorate-item ()
