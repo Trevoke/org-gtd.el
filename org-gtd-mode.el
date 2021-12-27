@@ -26,6 +26,9 @@
 
 (require 'org-agenda)
 
+(defvar org-gtd-edna-inheritance nil "Private.")
+(defvar org-gtd-edna nil "Private.")
+
 ;;;###autoload
 (define-minor-mode org-gtd-mode
   "Global minor mode to bound `org-agenda' to the org-gtd settings."

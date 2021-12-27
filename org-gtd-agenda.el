@@ -60,10 +60,8 @@ This function is intended to be used on incubated items that come up."
    #'org-gtd-agenda-projectify nil t nil
    (let* ((marker (or (org-get-at-bol 'org-marker)
                       (org-agenda-error)))
-          (type (marker-insertion-type marker))
           (buffer (marker-buffer marker))
-          (pos (marker-position marker))
-          ts)
+          (pos (marker-position marker)))
      (set-marker-insertion-type marker t)
      (org-with-remote-undo buffer
        (with-current-buffer buffer
@@ -88,10 +86,8 @@ This function is intended to be used on incubated items that come up."
    #'org-gtd-agenda-delegate nil t nil
    (let* ((marker (or (org-get-at-bol 'org-marker)
                       (org-agenda-error)))
-          (type (marker-insertion-type marker))
           (buffer (marker-buffer marker))
-          (pos (marker-position marker))
-          ts)
+          (pos (marker-position marker)))
      (set-marker-insertion-type marker t)
      (org-with-remote-undo buffer
        (with-current-buffer buffer
@@ -110,10 +106,8 @@ This function is intended to be used on incubated items that come up."
    #'org-gtd-agenda-cancel-project nil t nil
    (let* ((marker (or (org-get-at-bol 'org-marker)
                       (org-agenda-error)))
-          (type (marker-insertion-type marker))
           (buffer (marker-buffer marker))
-          (pos (marker-position marker))
-          ts)
+          (pos (marker-position marker)))
      (set-marker-insertion-type marker t)
      (org-with-remote-undo buffer
        (with-current-buffer buffer
