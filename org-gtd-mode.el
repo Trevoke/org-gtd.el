@@ -55,7 +55,7 @@ is enabled.")
 (defun org-gtd--enable-org-gtd-mode ()
   "Private function.
 
-`org-gtd-mode' uses this to override a number of settings in emacs.
+`org-gtd-mode' uses this to override a number of settings in Emacs.
 Disabling the mode reverts the settings to their previous values.
 It should be safe to turn this on if you do not have extensive `org-mode'
 configuration."
