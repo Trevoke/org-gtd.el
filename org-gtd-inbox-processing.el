@@ -76,7 +76,6 @@ undefined state."
 
   (condition-case err
       (progn
-        (message "%s" err)
         (widen)
         (goto-char (point-min))
         (org-next-visible-heading 1)

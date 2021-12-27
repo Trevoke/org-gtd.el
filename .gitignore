@@ -2,5 +2,6 @@
 /.eldev
 /Eldev-local
 /dev/.emacs.d
+/dev/.emacs~
+/doc/org-gtd.info
 /dev/gtd
-/.emacs~
