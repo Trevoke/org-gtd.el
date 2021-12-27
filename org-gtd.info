@@ -443,8 +443,11 @@ File: org-gtd.info,  Node: The easy way,  Next: Required configuration of sub-pa
 ------------------
 
 Just turn on ‘org-gtd-mode’ (‘M-x org-gtd-mode’).  This will set up
-emacs, Org mode, and Org GTD’s dependencies.  Turn off ‘org-gtd-mode’ to
-restore emacs to pre-org-gtd settings.
+emacs, Org mode, and Org GTD’s dependencies.  It will wrap a number of
+‘org-agenda’ functions to work smoothly.  If you are just testing out
+Org GTD, this is a good way to start.
+
+   Turn off ‘org-gtd-mode’ to restore emacs to pre-org-gtd settings.
 
    Note, you should still head over to the *note Recommended key
 bindings:: section.
@@ -895,29 +898,29 @@ Node: use-package14160
 Node: Manually14372
 Node: Configuring14738
 Node: The easy way14994
-Node: Required configuration of sub-packages15422
-Node: org-edna15686
-Node: configuration options for org-gtd16163
-Node: Recommended key bindings16905
-Node: Using Org GTD17633
-Node: Adding things to the inbox18315
-Node: Processing the inbox19130
-Node: Quick action21667
-Node: Trash21973
-Node: Calendar22218
-Node: Delegate22488
-Node: Single action22848
-Node: Archive23102
-Node: Incubate23495
-Node: Projects23951
-Node: Engaging with your GTD items24975
-Node: Interacting with org-agenda25830
-Node: Cleaning up / archiving completed work26701
-Node: Multiple files / refile targets27555
-Node: New project heading27898
-Node: Other headings28306
-Node: Troubleshooting28891
-Node: Projects without a NEXT item29141
+Node: Required configuration of sub-packages15563
+Node: org-edna15827
+Node: configuration options for org-gtd16304
+Node: Recommended key bindings17046
+Node: Using Org GTD17774
+Node: Adding things to the inbox18456
+Node: Processing the inbox19271
+Node: Quick action21808
+Node: Trash22114
+Node: Calendar22359
+Node: Delegate22629
+Node: Single action22989
+Node: Archive23243
+Node: Incubate23636
+Node: Projects24092
+Node: Engaging with your GTD items25116
+Node: Interacting with org-agenda25971
+Node: Cleaning up / archiving completed work26842
+Node: Multiple files / refile targets27696
+Node: New project heading28039
+Node: Other headings28447
+Node: Troubleshooting29032
+Node: Projects without a NEXT item29282
 
 End Tag Table
 

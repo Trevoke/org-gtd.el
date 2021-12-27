@@ -246,7 +246,9 @@ Finally, add this to your config:
 :DESCRIPTION: Required and optional system configuration
 :END:
 *** The easy way
-Just turn on ~org-gtd-mode~ (~M-x org-gtd-mode~). This will set up emacs, Org mode, and Org GTD's dependencies. Turn off ~org-gtd-mode~ to restore emacs to pre-org-gtd settings.
+Just turn on ~org-gtd-mode~ (~M-x org-gtd-mode~). This will set up emacs, Org mode, and Org GTD's dependencies. It will wrap a number of ~org-agenda~ functions to work smoothly. If you are just testing out Org GTD, this is a good way to start.
+
+Turn off ~org-gtd-mode~ to restore emacs to pre-org-gtd settings.
 
 Note, you should still head over to the [[*Recommended key bindings]] section.
 *** Required configuration of sub-packages

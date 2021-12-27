@@ -403,7 +403,9 @@ Finally, add this to your config:
 @node The easy way
 @subsection The easy way
 
-Just turn on @code{org-gtd-mode} (@code{M-x org-gtd-mode}). This will set up emacs, Org mode, and Org GTD's dependencies. Turn off @code{org-gtd-mode} to restore emacs to pre-org-gtd settings.
+Just turn on @code{org-gtd-mode} (@code{M-x org-gtd-mode}). This will set up emacs, Org mode, and Org GTD's dependencies. It will wrap a number of @code{org-agenda} functions to work smoothly. If you are just testing out Org GTD, this is a good way to start.
+
+Turn off @code{org-gtd-mode} to restore emacs to pre-org-gtd settings.
 
 Note, you should still head over to the @ref{Recommended key bindings} section.
 
