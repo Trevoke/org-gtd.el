@@ -49,14 +49,14 @@ This manual is for Org GtD version 2.0.
 @end ifnottex
 
 @menu
-* Org GTD::
+* Setting up Org GTD::
 * Using Org GTD::                How Org GTD maps to the GTD flow
 * Troubleshooting::
 
 @detailmenu
 --- The Detailed Node Listing ---
 
-Org GTD
+Setting up Org GTD
 
 * Summary::                      quick intro to GTD
 * Upgrading::                    How to upgrade your local setup across major versions
@@ -120,8 +120,8 @@ Troubleshooting
 @end detailmenu
 @end menu
 
-@node Org GTD
-@chapter Org GTD
+@node Setting up Org GTD
+@chapter Setting up Org GTD
 
 @menu
 * Summary::                      quick intro to GTD
