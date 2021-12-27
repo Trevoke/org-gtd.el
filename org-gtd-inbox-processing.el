@@ -33,13 +33,13 @@
 ;;;###autoload
 (define-minor-mode org-gtd-process-mode
   "Minor mode for org-gtd."
-  nil " GPR" org-gtd-process-map
+  nil " GPM" org-gtd-process-map
   :global nil
   (if org-gtd-process-mode
       (setq-local
        header-line-format
        (substitute-command-keys
-        "\\<org-gtd-process-map>Clarify item.  Finish `\\[org-gtd-choose]'."))
+        "\\<org-gtd-process-map>Clarify item.  Let Org GTD store it with `\\[org-gtd-choose]'."))
     (setq-local header-line-format nil)))
 
 
@@ -50,11 +50,12 @@ Note that this function is intended to be used only during inbox processing.
 Each action continues inbox processing, so you may put your emacs in an
 undefined state."
   ["Actionable"
-   [("p" "Project (multi-step)" org-gtd--project)]
+   [("q" "Quick action" org-gtd--quick-action)
+    ("s" "Single action" org-gtd--single-action)]
    [("d" "Delegate" org-gtd--delegate)
     ("c" "Calendar" org-gtd--calendar)]
-   [("q" "Quick action" org-gtd--quick-action)
-    ("s" "Single action" org-gtd--single-action)]]
+   [("p" "Project (multi-step)" org-gtd--project)]
+   ]
   ["Non-actionable"
    [("i" "Incubate" org-gtd--incubate)
     ("a" "Archive this knowledge" org-gtd--archive)]
