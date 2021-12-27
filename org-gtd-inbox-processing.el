@@ -88,7 +88,7 @@ undefined state."
   "Process GTD inbox item as a reference item."
   (interactive)
   (org-todo "DONE")
-  (org-archive-subtree)
+  (with-org-gtd-context (org-archive-subtree))
   (org-gtd-process-inbox))
 
 ;;;###autoload
@@ -155,7 +155,7 @@ the inbox.  Mark it as done and archive."
   (org-back-to-heading)
   (org-gtd--decorate-item)
   (org-todo "DONE")
-  (org-archive-subtree)
+  (with-org-gtd-context (org-archive-subtree))
   (org-gtd-process-inbox))
 
 ;;;###autoload
@@ -177,7 +177,7 @@ the inbox.  Set as a NEXT action and refile to
   (interactive)
   (org-gtd--decorate-item)
   (org-todo "CNCL")
-  (org-archive-subtree)
+  (with-org-gtd-context (org-archive-subtree))
   (org-gtd-process-inbox))
 
 ;;;###autoload

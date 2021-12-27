@@ -90,7 +90,7 @@ top level heading, or the behavior of org-gtd will be undefined."
 
 (defcustom org-gtd-agenda-custom-commands
   '(("g" "Scheduled today and all NEXT items"
-     ((agenda "" ((org-agenda-span 1))) (todo "NEXT|WAIT"))))
+     ((agenda "" ((org-agenda-span 1))) (todo "NEXT|WAIT-DELEGATED_TO"))))
   "Agenda custom commands to be used for org-gtd.
 
 The provided default is to show the agenda for today and all TODOs marked as
