@@ -26,6 +26,7 @@
 
 (require 'org-capture)
 (require 'org-gtd-core)
+(require 'org-gtd-files)
 
 ;;;###autoload
 (defun org-gtd-capture (&optional goto keys)
