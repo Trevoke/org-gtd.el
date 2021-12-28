@@ -1,3 +1,11 @@
+* 2.0.0
+** Complete overhaul of inbox processing
+We now respect that emacs is a GUI and that the user must have complete control at all times. The flow also provides control to the user *PRIOR* to the user choosing the way to categorize this item.
+** Create an actual info file usable within emacs
+** state CANCELED rename to CNCL
+Fits the four-letter pattern better. You'll need to do a search-and-replace in the files managed by ~org-gtd~, replacing "CANCELED" by "CNCL".
+** Better refile target discovery and dupport for many refile targets
+The code now looks for top-level headings with a property called ~ORG_GTD~ with possible values: ~Action~, ~Incubated~, ~Projects~, ~Scheduled~, ~Delegated~.
 * 1.1.1
 [2021-10-06 Wed]
 ** Bugfix in project canceling

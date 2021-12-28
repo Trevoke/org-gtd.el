@@ -1,0 +1,709 @@
+\input texinfo    @c -*- texinfo -*-
+@c %**start of header
+@setfilename ../org-gtd.info
+@settitle Org GTD User Manual
+@documentencoding UTF-8
+@documentlanguage en
+@c %**end of header
+
+@copying
+Copyright (C) 2018-2021 Aldric Giacomoni <trevoke@@gmail.com>
+
+You can redistribute this document and/or modify it under the terms
+of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any
+later version.
+
+This document is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE@.  See the GNU
+General Public License for more details.
+@end copying
+
+@dircategory Emacs
+@direntry
+* Org GTD: (org-gtd).   An opinionated GTD flow implemented in org-mode.
+@end direntry
+
+@finalout
+@titlepage
+@title Org GTD User Manual
+@subtitle for version 2.0
+@author Aldric Giacomoni
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top Org GTD User Manual
+
+Org GTD is an attempt to implement the GTD flow described in the GTD
+book as faithfully as possible.
+
+@noindent
+This manual is for Org GtD version 2.0.
+@end ifnottex
+
+@menu
+* Setting up Org GTD::
+* Using Org GTD::                How Org GTD maps to the GTD flow
+* Troubleshooting::
+
+@detailmenu
+--- The Detailed Node Listing ---
+
+Setting up Org GTD
+
+* Summary::                      quick intro to GTD
+* Upgrading::                    How to upgrade your local setup across major versions
+* Installing::                   Get Org GTD in your emacs
+* Configuring::                  Required and optional system configuration
+
+Upgrading
+
+* 2.0.0 <- 1.1.x: 200 <- 11x.
+
+
+Installing
+
+* use-package::
+* Manually::
+
+
+Configuring
+
+* The easy way::
+* Required configuration of sub-packages::
+* configuration options for org-gtd::
+* Recommended key bindings::
+
+
+Using Org GTD
+
+* Adding things to the inbox::
+* Processing the inbox::
+* Engaging with your GTD items::
+* Cleaning up / archiving completed work::
+* Multiple files / refile targets::
+
+Processing the inbox
+
+* Quick action::
+* Trash::
+* Calendar::
+* Delegate::
+* Single action::
+* Archive::
+* Incubate::
+* Projects::
+
+
+Engaging with your GTD items
+
+* Interacting with org-agenda::
+
+
+Multiple files / refile targets
+
+* New project heading::
+* Other headings::
+
+
+Troubleshooting
+
+* Projects without a NEXT item::
+
+@end detailmenu
+@end menu
+
+@node Setting up Org GTD
+@chapter Setting up Org GTD
+
+@menu
+* Summary::                      quick intro to GTD
+* Upgrading::                    How to upgrade your local setup across major versions
+* Installing::                   Get Org GTD in your emacs
+* Configuring::                  Required and optional system configuration
+@end menu
+
+@node Summary
+@section Summary
+
+This package tries to replicate as closely as possible the GTD workflow (see diagram below).
+
+This package, and this documentation, assume familiarity with the flow of GTD as described in the book.
+
+This package provides a system that allows you to capture incoming things into an inbox, then process the inbox and categorize each item based on the GTD categories. It leverages org-agenda to show today's items as well as the NEXT items. It also has a simple project management system, which currently assumes all tasks in a project are sequential.
+@example
+                                    +-------+
+                                    |"STUFF"|
+                                    +---+---+
+                                        |
+                                    +---v---+
+                                    |IN BOX |
+                                    +---+----+
+                                        |              Eliminate  +----------+
+                                        |            +------------>   Trash  |
+                                   +----v------+     |            +----------+
+                                   |What is it?|     |
+                                   +----+------+     |            +----------+
+                                        |            | Incubate   |  Someday/|
+                                        |            +------------>  Maybe   |
++----------+  YES (Multi-Step)   +------v------+  NO |            +----------+
+| Projects <---------------------+    Is it    +-----+
++-+----^---+                     |  Actionable?|     | File       +----------+
+  |    |   +----------------+    +------+------+     +------------>Reference |
+  |    |        Review For  |           |                         +----------+
++-v----+---+     Actions    |           | YES
+| Planning |                +----------->
++----------+                            |
+                                  +-----v------+     Less than
+                  Delegate        | What's the |     2 minutes     +--------+
+                     +------------+Next Action?+-------------------> DO IT  |
+                     |            +-------+----+                   +--------+
+                     |                    |
+                     |                    |  FOR ME
+                     |                    |           Specific Date or Time
+                     |                    +----------------------------+
+                     |              ASAP  |                            |
+                +----v-----+           +--v-------+              +-----v----+
+                |          |           |          |              |          |
+                |          |           |          |              |          |
+                |          |           |          |              |          |
+                |          |           |          |              |          |
+                |          |           |          |              |          |
+                +----------+           +----------+              +----------+
+                 Waiting For           Next Actions                 Calendar
+@end example
+
+@node Upgrading
+@section Upgrading
+
+@menu
+* 2.0.0 <- 1.1.x: 200 <- 11x.
+@end menu
+
+@node 200 <- 11x
+@subsection 2.0.0 <- 1.1.x
+
+@menu
+* Configuration::
+* Relevant commands with new names::
+* heading states (TODO, etc.): heading states (TODO etc).
+* Differentiating GTD types of items::
+* Multiple refile targets::
+* Key bindings::
+@end menu
+
+@node Configuration
+@unnumberedsubsubsec Configuration
+
+Org GTD now handles dependency loading more intelligently, so you no longer need the overly complicated setup of @code{org-gtd}, @code{org-agenda} and @code{org-capure} in your config for dependency loading. You now only need @code{org-gtd}. If you are using @code{use-package} then the following is the minimal config required.
+
+@lisp
+(use-package org-gtd :after 'org)
+@end lisp
+
+You no longer need to configure @code{org-agenda-property-list} yourself. Org GTD now manages the context with a macro, @code{with-org-gtd-context}. Any prior configuration of this subpackage can be handled as you did before.
+
+You no longer need to configure @code{org-agenda-files}. Same reason as above. This allows you to use org-gtd without destroying your previous setup, and makes it easier to try org-gtd and then get rid of it if you don't like it.
+
+You no longer need to configure @code{org-agenda-custom-commands}. Now there's @code{org-gtd-agenda-custom-commands} to take the relay - see the variable documentation for more information.
+
+The org-capture templates are now simplified and managed by @code{org-gtd-capture-templates}. If you did not change the default configuration, then you can just remove what you had. Read the variable documentaton for further information.
+
+@itemize
+@item
+@anchor{Example upgrade}Example upgrade
+
+
+My org-gtd config for 1.x was:
+@lisp
+(use-package org-gtd
+  :after org
+  :demand t
+  :pin melpa
+  :custom
+  (org-gtd-directory stag-org-gtd-directory)
+  (org-agenda-property-list '("DELEGATED_TO"))
+  (org-edna-use-inheritance t)
+  :config
+  (org-edna-load)
+  :bind
+  (("C-c d c" . org-gtd-capture)
+   ("C-c d a" . org-agenda-list)
+   ("C-c d p" . org-gtd-process-inbox)
+   ("C-c d n" . org-gtd-show-all-next)
+   ("C-c d s" . org-gtd-show-stuck-projects)
+   :map org-gtd-process-map
+   ("C-c c" . org-gtd-choose)))
+
+
+(use-package org-agenda
+  :ensure nil
+  :no-require t
+  :after (org-gtd)
+  :custom
+  (org-agenda-skip-deadline-if-done t)
+  (org-agenda-skip-scheduled-if-done t)
+  (org-agenda-files `(,org-gtd-directory))
+  (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT"))))))
+
+(use-package org-capture
+  :ensure nil
+  :after org-gtd
+  :config
+  (setq org-capture-templates `(("i" "Inbox"
+                               entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
+                               "* %?\n%U\n\n  %i"
+                               :kill-buffer t)
+                              ("t" "Todo with link"
+                               entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
+                               "* %?\n%U\n\n  %i\n  %a"
+                               :kill-buffer t))))
+@end lisp
+
+And my config for 2.0 is:
+@lisp
+(use-package org-gtd
+  :after org
+  :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
+                   :branch "2.0.0" :upgrade t)
+  :demand t
+  :custom
+  (org-gtd-directory stag-org-gtd-directory)
+  (org-edna-use-inheritance t)
+  :config
+  (org-edna-mode)
+  :bind
+  (("C-c d c" . org-gtd-capture)
+   ("C-c d e" . org-gtd-engage)
+   ("C-c d p" . org-gtd-process-inbox)
+   ("C-c d n" . org-gtd-show-all-next)
+   ("C-c d s" . org-gtd-show-stuck-projects)
+   :map org-gtd-process-map
+   ("C-c c" . org-gtd-choose)))
+@end lisp
+@end itemize
+
+@node Relevant commands with new names
+@unnumberedsubsubsec Relevant commands with new names
+
+@itemize
+@item
+@code{org-agenda-list} -> @code{org-gtd-engage}
+@item
+@code{org-gtd-clarify-finalize} -> @code{org-gtd-choose} (see the section on Key bindings below)
+@end itemize
+
+@node heading states (TODO etc)
+@unnumberedsubsubsec heading states (TODO, etc.)
+
+You need to rename CANCELED to CNCL@. a simple string replace in the @code{org-gtd-directory} will do the trick.
+
+@node Differentiating GTD types of items
+@unnumberedsubsubsec Differentiating GTD types of items
+
+Org GTD no longer uses the name of the heading to figure out how to refile things, and which headings are useful. Instead it uses a custom Org property called ORG@math{_GTD}. This means you are free to rename the existing headings whatever you want, but you DO need to make some adjustments to your current files.
+
+If you would like to add new refile targets, it's simple, follow these instructions.
+
+For projects, make sure the heading has the following two properties.
+@example
+:PROPERTIES:
+:TRIGGER: next-sibling todo!(NEXT)
+:ORG_GTD: Projects
+:END:
+@end example
+
+For other headings, make sure there is an ORG@math{_GTD} property, like for the project, above.
+
+The other ORG@math{_GTD} properties are set as follows. Note that Single and Delegated actions are together now, so you can merge those headings if you want.
+
+@table @asis
+@item Scheduled actions
+@samp{ORG_GTD: Calendar}
+@item Single & Delegated actions
+@samp{ORG_GTD: Actions}
+@item Incubated actions
+@samp{ORG_GTD: Incubated}
+@end table
+
+For incubated actions, version 1.x of Org GTD asked for second-level heading, such as @code{*To Read}. No more - these are now top-level headings, exactly as described above, with a heading property of @code{ORG_GTD: Incubated}.
+
+@node Multiple refile targets
+@unnumberedsubsubsec Multiple refile targets
+
+There is a new variable, @code{org-gtd-refile-to-any-target}. By default this variable is set to @code{t}. This means that Org GTD will refile to whatever the first target it finds is. This is the default value because it most closely matches the behavior for version 1.x.
+@strong{THIS BEHAVIOR ALSO APPLIES TO INCUBATE REFILE TARGETS}. Therefore, if you have multiple incubated refile targets, you will need to set this variable to @code{nil}, or change to a single refile target. You can e.g. set a custom property to describe the kind of incubated item it is, if it is useful to you, something like:
+
+@example
+* Incubated
+** Buy a boat
+SCHEDULED: <2035-06-01 Fri>
+:PROPERTIES:
+:INCUBATE: big financial investment
+:END:
+@end example
+
+@node Key bindings
+@unnumberedsubsubsec Key bindings
+
+Version 1.x of Org GTD recommended a binding for @code{org-gtd-clarify-finalize}. This binding must now be set as follows (replace the keybinding with one of your choice):
+
+@lisp
+(define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose)
+@end lisp
+
+@node Installing
+@section Installing
+
+This package requires emacs 27.1 or higher.
+
+This package is on MELPA and MELPA stable under the name @code{org-gtd}.
+
+@menu
+* use-package::
+* Manually::
+@end menu
+
+@node use-package
+@subsection use-package
+
+Just make sure this is loaded after @code{org-mode} like so.
+@lisp
+(use-package org-gtd :after org)
+@end lisp
+
+@node Manually
+@subsection Manually
+
+Check out the source code for dependencies and install them.
+Then, clone this repo to a directory of your choice, e.g. @samp{~/.emacs.d/packages}.
+Finally, add this to your config:
+@lisp
+(add-to-list 'load-path "~/.emacs.d/packages")
+(require 'org-gtd)
+@end lisp
+
+@node Configuring
+@section Configuring
+
+@menu
+* The easy way::
+* Required configuration of sub-packages::
+* configuration options for org-gtd::
+* Recommended key bindings::
+@end menu
+
+@node The easy way
+@subsection The easy way
+
+Just turn on @code{org-gtd-mode} (@code{M-x org-gtd-mode}). This will set up emacs, Org mode, and Org GTD's dependencies. It will wrap a number of @code{org-agenda} functions to work smoothly. If you are just testing out Org GTD, this is a good way to start.
+
+Turn off @code{org-gtd-mode} to restore emacs to pre-org-gtd settings.
+
+Note, you should still head over to the @ref{Recommended key bindings} section.
+
+@node Required configuration of sub-packages
+@subsection Required configuration of sub-packages
+
+@menu
+* org-edna::
+@end menu
+
+@node org-edna
+@unnumberedsubsubsec org-edna
+
+package: @uref{https://www.nongnu.org/org-edna-el/}
+
+This is one of the dependencies. This setting change is REQUIRED@. It automatically changes the next TODO heading to NEXT in a project when you've finished the current task.
+
+You do not need to make this change if you choose to toggle @code{org-gtd-mode}.
+@lisp
+(setq org-edna-use-inheritance t)
+(org-edna-mode 1)
+@end lisp
+
+@node configuration options for org-gtd
+@subsection configuration options for org-gtd
+
+The most direct way to find out about the configuration options for org-gtd is to see the customize group: @code{M-x customize-group RET org-gtd}. They are all optional because they all come with default values.
+
+The only one you may want to change before starting to use Org GTD is @code{org-gtd-directory}, which is the directory that Org GTD
+will look to for everything it needs to do.
+
+The configuration options will also be mentioned in the relevant subsections of @ref{Using Org GTD}.
+
+@node Recommended key bindings
+@subsection Recommended key bindings
+
+There's an important keymap you'll want to make the flow of processing the inbox smoother. To limit impact on your emacs configuration, there is a specific keymap you can use. The function you'll want to bind is @code{org-gtd-choose}. I suggest @code{C-c c}, as in the following example.
+
+@lisp
+(define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose)
+@end lisp
+
+For other keybindings, do what you need. My bindings use @code{C-c d} as a prefix, i.e.:
+
+@table @asis
+@item @code{C-c d c}
+@code{org-gtd-capture}
+@item @code{C-c d e}
+@code{org-gtd-engage}
+@end table
+
+etc.
+
+@node Using Org GTD
+@chapter Using Org GTD
+
+Here are the categories of actions from GTD that we have to be able to handle:
+
+@itemize
+@item
+adding things to the inbox
+@item
+processing the inbox
+@item
+Engage with your GTD system
+@item
+cleaning up / archiving completed work
+@end itemize
+
+Other elements of GTD, such as reviews, are currently unimplemented: as the user, you can simply open the files to review things for now.
+
+@menu
+* Adding things to the inbox::
+* Processing the inbox::
+* Engaging with your GTD items::
+* Cleaning up / archiving completed work::
+* Multiple files / refile targets::
+@end menu
+
+@node Adding things to the inbox
+@section Adding things to the inbox
+
+The inbox is a file called @code{inbox.org} in the directory stored in the variable @code{org-gtd-directory}. By default this variable is @code{~/gtd}.
+
+Org GTD provides one function to capture items: @code{M-x org-gtd-capture}. In my setup I have this booked globally as such:
+
+@lisp
+(global-set-key "C-c d c" #'org-gtd-capture)
+@end lisp
+
+This function overrides @code{org-capture} and uses the variable @code{org-gtd-capture-templates} to define org-gtd-specific capture templates. By default it comes with two templates, one to just capture a new item, and one to capture an item with a link to the file where you were when you started the capture.
+
+@node Processing the inbox
+@section Processing the inbox
+
+Processing the inbox means taking everything in the inbox, one at a time, and refining/categorizing them so they are instantly useful when you are looking at available next / scheduled actions.
+
+You can start processing the inbox with @code{org-gtd-process-inbox}. This will select the inbox buffer and hide everything but the first item in the inbox, then give you control to refine it.
+
+When you are done refining it, call @code{M-x org-gtd-choose} (or hit your keybinding for it, see @ref{Recommended key bindings}). This will open a transient menu to let you choose how Org GTD should categorize this item.
+
+You have a number of possible choices for each item you process. Subsections will explain how Org GTD handles each one.
+
+@table @asis
+@item @strong{[Q]uick Action}
+Quick action. Do it now, then choose this to mark the item as DONΕ and archive it.
+@item @strong{[T]rash}
+This is not actionable and it's not knowledge for later. Choose this to mark the item as CNCL and archive it.
+@item @strong{[P]roject}
+This is a multi-step action. I'll describe how to handle these below.
+@item @strong{[C]alendar}
+This is a single item to be done at a given date or time. You'll be presented with org-mode's date picker, then it'll refile the item. You'll find this in the agenda later.
+@item @strong{[D]elegate}
+Let someone else do this. Write the name of the person doing it, and choose a time to check up on that item.
+@item @strong{[S]ingle action}
+This is a one-off to be done when possible.
+@item @strong{[A]rchive}
+This is knowledge to be stored away.
+@item @strong{[I]ncubate}
+no action now, review later
+@end table
+
+In addition you have @strong{[X]} for "exit early", which you can use to stop processing the inbox and restore emacs to its non-inbox-processing state.
+
+After the item-type-specific behavior, you will have the option to add custom decorations to each item, based on how you prefer to think about (filter, find, etc.) the items when you do GTD@.
+
+The decorations are tracked in @code{org-gtd-process-item-hooks}, a list of functions. By default there is one element in the list, to add tags to the item.
+
+This process will continue, item after item, until you hit @strong{x} to exit early or until you run out of items to process.
+
+@menu
+* Quick action::
+* Trash::
+* Calendar::
+* Delegate::
+* Single action::
+* Archive::
+* Incubate::
+* Projects::
+@end menu
+
+@node Quick action
+@subsection Quick action
+
+When you choose quick action, you indicate that not much more tracking is necessary. This item is automatically marked as DONE and archived, then Org GTD moves on to the next item.
+
+@node Trash
+@subsection Trash
+
+When you choose trash, the item is automatically marked as CNCL and archived, then Org GTD moves on to the next item.
+
+@node Calendar
+@subsection Calendar
+
+When you you choose calendar, you will be asked to select a date (and time if you choose to add it), then Org GTD moves on to the next item.
+
+@node Delegate
+@subsection Delegate
+
+When you choose delegate, you'll be asked for a name to whom to delegate this to, and a date on which to check in with the person. Org GTD automatically marks this item as "WAIT", then Org GTD moves on to the next item.
+
+@node Single action
+@subsection Single action
+
+When you choose single action, Org GTD will mark it as a NEXT item, then Org GTD moves on to the next item.
+
+@node Archive
+@subsection Archive
+
+When you choose archive, Org GTD will assume you have done what you needed to do to store this (e.g. put the information in org roam, bbdb, or wherever you will store it), then marks the item as DONE and archives it. Org GTD then moves on to the next item.
+
+@node Incubate
+@subsection Incubate
+
+Incubating an item is similar to simply scheduling one, though the idea is that you want to be reminded of it much later, and be able to review your incubated items separately.
+So, all this will really do is make you choose a date at which you want to be reminded of this, then it'll be refiled under an incubated target.
+
+@node Projects
+@subsection Projects
+
+A "project" is defined as a top-level org heading with a set of second-level org headings. When you choose "project" and enter the editing mode, create such a headline structure, like in the following example.
+
+@example
+* Project heading
+** First task
+** Second task
+** Third task
+@end example
+
+Then call @code{M-x org-gtd-choose} or hit your chosen keybinding, tell Org GTD you chose a project, and move on with your life.
+
+A project is defined as "completed" when all its tasks are marked as DONE@.
+A project is defined as "canceled" when its last task is marked as CNCL@.
+
+You can cancel a project by calling @code{org-gtd-agenda-cancel-project} from the agenda view, when the point is on the next task of the project.
+
+DO NOTE: it is surprisingly difficult to add a custom note when canceling, so if you want to add a note explaining why you canceled the project, you will have to do so manually.
+
+@node Engaging with your GTD items
+@section Engaging with your GTD items
+
+You can see a list of all NEXT actions, and scheduled actions, with @code{M-x org-gtd-engage} . This opens an @code{org-agenda} view.
+
+The variable @code{org-gtd-agenda-custom-commands} has the settings to define what gets shown in that function.
+
+You can define other functions by adding new custom commands to the above, and defining your own functions like so, where "x" is whatever your defined key is.
+
+@lisp
+(defun my-agenda ()
+  (with-org-gtd-context
+      (org-agenda nil "x")))
+@end lisp
+
+You can call @code{org-gtd-show-all-next} to only see NEXT actions, nothing scheduled.
+
+@menu
+* Interacting with org-agenda::
+@end menu
+
+@node Interacting with org-agenda
+@subsection Interacting with org-agenda
+
+Since Org provides the agenda, it is a convenient base of operations for interacting with things that come up through @code{org-gtd-engage}.
+
+Here are the actions available to you:
+
+@table @asis
+@item @code{M-x org-gtd-agenda-cancel-project}
+When the point is on a project action, this command will cancel the remaining actions in the project.
+@item @code{M-x org-gtd-agenda-delegate}
+When the point is on an action, this will properly delegate the action to someone else.
+@item @code{M-x org-gtd-agenda-projectify}
+This is intended to be used on an incubated item that has come up. Behavior in other situations has not been tested. This will properly let you transform an incubated item into a project.
+@end table
+
+@node Cleaning up / archiving completed work
+@section Cleaning up / archiving completed work
+
+Doing this without user intervention is tricky, as it makes undoing actions more complicated. As such, Org GTD provides a function that will go through the @code{org-gtd-directory} files, find the headings that belong to Org GTD (see @ref{Multiple files / refile targets}), and archive the finished items.
+
+The variable @code{org-gtd-archive-location} hosts a @strong{function} that returns a string matching the @code{org-archive-location} definition. It is a function in order to make the filename entirely dynamic.
+
+The function to archive everything is @code{M-x org-gtd-archive-completed-items}.
+
+@node Multiple files / refile targets
+@section Multiple files / refile targets
+
+If you would like to add new refile targets, it's simple, follow these instructions.
+
+@menu
+* New project heading::
+* Other headings::
+@end menu
+
+@node New project heading
+@subsection New project heading
+
+Add a top-level heading in any @code{.org} file (including a new one) in @code{org-gtd-directory} and make sure it has the following properties drawer.
+@example
+:PROPERTIES:
+:TRIGGER: next-sibling todo!(NEXT)
+:ORG_GTD: Projects
+:END:
+@end example
+
+@node Other headings
+@subsection Other headings
+
+Create a new top-level heading in any @code{.org} file (including a new one) and make sure it has an ORG@math{_GTD} property as such.
+@example
+:PROPERTIES:
+:ORG_GTD: Action
+:END:
+@end example
+
+The ORG@math{_GTD} properties are set as follows, except for Projects (see @ref{New project heading}):
+
+@table @asis
+@item Scheduled actions
+@samp{ORG_GTD: Calendar}
+@item Incubated actions
+@samp{ORG_GTD: Incubated}
+@item Single & Delegated actions
+@samp{ORG_GTD: Actions}
+@end table
+
+@node Troubleshooting
+@chapter Troubleshooting
+
+@code{org-edna} needs to be configured, see @ref{Required configuration of sub-packages}.
+
+@menu
+* Projects without a NEXT item::
+@end menu
+
+@node Projects without a NEXT item
+@section Projects without a NEXT item
+
+Sometimes things break. Use @code{M-x org-gtd-show-stuck-projects} to find all projects that don't have a NEXT item, which is to say, all projects that the package will not surface and help you finish.
+
+@bye
