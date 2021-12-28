@@ -56,7 +56,7 @@
                                   org-capture-templates))
           (org-refile-use-outline-path nil)
           (org-stuck-projects org-gtd-stuck-projects)
-2          (org-odd-levels-only nil)
+          (org-odd-levels-only nil)
           (org-agenda-files `(,org-gtd-directory))
           (org-agenda-property-list '("DELEGATED_TO"))
           (org-agenda-custom-commands org-gtd-agenda-custom-commands))
