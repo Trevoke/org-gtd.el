@@ -27,18 +27,6 @@
 (require 'org-capture)
 (require 'org-gtd-core)
 
-;;;###autoload
-(defun org-gtd-capture (&optional goto keys)
-  "Capture something into the GTD inbox.
-
-Wraps the function `org-capture' to ensure the inbox exists.
-
-For GOTO and KEYS, see `org-capture' documentation for the variables of the same name."
-  (interactive)
-  (with-org-gtd-context
-      (org-gtd--inbox-file)
-      (org-capture goto keys)))
-
 ;; move this here to make a clear load path to make straight.el happy
 ;; it was originally in org-gtd-capture.el
 (defun org-gtd--capture-templates ()

@@ -27,7 +27,6 @@
 
 (require 'org-capture)
 (require 'org-gtd-customize)
-(require 'org-gtd-capture)
 
 (defconst org-gtd-inbox "inbox")
 (defconst org-gtd-incubated "incubated")
