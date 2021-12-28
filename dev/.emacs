@@ -39,8 +39,8 @@
 
 (use-package org-gtd
   :after org
-  :quelpa ((org-gtd :fetcher github :repo "trevoke/org-gtd.el"
-                    :branch "2.0.0") :upgrade t)
+  :quelpa ((org-gtd :fetcher github :repo "trevoke/org-gtd.el")
+	   :upgrade t)
   :demand t
   :custom
   (org-agenda-property-position 'next-line)

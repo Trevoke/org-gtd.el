@@ -24,6 +24,11 @@
 ;;
 ;;; Code:
 
+(require 'org)
+(require 'org-refile)
+(require 'org-element)
+(require 'org-gtd-core)
+
 (defconst org-gtd-projects-template
   "* Projects
 :PROPERTIES:

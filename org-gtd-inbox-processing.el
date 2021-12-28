@@ -25,6 +25,7 @@
 ;;; Code:
 
 (require 'transient)
+(require 'org-gtd-core)
 
 ;;;###autoload
 (defvar org-gtd-process-map (make-sparse-keymap)

@@ -24,6 +24,11 @@
 ;;
 ;;; Code:
 
+(require 'org)
+(require 'org-element)
+(require 'org-edna)
+(require 'org-gtd-core)
+
 ;;;###autoload
 (defun org-gtd-cancel-project ()
   "With point on topmost project heading, mark all undone tasks canceled."

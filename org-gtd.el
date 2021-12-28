@@ -39,8 +39,6 @@
 ;;
 ;;; Code:
 
-;;;; Requirements
-
 (require 'subr-x)
 (require 'cl-lib)
 (require 'f)
@@ -52,40 +50,8 @@
 (require 'org-edna)
 (require 'org-gtd-customize)
 
-(defconst org-gtd-inbox "inbox")
-(defconst org-gtd-incubated "incubated")
-(defconst org-gtd-projects "projects")
-(defconst org-gtd-actions "actions")
-(defconst org-gtd-delegated "delegated")
-(defconst org-gtd-calendar "calendar")
-
-(defconst org-gtd--properties
-  (let ((myhash (make-hash-table :test 'equal)))
-    (puthash org-gtd-actions "Actions" myhash)
-    (puthash org-gtd-incubated "Incubated" myhash)
-    (puthash org-gtd-projects "Projects" myhash)
-    (puthash org-gtd-calendar "Calendar" myhash)
-    myhash))
-
-;;;###autoload
-(defmacro with-org-gtd-context (&rest body)
-  "Wrap any BODY in this macro to inherit the org-gtd settings for your logic."
-  (declare (debug t) (indent 2))
-  `(let* ((org-use-property-inheritance "ORG_GTD")
-          (org-archive-location (funcall org-gtd-archive-location))
-          (org-capture-templates (seq-concatenate
-                                  'list
-                                  (org-gtd--capture-templates)
-                                  org-capture-templates))
-          (org-refile-use-outline-path nil)
-          (org-stuck-projects org-gtd-stuck-projects)
-          (org-odd-levels-only nil)
-          (org-agenda-files `(,org-gtd-directory))
-          (org-agenda-property-list '("DELEGATED_TO"))
-          (org-agenda-custom-commands org-gtd-agenda-custom-commands))
-     (unwind-protect
-         (progn ,@body))))
-
+(require 'org-gtd-core)
+(require 'org-gtd-delegate)
 (require 'org-gtd-archive)
 (require 'org-gtd-capture)
 (require 'org-gtd-files)
@@ -94,19 +60,6 @@
 (require 'org-gtd-agenda)
 (require 'org-gtd-inbox-processing)
 (require 'org-gtd-mode)
-
-;;;###autoload
-(defun org-gtd-delegate ()
-  "Delegate item at point."
-  (interactive)
-  (let ((delegated-to (read-string "Who will do this? "))
-        (org-inhibit-logging 'note))
-    (org-set-property "DELEGATED_TO" delegated-to)
-    (org-todo "WAIT")
-    (org-schedule 0)
-    (save-excursion
-      (goto-char (org-log-beginning t))
-      (insert (format "programmatically delegated to %s\n" delegated-to)))))
 
 (provide 'org-gtd)
 ;;; org-gtd.el ends here

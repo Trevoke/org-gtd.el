@@ -25,6 +25,7 @@
 ;;; Code:
 
 (require 'org-capture)
+(require 'org-gtd-core)
 
 ;;;###autoload
 (defun org-gtd-capture (&optional goto keys)
