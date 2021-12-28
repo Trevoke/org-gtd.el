@@ -25,6 +25,7 @@
 ;;
 ;;; Code:
 
+(require 'org-capture)
 (require 'org-gtd-customize)
 
 (defconst org-gtd-inbox "inbox")
