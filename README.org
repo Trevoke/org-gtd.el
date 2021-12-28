@@ -1,5 +1,11 @@
-* Org GTD
+* NOTICE
+This is a release candidate for version 2.0.
 
+Check documentation in [[doc/]] if you're upgrading. Please report all defects as Github issues.
+
+Once stability has been sufficiently proven, I will add a 2.0.0 tag and the package will then be available on MELPA stable.
+
+* Org GTD
 This package tries to replicate as closely as possible the GTD workflow.
 This package assumes familiarity with GTD.
 
