@@ -31,7 +31,7 @@
 
 ;;;###autoload
 (defvar org-gtd-process-map (make-sparse-keymap)
-  "Keymap for `org-gtd-process-mode', a minor mode.")
+  "Keymap for command `org-gtd-process-mode', a minor mode.")
 
 ;;;###autoload
 (define-minor-mode org-gtd-process-mode

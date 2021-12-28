@@ -56,7 +56,7 @@
                                   org-capture-templates))
           (org-refile-use-outline-path nil)
           (org-stuck-projects org-gtd-stuck-projects)
-          (org-odd-levels-only nil)
+2          (org-odd-levels-only nil)
           (org-agenda-files `(,org-gtd-directory))
           (org-agenda-property-list '("DELEGATED_TO"))
           (org-agenda-custom-commands org-gtd-agenda-custom-commands))
@@ -78,7 +78,7 @@ Return valid `org-capture' templates based on `org-gtd-capture-templates'."
   "Private function.
 
 Given an `org-capture-template' TEMPLATE string, generate a valid
-org-gtd-capture item."
+`org-gtd-capture' item."
   (cl-destructuring-bind (key description template-string) template
     `(,key ,description entry
            (file (lambda () (org-gtd-inbox-path)))

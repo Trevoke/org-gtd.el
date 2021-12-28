@@ -51,7 +51,7 @@ Argument R is there to be passed through."
 
   "List of commands available to the user through `org-agenda'.
 
-Org-gtd wraps these functions with its own context when `org-gtd-mode'
+Org-gtd wraps these functions with its own context when command `org-gtd-mode'
 is enabled.")
 
 (defun org-gtd--enable-org-gtd-mode ()
