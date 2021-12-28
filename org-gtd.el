@@ -61,17 +61,5 @@
 (require 'org-gtd-inbox-processing)
 (require 'org-gtd-mode)
 
-;;;###autoload
-(defun org-gtd-capture (&optional goto keys)
-  "Capture something into the GTD inbox.
-
-Wraps the function `org-capture' to ensure the inbox exists.
-
-For GOTO and KEYS, see `org-capture' documentation for the variables of the same name."
-  (interactive)
-  (with-org-gtd-context
-      (org-gtd--inbox-file)
-      (org-capture goto keys)))
-
 (provide 'org-gtd)
 ;;; org-gtd.el ends here

@@ -62,5 +62,26 @@
      (unwind-protect
          (progn ,@body))))
 
+;; move this here to make a clear load path to make straight.el happy
+;; it was originally in org-gtd-capture.el
+(defun org-gtd--capture-templates ()
+  "Private function.
+
+Return valid `org-capture' templates based on `org-gtd-capture-templates'."
+  (mapcar #'org-gtd--gen-capture-templates
+          org-gtd-capture-templates))
+
+;; move this here to make a clear load path to make straight.el happy
+;; it was originally in org-gtd-capture.el
+(defun org-gtd--gen-capture-templates (template)
+  "Private function.
+
+Given an `org-capture-template' TEMPLATE string, generate a valid
+org-gtd-capture item."
+  (cl-destructuring-bind (key description template-string) template
+    `(,key ,description entry
+           (file (lambda () (org-gtd-inbox-path)))
+                 ,template-string :kill-buffer t)))
+
 (provide 'org-gtd-core)
 ;;; org-gtd-core.el ends here
