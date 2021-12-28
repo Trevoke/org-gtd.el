@@ -76,16 +76,6 @@
     (puthash org-gtd-calendar "Refile calendar item to: " myhash)
     myhash))
 
-(defun org-gtd--refile (type)
-  "Refile an item to the single action file.
-
-TYPE is one of the org-gtd action types.  This is a private function."
-  (with-org-gtd-refile type
-    (unless (org-refile-get-targets) (org-gtd-refile--add-target type))
-    (if org-gtd-refile-to-any-target
-        (org-refile nil nil (car (org-refile-get-targets)))
-      (org-refile nil nil nil (org-gtd-refile--prompt type)))))
-
 ;;;###autoload
 (defmacro with-org-gtd-refile (type &rest body)
   "Macro to refile specifically within org-gtd context.
@@ -96,6 +86,16 @@ TYPE is the org-gtd action type.  BODY is the rest of the code."
          (org-refile-targets '((org-agenda-files :level . 1))))
      (unwind-protect
          (with-org-gtd-context (progn ,@body)))))
+
+(defun org-gtd--refile (type)
+  "Refile an item to the single action file.
+
+TYPE is one of the org-gtd action types.  This is a private function."
+  (with-org-gtd-refile type
+    (unless (org-refile-get-targets) (org-gtd-refile--add-target type))
+    (if org-gtd-refile-to-any-target
+        (org-refile nil nil (car (org-refile-get-targets)))
+      (org-refile nil nil nil (org-gtd-refile--prompt type)))))
 
 (defun org-gtd-refile--add-target (gtd-type)
   "Private function used to create a missing org-gtd refile target.

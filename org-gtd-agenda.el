@@ -26,6 +26,7 @@
 
 (require 'winner)
 (require 'org-agenda)
+(require 'org-gtd-customize)
 (require 'org-gtd-core)
 
 (defconst org-gtd-stuck-projects

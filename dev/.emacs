@@ -42,6 +42,7 @@
 (assq-delete-all 'org package--builtin-versions)
 
 (straight-use-package '(org-gtd :type git :host github :repo "trevoke/org-gtd.el"))
+(require 'org-gtd)
 
 ;; (use-package org
 ;;   :quelpa ((org) :upgrade t)

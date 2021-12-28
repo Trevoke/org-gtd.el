@@ -125,5 +125,4 @@ setting if you follow the instructions to add your own refile targets."
   :package-version "2.0.0")
 
 (provide 'org-gtd-customize)
-(require 'org-gtd-customize)
 ;;; org-gtd-customize.el ends here
