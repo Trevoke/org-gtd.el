@@ -5,6 +5,19 @@
                          ("melpa-stable" . "https://stable.melpa.org/packages/")
                          ("gnu" . "https://elpa.gnu.org/packages/")))
 
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
 (require 'package)
 (package-initialize)
 
@@ -28,39 +41,41 @@
 (assq-delete-all 'org package--builtins)
 (assq-delete-all 'org package--builtin-versions)
 
-(use-package org
-  :quelpa ((org) :upgrade t)
-  :demand t
-  :ensure t
-  :init
-  (setq org-directory "~/orgnotes/")
-  (setq org-id-track-globally t)
-  (setq org-id-locations-file "~/.emacs.d/.org-id-locations"))
+(straight-use-package '(org-gtd :type git :host github :repo "trevoke/org-gtd.el"))
 
-(use-package org-gtd
-  :after org
-  :quelpa ((org-gtd :fetcher github :repo "trevoke/org-gtd.el")
-	   :upgrade t)
-  :demand t
-  :custom
-  (org-agenda-property-position 'next-line)
-  (org-edna-use-inheritance t)
-  :config
-  (org-edna-mode)
-  :bind
-  (("C-c d c" . org-gtd-capture)
-   ("C-c d e" . org-gtd-engage)
-   ("C-c d p" . org-gtd-process-inbox)
-   ("C-c d n" . org-gtd-show-all-next)
-   ("C-c d s" . org-gtd-show-stuck-projects)
-   :map org-gtd-process-map
-   ("C-c c" . org-gtd-choose)))
+;; (use-package org
+;;   :quelpa ((org) :upgrade t)
+;;   :demand t
+;;   :ensure t
+;;   :init
+;;   (setq org-directory "~/orgnotes/")
+;;   (setq org-id-track-globally t)
+;;   (setq org-id-locations-file "~/.emacs.d/.org-id-locations"))
 
-(use-package org-agenda
-  :ensure nil
-  :after org-gtd
-  :custom
-  (org-agenda-window-setup 'only-window))
+;; (use-package org-gtd
+;;   :after org
+;;   :quelpa ((org-gtd :fetcher github :repo "trevoke/org-gtd.el")
+;; 	   :upgrade t)
+;;   :demand t
+;;   :custom
+;;   (org-agenda-property-position 'next-line)
+;;   (org-edna-use-inheritance t)
+;;   :config
+;;   (org-edna-mode)
+;;   :bind
+;;   (("C-c d c" . org-gtd-capture)
+;;    ("C-c d e" . org-gtd-engage)
+;;    ("C-c d p" . org-gtd-process-inbox)
+;;    ("C-c d n" . org-gtd-show-all-next)
+;;    ("C-c d s" . org-gtd-show-stuck-projects)
+;;    :map org-gtd-process-map
+;;    ("C-c c" . org-gtd-choose)))
+
+;; (use-package org-agenda
+;;   :ensure nil
+;;   :after org-gtd
+;;   :custom
+;;   (org-agenda-window-setup 'only-window))
 
 (use-package camcorder :quelpa t)
 
