@@ -24,6 +24,8 @@
 ;;
 ;;; Code:
 
+(require 'f)
+
 (defconst org-gtd-inbox-template
   "#+STARTUP: overview hidestars logrefile indent logdone
 #+TODO: NEXT TODO WAIT | DONE CNCL TRASH

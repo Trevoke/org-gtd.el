@@ -28,6 +28,7 @@
 (require 'org-element)
 (require 'org-edna)
 (require 'org-gtd-core)
+(require 'org-gtd-agenda)
 
 ;;;###autoload
 (defun org-gtd-cancel-project ()

@@ -26,6 +26,8 @@
 
 (require 'transient)
 (require 'org-gtd-core)
+(require 'org-gtd-agenda)
+(require 'org-gtd-projects)
 
 ;;;###autoload
 (defvar org-gtd-process-map (make-sparse-keymap)

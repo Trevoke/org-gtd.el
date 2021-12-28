@@ -25,6 +25,7 @@
 ;;
 ;;; Code:
 
+(require 'org-agenda-property)
 (require 'org-capture)
 (require 'org-gtd-customize)
 

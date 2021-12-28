@@ -25,6 +25,7 @@
 ;;; Code:
 
 (require 'org-archive)
+(require 'org-element)
 
 ;;;###autoload
 (defun org-gtd-archive-completed-items ()
