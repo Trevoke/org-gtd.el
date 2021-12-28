@@ -56,11 +56,22 @@
    :map org-gtd-process-map
    ("C-c c" . org-gtd-choose)))
 
+(use-package org-agenda
+  :ensure nil
+  :after org-gtd
+  :custom
+  (org-agenda-window-setup 'only-window))
+
 (use-package camcorder :quelpa t)
 
 (use-package command-log-mode :quelpa t)
 
 (show-paren-mode)
+
+(add-hook 'minibuffer-setup-hook 'my-minibuffer-setup)
+(defun my-minibuffer-setup ()
+       (set (make-local-variable 'face-remapping-alist)
+          '((default :height 2.0))))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -73,9 +84,3 @@
  '(command-log-mode-open-log-turns-on-mode t)
  '(command-log-mode-window-size 40)
  '(package-selected-packages '(camcorder org-gtd quelpa-use-package)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(default ((t (:family "Source Code Pro")))))

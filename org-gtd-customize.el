@@ -55,8 +55,8 @@ the items once they have been processed and add them to that list."
 
 (defcustom org-gtd-archive-location
   (lambda ()
-   (let ((year (number-to-string (caddr (calendar-current-date)))))
-     (string-join `("gtd_archive_" ,year "::datetree/"))))
+    (let ((year (number-to-string (caddr (calendar-current-date)))))
+      (string-join `("gtd_archive_" ,year "::datetree/"))))
   "Function to generate archive location for org gtd.
 
 That is to say, when items get cleaned up from the active files, they will go
@@ -90,7 +90,11 @@ top level heading, or the behavior of org-gtd will be undefined."
 
 (defcustom org-gtd-agenda-custom-commands
   '(("g" "Scheduled today and all NEXT items"
-     ((agenda "" ((org-agenda-span 1))) (todo "NEXT|WAIT-DELEGATED_TO"))))
+     (
+      (agenda "" ((org-agenda-span 1)))
+      (todo "NEXT" ((org-agenda-overriding-header "All NEXT items")))
+      (todo "WAIT" ((org-agenda-todo-ignore-with-date t)
+                    (org-agenda-overriding-header "Blocked items"))))))
   "Agenda custom commands to be used for org-gtd.
 
 The provided default is to show the agenda for today and all TODOs marked as
