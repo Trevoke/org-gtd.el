@@ -25,6 +25,8 @@
 ;;
 ;;; Code:
 
+(require 'org-gtd-customize)
+
 (defconst org-gtd-inbox "inbox")
 (defconst org-gtd-incubated "incubated")
 (defconst org-gtd-projects "projects")
