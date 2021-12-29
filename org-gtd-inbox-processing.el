@@ -28,6 +28,7 @@
 (require 'org-gtd-core)
 (require 'org-gtd-agenda)
 (require 'org-gtd-projects)
+(require 'org-gtd-refile)
 
 ;;;###autoload
 (defvar org-gtd-process-map (make-sparse-keymap)

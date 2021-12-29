@@ -44,6 +44,12 @@
     (puthash org-gtd-calendar "Calendar" myhash)
     myhash))
 
+(defconst org-gtd-stuck-projects
+  '("+LEVEL=2&+ORG_GTD=\"Projects\"" ("NEXT" "WAIT") nil "")
+  "How to identify stuck projects in the GTD system.
+
+This is a list of four items, the same type as in `org-stuck-projects'.")
+
 ;;;###autoload
 (defmacro with-org-gtd-context (&rest body)
   "Wrap any BODY in this macro to inherit the org-gtd settings for your logic."

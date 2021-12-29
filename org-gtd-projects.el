@@ -52,6 +52,10 @@
   (with-org-gtd-context
       (org-agenda-list-stuck-projects)))
 
+(defun org-gtd-projects--org-element-pom (element)
+  "Return buffer position for start of Org ELEMENT."
+  (org-element-property :begin element))
+
 (defun org-gtd-projects--nextify ()
   "Add the NEXT keyword to the first action/task of the project.
 
@@ -70,10 +74,6 @@ Add the TODO keyword to all subsequent actions/tasks."
   "Determine if current heading is a task that's not finished."
   (and (org-entry-is-todo-p)
        (not (org-entry-is-done-p))))
-
-(defun org-gtd-projects--org-element-pom (element)
-  "Return buffer position for start of Org ELEMENT."
-  (org-element-property :begin element))
 
 (provide 'org-gtd-projects)
 ;;; org-gtd-projects.el ends here

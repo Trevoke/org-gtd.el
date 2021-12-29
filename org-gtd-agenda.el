@@ -29,12 +29,6 @@
 (require 'org-gtd-customize)
 (require 'org-gtd-core)
 
-(defconst org-gtd-stuck-projects
-  '("+LEVEL=2&+ORG_GTD=\"Projects\"" ("NEXT" "WAIT") nil "")
-  "How to identify stuck projects in the GTD system.
-
-This is a list of four items, the same type as in `org-stuck-projects'.")
-
 ;;;###autoload
 (defun org-gtd-engage ()
   "Display `org-agenda' customized by org-gtd."
