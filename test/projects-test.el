@@ -36,6 +36,22 @@
         (org-gtd-archive-completed-items)
         (basic-save-buffer))
       (let ((archived-projects (ogt--archive-string)))
-        (expect archived-projects :to-match "project headline")))
+        (expect archived-projects :to-match "project headline")))))
 
-    ))
+;; commented out until I figure out with buttercup project what's happening
+;; (it "safely adds the stats cookie"
+
+;;   (setq org-gtd-process-item-hooks '(org-set-tags-command org-priority))
+;;   (ogt--add-single-item "project headline")
+;;   (org-gtd-process-inbox)
+;;   (execute-kbd-macro (kbd "M-> RET"))
+;;   (insert ogt--project-text)
+;;   (execute-kbd-macro (kbd "C-c c p this-is-a-tag RET A"))
+;;   (ogt--save-all-buffers)
+;;   (with-current-buffer (org-gtd--default-file)
+;;     (goto-char (point-min))
+;;     (message "%s" (buffer-string))
+;;     (search-forward "project headline")
+;;     (move-beginning-of-line)
+;;     )
+;;   )
