@@ -351,7 +351,7 @@ When you choose archive, Org GTD will assume you have done what you needed to do
 Incubating an item is similar to simply scheduling one, though the idea is that you want to be reminded of it much later, and be able to review your incubated items separately.
 So, all this will really do is make you choose a date at which you want to be reminded of this, then it'll be refiled under an incubated target.
 *** Projects
-A "project" is defined as a top-level org heading with a set of second-level org headings. When you choose "project" and enter the editing mode, create such a headline structure, like in the following example.
+A "project" in GTD is a finite set of steps after which a given task is complete. In Org GTD, this is defined as a top-level org heading with a set of second-level org headings. When the item you are editing is intended to be a project, create such a headline structure, like so:
 
 #+begin_example
 ,* Project heading

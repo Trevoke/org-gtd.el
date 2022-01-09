@@ -7,7 +7,7 @@
 @c %**end of header
 
 @copying
-Copyright (C) 2018-2021 Aldric Giacomoni <trevoke@@gmail.com>
+Copyright (C) 2018-2022 Aldric Giacomoni <trevoke@@gmail.com>
 
 You can redistribute this document and/or modify it under the terms
 of the GNU General Public License as published by the Free Software
@@ -586,7 +586,7 @@ So, all this will really do is make you choose a date at which you want to be re
 @node Projects
 @subsection Projects
 
-A "project" is defined as a top-level org heading with a set of second-level org headings. When you choose "project" and enter the editing mode, create such a headline structure, like in the following example.
+A "project" in GTD is a finite set of steps after which a given task is complete. In Org GTD, this is defined as a top-level org heading with a set of second-level org headings. When the item you are editing is intended to be a project, create such a headline structure, like so:
 
 @example
 * Project heading

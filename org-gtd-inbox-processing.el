@@ -103,6 +103,10 @@ Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (interactive)
+
+  (if (org-gtd--poorly-formatted-project-p)
+      (org-gtd--show-error-and-return-to-editing)
+
   (org-gtd--decorate-item)
   (org-gtd-projects--nextify)
   (goto-char (point-min))
@@ -111,11 +115,33 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (insert "[/]")
   (org-update-statistics-cookies t)
   (org-gtd--refile org-gtd-projects)
+  (org-gtd-process-inbox)))
+
+(defun org-gtd--poorly-formatted-project-p ()
+  "Return true if the project is composed of only one heading."
+  (basic-save-buffer)
+  (eql 1 (length (org-map-entries t))))
+
+(defun org-gtd--show-error-and-return-to-editing ()
+  "Tell the user something is wrong with the project."
+  (display-message-or-buffer
+   "A 'project' in GTD is a finite set of steps after which a given task is
+complete. In Org GTD, this is defined as a top-level org heading with at least
+one second-level org headings. When the item you are editing is intended to be
+a project, create such a headline structure, like so:
+
+* Project heading
+** First task
+** Second task
+** Third task
+
+If you do not need sub-headings, then make a single action instead.")
   (org-gtd-process-inbox))
 
 ;;;###autoload
 (defun org-gtd--calendar ()
   "Process GTD inbox item by scheduling it.
+
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Refile to `org-gtd-actionable-file-basename'."

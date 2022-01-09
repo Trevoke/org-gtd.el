@@ -26,6 +26,7 @@
   "Run after every test to clear open buffers state"
   (kill-matching-buffers ".*\\.org" nil t)
   (kill-matching-buffers ".*Agenda.*" nil t)
+  (kill-matching-buffers ".*Calendar.*" nil t)
   )
 
 (defun ogt--clear-file-and-buffer (buffer)

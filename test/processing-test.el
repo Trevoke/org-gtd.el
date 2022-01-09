@@ -88,4 +88,13 @@
     (org-gtd-engage)
     (let ((ogt-agenda-string (ogt--buffer-string org-agenda-buffer)))
       (expect (string-match "single action" ogt-agenda-string)
-              :to-be-truthy))))
+              :to-be-truthy)))
+
+  (describe "error management"
+    (describe "when project has incorrect shape"
+      (it "tells the user and returns to editing"
+        (org-gtd-process-inbox)
+        (execute-kbd-macro (kbd "C-c c p"))
+        (expect (buffer-name) :to-match "inbox")
+        (with-current-buffer "*Message*"
+          (expect (buffer-string) :to-match "First task"))))))

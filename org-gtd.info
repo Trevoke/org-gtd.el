@@ -1,7 +1,7 @@
 This is org-gtd.info, produced by makeinfo version 6.7 from
 org-gtd.texi.
 
-Copyright (C) 2018-2021 Aldric Giacomoni <trevoke@gmail.com>
+Copyright (C) 2018-2022 Aldric Giacomoni <trevoke@gmail.com>
 
    You can redistribute this document and/or modify it under the terms
 of the GNU General Public License as published by the Free Software
@@ -713,10 +713,10 @@ File: org-gtd.info,  Node: Projects,  Prev: Incubate,  Up: Processing the inbox
 2.2.8 Projects
 --------------
 
-A "project" is defined as a top-level org heading with a set of
-second-level org headings.  When you choose "project" and enter the
-editing mode, create such a headline structure, like in the following
-example.
+A "project" in GTD is a finite set of steps after which a given task is
+complete.  In Org GTD, this is defined as a top-level org heading with a
+set of second-level org headings.  When the item you are editing is
+intended to be a project, create such a headline structure, like so:
 
      * Project heading
      ** First task
@@ -913,14 +913,14 @@ Node: Single action22989
 Node: Archive23243
 Node: Incubate23636
 Node: Projects24092
-Node: Engaging with your GTD items25116
-Node: Interacting with org-agenda25971
-Node: Cleaning up / archiving completed work26842
-Node: Multiple files / refile targets27696
-Node: New project heading28039
-Node: Other headings28447
-Node: Troubleshooting29032
-Node: Projects without a NEXT item29282
+Node: Engaging with your GTD items25187
+Node: Interacting with org-agenda26042
+Node: Cleaning up / archiving completed work26913
+Node: Multiple files / refile targets27767
+Node: New project heading28110
+Node: Other headings28518
+Node: Troubleshooting29103
+Node: Projects without a NEXT item29353
 
 End Tag Table
 
