@@ -91,7 +91,8 @@ top level heading, or the behavior of org-gtd will be undefined."
 (defcustom org-gtd-agenda-custom-commands
   '(("g" "Scheduled today and all NEXT items"
      (
-      (agenda "" ((org-agenda-span 1)))
+      (agenda "" ((org-agenda-span 1)
+                  (org-agenda-start-day nil)))
       (todo "NEXT" ((org-agenda-overriding-header "All NEXT items")))
       (todo "WAIT" ((org-agenda-todo-ignore-with-date t)
                     (org-agenda-overriding-header "Blocked items"))))))
