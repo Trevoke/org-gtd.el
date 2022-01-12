@@ -112,7 +112,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (goto-char (point-min))
   (let ((org-special-ctrl-a t))
     (org-end-of-line))
-  (insert "[/]")
+  (insert " [/]")
   (org-update-statistics-cookies t)
   (org-gtd--refile org-gtd-projects)
   (org-gtd-process-inbox)))
