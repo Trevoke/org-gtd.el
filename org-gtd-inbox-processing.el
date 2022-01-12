@@ -111,7 +111,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-gtd-projects--nextify)
   (goto-char (point-min))
   (let ((org-special-ctrl-a t))
-    (execute-kbd-macro (kbd "C-e")))
+    (end-of-line))
   (insert "[/]")
   (org-update-statistics-cookies t)
   (org-gtd--refile org-gtd-projects)
