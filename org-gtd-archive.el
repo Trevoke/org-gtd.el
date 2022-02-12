@@ -26,6 +26,8 @@
 
 (require 'org-archive)
 (require 'org-element)
+(require 'org-gtd-core)
+(require 'org-gtd-agenda)
 
 ;;;###autoload
 (defun org-gtd-archive-completed-items ()
