@@ -47,7 +47,9 @@ Programmatic wrapper to add org-gtd context to any FUN using `defadvice'.
 Argument R is there to be passed through."
   (with-org-gtd-context (apply fun r)))
 
-(defconst org-gtd--agenda-functions (apropos-internal "org-agenda" #'commandp)
+(defconst org-gtd--agenda-functions (append (apropos-internal "org-agenda" #'commandp)
+                                            ;; For `org-agenda-redo' & `org-save-all-org-buffers'
+                                            '(org-agenda-run-series org-save-all-org-buffers))
 
   "List of commands available to the user through `org-agenda'.
 
