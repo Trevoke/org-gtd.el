@@ -219,7 +219,8 @@ Stop processing the inbox."
   (interactive)
   (widen)
   (org-gtd-process-mode -1)
-  (whitespace-cleanup))
+  (let ((whitespace-style '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab space-mark tab-mark newline-mark missing-newline-at-eof)))
+    (whitespace-cleanup)))
 
 (defun org-gtd--decorate-item ()
   "Apply hooks to add metadata to a given GTD item."
