@@ -93,6 +93,7 @@ This package provides a system that allows you to capture incoming things into a
 :PROPERTIES:
 :DESCRIPTION: How to upgrade your local setup across major versions
 :END:
+If you are installing and not upgrading, you can skip this section entirely and just go to the next section, [[*Installing]].
 *** 2.0.0 <- 1.1.x
 **** Configuration
 Org GTD now handles dependency loading more intelligently, so you no longer need the overly complicated setup of ~org-gtd~, ~org-agenda~ and ~org-capure~ in your config for dependency loading. You now only need ~org-gtd~. If you are using ~use-package~ then the following is the minimal config required.
@@ -109,14 +110,15 @@ You no longer need to configure ~org-agenda-custom-commands~. Now there's ~org-g
 
 The org-capture templates are now simplified and managed by ~org-gtd-capture-templates~. If you did not change the default configuration, then you can just remove what you had. Read the variable documentaton for further information.
 ***** Example upgrade
-My org-gtd config for 1.x was:
+My org-gtd config for 1.x was as follows:
 #+begin_src elisp
   (use-package org-gtd
     :after org
+    :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
+                     :commit "1.1.1" :upgrade t)
     :demand t
-    :pin melpa
     :custom
-    (org-gtd-directory stag-org-gtd-directory)
+    (org-gtd-directory "~/org-gtd")
     (org-agenda-property-list '("DELEGATED_TO"))
     (org-edna-use-inheritance t)
     :config
@@ -160,10 +162,10 @@ And my config for 2.0 is:
   (use-package org-gtd
     :after org
     :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
-                     :branch "2.0.0" :upgrade t)
+                     :commit "2.0.0" :upgrade t)
     :demand t
     :custom
-    (org-gtd-directory stag-org-gtd-directory)
+    (org-gtd-directory "~/org-gtd")
     (org-edna-use-inheritance t)
     :config
     (org-edna-mode)
