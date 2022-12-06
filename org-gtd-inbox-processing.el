@@ -58,7 +58,8 @@ undefined state."
     ("s" "Single action" org-gtd--single-action)]
    [("d" "Delegate" org-gtd--delegate)
     ("c" "Calendar" org-gtd--calendar)]
-   [("p" "Project (multi-step)" org-gtd--project)]
+   [("p" "Project (multi-step)" org-gtd--project)
+    ("m" "Modify project: add this task" org-gtd--modify-project)]
    ]
   ["Non-actionable"
    [("i" "Incubate" org-gtd--incubate)
@@ -94,6 +95,26 @@ undefined state."
   (interactive)
   (org-todo "DONE")
   (with-org-gtd-context (org-archive-subtree))
+  (org-gtd-process-inbox))
+
+;;;###autoload
+(defun org-gtd--modify-project ()
+  "Add current task in progress to an existing project."
+  (interactive)
+  (org-todo "NEXT")
+  (with-org-gtd-context
+      (let ((org-refile-target-verify-function
+             (lambda ()
+               (if (org-gtd-refile--group-p org-gtd-projects)
+                   t
+                 (org-end-of-subtree)
+                 nil)))
+             (org-refile-targets '((org-agenda-files :maxlevel . 3)))
+             (org-gtd-refile-to-any-target nil)
+             (org-use-property-inheritance '("ORG_GTD"))
+             (org-reverse-note-order t))
+        (org-refile nil nil nil "Choose the project to refile to: ")
+        (org-refile)))
   (org-gtd-process-inbox))
 
 ;;;###autoload
