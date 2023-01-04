@@ -70,6 +70,25 @@ Add the TODO keyword to all subsequent actions/tasks."
         (org-entry-put (org-gtd-projects--org-element-pom myelt) "TODO" "TODO")))
     (org-entry-put (org-gtd-projects--org-element-pom first-entry) "TODO" "NEXT")))
 
+
+
+(defun org-gtd-projects--renextify (marker)
+  "Documentation TK"
+    (let ((mybuf (marker-buffer marker))
+	  (mypos (marker-position marker)))
+      (with-current-buffer mybuf
+	(goto-char mypos)
+	(cl-destructuring-bind
+	    (first-entry . rest-entries)
+	    (cdr (org-map-entries #'org-element-at-point t 'tree))
+	  (org-element-map
+	      rest-entries
+	      'headline
+	    (lambda (elt)
+	      (if (string-equal (org-element-property :todo-keyword elt) "NEXT")
+		  (org-entry-put (org-gtd-projects--org-element-pom elt) "TODO" "TODO"))))
+	  (org-entry-put (org-gtd-projects--org-element-pom first-entry) "TODO" "NEXT")))))
+
 (defun org-gtd-projects--incomplete-task-p ()
   "Determine if current heading is a task that's not finished."
   (and (org-entry-is-todo-p)

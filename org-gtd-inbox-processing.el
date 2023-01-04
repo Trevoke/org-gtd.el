@@ -138,6 +138,25 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-gtd--refile org-gtd-projects)
   (org-gtd-process-inbox)))
 
+(defun refile-under-org-heading ()
+  "Refile the org heading at point under a chosen heading in the agenda files."
+  (interactive)
+  (with-org-gtd-context
+      (let* ((org-gtd-refile-to-any-target nil)
+	     (org-use-property-inheritance '("ORG_GTD"))
+	     (org-reverse-note-order t)
+	     (headings (org-map-entries
+                        (lambda () (org-get-heading t t t t))
+                        "+LEVEL=2&+ORG_GTD=\"Projects\""
+                        'agenda))
+             (chosen-heading (completing-read "Choose a heading: " headings nil t))
+	     (heading-marker (org-find-exact-heading-in-directory chosen-heading org-gtd-directory)))
+        (org-refile nil
+		    nil
+		    `(,chosen-heading ,(buffer-file-name (marker-buffer heading-marker)) nil ,(marker-position heading-marker))
+		    nil)
+	(org-gtd-projects--renextify heading-marker))))
+
 (defun org-gtd--poorly-formatted-project-p ()
   "Return true if the project is composed of only one heading."
   (basic-save-buffer)
