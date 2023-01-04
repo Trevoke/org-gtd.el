@@ -44,8 +44,12 @@
     (puthash org-gtd-calendar "Calendar" myhash)
     myhash))
 
+(defconst org-gtd-project-headings
+  "+LEVEL=2&+ORG_GTD=\"Projects\""
+  "How to tell org-mode to find project headings")
+
 (defconst org-gtd-stuck-projects
-  '("+LEVEL=2&+ORG_GTD=\"Projects\"" ("NEXT" "WAIT") nil "")
+  `(,org-gtd-project-headings ("NEXT" "WAIT") nil "")
   "How to identify stuck projects in the GTD system.
 
 This is a list of four items, the same type as in `org-stuck-projects'.")
