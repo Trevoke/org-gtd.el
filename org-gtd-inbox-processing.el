@@ -98,26 +98,6 @@ undefined state."
   (org-gtd-process-inbox))
 
 ;;;###autoload
-(defun org-gtd--modify-project ()
-  "Add current task in progress to an existing project."
-  (interactive)
-  (org-todo "NEXT")
-  (with-org-gtd-context
-      (let ((org-refile-target-verify-function
-             (lambda ()
-               (if (org-gtd-refile--group-p org-gtd-projects)
-                   t
-                 (org-end-of-subtree)
-                 nil)))
-             (org-refile-targets '((org-agenda-files :maxlevel . 3)))
-             (org-gtd-refile-to-any-target nil)
-             (org-use-property-inheritance '("ORG_GTD"))
-             (org-reverse-note-order t))
-        (org-refile nil nil nil "Choose the project to refile to: ")
-        (org-refile)))
-  (org-gtd-process-inbox))
-
-;;;###autoload
 (defun org-gtd--project ()
   "Process GTD inbox item by transforming it into a project.
 Allow the user apply user-defined tags from
@@ -128,34 +108,36 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (if (org-gtd--poorly-formatted-project-p)
       (org-gtd--show-error-and-return-to-editing)
 
-  (org-gtd--decorate-item)
-  (org-gtd-projects--nextify)
-  (goto-char (point-min))
-  (let ((org-special-ctrl-a t))
-    (org-end-of-line))
-  (insert " [/]")
-  (org-update-statistics-cookies t)
-  (org-gtd--refile org-gtd-projects)
-  (org-gtd-process-inbox)))
+    (org-gtd--decorate-item)
+    (org-gtd-projects--nextify)
+    (goto-char (point-min))
+    (let ((org-special-ctrl-a t))
+      (org-end-of-line))
+    (insert " [/]")
+    (org-update-statistics-cookies t)
+    (org-gtd--refile org-gtd-projects)
+    (org-gtd-process-inbox)))
 
-(defun refile-under-org-heading ()
+;;;###autoload
+(defun org-gtd--modify-project ()
   "Refile the org heading at point under a chosen heading in the agenda files."
   (interactive)
   (with-org-gtd-context
       (let* ((org-gtd-refile-to-any-target nil)
-	     (org-use-property-inheritance '("ORG_GTD"))
-	     (org-reverse-note-order t)
-	     (headings (org-map-entries
+             (org-use-property-inheritance '("ORG_GTD"))
+             (org-reverse-note-order t)
+             (headings (org-map-entries
                         (lambda () (org-get-heading t t t t))
-                        "+LEVEL=2&+ORG_GTD=\"Projects\""
+                        org-gtd-project-headings
                         'agenda))
              (chosen-heading (completing-read "Choose a heading: " headings nil t))
-	     (heading-marker (org-find-exact-heading-in-directory chosen-heading org-gtd-directory)))
+             (heading-marker (org-find-exact-heading-in-directory chosen-heading org-gtd-directory)))
         (org-refile nil
-		    nil
-		    `(,chosen-heading ,(buffer-file-name (marker-buffer heading-marker)) nil ,(marker-position heading-marker))
-		    nil)
-	(org-gtd-projects--renextify heading-marker))))
+                    nil
+                    `(,chosen-heading ,(buffer-file-name (marker-buffer heading-marker)) nil ,(marker-position heading-marker))
+                    nil)
+        (org-gtd-projects-fix-todo-keywords heading-marker)))
+  (org-gtd-process-inbox))
 
 (defun org-gtd--poorly-formatted-project-p ()
   "Return true if the project is composed of only one heading."

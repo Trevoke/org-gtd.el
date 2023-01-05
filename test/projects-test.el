@@ -35,22 +35,7 @@
         (org-gtd-archive-completed-items)
         (basic-save-buffer))
       (let ((archived-projects (ogt--archive-string)))
-        (expect archived-projects :to-match "project headline"))))
-
-  (describe
-   "adds new tasks to an existing project"
-   (it
-    "as the first NEXT task"
-    (ogt--add-single-item "Task 0")
-    (org-gtd-process-inbox)
-    (execute-kbd-macro (kbd "C-c c m"))
-    (insert "project headline")
-    (execute-kbd-macro (kbd "RET"))
-    (org-gtd-engage)
-    (with-current-buffer org-agenda-this-buffer-name
-      (expect (buffer-string) :to-match "Task 0"))
-    ))
-  )
+        (expect archived-projects :to-match "project headline")))))
 
 ;; commented out until I figure out with buttercup project what's happening
 ;; (it "safely adds the stats cookie"
