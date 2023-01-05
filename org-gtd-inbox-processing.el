@@ -51,7 +51,7 @@
   "Choose how to categorize the current item.
 
 Note that this function is intended to be used only during inbox processing.
-Each action continues inbox processing, so you may put your emacs in an
+Each action continues inbox processing, so you may put your Emacs in an
 undefined state."
   ["Actionable"
    [("q" "Quick action" org-gtd--quick-action)
@@ -140,7 +140,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-gtd-process-inbox))
 
 (defun org-gtd--poorly-formatted-project-p ()
-  "Return true if the project is composed of only one heading."
+  "Return non-nil if the project is composed of only one heading."
   (basic-save-buffer)
   (eql 1 (length (org-map-entries t))))
 

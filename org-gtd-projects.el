@@ -54,8 +54,9 @@
 
 ;;;###autoload
 (defun org-gtd-projects-fix-todo-keywords (marker)
-  "Call this function if you want to have one and only one NEXT keyword in a
-given project. MARKER is a marker to the header of the project to fix."
+  "Ensure project at MARKER has only one NEXT keyword.
+
+ensures only the first non-done keyword is NEXT, all other non-done are TODO."
   (interactive)
   (let ((mybuf (marker-buffer marker))
         (mypos (marker-position marker)))
