@@ -1,6 +1,6 @@
 ;;; org-gtd-inbox-processing.el --- Code to process inbox -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2021 Aldric Giacomoni
+;; Copyright © 2019-2023 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -51,14 +51,15 @@
   "Choose how to categorize the current item.
 
 Note that this function is intended to be used only during inbox processing.
-Each action continues inbox processing, so you may put your emacs in an
+Each action continues inbox processing, so you may put your Emacs in an
 undefined state."
   ["Actionable"
    [("q" "Quick action" org-gtd--quick-action)
     ("s" "Single action" org-gtd--single-action)]
    [("d" "Delegate" org-gtd--delegate)
     ("c" "Calendar" org-gtd--calendar)]
-   [("p" "Project (multi-step)" org-gtd--project)]
+   [("p" "Project (multi-step)" org-gtd--project)
+    ("m" "Modify project: add this task" org-gtd--modify-project)]
    ]
   ["Non-actionable"
    [("i" "Incubate" org-gtd--incubate)
@@ -107,18 +108,39 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (if (org-gtd--poorly-formatted-project-p)
       (org-gtd--show-error-and-return-to-editing)
 
-  (org-gtd--decorate-item)
-  (org-gtd-projects--nextify)
-  (goto-char (point-min))
-  (let ((org-special-ctrl-a t))
-    (org-end-of-line))
-  (insert " [/]")
-  (org-update-statistics-cookies t)
-  (org-gtd--refile org-gtd-projects)
-  (org-gtd-process-inbox)))
+    (org-gtd--decorate-item)
+    (org-gtd-projects--nextify)
+    (goto-char (point-min))
+    (let ((org-special-ctrl-a t))
+      (org-end-of-line))
+    (insert " [/]")
+    (org-update-statistics-cookies t)
+    (org-gtd--refile org-gtd-projects)
+    (org-gtd-process-inbox)))
+
+;;;###autoload
+(defun org-gtd--modify-project ()
+  "Refile the org heading at point under a chosen heading in the agenda files."
+  (interactive)
+  (with-org-gtd-context
+      (let* ((org-gtd-refile-to-any-target nil)
+             (org-use-property-inheritance '("ORG_GTD"))
+             (org-reverse-note-order t)
+             (headings (org-map-entries
+                        (lambda () (org-get-heading t t t t))
+                        org-gtd-project-headings
+                        'agenda))
+             (chosen-heading (completing-read "Choose a heading: " headings nil t))
+             (heading-marker (org-find-exact-heading-in-directory chosen-heading org-gtd-directory)))
+        (org-refile nil
+                    nil
+                    `(,chosen-heading ,(buffer-file-name (marker-buffer heading-marker)) nil ,(marker-position heading-marker))
+                    nil)
+        (org-gtd-projects-fix-todo-keywords heading-marker)))
+  (org-gtd-process-inbox))
 
 (defun org-gtd--poorly-formatted-project-p ()
-  "Return true if the project is composed of only one heading."
+  "Return non-nil if the project is composed of only one heading."
   (basic-save-buffer)
   (eql 1 (length (org-map-entries t))))
 

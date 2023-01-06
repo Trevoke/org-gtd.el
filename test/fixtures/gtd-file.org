@@ -3,12 +3,11 @@
 
 * Projects
 :PROPERTIES:
-:TRIGGER: next-sibling todo!(NEXT)
-:ORG_GTD: Projects
+:TRIGGER:  relatives(forward-no-wrap todo-only 1 no-sort) todo!(NEXT)
+:ORG_GTD:  Projects
 :END:
 
 ** [0/3] Unstarted project
-
 *** NEXT Task 1
 
 *** TODO Task 2
@@ -25,10 +24,13 @@
 *** DONE Task 1
 *** CNCL Task 2
 *** CNCL Task 3
-
+** [1/3] addtaskhere
+*** DONE finished task
+*** NEXT initial next task
+*** TODO initial last task
 * Calendar
 :PROPERTIES:
-:ORG_GTD: Calendar
+:ORG_GTD:  Calendar
 :END:
 
 ** DONE write a nice test
@@ -49,7 +51,7 @@ SCHEDULED: <2021-12-04 Sat>
 - State "DONE"       from ""           [2021-11-20 Sat 16:51]
 * Actions
 :PROPERTIES:
-:ORG_GTD: Actions
+:ORG_GTD:  Actions
 :END:
 
 ** NEXT Do this soon
@@ -63,7 +65,7 @@ SCHEDULED: <2021-12-04 Sat>
 
 * Incubate
 :PROPERTIES:
-:ORG_GTD: Incubated
+:ORG_GTD:  Incubated
 :END:
 ** For later
 SCHEDULED: <2037-02-19 Thu>

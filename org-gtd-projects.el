@@ -1,6 +1,6 @@
 ;;; org-gtd-projects.el --- project management in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2021 Aldric Giacomoni
+;; Copyright © 2019-2023 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -52,10 +52,41 @@
   (with-org-gtd-context
       (org-agenda-list-stuck-projects)))
 
+;;;###autoload
+(defun org-gtd-projects-fix-todo-keywords-for-project-at-point ()
+  "Ensure keywords for subheadings of project at point are sane.
+
+This means one and only one NEXT keyword, and it is the first of type TODO
+in the list."
+  (interactive)
+  (org-gtd-projects-fix-todo-keywords (point-marker)))
+
+;;;###autoload
+(defun org-gtd-projects-fix-todo-keywords (marker)
+  "Ensure project at MARKER has only one NEXT keyword.
+
+ensures only the first non-done keyword is NEXT, all other non-done are TODO."
+  (interactive)
+  (let ((mybuf (marker-buffer marker))
+        (mypos (marker-position marker)))
+    (with-current-buffer mybuf
+      (goto-char mypos)
+      (cl-destructuring-bind
+          (first-entry . rest-entries)
+          (cdr (org-map-entries #'org-element-at-point t 'tree))
+        (org-element-map
+            rest-entries
+            'headline
+          (lambda (elt)
+            (if (string-equal (org-element-property :todo-keyword elt) "NEXT")
+                (org-entry-put (org-gtd-projects--org-element-pom elt) "TODO" "TODO"))))
+        (org-entry-put (org-gtd-projects--org-element-pom first-entry) "TODO" "NEXT")))))
+
 (defun org-gtd-projects--org-element-pom (element)
   "Return buffer position for start of Org ELEMENT."
   (org-element-property :begin element))
 
+;; TODO rename to something like initialize TODO states
 (defun org-gtd-projects--nextify ()
   "Add the NEXT keyword to the first action/task of the project.
 

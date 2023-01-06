@@ -5,8 +5,9 @@
 (defun ogt--configure-emacs ()
   (setq org-gtd-directory (make-temp-file "org-gtd" t)
         org-gtd-process-item-hooks '()
-        org-gtd-refile-to-any-target nil)
-
+        org-gtd-refile-to-any-target nil
+        org-edna-use-inheritance t)
+  (org-edna-mode 1)
   (define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose))
 
 (defun ogt--prepare-filesystem ()

@@ -15,7 +15,6 @@
   (after-each (ogt--close-and-delete-files))
 
   (describe "marks all undone tasks of a canceled project as canceled"
-
     (it "on a task in the agenda"
       (org-gtd-engage)
       (with-current-buffer org-agenda-buffer
@@ -36,10 +35,7 @@
         (org-gtd-archive-completed-items)
         (basic-save-buffer))
       (let ((archived-projects (ogt--archive-string)))
-        (expect archived-projects :to-match "project headline"))))
-
-
-  )
+        (expect archived-projects :to-match "project headline")))))
 
 ;; commented out until I figure out with buttercup project what's happening
 ;; (it "safely adds the stats cookie"

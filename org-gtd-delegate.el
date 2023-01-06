@@ -1,6 +1,6 @@
 ;;; org-gtd-delegate.el --- logic to delegate items -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2021 Aldric Giacomoni
+;; Copyright © 2019-2023 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
