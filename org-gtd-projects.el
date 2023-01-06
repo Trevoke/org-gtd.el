@@ -1,6 +1,6 @@
 ;;; org-gtd-projects.el --- project management in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2021 Aldric Giacomoni
+;; Copyright © 2019-2023 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -51,6 +51,15 @@
   (interactive)
   (with-org-gtd-context
       (org-agenda-list-stuck-projects)))
+
+;;;###autoload
+(defun org-gtd-projects-fix-todo-keywords-for-project-at-point ()
+  "Ensure keywords for subheadings of project at point are sane.
+
+This means one and only one NEXT keyword, and it is the first of type TODO
+in the list."
+  (interactive)
+  (org-gtd-projects-fix-todo-keywords (point-marker)))
 
 ;;;###autoload
 (defun org-gtd-projects-fix-todo-keywords (marker)

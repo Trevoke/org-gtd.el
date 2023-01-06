@@ -1,6 +1,6 @@
 ;;; org-gtd-refile.el --- refiling logic for org gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2021 Aldric Giacomoni
+;; Copyright © 2019-2023 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -32,7 +32,7 @@
 (defconst org-gtd-projects-template
   "* Projects
 :PROPERTIES:
-:TRIGGER: next-sibling todo!(NEXT)
+:TRIGGER: relatives(forward-no-wrap todo-only 1 no-sort) todo!(NEXT)
 :ORG_GTD: Projects
 :END:
 ")

@@ -1,11 +1,11 @@
 ;;; org-gtd.el --- An implementation of GTD -*- lexical-binding: t; coding: utf-8 -*-
 
-;; Copyright (C) 2019-2021 Aldric Giacomoni
+;; Copyright (C) 2019-2023 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; Homepage: https://github.com/Trevoke/org-gtd.el
 ;; Package-Requires: ((emacs "27.1") (org-edna "1.1.2") (f "0.20.0") (org "9.5") (org-agenda-property "1.3.1") (transient "0.3.7"))
-;; Package-Version: 2.0.0
+;; Package-Version: 2.1.0
 
 ;; This file is not part of GNU Emacs.
 

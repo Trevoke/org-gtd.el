@@ -7,7 +7,7 @@
 @c %**end of header
 
 @copying
-Copyright (C) 2018-2022 Aldric Giacomoni <trevoke@@gmail.com>
+Copyright (C) 2018-2023 Aldric Giacomoni <trevoke@@gmail.com>
 
 You can redistribute this document and/or modify it under the terms
 of the GNU General Public License as published by the Free Software
@@ -28,7 +28,7 @@ General Public License for more details.
 @finalout
 @titlepage
 @title Org GTD User Manual
-@subtitle for version 2.0
+@subtitle for version 2.1
 @author Aldric Giacomoni
 @page
 @vskip 0pt plus 1filll
@@ -45,7 +45,7 @@ Org GTD is an attempt to implement the GTD flow described in the GTD
 book as faithfully as possible.
 
 @noindent
-This manual is for Org GtD version 2.0.
+This manual is for Org GtD version 2.1.
 @end ifnottex
 
 @menu
@@ -65,7 +65,8 @@ Setting up Org GTD
 
 Upgrading
 
-* 2.0.0 <- 1.1.x: 200 <- 11x.
+* 2.0.1 <- 2.0.0: 201 <- 200. 
+* 2.0.0 <- 1.1.x: 200 <- 11x. 
 
 
 Installing
@@ -92,6 +93,8 @@ Using Org GTD
 
 Processing the inbox
 
+* Projects::
+* Modify an existing project::
 * Quick action::
 * Trash::
 * Calendar::
@@ -99,7 +102,6 @@ Processing the inbox
 * Single action::
 * Archive::
 * Incubate::
-* Projects::
 
 
 Engaging with your GTD items
@@ -183,9 +185,40 @@ This package provides a system that allows you to capture incoming things into a
 @node Upgrading
 @section Upgrading
 
+If you are installing and not upgrading, you can skip this section entirely and just go to the next section, @ref{Installing}.
+
 @menu
-* 2.0.0 <- 1.1.x: 200 <- 11x.
+* 2.0.1 <- 2.0.0: 201 <- 200. 
+* 2.0.0 <- 1.1.x: 200 <- 11x. 
 @end menu
+
+@node 201 <- 200
+@subsection 2.0.1 <- 2.0.0
+
+@menu
+* Update org-edna trigger::
+@end menu
+
+@node Update org-edna trigger
+@unnumberedsubsubsec Update org-edna trigger
+
+In order for project modification to work, you will need to go to every Project heading that you have. You will find the following:
+@example
+:PROPERTIES:
+:TRIGGER: next-sibling todo!(NEXT)
+:ORG_GTD: Projects
+:END:
+@end example
+
+And you will need to update the trigger so it looks like this:
+@example
+:PROPERTIES:
+:TRIGGER: relatives(forward-no-wrap todo-only 1 no-sort) todo!(NEXT)
+:ORG_GTD: Projects
+:END:
+@end example
+
+That is it! You're ready to add tasks to existing projects while processing the inbox.
 
 @node 200 <- 11x
 @subsection 2.0.0 <- 1.1.x
@@ -193,7 +226,7 @@ This package provides a system that allows you to capture incoming things into a
 @menu
 * Configuration::
 * Relevant commands with new names::
-* heading states (TODO, etc.): heading states (TODO etc).
+* heading states (TODO, etc.): heading states (TODO etc). 
 * Differentiating GTD types of items::
 * Multiple refile targets::
 * Key bindings::
@@ -221,14 +254,15 @@ The org-capture templates are now simplified and managed by @code{org-gtd-captur
 @anchor{Example upgrade}Example upgrade
 
 
-My org-gtd config for 1.x was:
+My org-gtd config for 1.x was as follows:
 @lisp
 (use-package org-gtd
   :after org
+  :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
+                   :commit "1.1.1" :upgrade t)
   :demand t
-  :pin melpa
   :custom
-  (org-gtd-directory stag-org-gtd-directory)
+  (org-gtd-directory "~/org-gtd")
   (org-agenda-property-list '("DELEGATED_TO"))
   (org-edna-use-inheritance t)
   :config
@@ -272,10 +306,10 @@ And my config for 2.0 is:
 (use-package org-gtd
   :after org
   :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
-                   :branch "2.0.0" :upgrade t)
+                   :commit "2.0.0" :upgrade t)
   :demand t
   :custom
-  (org-gtd-directory stag-org-gtd-directory)
+  (org-gtd-directory "~/org-gtd")
   (org-edna-use-inheritance t)
   :config
   (org-edna-mode)
@@ -510,33 +544,37 @@ When you are done refining it, call @code{M-x org-gtd-choose} (or hit your keybi
 You have a number of possible choices for each item you process. Subsections will explain how Org GTD handles each one.
 
 @table @asis
-@item @strong{[Q]uick Action}
-Quick action. Do it now, then choose this to mark the item as DONΕ and archive it.
+@item *[P]rojects
+This is a multi-step action. @ref{Projects}.
+@item *[M]odify a project
+Add current task to pre-existing project. @ref{Modify an existing project}.
+@item *[Q]uick action
+Less than 2 minutes. Do it now, then choose this to mark the item as DONΕ and archive it. @ref{Quick action}.
 @item @strong{[T]rash}
-This is not actionable and it's not knowledge for later. Choose this to mark the item as CNCL and archive it.
-@item @strong{[P]roject}
-This is a multi-step action. I'll describe how to handle these below.
+Not actionable; not knowledge. @ref{Trash}.
 @item @strong{[C]alendar}
-This is a single item to be done at a given date or time. You'll be presented with org-mode's date picker, then it'll refile the item. You'll find this in the agenda later.
-@item @strong{[D]elegate}
-Let someone else do this. Write the name of the person doing it, and choose a time to check up on that item.
+Single action to be done at a given date or time. @ref{Calendar}.
+@item *[D]elegate
+Let someone else do this. @ref{Delegate}.
 @item @strong{[S]ingle action}
-This is a one-off to be done when possible.
+This is a one-off to be done when possible. @ref{Single action}.
 @item @strong{[A]rchive}
-This is knowledge to be stored away.
+This is knowledge to be stored away. @ref{Archive}.
 @item @strong{[I]ncubate}
-no action now, review later
+no action now; review later. @ref{Incubate}.
 @end table
 
-In addition you have @strong{[X]} for "exit early", which you can use to stop processing the inbox and restore emacs to its non-inbox-processing state.
+In addition you have @strong{[x]} for "exit early", which you can use to stop processing the inbox and restore emacs to its non-inbox-processing state.
 
 After the item-type-specific behavior, you will have the option to add custom decorations to each item, based on how you prefer to think about (filter, find, etc.) the items when you do GTD@.
 
-The decorations are tracked in @code{org-gtd-process-item-hooks}, a list of functions. By default there is one element in the list, to add tags to the item.
-
 This process will continue, item after item, until you hit @strong{x} to exit early or until you run out of items to process.
 
+The decorations (priority, tags, categories, etc.) are customizable as you desire and managed by @code{org-gtd-process-item-hooks}, a list of functions. By default there is one element in the list, to add tags to the item. You can add your own functions to this list, as long as the functions do not modify the text in any "custom" way, separate from what org-mode understands.
+
 @menu
+* Projects::
+* Modify an existing project::
 * Quick action::
 * Trash::
 * Calendar::
@@ -544,49 +582,13 @@ This process will continue, item after item, until you hit @strong{x} to exit ea
 * Single action::
 * Archive::
 * Incubate::
-* Projects::
 @end menu
-
-@node Quick action
-@subsection Quick action
-
-When you choose quick action, you indicate that not much more tracking is necessary. This item is automatically marked as DONE and archived, then Org GTD moves on to the next item.
-
-@node Trash
-@subsection Trash
-
-When you choose trash, the item is automatically marked as CNCL and archived, then Org GTD moves on to the next item.
-
-@node Calendar
-@subsection Calendar
-
-When you you choose calendar, you will be asked to select a date (and time if you choose to add it), then Org GTD moves on to the next item.
-
-@node Delegate
-@subsection Delegate
-
-When you choose delegate, you'll be asked for a name to whom to delegate this to, and a date on which to check in with the person. Org GTD automatically marks this item as "WAIT", then Org GTD moves on to the next item.
-
-@node Single action
-@subsection Single action
-
-When you choose single action, Org GTD will mark it as a NEXT item, then Org GTD moves on to the next item.
-
-@node Archive
-@subsection Archive
-
-When you choose archive, Org GTD will assume you have done what you needed to do to store this (e.g. put the information in org roam, bbdb, or wherever you will store it), then marks the item as DONE and archives it. Org GTD then moves on to the next item.
-
-@node Incubate
-@subsection Incubate
-
-Incubating an item is similar to simply scheduling one, though the idea is that you want to be reminded of it much later, and be able to review your incubated items separately.
-So, all this will really do is make you choose a date at which you want to be reminded of this, then it'll be refiled under an incubated target.
 
 @node Projects
 @subsection Projects
 
-A "project" in GTD is a finite set of steps after which a given task is complete. In Org GTD, this is defined as a top-level org heading with a set of second-level org headings. When the item you are editing is intended to be a project, create such a headline structure, like so:
+A "project" in GTD is a finite set of steps after which a given task is complete. In Org GTD, this is defined as a top-level org heading with a set of second-level org headings. Those second-level headings represent the sequentially-ordered set of tasks to be executed before the project can be called complete.
+When the item you are editing is intended to be a project, create such a headline structure, like so:
 
 @example
 * Project heading
@@ -595,7 +597,7 @@ A "project" in GTD is a finite set of steps after which a given task is complete
 ** Third task
 @end example
 
-Then call @code{M-x org-gtd-choose} or hit your chosen keybinding, tell Org GTD you chose a project, and move on with your life.
+Then call @code{M-x org-gtd-choose} or hit your chosen keybinding, tell Org GTD you chose a project, and move on to the next item in the inbox.
 
 A project is defined as "completed" when all its tasks are marked as DONE@.
 A project is defined as "canceled" when its last task is marked as CNCL@.
@@ -603,6 +605,77 @@ A project is defined as "canceled" when its last task is marked as CNCL@.
 You can cancel a project by calling @code{org-gtd-agenda-cancel-project} from the agenda view, when the point is on the next task of the project.
 
 DO NOTE: it is surprisingly difficult to add a custom note when canceling, so if you want to add a note explaining why you canceled the project, you will have to do so manually.
+
+Projects will show up in the agenda, but only the current NEXT task.
+
+@node Modify an existing project
+@subsection Modify an existing project
+
+When you choose this, the package will do the following:
+@itemize
+@item
+refile this as the top heading of the project
+@item
+adjust the state keywords so that the new heading is marked as NEXT (this way it will show up in your agenda and you won't lose track of it) and all other non-done headings are marked as TODO@.
+@end itemize
+
+You can go to that project yourself and readjust the order of the headings as necessary, and then you can go to that project's top heading ("Project heading" in example below) and execute @code{M-x org-gtd-projects-fix-todo-keywords-for-project-at-point}
+
+@example
+* Project heading
+** NEXT First task
+** TODO Second task
+** TODO Third task
+@end example
+
+@node Quick action
+@subsection Quick action
+
+When you choose quick action, you indicate that not much more tracking is necessary. This item is automatically marked as DONE and archived, then Org GTD moves on to the next item.
+
+This won't show up in the agenda, because you've already done it.
+
+@node Trash
+@subsection Trash
+
+When you choose trash, the item is automatically marked as CNCL and archived, then Org GTD moves on to the next item.
+
+This won't show up in the agenda, because you don't care about it.
+
+@node Calendar
+@subsection Calendar
+
+When you you choose calendar, you will be asked to select a date (and time if you choose to add it), then Org GTD moves on to the next item.
+This will come up in the agenda when the time is right. Literally.
+
+@node Delegate
+@subsection Delegate
+
+When you choose delegate, you'll be asked for a name to whom to delegate this to, and a date on which to check in with the person. Org GTD automatically marks this item as "WAIT", then Org GTD moves on to the next item.
+
+This will show up in the "Blocked" section of the agenda.
+
+@node Single action
+@subsection Single action
+
+When you choose single action, Org GTD will mark it as a NEXT item, then Org GTD moves on to the next item.
+
+This will show up in the agenda as a NEXT item.
+
+@node Archive
+@subsection Archive
+
+When you choose archive, Org GTD will assume you have done what you needed to do to store this (e.g. put the information in org roam, bbdb, or wherever you will store it), then marks the item as DONE and archives it. Org GTD then moves on to the next item.
+
+This won't show up in the agenda because it's not actionable.
+
+@node Incubate
+@subsection Incubate
+
+Incubating an item is similar to simply scheduling one, though the idea is that you want to be reminded of it much later, and be able to review your incubated items separately.
+So, all this will really do is make you choose a date at which you want to be reminded of this, then it'll be refiled under an incubated target.
+
+This will show up in the agenda at the date of your choosing.
 
 @node Engaging with your GTD items
 @section Engaging with your GTD items
@@ -620,6 +693,8 @@ You can define other functions by adding new custom commands to the above, and d
 @end lisp
 
 You can call @code{org-gtd-show-all-next} to only see NEXT actions, nothing scheduled.
+
+Org Gtd uses @code{org-edna} to automatically trigger state changes in projects, such that when you mark a NEXT item from a project as DONE, the next TODO in that project automatically becomes NEXT, such that the agenda is always up-to-date (you may need to refresh the agenda).
 
 @menu
 * Interacting with org-agenda::
