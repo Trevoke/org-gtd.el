@@ -214,6 +214,11 @@ Project heading that you have.  You will find the following:
      :ORG_GTD: Projects
      :END:
 
+   Now be sure to set the following variable in your config file, before
+org-gtd loads, to disable the loud warning:
+
+     (setq org-gtd-update-ack "2.1.0")
+
    That is it!  You’re ready to add tasks to existing projects while
 processing the inbox.
 
@@ -973,43 +978,43 @@ Node: Summary2662
 Node: Upgrading6110
 Node: 201 <- 2006439
 Node: Update org-edna trigger6596
-Node: 200 <- 11x7231
-Node: Configuration7557
-Ref: Example upgrade8965
-Node: Relevant commands with new names11598
-Node: heading states (TODO etc)11962
-Node: Differentiating GTD types of items12289
-Node: Multiple refile targets13707
-Node: Key bindings14630
-Node: Installing14992
-Node: use-package15287
-Node: Manually15499
-Node: Configuring15865
-Node: The easy way16121
-Node: Required configuration of sub-packages16690
-Node: org-edna16954
-Node: configuration options for org-gtd17431
-Node: Recommended key bindings18173
-Node: Using Org GTD18901
-Node: Adding things to the inbox19583
-Node: Processing the inbox20398
-Node: Projects23098
-Node: Modify an existing project24434
-Node: Quick action25303
-Node: Trash25718
-Node: Calendar26038
-Node: Delegate26376
-Node: Single action26798
-Node: Archive27104
-Node: Incubate27567
-Node: Engaging with your GTD items28072
-Node: Interacting with org-agenda29209
-Node: Cleaning up / archiving completed work30080
-Node: Multiple files / refile targets30934
-Node: New project heading31277
-Node: Other headings31685
-Node: Troubleshooting32270
-Node: Projects without a NEXT item32520
+Node: 200 <- 11x7389
+Node: Configuration7715
+Ref: Example upgrade9123
+Node: Relevant commands with new names11756
+Node: heading states (TODO etc)12120
+Node: Differentiating GTD types of items12447
+Node: Multiple refile targets13865
+Node: Key bindings14788
+Node: Installing15150
+Node: use-package15445
+Node: Manually15657
+Node: Configuring16023
+Node: The easy way16279
+Node: Required configuration of sub-packages16848
+Node: org-edna17112
+Node: configuration options for org-gtd17589
+Node: Recommended key bindings18331
+Node: Using Org GTD19059
+Node: Adding things to the inbox19741
+Node: Processing the inbox20556
+Node: Projects23256
+Node: Modify an existing project24592
+Node: Quick action25461
+Node: Trash25876
+Node: Calendar26196
+Node: Delegate26534
+Node: Single action26956
+Node: Archive27262
+Node: Incubate27725
+Node: Engaging with your GTD items28230
+Node: Interacting with org-agenda29367
+Node: Cleaning up / archiving completed work30238
+Node: Multiple files / refile targets31092
+Node: New project heading31435
+Node: Other headings31843
+Node: Troubleshooting32428
+Node: Projects without a NEXT item32678
 
 End Tag Table
 

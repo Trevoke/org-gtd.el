@@ -218,6 +218,12 @@ And you will need to update the trigger so it looks like this:
 :END:
 @end example
 
+Now be sure to set the following variable in your config file, before org-gtd loads, to disable the loud warning:
+
+@lisp
+(setq org-gtd-update-ack "2.1.0")
+@end lisp
+
 That is it! You're ready to add tasks to existing projects while processing the inbox.
 
 @node 200 <- 11x

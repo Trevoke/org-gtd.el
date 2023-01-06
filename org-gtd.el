@@ -38,6 +38,7 @@
 ;; Upgrade information is also available therein.
 ;;
 ;;; Code:
+(defconst org-gtd-version "2.1.0")
 
 (require 'subr-x)
 (require 'cl-lib)
@@ -60,6 +61,34 @@
 (require 'org-gtd-agenda)
 (require 'org-gtd-inbox-processing)
 (require 'org-gtd-mode)
+
+(defvar org-gtd-update-ack "1.0.0"
+  "Set this to the latest version you have upgraded to.
+
+You will only see warnings relevant to upgrade steps you must take to go up from
+your version to the one installed. Use a version string. For instance:
+
+If org-gtd is 2.0.0, use \"2.0.0\".
+If org-gtd is 2.3.5, use \"2.3.5\".")
+
+(if (version< org-gtd-update-ack org-gtd-version)
+    (lwarn 'org-gtd :warning "
+|--------------------------|
+| WARNING: action required |
+|--------------------------|
+
+Upgrading to 2.1.0 requires changing the org-edna triggers for the project
+categories. Failure to do so means your projects will end up in inconsistent
+states.
+
+See the documentation for instructions to upgrade (C-h i, then find org-gtd),
+then add the following setting to your config file (BEFORE ORG-GTD LOADS)
+to disable this warning.
+
+(setq org-gtd-update-ack \"2.1.0\")
+
+"))
+
 
 (provide 'org-gtd)
 ;;; org-gtd.el ends here
