@@ -30,7 +30,7 @@
 *** TODO initial last task
 * Calendar
 :PROPERTIES:
-:ORG_GTD: Calendar
+:ORG_GTD:  Calendar
 :END:
 
 ** DONE write a nice test
@@ -51,7 +51,7 @@ SCHEDULED: <2021-12-04 Sat>
 - State "DONE"       from ""           [2021-11-20 Sat 16:51]
 * Actions
 :PROPERTIES:
-:ORG_GTD: Actions
+:ORG_GTD:  Actions
 :END:
 
 ** NEXT Do this soon
@@ -65,7 +65,7 @@ SCHEDULED: <2021-12-04 Sat>
 
 * Incubate
 :PROPERTIES:
-:ORG_GTD: Incubated
+:ORG_GTD:  Incubated
 :END:
 ** For later
 SCHEDULED: <2037-02-19 Thu>
