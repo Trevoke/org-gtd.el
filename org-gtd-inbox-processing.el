@@ -70,6 +70,16 @@ undefined state."
     "Exit. Stop processing the inbox for now."
     org-gtd--stop-processing)])
 
+;; something to uncomment and start using later.
+;;;;###autoload
+;; (defmacro org-gtd-organize-action (fun-name &rest body)
+;;   "Creates a function to hook into the transient for inbox item organization"
+;;   (declare (debug t) (indent defun))
+;;   `(defun ,fun-name ()
+;;      (interactive)
+;;      (unwind-protect (progn ,@body))
+;;      (org-gtd-process-inbox)))
+
 ;;;###autoload
 (defun org-gtd-process-inbox ()
   "Process the GTD inbox."
@@ -125,16 +135,16 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (with-org-gtd-context
       (let* ((org-gtd-refile-to-any-target nil)
              (org-use-property-inheritance '("ORG_GTD"))
-             (org-reverse-note-order t)
              (headings (org-map-entries
                         (lambda () (org-get-heading t t t t))
                         org-gtd-project-headings
                         'agenda))
              (chosen-heading (completing-read "Choose a heading: " headings nil t))
              (heading-marker (org-find-exact-heading-in-directory chosen-heading org-gtd-directory)))
-        (org-refile nil
-                    nil
-                    `(,chosen-heading ,(buffer-file-name (marker-buffer heading-marker)) nil ,(marker-position heading-marker))
+        (org-refile nil nil `(,chosen-heading
+                              ,(buffer-file-name (marker-buffer heading-marker))
+                              nil
+                              ,(marker-position heading-marker))
                     nil)
         (org-gtd-projects-fix-todo-keywords heading-marker)))
   (org-gtd-process-inbox))

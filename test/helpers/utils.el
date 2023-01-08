@@ -32,3 +32,7 @@
   "Return buffer's content."
   (with-current-buffer buffer
     (buffer-string)))
+
+(defun ogt--current-buffer-raw-text ()
+  "Returns text without faces"
+  (buffer-substring-no-properties (point-min) (point-max)))

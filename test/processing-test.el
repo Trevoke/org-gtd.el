@@ -66,7 +66,7 @@
     (execute-kbd-macro (kbd "C-c c s TAB RET"))
 
     (with-current-buffer (org-gtd--inbox-file)
-      (expect (buffer-string)
+      (expect (ogt--current-buffer-raw-text)
               :not :to-match
               "single action")))
 
@@ -97,4 +97,4 @@
         (execute-kbd-macro (kbd "C-c c p"))
         (expect (buffer-name) :to-match "inbox")
         (with-current-buffer "*Message*"
-          (expect (buffer-string) :to-match "First task"))))))
+          (expect (ogt--current-buffer-raw-text) :to-match "First task"))))))

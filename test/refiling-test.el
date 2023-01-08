@@ -23,7 +23,7 @@
         (org-gtd--refile org-gtd-projects))
 
       (with-current-buffer (org-gtd--default-file)
-        (expect (buffer-string) :to-match "foobar"))))
+        (expect (ogt--current-buffer-raw-text) :to-match "foobar"))))
 
   (describe "finding a refile target"
 
@@ -66,7 +66,7 @@
               "AdditionalHeading RET"
             (org-gtd--refile org-gtd-projects)))
 
-        (expect (with-current-buffer new-buffer (buffer-string))
+        (expect (with-current-buffer new-buffer (ogt--current-buffer-raw-text))
                 :to-match
                 "choose-refile-target")
 

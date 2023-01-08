@@ -24,6 +24,7 @@
 ;;
 ;;; Code:
 
+(require 'f)
 (require 'org)
 (require 'org-element)
 (require 'org-edna)
@@ -63,24 +64,31 @@ in the list."
 
 ;;;###autoload
 (defun org-gtd-projects-fix-todo-keywords (marker)
-  "Ensure project at MARKER has only one NEXT keyword.
-
-ensures only the first non-done keyword is NEXT, all other non-done are TODO."
+  "Ensure project at MARKER has only one NEXT keyword. Ensures only the first non-done keyword is NEXT, all other non-done are TODO."
   (interactive)
-  (let ((mybuf (marker-buffer marker))
-        (mypos (marker-position marker)))
-    (with-current-buffer mybuf
-      (goto-char mypos)
-      (cl-destructuring-bind
-          (first-entry . rest-entries)
-          (cdr (org-map-entries #'org-element-at-point t 'tree))
-        (org-element-map
-            rest-entries
-            'headline
-          (lambda (elt)
-            (if (string-equal (org-element-property :todo-keyword elt) "NEXT")
-                (org-entry-put (org-gtd-projects--org-element-pom elt) "TODO" "TODO"))))
-        (org-entry-put (org-gtd-projects--org-element-pom first-entry) "TODO" "NEXT")))))
+  (with-current-buffer (marker-buffer marker)
+    (message "ARE WE HERE")
+    (save-excursion
+      (goto-char (marker-position marker))
+      ;; first, make sure all we have is TODO WAIT DONE CNCL
+      (org-map-entries
+       (lambda ()
+         (message "%s" (org-element-property :title (org-element-at-point)))
+         (unless (member
+                  (org-element-property :todo-keyword (org-element-at-point))
+                  '("TODO" "WAIT" "DONE" "CNCL"))
+           (org-entry-put (org-gtd-projects--org-element-pom (org-element-at-point)) "TODO" "TODO")))
+       "+LEVEL=3" 'tree))
+    (save-excursion
+      (goto-char (marker-position marker))
+      (let* ((tasks (org-map-entries #'org-element-at-point "+LEVEL=3" 'tree))
+             (first-wait (-any (lambda (x) (and (string-equal "WAIT" (org-element-property :todo-keyword x)) x)) tasks))
+             (first-todo (-any (lambda (x) (and (string-equal "TODO" (org-element-property :todo-keyword x)) x)) tasks)))
+        (message "%s" (org-element-property :title first-wait))
+        (message "%s" (org-element-property :title first-todo))
+        (unless first-wait
+          (org-entry-put (org-gtd-projects--org-element-pom first-todo) "TODO" "NEXT"))
+        ))))
 
 (defun org-gtd-projects--org-element-pom (element)
   "Return buffer position for start of Org ELEMENT."

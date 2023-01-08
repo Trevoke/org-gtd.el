@@ -25,5 +25,5 @@
     (ogt--save-all-buffers)
     (org-gtd-engage)
     (with-current-buffer org-agenda-buffer
-      (expect (buffer-string) :to-match "WAIT ")
-      (expect (buffer-string) :to-match "That Guy"))))
+      (expect (ogt--current-buffer-raw-text) :to-match "WAIT ")
+      (expect (ogt--current-buffer-raw-text) :to-match "That Guy"))))

@@ -16,16 +16,16 @@
   (describe "with default content"
     (it "for the inbox"
       (with-current-buffer (org-gtd--inbox-file)
-        (expect (buffer-string)
+        (expect (ogt--current-buffer-raw-text)
                 :to-match
                 "This is the inbox")
-        (expect (buffer-string)
+        (expect (ogt--current-buffer-raw-text)
                 :to-match
                 "#\\+STARTUP: overview hidestars logrefile indent logdone")))
 
     (it "has a header for the default file"
       (with-current-buffer (org-gtd--default-file)
-        (expect (buffer-string)
+        (expect (ogt--current-buffer-raw-text)
                 :to-match
                 "#\\+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
 #\\+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)")))
