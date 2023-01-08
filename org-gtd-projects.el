@@ -67,13 +67,11 @@ in the list."
   "Ensure project at MARKER has only one NEXT keyword. Ensures only the first non-done keyword is NEXT, all other non-done are TODO."
   (interactive)
   (with-current-buffer (marker-buffer marker)
-    (message "ARE WE HERE")
     (save-excursion
       (goto-char (marker-position marker))
       ;; first, make sure all we have is TODO WAIT DONE CNCL
       (org-map-entries
        (lambda ()
-         (message "%s" (org-element-property :title (org-element-at-point)))
          (unless (member
                   (org-element-property :todo-keyword (org-element-at-point))
                   '("TODO" "WAIT" "DONE" "CNCL"))
@@ -84,11 +82,8 @@ in the list."
       (let* ((tasks (org-map-entries #'org-element-at-point "+LEVEL=3" 'tree))
              (first-wait (-any (lambda (x) (and (string-equal "WAIT" (org-element-property :todo-keyword x)) x)) tasks))
              (first-todo (-any (lambda (x) (and (string-equal "TODO" (org-element-property :todo-keyword x)) x)) tasks)))
-        (message "%s" (org-element-property :title first-wait))
-        (message "%s" (org-element-property :title first-todo))
         (unless first-wait
-          (org-entry-put (org-gtd-projects--org-element-pom first-todo) "TODO" "NEXT"))
-        ))))
+          (org-entry-put (org-gtd-projects--org-element-pom first-todo) "TODO" "NEXT"))))))
 
 (defun org-gtd-projects--org-element-pom (element)
   "Return buffer position for start of Org ELEMENT."
