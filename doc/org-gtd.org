@@ -9,9 +9,9 @@
 #+TEXINFO_DIR_TITLE: Org GTD: (org-gtd)
 #+TEXINFO_DIR_DESC: An opinionated GTD flow implemented in org-mode
 #+TEXINFO_FILENAME: ../org-gtd.info
-#+SUBTITLE: for version 2.1
+#+SUBTITLE: for version 2.2
 #+TEXINFO_DEFFN: t
-#+OPTIONS: H:4 num:3 toc:2
+#+OPTIONS: H:3 num:3 toc:2
 #+PROPERTY: header-args :eval never
 #+MACRO: year (eval (format-time-string "%Y"))
 
@@ -19,7 +19,7 @@ Org GTD is an attempt to implement the GTD flow described in the GTD
 book as faithfully as possible.
 
 #+TEXINFO: @noindent
-This manual is for Org GtD version 2.1.
+This manual is for Org GtD version 2.2
 
 :END:
 * Copying
@@ -94,7 +94,18 @@ This package provides a system that allows you to capture incoming things into a
 :DESCRIPTION: How to upgrade your local setup across major versions
 :END:
 If you are installing and not upgrading, you can skip this section entirely and just go to the next section, [[*Installing]].
-*** 2.0.1 <- 2.0.0
+*** 2.2.0 <- 2.1.0
+**** respect org-mode's org-reverse-note-order variable
+The upgrade to =2.0.1= allowed addition of a task as the first task of an existing project while organizing a clarified item.
+=2.0.2= allows the user to choose what they prefer. Correspondibly, it lets the =org-mode= variable ~org-reverse-note-order~ operate as it should. In your configuration, use:
+#+begin_src emacs-lisp
+  (setq org-reverse-note-order t)   ;; refile to the top of the list
+  (setq org-reverse-note-order nil) ;; refile to the bottom of the list
+#+end_src
+
+Note that if you're upgrading straight from 2.0.0 you still need to make the adjustment to the TRIGGER for your project headings.
+
+*** 2.1.0 <- 2.0.0
 **** Update org-edna trigger
 In order for project modification to work, you will need to go to every Project heading that you have. You will find the following:
 #+begin_example
@@ -290,12 +301,25 @@ You do not need to make this change if you choose to toggle ~org-gtd-mode~.
 (org-edna-mode 1)
 #+end_src
 *** configuration options for org-gtd
+**** I don't care, just let me start using it
 The most direct way to find out about the configuration options for org-gtd is to see the customize group: ~M-x customize-group RET org-gtd~. They are all optional because they all come with default values.
 
 The only one you may want to change before starting to use Org GTD is ~org-gtd-directory~, which is the directory that Org GTD
 will look to for everything it needs to do.
 
 The configuration options will also be mentioned in the relevant subsections of [[*Using Org GTD]].
+**** Tell me all the levers I can pull
+
+Make sure you also read about sub-package configuration: [[*Required configuration of sub-packages]].
+
+- ~org-gtd-directory~ :: set this to a directory. =org-gtd= will look for all its files in this directory.
+- ~org-gtd-capture-templates~ :: (!note: take care when changing this) This defines the pre-filled text that will show up when capturing an item to the inbox. This is a simplified version of ~org-capture-templates~. If you want to modify it, you should be able to get away with only reading the documentation for this one variable. The only recommendation is that the template string must define an org-mode top-level heading. That is to say, the first two characters must be a single asterisk followed by a space: "* ". [[*Adding things to the inbox]].
+- ~org-gtd-agenda-custom-commands~ :: (!note: take care when changing this) this is the exact same thing as ~org-agenda-custom-commands~. =Org-gtd= requires that the key =g= be bound to a display view, so if you want to change what =org-gtd= displays, make sure you leave the =g= alone (or modify that one). [[*Engaging with your GTD items]].
+- ~org-reverse-note-order~ :: (=org-mode= variable) set this to ~t~ to add new items to the top of project tasks and to ~nil~ to add new items to the bottom of project tasks. Most relevant, see [[*Projects]] and [[*Modify an existing project]].
+- ~org-gtd-process-item-hooks~ :: this is a list of functions that you can use to decorate each item when you clarify it. For instance, you could add a function to set the effort, or the priority, or some category, etc. By default it has only one function, which lets you add tags. You could remove this function if you wanted. [[*Processing the inbox]].
+- ~org-gtd-archive-location~ :: variable that holds a function to generate the archive file. I made this choice primarily because I want to refile to an archive file suffixed with the year, and I'm *just too lazy* to manually rename them once a year. The function has an arity of zero and generates an org-mode file+outline path. [[*Cleaning up / archiving completed work]].
+- ~org-gtd-refile-to-any-target~ :: when ~t~, =org-gtd= will refile to the first target it finds, and create a target if it doesn't find one. When false, it will ask for confirmation before refiling. [[*Multiple files / refile targets]].
+-  ::
 *** Recommended key bindings
 
 There's an important keymap you'll want to make the flow of processing the inbox smoother. To limit impact on your emacs configuration, there is a specific keymap you can use. The function you'll want to bind is ~org-gtd-choose~. I suggest ~C-c c~, as in the following example.
@@ -386,8 +410,11 @@ DO NOTE: it is surprisingly difficult to add a custom note when canceling, so if
 Projects will show up in the agenda, but only the current NEXT task.
 *** Modify an existing project
 When you choose this, the package will do the following:
-- refile this as the top heading of the project
-- adjust the state keywords so that the new heading is marked as NEXT (this way it will show up in your agenda and you won't lose track of it) and all other non-done headings are marked as TODO.
+- refile this as a task inside the project of the project (first or last, depending on value of ~org-reverse-note-order~)
+- adjust the TODO keywords of the project such that:
+  - all DONE or CNCL keywords are untouched
+  - there is exactly one WAIT or NEXT keyword
+  - all other keywords are TODO
 
 You can go to that project yourself and readjust the order of the headings as necessary, and then you can go to that project's top heading ("Project heading" in example below) and execute ~M-x org-gtd-projects-fix-todo-keywords-for-project-at-point~
 
@@ -463,7 +490,7 @@ If you would like to add new refile targets, it's simple, follow these instructi
 Add a top-level heading in any ~.org~ file (including a new one) in ~org-gtd-directory~ and make sure it has the following properties drawer.
 #+begin_src org-mode
 :PROPERTIES:
-:TRIGGER: next-sibling todo!(NEXT)
+:TRIGGER: relatives(forward-no-wrap todo-only 1 no-sort) todo!(NEXT)
 :ORG_GTD: Projects
 :END:
 #+end_src
@@ -481,7 +508,11 @@ The ORG_GTD properties are set as follows, except for Projects (see [[*New proje
 - Incubated actions :: =ORG_GTD: Incubated=
 - Single & Delegated actions :: =ORG_GTD: Actions=
 * Troubleshooting
-
-~org-edna~ needs to be configured, see [[*Required configuration of sub-packages]].
 ** Projects without a NEXT item
 Sometimes things break. Use ~M-x org-gtd-show-stuck-projects~ to find all projects that don't have a NEXT item, which is to say, all projects that the package will not surface and help you finish.
+
+~org-edna~ needs to be configured and enabled, see [[*Required configuration of sub-packages]].
+
+To fix such a stuck project, put the point on the project heading and call ~M-x org-gtd-projects-fix-todo-keywords-for-project-at-point~.
+** I can't create a project when clarifying an inbox item!
+[[*Projects]]. If this does not help you, please open an issue and show exactly what you have done before asking =org-gtd= to create a project.

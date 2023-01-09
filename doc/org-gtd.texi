@@ -28,7 +28,7 @@ General Public License for more details.
 @finalout
 @titlepage
 @title Org GTD User Manual
-@subtitle for version 2.1
+@subtitle for version 2.2
 @author Aldric Giacomoni
 @page
 @vskip 0pt plus 1filll
@@ -45,7 +45,7 @@ Org GTD is an attempt to implement the GTD flow described in the GTD
 book as faithfully as possible.
 
 @noindent
-This manual is for Org GtD version 2.1.
+This manual is for Org GtD version 2.2
 @end ifnottex
 
 @menu
@@ -65,7 +65,8 @@ Setting up Org GTD
 
 Upgrading
 
-* 2.0.1 <- 2.0.0: 201 <- 200. 
+* 2.2.0 <- 2.1.0: 220 <- 210. 
+* 2.1.0 <- 2.0.0: 210 <- 200. 
 * 2.0.0 <- 1.1.x: 200 <- 11x. 
 
 
@@ -118,6 +119,7 @@ Multiple files / refile targets
 Troubleshooting
 
 * Projects without a NEXT item::
+* I can't create a project when clarifying an inbox item!::
 
 @end detailmenu
 @end menu
@@ -188,19 +190,36 @@ This package provides a system that allows you to capture incoming things into a
 If you are installing and not upgrading, you can skip this section entirely and just go to the next section, @ref{Installing}.
 
 @menu
-* 2.0.1 <- 2.0.0: 201 <- 200. 
+* 2.2.0 <- 2.1.0: 220 <- 210. 
+* 2.1.0 <- 2.0.0: 210 <- 200. 
 * 2.0.0 <- 1.1.x: 200 <- 11x. 
 @end menu
 
-@node 201 <- 200
-@subsection 2.0.1 <- 2.0.0
+@node 220 <- 210
+@subsection 2.2.0 <- 2.1.0
 
-@menu
-* Update org-edna trigger::
-@end menu
+@itemize
+@item
+@anchor{respect org-mode's org-reverse-note-order variable}respect org-mode's org-reverse-note-order variable
 
-@node Update org-edna trigger
-@unnumberedsubsubsec Update org-edna trigger
+
+The upgrade to @samp{2.0.1} allowed addition of a task as the first task of an existing project while organizing a clarified item.
+@samp{2.0.2} allows the user to choose what they prefer. Correspondibly, it lets the @samp{org-mode} variable @code{org-reverse-note-order} operate as it should. In your configuration, use:
+@lisp
+(setq org-reverse-note-order t)   ;; refile to the top of the list
+(setq org-reverse-note-order nil) ;; refile to the bottom of the list
+@end lisp
+
+Note that if you're upgrading straight from 2.0.0 you still need to make the adjustment to the TRIGGER for your project headings.
+@end itemize
+
+@node 210 <- 200
+@subsection 2.1.0 <- 2.0.0
+
+@itemize
+@item
+@anchor{Update org-edna trigger}Update org-edna trigger
+
 
 In order for project modification to work, you will need to go to every Project heading that you have. You will find the following:
 @example
@@ -225,21 +244,15 @@ Now be sure to set the following variable in your config file, before org-gtd lo
 @end lisp
 
 That is it! You're ready to add tasks to existing projects while processing the inbox.
+@end itemize
 
 @node 200 <- 11x
 @subsection 2.0.0 <- 1.1.x
 
-@menu
-* Configuration::
-* Relevant commands with new names::
-* heading states (TODO, etc.): heading states (TODO etc). 
-* Differentiating GTD types of items::
-* Multiple refile targets::
-* Key bindings::
-@end menu
+@itemize
+@item
+@anchor{Configuration}Configuration
 
-@node Configuration
-@unnumberedsubsubsec Configuration
 
 Org GTD now handles dependency loading more intelligently, so you no longer need the overly complicated setup of @code{org-gtd}, @code{org-agenda} and @code{org-capure} in your config for dependency loading. You now only need @code{org-gtd}. If you are using @code{use-package} then the following is the minimal config required.
 
@@ -330,8 +343,9 @@ And my config for 2.0 is:
 @end lisp
 @end itemize
 
-@node Relevant commands with new names
-@unnumberedsubsubsec Relevant commands with new names
+@item
+@anchor{Relevant commands with new names}Relevant commands with new names
+
 
 @itemize
 @item
@@ -340,13 +354,15 @@ And my config for 2.0 is:
 @code{org-gtd-clarify-finalize} -> @code{org-gtd-choose} (see the section on Key bindings below)
 @end itemize
 
-@node heading states (TODO etc)
-@unnumberedsubsubsec heading states (TODO, etc.)
+@item
+@anchor{heading states (TODO etc)}heading states (TODO, etc.)
+
 
 You need to rename CANCELED to CNCL@. a simple string replace in the @code{org-gtd-directory} will do the trick.
 
-@node Differentiating GTD types of items
-@unnumberedsubsubsec Differentiating GTD types of items
+@item
+@anchor{Differentiating GTD types of items}Differentiating GTD types of items
+
 
 Org GTD no longer uses the name of the heading to figure out how to refile things, and which headings are useful. Instead it uses a custom Org property called ORG@math{_GTD}. This means you are free to rename the existing headings whatever you want, but you DO need to make some adjustments to your current files.
 
@@ -375,8 +391,9 @@ The other ORG@math{_GTD} properties are set as follows. Note that Single and Del
 
 For incubated actions, version 1.x of Org GTD asked for second-level heading, such as @code{*To Read}. No more - these are now top-level headings, exactly as described above, with a heading property of @code{ORG_GTD: Incubated}.
 
-@node Multiple refile targets
-@unnumberedsubsubsec Multiple refile targets
+@item
+@anchor{Multiple refile targets}Multiple refile targets
+
 
 There is a new variable, @code{org-gtd-refile-to-any-target}. By default this variable is set to @code{t}. This means that Org GTD will refile to whatever the first target it finds is. This is the default value because it most closely matches the behavior for version 1.x.
 @strong{THIS BEHAVIOR ALSO APPLIES TO INCUBATE REFILE TARGETS}. Therefore, if you have multiple incubated refile targets, you will need to set this variable to @code{nil}, or change to a single refile target. You can e.g. set a custom property to describe the kind of incubated item it is, if it is useful to you, something like:
@@ -390,14 +407,16 @@ SCHEDULED: <2035-06-01 Fri>
 :END:
 @end example
 
-@node Key bindings
-@unnumberedsubsubsec Key bindings
+@item
+@anchor{Key bindings}Key bindings
+
 
 Version 1.x of Org GTD recommended a binding for @code{org-gtd-clarify-finalize}. This binding must now be set as follows (replace the keybinding with one of your choice):
 
 @lisp
 (define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose)
 @end lisp
+@end itemize
 
 @node Installing
 @section Installing
@@ -452,12 +471,10 @@ Note, you should still head over to the @ref{Recommended key bindings} section.
 @node Required configuration of sub-packages
 @subsection Required configuration of sub-packages
 
-@menu
-* org-edna::
-@end menu
+@itemize
+@item
+@anchor{org-edna}org-edna
 
-@node org-edna
-@unnumberedsubsubsec org-edna
 
 package: @uref{https://www.nongnu.org/org-edna-el/}
 
@@ -468,9 +485,15 @@ You do not need to make this change if you choose to toggle @code{org-gtd-mode}.
 (setq org-edna-use-inheritance t)
 (org-edna-mode 1)
 @end lisp
+@end itemize
 
 @node configuration options for org-gtd
 @subsection configuration options for org-gtd
+
+@itemize
+@item
+@anchor{I don't care just let me start using it}I don't care, just let me start using it
+
 
 The most direct way to find out about the configuration options for org-gtd is to see the customize group: @code{M-x customize-group RET org-gtd}. They are all optional because they all come with default values.
 
@@ -478,6 +501,32 @@ The only one you may want to change before starting to use Org GTD is @code{org-
 will look to for everything it needs to do.
 
 The configuration options will also be mentioned in the relevant subsections of @ref{Using Org GTD}.
+
+@item
+@anchor{Tell me all the levers I can pull}Tell me all the levers I can pull
+
+
+Make sure you also read about sub-package configuration: @ref{Required configuration of sub-packages}.
+
+@table @asis
+@item @code{org-gtd-directory}
+set this to a directory. @samp{org-gtd} will look for all its files in this directory.
+@item @code{org-gtd-capture-templates}
+(!note: take care when changing this) This defines the pre-filled text that will show up when capturing an item to the inbox. This is a simplified version of @code{org-capture-templates}. If you want to modify it, you should be able to get away with only reading the documentation for this one variable. The only recommendation is that the template string must define an org-mode top-level heading. That is to say, the first two characters must be a single asterisk followed by a space: "* ". @ref{Adding things to the inbox}.
+@item @code{org-gtd-agenda-custom-commands}
+(!note: take care when changing this) this is the exact same thing as @code{org-agenda-custom-commands}. @samp{Org-gtd} requires that the key @samp{g} be bound to a display view, so if you want to change what @samp{org-gtd} displays, make sure you leave the @samp{g} alone (or modify that one). @ref{Engaging with your GTD items}.
+@item @code{org-reverse-note-order}
+(@samp{org-mode} variable) set this to @code{t} to add new items to the top of project tasks and to @code{nil} to add new items to the bottom of project tasks. Most relevant, see @ref{Projects} and @ref{Modify an existing project}.
+@item @code{org-gtd-process-item-hooks}
+this is a list of functions that you can use to decorate each item when you clarify it. For instance, you could add a function to set the effort, or the priority, or some category, etc. By default it has only one function, which lets you add tags. You could remove this function if you wanted. @ref{Processing the inbox}.
+@item @code{org-gtd-archive-location}
+variable that holds a function to generate the archive file. I made this choice primarily because I want to refile to an archive file suffixed with the year, and I'm @strong{just too lazy} to manually rename them once a year. The function has an arity of zero and generates an org-mode file+outline path. @ref{Cleaning up / archiving completed work}.
+@item @code{org-gtd-refile-to-any-target}
+when @code{t}, @samp{org-gtd} will refile to the first target it finds, and create a target if it doesn't find one. When false, it will ask for confirmation before refiling. @ref{Multiple files / refile targets}.
+@item
+::
+@end table
+@end itemize
 
 @node Recommended key bindings
 @subsection Recommended key bindings
@@ -620,9 +669,17 @@ Projects will show up in the agenda, but only the current NEXT task.
 When you choose this, the package will do the following:
 @itemize
 @item
-refile this as the top heading of the project
+refile this as a task inside the project of the project (first or last, depending on value of @code{org-reverse-note-order})
 @item
-adjust the state keywords so that the new heading is marked as NEXT (this way it will show up in your agenda and you won't lose track of it) and all other non-done headings are marked as TODO@.
+adjust the TODO keywords of the project such that:
+@itemize
+@item
+all DONE or CNCL keywords are untouched
+@item
+there is exactly one WAIT or NEXT keyword
+@item
+all other keywords are TODO
+@end itemize
 @end itemize
 
 You can go to that project yourself and readjust the order of the headings as necessary, and then you can go to that project's top heading ("Project heading" in example below) and execute @code{M-x org-gtd-projects-fix-todo-keywords-for-project-at-point}
@@ -747,7 +804,7 @@ If you would like to add new refile targets, it's simple, follow these instructi
 Add a top-level heading in any @code{.org} file (including a new one) in @code{org-gtd-directory} and make sure it has the following properties drawer.
 @example
 :PROPERTIES:
-:TRIGGER: next-sibling todo!(NEXT)
+:TRIGGER: relatives(forward-no-wrap todo-only 1 no-sort) todo!(NEXT)
 :ORG_GTD: Projects
 :END:
 @end example
@@ -776,15 +833,23 @@ The ORG@math{_GTD} properties are set as follows, except for Projects (see @ref{
 @node Troubleshooting
 @chapter Troubleshooting
 
-@code{org-edna} needs to be configured, see @ref{Required configuration of sub-packages}.
-
 @menu
 * Projects without a NEXT item::
+* I can't create a project when clarifying an inbox item!::
 @end menu
 
 @node Projects without a NEXT item
 @section Projects without a NEXT item
 
 Sometimes things break. Use @code{M-x org-gtd-show-stuck-projects} to find all projects that don't have a NEXT item, which is to say, all projects that the package will not surface and help you finish.
+
+@code{org-edna} needs to be configured and enabled, see @ref{Required configuration of sub-packages}.
+
+To fix such a stuck project, put the point on the project heading and call @code{M-x org-gtd-projects-fix-todo-keywords-for-project-at-point}.
+
+@node I can't create a project when clarifying an inbox item!
+@section I can't create a project when clarifying an inbox item!
+
+@ref{Projects}. If this does not help you, please open an issue and show exactly what you have done before asking @samp{org-gtd} to create a project.
 
 @bye

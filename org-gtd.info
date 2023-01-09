@@ -26,7 +26,7 @@ Org GTD User Manual
 Org GTD is an attempt to implement the GTD flow described in the GTD
 book as faithfully as possible.
 
-This manual is for Org GtD version 2.1.
+This manual is for Org GtD version 2.2
 
 * Menu:
 
@@ -45,7 +45,8 @@ Setting up Org GTD
 
 Upgrading
 
-* 2.0.1 <- 2.0.0: 201 <- 200.
+* 2.2.0 <- 2.1.0: 220 <- 210.
+* 2.1.0 <- 2.0.0: 210 <- 200.
 * 2.0.0 <- 1.1.x: 200 <- 11x.
 
 
@@ -98,6 +99,7 @@ Multiple files / refile targets
 Troubleshooting
 
 * Projects without a NEXT item::
+* I can't create a project when clarifying an inbox item!::
 
 
 
@@ -182,254 +184,235 @@ entirely and just go to the next section, *note Installing::.
 
 * Menu:
 
-* 2.0.1 <- 2.0.0: 201 <- 200.
+* 2.2.0 <- 2.1.0: 220 <- 210.
+* 2.1.0 <- 2.0.0: 210 <- 200.
 * 2.0.0 <- 1.1.x: 200 <- 11x.
 
 
-File: org-gtd.info,  Node: 201 <- 200,  Next: 200 <- 11x,  Up: Upgrading
+File: org-gtd.info,  Node: 220 <- 210,  Next: 210 <- 200,  Up: Upgrading
 
-1.2.1 2.0.1 <- 2.0.0
+1.2.1 2.2.0 <- 2.1.0
 --------------------
 
-* Menu:
+   • respect org-mode’s org-reverse-note-order variable
 
-* Update org-edna trigger::
+     The upgrade to ‘2.0.1’ allowed addition of a task as the first task
+     of an existing project while organizing a clarified item.  ‘2.0.2’
+     allows the user to choose what they prefer.  Correspondibly, it
+     lets the ‘org-mode’ variable ‘org-reverse-note-order’ operate as it
+     should.  In your configuration, use:
+          (setq org-reverse-note-order t)   ;; refile to the top of the list
+          (setq org-reverse-note-order nil) ;; refile to the bottom of the list
 
-
-File: org-gtd.info,  Node: Update org-edna trigger,  Up: 201 <- 200
-
-Update org-edna trigger
-.......................
-
-In order for project modification to work, you will need to go to every
-Project heading that you have.  You will find the following:
-     :PROPERTIES:
-     :TRIGGER: next-sibling todo!(NEXT)
-     :ORG_GTD: Projects
-     :END:
-
-   And you will need to update the trigger so it looks like this:
-     :PROPERTIES:
-     :TRIGGER: relatives(forward-no-wrap todo-only 1 no-sort) todo!(NEXT)
-     :ORG_GTD: Projects
-     :END:
-
-   Now be sure to set the following variable in your config file, before
-org-gtd loads, to disable the loud warning:
-
-     (setq org-gtd-update-ack "2.1.0")
-
-   That is it!  You’re ready to add tasks to existing projects while
-processing the inbox.
+     Note that if you’re upgrading straight from 2.0.0 you still need to
+     make the adjustment to the TRIGGER for your project headings.
 
 
-File: org-gtd.info,  Node: 200 <- 11x,  Prev: 201 <- 200,  Up: Upgrading
+File: org-gtd.info,  Node: 210 <- 200,  Next: 200 <- 11x,  Prev: 220 <- 210,  Up: Upgrading
 
-1.2.2 2.0.0 <- 1.1.x
+1.2.2 2.1.0 <- 2.0.0
 --------------------
 
-* Menu:
+   • Update org-edna trigger
 
-* Configuration::
-* Relevant commands with new names::
-* heading states (TODO, etc.): heading states (TODO etc).
-* Differentiating GTD types of items::
-* Multiple refile targets::
-* Key bindings::
+     In order for project modification to work, you will need to go to
+     every Project heading that you have.  You will find the following:
+          :PROPERTIES:
+          :TRIGGER: next-sibling todo!(NEXT)
+          :ORG_GTD: Projects
+          :END:
 
-
-File: org-gtd.info,  Node: Configuration,  Next: Relevant commands with new names,  Up: 200 <- 11x
+     And you will need to update the trigger so it looks like this:
+          :PROPERTIES:
+          :TRIGGER: relatives(forward-no-wrap todo-only 1 no-sort) todo!(NEXT)
+          :ORG_GTD: Projects
+          :END:
 
-Configuration
-.............
+     Now be sure to set the following variable in your config file,
+     before org-gtd loads, to disable the loud warning:
 
-Org GTD now handles dependency loading more intelligently, so you no
-longer need the overly complicated setup of ‘org-gtd’, ‘org-agenda’ and
-‘org-capure’ in your config for dependency loading.  You now only need
-‘org-gtd’.  If you are using ‘use-package’ then the following is the
-minimal config required.
+          (setq org-gtd-update-ack "2.1.0")
 
-     (use-package org-gtd :after 'org)
-
-   You no longer need to configure ‘org-agenda-property-list’ yourself.
-Org GTD now manages the context with a macro, ‘with-org-gtd-context’.
-Any prior configuration of this subpackage can be handled as you did
-before.
-
-   You no longer need to configure ‘org-agenda-files’.  Same reason as
-above.  This allows you to use org-gtd without destroying your previous
-setup, and makes it easier to try org-gtd and then get rid of it if you
-don’t like it.
-
-   You no longer need to configure ‘org-agenda-custom-commands’.  Now
-there’s ‘org-gtd-agenda-custom-commands’ to take the relay - see the
-variable documentation for more information.
-
-   The org-capture templates are now simplified and managed by
-‘org-gtd-capture-templates’.  If you did not change the default
-configuration, then you can just remove what you had.  Read the variable
-documentaton for further information.
-
-   • Example upgrade
-
-     My org-gtd config for 1.x was as follows:
-          (use-package org-gtd
-            :after org
-            :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
-                             :commit "1.1.1" :upgrade t)
-            :demand t
-            :custom
-            (org-gtd-directory "~/org-gtd")
-            (org-agenda-property-list '("DELEGATED_TO"))
-            (org-edna-use-inheritance t)
-            :config
-            (org-edna-load)
-            :bind
-            (("C-c d c" . org-gtd-capture)
-             ("C-c d a" . org-agenda-list)
-             ("C-c d p" . org-gtd-process-inbox)
-             ("C-c d n" . org-gtd-show-all-next)
-             ("C-c d s" . org-gtd-show-stuck-projects)
-             :map org-gtd-process-map
-             ("C-c c" . org-gtd-choose)))
-
-
-          (use-package org-agenda
-            :ensure nil
-            :no-require t
-            :after (org-gtd)
-            :custom
-            (org-agenda-skip-deadline-if-done t)
-            (org-agenda-skip-scheduled-if-done t)
-            (org-agenda-files `(,org-gtd-directory))
-            (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT"))))))
-
-          (use-package org-capture
-            :ensure nil
-            :after org-gtd
-            :config
-            (setq org-capture-templates `(("i" "Inbox"
-                                         entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
-                                         "* %?\n%U\n\n  %i"
-                                         :kill-buffer t)
-                                        ("t" "Todo with link"
-                                         entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
-                                         "* %?\n%U\n\n  %i\n  %a"
-                                         :kill-buffer t))))
-
-     And my config for 2.0 is:
-          (use-package org-gtd
-            :after org
-            :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
-                             :commit "2.0.0" :upgrade t)
-            :demand t
-            :custom
-            (org-gtd-directory "~/org-gtd")
-            (org-edna-use-inheritance t)
-            :config
-            (org-edna-mode)
-            :bind
-            (("C-c d c" . org-gtd-capture)
-             ("C-c d e" . org-gtd-engage)
-             ("C-c d p" . org-gtd-process-inbox)
-             ("C-c d n" . org-gtd-show-all-next)
-             ("C-c d s" . org-gtd-show-stuck-projects)
-             :map org-gtd-process-map
-             ("C-c c" . org-gtd-choose)))
+     That is it!  You’re ready to add tasks to existing projects while
+     processing the inbox.
 
 
-File: org-gtd.info,  Node: Relevant commands with new names,  Next: heading states (TODO etc),  Prev: Configuration,  Up: 200 <- 11x
+File: org-gtd.info,  Node: 200 <- 11x,  Prev: 210 <- 200,  Up: Upgrading
 
-Relevant commands with new names
-................................
+1.2.3 2.0.0 <- 1.1.x
+--------------------
 
-   • ‘org-agenda-list’ -> ‘org-gtd-engage’
-   • ‘org-gtd-clarify-finalize’ -> ‘org-gtd-choose’ (see the section on
-     Key bindings below)
+   • Configuration
 
-
-File: org-gtd.info,  Node: heading states (TODO etc),  Next: Differentiating GTD types of items,  Prev: Relevant commands with new names,  Up: 200 <- 11x
+     Org GTD now handles dependency loading more intelligently, so you
+     no longer need the overly complicated setup of ‘org-gtd’,
+     ‘org-agenda’ and ‘org-capure’ in your config for dependency
+     loading.  You now only need ‘org-gtd’.  If you are using
+     ‘use-package’ then the following is the minimal config required.
 
-heading states (TODO, etc.)
-...........................
+          (use-package org-gtd :after 'org)
 
-You need to rename CANCELED to CNCL.  a simple string replace in the
-‘org-gtd-directory’ will do the trick.
+     You no longer need to configure ‘org-agenda-property-list’
+     yourself.  Org GTD now manages the context with a macro,
+     ‘with-org-gtd-context’.  Any prior configuration of this subpackage
+     can be handled as you did before.
 
-
-File: org-gtd.info,  Node: Differentiating GTD types of items,  Next: Multiple refile targets,  Prev: heading states (TODO etc),  Up: 200 <- 11x
+     You no longer need to configure ‘org-agenda-files’.  Same reason as
+     above.  This allows you to use org-gtd without destroying your
+     previous setup, and makes it easier to try org-gtd and then get rid
+     of it if you don’t like it.
 
-Differentiating GTD types of items
-..................................
+     You no longer need to configure ‘org-agenda-custom-commands’.  Now
+     there’s ‘org-gtd-agenda-custom-commands’ to take the relay - see
+     the variable documentation for more information.
 
-Org GTD no longer uses the name of the heading to figure out how to
-refile things, and which headings are useful.  Instead it uses a custom
-Org property called ORG_GTD. This means you are free to rename the
-existing headings whatever you want, but you DO need to make some
-adjustments to your current files.
+     The org-capture templates are now simplified and managed by
+     ‘org-gtd-capture-templates’.  If you did not change the default
+     configuration, then you can just remove what you had.  Read the
+     variable documentaton for further information.
 
-   If you would like to add new refile targets, it’s simple, follow
-these instructions.
+        • Example upgrade
 
-   For projects, make sure the heading has the following two properties.
-     :PROPERTIES:
-     :TRIGGER: next-sibling todo!(NEXT)
-     :ORG_GTD: Projects
-     :END:
+          My org-gtd config for 1.x was as follows:
+               (use-package org-gtd
+                 :after org
+                 :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
+                                  :commit "1.1.1" :upgrade t)
+                 :demand t
+                 :custom
+                 (org-gtd-directory "~/org-gtd")
+                 (org-agenda-property-list '("DELEGATED_TO"))
+                 (org-edna-use-inheritance t)
+                 :config
+                 (org-edna-load)
+                 :bind
+                 (("C-c d c" . org-gtd-capture)
+                  ("C-c d a" . org-agenda-list)
+                  ("C-c d p" . org-gtd-process-inbox)
+                  ("C-c d n" . org-gtd-show-all-next)
+                  ("C-c d s" . org-gtd-show-stuck-projects)
+                  :map org-gtd-process-map
+                  ("C-c c" . org-gtd-choose)))
 
-   For other headings, make sure there is an ORG_GTD property, like for
-the project, above.
 
-   The other ORG_GTD properties are set as follows.  Note that Single
-and Delegated actions are together now, so you can merge those headings
-if you want.
+               (use-package org-agenda
+                 :ensure nil
+                 :no-require t
+                 :after (org-gtd)
+                 :custom
+                 (org-agenda-skip-deadline-if-done t)
+                 (org-agenda-skip-scheduled-if-done t)
+                 (org-agenda-files `(,org-gtd-directory))
+                 (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT"))))))
 
-Scheduled actions
-     ‘ORG_GTD: Calendar’
-Single & Delegated actions
-     ‘ORG_GTD: Actions’
-Incubated actions
-     ‘ORG_GTD: Incubated’
+               (use-package org-capture
+                 :ensure nil
+                 :after org-gtd
+                 :config
+                 (setq org-capture-templates `(("i" "Inbox"
+                                              entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
+                                              "* %?\n%U\n\n  %i"
+                                              :kill-buffer t)
+                                             ("t" "Todo with link"
+                                              entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
+                                              "* %?\n%U\n\n  %i\n  %a"
+                                              :kill-buffer t))))
 
-   For incubated actions, version 1.x of Org GTD asked for second-level
-heading, such as ‘*To Read’.  No more - these are now top-level
-headings, exactly as described above, with a heading property of
-‘ORG_GTD: Incubated’.
+          And my config for 2.0 is:
+               (use-package org-gtd
+                 :after org
+                 :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
+                                  :commit "2.0.0" :upgrade t)
+                 :demand t
+                 :custom
+                 (org-gtd-directory "~/org-gtd")
+                 (org-edna-use-inheritance t)
+                 :config
+                 (org-edna-mode)
+                 :bind
+                 (("C-c d c" . org-gtd-capture)
+                  ("C-c d e" . org-gtd-engage)
+                  ("C-c d p" . org-gtd-process-inbox)
+                  ("C-c d n" . org-gtd-show-all-next)
+                  ("C-c d s" . org-gtd-show-stuck-projects)
+                  :map org-gtd-process-map
+                  ("C-c c" . org-gtd-choose)))
 
-
-File: org-gtd.info,  Node: Multiple refile targets,  Next: Key bindings,  Prev: Differentiating GTD types of items,  Up: 200 <- 11x
+   • Relevant commands with new names
 
-Multiple refile targets
-.......................
+        • ‘org-agenda-list’ -> ‘org-gtd-engage’
+        • ‘org-gtd-clarify-finalize’ -> ‘org-gtd-choose’ (see the
+          section on Key bindings below)
 
-There is a new variable, ‘org-gtd-refile-to-any-target’.  By default
-this variable is set to ‘t’.  This means that Org GTD will refile to
-whatever the first target it finds is.  This is the default value
-because it most closely matches the behavior for version 1.x.  *THIS
-BEHAVIOR ALSO APPLIES TO INCUBATE REFILE TARGETS*. Therefore, if you
-have multiple incubated refile targets, you will need to set this
-variable to ‘nil’, or change to a single refile target.  You can e.g.
-set a custom property to describe the kind of incubated item it is, if
-it is useful to you, something like:
+   • heading states (TODO, etc.)
 
-     * Incubated
-     ** Buy a boat
-     SCHEDULED: <2035-06-01 Fri>
-     :PROPERTIES:
-     :INCUBATE: big financial investment
-     :END:
+     You need to rename CANCELED to CNCL.  a simple string replace in
+     the ‘org-gtd-directory’ will do the trick.
 
-
-File: org-gtd.info,  Node: Key bindings,  Prev: Multiple refile targets,  Up: 200 <- 11x
+   • Differentiating GTD types of items
 
-Key bindings
-............
+     Org GTD no longer uses the name of the heading to figure out how to
+     refile things, and which headings are useful.  Instead it uses a
+     custom Org property called ORG_GTD. This means you are free to
+     rename the existing headings whatever you want, but you DO need to
+     make some adjustments to your current files.
 
-Version 1.x of Org GTD recommended a binding for
-‘org-gtd-clarify-finalize’.  This binding must now be set as follows
-(replace the keybinding with one of your choice):
+     If you would like to add new refile targets, it’s simple, follow
+     these instructions.
 
-     (define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose)
+     For projects, make sure the heading has the following two
+     properties.
+          :PROPERTIES:
+          :TRIGGER: next-sibling todo!(NEXT)
+          :ORG_GTD: Projects
+          :END:
+
+     For other headings, make sure there is an ORG_GTD property, like
+     for the project, above.
+
+     The other ORG_GTD properties are set as follows.  Note that Single
+     and Delegated actions are together now, so you can merge those
+     headings if you want.
+
+     Scheduled actions
+          ‘ORG_GTD: Calendar’
+     Single & Delegated actions
+          ‘ORG_GTD: Actions’
+     Incubated actions
+          ‘ORG_GTD: Incubated’
+
+     For incubated actions, version 1.x of Org GTD asked for
+     second-level heading, such as ‘*To Read’.  No more - these are now
+     top-level headings, exactly as described above, with a heading
+     property of ‘ORG_GTD: Incubated’.
+
+   • Multiple refile targets
+
+     There is a new variable, ‘org-gtd-refile-to-any-target’.  By
+     default this variable is set to ‘t’.  This means that Org GTD will
+     refile to whatever the first target it finds is.  This is the
+     default value because it most closely matches the behavior for
+     version 1.x.  *THIS BEHAVIOR ALSO APPLIES TO INCUBATE REFILE
+     TARGETS*. Therefore, if you have multiple incubated refile targets,
+     you will need to set this variable to ‘nil’, or change to a single
+     refile target.  You can e.g.  set a custom property to describe the
+     kind of incubated item it is, if it is useful to you, something
+     like:
+
+          * Incubated
+          ** Buy a boat
+          SCHEDULED: <2035-06-01 Fri>
+          :PROPERTIES:
+          :INCUBATE: big financial investment
+          :END:
+
+   • Key bindings
+
+     Version 1.x of Org GTD recommended a binding for
+     ‘org-gtd-clarify-finalize’.  This binding must now be set as
+     follows (replace the keybinding with one of your choice):
+
+          (define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose)
 
 
 File: org-gtd.info,  Node: Installing,  Next: Configuring,  Prev: Upgrading,  Up: Setting up Org GTD
@@ -502,26 +485,18 @@ File: org-gtd.info,  Node: Required configuration of sub-packages,  Next: config
 1.4.2 Required configuration of sub-packages
 --------------------------------------------
 
-* Menu:
+   • org-edna
 
-* org-edna::
+     package: <https://www.nongnu.org/org-edna-el/>
 
-
-File: org-gtd.info,  Node: org-edna,  Up: Required configuration of sub-packages
+     This is one of the dependencies.  This setting change is REQUIRED.
+     It automatically changes the next TODO heading to NEXT in a project
+     when you’ve finished the current task.
 
-org-edna
-........
-
-package: <https://www.nongnu.org/org-edna-el/>
-
-   This is one of the dependencies.  This setting change is REQUIRED.
-It automatically changes the next TODO heading to NEXT in a project when
-you’ve finished the current task.
-
-   You do not need to make this change if you choose to toggle
-‘org-gtd-mode’.
-     (setq org-edna-use-inheritance t)
-     (org-edna-mode 1)
+     You do not need to make this change if you choose to toggle
+     ‘org-gtd-mode’.
+          (setq org-edna-use-inheritance t)
+          (org-edna-mode 1)
 
 
 File: org-gtd.info,  Node: configuration options for org-gtd,  Next: Recommended key bindings,  Prev: Required configuration of sub-packages,  Up: Configuring
@@ -529,17 +504,71 @@ File: org-gtd.info,  Node: configuration options for org-gtd,  Next: Recommended
 1.4.3 configuration options for org-gtd
 ---------------------------------------
 
-The most direct way to find out about the configuration options for
-org-gtd is to see the customize group: ‘M-x customize-group RET
-org-gtd’.  They are all optional because they all come with default
-values.
+   • I don’t care, just let me start using it
 
-   The only one you may want to change before starting to use Org GTD is
-‘org-gtd-directory’, which is the directory that Org GTD will look to
-for everything it needs to do.
+     The most direct way to find out about the configuration options for
+     org-gtd is to see the customize group: ‘M-x customize-group RET
+     org-gtd’.  They are all optional because they all come with default
+     values.
 
-   The configuration options will also be mentioned in the relevant
-subsections of *note Using Org GTD::.
+     The only one you may want to change before starting to use Org GTD
+     is ‘org-gtd-directory’, which is the directory that Org GTD will
+     look to for everything it needs to do.
+
+     The configuration options will also be mentioned in the relevant
+     subsections of *note Using Org GTD::.
+
+   • Tell me all the levers I can pull
+
+     Make sure you also read about sub-package configuration: *note
+     Required configuration of sub-packages::.
+
+     ‘org-gtd-directory’
+          set this to a directory.  ‘org-gtd’ will look for all its
+          files in this directory.
+     ‘org-gtd-capture-templates’
+          (!note: take care when changing this) This defines the
+          pre-filled text that will show up when capturing an item to
+          the inbox.  This is a simplified version of
+          ‘org-capture-templates’.  If you want to modify it, you should
+          be able to get away with only reading the documentation for
+          this one variable.  The only recommendation is that the
+          template string must define an org-mode top-level heading.
+          That is to say, the first two characters must be a single
+          asterisk followed by a space: "* ".  *note Adding things to
+          the inbox::.
+     ‘org-gtd-agenda-custom-commands’
+          (!note: take care when changing this) this is the exact same
+          thing as ‘org-agenda-custom-commands’.  ‘Org-gtd’ requires
+          that the key ‘g’ be bound to a display view, so if you want to
+          change what ‘org-gtd’ displays, make sure you leave the ‘g’
+          alone (or modify that one).  *note Engaging with your GTD
+          items::.
+     ‘org-reverse-note-order’
+          (‘org-mode’ variable) set this to ‘t’ to add new items to the
+          top of project tasks and to ‘nil’ to add new items to the
+          bottom of project tasks.  Most relevant, see *note Projects::
+          and *note Modify an existing project::.
+     ‘org-gtd-process-item-hooks’
+          this is a list of functions that you can use to decorate each
+          item when you clarify it.  For instance, you could add a
+          function to set the effort, or the priority, or some category,
+          etc.  By default it has only one function, which lets you add
+          tags.  You could remove this function if you wanted.  *note
+          Processing the inbox::.
+     ‘org-gtd-archive-location’
+          variable that holds a function to generate the archive file.
+          I made this choice primarily because I want to refile to an
+          archive file suffixed with the year, and I’m *just too lazy*
+          to manually rename them once a year.  The function has an
+          arity of zero and generates an org-mode file+outline path.
+          *note Cleaning up / archiving completed work::.
+     ‘org-gtd-refile-to-any-target’
+          when ‘t’, ‘org-gtd’ will refile to the first target it finds,
+          and create a target if it doesn’t find one.  When false, it
+          will ask for confirmation before refiling.  *note Multiple
+          files / refile targets::.
+          ::
 
 
 File: org-gtd.info,  Node: Recommended key bindings,  Prev: configuration options for org-gtd,  Up: Configuring
@@ -724,10 +753,12 @@ File: org-gtd.info,  Node: Modify an existing project,  Next: Quick action,  Pre
 --------------------------------
 
 When you choose this, the package will do the following:
-   • refile this as the top heading of the project
-   • adjust the state keywords so that the new heading is marked as NEXT
-     (this way it will show up in your agenda and you won’t lose track
-     of it) and all other non-done headings are marked as TODO.
+   • refile this as a task inside the project of the project (first or
+     last, depending on value of ‘org-reverse-note-order’)
+   • adjust the TODO keywords of the project such that:
+        • all DONE or CNCL keywords are untouched
+        • there is exactly one WAIT or NEXT keyword
+        • all other keywords are TODO
 
    You can go to that project yourself and readjust the order of the
 headings as necessary, and then you can go to that project’s top heading
@@ -920,7 +951,7 @@ Add a top-level heading in any ‘.org’ file (including a new one) in
 ‘org-gtd-directory’ and make sure it has the following properties
 drawer.
      :PROPERTIES:
-     :TRIGGER: next-sibling todo!(NEXT)
+     :TRIGGER: relatives(forward-no-wrap todo-only 1 no-sort) todo!(NEXT)
      :ORG_GTD: Projects
      :END:
 
@@ -952,15 +983,13 @@ File: org-gtd.info,  Node: Troubleshooting,  Prev: Using Org GTD,  Up: Top
 3 Troubleshooting
 *****************
 
-‘org-edna’ needs to be configured, see *note Required configuration of
-sub-packages::.
-
 * Menu:
 
 * Projects without a NEXT item::
+* I can't create a project when clarifying an inbox item!::
 
 
-File: org-gtd.info,  Node: Projects without a NEXT item,  Up: Troubleshooting
+File: org-gtd.info,  Node: Projects without a NEXT item,  Next: I can't create a project when clarifying an inbox item!,  Up: Troubleshooting
 
 3.1 Projects without a NEXT item
 ================================
@@ -969,52 +998,73 @@ Sometimes things break.  Use ‘M-x org-gtd-show-stuck-projects’ to find
 all projects that don’t have a NEXT item, which is to say, all projects
 that the package will not surface and help you finish.
 
+   ‘org-edna’ needs to be configured and enabled, see *note Required
+configuration of sub-packages::.
+
+   To fix such a stuck project, put the point on the project heading and
+call ‘M-x org-gtd-projects-fix-todo-keywords-for-project-at-point’.
+
+
+File: org-gtd.info,  Node: I can't create a project when clarifying an inbox item!,  Prev: Projects without a NEXT item,  Up: Troubleshooting
+
+3.2 I can’t create a project when clarifying an inbox item!
+===========================================================
+
+*note Projects::.  If this does not help you, please open an issue and
+show exactly what you have done before asking ‘org-gtd’ to create a
+project.
+
 
 
 Tag Table:
 Node: Top736
-Node: Setting up Org GTD2242
-Node: Summary2662
-Node: Upgrading6110
-Node: 201 <- 2006439
-Node: Update org-edna trigger6596
-Node: 200 <- 11x7389
-Node: Configuration7715
-Ref: Example upgrade9123
-Node: Relevant commands with new names11756
-Node: heading states (TODO etc)12120
-Node: Differentiating GTD types of items12447
-Node: Multiple refile targets13865
-Node: Key bindings14788
-Node: Installing15150
-Node: use-package15445
-Node: Manually15657
-Node: Configuring16023
-Node: The easy way16279
-Node: Required configuration of sub-packages16848
-Node: org-edna17112
-Node: configuration options for org-gtd17589
-Node: Recommended key bindings18331
-Node: Using Org GTD19059
-Node: Adding things to the inbox19741
-Node: Processing the inbox20556
-Node: Projects23256
-Node: Modify an existing project24592
-Node: Quick action25461
-Node: Trash25876
-Node: Calendar26196
-Node: Delegate26534
-Node: Single action26956
-Node: Archive27262
-Node: Incubate27725
-Node: Engaging with your GTD items28230
-Node: Interacting with org-agenda29367
-Node: Cleaning up / archiving completed work30238
-Node: Multiple files / refile targets31092
-Node: New project heading31435
-Node: Other headings31843
-Node: Troubleshooting32428
-Node: Projects without a NEXT item32678
+Node: Setting up Org GTD2331
+Node: Summary2751
+Node: Upgrading6199
+Node: 220 <- 2106558
+Ref: respect org-mode's org-reverse-note-order variable6684
+Node: 210 <- 2007384
+Ref: Update org-edna trigger7529
+Node: 200 <- 11x8298
+Ref: Configuration8424
+Ref: Example upgrade9816
+Ref: Relevant commands with new names12756
+Ref: heading states (TODO etc)12973
+Ref: Differentiating GTD types of items13132
+Ref: Multiple refile targets14499
+Ref: Key bindings15351
+Node: Installing15628
+Node: use-package15923
+Node: Manually16135
+Node: Configuring16501
+Node: The easy way16757
+Node: Required configuration of sub-packages17326
+Ref: org-edna17574
+Node: configuration options for org-gtd17992
+Ref: I don't care just let me start using it18242
+Ref: Tell me all the levers I can pull18831
+Node: Recommended key bindings21709
+Node: Using Org GTD22437
+Node: Adding things to the inbox23119
+Node: Processing the inbox23934
+Node: Projects26634
+Node: Modify an existing project27970
+Node: Quick action28914
+Node: Trash29329
+Node: Calendar29649
+Node: Delegate29987
+Node: Single action30409
+Node: Archive30715
+Node: Incubate31178
+Node: Engaging with your GTD items31683
+Node: Interacting with org-agenda32820
+Node: Cleaning up / archiving completed work33691
+Node: Multiple files / refile targets34545
+Node: New project heading34888
+Node: Other headings35330
+Node: Troubleshooting35915
+Node: Projects without a NEXT item36133
+Node: I can't create a project when clarifying an inbox item!36803
 
 End Tag Table
 

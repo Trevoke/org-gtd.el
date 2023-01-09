@@ -5,7 +5,7 @@
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; Homepage: https://github.com/Trevoke/org-gtd.el
 ;; Package-Requires: ((emacs "27.1") (org-edna "1.1.2") (f "0.20.0") (org "9.5") (org-agenda-property "1.3.1") (transient "0.3.7"))
-;; Package-Version: 2.1.0
+;; Package-Version: 2.2.0
 
 ;; This file is not part of GNU Emacs.
 
@@ -38,7 +38,7 @@
 ;; Upgrade information is also available therein.
 ;;
 ;;; Code:
-(defconst org-gtd-version "2.1.0")
+(defconst org-gtd-version "2.2.0")
 
 (require 'subr-x)
 (require 'cl-lib)
@@ -71,8 +71,9 @@ your version to the one installed. Use a version string. For instance:
 If org-gtd is 2.0.0, use \"2.0.0\".
 If org-gtd is 2.3.5, use \"2.3.5\".")
 
-(if (version< org-gtd-update-ack org-gtd-version)
+(if (version< org-gtd-update-ack "2.1.0")
     (lwarn 'org-gtd :warning "
+
 |--------------------------|
 | WARNING: action required |
 |--------------------------|
