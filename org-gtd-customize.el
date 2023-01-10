@@ -93,9 +93,11 @@ top level heading, or the behavior of org-gtd will be undefined."
      (
       (agenda "" ((org-agenda-span 1)
                   (org-agenda-start-day nil)))
-      (todo "NEXT" ((org-agenda-overriding-header "All NEXT items")))
+      (todo "NEXT" ((org-agenda-overriding-header "All NEXT items")
+                    (org-agenda-prefix-format '((todo . " %i %-12:(org-gtd--agenda-prefix-format)")))))
       (todo "WAIT" ((org-agenda-todo-ignore-with-date t)
-                    (org-agenda-overriding-header "Blocked items"))))))
+                    (org-agenda-overriding-header "Delegated/Blocked items")
+                    (org-agenda-prefix-format '((todo . " %i %-12 (org-gtd--agenda-prefix-format)"))))))))
   "Agenda custom commands to be used for org-gtd.
 
 The provided default is to show the agenda for today and all TODOs marked as
@@ -124,6 +126,25 @@ setting if you follow the instructions to add your own refile targets."
   :group 'org-gtd
   :type 'boolean
   :package-version "2.0.0")
+
+(defun org-gtd--agenda-prefix-format ()
+  "format prefix for items in buffer"
+  (let* ((elt (org-element-at-point))
+         (level (org-element-property :level elt))
+         (category (org-entry-get (point) "CATEGORY" t))
+         (parent-title (org-element-property :raw-value (org-element-property :parent elt))))
+
+    (cond
+     ((eq level 3) (concat
+                    (substring (string-pad (replace-regexp-in-string
+                                            "\[[[:digit:]]+/[[:digit:]]+\][[:space:]]*"
+                                            ""
+                                            parent-title)
+                                           11)
+                               0 10)
+                    "…"))
+     (category (concat (substring (string-pad category 11) 0 10) "…"))
+     "Simple task")))
 
 (provide 'org-gtd-customize)
 ;;; org-gtd-customize.el ends here
