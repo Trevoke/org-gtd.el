@@ -24,6 +24,8 @@
 ;;
 ;;; Code:
 
+(require 'subr-x)
+
 (defgroup org-gtd nil
   "Customize the org-gtd package."
   :link '(url-link "https://github.com/Trevoke/org-gtd.el")
@@ -126,6 +128,28 @@ setting if you follow the instructions to add your own refile targets."
   :group 'org-gtd
   :type 'boolean
   :package-version "2.0.0")
+
+;; this was added in emacs 28.1
+(unless (fboundp 'string-pad)
+  (defun string-pad (string length &optional padding start)
+    "Pad STRING to LENGTH using PADDING.
+If PADDING is nil, the space character is used.  If not nil, it
+should be a character.
+
+If STRING is longer than the absolute value of LENGTH, no padding
+is done.
+
+If START is nil (or not present), the padding is done to the end
+of the string, and if non-nil, padding is done to the start of
+the string."
+    (unless (natnump length)
+      (signal 'wrong-type-argument (list 'natnump length)))
+    (let ((pad-length (- length (length string))))
+      (cond ((<= pad-length 0) string)
+            (start (concat (make-string pad-length (or padding ?\s)) string))
+            (t (concat string (make-string pad-length (or padding ?\s))))))))
+
+
 
 (defun org-gtd--agenda-prefix-format ()
   "format prefix for items in buffer"
