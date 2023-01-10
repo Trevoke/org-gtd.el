@@ -31,7 +31,7 @@
 (defun ogt--buffer-string (buffer)
   "Return buffer's content."
   (with-current-buffer buffer
-    (buffer-string)))
+    (ogt--current-buffer-raw-text)))
 
 (defun ogt--current-buffer-raw-text ()
   "Returns text without faces"

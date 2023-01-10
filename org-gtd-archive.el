@@ -51,53 +51,31 @@
 Done here is any done `org-todo-keyword'.  For org-gtd this means DONE or CNCL."
   (org-map-entries
    (lambda ()
-     (let ((task-states (org-gtd--current-project-states)))
-       (when (or (org-gtd--project-complete-p task-states)
-                 (org-gtd--project-canceled-p task-states))
-         (setq org-map-continue-from (org-element-property
-                                      :begin
-                                      (org-element-at-point)))
-         (org-archive-subtree-default))))
+
+     (when (org-gtd--all-subheadings-in-done-type-p)
+       (setq org-map-continue-from
+             (org-element-property :begin (org-element-at-point)))
+
+       (org-archive-subtree-default)))
    "+LEVEL=2&+ORG_GTD=\"Projects\""
    'agenda))
+
+(defun org-gtd--all-subheadings-in-done-type-p ()
+  "Private function. Returns t if every sub-heading is in a DONE or CNCL state."
+  (seq-every-p (lambda (x) (eq x 'done))
+               (org-map-entries (lambda ()
+                                  (org-element-property :todo-type (org-element-at-point)))
+                                "+LEVEL=3"
+                                'tree)))
 
 (defun org-gtd--archive-completed-actions ()
   "Private function.  With point on heading, archive if entry is done."
   (if (org-entry-is-done-p)
       (progn
         (setq org-map-continue-from (org-element-property
-                                       :begin
-                                       (org-element-at-point)))
+                                     :begin
+                                     (org-element-at-point)))
         (org-archive-subtree-default))))
-
-(defun org-gtd--current-project-states ()
-  "Return a list of the task states for the current project."
-  (cdr (org-map-entries
-        (lambda ()
-          (org-entry-get
-           (org-gtd-projects--org-element-pom (org-element-at-point))
-           "TODO"))
-        t
-        'tree)))
-
-(defun org-gtd--project-heading-p ()
-  "Determine if current heading is a project heading."
-  (not (org-entry-is-todo-p)))
-
-(defun org-gtd--project-complete-p (task-states)
-  "Return t if project complete, nil otherwise.
-
-A project is considered complete when all TASK-STATES are
-marked with a done `org-todo-keyword'."
-  (seq-every-p (lambda (x) (string-equal x "DONE")) task-states))
-
-(defun org-gtd--project-canceled-p (task-states)
-  "Return t if project canceled, nil otherwise.
-
-A project is considered canceled when the last of the TASK-STATES is
-marked with a canceled `org-todo-keyword'."
-  (string-equal "CNCL" (car (last task-states))))
-
 
 (provide 'org-gtd-archive)
 ;;; org-gtd-archive.el ends here

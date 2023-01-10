@@ -19,7 +19,7 @@
 (defconst ogt--completed-project
   "** [3/3] completed
 *** DONE Task 1
-*** DONE Task 2
+*** CNCL Task 2
 *** DONE Task 3")
 
 (defconst ogt--canceled-project
