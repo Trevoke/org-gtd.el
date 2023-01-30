@@ -62,10 +62,8 @@ in the list."
   (interactive)
   (org-gtd-projects-fix-todo-keywords (point-marker)))
 
-;;;###autoload
 (defun org-gtd-projects-fix-todo-keywords (marker)
   "Ensure project at MARKER has only one NEXT keyword. Ensures only the first non-done keyword is NEXT, all other non-done are TODO."
-  (interactive)
   (with-current-buffer (marker-buffer marker)
     (save-excursion
       (goto-char (marker-position marker))
