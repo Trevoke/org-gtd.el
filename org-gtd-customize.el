@@ -29,7 +29,7 @@
 (defgroup org-gtd nil
   "Customize the org-gtd package."
   :link '(url-link "https://github.com/Trevoke/org-gtd.el")
-  :package-version "0.1"
+  :package-version '(org-gtd . "0.1")
   :group 'org)
 
 (defcustom org-gtd-directory "~/gtd/"
@@ -40,7 +40,7 @@ building the agenda or refiling items.  This is the directory where you will
 find the default org-gtd file, and it is the directory where you should place
 your own files if you want multiple refile targets (projects, etc.)."
   :group 'org-gtd
-  :package-version "0.1"
+  :package-version '(org-gtd . "0.1")
   :type 'directory)
 
 (defcustom org-gtd-process-item-hooks '(org-set-tags-command)
@@ -51,7 +51,7 @@ one function: setting org tags on the item.  Some built-in examples are
 provided as options here.  You can create your own functions to enhance/decorate
 the items once they have been processed and add them to that list."
   :group 'org-gtd
-  :package-version "1.0.4"
+  :package-version '(org-gtd . "1.0.4")
   :type 'hook
   :options '(org-set-tags-command org-set-effort org-priority))
 
@@ -73,7 +73,7 @@ called gtd_archive_<currentyear> in `org-gtd-directory' and puts the entries
 into a datetree."
   :group 'org-gtd
   :type 'sexp
-  :package-version "2.0.0")
+  :package-version '(org-gtd . "2.0.0"))
 
 (defcustom org-gtd-capture-templates
   '(("i" "Inbox" "* %?\n%U\n\n  %i")
@@ -88,7 +88,7 @@ Make the sure the template string starts with a single asterisk to denote a
 top level heading, or the behavior of org-gtd will be undefined."
   :group 'org-gtd
   :type 'sexp
-  :package-version "2.0.0")
+  :package-version '(org-gtd . "2.0.0"))
 
 (defcustom org-gtd-agenda-custom-commands
   '(("g" "Scheduled today and all NEXT items"
@@ -112,7 +112,7 @@ can leverage this customization feature with command `org-gtd-mode'
 or by wrapping your own custom functions with `with-org-gtd-context'."
   :group 'org-gtd
   :type 'sexp
-  :package-version "2.0.0")
+  :package-version '(org-gtd . "2.0.0"))
 
 (defcustom org-gtd-refile-to-any-target t
   "Set to true if you do not need to choose where to refile processed items.
@@ -127,7 +127,7 @@ Defaults to true to carry over pre-2.0 behavior.  You will need to change this
 setting if you follow the instructions to add your own refile targets."
   :group 'org-gtd
   :type 'boolean
-  :package-version "2.0.0")
+  :package-version '(org-gtd . "2.0.0"))
 
 ;; this was added in emacs 28.1
 (unless (fboundp 'string-pad)
