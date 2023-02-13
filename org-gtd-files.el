@@ -44,9 +44,8 @@ This is the inbox. Everything goes in here when you capture it.
 (defconst org-gtd-default-file-name "org-gtd-tasks")
 
 ;;;###autoload
-(defun org-gtd-inbox-path ()
-  "Return the full path to the inbox file."
-  (org-gtd--path org-gtd-inbox))
+(defalias 'org-gtd-inbox-path 'org-gtd--ensure-inbox
+    "Return the full path to the inbox file.")
 
 (defun org-gtd--inbox-file ()
   "Create or return the buffer to the GTD inbox file."
