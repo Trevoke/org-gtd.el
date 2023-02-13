@@ -76,14 +76,17 @@ into a datetree."
   :package-version '(org-gtd . "2.0.0"))
 
 (defcustom org-gtd-capture-templates
-  '(("i" "Inbox" "* %?\n%U\n\n  %i")
-    ("l" "Inbox with link" "* %?\n%U\n\n  %i\n  %a"))
+  '(("i" "Inbox"
+        entry (file #'org-gtd-inbox-path)
+        "* %?\n%U\n\n  %i"
+        :kill-buffer t)
+    ("l" "Inbox with link"
+        entry (file #'org-gtd-inbox-path)
+        "* %?\n%U\n\n  %i\n  %a"
+        :kill-buffer t))
   "Capture templates to be used when adding something to the inbox.
 
-This is a list of lists.  Each list is composed of three elements:
-
-\(KEYS DESCRIPTION TEMPLATE)
-see `org-capture-templates' for the definition of each of those items.
+See `org-capture-templates' for the format of each capture template.
 Make the sure the template string starts with a single asterisk to denote a
 top level heading, or the behavior of org-gtd will be undefined."
   :group 'org-gtd
