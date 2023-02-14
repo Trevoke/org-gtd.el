@@ -25,6 +25,7 @@
 ;;; Code:
 
 (require 'f)
+(require 'org-gtd-core)
 
 (defconst org-gtd-inbox-template
   "#+STARTUP: overview hidestars logrefile indent logdone
