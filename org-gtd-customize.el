@@ -76,12 +76,12 @@ into a datetree."
   :package-version '(org-gtd . "2.0.0"))
 
 (defcustom org-gtd-capture-templates
-  '(("i" "Inbox"
-        entry (file #'org-gtd-inbox-path)
+  `(("i" "Inbox"
+        entry  (file ,#'org-gtd-inbox-path)
         "* %?\n%U\n\n  %i"
         :kill-buffer t)
     ("l" "Inbox with link"
-        entry (file #'org-gtd-inbox-path)
+        entry (file ,#'org-gtd-inbox-path)
         "* %?\n%U\n\n  %i\n  %a"
         :kill-buffer t))
   "Capture templates to be used when adding something to the inbox.
