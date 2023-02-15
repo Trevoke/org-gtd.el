@@ -37,8 +37,8 @@
 ;;;###autoload
 (define-minor-mode org-gtd-process-mode
   "Minor mode for org-gtd."
-  nil " GPM" org-gtd-process-map
-  :global nil
+  :lighter " GPM"
+  :keymap org-gtd-process-map
   (if org-gtd-process-mode
       (setq-local
        header-line-format
@@ -88,7 +88,7 @@ undefined state."
   (display-buffer-same-window (org-gtd--inbox-file) '())
   (delete-other-windows)
 
-  (org-gtd-process-mode t)
+  (org-gtd-process-mode)
 
   (condition-case err
       (progn
