@@ -85,7 +85,7 @@ undefined state."
   "Process the GTD inbox."
   (interactive)
   (set-buffer (org-gtd--inbox-file))
-  (display-buffer-same-window (org-gtd--inbox-file) '())
+  (display-buffer-same-window (current-buffer) '())
   (delete-other-windows)
 
   (org-gtd-process-mode)
