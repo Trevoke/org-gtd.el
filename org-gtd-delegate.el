@@ -25,12 +25,13 @@
 ;;; Code:
 
 (require 'org)
+(require 'org-gtd-customize)
 
 ;;;###autoload
 (defun org-gtd-delegate ()
   "Delegate item at point."
   (interactive)
-  (let ((delegated-to (read-string "Who will do this? "))
+  (let ((delegated-to (apply org-gtd-delegate-read-func nil))
         (org-inhibit-logging 'note))
     (org-set-property "DELEGATED_TO" delegated-to)
     (org-todo "WAIT")
