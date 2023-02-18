@@ -1,0 +1,38 @@
+Thank you for your interest in contributing to ~org-gtd~!
+
+Emacs is a fiddly environment, and ~org-gtd~ is a slightly ambitious project, so there's a few things we have to cover. If you're not totally sure how to do any or all of those things, no worries, I really want you to contribute, and I'll pick up as much as I have to :)
+
+Without further ado, here's the list:
+
+1. automated testing
+2. manual testing
+3. code linting
+4. compilation
+5. autoloads
+
+* Automated testing
+I use [[https://github.com/doublep/eldev/][eldev]] for local and CI-based testing. To run the test suite locally, install eldev, then run ~$ eldev test~.
+
+If you need to step into the test suite, either because a test broke or you are adding a new feature, the test framework is [[https://github.com/jorgenschaefer/emacs-buttercup][buttercup]], which has fairly reasonable documentation.
+
+Every feature must be accompanied by at least one acceptance test (a test that replicates the user's typing, and checks for what should be on the screen after everything is done). Unit tests are also fantastic, and I don't have enough of them.
+
+* Manual testing
+Despite all automated testing, ~emacs~ is a strange beast, and so is ~org-mode~, so it's important to test the new feature yourself manually. Among other things, I haven't figured out ways to test things like "this buffer is on a window displayed in front of the user" or "this is what the window configuration is at the moment".
+
+* code linting
+(this part is taken straight from MELPA's [[https://github.com/melpa/melpa/blob/master/CONTRIBUTING.org#making-your-package-ready-for-inclusion][CONTRIBUTING.org]] file)
+
+Use [[https://melpa.org/#/flycheck][flycheck]], [[https://github.com/purcell/package-lint][package-lint]] and [[https://github.com/purcell/flycheck-package][flycheck-package]] to help you identify common errors in your package metadata.
+Use [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Tips.html][checkdoc]] to make sure that your package follows the conventions for documentation strings.
+
+** Typical problems, again, from MELPA
+- add ~-*- lexical-binding: t; -*-~ at the end of the first line of each Emacs Lisp file.
+- if we have to define a face, just inherit, and let the user customize the rest
+- prefix function names with ~#'~ instead of just ~'~
+* compilation
+It's great to get the code working locally, but it's better if it can compile and run properly when a user installs it and compiles it automatically themselves, so try ~eldev clean && eldev compile~; fix compilation errors, and make a fair attempt at the warnings.
+* autoloads
+Autoloads are a funny lil' feature of emacs because basically they are functions that will load the code when you call them -- so you can call them without having used ~require~ or ~load~ beforehand, and that means the code has to load intelligently when the user calls any of them.
+
+There is a ~dev/~ subdirectory. You can use ~HOME=dev/ emacs~ from the root directory of the ~org-gtd~ project to start emacs using the provided init file (you may have to make an adjustment so that it pulls and compile from your repository and branch) but you should be able to use this to test the autoloads and make sure they load properly. If there are no compilation warnings, I believe there is nothing to worry about, but this is an area of emacs that I don't master yet.
