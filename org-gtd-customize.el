@@ -170,5 +170,13 @@ the string."
      (category (concat (substring (string-pad category 11) 0 10) "…"))
      "Simple task")))
 
+(defcustom org-gtd-delegate-read-func (lambda () (read-string "Who will do this? "))
+  "Function that is called to read in the Person the task is delegated to.
+
+Needs to return a string thet will be used as the persons name."
+  :group 'org-gtd
+  :package-version '(org-gtd . "2.3.0")
+  :type 'function )
+
 (provide 'org-gtd-customize)
 ;;; org-gtd-customize.el ends here

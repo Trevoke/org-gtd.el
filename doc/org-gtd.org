@@ -319,7 +319,7 @@ Make sure you also read about sub-package configuration: [[*Required configurati
 - ~org-gtd-process-item-hooks~ :: this is a list of functions that you can use to decorate each item when you clarify it. For instance, you could add a function to set the effort, or the priority, or some category, etc. By default it has only one function, which lets you add tags. You could remove this function if you wanted. [[*Processing the inbox]].
 - ~org-gtd-archive-location~ :: variable that holds a function to generate the archive file. I made this choice primarily because I want to refile to an archive file suffixed with the year, and I'm *just too lazy* to manually rename them once a year. The function has an arity of zero and generates an org-mode file+outline path. [[*Cleaning up / archiving completed work]].
 - ~org-gtd-refile-to-any-target~ :: when ~t~, =org-gtd= will refile to the first target it finds, and create a target if it doesn't find one. When false, it will ask for confirmation before refiling. [[*Multiple files / refile targets]].
--  ::
+- ~org-gtd-delegate-read-func~ :: function that is used to prompt for a person a task is delegated to. Must return a string. By default this is set to ~read-string~.
 *** Recommended key bindings
 
 There's an important keymap you'll want to make the flow of processing the inbox smoother. To limit impact on your emacs configuration, there is a specific keymap you can use. The function you'll want to bind is ~org-gtd-choose~. I suggest ~C-c c~, as in the following example.
