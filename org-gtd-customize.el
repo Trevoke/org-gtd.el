@@ -175,7 +175,7 @@ the string."
 
 Needs to return a string thet will be used as the persons name."
   :group 'org-gtd
-  :package-version '(org-gtd . "2.0.0")
+  :package-version '(org-gtd . "2.3.0")
   :type 'function )
 
 (provide 'org-gtd-customize)
