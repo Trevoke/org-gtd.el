@@ -45,35 +45,29 @@ This is the inbox. Everything goes in here when you capture it.
 (defconst org-gtd-default-file-name "org-gtd-tasks")
 
 ;;;###autoload
-(defalias 'org-gtd-inbox-path 'org-gtd--ensure-inbox
-    "Return the full path to the inbox file.")
+(defun org-gtd-inbox-path ()
+  "Return the full path to the inbox file."
+  (let ((path (org-gtd--path org-gtd-inbox)))
+    (org-gtd--ensure-file-exists path org-gtd-inbox-template)
+    path))
 
 (defun org-gtd--inbox-file ()
   "Create or return the buffer to the GTD inbox file."
-  (find-file-noselect (org-gtd--ensure-inbox)))
-
-(defun org-gtd--ensure-inbox ()
-  "Ensure GTD inbox file exists, and return its full path."
-  (org-gtd--ensure-path (org-gtd--path org-gtd-inbox)
-                        org-gtd-inbox-template))
+  (find-file-noselect (org-gtd-inbox-path)))
 
 (defun org-gtd--default-file ()
   "Create or return the buffer to the default GTD file."
-  (find-file-noselect (org-gtd--ensure-default)))
+  (let ((path (org-gtd--path org-gtd-default-file-name)))
+    (org-gtd--ensure-file-exists path org-gtd-file-header)
+    (find-file-noselect path)))
 
-(defun org-gtd--ensure-default ()
-  "Ensure default GTD file exists, and return its path."
-  (org-gtd--ensure-path (org-gtd--path org-gtd-default-file-name)
-                        org-gtd-file-header))
-
-(defun org-gtd--ensure-path (path initial-contents)
-  "Return PATH, creating the file with INITIAL-CONTENTS if necessary."
+(defun org-gtd--ensure-file-exists (path initial-contents)
+  "Create the file at PATH with INITIAL-CONTENTS if it does not exist."
   (unless (f-exists-p path)
     (with-current-buffer (find-file-noselect path)
       (insert initial-contents)
       (org-mode-restart)
-      (basic-save-buffer)))
-  path)
+      (basic-save-buffer))))
 
 (defun org-gtd--path (file)
   "Return the full path to FILE.org.
