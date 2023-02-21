@@ -523,8 +523,8 @@ this is a list of functions that you can use to decorate each item when you clar
 variable that holds a function to generate the archive file. I made this choice primarily because I want to refile to an archive file suffixed with the year, and I'm @strong{just too lazy} to manually rename them once a year. The function has an arity of zero and generates an org-mode file+outline path. @ref{Cleaning up / archiving completed work}.
 @item @code{org-gtd-refile-to-any-target}
 when @code{t}, @samp{org-gtd} will refile to the first target it finds, and create a target if it doesn't find one. When false, it will ask for confirmation before refiling. @ref{Multiple files / refile targets}.
-@item
-::
+@item @code{org-gtd-delegate-read-func}
+function that is used to prompt for a person a task is delegated to. Must return a string. By default this is set to @code{read-string}.
 @end table
 @end itemize
 

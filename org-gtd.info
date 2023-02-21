@@ -568,7 +568,10 @@ File: org-gtd.info,  Node: configuration options for org-gtd,  Next: Recommended
           and create a target if it doesn’t find one.  When false, it
           will ask for confirmation before refiling.  *note Multiple
           files / refile targets::.
-          ::
+     ‘org-gtd-delegate-read-func’
+          function that is used to prompt for a person a task is
+          delegated to.  Must return a string.  By default this is set
+          to ‘read-string’.
 
 
 File: org-gtd.info,  Node: Recommended key bindings,  Prev: configuration options for org-gtd,  Up: Configuring
@@ -1043,28 +1046,28 @@ Ref: org-edna17574
 Node: configuration options for org-gtd17992
 Ref: I don't care just let me start using it18242
 Ref: Tell me all the levers I can pull18831
-Node: Recommended key bindings21709
-Node: Using Org GTD22437
-Node: Adding things to the inbox23119
-Node: Processing the inbox23934
-Node: Projects26634
-Node: Modify an existing project27970
-Node: Quick action28914
-Node: Trash29329
-Node: Calendar29649
-Node: Delegate29987
-Node: Single action30409
-Node: Archive30715
-Node: Incubate31178
-Node: Engaging with your GTD items31683
-Node: Interacting with org-agenda32820
-Node: Cleaning up / archiving completed work33691
-Node: Multiple files / refile targets34545
-Node: New project heading34888
-Node: Other headings35330
-Node: Troubleshooting35915
-Node: Projects without a NEXT item36133
-Node: I can't create a project when clarifying an inbox item!36803
+Node: Recommended key bindings21902
+Node: Using Org GTD22630
+Node: Adding things to the inbox23312
+Node: Processing the inbox24127
+Node: Projects26827
+Node: Modify an existing project28163
+Node: Quick action29107
+Node: Trash29522
+Node: Calendar29842
+Node: Delegate30180
+Node: Single action30602
+Node: Archive30908
+Node: Incubate31371
+Node: Engaging with your GTD items31876
+Node: Interacting with org-agenda33013
+Node: Cleaning up / archiving completed work33884
+Node: Multiple files / refile targets34738
+Node: New project heading35081
+Node: Other headings35523
+Node: Troubleshooting36108
+Node: Projects without a NEXT item36326
+Node: I can't create a project when clarifying an inbox item!36996
 
 End Tag Table
 
