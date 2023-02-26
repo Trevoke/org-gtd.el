@@ -262,5 +262,11 @@ Stop processing the inbox."
       (save-restriction
         (funcall hook)))))
 
+(defun org-gtd--decorate-element (element)
+  "Apply `org-gtd--decorate-item' to org-element ELEMENT."
+  (org-with-point-at (org-gtd-projects--org-element-pom element)
+    (org-narrow-to-element)
+    (org-gtd--decorate-item)))
+
 (provide 'org-gtd-inbox-processing)
 ;;; org-gtd-inbox-processing.el ends here

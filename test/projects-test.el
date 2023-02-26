@@ -45,7 +45,7 @@
      (org-gtd-process-inbox)
      (execute-kbd-macro (kbd "M-> RET"))
      (insert ogt--project-text)
-     (execute-kbd-macro (kbd "C-c c p this_is_a_tag RET A"))
+     (execute-kbd-macro (kbd "C-c c p headline_tag RET A task_1_tag RET B task_2_tag RET C task_3_tag RET A"))
      (ogt--save-all-buffers)
      (with-current-buffer (org-gtd--default-file)
        (goto-char (point-min))

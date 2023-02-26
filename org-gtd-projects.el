@@ -99,7 +99,8 @@ Add the TODO keyword to all subsequent actions/tasks."
         (reverse rest-entries)
         'headline
       (lambda (myelt)
-        (org-entry-put (org-gtd-projects--org-element-pom myelt) "TODO" "TODO")))
+        (org-gtd--decorate-element myelt) (org-entry-put (org-gtd-projects--org-element-pom myelt) "TODO" "TODO")))
+    (org-gtd--decorate-element first-entry)
     (org-entry-put (org-gtd-projects--org-element-pom first-entry) "TODO" "NEXT")))
 
 (defun org-gtd-projects--incomplete-task-p ()
