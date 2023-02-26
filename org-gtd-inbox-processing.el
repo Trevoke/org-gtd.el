@@ -141,6 +141,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
                         'agenda))
              (chosen-heading (completing-read "Choose a heading: " headings nil t))
              (heading-marker (org-find-exact-heading-in-directory chosen-heading org-gtd-directory)))
+        (org-gtd--decorate-item)
         (org-refile nil nil `(,chosen-heading
                               ,(buffer-file-name (marker-buffer heading-marker))
                               nil
