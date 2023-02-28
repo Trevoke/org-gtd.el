@@ -32,6 +32,10 @@
   :package-version '(org-gtd . "0.1")
   :group 'org)
 
+(defgroup org-gtd-organize nil
+  "Manage the functions for organizing the GTD actions."
+  :package-version '(org-gtd . "3.0.0"))
+
 (defcustom org-gtd-directory "~/gtd/"
   "Directory for org-gtd.
 

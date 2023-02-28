@@ -29,6 +29,7 @@
 (require 'org-gtd-agenda)
 (require 'org-gtd-projects)
 (require 'org-gtd-refile)
+(require 'org-gtd-organize)
 
 ;;;###autoload
 (defvar org-gtd-process-map (make-sparse-keymap)
@@ -45,40 +46,6 @@
        (substitute-command-keys
         "\\<org-gtd-process-map>Clarify item.  Let Org GTD store it with `\\[org-gtd-choose]'."))
     (setq-local header-line-format nil)))
-
-
-(transient-define-prefix org-gtd-choose ()
-  "Choose how to categorize the current item.
-
-Note that this function is intended to be used only during inbox processing.
-Each action continues inbox processing, so you may put your Emacs in an
-undefined state."
-  ["Actionable"
-   [("q" "Quick action" org-gtd--quick-action)
-    ("s" "Single action" org-gtd--single-action)]
-   [("d" "Delegate" org-gtd--delegate)
-    ("c" "Calendar" org-gtd--calendar)]
-   [("p" "Project (multi-step)" org-gtd--project)
-    ("m" "Modify project: add this task" org-gtd--modify-project)]
-   ]
-  ["Non-actionable"
-   [("i" "Incubate" org-gtd--incubate)
-    ("a" "Archive this knowledge" org-gtd--archive)]
-   [("t" "Trash" org-gtd--trash)]]
-  ["Org GTD"
-   ("x"
-    "Exit. Stop processing the inbox for now."
-    org-gtd--stop-processing)])
-
-;; something to uncomment and start using later.
-;;;;###autoload
-;; (defmacro org-gtd-organize-action (fun-name &rest body)
-;;   "Creates a function to hook into the transient for inbox item organization"
-;;   (declare (debug t) (indent defun))
-;;   `(defun ,fun-name ()
-;;      (interactive)
-;;      (unwind-protect (progn ,@body))
-;;      (org-gtd-process-inbox)))
 
 ;;;###autoload
 (defun org-gtd-process-inbox ()
@@ -97,40 +64,36 @@ undefined state."
         (org-next-visible-heading 1)
         (org-back-to-heading)
         (org-narrow-to-subtree))
-    (user-error (org-gtd--stop-processing))))
+    (user-error (org-gtd-inbox-processing--stop))))
 
 ;;;###autoload
-(defun org-gtd--archive ()
+(defmacro org-gtd-inbox-processing-action (fun-name docstring &rest body)
+  "Creates a function to hook into the transient for inbox item organization"
+  (declare (debug t) (indent defun))
+  `(defun ,fun-name ()
+     ,docstring
+     (interactive)
+     (goto-char (point-min))
+     (unwind-protect (progn ,@body))
+     (org-gtd-process-inbox)))
+
+(org-gtd-inbox-processing-action
+    org-gtd--archive
   "Process GTD inbox item as a reference item."
-  (interactive)
-  (org-todo "DONE")
-  (with-org-gtd-context (org-archive-subtree))
-  (org-gtd-process-inbox))
+  (org-gtd-organize-task-at-point-as-archived-knowledge))
 
-;;;###autoload
-(defun org-gtd--project ()
+(org-gtd-inbox-processing-action
+  org-gtd--project
   "Process GTD inbox item by transforming it into a project.
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Refile to `org-gtd-actionable-file-basename'."
-  (interactive)
+  (org-gtd-organize-task-at-point-as-new-project))
 
-  (if (org-gtd--poorly-formatted-project-p)
-      (org-gtd--show-error-and-return-to-editing)
-
-    (org-gtd--decorate-item)
-    (org-gtd-projects--nextify)
-    (goto-char (point-min))
-    (let ((org-special-ctrl-a t))
-      (org-end-of-line))
-    (insert " [/]")
-    (org-update-statistics-cookies t)
-    (org-gtd--refile org-gtd-projects)
-    (org-gtd-process-inbox)))
-
-;;;###autoload
-(defun org-gtd--modify-project ()
+(org-gtd-inbox-processing-action
+  org-gtd--modify-project
   "Refile the org heading at point under a chosen heading in the agenda files."
+<<<<<<< HEAD
   (interactive)
   (with-org-gtd-context
       (let* ((org-gtd-refile-to-any-target nil)
@@ -149,124 +112,54 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
                     nil)
         (org-gtd-projects-fix-todo-keywords heading-marker)))
   (org-gtd-process-inbox))
+=======
+  (org-gtd-organize-add-task-at-point-to-existing-project))
+>>>>>>> 93f22b4 (Surface one-off organizing actions)
 
-(defun org-gtd--poorly-formatted-project-p ()
-  "Return non-nil if the project is composed of only one heading."
-  (basic-save-buffer)
-  (eql 1 (length (org-map-entries t))))
+(org-gtd-inbox-processing-action
+  org-gtd--modify-project
+  "Refile the org heading at point under a chosen heading in the agenda files."
+  (org-gtd-organize-add-task-at-point-to-existing-project))
 
-(defun org-gtd--show-error-and-return-to-editing ()
-  "Tell the user something is wrong with the project."
-  (display-message-or-buffer
-   "A 'project' in GTD is a finite set of steps after which a given task is
-complete. In Org GTD, this is defined as a top-level org heading with at least
-one second-level org headings. When the item you are editing is intended to be
-a project, create such a headline structure, like so:
+(org-gtd-inbox-processing-action
+  org-gtd--calendar
+  "Process GTD inbox item by scheduling it.")
 
-* Project heading
-** First task
-** Second task
-** Third task
+(org-gtd-inbox-processing-action
+  org-gtd--delegate
+  "Process GTD inbox item by delegating it."
+  (org-gtd-organize-delegate-task-at-point))
 
-If you do not need sub-headings, then make a single action instead.")
-  (org-gtd-process-inbox))
-
-;;;###autoload
-(defun org-gtd--calendar ()
-  "Process GTD inbox item by scheduling it.
-
-Allow the user apply user-defined tags from
-`org-tag-persistent-alist', `org-tag-alist' or file-local tags in
-the inbox.  Refile to `org-gtd-actionable-file-basename'."
-  (interactive)
-  (org-gtd--decorate-item)
-  (org-schedule 0)
-  (org-gtd--refile org-gtd-calendar)
-  (org-gtd-process-inbox))
-
-;;;###autoload
-(defun org-gtd--delegate ()
-  "Process GTD inbox item by delegating it.
-Allow the user apply user-defined tags from
-`org-tag-persistent-alist', `org-tag-alist' or file-local tags in
-the inbox.  Set it as a waiting action and refile to
-`org-gtd-actionable-file-basename'."
-  (interactive)
-  (org-gtd--decorate-item)
-  (org-gtd-delegate)
-  (org-gtd--refile org-gtd-actions)
-  (org-gtd-process-inbox))
-
-;;;###autoload
-(defun org-gtd--incubate ()
+(org-gtd-inbox-processing-action
+  org-gtd--incubate
   "Process GTD inbox item by incubating it.
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Refile to any org-gtd incubate target (see manual)."
-  (interactive)
-  (org-gtd--decorate-item)
-  (org-schedule 0)
-  (org-gtd--refile org-gtd-incubated)
-  (org-gtd-process-inbox))
+  (org-gtd-organize-incubate-task-at-point))
+
+(org-gtd-inbox-processing-action
+  org-gtd--quick-action
+  "This was a quick action, and you've just done it."
+  (org-gtd-organize-task-at-point-was-quick-action))
+
+(org-gtd-inbox-processing-action
+  org-gtd--single-action
+  "Set this as a single action to be done when possible."
+  (org-gtd-organize-task-at-point-as-single-action))
+
+(org-gtd-inbox-processing-action
+  org-gtd--trash
+  "You're not going to do this, set this as cancelled."
+  (org-gtd-organize-task-at-point-as-trash))
 
 ;;;###autoload
-(defun org-gtd--quick-action ()
-  "Process GTD inbox item by doing it now.
-Allow the user apply user-defined tags from
-`org-tag-persistent-alist', `org-tag-alist' or file-local tags in
-the inbox.  Mark it as done and archive."
-  (interactive)
-  (org-back-to-heading)
-  (org-gtd--decorate-item)
-  (org-todo "DONE")
-  (with-org-gtd-context (org-archive-subtree))
-  (org-gtd-process-inbox))
-
-;;;###autoload
-(defun org-gtd--single-action ()
-  "Process GTD inbox item as a single action.
-Allow the user apply user-defined tags from
-`org-tag-persistent-alist', `org-tag-alist' or file-local tags in
-the inbox.  Set as a NEXT action and refile to
-`org-gtd-actionable-file-basename'."
-  (interactive)
-  (org-gtd--decorate-item)
-  (org-todo "NEXT")
-  (org-gtd--refile org-gtd-actions)
-  (org-gtd-process-inbox))
-
-;;;###autoload
-(defun org-gtd--trash ()
-  "Mark GTD inbox item as cancelled and archive it."
-  (interactive)
-  (org-gtd--decorate-item)
-  (org-todo "CNCL")
-  (with-org-gtd-context (org-archive-subtree))
-  (org-gtd-process-inbox))
-
-;;;###autoload
-(defun org-gtd--stop-processing ()
-  "Private function.
-
-Stop processing the inbox."
+(defun org-gtd-inbox-processing--stop ()
+  "Stop processing the inbox."
   (interactive)
   (widen)
   (org-gtd-process-mode -1)
   (whitespace-cleanup))
-
-(defun org-gtd--decorate-item ()
-  "Apply hooks to add metadata to a given GTD item."
-  (goto-char (point-min))
-  (dolist (hook org-gtd-process-item-hooks)
-    (save-excursion
-      (save-restriction
-        (funcall hook)))))
-
-(defun org-gtd--decorate-element (element)
-  "Apply `org-gtd--decorate-item' to org-element ELEMENT."
-  (org-with-point-at (org-gtd-projects--org-element-pom element)
-    (org-narrow-to-element)
-    (org-gtd--decorate-item)))
 
 (provide 'org-gtd-inbox-processing)
 ;;; org-gtd-inbox-processing.el ends here

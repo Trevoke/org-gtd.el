@@ -108,5 +108,26 @@ Add the TODO keyword to all subsequent actions/tasks."
   (and (org-entry-is-todo-p)
        (not (org-entry-is-done-p))))
 
+(defun org-gtd-projects--poorly-formatted-p ()
+  "Return non-nil if the project is composed of only one heading."
+  (basic-save-buffer)
+  (eql 1 (length (org-map-entries t))))
+
+(defun org-gtd-projects--show-error-and-return-to-editing ()
+  "Tell the user something is wrong with the project."
+  (display-message-or-buffer
+   "A 'project' in GTD is a finite set of steps after which a given task is
+complete. In Org GTD, this is defined as a top-level org heading with at least
+one second-level org headings. When the item you are editing is intended to be
+a project, create such a headline structure, like so:
+
+* Project heading
+** First task
+** Second task
+** Third task
+
+If you do not need sub-headings, then make a single action instead.")
+  (org-gtd-process-inbox))
+
 (provide 'org-gtd-projects)
 ;;; org-gtd-projects.el ends here
