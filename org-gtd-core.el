@@ -60,10 +60,7 @@ This is a list of four items, the same type as in `org-stuck-projects'.")
   (declare (debug t) (indent 2))
   `(let* ((org-use-property-inheritance "ORG_GTD")
           (org-archive-location (funcall org-gtd-archive-location))
-          (org-capture-templates (seq-concatenate
-                                  'list
-                                  (org-gtd--capture-templates)
-                                  org-capture-templates))
+          (org-capture-templates org-gtd-capture-templates)
           (org-refile-use-outline-path nil)
           (org-stuck-projects org-gtd-stuck-projects)
           (org-odd-levels-only nil)
@@ -72,27 +69,6 @@ This is a list of four items, the same type as in `org-stuck-projects'.")
           (org-agenda-custom-commands org-gtd-agenda-custom-commands))
      (unwind-protect
          (progn ,@body))))
-
-;; move this here to make a clear load path to make straight.el happy
-;; it was originally in org-gtd-capture.el
-(defun org-gtd--capture-templates ()
-  "Private function.
-
-Return valid `org-capture' templates based on `org-gtd-capture-templates'."
-  (mapcar #'org-gtd--gen-capture-templates
-          org-gtd-capture-templates))
-
-;; move this here to make a clear load path to make straight.el happy
-;; it was originally in org-gtd-capture.el
-(defun org-gtd--gen-capture-templates (template)
-  "Private function.
-
-Given an `org-capture-template' TEMPLATE string, generate a valid
-`org-gtd-capture' item."
-  (cl-destructuring-bind (key description template-string) template
-    `(,key ,description entry
-           (file (lambda () (org-gtd-inbox-path)))
-                 ,template-string :kill-buffer t)))
 
 (provide 'org-gtd-core)
 ;;; org-gtd-core.el ends here

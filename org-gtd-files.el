@@ -25,6 +25,7 @@
 ;;; Code:
 
 (require 'f)
+(require 'org-gtd-core)
 
 (defconst org-gtd-inbox-template
   "#+STARTUP: overview hidestars logrefile indent logdone
@@ -46,29 +47,27 @@ This is the inbox. Everything goes in here when you capture it.
 ;;;###autoload
 (defun org-gtd-inbox-path ()
   "Return the full path to the inbox file."
-  (org-gtd--path org-gtd-inbox))
+  (let ((path (org-gtd--path org-gtd-inbox)))
+    (org-gtd--ensure-file-exists path org-gtd-inbox-template)
+    path))
 
 (defun org-gtd--inbox-file ()
   "Create or return the buffer to the GTD inbox file."
-  (let ((file-path (org-gtd--path org-gtd-inbox)))
-    (if (f-file-p file-path)
-        (find-file-noselect file-path)
-      (with-current-buffer (find-file-noselect file-path)
-        (insert org-gtd-inbox-template)
-        (org-mode-restart)
-        (basic-save-buffer)
-        (current-buffer)))))
+  (find-file-noselect (org-gtd-inbox-path)))
 
 (defun org-gtd--default-file ()
   "Create or return the buffer to the default GTD file."
-  (let ((file-path (org-gtd--path org-gtd-default-file-name)))
-    (if (f-file-p file-path)
-        (find-file-noselect file-path)
-      (with-current-buffer (find-file-noselect file-path)
-        (insert org-gtd-file-header)
-        (org-mode-restart)
-        (basic-save-buffer)
-        (current-buffer)))))
+  (let ((path (org-gtd--path org-gtd-default-file-name)))
+    (org-gtd--ensure-file-exists path org-gtd-file-header)
+    (find-file-noselect path)))
+
+(defun org-gtd--ensure-file-exists (path initial-contents)
+  "Create the file at PATH with INITIAL-CONTENTS if it does not exist."
+  (unless (f-exists-p path)
+    (with-current-buffer (find-file-noselect path)
+      (insert initial-contents)
+      (org-mode-restart)
+      (basic-save-buffer))))
 
 (defun org-gtd--path (file)
   "Return the full path to FILE.org.
