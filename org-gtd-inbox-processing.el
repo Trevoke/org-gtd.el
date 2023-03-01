@@ -123,7 +123,8 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
 
 (org-gtd-inbox-processing-action
   org-gtd--calendar
-  "Process GTD inbox item by scheduling it.")
+  "Process GTD inbox item by scheduling it."
+  (org-gtd-organize-task-at-point-as-appointment))
 
 (org-gtd-inbox-processing-action
   org-gtd--delegate
