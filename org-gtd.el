@@ -60,7 +60,7 @@
 (require 'org-gtd-projects)
 (require 'org-gtd-agenda)
 (require 'org-gtd-organize)
-(require 'org-gtd-inbox-processing)
+(require 'org-gtd-process)
 (require 'org-gtd-mode)
 
 (defvar org-gtd-update-ack "1.0.0"

@@ -1,4 +1,4 @@
-;;; org-gtd-inbox-processing.el --- Move tasks where they belong -*- lexical-binding: t; coding: utf-8 -*-
+;;; org-gtd-organize.el --- Move tasks where they belong -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2023 Aldric Giacomoni
 
@@ -230,4 +230,4 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
     (org-gtd--decorate-item)))
 
 (provide 'org-gtd-organize)
-;;; org-gtd-inbox-processing.el ends here
+;;; org-gtd-organize.el ends here

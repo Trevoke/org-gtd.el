@@ -1,4 +1,4 @@
-;;; org-gtd-inbox-processing.el --- Code to process inbox -*- lexical-binding: t; coding: utf-8 -*-
+;;; org-gtd-process.el --- Code to process inbox -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2023 Aldric Giacomoni
 
@@ -64,10 +64,10 @@
         (org-next-visible-heading 1)
         (org-back-to-heading)
         (org-narrow-to-subtree))
-    (user-error (org-gtd-inbox-processing--stop))))
+    (user-error (org-gtd-process--stop))))
 
 ;;;###autoload
-(defmacro org-gtd-inbox-processing-action (fun-name docstring &rest body)
+(defmacro org-gtd-process-action (fun-name docstring &rest body)
   "Creates a function to hook into the transient for inbox item organization"
   (declare (debug t) (indent defun))
   `(defun ,fun-name ()
@@ -77,12 +77,12 @@
      (unwind-protect (progn ,@body))
      (org-gtd-process-inbox)))
 
-(org-gtd-inbox-processing-action
+(org-gtd-process-action
     org-gtd--archive
   "Process GTD inbox item as a reference item."
   (org-gtd-organize-task-at-point-as-archived-knowledge))
 
-(org-gtd-inbox-processing-action
+(org-gtd-process-action
   org-gtd--project
   "Process GTD inbox item by transforming it into a project.
 Allow the user apply user-defined tags from
@@ -90,7 +90,7 @@ Allow the user apply user-defined tags from
 the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-gtd-organize-task-at-point-as-new-project))
 
-(org-gtd-inbox-processing-action
+(org-gtd-process-action
   org-gtd--modify-project
   "Refile the org heading at point under a chosen heading in the agenda files."
 <<<<<<< HEAD
@@ -116,22 +116,22 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-gtd-organize-add-task-at-point-to-existing-project))
 >>>>>>> 93f22b4 (Surface one-off organizing actions)
 
-(org-gtd-inbox-processing-action
+(org-gtd-process-action
   org-gtd--modify-project
   "Refile the org heading at point under a chosen heading in the agenda files."
   (org-gtd-organize-add-task-at-point-to-existing-project))
 
-(org-gtd-inbox-processing-action
+(org-gtd-process-action
   org-gtd--calendar
   "Process GTD inbox item by scheduling it."
   (org-gtd-organize-task-at-point-as-appointment))
 
-(org-gtd-inbox-processing-action
+(org-gtd-process-action
   org-gtd--delegate
   "Process GTD inbox item by delegating it."
   (org-gtd-organize-delegate-task-at-point))
 
-(org-gtd-inbox-processing-action
+(org-gtd-process-action
   org-gtd--incubate
   "Process GTD inbox item by incubating it.
 Allow the user apply user-defined tags from
@@ -139,28 +139,28 @@ Allow the user apply user-defined tags from
 the inbox.  Refile to any org-gtd incubate target (see manual)."
   (org-gtd-organize-incubate-task-at-point))
 
-(org-gtd-inbox-processing-action
+(org-gtd-process-action
   org-gtd--quick-action
   "This was a quick action, and you've just done it."
   (org-gtd-organize-task-at-point-was-quick-action))
 
-(org-gtd-inbox-processing-action
+(org-gtd-process-action
   org-gtd--single-action
   "Set this as a single action to be done when possible."
   (org-gtd-organize-task-at-point-as-single-action))
 
-(org-gtd-inbox-processing-action
+(org-gtd-process-action
   org-gtd--trash
   "You're not going to do this, set this as cancelled."
   (org-gtd-organize-task-at-point-as-trash))
 
 ;;;###autoload
-(defun org-gtd-inbox-processing--stop ()
+(defun org-gtd-process--stop ()
   "Stop processing the inbox."
   (interactive)
   (widen)
   (org-gtd-process-mode -1)
   (whitespace-cleanup))
 
-(provide 'org-gtd-inbox-processing)
-;;; org-gtd-inbox-processing.el ends here
+(provide 'org-gtd-process)
+;;; org-gtd-process.el ends here
