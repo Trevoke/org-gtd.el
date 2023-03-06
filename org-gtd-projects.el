@@ -92,6 +92,7 @@ in the list."
   "Add the NEXT keyword to the first action/task of the project.
 
 Add the TODO keyword to all subsequent actions/tasks."
+  (org-map-entries (lambda () (org-gtd--decorate-element (org-element-at-point)) ) "LEVEL=2" 'tree)
   (cl-destructuring-bind
       (first-entry . rest-entries)
       (cdr (org-map-entries (lambda () (org-element-at-point)) t 'tree))
@@ -99,8 +100,7 @@ Add the TODO keyword to all subsequent actions/tasks."
         (reverse rest-entries)
         'headline
       (lambda (myelt)
-        (org-gtd--decorate-element myelt) (org-entry-put (org-gtd-projects--org-element-pom myelt) "TODO" "TODO")))
-    (org-gtd--decorate-element first-entry)
+         (org-entry-put (org-gtd-projects--org-element-pom myelt) "TODO" "TODO")))
     (org-entry-put (org-gtd-projects--org-element-pom first-entry) "TODO" "NEXT")))
 
 (defun org-gtd-projects--incomplete-task-p ()
