@@ -93,28 +93,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
 (org-gtd-process-action
   org-gtd--modify-project
   "Refile the org heading at point under a chosen heading in the agenda files."
-<<<<<<< HEAD
-  (interactive)
-  (with-org-gtd-context
-      (let* ((org-gtd-refile-to-any-target nil)
-             (org-use-property-inheritance '("ORG_GTD"))
-             (headings (org-map-entries
-                        (lambda () (org-get-heading t t t t))
-                        org-gtd-project-headings
-                        'agenda))
-             (chosen-heading (completing-read "Choose a heading: " headings nil t))
-             (heading-marker (org-find-exact-heading-in-directory chosen-heading org-gtd-directory)))
-        (org-gtd--decorate-item)
-        (org-refile nil nil `(,chosen-heading
-                              ,(buffer-file-name (marker-buffer heading-marker))
-                              nil
-                              ,(marker-position heading-marker))
-                    nil)
-        (org-gtd-projects-fix-todo-keywords heading-marker)))
-  (org-gtd-process-inbox))
-=======
   (org-gtd-organize-add-task-at-point-to-existing-project))
->>>>>>> 93f22b4 (Surface one-off organizing actions)
 
 (org-gtd-process-action
   org-gtd--modify-project

@@ -92,7 +92,7 @@ in the list."
   "Add the NEXT keyword to the first action/task of the project.
 
 Add the TODO keyword to all subsequent actions/tasks."
-  (org-map-entries (lambda () (org-gtd--decorate-element (org-element-at-point)) ) "LEVEL=2" 'tree)
+  (org-map-entries (lambda () (org-gtd-organize--decorate-element (org-element-at-point)) ) "LEVEL=2" 'tree)
   (cl-destructuring-bind
       (first-entry . rest-entries)
       (cdr (org-map-entries (lambda () (org-element-at-point)) t 'tree))

@@ -119,7 +119,7 @@ undefined state."
   ["Org GTD"
    ("x"
     "Exit. Stop processing the inbox for now."
-    org-gtd-inbox-processing--stop)])
+    org-gtd-process--stop)])
 
 (defalias 'org-gtd-choose
   #'org-gtd-organize)
@@ -173,6 +173,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
                         'agenda))
              (chosen-heading (completing-read "Choose a heading: " headings nil t))
              (heading-marker (org-find-exact-heading-in-directory chosen-heading org-gtd-directory)))
+        (org-gtd-organize-decorate-item)
         (org-refile nil nil `(,chosen-heading
                               ,(buffer-file-name (marker-buffer heading-marker))
                               nil
@@ -227,7 +228,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   "Apply `org-gtd--decorate-item' to org-element ELEMENT."
   (org-with-point-at (org-gtd-projects--org-element-pom element)
     (org-narrow-to-element)
-    (org-gtd--decorate-item)))
+    (org-gtd-organize-decorate-item)))
 
 (provide 'org-gtd-organize)
 ;;; org-gtd-organize.el ends here
