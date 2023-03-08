@@ -168,7 +168,7 @@ the string."
                                0 10)
                     "…"))
      (category (concat (substring (string-pad category 11) 0 10) "…"))
-     "Simple task")))
+     (t "Simple task"))))
 
 (defcustom org-gtd-delegate-read-func (lambda () (read-string "Who will do this? "))
   "Function that is called to read in the Person the task is delegated to.
