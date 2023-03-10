@@ -97,30 +97,6 @@ top level heading, or the behavior of org-gtd will be undefined."
   :type 'sexp
   :package-version '(org-gtd . "2.0.0"))
 
-(defcustom org-gtd-agenda-custom-commands
-  '(("g" "Scheduled today and all NEXT items"
-     (
-      (agenda "" ((org-agenda-span 1)
-                  (org-agenda-start-day nil)))
-      (todo "NEXT" ((org-agenda-overriding-header "All NEXT items")
-                    (org-agenda-prefix-format '((todo . " %i %-12:(org-gtd--agenda-prefix-format)")))))
-      (todo "WAIT" ((org-agenda-todo-ignore-with-date t)
-                    (org-agenda-overriding-header "Delegated/Blocked items")
-                    (org-agenda-prefix-format '((todo . " %i %-12 (org-gtd--agenda-prefix-format)"))))))))
-  "Agenda custom commands to be used for org-gtd.
-
-The provided default is to show the agenda for today and all TODOs marked as
-NEXT or WAIT.  See documentation for `org-agenda-custom-commands' to customize
-this further.
-
-NOTE! The function `org-gtd-engage' assumes the 'g' shortcut exists.
-It's recommended you add to this list without modifying this first entry.  You
-can leverage this customization feature with command `org-gtd-mode'
-or by wrapping your own custom functions with `with-org-gtd-context'."
-  :group 'org-gtd
-  :type 'sexp
-  :package-version '(org-gtd . "2.0.0"))
-
 (defcustom org-gtd-refile-to-any-target t
   "Set to true if you do not need to choose where to refile processed items.
 
@@ -135,47 +111,6 @@ setting if you follow the instructions to add your own refile targets."
   :group 'org-gtd
   :type 'boolean
   :package-version '(org-gtd . "2.0.0"))
-
-;; this was added in emacs 28.1
-(unless (fboundp 'string-pad)
-  (defun string-pad (string length &optional padding start)
-    "Pad STRING to LENGTH using PADDING.
-If PADDING is nil, the space character is used.  If not nil, it
-should be a character.
-
-If STRING is longer than the absolute value of LENGTH, no padding
-is done.
-
-If START is nil (or not present), the padding is done to the end
-of the string, and if non-nil, padding is done to the start of
-the string."
-    (unless (natnump length)
-      (signal 'wrong-type-argument (list 'natnump length)))
-    (let ((pad-length (- length (length string))))
-      (cond ((<= pad-length 0) string)
-            (start (concat (make-string pad-length (or padding ?\s)) string))
-            (t (concat string (make-string pad-length (or padding ?\s))))))))
-
-
-
-(defun org-gtd--agenda-prefix-format ()
-  "format prefix for items in buffer"
-  (let* ((elt (org-element-at-point))
-         (level (org-element-property :level elt))
-         (category (org-entry-get (point) "CATEGORY" t))
-         (parent-title (org-element-property :raw-value (org-element-property :parent elt))))
-
-    (cond
-     ((eq level 3) (concat
-                    (substring (string-pad (replace-regexp-in-string
-                                            "\[[[:digit:]]+/[[:digit:]]+\][[:space:]]*"
-                                            ""
-                                            parent-title)
-                                           11)
-                               0 10)
-                    "…"))
-     (category (concat (substring (string-pad category 11) 0 10) "…"))
-     (t "Simple task"))))
 
 (defcustom org-gtd-delegate-read-func (lambda () (read-string "Who will do this? "))
   "Function that is called to read in the Person the task is delegated to.
