@@ -66,22 +66,6 @@
         (org-narrow-to-subtree))
     (user-error (org-gtd-process--stop))))
 
-;; new processing function
-(defun stag-process-item ()
-  "Process item at point through org-gtd."
-  (interactive)
-  (org-id-get-create)
-  (let ((processing-buffer (generate-new-buffer "*Org GTD processing*"))
-        (window-config (current-window-configuration)))
-    (org-copy-subtree)
-    (with-current-buffer processing-buffer
-      (org-mode)
-      (org-gtd-process-mode)
-      (setq-local org-gtd--window-config window-config)
-      (org-yank))
-    (display-buffer processing-buffer)
-    (delete-other-windows (get-buffer-window processing-buffer))))
-
 ;;;###autoload
 (defmacro org-gtd-process-action (fun-name docstring &rest body)
   "Creates a function to hook into the transient for inbox item organization"

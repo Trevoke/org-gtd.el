@@ -33,12 +33,12 @@
 
            (it "keeps sanity of TODO states in modified project"
                (let* ((temporary-file-directory org-gtd-directory)
-                      (gtd-file (make-temp-file "foo" nil ".org" (org-file-contents "test/fixtures/gtd-file.org"))))
+                      (gtd-file-buffer (ogt--temp-org-file-buffer "foo" (org-file-contents "test/fixtures/gtd-file.org"))))
                  (ogt--add-single-item "Task 0")
                  (org-gtd-process-inbox)
                  (with-simulated-input "[1/3] SPC addtaskhere RET"
                                        (org-gtd--modify-project))
-                 (with-current-buffer (find-file-noselect gtd-file)
+                 (with-current-buffer gtd-file-buffer
                    (expect (ogt--current-buffer-raw-text) :to-match "NEXT Task 0")
                    (expect (ogt--current-buffer-raw-text) :to-match "DONE finished task")
                    (expect (ogt--current-buffer-raw-text) :to-match "TODO initial next task")

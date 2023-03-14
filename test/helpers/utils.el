@@ -20,6 +20,13 @@
 (defun ogt--save-all-buffers ()
   (with-simulated-input "!" (save-some-buffers)))
 
+(defun ogt--temp-org-file-buffer (basename &optional text)
+  "Create a new org-mode file with a unique name.
+The name is based on BASENAME, the TEXT is optional content.
+Return the buffer visiting that file."
+  (let ((filename (make-temp-file basename nil ".org" text)))
+    (find-file-noselect filename)))
+
 (defun create-additional-project-target (filename)
   (let* ((file (f-join org-gtd-directory (format "%s.org" filename)))
          (buffer (find-file-noselect file)))

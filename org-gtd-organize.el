@@ -128,6 +128,25 @@ undefined state."
                #'org-gtd-organize
                "2.3.0")
 
+(defun org-gtd-organize-next-action ()
+  "Item at point is a one-off NEXT action."
+  (interactive)
+  (let ((org-todo-keywords '((sequence "NEXT" "TODO" "WAIT" "|" "DONE" "CNCL" "TRASH")))
+        (task-id (org-id-get))
+        (window-config org-gtd--window-config)
+        (source-heading-marker org-gtd--stuff-marker))
+    (org-mode-restart)
+    (org-gtd-organize-decorate-item)
+    (org-todo "NEXT")
+    (org-gtd--refile org-gtd-actions)
+    (let ((buffer (marker-buffer source-heading-marker))
+          (position (marker-position source-heading-marker)))
+      (with-current-buffer buffer
+        (goto-char position)
+        (org-cut-subtree)))
+    (set-window-configuration window-config)
+    (kill-buffer (org-gtd-wip--buffer-name task-id))))
+
 (defun org-gtd-organize-task-at-point-was-quick-action ()
   "Process GTD inbox item by doing it now."
   (interactive)
