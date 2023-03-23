@@ -40,7 +40,7 @@ SCHEDULED: <2021-11-20 Sat>
 SCHEDULED: <2021-11-18 Thu>
 
 ** repeating item
-SCHEDULED: <2021-12-04 Sat>
+SCHEDULED: <2021-12-04 Sat .+1d>
 :PROPERTIES:
 :STYLE:    habit
 :LAST_REPEAT: [2021-11-20 Sat 16:52]
@@ -57,6 +57,10 @@ SCHEDULED: <2021-12-04 Sat>
 ** NEXT Do this soon
 
 ** WAIT Wait for someone
+SCHEDULED: <2025-03-23 Sun>
+:PROPERTIES:
+:DELEGATED_TO: future me
+:END:
 
 - State "WAIT"       from "NEXT"       [2021-11-20 Sat 16:42] \\
   wait for me
