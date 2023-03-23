@@ -26,7 +26,7 @@
 ;;
 ;;; Code:
 
-(defconst org-gtd-wip--prefix "*Org-GTD WIP: ")
+(defconst org-gtd-wip--prefix "Org-GTD WIP")
 
 (defvar-local org-gtd--window-config nil
   "Store window configuration prior to clarifying task")
@@ -36,7 +36,7 @@
 
 (defun org-gtd-wip--buffer-name (id)
   "Retrieve the name of the WIP buffer for this particular ID."
-  (concat org-gtd-wip--prefix id "*"))
+  (format "*%s: %s*" org-gtd-wip--prefix id))
 
 (defun org-gtd-wip-select ()
   "Prompt the user to choose one of the existing WIP buffers."
