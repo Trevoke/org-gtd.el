@@ -27,7 +27,6 @@
 
 (require 'org-agenda-property)
 (require 'org-capture)
-(require 'org-gtd-customize)
 
 (defconst org-gtd-inbox "inbox")
 (defconst org-gtd-incubated "incubated")

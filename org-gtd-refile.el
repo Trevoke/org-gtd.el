@@ -29,6 +29,21 @@
 (require 'org-element)
 (require 'org-gtd-core)
 
+(defcustom org-gtd-refile-to-any-target t
+  "Set to true if you do not need to choose where to refile processed items.
+
+When this is true, org-gtd will refile to the first target it finds, or creates
+if necessary, without confirmation.  When this is false, it will ask for
+confirmation regardless of the number of options.  Note that setting this to
+false does not mean you can safely create new targets.  See the documentation
+to create new refile targets.
+
+Defaults to true to carry over pre-2.0 behavior.  You will need to change this
+setting if you follow the instructions to add your own refile targets."
+  :group 'org-gtd
+  :type 'boolean
+  :package-version '(org-gtd . "2.0.0"))
+
 (defconst org-gtd-projects-template
   "* Projects
 :PROPERTIES:

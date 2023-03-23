@@ -25,7 +25,14 @@
 ;;; Code:
 
 (require 'org)
-(require 'org-gtd-customize)
+
+(defcustom org-gtd-delegate-read-func (lambda () (read-string "Who will do this? "))
+  "Function that is called to read in the Person the task is delegated to.
+
+Needs to return a string that will be used as the persons name."
+  :group 'org-gtd
+  :package-version '(org-gtd . "2.3.0")
+  :type 'function )
 
 ;;;###autoload
 (defun org-gtd-delegate ()

@@ -23,6 +23,7 @@
 ;; Functions that don't exist in older vanilla emacsen
 ;;
 ;;; Code:
+(require 'subr-x)
 
 ;; this was added in emacs 28.1
 (unless (fboundp 'string-pad)

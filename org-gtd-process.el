@@ -31,6 +31,18 @@
 (require 'org-gtd-refile)
 (require 'org-gtd-organize)
 
+(defcustom org-gtd-process-item-hooks '(org-set-tags-command)
+  "Enhancements to add to each item as they get processed from the inbox.
+
+This is a list of functions that modify an org element.  The default value has
+one function: setting org tags on the item.  Some built-in examples are
+provided as options here.  You can create your own functions to enhance/decorate
+the items once they have been processed and add them to that list."
+  :group 'org-gtd
+  :package-version '(org-gtd . "1.0.4")
+  :type 'hook
+  :options '(org-set-tags-command org-set-effort org-priority))
+
 ;;;###autoload
 (defvar org-gtd-process-map (make-sparse-keymap)
   "Keymap for command `org-gtd-process-mode', a minor mode.")
