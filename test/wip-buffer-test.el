@@ -4,6 +4,20 @@
 (require 'buttercup)
 (require 'with-simulated-input)
 
+(defun ogt-manage-active-minor-modes ()
+  "Get a list of which minor modes are enabled in the current buffer. Taken from
+https://emacs.stackexchange.com/a/62414/61
+because I need to run this on older emacsen than 28.1 which has
+`local-minor-modes'."
+  (let ($list)
+    (mapc (lambda ($mode)
+            (condition-case nil
+                (if (and (symbolp $mode) (symbol-value $mode))
+                    (setq $list (cons $mode $list)))
+              (error nil)))
+          minor-mode-list)
+    (sort $list 'string<)))
+
 (describe
  "WIP state for tasks"
 
@@ -28,4 +42,4 @@
 
        (let ((wip-buffer (car (org-gtd-wip--get-buffers))))
          (with-current-buffer wip-buffer
-           (expect local-minor-modes :to-contain 'org-gtd-process-mode))))))
+           (expect (ogt-manage-active-minor-modes) :to-contain 'org-gtd-process-mode))))))

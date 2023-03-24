@@ -28,6 +28,23 @@
 (require 'org-agenda-property)
 (require 'org-capture)
 
+(defgroup org-gtd nil
+  "Customize the org-gtd package."
+  :link '(url-link "https://github.com/Trevoke/org-gtd.el")
+  :package-version '(org-gtd . "0.1")
+  :group 'org)
+
+(defcustom org-gtd-directory "~/gtd/"
+  "Directory for org-gtd.
+
+The package will use this directory for all its functionality, whether it is
+building the agenda or refiling items.  This is the directory where you will
+find the default org-gtd file, and it is the directory where you should place
+your own files if you want multiple refile targets (projects, etc.)."
+  :group 'org-gtd
+  :package-version '(org-gtd . "0.1")
+  :type 'directory)
+
 (defconst org-gtd-inbox "inbox")
 (defconst org-gtd-incubated "incubated")
 (defconst org-gtd-projects "projects")

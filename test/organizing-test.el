@@ -18,7 +18,7 @@
        (set-buffer source-buffer)
        (org-gtd-clarify-item)
        (setq window-config org-gtd--window-config)
-       (org-gtd-organize-next-action)
+       (org-gtd-organize-task-at-point-as-single-action)
 
        (expect (compare-window-configurations (current-window-configuration) window-config)
                :to-be t)))
@@ -27,7 +27,7 @@
            (org-gtd-refile-to-any-target t))
        (set-buffer source-buffer)
        (org-gtd-clarify-item)
-       (org-gtd-organize-next-action)
+       (org-gtd-organize-task-at-point-as-single-action)
        (expect (org-gtd-wip--get-buffers) :to-be nil)))
 
  (it "deletes the source heading"
@@ -35,5 +35,5 @@
            (org-gtd-refile-to-any-target t))
        (set-buffer source-buffer)
        (org-gtd-clarify-item)
-       (org-gtd-organize-next-action)
+       (org-gtd-organize-task-at-point-as-single-action)
        (expect (buffer-size) :to-equal 0))))

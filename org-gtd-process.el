@@ -105,12 +105,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
 (org-gtd-process-action
   org-gtd--modify-project
   "Refile the org heading at point under a chosen heading in the agenda files."
-  (org-gtd-organize-add-task-at-point-to-existing-project))
-
-(org-gtd-process-action
-  org-gtd--modify-project
-  "Refile the org heading at point under a chosen heading in the agenda files."
-  (org-gtd-organize-add-task-at-point-to-existing-project))
+  (org-gtd-organize-task-at-point-add-to-existing-project))
 
 (org-gtd-process-action
   org-gtd--calendar
@@ -120,7 +115,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
 (org-gtd-process-action
   org-gtd--delegate
   "Process GTD inbox item by delegating it."
-  (org-gtd-organize-delegate-task-at-point))
+  (org-gtd-organize-task-at-point-as-delegated))
 
 (org-gtd-process-action
   org-gtd--incubate
@@ -128,7 +123,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Refile to any org-gtd incubate target (see manual)."
-  (org-gtd-organize-incubate-task-at-point))
+  (org-gtd-organize-task-at-point-as-incubated))
 
 (org-gtd-process-action
   org-gtd--quick-action

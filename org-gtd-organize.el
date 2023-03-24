@@ -24,6 +24,7 @@
 ;;
 ;;; Code:
 
+(require 'transient)
 (require 'org-gtd-core)
 (require 'org-gtd-agenda)
 (require 'org-gtd-projects)
@@ -42,62 +43,78 @@ point as an action that you started and finished just now."
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-(defcustom org-gtd-organize-foo
-  #'org-gtd-organize-foo
-  "Can be an atom or a sexp. Function called when org-gtd..."
+(defcustom org-gtd-organize-single-action-func
+  #'org-gtd-organize-task-at-point-as-single-action
+  "Can be an atom or a sexp. Function called when org-gtd organizes the item at
+point as a single next action."
   :group 'org-gtd-organize
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-(defcustom org-gtd-organize-foo
-  #'org-gtd-organize-foo
-  "Can be an atom or a sexp. Function called when org-gtd..."
+(defcustom org-gtd-organize-archive-func
+  #'org-gtd-organize-task-at-point-as-archived-knowledge
+  "Can be an atom or a sexp. Function called when org-gtd organizes the item at
+point as knowledge to be stored. Note that this function is used inside loops,
+for instance to process the inbox, so if you have manual steps you need to take
+when storing a heading as knowledge, take them before calling this function
+(for instance, during inbox processing, take the manual steps during the clarify
+step, before you call `org-gtd-organize')."
   :group 'org-gtd-organize
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-(defcustom org-gtd-organize-foo
-  #'org-gtd-organize-foo
-  "Can be an atom or a sexp. Function called when org-gtd..."
+(defcustom org-gtd-organize-project-func
+  #'org-gtd-organize-task-at-point-as-new-project
+  "Can be an atom or a sexp. Function called when org-gtd organizes the item at
+point as a project. You *probably* should not change this from the default, as a
+lot of fiddly bits depend on the way org-gtd structures and organizes the
+projects, but who's gonna stop you?"
   :group 'org-gtd-organize
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-(defcustom org-gtd-organize-foo
-  #'org-gtd-organize-foo
-  "Can be an atom or a sexp. Function called when org-gtd..."
+(defcustom org-gtd-organize-add-to-project-func
+  #'org-gtd-organize-task-at-point-add-to-existing-project
+  "Can be an atom or a sexp. Function called when org-gtd organizes the item at
+point as a new task in an existing project"
   :group 'org-gtd-organize
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-(defcustom org-gtd-organize-foo
-  #'org-gtd-organize-foo
-  "Can be an atom or a sexp. Function called when org-gtd..."
+(defcustom org-gtd-organize-appointment-func
+  #'org-gtd-organize-task-at-point-as-appointment
+  "Can be an atom or a sexp. Function called when org-gtd organizes the item at
+point as a task that must happen on a given day. Keep this clean and don't load
+your calendar with things that aren't actually appointments or deadlines."
   :group 'org-gtd-organize
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-(defcustom org-gtd-organize-foo
-  #'org-gtd-organize-foo
-  "Can be an atom or a sexp. Function called when org-gtd..."
+(defcustom org-gtd-organize-delegate-func
+  #'org-gtd-organize-task-at-point-as-delegated
+  "Can be an atom or a sexp. Function called when org-gtd organizes the item at
+point as an action delegated to someone else."
   :group 'org-gtd-organize
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-(defcustom org-gtd-organize-foo
-  #'org-gtd-organize-foo
-  "Can be an atom or a sexp. Function called when org-gtd..."
+(defcustom org-gtd-organize-incubate-func
+  #'org-gtd-organize-task-at-point-as-incubated
+  "Can be an atom or a sexp. Function called when org-gtd organizes the item at
+point as incubated."
   :group 'org-gtd-organize
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-(defcustom org-gtd-organize-foo
-  #'org-gtd-organize-foo
-  "Can be an atom or a sexp. Function called when org-gtd..."
+(defcustom org-gtd-organize-trash-func
+  #'org-gtd-organize-task-at-point-as-trash
+  "Can be an atom or a sexp. Function called when org-gtd organizes the item at
+point as something to be discarded."
   :group 'org-gtd-organize
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
+;;;###autoload
 (transient-define-prefix org-gtd-organize ()
   "Choose how to categorize the current item.
 
@@ -128,7 +145,7 @@ undefined state."
                #'org-gtd-organize
                "2.3.0")
 
-(defun org-gtd-organize-next-action ()
+(defun org-gtd-organize-task-at-point-as-single-action ()
   "Item at point is a one-off NEXT action."
   (interactive)
   (let ((org-todo-keywords '((sequence "NEXT" "TODO" "WAIT" "|" "DONE" "CNCL" "TRASH")))
@@ -180,7 +197,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
     (org-update-statistics-cookies t)
     (org-gtd--refile org-gtd-projects)))
 
-(defun org-gtd-organize-add-task-at-point-to-existing-project ()
+(defun org-gtd-organize-task-at-point-add-to-existing-project ()
   "Refile the org heading at point under a chosen heading in the agenda files."
   (interactive)
   (with-org-gtd-context
@@ -207,26 +224,19 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (org-schedule 0)
   (org-gtd--refile org-gtd-calendar))
 
-(defun org-gtd-organize-delegate-task-at-point ()
+(defun org-gtd-organize-task-at-point-as-delegated ()
   "Delegate this item and file it in the org-gtd system."
   (interactive)
   (org-gtd-organize-decorate-item)
   (org-gtd-delegate)
   (org-gtd--refile org-gtd-actions))
 
-(defun org-gtd-organize-incubate-task-at-point ()
+(defun org-gtd-organize-task-at-point-as-incubated ()
   "Incubate this item through org-gtd."
   (interactive)
   (org-gtd-organize-decorate-item)
   (org-schedule 0)
   (org-gtd--refile org-gtd-incubated))
-
-(defun org-gtd-organize-task-at-point-as-single-action ()
-  "Process GTD inbox item as a single action."
-  (interactive)
-  (org-gtd-organize-decorate-item)
-  (org-todo "NEXT")
-  (org-gtd--refile org-gtd-actions))
 
 (defun org-gtd-organize-task-at-point-as-trash ()
   "Mark GTD inbox item as cancelled and move it to the org-gtd task archives."
