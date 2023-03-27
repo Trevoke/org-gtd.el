@@ -138,29 +138,23 @@ undefined state."
     "Exit. Stop processing the inbox for now."
     org-gtd-process--stop)])
 
-(defalias 'org-gtd-choose
-  #'org-gtd-organize)
-
-(make-obsolete 'org-gtd-choose
-               #'org-gtd-organize
-               "2.3.0")
+(defalias 'org-gtd-choose #'org-gtd-organize)
+(make-obsolete 'org-gtd-choose #'org-gtd-organize "2.3.0")
 
 (defun org-gtd-organize-task-at-point-as-single-action ()
   "Item at point is a one-off NEXT action."
   (interactive)
-  (let ((org-todo-keywords '((sequence "NEXT" "TODO" "WAIT" "|" "DONE" "CNCL" "TRASH")))
-        (task-id (org-id-get))
+  (org-gtd-organize-decorate-item)
+  (org-todo "NEXT")
+  (org-gtd--refile org-gtd-actions)
+  (let ((task-id org-gtd--wip-id)
         (window-config org-gtd--window-config)
-        (source-heading-marker org-gtd--stuff-marker))
-    (org-mode-restart)
-    (org-gtd-organize-decorate-item)
-    (org-todo "NEXT")
-    (org-gtd--refile org-gtd-actions)
-    (let ((buffer (marker-buffer source-heading-marker))
-          (position (marker-position source-heading-marker)))
-      (with-current-buffer buffer
+        (source-heading-marker org-gtd--stuff-marker)
+        (buffer (marker-buffer source-heading-marker))
+        (position (marker-position source-heading-marker)))
+    (with-current-buffer buffer
         (goto-char position)
-        (org-cut-subtree)))
+        (org-cut-subtree))
     (set-window-configuration window-config)
     (kill-buffer (org-gtd-wip--buffer-name task-id))))
 

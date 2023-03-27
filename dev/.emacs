@@ -25,7 +25,7 @@
 
 (unless (package-installed-p 'quelpa)
   (with-temp-buffer
-    (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
+    (url-insert-file-contents "https://github.com/quelpa/quelpa/raw/master/quelpa.el")
     (eval-buffer)
     (quelpa-self-upgrade)))
 
@@ -88,8 +88,8 @@
 
 (add-hook 'minibuffer-setup-hook 'my-minibuffer-setup)
 (defun my-minibuffer-setup ()
-       (set (make-local-variable 'face-remapping-alist)
-          '((default :height 2.0))))
+  (set (make-local-variable 'face-remapping-alist)
+       '((default :height 2.0))))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.

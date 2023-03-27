@@ -61,22 +61,29 @@ the items once they have been processed and add them to that list."
 
 ;;;###autoload
 (defun org-gtd-process-inbox ()
-  "Process the GTD inbox."
+  "New stuff whodis"
   (interactive)
-  (set-buffer (org-gtd--inbox-file))
-  (display-buffer-same-window (current-buffer) '())
-  (delete-other-windows)
+  (with-current-buffer (org-gtd--inbox-file)
+    (save-excursion
+      (goto-char (point-min))
+      (condition-case err
+          (progn
+            (outline-next-visible-heading 1)
+            (org-N-empty-lines-before-current 1)
+            (org-gtd-clarify-item))
+        (user-error (org-gtd-process--stop))))))
 
-  (org-gtd-process-mode)
+(defun org-gtd-process--stop ()
+  "Stop processing the inbox."
+  (interactive)
+  (whitespace-cleanup))
 
-  (condition-case err
-      (progn
-        (widen)
-        (goto-char (point-min))
-        (org-next-visible-heading 1)
-        (org-back-to-heading)
-        (org-narrow-to-subtree))
-    (user-error (org-gtd-process--stop))))
+
+(defun org-gtd-process-action (func)
+  "Run FUNC as part of a flow that loops over each item in the inbox."
+  (goto-char (point-min))
+  (apply func)
+  (org-gtd-process-inbox))
 
 ;;;###autoload
 (defmacro org-gtd-process-action (fun-name docstring &rest body)
@@ -139,14 +146,6 @@ the inbox.  Refile to any org-gtd incubate target (see manual)."
   org-gtd--trash
   "You're not going to do this, set this as cancelled."
   (org-gtd-organize-task-at-point-as-trash))
-
-;;;###autoload
-(defun org-gtd-process--stop ()
-  "Stop processing the inbox."
-  (interactive)
-  (widen)
-  (org-gtd-process-mode -1)
-  (whitespace-cleanup))
 
 (provide 'org-gtd-process)
 ;;; org-gtd-process.el ends here

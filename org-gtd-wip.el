@@ -34,10 +34,10 @@
 (defvar-local org-gtd--stuff-marker nil
   "Store marker to item that is being clarified")
 
-(defun org-gtd-wip--buffer-name (id)
-  "Retrieve the name of the WIP buffer for this particular ID."
-  (format "*%s: %s*" org-gtd-wip--prefix id))
+(defvar-local org-gtd--wip-id nil
+  "Reference to the org id of the heading currently in the WIP buffer")
 
+;;;###autoload
 (defun org-gtd-wip-select ()
   "Prompt the user to choose one of the existing WIP buffers."
   (interactive)
@@ -46,6 +46,10 @@
         (let ((chosen-buf-name (completing-read "Choose a buffer: " buf-names)))
           (get-buffer chosen-buf-name))
       (message "There are no Org-GTD WIP buffers."))))
+
+(defun org-gtd-wip--buffer-name (id)
+  "Retrieve the name of the WIP buffer for this particular ID."
+  (format "*%s: %s*" org-gtd-wip--prefix id))
 
 (defun org-gtd-wip--get-buffers ()
   "Retrieve a list of Org GTD WIP buffers."
@@ -58,6 +62,7 @@
   (org-gtd-id-get-create)
   (let ((buffer (get-buffer-create (org-gtd-wip--buffer-name (org-id-get)))))
     (with-current-buffer buffer
+      (let ((org-todo-keywords '((sequence "NEXT" "TODO" "WAIT" "|" "DONE" "CNCL" "TRASH"))))
       (org-mode)
       (org-gtd-process-mode 1))
     buffer))

@@ -38,7 +38,8 @@
     (display-buffer processing-buffer)
     (delete-other-windows (get-buffer-window processing-buffer))
     (setq-local org-gtd--window-config window-config
-                org-gtd--stuff-marker stuff-marker)))
+                org-gtd--stuff-marker stuff-marker
+                org-gtd--wip-id (org-id-get)))
 
 (provide 'org-gtd-clarify)
 ;;; org-gtd-clarify.el ends here
