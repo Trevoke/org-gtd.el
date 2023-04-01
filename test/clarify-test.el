@@ -1,5 +1,6 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
+(load "test/helpers/setup.el")
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -12,7 +13,7 @@
          (org-gtd-clarify-item))
 
        (let ((task-id (with-current-buffer source-buffer (org-id-get)))
-             (wip-buffer (car (org-gtd-wip--get-buffers))))
+             (wip-buffer (car (org-gtd-clarify--get-buffers))))
          (with-current-buffer wip-buffer
-           (expect (org-entry-get org-gtd--stuff-marker "ID")
+           (expect (org-entry-get org-gtd-clarify--stuff-marker "ID")
                    :to-equal task-id))))))

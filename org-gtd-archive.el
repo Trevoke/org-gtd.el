@@ -78,7 +78,13 @@ Done here is any done `org-todo-keyword'.  For org-gtd this means DONE or CNCL."
 
        (org-archive-subtree-default)))
    "+LEVEL=2&+ORG_GTD=\"Projects\""
-   'agenda))
+   'agenda)
+
+  (message ".................................................")
+  (mapc (lambda (x) (message "---------\n %s \n-----------" x)) kill-ring)
+  (message ".................................................")
+
+  )
 
 (defun org-gtd--all-subheadings-in-done-type-p ()
   "Private function. Returns t if every sub-heading is in a DONE or CNCL state."

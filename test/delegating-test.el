@@ -8,8 +8,7 @@
 (describe "delegating a task"
 
   (before-each
-    (ogt--configure-emacs)
-    (ogt--prepare-filesystem))
+    (ogt--configure-emacs))
   (after-each (ogt--close-and-delete-files))
 
   (it "can be done through the agenda and show on the agenda"

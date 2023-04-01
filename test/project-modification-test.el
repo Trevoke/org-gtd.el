@@ -9,8 +9,7 @@
  "Modifying a project"
 
  (before-each
-  (ogt--configure-emacs)
-  (ogt--prepare-filesystem))
+  (ogt--configure-emacs))
 
  (after-each (ogt--close-and-delete-files))
 

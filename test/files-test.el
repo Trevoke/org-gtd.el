@@ -9,8 +9,7 @@
 (describe "Create a default file"
 
   (before-each
-    (ogt--configure-emacs)
-    (ogt--prepare-filesystem))
+    (ogt--configure-emacs))
   (after-each (ogt--close-and-delete-files))
 
   (describe "with default content"

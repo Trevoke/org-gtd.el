@@ -3,21 +3,13 @@
 (load "test/helpers/utils.el")
 
 (defun ogt--configure-emacs ()
-  (setq org-gtd-directory (make-temp-file "org-gtd" t)
+  (setq last-command nil
+        org-gtd-directory (make-temp-file "org-gtd" t)
         org-gtd-process-item-hooks '()
-        org-gtd-refile-to-any-target nil
+        org-gtd-refile-to-any-target t
         org-edna-use-inheritance t)
   (org-edna-mode 1)
-  (define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose))
-
-(defun ogt--prepare-filesystem ()
-  "run before each test"
-  ;(ogt--clean-target-directory org-gtd-directory)
-  )
-
-(defun ogt--clean-target-directory (dir)
-  (delete-directory dir t nil)
-  (make-directory dir))
+  (define-key org-gtd-clarify-map (kbd "C-c c") #'org-gtd-organize))
 
 (defun ogt--reset-var (symbl)
   "Reset SYMBL to its standard value."
@@ -25,10 +17,23 @@
 
 (defun ogt--close-and-delete-files ()
   "Run after every test to clear open buffers state"
-  (kill-matching-buffers ".*\\.org" nil t)
-  (kill-matching-buffers ".*Agenda.*" nil t)
-  (kill-matching-buffers ".*Calendar.*" nil t)
-  (kill-matching-buffers org-gtd-wip--prefix nil t)
+  ;; (let* ((special-names '(" *Buttercup-Warnings*"))
+  ;;        (buffers (seq-remove (lambda (x) (member (buffer-name x) special-names)) (buffer-list))))
+  ;;   (mapcar 'kill-buffer buffers)
+  ;;   (delete-other-windows)
+  ;;   )
+
+  (mapc
+   #'ogt--kill-buffer
+   (-flatten (mapcar
+              #'ogt--get-buffers
+              `(".*\\.org" ".*Agenda.*" "gtd_archive.*" ".*Calendar.*" ,(format ".*%s.*" org-gtd-clarify--prefix)))))
+
+  ;; (kill-matching-buffers ".*\\.org" nil t)
+  ;; (kill-matching-buffers ".*Agenda.*" nil t)
+  ;; (kill-matching-buffers "gtd_archive.*" nil t)
+  ;; (kill-matching-buffers ".*Calendar.*" nil t)
+  ;; (kill-matching-buffers (format ".*%s.*" org-gtd-clarify--prefix) nil t)
   )
 
 (defun ogt--clear-file-and-buffer (buffer)
@@ -37,3 +42,14 @@
         (with-current-buffer buffer (basic-save-buffer))
         (kill-buffer buffer)
         (delete-file filename))))
+
+(defun ogt--get-buffers (regexp)
+  (seq-filter (lambda (buf)
+                (string-match-p regexp (buffer-name buf)))
+              (buffer-list)))
+
+(defun ogt--kill-buffer (buffer)
+  (when (buffer-file-name buffer)
+    (with-current-buffer buffer
+      (revert-buffer t t)))
+  (kill-buffer buffer))

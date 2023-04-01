@@ -120,7 +120,8 @@ GTD-TYPE is an action type."
     (goto-char (point-max))
     (newline)
     (insert (gethash gtd-type org-gtd--file-template))
-    (basic-save-buffer)))
+    (basic-save-buffer)
+    ))
 
 (defun org-gtd-refile--group-p (type)
   "Determine whether the current heading is of a given gtd TYPE."

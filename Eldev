@@ -7,3 +7,4 @@
 (setq eldev-test-framework 'buttercup)
 
 (eldev-add-extra-dependencies 'test 'with-simulated-input)
+(eldev-add-extra-dependencies 'test 'dash)

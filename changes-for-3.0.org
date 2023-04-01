@@ -1,0 +1,4 @@
+* org-gtd-process-mode is now org-gtd-clarify-mode
+* org-gtd-process-map is now org-gtd-clarify-map
+* org-gtd-choose is now org-gtd-organize
+* you can now clarify single items with org-gtd-clarify-item

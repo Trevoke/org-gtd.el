@@ -10,9 +10,9 @@
 
   (before-each
     (ogt--configure-emacs)
-    (ogt--prepare-filesystem)
     (ogt--add-single-item))
-  (after-each (ogt--close-and-delete-files))
+  (after-each (ogt--close-and-delete-files)
+              )
 
   (it "processes all the elements"
     (dotimes (x 8)

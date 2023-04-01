@@ -44,108 +44,29 @@ the items once they have been processed and add them to that list."
   :options '(org-set-tags-command org-set-effort org-priority))
 
 ;;;###autoload
-(defvar org-gtd-process-map (make-sparse-keymap)
-  "Keymap for command `org-gtd-process-mode', a minor mode.")
-
-;;;###autoload
-(define-minor-mode org-gtd-process-mode
-  "Minor mode for org-gtd."
-  :lighter " GPM"
-  :keymap org-gtd-process-map
-  (if org-gtd-process-mode
-      (setq-local
-       header-line-format
-       (substitute-command-keys
-        "\\<org-gtd-process-map>Clarify item.  Let Org GTD store it with `\\[org-gtd-choose]'."))
-    (setq-local header-line-format nil)))
-
-;;;###autoload
 (defun org-gtd-process-inbox ()
   "New stuff whodis"
   (interactive)
-  (with-current-buffer (org-gtd--inbox-file)
-    (save-excursion
-      (goto-char (point-min))
-      (condition-case err
-          (progn
-            (outline-next-visible-heading 1)
-            (org-N-empty-lines-before-current 1)
-            (org-gtd-clarify-item))
-        (user-error (org-gtd-process--stop))))))
+  (set-buffer (org-gtd--inbox-file))
+
+  (goto-char (point-min))
+  (condition-case err
+      (progn
+        (outline-next-visible-heading 1)
+        (org-N-empty-lines-before-current 1)
+        (org-gtd-clarify-inbox-item))
+    (user-error (org-gtd-process--stop))))
 
 (defun org-gtd-process--stop ()
   "Stop processing the inbox."
   (interactive)
   (whitespace-cleanup))
 
-
 (defun org-gtd-process-action (func)
   "Run FUNC as part of a flow that loops over each item in the inbox."
   (goto-char (point-min))
-  (apply func)
+  (funcall func)
   (org-gtd-process-inbox))
-
-;;;###autoload
-(defmacro org-gtd-process-action (fun-name docstring &rest body)
-  "Creates a function to hook into the transient for inbox item organization"
-  (declare (debug t) (indent defun))
-  `(defun ,fun-name ()
-     ,docstring
-     (interactive)
-     (goto-char (point-min))
-     (unwind-protect (progn ,@body))
-     (org-gtd-process-inbox)))
-
-(org-gtd-process-action
-    org-gtd--archive
-  "Process GTD inbox item as a reference item."
-  (org-gtd-organize-task-at-point-as-archived-knowledge))
-
-(org-gtd-process-action
-  org-gtd--project
-  "Process GTD inbox item by transforming it into a project.
-Allow the user apply user-defined tags from
-`org-tag-persistent-alist', `org-tag-alist' or file-local tags in
-the inbox.  Refile to `org-gtd-actionable-file-basename'."
-  (org-gtd-organize-task-at-point-as-new-project))
-
-(org-gtd-process-action
-  org-gtd--modify-project
-  "Refile the org heading at point under a chosen heading in the agenda files."
-  (org-gtd-organize-task-at-point-add-to-existing-project))
-
-(org-gtd-process-action
-  org-gtd--calendar
-  "Process GTD inbox item by scheduling it."
-  (org-gtd-organize-task-at-point-as-appointment))
-
-(org-gtd-process-action
-  org-gtd--delegate
-  "Process GTD inbox item by delegating it."
-  (org-gtd-organize-task-at-point-as-delegated))
-
-(org-gtd-process-action
-  org-gtd--incubate
-  "Process GTD inbox item by incubating it.
-Allow the user apply user-defined tags from
-`org-tag-persistent-alist', `org-tag-alist' or file-local tags in
-the inbox.  Refile to any org-gtd incubate target (see manual)."
-  (org-gtd-organize-task-at-point-as-incubated))
-
-(org-gtd-process-action
-  org-gtd--quick-action
-  "This was a quick action, and you've just done it."
-  (org-gtd-organize-task-at-point-was-quick-action))
-
-(org-gtd-process-action
-  org-gtd--single-action
-  "Set this as a single action to be done when possible."
-  (org-gtd-organize-task-at-point-as-single-action))
-
-(org-gtd-process-action
-  org-gtd--trash
-  "You're not going to do this, set this as cancelled."
-  (org-gtd-organize-task-at-point-as-trash))
 
 (provide 'org-gtd-process)
 ;;; org-gtd-process.el ends here

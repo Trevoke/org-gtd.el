@@ -1,5 +1,6 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
+(load "test/helpers/setup.el")
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -7,8 +8,7 @@
 (describe
  "Organizing (in 3.0)"
  (before-each
-  (ogt--configure-emacs)
-  (ogt--prepare-filesystem))
+  (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
  (it "restores the window configuration"
@@ -17,8 +17,8 @@
            (org-gtd-refile-to-any-target t))
        (set-buffer source-buffer)
        (org-gtd-clarify-item)
-       (setq window-config org-gtd--window-config)
-       (org-gtd-organize-task-at-point-as-single-action)
+       (setq window-config org-gtd-clarify--window-config)
+       (org-gtd-organize--call 'org-gtd-organize--task-at-point-as-single-action)
 
        (expect (compare-window-configurations (current-window-configuration) window-config)
                :to-be t)))
@@ -27,13 +27,13 @@
            (org-gtd-refile-to-any-target t))
        (set-buffer source-buffer)
        (org-gtd-clarify-item)
-       (org-gtd-organize-task-at-point-as-single-action)
-       (expect (org-gtd-wip--get-buffers) :to-be nil)))
+       (org-gtd-organize--call 'org-gtd-organize--task-at-point-as-single-action)
+       (expect (org-gtd-clarify--get-buffers) :to-be nil)))
 
  (it "deletes the source heading"
      (let ((source-buffer (ogt--temp-org-file-buffer "taskfile" "* This is the heading to clarify"))
            (org-gtd-refile-to-any-target t))
        (set-buffer source-buffer)
        (org-gtd-clarify-item)
-       (org-gtd-organize-task-at-point-as-single-action)
+       (org-gtd-organize--call 'org-gtd-organize--task-at-point-as-single-action)
        (expect (buffer-size) :to-equal 0))))

@@ -44,6 +44,7 @@
 (assq-delete-all 'org package--builtin-versions)
 
 (straight-use-package '(org-gtd :type git :host github :repo "trevoke/org-gtd.el"))
+(setq org-gtd-update-ack "2.1.0")
 (require 'org-gtd)
 
 ;; (use-package org

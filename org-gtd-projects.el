@@ -100,7 +100,7 @@ Add the TODO keyword to all subsequent actions/tasks."
         (reverse rest-entries)
         'headline
       (lambda (myelt)
-         (org-entry-put (org-gtd-projects--org-element-pom myelt) "TODO" "TODO")))
+        (org-entry-put (org-gtd-projects--org-element-pom myelt) "TODO" "TODO")))
     (org-entry-put (org-gtd-projects--org-element-pom first-entry) "TODO" "NEXT")))
 
 (defun org-gtd-projects--incomplete-task-p ()
@@ -110,7 +110,7 @@ Add the TODO keyword to all subsequent actions/tasks."
 
 (defun org-gtd-projects--poorly-formatted-p ()
   "Return non-nil if the project is composed of only one heading."
-  (basic-save-buffer)
+  ;(basic-save-buffer)
   (eql 1 (length (org-map-entries t))))
 
 (defun org-gtd-projects--show-error-and-return-to-editing ()

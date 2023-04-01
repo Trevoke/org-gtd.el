@@ -325,7 +325,7 @@ Make sure you also read about sub-package configuration: [[*Required configurati
 There's an important keymap you'll want to make the flow of processing the inbox smoother. To limit impact on your emacs configuration, there is a specific keymap you can use. The function you'll want to bind is ~org-gtd-choose~. I suggest ~C-c c~, as in the following example.
 
 #+begin_src elisp
-(define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose)
+(define-key org-gtd-clarify-map (kbd "C-c c") #'org-gtd-organize)
 #+end_src
 
 For other keybindings, do what you need. My bindings use ~C-c d~ as a prefix, i.e.:
