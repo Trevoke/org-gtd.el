@@ -95,6 +95,7 @@
       (it "tells the user and returns to editing"
         (org-gtd-process-inbox)
         (execute-kbd-macro (kbd "C-c c p"))
+        (execute-kbd-macro (kbd "RET")) ;; any key
         (expect (buffer-name) :to-match "inbox")
         (with-current-buffer "*Message*"
           (expect (ogt--current-buffer-raw-text) :to-match "First task"))))))

@@ -62,11 +62,5 @@ the items once they have been processed and add them to that list."
   (interactive)
   (whitespace-cleanup))
 
-(defun org-gtd-process-action (func)
-  "Run FUNC as part of a flow that loops over each item in the inbox."
-  (goto-char (point-min))
-  (funcall func)
-  (org-gtd-process-inbox))
-
 (provide 'org-gtd-process)
 ;;; org-gtd-process.el ends here

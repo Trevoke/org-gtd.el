@@ -124,18 +124,30 @@ point as something to be discarded."
 
 (transient-define-prefix org-gtd-organize-one-off ()
   ["Actionable"
-   [("q" "Quick action" (lambda () (interactive)
-                          (org-gtd-organize--call org-gtd-organize-quick-action-func)))
-    ("s" "Single action" (lambda () (interactive)
-                           (org-gtd-organize--call org-gtd-organize-single-action-func)))]
-   [("d" "Delegate" (lambda () (interactive)
-                      (org-gtd-organize--call org-gtd-organize-delegate-func)))
-    ("c" "Calendar" (lambda () (interactive)
-                      (org-gtd-organize--call org-gtd-organize-appointment-func)))]]
-  [("p" "Project (multi-step)" (lambda () (interactive)
-                                 (org-gtd-organize--call org-gtd-organize-project-func)))
-   ("m" "Modify project: add this task" (lambda () (interactive)
-                                          (org-gtd-organize--call org-gtd-organize-add-to-project-func)))]
+   [("q" "Quick action" (lambda ()
+                          (interactive)
+                          (org-gtd-organize--call
+                           org-gtd-organize-quick-action-func)))
+    ("s" "Single action" (lambda ()
+                           (interactive)
+                           (org-gtd-organize--call
+                            org-gtd-organize-single-action-func)))]
+   [("d" "Delegate" (lambda ()
+                      (interactive)
+                      (org-gtd-organize--call
+                       org-gtd-organize-delegate-func)))
+    ("c" "Calendar" (lambda ()
+                      (interactive)
+                      (org-gtd-organize--call
+                       org-gtd-organize-appointment-func)))]]
+  [("p" "Project (multi-step)" (lambda ()
+                                 (interactive)
+                                 (org-gtd-organize--call
+                                  org-gtd-organize-project-func)))
+   ("m" "Modify project: add this task" (lambda ()
+                                          (interactive)
+                                          (org-gtd-organize--call
+                                           org-gtd-organize-add-to-project-func)))]
   ["Non-actionable"
    [("i" "Incubate" (lambda () (interactive)
                       (org-gtd-organize--call org-gtd-organize-incubate-func)))
@@ -146,35 +158,35 @@ point as something to be discarded."
 
 (transient-define-prefix org-gtd-organize-inbox ()
   ["Actionable"
-   [("q" "Quick action" (lambda () (interactive)
-                          (org-gtd-process-action
-                           (apply-partially 'org-gtd-organize--call org-gtd-organize-quick-action-func))))
+   [("q" "Quick action" (lambda ()
+                          (interactive)
+                          (org-gtd-organize-inbox-item
+                           org-gtd-organize-quick-action-func)))
     ("s" "Single action" (lambda () (interactive)
-                           (org-gtd-process-action
-                            (apply-partially 'org-gtd-organize--call org-gtd-organize-single-action-func))))]
+                           (org-gtd-organize-inbox-item
+                            org-gtd-organize-single-action-func)))]
    [("d" "Delegate" (lambda () (interactive)
-                      (org-gtd-process-action
-                       (apply-partially 'org-gtd-organize--call org-gtd-organize-delegate-func))))
+                      (org-gtd-organize-inbox-item
+                       org-gtd-organize-delegate-func)))
     ("c" "Calendar" (lambda () (interactive)
-                      (org-gtd-process-action
-                       (apply-partially 'org-gtd-organize--call org-gtd-organize-appointment-func))))]]
+                      (org-gtd-organize-inbox-item
+                       org-gtd-organize-appointment-func)))]]
   [("p" "Project (multi-step)" (lambda () (interactive)
-                                 (message "HI THERE")
-                                 (org-gtd-process-action
-                                  (apply-partially 'org-gtd-organize--call org-gtd-organize-project-func))))
+                                 (org-gtd-organize-inbox-item
+                                  org-gtd-organize-project-func)))
    ("m" "Modify project: add this task" (lambda () (interactive)
-                                          (org-gtd-process-action
-                                           (apply-partially 'org-gtd-organize--call org-gtd-organize-add-to-project-func))))]
+                                          (org-gtd-organize-inbox-item
+                                           org-gtd-organize-add-to-project-func)))]
   ["Non-actionable"
    [("i" "Incubate" (lambda () (interactive)
-                      (org-gtd-process-action
-                       (apply-partially 'org-gtd-organize--call org-gtd-organize-incubate-func))))
+                      (org-gtd-organize-inbox-item
+                       org-gtd-organize-incubate-func)))
     ("a" "Archive this knowledge" (lambda () (interactive)
-                                    (org-gtd-process-action
-                                     (apply-partially 'org-gtd-organize--call org-gtd-organize-archive-func))))]
+                                    (org-gtd-organize-inbox-item
+                                     org-gtd-organize-archive-func)))]
    [("t" "Trash" (lambda () (interactive)
-                   (org-gtd-process-action
-                    (apply-partially 'org-gtd-organize--call org-gtd-organize-trash-func))))]]
+                   (org-gtd-organize-inbox-item
+                    org-gtd-organize-trash-func)))]]
 
   ["Org GTD"
    ("x"
@@ -187,19 +199,25 @@ point as something to be discarded."
 (defun org-gtd-organize--call (func)
   "Organize the item within org-gtd. FUNC is the function that does the actual
 work. This is simply a wrapper function that cleans up emacs as required."
-  (message "ENTERING ORGANIZE--CALL")
-  (funcall func)
-  (message (buffer-name (current-buffer)))
-  (message org-gtd-clarify--clarify-id)
+  ;; TODO handle errors from here (see: malformed project)
+  (goto-char (point-min))
+  (save-excursion (funcall func))
   (let ((task-id org-gtd-clarify--clarify-id)
         (window-config org-gtd-clarify--window-config)
-        (buffer (marker-buffer org-gtd-clarify--stuff-marker))
-        (position (marker-position org-gtd-clarify--stuff-marker)))
+        (buffer (marker-buffer org-gtd-clarify--source-heading-marker))
+        (position (marker-position org-gtd-clarify--source-heading-marker)))
     (with-current-buffer buffer
       (goto-char position)
       (org-cut-subtree))
     (set-window-configuration window-config)
     (kill-buffer (org-gtd-clarify--buffer-name task-id))))
+
+(defun org-gtd-organize-inbox-item (func)
+  "Run FUNC as part of a flow that loops over each item in the inbox."
+  (org-gtd-organize--call func)
+;  (funcall (apply-partially 'org-gtd-organize--call func))
+;  (funcall func)
+  (org-gtd-process-inbox))
 
 (defun org-gtd-organize-decorate-item ()
   "Apply hooks to add metadata to a given GTD item."
@@ -239,7 +257,9 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (if (org-gtd-projects--poorly-formatted-p)
       ;; TODO the error message can't also
       ;; call the process inbox, that is not its job
-      (org-gtd-projects--show-error-and-return-to-editing)
+      (progn
+        (org-gtd-projects--show-error)
+        (read-char))
 
     (org-gtd-organize-decorate-item)
     (org-gtd-projects--nextify)
@@ -262,7 +282,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
              (chosen-heading (completing-read "Choose a heading: " headings nil t))
              (heading-marker (org-find-exact-heading-in-directory chosen-heading org-gtd-directory)))
         (org-gtd-organize-decorate-item)
-        (org-refile nil nil `(,chosen-heading
+        (org-refile 3 nil `(,chosen-heading
                               ,(buffer-file-name (marker-buffer heading-marker))
                               nil
                               ,(marker-position heading-marker))

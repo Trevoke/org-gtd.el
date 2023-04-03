@@ -15,5 +15,5 @@
        (let ((task-id (with-current-buffer source-buffer (org-id-get)))
              (wip-buffer (car (org-gtd-clarify--get-buffers))))
          (with-current-buffer wip-buffer
-           (expect (org-entry-get org-gtd-clarify--stuff-marker "ID")
+           (expect (org-entry-get org-gtd-clarify--source-heading-marker "ID")
                    :to-equal task-id))))))

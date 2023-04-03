@@ -4,24 +4,17 @@
   (org-capture-finalize))
 
 (defun ogt--print-buffer-list ()
-  (message "Start List of active buffers")
+  (message "*** Start List of active buffers")
   (mapc (lambda (x) (message (buffer-name x))) (buffer-list))
-  (message "End List of active buffers"))
+  (message "*** End List of active buffers"))
 
 (defun ogt--add-and-process-project (label)
   "LABEL is the project label."
   (ogt--add-single-item label)
-  (message "After add-single-item, I am in %s" (buffer-name (current-buffer)))
   (org-gtd-process-inbox)
-  ;;(set-buffer (car (org-gtd-clarify--get-buffers)))
-  (execute-kbd-macro (kbd "C-n"))
-  (message "after C-n I am in %s" (buffer-name (current-buffer)))
   (execute-kbd-macro (kbd "M-> RET"))
-  (message "after M-> RET, I am in %s" (buffer-name (current-buffer)))
   (with-current-buffer (current-buffer)
     (insert ogt--project-text))
-                                        ;(insert ogt--project-text)
-  (message "after insert text, I am in %s" (buffer-name (current-buffer)))
   (execute-kbd-macro (kbd "C-c c p"))
   )
 

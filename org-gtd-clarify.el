@@ -31,7 +31,7 @@
 (defvar-local org-gtd-clarify--window-config nil
   "Store window configuration prior to clarifying task")
 
-(defvar-local org-gtd-clarify--stuff-marker nil
+(defvar-local org-gtd-clarify--source-heading-marker nil
   "Store marker to item that is being clarified")
 
 (defvar-local org-gtd-clarify--clarify-id nil
@@ -62,21 +62,15 @@
   (interactive)
   (let ((processing-buffer (org-gtd-clarify--get-buffer))
         (window-config (current-window-configuration))
-        (stuff-marker (point-marker)))
-    (message "Entering org-gtd-clarify-item")
+        (source-heading-marker (point-marker)))
     (when (= (buffer-size processing-buffer) 0)
-      (org-copy-subtree)
+      (let ((last-command nil)) (org-copy-subtree))
       (with-current-buffer processing-buffer
-        (message ".................................................")
-        (mapc (lambda (x) (message "---------\n %s \n-----------" x)) kill-ring)
-        (message ".................................................")
-
         (org-paste-subtree)))
-    (message "stuffmarker is: %s" stuff-marker)
     (with-current-buffer processing-buffer
       (setq-local org-gtd-clarify--window-config window-config
-                org-gtd-clarify--stuff-marker stuff-marker
-                org-gtd-clarify--clarify-id (org-id-get)))
+                  org-gtd-clarify--source-heading-marker source-heading-marker
+                  org-gtd-clarify--clarify-id (org-id-get)))
     (set-buffer processing-buffer)
     (display-buffer processing-buffer)
     (delete-other-windows (get-buffer-window processing-buffer))))
