@@ -1,4 +1,8 @@
-* org-gtd-process-mode is now org-gtd-clarify-mode
-* org-gtd-process-map is now org-gtd-clarify-map
-* org-gtd-choose is now org-gtd-organize
-* you can now clarify single items with org-gtd-clarify-item
+* new features
+** you can now clarify single items with org-gtd-clarify-item
+** you can customize what the functions do for each GTD action (e.g. incubate, single action, etc.)
+* required config changes
+** org-gtd-process-mode is now org-gtd-clarify-mode
+** org-gtd-process-map is now org-gtd-clarify-map
+** org-gtd-choose is now org-gtd-organize
+** refile logic is now org-refile logic, not my crippled one
