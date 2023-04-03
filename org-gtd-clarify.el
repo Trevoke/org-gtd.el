@@ -64,7 +64,8 @@
         (window-config (current-window-configuration))
         (source-heading-marker (point-marker)))
     (when (= (buffer-size processing-buffer) 0)
-      (let ((last-command nil)) (org-copy-subtree))
+      (let ((last-command nil))
+        (org-copy-subtree))
       (with-current-buffer processing-buffer
         (org-paste-subtree)))
     (with-current-buffer processing-buffer

@@ -133,14 +133,10 @@ Add the TODO keyword to all subsequent actions/tasks."
 
 (defun org-gtd-projects--show-error ()
   "Tell the user something is wrong with the project."
-  (message "WOOOOO")
-
   (let ((resize-mini-windows t)
         (max-mini-window-height 0))
-    (message "????")
     (display-message-or-buffer org-gtd-projects--malformed))
   (read-key "Waiting for a keypress to return to clarifying... " t)
-  (message (buffer-name (current-buffer)))
   (message ""))
 
 (provide 'org-gtd-projects)

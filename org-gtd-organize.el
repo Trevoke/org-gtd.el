@@ -162,29 +162,37 @@ point as something to be discarded."
                           (interactive)
                           (org-gtd-organize-inbox-item
                            org-gtd-organize-quick-action-func)))
-    ("s" "Single action" (lambda () (interactive)
+    ("s" "Single action" (lambda ()
+                           (interactive)
                            (org-gtd-organize-inbox-item
                             org-gtd-organize-single-action-func)))]
-   [("d" "Delegate" (lambda () (interactive)
+   [("d" "Delegate" (lambda ()
+                      (interactive)
                       (org-gtd-organize-inbox-item
                        org-gtd-organize-delegate-func)))
-    ("c" "Calendar" (lambda () (interactive)
+    ("c" "Calendar" (lambda ()
+                      (interactive)
                       (org-gtd-organize-inbox-item
                        org-gtd-organize-appointment-func)))]]
-  [("p" "Project (multi-step)" (lambda () (interactive)
+  [("p" "Project (multi-step)" (lambda ()
+                                 (interactive)
                                  (org-gtd-organize-inbox-item
                                   org-gtd-organize-project-func)))
-   ("m" "Modify project: add this task" (lambda () (interactive)
+   ("m" "Modify project: add this task" (lambda ()
+                                          (interactive)
                                           (org-gtd-organize-inbox-item
                                            org-gtd-organize-add-to-project-func)))]
   ["Non-actionable"
-   [("i" "Incubate" (lambda () (interactive)
+   [("i" "Incubate" (lambda ()
+                      (interactive)
                       (org-gtd-organize-inbox-item
                        org-gtd-organize-incubate-func)))
-    ("a" "Archive this knowledge" (lambda () (interactive)
+    ("a" "Archive this knowledge" (lambda ()
+                                    (interactive)
                                     (org-gtd-organize-inbox-item
                                      org-gtd-organize-archive-func)))]
-   [("t" "Trash" (lambda () (interactive)
+   [("t" "Trash" (lambda ()
+                   (interactive)
                    (org-gtd-organize-inbox-item
                     org-gtd-organize-trash-func)))]]
 
@@ -255,11 +263,8 @@ Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (interactive)
-  (message "9090909090")
   (when (org-gtd-projects--poorly-formatted-p)
-    (message "2")
     (org-gtd-projects--show-error)
-    (message "3")
     (throw 'org-gtd-error "Malformed project"))
 
 
@@ -295,8 +300,6 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   "Add a date/time to this item and store in org gtd."
   (interactive)
   (org-gtd-organize-decorate-item)
-  (message "****\n%s\n****" (buffer-string))
-  (message "%s" (point))
   (org-schedule 0)
   (org-gtd--refile org-gtd-calendar))
 

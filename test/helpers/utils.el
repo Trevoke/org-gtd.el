@@ -43,3 +43,8 @@ Return the buffer visiting that file."
 (defun ogt--current-buffer-raw-text ()
   "Returns text without faces"
   (buffer-substring-no-properties (point-min) (point-max)))
+
+(defun ogt--print-buffer-list ()
+  (message "*** Start List of active buffers")
+  (mapc (lambda (x) (message (buffer-name x))) (buffer-list))
+  (message "*** End List of active buffers"))

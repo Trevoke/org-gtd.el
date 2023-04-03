@@ -11,36 +11,48 @@
  (before-each (ogt--configure-emacs))
 
  (after-each (ogt--close-and-delete-files)
-             (remove-hook 'post-command-hook 'org-add-log-note))
+             ;; TODO figure out if this can / should be removed
+             (remove-hook 'post-command-hook 'org-add-log-note)
+             )
 
- ;; (describe
- ;;  "marks all undone tasks of a canceled project as canceled"
- (it "on a task in the agenda"
-     (ogt--add-and-process-project "project headline")
-     (org-gtd-engage)
-     (with-current-buffer org-agenda-buffer
-       (goto-char (point-min))
-       (search-forward "Task 1")
-       (org-gtd-agenda-cancel-project)
-       (org-gtd-archive-completed-items))
+ (describe
+  "marks all undone tasks of a canceled project as canceled"
+  (it "on a task in the agenda"
+      (ogt--add-and-process-project "project headline")
+      (org-gtd-engage)
+      (with-current-buffer org-agenda-buffer
+        (goto-char (point-min))
+        (search-forward "Task 1")
+        (org-gtd-agenda-cancel-project)
+        (org-gtd-archive-completed-items))
 
-     (let ((archived-projects (ogt--archive-string)))
-       (expect archived-projects :to-match "project headline")))
+      (let ((archived-projects (ogt--archive-string)))
+        (expect archived-projects :to-match "project headline")))
 
-(it "when on the heading"
-     (ogt--add-and-process-project "project tailline")
-     (with-current-buffer (org-gtd--default-file)
-       (goto-char (point-min))
-       (search-forward "project tailline")
-       (org-gtd-cancel-project)
-       (org-gtd-archive-completed-items)
-       (basic-save-buffer))
+  (it "when on the heading"
+      (ogt--add-and-process-project "project tailline")
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "project tailline")
+        (org-gtd-cancel-project)
+        (org-gtd-archive-completed-items)
+        (basic-save-buffer))
 
-     (let ((archived-projects (ogt--archive-string)))
-       (expect archived-projects :to-match "project tailline")))
+      (let ((archived-projects (ogt--archive-string)))
+        (expect archived-projects :to-match "project tailline"))))
 
+ (describe
+  "displaying the guide when the project is poorly shaped"
+  (it "does it"
+      (with-simulated-input "SPC"
+                            (org-gtd-projects--show-error))
+      (expect (ogt--buffer-string "*Message*")
+              :to-match "** First Task"))
+  )
  )
 
+;;; TODO uncomment this test
+;;; TODO stat cookie should support percent and tally versions
 
 ;; (it "safely adds the stats cookie"
 ;;     (setq org-gtd-process-item-hooks '(org-set-tags-command org-priority))

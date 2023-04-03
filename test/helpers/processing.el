@@ -3,11 +3,6 @@
   (insert (or label "single action"))
   (org-capture-finalize))
 
-(defun ogt--print-buffer-list ()
-  (message "*** Start List of active buffers")
-  (mapc (lambda (x) (message (buffer-name x))) (buffer-list))
-  (message "*** End List of active buffers"))
-
 (defun ogt--add-and-process-project (label)
   "LABEL is the project label."
   (ogt--add-single-item label)
