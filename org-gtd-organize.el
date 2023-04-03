@@ -200,7 +200,6 @@ point as something to be discarded."
   "Organize the item within org-gtd. FUNC is the function that does the actual
 work. This is simply a wrapper function that cleans up emacs as required."
   (goto-char (point-min))
-  ;; TODO handle errors from here (see: malformed project)
   (catch 'org-gtd-error
     (save-excursion (funcall func))
     (let ((task-id org-gtd-clarify--clarify-id)
@@ -216,8 +215,6 @@ work. This is simply a wrapper function that cleans up emacs as required."
 (defun org-gtd-organize-inbox-item (func)
   "Run FUNC as part of a flow that loops over each item in the inbox."
   (org-gtd-organize--call func)
-;  (funcall (apply-partially 'org-gtd-organize--call func))
-;  (funcall func)
   (org-gtd-process-inbox))
 
 (defun org-gtd-organize-decorate-item ()
@@ -292,6 +289,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   "Add a date/time to this item and store in org gtd."
   (interactive)
   (org-gtd-organize-decorate-item)
+  (message "****\n%s\n****" (buffer-string))
   (org-schedule 0)
   (org-gtd--refile org-gtd-calendar))
 
