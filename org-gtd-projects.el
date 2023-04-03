@@ -31,6 +31,20 @@
 (require 'org-gtd-core)
 (require 'org-gtd-agenda)
 
+(defconst org-gtd-projects--malformed
+  "A 'project' in GTD is a finite set of steps after which a given task is
+complete. In Org GTD, this is defined as a top-level org heading with at least
+one second-level org headings. When the item you are editing is intended to be
+a project, create such a headline structure, like so:
+
+* Project heading
+** First task
+** Second task
+** Third task
+
+If you do not need sub-headings, then organize this item as a 'single action'
+instead.")
+
 ;;;###autoload
 (defun org-gtd-cancel-project ()
   "With point on topmost project heading, mark all undone tasks canceled."
@@ -63,7 +77,8 @@ in the list."
   (org-gtd-projects-fix-todo-keywords (point-marker)))
 
 (defun org-gtd-projects-fix-todo-keywords (marker)
-  "Ensure project at MARKER has only one NEXT keyword. Ensures only the first non-done keyword is NEXT, all other non-done are TODO."
+  "Ensure project at MARKER has only one NEXT keyword. Ensures only the first
+non-done keyword is NEXT, all other non-done are TODO."
   (with-current-buffer (marker-buffer marker)
     (save-excursion
       (goto-char (marker-position marker))
@@ -73,7 +88,8 @@ in the list."
          (unless (member
                   (org-element-property :todo-keyword (org-element-at-point))
                   '("TODO" "WAIT" "DONE" "CNCL"))
-           (org-entry-put (org-gtd-projects--org-element-pom (org-element-at-point)) "TODO" "TODO")))
+           (org-entry-put (org-gtd-projects--org-element-pom (org-element-at-point))
+                          "TODO" "TODO")))
        "+LEVEL=3" 'tree))
     (save-excursion
       (goto-char (marker-position marker))
@@ -92,7 +108,10 @@ in the list."
   "Add the NEXT keyword to the first action/task of the project.
 
 Add the TODO keyword to all subsequent actions/tasks."
-  (org-map-entries (lambda () (org-gtd-organize--decorate-element (org-element-at-point)) ) "LEVEL=2" 'tree)
+  (org-map-entries (lambda () (org-gtd-organize--decorate-element
+                               (org-element-at-point)) )
+                   "LEVEL=2"
+                   'tree)
   (cl-destructuring-bind
       (first-entry . rest-entries)
       (cdr (org-map-entries (lambda () (org-element-at-point)) t 'tree))
@@ -110,29 +129,19 @@ Add the TODO keyword to all subsequent actions/tasks."
 
 (defun org-gtd-projects--poorly-formatted-p ()
   "Return non-nil if the project is composed of only one heading."
-  ;(basic-save-buffer)
   (eql 1 (length (org-map-entries t))))
-
-(defconst org-gtd-projects--malformed
-  "A 'project' in GTD is a finite set of steps after which a given task is
-complete. In Org GTD, this is defined as a top-level org heading with at least
-one second-level org headings. When the item you are editing is intended to be
-a project, create such a headline structure, like so:
-
-* Project heading
-** First task
-** Second task
-** Third task
-
-If you do not need sub-headings, then organize this item as a 'single action'
-instead.
-
-Hit a key to continue.")
 
 (defun org-gtd-projects--show-error ()
   "Tell the user something is wrong with the project."
-  (display-message-or-buffer org-gtd-projects--malformed)
-  (read-key nil t))
+  (message "WOOOOO")
+
+  (let ((resize-mini-windows t)
+        (max-mini-window-height 0))
+    (message "????")
+    (display-message-or-buffer org-gtd-projects--malformed))
+  (read-key "Waiting for a keypress to return to clarifying... " t)
+  (message (buffer-name (current-buffer)))
+  (message ""))
 
 (provide 'org-gtd-projects)
 ;;; org-gtd-projects.el ends here

@@ -199,7 +199,9 @@ point as something to be discarded."
 (defun org-gtd-organize--call (func)
   "Organize the item within org-gtd. FUNC is the function that does the actual
 work. This is simply a wrapper function that cleans up emacs as required."
-  (goto-char (point-min))
+  (beginning-of-buffer)
+  (when (org-before-first-heading-p)
+    (org-next-visible-heading 1))
   (catch 'org-gtd-error
     (save-excursion (funcall func))
     (let ((task-id org-gtd-clarify--clarify-id)
@@ -219,9 +221,11 @@ work. This is simply a wrapper function that cleans up emacs as required."
 
 (defun org-gtd-organize-decorate-item ()
   "Apply hooks to add metadata to a given GTD item."
-  (goto-char (point-min))
   (dolist (hook org-gtd-process-item-hooks)
     (save-excursion
+      (beginning-of-buffer)
+      (when (org-before-first-heading-p)
+        (org-next-visible-heading 1))
       (save-restriction
         (funcall hook)))))
 
@@ -251,11 +255,13 @@ Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (interactive)
+  (message "9090909090")
+  (when (org-gtd-projects--poorly-formatted-p)
+    (message "2")
+    (org-gtd-projects--show-error)
+    (message "3")
+    (throw 'org-gtd-error "Malformed project"))
 
-  (if (org-gtd-projects--poorly-formatted-p)
-      (progn
-        (org-gtd-projects--show-error)
-        (throw 'org-gtd-error "Malformed project"))
 
     (org-gtd-organize-decorate-item)
     (org-gtd-projects--nextify)
@@ -263,7 +269,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
       (org-end-of-line))
     (insert " [/]")
     (org-update-statistics-cookies t)
-    (org-gtd--refile org-gtd-projects)))
+    (org-gtd--refile org-gtd-projects))
 
 (defun org-gtd-organize--task-at-point-add-to-existing-project ()
   "Refile the org heading at point under a chosen heading in the agenda files."
@@ -290,6 +296,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (interactive)
   (org-gtd-organize-decorate-item)
   (message "****\n%s\n****" (buffer-string))
+  (message "%s" (point))
   (org-schedule 0)
   (org-gtd--refile org-gtd-calendar))
 

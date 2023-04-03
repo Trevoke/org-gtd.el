@@ -93,8 +93,14 @@
   (describe "error management"
     (describe "when project has incorrect shape"
       (it "tells the user and returns to editing"
-        (org-gtd-process-inbox)
-        (execute-kbd-macro (kbd "C-c c p RET")) ;; RET is "any key" to continue after error message
-        (expect (buffer-name) :to-match org-gtd-clarify--prefix)
+          (org-gtd-process-inbox)
+          (execute-kbd-macro (kbd "C-c c p"))
+          (execute-kbd-macro (kbd "SPC"))
+          ;; (with-simulated-input
+          ;;  "C-c c p"
+          ;;  ;; RET is "any key" to continue after error is displayed
+          ;;  (org-gtd-process-inbox))
+          (expect (buffer-name) :to-match org-gtd-clarify--prefix)
+        ;(execute-kbd-macro (kbd "SPC"))
         (with-current-buffer "*Message*"
           (expect (ogt--current-buffer-raw-text) :to-match "First task"))))))
