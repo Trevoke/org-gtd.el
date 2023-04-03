@@ -17,24 +17,12 @@
 
 (defun ogt--close-and-delete-files ()
   "Run after every test to clear open buffers state"
-  ;; (let* ((special-names '(" *Buttercup-Warnings*"))
-  ;;        (buffers (seq-remove (lambda (x) (member (buffer-name x) special-names)) (buffer-list))))
-  ;;   (mapcar 'kill-buffer buffers)
-  ;;   (delete-other-windows)
-  ;;   )
 
   (mapc
    #'ogt--kill-buffer
    (-flatten (mapcar
               #'ogt--get-buffers
-              `(".*\\.org" ".*Agenda.*" "gtd_archive.*" ".*Calendar.*" ,(format ".*%s.*" org-gtd-clarify--prefix)))))
-
-  ;; (kill-matching-buffers ".*\\.org" nil t)
-  ;; (kill-matching-buffers ".*Agenda.*" nil t)
-  ;; (kill-matching-buffers "gtd_archive.*" nil t)
-  ;; (kill-matching-buffers ".*Calendar.*" nil t)
-  ;; (kill-matching-buffers (format ".*%s.*" org-gtd-clarify--prefix) nil t)
-  )
+              `(".*\\.org" ".*Agenda.*" "gtd_archive.*" ".*Calendar.*" ,(format ".*%s.*" org-gtd-clarify--prefix))))))
 
 (defun ogt--clear-file-and-buffer (buffer)
   (if (bufferp buffer)

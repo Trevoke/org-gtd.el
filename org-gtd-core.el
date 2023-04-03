@@ -80,11 +80,20 @@ This is a list of four items, the same type as in `org-stuck-projects'.")
           (org-refile-use-outline-path nil)
           (org-stuck-projects org-gtd-stuck-projects)
           (org-odd-levels-only nil)
-          (org-agenda-files `(,org-gtd-directory))
+          (org-agenda-files (org-gtd-core--agenda-files))
           (org-agenda-property-list '("DELEGATED_TO"))
           (org-agenda-custom-commands org-gtd-agenda-custom-commands))
      (unwind-protect
          (progn ,@body))))
+
+(defun org-gtd-core--agenda-files ()
+  "Return the value of the `org-agenda-files' variable with `org-gtd-directory'
+added to it."
+  (if (stringp org-agenda-files)
+      (append (org-read-agenda-file-list)
+              (ensure-list org-gtd-directory))
+    (append (ensure-list org-agenda-files)
+            (ensure-list org-gtd-directory))))
 
 (provide 'org-gtd-core)
 ;;; org-gtd-core.el ends here
