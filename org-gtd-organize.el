@@ -199,18 +199,19 @@ point as something to be discarded."
 (defun org-gtd-organize--call (func)
   "Organize the item within org-gtd. FUNC is the function that does the actual
 work. This is simply a wrapper function that cleans up emacs as required."
-  ;; TODO handle errors from here (see: malformed project)
   (goto-char (point-min))
-  (save-excursion (funcall func))
-  (let ((task-id org-gtd-clarify--clarify-id)
-        (window-config org-gtd-clarify--window-config)
-        (buffer (marker-buffer org-gtd-clarify--source-heading-marker))
-        (position (marker-position org-gtd-clarify--source-heading-marker)))
-    (with-current-buffer buffer
-      (goto-char position)
-      (org-cut-subtree))
-    (set-window-configuration window-config)
-    (kill-buffer (org-gtd-clarify--buffer-name task-id))))
+  ;; TODO handle errors from here (see: malformed project)
+  (catch 'org-gtd-error
+    (save-excursion (funcall func))
+    (let ((task-id org-gtd-clarify--clarify-id)
+          (window-config org-gtd-clarify--window-config)
+          (buffer (marker-buffer org-gtd-clarify--source-heading-marker))
+          (position (marker-position org-gtd-clarify--source-heading-marker)))
+      (with-current-buffer buffer
+        (goto-char position)
+        (org-cut-subtree))
+      (set-window-configuration window-config)
+      (kill-buffer (org-gtd-clarify--buffer-name task-id)))))
 
 (defun org-gtd-organize-inbox-item (func)
   "Run FUNC as part of a flow that loops over each item in the inbox."
@@ -255,11 +256,9 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (interactive)
 
   (if (org-gtd-projects--poorly-formatted-p)
-      ;; TODO the error message can't also
-      ;; call the process inbox, that is not its job
       (progn
         (org-gtd-projects--show-error)
-        (read-char))
+        (throw 'org-gtd-error "Malformed project"))
 
     (org-gtd-organize-decorate-item)
     (org-gtd-projects--nextify)
