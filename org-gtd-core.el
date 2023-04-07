@@ -75,6 +75,10 @@ This is a list of four items, the same type as in `org-stuck-projects'.")
   "Wrap any BODY in this macro to inherit the org-gtd settings for your logic."
   (declare (debug t) (indent 2))
   `(let* ((org-use-property-inheritance "ORG_GTD")
+          (org-todo-keywords '((sequence "NEXT(n)" "TODO(t)" "WAIT(w@)" "|" "DONE(d)" "CNCL(c@)" "TRASH(h)")))
+          ;; (org-log-done 'time)
+          ;; (org-log-done-with-time t)
+          ;; (org-log-refile 'time)
           (org-archive-location (funcall org-gtd-archive-location))
           (org-capture-templates org-gtd-capture-templates)
           (org-refile-use-outline-path nil)
@@ -85,6 +89,20 @@ This is a list of four items, the same type as in `org-stuck-projects'.")
           (org-agenda-custom-commands org-gtd-agenda-custom-commands))
      (unwind-protect
          (progn ,@body))))
+
+(defun org-gtd-core-prepare-buffer (&optional buffer)
+  "Make sure BUFFER is prepared to handle Org GTD operations. If BUFFER is nil,
+use current buffer."
+  (with-current-buffer (or buffer (current-buffer))
+    (unless (bound-and-true-p org-gtd--loading-p)
+      (setq-local org-gtd--loading-p t)
+      (with-org-gtd-context
+          (org-mode-restart)))))
+
+(defun org-gtd-core-prepare-agenda-buffers ()
+  (mapc
+   (lambda (file) (org-gtd-core-prepare-buffer (find-file-noselect file)))
+   (with-org-gtd-context (org-agenda-files))))
 
 (defun org-gtd-core--agenda-files ()
   "Return the value of the `org-agenda-files' variable with `org-gtd-directory'

@@ -50,7 +50,7 @@ the items once they have been processed and add them to that list."
 
   (condition-case err
       (progn
-        (beginning-of-buffer)
+        (goto-char (point-min))
         (when (org-before-first-heading-p)
           (outline-next-visible-heading 1))
         (org-N-empty-lines-before-current 1)

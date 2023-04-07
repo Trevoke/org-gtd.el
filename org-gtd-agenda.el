@@ -62,6 +62,7 @@ or by wrapping your own custom functions with `with-org-gtd-context'."
 (defun org-gtd-engage ()
   "Display `org-agenda' customized by org-gtd."
   (interactive)
+  (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
       (org-agenda nil "g")))
 
@@ -71,6 +72,7 @@ or by wrapping your own custom functions with `with-org-gtd-context'."
 This assumes all GTD files are also agenda files."
   (interactive)
   (with-org-gtd-context
+      (org-gtd-core-prepare-agenda-buffers)
       (org-todo-list "NEXT")))
 
 ;;;###autoload
@@ -99,6 +101,7 @@ This assumes all GTD files are also agenda files."
          (winner-undo))
        (org-agenda-show-tags)))))
 
+;;; TODO: replace this with a call to clarify item
 ;;;###autoload
 (defun org-gtd-agenda-projectify ()
   "Transform the current agenda item into a gtd project.

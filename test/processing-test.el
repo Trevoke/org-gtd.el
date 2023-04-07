@@ -12,7 +12,9 @@
  (before-each
   (ogt--configure-emacs)
   (ogt--add-single-item))
- (after-each (ogt--close-and-delete-files))
+ (after-each (ogt--close-and-delete-files)
+             ;; TODO see if I can remove this after I remove the logdone header
+             (remove-hook 'post-command-hook 'org-add-log-note))
 
  (it "processes all the elements"
      (dotimes (x 8)
@@ -64,6 +66,7 @@
      (execute-kbd-macro (kbd "C-c c s TAB RET"))
 
      (execute-kbd-macro (kbd "C-c c s TAB RET"))
+
 
      (with-current-buffer (org-gtd--inbox-file)
        (expect (ogt--current-buffer-raw-text)

@@ -207,11 +207,12 @@ point as something to be discarded."
 (defun org-gtd-organize--call (func)
   "Organize the item within org-gtd. FUNC is the function that does the actual
 work. This is simply a wrapper function that cleans up emacs as required."
-  (beginning-of-buffer)
+  (goto-char (point-min))
   (when (org-before-first-heading-p)
     (org-next-visible-heading 1))
   (catch 'org-gtd-error
-    (save-excursion (funcall func))
+    (with-org-gtd-context
+        (save-excursion (funcall func)))
     (let ((task-id org-gtd-clarify--clarify-id)
           (window-config org-gtd-clarify--window-config)
           (buffer (marker-buffer org-gtd-clarify--source-heading-marker))
@@ -231,7 +232,7 @@ work. This is simply a wrapper function that cleans up emacs as required."
   "Apply hooks to add metadata to a given GTD item."
   (dolist (hook org-gtd-process-item-hooks)
     (save-excursion
-      (beginning-of-buffer)
+      (goto-char (point-min))
       (when (org-before-first-heading-p)
         (org-next-visible-heading 1))
       (save-restriction

@@ -28,18 +28,15 @@
 (require 'org-gtd-core)
 
 (defconst org-gtd-inbox-template
-  "#+STARTUP: overview hidestars logrefile indent logdone
-#+TODO: NEXT TODO WAIT | DONE CNCL TRASH
-#+begin_comment
+  "#+begin_comment
 This is the inbox. Everything goes in here when you capture it.
 #+end_comment
 "
   "Template for the GTD inbox.")
 
+;; TODO remove this entirely
 (defconst org-gtd-file-header
-  "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
-#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
-")
+  "")
 
 
 (defconst org-gtd-default-file-name "org-gtd-tasks")
@@ -66,7 +63,7 @@ This is the inbox. Everything goes in here when you capture it.
   (unless (f-exists-p path)
     (with-current-buffer (find-file-noselect path)
       (insert initial-contents)
-      (org-mode-restart)
+      (org-gtd-core-prepare-buffer)
       (basic-save-buffer))))
 
 (defun org-gtd--path (file)

@@ -6,3 +6,7 @@
 ** org-gtd-process-map is now org-gtd-clarify-map
 ** org-gtd-choose is now org-gtd-organize
 ** refile logic is now org-refile logic, not my crippled one
+** drop the headers
+point people to org documentation for startup / variables to determine logging behavior if they want to keep it
+-> logdone logrepeat logreschedule logredeadline
+https://orgmode.org/manual/In_002dbuffer-Settings.html

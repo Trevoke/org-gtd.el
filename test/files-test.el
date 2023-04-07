@@ -20,16 +20,7 @@
                 "This is the inbox")
         (expect (ogt--current-buffer-raw-text)
                 :to-match
-                "#\\+STARTUP: overview hidestars logrefile indent logdone")))
-
-    (it "has a header for the default file"
-      (with-current-buffer (org-gtd--default-file)
-        (expect (ogt--current-buffer-raw-text)
-                :to-match
-                "#\\+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
-#\\+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)")))
-
-
+                "This is the inbox.")))
 
     (describe
         "when there isn't a refile target"

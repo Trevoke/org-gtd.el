@@ -80,6 +80,7 @@ in the list."
   "Ensure project at MARKER has only one NEXT keyword. Ensures only the first
 non-done keyword is NEXT, all other non-done are TODO."
   (with-current-buffer (marker-buffer marker)
+    (org-gtd-core-prepare-buffer)
     (save-excursion
       (goto-char (marker-position marker))
       ;; first, make sure all we have is TODO WAIT DONE CNCL

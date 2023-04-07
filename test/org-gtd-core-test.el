@@ -7,8 +7,10 @@
 
 (describe
  "org-gtd-agenda-files"
+
  (before-each (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
+
  (it "appends to the existing org-agenda-files"
      (let ((org-agenda-files '("/tmp/foo.org")))
        (with-org-gtd-context

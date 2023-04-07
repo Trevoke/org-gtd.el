@@ -109,9 +109,9 @@ inbox clarification process."
   (org-gtd-id-get-create)
   (let ((buffer (get-buffer-create (org-gtd-clarify--buffer-name (org-id-get)))))
     (with-current-buffer buffer
-      (let ((org-todo-keywords '((sequence "NEXT" "TODO" "WAIT" "|" "DONE" "CNCL" "TRASH"))))
-        (org-mode)
-        (org-gtd-clarify-mode 1))
+      (org-mode)
+      (org-gtd-core-prepare-buffer)
+      (org-gtd-clarify-mode 1)
       buffer)))
 
 (provide 'org-gtd-clarify)
