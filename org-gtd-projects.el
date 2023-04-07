@@ -31,8 +31,22 @@
 (require 'org-gtd-core)
 (require 'org-gtd-agenda)
 
+(defconst org-gtd-project-headings
+  "+LEVEL=2&+ORG_GTD=\"Projects\""
+  "How to tell org-mode to find project headings")
+
+(defconst org-gtd-stuck-projects
+  `(,org-gtd-project-headings
+    (,org-gtd-next ,org-gtd-wait)
+    nil
+    "")
+  "How to identify stuck projects in the GTD system.
+
+This is a list of four items, the same type as in `org-stuck-projects'.")
+
 (defun org-edna-action/org-gtd-update-project-task! (_last-entry)
   (org-todo org-gtd-next))
+
 (defun org-edna-finder/org-gtd-next-project-action ()
   (org-edna-finder/relatives 'forward-no-wrap 'todo-only 1 'no-sort))
 

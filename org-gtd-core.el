@@ -164,18 +164,8 @@ See `org-todo-keywords' for definition."
     (puthash org-gtd-calendar "Calendar" myhash)
     myhash))
 
-(defconst org-gtd-project-headings
-  "+LEVEL=2&+ORG_GTD=\"Projects\""
-  "How to tell org-mode to find project headings")
-
-(defconst org-gtd-stuck-projects
-  `(,org-gtd-project-headings
-    (,org-gtd-next ,org-gtd-wait)
-    nil
-    "")
-  "How to identify stuck projects in the GTD system.
-
-This is a list of four items, the same type as in `org-stuck-projects'.")
+(defvar org-gtd-project-headings)
+(defvar org-gtd-stuck-projects)
 
 ;;;###autoload
 (defmacro with-org-gtd-context (&rest body)

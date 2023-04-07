@@ -37,79 +37,74 @@
 
 (defcustom org-gtd-organize-quick-action-func
   #'org-gtd-organize--task-at-point-was-quick-action
-  "Can be an atom or a sexp.  Function called when org-gtd organizes the item at
-point as an action that you started and finished just now."
+  "Function called when item at point was quick action."
   :group 'org-gtd-organize
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
 (defcustom org-gtd-organize-single-action-func
   #'org-gtd-organize--task-at-point-as-single-action
-  "Can be an atom or a sexp.  Function called when org-gtd organizes the item at
-point as a single next action."
+  "Function called when item at point is a single next action."
   :group 'org-gtd-organize
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
 (defcustom org-gtd-organize-archive-func
   #'org-gtd-organize-task-at-point-as-archived-knowledge
-  "Can be an atom or a sexp. Function called when org-gtd organizes the item at
-point as knowledge to be stored. Note that this function is used inside loops,
-for instance to process the inbox, so if you have manual steps you need to take
-when storing a heading as knowledge, take them before calling this function
-(for instance, during inbox processing, take the manual steps during the clarify
-step, before you call `org-gtd-organize')."
+  "Function called when item at point is knowledge to be stored.
+Note that this function is used inside loops,for instance to process the inbox,
+so if you have manual steps you need to take when storing a heading
+as knowledge, take them before calling this function
+\(for instance, during inbox processing, take the manual steps during the
+clarify step, before you call `org-gtd-organize')."
   :group 'org-gtd-organize
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
 (defcustom org-gtd-organize-project-func
   #'org-gtd-organize--task-at-point-as-new-project
-  "Can be an atom or a sexp. Function called when org-gtd organizes the item at
-point as a project. You *probably* should not change this from the default, as a
-lot of fiddly bits depend on the way org-gtd structures and organizes the
-projects, but who's gonna stop you?"
+  "Function called when item at point is a project.
+
+You *probably* should not change this from the default, as a lot of fiddly bits
+depend on the way org-gtd structures and organizes the projects."
   :group 'org-gtd-organize
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
 (defcustom org-gtd-organize-add-to-project-func
   #'org-gtd-organize--task-at-point-add-to-existing-project
-  "Can be an atom or a sexp. Function called when org-gtd organizes the item at
-point as a new task in an existing project"
+  "Function called when item at point is a new task in an existing project."
   :group 'org-gtd-organize
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
 (defcustom org-gtd-organize-appointment-func
   #'org-gtd-organize--task-at-point-as-appointment
-  "Can be an atom or a sexp. Function called when org-gtd organizes the item at
-point as a task that must happen on a given day. Keep this clean and don't load
-your calendar with things that aren't actually appointments or deadlines."
+  "Function called when item at point is a task that must happen on a given day.
+
+Keep this clean and don't load your calendar with things that aren't
+actually appointments or deadlines."
   :group 'org-gtd-organize
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
 (defcustom org-gtd-organize-delegate-func
   #'org-gtd-organize--task-at-point-as-delegated
-  "Can be an atom or a sexp. Function called when org-gtd organizes the item at
-point as an action delegated to someone else."
+  "Function called when item at at point is an action delegated to someone else."
   :group 'org-gtd-organize
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
 (defcustom org-gtd-organize-incubate-func
   #'org-gtd-organize--task-at-point-as-incubated
-  "Can be an atom or a sexp. Function called when org-gtd organizes the item at
-point as incubated."
+  "Function called when item at point is to be incubated."
   :group 'org-gtd-organize
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
 (defcustom org-gtd-organize-trash-func
   #'org-gtd-organize--task-at-point-as-trash
-  "Can be an atom or a sexp. Function called when org-gtd organizes the item at
-point as something to be discarded."
+  "Function called when  item at point is to be discarded."
   :group 'org-gtd-organize
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
@@ -205,8 +200,8 @@ point as something to be discarded."
 (make-obsolete 'org-gtd-choose #'org-gtd-organize "2.3.0")
 
 (defun org-gtd-organize--call (func)
-  "Organize the item within org-gtd. FUNC is the function that does the actual
-work. This is simply a wrapper function that cleans up emacs as required."
+  "Wrap FUNC, which does the real work, to keep Emacs clean.
+This handles the internal bits of `org-gtd'."
   (goto-char (point-min))
   (when (org-before-first-heading-p)
     (org-next-visible-heading 1))
