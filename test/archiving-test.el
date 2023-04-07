@@ -39,7 +39,7 @@
      (with-current-buffer (org-gtd--default-file)
        (goto-char (point-min))
        (search-forward "NEXT one")
-       (org-todo "DONE"))
+       (org-todo org-gtd-done))
      (org-gtd-archive-completed-items)
      (ogt--save-all-buffers)
      (with-current-buffer (org-gtd--default-file)

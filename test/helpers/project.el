@@ -1,7 +1,7 @@
 (defconst ogt--base-project-heading
   "* AdditionalHeading
 :PROPERTIES:
-:TRIGGER:  relatives(forward-no-wrap todo-only 1 no-sort) todo!(NEXT)
+:TRIGGER: org-gtd-next-project-action org-gtd-update-project-task!
 :ORG_GTD:  Projects
 :END:
 ")

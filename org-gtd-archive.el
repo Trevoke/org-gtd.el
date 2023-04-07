@@ -53,6 +53,7 @@ into a datetree."
 (defun org-gtd-archive-completed-items ()
   "Archive everything that needs to be archived in your org-gtd."
   (interactive)
+  (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
       (org-gtd--archive-complete-projects)
       (org-map-entries #'org-gtd--archive-completed-actions
@@ -68,7 +69,8 @@ into a datetree."
 (defun org-gtd--archive-complete-projects ()
   "Archive all projects for which all actions/tasks are marked as done.
 
-Done here is any done `org-todo-keyword'.  For org-gtd this means DONE or CNCL."
+Done here is any done `org-todo-keyword'.  For org-gtd this means `org-gtd-done'
+or `org-gtd-canceled'."
   (org-map-entries
    (lambda ()
 
@@ -81,7 +83,8 @@ Done here is any done `org-todo-keyword'.  For org-gtd this means DONE or CNCL."
    'agenda))
 
 (defun org-gtd--all-subheadings-in-done-type-p ()
-  "Private function. Returns t if every sub-heading is in a DONE or CNCL state."
+  "Private function. Returns t if every sub-heading is in a `org-gtd-done' or
+`org-gtd-canceled' state."
   (seq-every-p (lambda (x) (eq x 'done))
                (org-map-entries (lambda ()
                                   (org-element-property :todo-type (org-element-at-point)))

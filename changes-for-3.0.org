@@ -1,6 +1,7 @@
 * new features
 ** you can now clarify single items with org-gtd-clarify-item
 ** you can customize what the functions do for each GTD action (e.g. incubate, single action, etc.)
+** you can customize your TODO keywords
 * required config changes
 ** org-gtd-process-mode is now org-gtd-clarify-mode
 ** org-gtd-process-map is now org-gtd-clarify-map
@@ -10,3 +11,4 @@
 point people to org documentation for startup / variables to determine logging behavior if they want to keep it
 -> logdone logrepeat logreschedule logredeadline
 https://orgmode.org/manual/In_002dbuffer-Settings.html
+** change org-edna triggers again

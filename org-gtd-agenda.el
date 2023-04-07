@@ -35,20 +35,20 @@
   :group 'org-gtd)
 
 (defcustom org-gtd-agenda-custom-commands
-  '(("g" "Scheduled today and all NEXT items"
+  `(("g" "Scheduled today and all NEXT items"
      (
       (agenda "" ((org-agenda-span 1)
                   (org-agenda-start-day nil)))
-      (todo "NEXT" ((org-agenda-overriding-header "All NEXT items")
-                    (org-agenda-prefix-format '((todo . " %i %-12:(org-gtd-agenda--prefix-format)")))))
-      (todo "WAIT" ((org-agenda-todo-ignore-with-date t)
-                    (org-agenda-overriding-header "Delegated/Blocked items")
-                    (org-agenda-prefix-format '((todo . " %i %-12 (org-gtd-agenda--prefix-format)"))))))))
+      (todo org-gtd-next ((org-agenda-overriding-header "All actions ready to be executed.")
+                          (org-agenda-prefix-format '((todo . " %i %-12:(org-gtd-agenda--prefix-format)")))))
+      (todo org-gtd-wait ((org-agenda-todo-ignore-with-date t)
+                          (org-agenda-overriding-header "Delegated/Blocked items")
+                          (org-agenda-prefix-format '((todo . " %i %-12 (org-gtd-agenda--prefix-format)"))))))))
   "Agenda custom commands to be used for org-gtd.
 
 The provided default is to show the agenda for today and all TODOs marked as
-NEXT or WAIT.  See documentation for `org-agenda-custom-commands' to customize
-this further.
+`org-gtd-next' or `org-gtd-wait'.  See documentation for
+`org-agenda-custom-commands' to customize this further.
 
 NOTE! The function `org-gtd-engage' assumes the 'g' shortcut exists.
 It's recommended you add to this list without modifying this first entry.  You
@@ -73,7 +73,7 @@ This assumes all GTD files are also agenda files."
   (interactive)
   (with-org-gtd-context
       (org-gtd-core-prepare-agenda-buffers)
-      (org-todo-list "NEXT")))
+      (org-todo-list org-gtd-next)))
 
 ;;;###autoload
 (defun org-gtd-agenda--apply (func)

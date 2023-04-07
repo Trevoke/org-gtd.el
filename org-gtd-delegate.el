@@ -41,7 +41,7 @@ Needs to return a string that will be used as the persons name."
   (let ((delegated-to (apply org-gtd-delegate-read-func nil))
         (org-inhibit-logging 'note))
     (org-set-property "DELEGATED_TO" delegated-to)
-    (org-todo "WAIT")
+    (org-todo org-gtd-wait)
     (org-schedule 0)
     (save-excursion
       (goto-char (org-log-beginning t))

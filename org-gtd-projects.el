@@ -31,6 +31,11 @@
 (require 'org-gtd-core)
 (require 'org-gtd-agenda)
 
+(defun org-edna-action/org-gtd-update-project-task! (_last-entry)
+  (org-todo org-gtd-next))
+(defun org-edna-finder/org-gtd-next-project-action ()
+  (org-edna-finder/relatives 'forward-no-wrap 'todo-only 1 'no-sort))
+
 (defconst org-gtd-projects--malformed
   "A 'project' in GTD is a finite set of steps after which a given task is
 complete. In Org GTD, this is defined as a top-level org heading with at least
@@ -55,7 +60,7 @@ instead.")
        (lambda ()
          (when (org-gtd-projects--incomplete-task-p)
            (let ((org-inhibit-logging 'note))
-             (org-todo "CNCL"))))
+             (org-todo org-gtd-canceled))))
        nil
        'tree))
   (org-edna-mode 1))
@@ -71,14 +76,15 @@ instead.")
 (defun org-gtd-projects-fix-todo-keywords-for-project-at-point ()
   "Ensure keywords for subheadings of project at point are sane.
 
-This means one and only one NEXT keyword, and it is the first of type TODO
-in the list."
+This means one and only one `org-gtd-next' keyword, and it is the first non-done
+state in the list - all others are `org-gtd-todo'.."
   (interactive)
   (org-gtd-projects-fix-todo-keywords (point-marker)))
 
 (defun org-gtd-projects-fix-todo-keywords (marker)
-  "Ensure project at MARKER has only one NEXT keyword. Ensures only the first
-non-done keyword is NEXT, all other non-done are TODO."
+  "Ensure project at MARKER has only one `org-gtd-next' keyword. Ensures only
+the first non-done keyword is `org-gtd-next', all other non-done are
+`org-gtd-todo'."
   (with-current-buffer (marker-buffer marker)
     (org-gtd-core-prepare-buffer)
     (save-excursion
@@ -88,17 +94,18 @@ non-done keyword is NEXT, all other non-done are TODO."
        (lambda ()
          (unless (member
                   (org-element-property :todo-keyword (org-element-at-point))
-                  '("TODO" "WAIT" "DONE" "CNCL"))
+                  `(,org-gtd-todo ,org-gtd-wait ,org-gtd-done ,org-gtd-canceled)
+                  )
            (org-entry-put (org-gtd-projects--org-element-pom (org-element-at-point))
-                          "TODO" "TODO")))
+                          "TODO" org-gtd-todo)))
        "+LEVEL=3" 'tree))
     (save-excursion
       (goto-char (marker-position marker))
       (let* ((tasks (org-map-entries #'org-element-at-point "+LEVEL=3" 'tree))
-             (first-wait (-any (lambda (x) (and (string-equal "WAIT" (org-element-property :todo-keyword x)) x)) tasks))
-             (first-todo (-any (lambda (x) (and (string-equal "TODO" (org-element-property :todo-keyword x)) x)) tasks)))
+             (first-wait (-any (lambda (x) (and (string-equal org-gtd-wait (org-element-property :todo-keyword x)) x)) tasks))
+             (first-todo (-any (lambda (x) (and (string-equal org-gtd-todo (org-element-property :todo-keyword x)) x)) tasks)))
         (unless first-wait
-          (org-entry-put (org-gtd-projects--org-element-pom first-todo) "TODO" "NEXT"))))))
+          (org-entry-put (org-gtd-projects--org-element-pom first-todo) "TODO" org-gtd-next))))))
 
 (defun org-gtd-projects--org-element-pom (element)
   "Return buffer position for start of Org ELEMENT."
@@ -106,9 +113,9 @@ non-done keyword is NEXT, all other non-done are TODO."
 
 ;; TODO rename to something like initialize TODO states
 (defun org-gtd-projects--nextify ()
-  "Add the NEXT keyword to the first action/task of the project.
+  "Add the `org-gtd-next' keyword to the first action/task of the project.
 
-Add the TODO keyword to all subsequent actions/tasks."
+Add the `org-gtd-todo' keyword to all subsequent actions/tasks."
   (org-map-entries (lambda () (org-gtd-organize--decorate-element
                                (org-element-at-point)) )
                    "LEVEL=2"
@@ -120,8 +127,8 @@ Add the TODO keyword to all subsequent actions/tasks."
         (reverse rest-entries)
         'headline
       (lambda (myelt)
-        (org-entry-put (org-gtd-projects--org-element-pom myelt) "TODO" "TODO")))
-    (org-entry-put (org-gtd-projects--org-element-pom first-entry) "TODO" "NEXT")))
+        (org-entry-put (org-gtd-projects--org-element-pom myelt) "TODO" org-gtd-todo)))
+    (org-entry-put (org-gtd-projects--org-element-pom first-entry) "TODO" org-gtd-next)))
 
 (defun org-gtd-projects--incomplete-task-p ()
   "Determine if current heading is a task that's not finished."

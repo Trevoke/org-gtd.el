@@ -47,7 +47,7 @@ setting as part of following the instructions to add your own refile targets."
 (defconst org-gtd-projects-template
   "* Projects
 :PROPERTIES:
-:TRIGGER: relatives(forward-no-wrap todo-only 1 no-sort) todo!(NEXT)
+:TRIGGER: org-gtd-next-project-action org-gtd-update-project-task!
 :ORG_GTD: Projects
 :END:
 ")

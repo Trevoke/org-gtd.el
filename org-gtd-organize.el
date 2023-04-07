@@ -239,23 +239,23 @@ work. This is simply a wrapper function that cleans up emacs as required."
         (funcall hook)))))
 
 (defun org-gtd-organize--task-at-point-as-single-action ()
-  "Item at point is a one-off NEXT action."
+  "Item at point is a one-off action, ready to be executed."
   (interactive)
   (org-gtd-organize-decorate-item)
-  (org-todo "NEXT")
+  (org-todo org-gtd-next)
   (org-gtd--refile org-gtd-actions))
 
 (defun org-gtd-organize--task-at-point-was-quick-action ()
   "Process GTD inbox item by doing it now."
   (interactive)
   (org-gtd-organize-decorate-item)
-  (org-todo "DONE")
+  (org-todo org-gtd-done)
   (with-org-gtd-context (org-archive-subtree)))
 
 (defun org-gtd-organize--task-at-point-as-archived-knowledge ()
   "Archive (in the GTD sense, which means file this knowledge)."
   (interactive)
-  (org-todo "DONE")
+  (org-todo org-gtd-done)
   (with-org-gtd-context (org-archive-subtree)))
 
 (defun org-gtd-organize--task-at-point-as-new-project ()
@@ -321,7 +321,7 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
 (defun org-gtd-organize--task-at-point-as-trash ()
   "Mark GTD inbox item as cancelled and move it to the org-gtd task archives."
   (interactive)
-  (org-todo "CNCL")
+  (org-todo org-gtd-canceled)
   (with-org-gtd-context (org-archive-subtree)))
 
 (defun org-gtd-organize--decorate-element (element)

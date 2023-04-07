@@ -45,6 +45,109 @@ your own files if you want multiple refile targets (projects, etc.)."
   :package-version '(org-gtd . "0.1")
   :type 'directory)
 
+(defcustom org-gtd-next "NEXT"
+  "The org-mode keyword for an action ready to be done. Just the word."
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0")
+  :type 'string)
+
+(defcustom org-gtd-next-suffix "(n)"
+  "Additional org-mode tools for this keyword. Example: \"(w@/!)\".
+
+You can define:
+- a key to be used with `org-use-fast-todo-selection'
+- behavior (optional note/timestamp) for entering state
+- behavior (optional note/timestamp) for leaving state.
+
+See `org-todo-keywords' for definition."
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0")
+  :type 'string)
+
+(defcustom org-gtd-todo "TODO"
+  "The org-mode keyword for an upcoming action (not yet ready, not blocked).
+
+See `org-todo-keywords' for customization options."
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0")
+  :type 'string)
+
+(defcustom org-gtd-todo-suffix "(t)"
+  "Additional org-mode tools for this keyword. Example: \"(w@/!)\".
+
+You can define:
+- a key to be used with `org-use-fast-todo-selection'
+- behavior (optional note/timestamp) for entering state
+- behavior (optional note/timestamp) for leaving state.
+
+See `org-todo-keywords' for definition."
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0")
+  :type 'string)
+
+(defcustom org-gtd-wait "WAIT"
+  "The org-mode keyword when an action is blocked/delegated.
+
+See `org-todo-keywords' for customization options."
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0")
+  :type 'string)
+
+(defcustom org-gtd-wait-suffix "(w@)"
+  "Additional org-mode tools for this keyword. Example: \"(w@/!)\".
+
+You can define:
+- a key to be used with `org-use-fast-todo-selection'
+- behavior (optional note/timestamp) for entering state
+- behavior (optional note/timestamp) for leaving state.
+
+See `org-todo-keywords' for definition."
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0")
+  :type 'string)
+
+(defcustom org-gtd-done "DONE"
+  "The org-mode keyword for a finished task.
+
+ See `org-todo-keywords' for customization options."
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0")
+  :type 'string)
+
+(defcustom org-gtd-done-suffix "(d)"
+  "Additional org-mode tools for this keyword. Example: \"(w@/!)\".
+
+You can define:
+- a key to be used with `org-use-fast-todo-selection'
+- behavior (optional note/timestamp) for entering state
+- behavior (optional note/timestamp) for leaving state.
+
+See `org-todo-keywords' for definition."
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0")
+  :type 'string)
+
+(defcustom org-gtd-canceled "CNCL"
+  "The org-mode keyword for a canceled task.
+
+ See `org-todo-keywords' for customization options."
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0")
+  :type 'string)
+
+(defcustom org-gtd-canceled-suffix "(c@)"
+  "Additional org-mode tools for this keyword. Example: \"(w@/!)\".
+
+You can define:
+- a key to be used with `org-use-fast-todo-selection'
+- behavior (optional note/timestamp) for entering state
+- behavior (optional note/timestamp) for leaving state.
+
+See `org-todo-keywords' for definition."
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0")
+  :type 'string)
+
 (defconst org-gtd-inbox "inbox")
 (defconst org-gtd-incubated "incubated")
 (defconst org-gtd-projects "projects")
@@ -65,7 +168,10 @@ your own files if you want multiple refile targets (projects, etc.)."
   "How to tell org-mode to find project headings")
 
 (defconst org-gtd-stuck-projects
-  `(,org-gtd-project-headings ("NEXT" "WAIT") nil "")
+  `(,org-gtd-project-headings
+    (,org-gtd-next ,org-gtd-wait)
+    nil
+    "")
   "How to identify stuck projects in the GTD system.
 
 This is a list of four items, the same type as in `org-stuck-projects'.")
@@ -75,7 +181,12 @@ This is a list of four items, the same type as in `org-stuck-projects'.")
   "Wrap any BODY in this macro to inherit the org-gtd settings for your logic."
   (declare (debug t) (indent 2))
   `(let* ((org-use-property-inheritance "ORG_GTD")
-          (org-todo-keywords '((sequence "NEXT(n)" "TODO(t)" "WAIT(w@)" "|" "DONE(d)" "CNCL(c@)" "TRASH(h)")))
+          (org-todo-keywords `((sequence ,(string-join `(,org-gtd-next ,org-gtd-next-suffix))
+                                         ,(string-join `(,org-gtd-todo ,org-gtd-todo-suffix))
+                                         ,(string-join `(,org-gtd-wait ,org-gtd-wait-suffix))
+                                         "|"
+                                         ,(string-join `(,org-gtd-done ,org-gtd-done-suffix))
+                                         ,(string-join `(,org-gtd-canceled ,org-gtd-canceled-suffix)))))
           ;; (org-log-done 'time)
           ;; (org-log-done-with-time t)
           ;; (org-log-refile 'time)
