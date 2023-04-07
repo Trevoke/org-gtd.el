@@ -27,6 +27,7 @@
 
 (require 'org-agenda-property)
 (require 'org-capture)
+(require 'org-gtd-backward-compatibility)
 
 (defgroup org-gtd nil
   "Customize the org-gtd package."

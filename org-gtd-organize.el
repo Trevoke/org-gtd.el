@@ -37,7 +37,7 @@
 
 (defcustom org-gtd-organize-quick-action-func
   #'org-gtd-organize--task-at-point-was-quick-action
-  "Can be an atom or a sexp. Function called when org-gtd organizes the item at
+  "Can be an atom or a sexp.  Function called when org-gtd organizes the item at
 point as an action that you started and finished just now."
   :group 'org-gtd-organize
   :type 'function
@@ -45,7 +45,7 @@ point as an action that you started and finished just now."
 
 (defcustom org-gtd-organize-single-action-func
   #'org-gtd-organize--task-at-point-as-single-action
-  "Can be an atom or a sexp. Function called when org-gtd organizes the item at
+  "Can be an atom or a sexp.  Function called when org-gtd organizes the item at
 point as a single next action."
   :group 'org-gtd-organize
   :type 'function

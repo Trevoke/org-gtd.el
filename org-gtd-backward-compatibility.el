@@ -45,5 +45,14 @@ the string."
             (start (concat (make-string pad-length (or padding ?\s)) string))
             (t (concat string (make-string pad-length (or padding ?\s))))))))
 
+(unless (fboundp 'ensure-list)
+  (defun ensure-list (object)
+    "Return OBJECT as a list.
+If OBJECT is already a list, return OBJECT itself.  If it's
+not a list, return a one-element list containing OBJECT."
+    (if (listp object)
+        object
+      (list object))))
+
 (provide 'org-gtd-backward-compatibility)
 ;;; org-gtd-backward-compatibility.el ends here
