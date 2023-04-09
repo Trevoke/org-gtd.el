@@ -109,7 +109,6 @@ actually appointments or deadlines."
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-;;;###autoload
 (transient-define-prefix org-gtd-organize ()
   "Choose how to categorize the current item. This function works for both one-off clarification and whole-inbox clarification."
   (interactive)
@@ -144,11 +143,14 @@ actually appointments or deadlines."
                                           (org-gtd-organize--call
                                            org-gtd-organize-add-to-project-func)))]
   ["Non-actionable"
-   [("i" "Incubate" (lambda () (interactive)
+   [("i" "Incubate" (lambda ()
+                      (interactive)
                       (org-gtd-organize--call org-gtd-organize-incubate-func)))
-    ("a" "Archive this knowledge" (lambda () (interactive)
+    ("a" "Archive this knowledge" (lambda ()
+                                    (interactive)
                                     (org-gtd-organize--call org-gtd-organize-archive-func)))]
-   [("t" "Trash" (lambda () (interactive)
+   [("t" "Trash" (lambda ()
+                   (interactive)
                    (org-gtd-organize--call org-gtd-organize-trash-func)))]])
 
 (transient-define-prefix org-gtd-organize-inbox ()

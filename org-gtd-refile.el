@@ -117,11 +117,10 @@ TYPE is one of the org-gtd action types.  This is a private function."
 
 GTD-TYPE is an action type."
   (with-current-buffer (org-gtd--default-file)
-    (end-of-buffer)
+    (goto-char (point-max))
     (newline)
     (insert (gethash gtd-type org-gtd--file-template))
-    (basic-save-buffer)
-    ))
+    (basic-save-buffer)))
 
 (defun org-gtd-refile--group-p (type)
   "Determine whether the current heading is of a given gtd TYPE."

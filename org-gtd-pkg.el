@@ -1,4 +1,4 @@
-(define-package "org-gtd" "2.3.0"
+(define-package "org-gtd" "3.0.0"
   "An implementation of GTD."
   '((emacs "27.1")
     (org-edna "1.1.2")
