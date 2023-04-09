@@ -158,7 +158,11 @@ Add the `org-gtd-todo' keyword to all subsequent actions/tasks."
   (let ((resize-mini-windows t)
         (max-mini-window-height 0))
     (display-message-or-buffer org-gtd-projects--malformed))
-  (read-key "Waiting for a keypress to return to clarifying... " t)
+  ;; read-key changed in emacs 28
+  (if (version< emacs-version "28")
+      (read-key "Waiting for a keypress to return to clarifying... ")
+    (read-key "Waiting for a keypress to return to clarifying... " t))
+
   (message ""))
 
 (provide 'org-gtd-projects)
