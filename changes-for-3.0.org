@@ -12,3 +12,4 @@ point people to org documentation for startup / variables to determine logging b
 -> logdone logrepeat logreschedule logredeadline
 https://orgmode.org/manual/In_002dbuffer-Settings.html
 ** change org-edna triggers again
+** calendar items no longer use SCHEDULED

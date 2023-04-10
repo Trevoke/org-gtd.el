@@ -18,7 +18,7 @@
        (set-buffer source-buffer)
        (org-gtd-clarify-item)
        (setq window-config org-gtd-clarify--window-config)
-       (org-gtd-organize--call 'org-gtd-organize--task-at-point-as-single-action)
+       (org-gtd-single-action--one-off)
 
        (expect (compare-window-configurations (current-window-configuration) window-config)
                :to-be t)))
@@ -27,7 +27,7 @@
            (org-gtd-refile-to-any-target t))
        (set-buffer source-buffer)
        (org-gtd-clarify-item)
-       (org-gtd-organize--call 'org-gtd-organize--task-at-point-as-single-action)
+       (org-gtd-single-action--one-off)
        (expect (org-gtd-clarify--get-buffers) :to-be nil)))
 
  (it "deletes the source heading"
@@ -35,7 +35,7 @@
            (org-gtd-refile-to-any-target t))
        (set-buffer source-buffer)
        (org-gtd-clarify-item)
-       (org-gtd-organize--call 'org-gtd-organize--task-at-point-as-single-action)
+       (org-gtd-single-action--one-off)
        (expect (buffer-size) :to-equal 0))
      ;; TODO after I remove the headers, test that I can remove this
      (remove-hook 'post-command-hook 'org-add-log-note)))

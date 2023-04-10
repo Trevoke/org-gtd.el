@@ -35,8 +35,7 @@ This is the inbox. Everything goes in here when you capture it.
   "Template for the GTD inbox.")
 
 ;; TODO remove this entirely
-(defconst org-gtd-file-header
-  "")
+(defconst org-gtd-file-header "")
 
 
 (defconst org-gtd-default-file-name "org-gtd-tasks")

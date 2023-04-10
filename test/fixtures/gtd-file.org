@@ -34,10 +34,15 @@
 :END:
 
 ** DONE write a nice test
-SCHEDULED: <2021-11-20 Sat>
+:PROPERTIES:
+:ORG_GTD_CALENDAR: <2021-11-20 Sat>
+:END:
+
 
 ** probably overdue by now
-SCHEDULED: <2021-11-18 Thu>
+:PROPERTIES:
+:ORG_GTD_CALENDAR: <2021-11-18 Thu>
+:END:
 
 ** repeating item
 SCHEDULED: <2021-12-04 Sat .+1d>

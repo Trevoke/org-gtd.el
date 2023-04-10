@@ -31,6 +31,29 @@
 (require 'org-gtd-core)
 (require 'org-gtd-agenda)
 
+(defun org-edna-action/org-gtd-update-project-task! (_last-entry)
+  (org-todo org-gtd-next))
+
+(defun org-edna-finder/org-gtd-next-project-action ()
+  (org-edna-finder/relatives 'forward-no-wrap 'todo-only 1 'no-sort))
+
+(defcustom org-gtd-organize-project-func
+  #'org-gtd-project-new--apply
+  "Function called when item at point is a project.
+
+You *probably* should not change this from the default, as a lot of fiddly bits
+depend on the way org-gtd structures and organizes the projects."
+  :group 'org-gtd-organize
+  :type 'function
+  :package-version '(org-gtd . "3.0.0"))
+
+(defcustom org-gtd-organize-add-to-project-func
+  #'org-gtd-project-extend--apply
+  "Function called when item at point is a new task in an existing project."
+  :group 'org-gtd-organize
+  :type 'function
+  :package-version '(org-gtd . "3.0.0"))
+
 (defconst org-gtd-project-headings
   "+LEVEL=2&+ORG_GTD=\"Projects\""
   "How to tell org-mode to find project headings")
@@ -43,12 +66,6 @@
   "How to identify stuck projects in the GTD system.
 
 This is a list of four items, the same type as in `org-stuck-projects'.")
-
-(defun org-edna-action/org-gtd-update-project-task! (_last-entry)
-  (org-todo org-gtd-next))
-
-(defun org-edna-finder/org-gtd-next-project-action ()
-  (org-edna-finder/relatives 'forward-no-wrap 'todo-only 1 'no-sort))
 
 (defconst org-gtd-projects--malformed
   "A 'project' in GTD is a finite set of steps after which a given task is
@@ -63,6 +80,63 @@ a project, create such a headline structure, like so:
 
 If you do not need sub-headings, then organize this item as a 'single action'
 instead.")
+
+;;;###autoload
+(defun org-gtd-project-new--one-off ()
+  (interactive)
+  (org-gtd-organize--call org-gtd-organize-project-func))
+
+;;;###autoload
+(defun org-gtd-project-new--inbox-loop ()
+  (interactive)
+  (org-gtd-organize-inbox-item org-gtd-organize-project-func))
+
+;;;###autoload
+(defun org-gtd-project-extend--one-off ()
+  (interactive)
+  (org-gtd-organize--call org-gtd-organize-add-to-project-func))
+
+;;;###autoload
+(defun org-gtd-project-extend--inbox-loop ()
+  (interactive)
+  (org-gtd-organize-inbox-item org-gtd-organize-add-to-project-func))
+
+(defun org-gtd-project-new--apply ()
+  "Process GTD inbox item by transforming it into a project.
+Allow the user apply user-defined tags from
+`org-tag-persistent-alist', `org-tag-alist' or file-local tags in
+the inbox.  Refile to `org-gtd-actionable-file-basename'."
+  (when (org-gtd-projects--poorly-formatted-p)
+    (org-gtd-projects--show-error)
+    (throw 'org-gtd-error "Malformed project"))
+
+
+  (org-gtd-organize-decorate-item)
+  (org-gtd-projects--nextify)
+  (let ((org-special-ctrl-a t))
+    (org-end-of-line))
+  (insert " [/]")
+  (org-update-statistics-cookies t)
+  (org-gtd--refile org-gtd-projects))
+
+(defun org-gtd-project-extend--apply ()
+  "Refile the org heading at point under a chosen heading in the agenda files."
+  (with-org-gtd-context
+      (let* ((org-gtd-refile-to-any-target nil)
+             (org-use-property-inheritance '("ORG_GTD"))
+             (headings (org-map-entries
+                        (lambda () (org-get-heading t t t t))
+                        org-gtd-project-headings
+                        'agenda))
+             (chosen-heading (completing-read "Choose a heading: " headings nil t))
+             (heading-marker (org-find-exact-heading-in-directory chosen-heading org-gtd-directory)))
+        (org-gtd-organize-decorate-item)
+        (org-refile 3 nil `(,chosen-heading
+                              ,(buffer-file-name (marker-buffer heading-marker))
+                              nil
+                              ,(marker-position heading-marker))
+                    nil)
+        (org-gtd-projects-fix-todo-keywords heading-marker))))
 
 ;;;###autoload
 (defun org-gtd-cancel-project ()

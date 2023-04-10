@@ -26,6 +26,13 @@
 
 (require 'transient)
 (require 'org-gtd-core)
+(require 'org-gtd-calendar)
+(require 'org-gtd-file)
+(require 'org-gtd-incubate)
+(require 'org-gtd-quick-action)
+(require 'org-gtd-single-action)
+(require 'org-gtd-trash)
+(require 'org-gtd-delegate)
 (require 'org-gtd-agenda)
 (require 'org-gtd-projects)
 (require 'org-gtd-refile)
@@ -34,80 +41,6 @@
   "Manage the functions for organizing the GTD actions."
   :package-version '(org-gtd . "3.0.0")
   :group 'org-gtd)
-
-(defcustom org-gtd-organize-quick-action-func
-  #'org-gtd-organize--task-at-point-was-quick-action
-  "Function called when item at point was quick action."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
-
-(defcustom org-gtd-organize-single-action-func
-  #'org-gtd-organize--task-at-point-as-single-action
-  "Function called when item at point is a single next action."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
-
-(defcustom org-gtd-organize-archive-func
-  #'org-gtd-organize-task-at-point-as-archived-knowledge
-  "Function called when item at point is knowledge to be stored.
-Note that this function is used inside loops,for instance to process the inbox,
-so if you have manual steps you need to take when storing a heading
-as knowledge, take them before calling this function
-\(for instance, during inbox processing, take the manual steps during the
-clarify step, before you call `org-gtd-organize')."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
-
-(defcustom org-gtd-organize-project-func
-  #'org-gtd-organize--task-at-point-as-new-project
-  "Function called when item at point is a project.
-
-You *probably* should not change this from the default, as a lot of fiddly bits
-depend on the way org-gtd structures and organizes the projects."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
-
-(defcustom org-gtd-organize-add-to-project-func
-  #'org-gtd-organize--task-at-point-add-to-existing-project
-  "Function called when item at point is a new task in an existing project."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
-
-(defcustom org-gtd-organize-appointment-func
-  #'org-gtd-organize--task-at-point-as-appointment
-  "Function called when item at point is a task that must happen on a given day.
-
-Keep this clean and don't load your calendar with things that aren't
-actually appointments or deadlines."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
-
-(defcustom org-gtd-organize-delegate-func
-  #'org-gtd-organize--task-at-point-as-delegated
-  "Function called when item at at point is an action delegated to someone else."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
-
-(defcustom org-gtd-organize-incubate-func
-  #'org-gtd-organize--task-at-point-as-incubated
-  "Function called when item at point is to be incubated."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
-
-(defcustom org-gtd-organize-trash-func
-  #'org-gtd-organize--task-at-point-as-trash
-  "Function called when  item at point is to be discarded."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
 
 (transient-define-prefix org-gtd-organize ()
   "Choose how to categorize the current item. This function works for both one-off clarification and whole-inbox clarification."
@@ -118,80 +51,29 @@ actually appointments or deadlines."
 
 (transient-define-prefix org-gtd-organize-one-off ()
   ["Actionable"
-   [("q" "Quick action" (lambda ()
-                          (interactive)
-                          (org-gtd-organize--call
-                           org-gtd-organize-quick-action-func)))
-    ("s" "Single action" (lambda ()
-                           (interactive)
-                           (org-gtd-organize--call
-                            org-gtd-organize-single-action-func)))]
-   [("d" "Delegate" (lambda ()
-                      (interactive)
-                      (org-gtd-organize--call
-                       org-gtd-organize-delegate-func)))
-    ("c" "Calendar" (lambda ()
-                      (interactive)
-                      (org-gtd-organize--call
-                       org-gtd-organize-appointment-func)))]]
-  [("p" "Project (multi-step)" (lambda ()
-                                 (interactive)
-                                 (org-gtd-organize--call
-                                  org-gtd-organize-project-func)))
-   ("m" "Modify project: add this task" (lambda ()
-                                          (interactive)
-                                          (org-gtd-organize--call
-                                           org-gtd-organize-add-to-project-func)))]
+   [("q" "Quick action" org-gtd-quick-action--one-off)
+    ("s" "Single action" org-gtd-single-action--one-off)]
+   [("d" "Delegate" org-gtd-delegate--one-off)
+    ("c" "Calendar" org-gtd-calendar-one-off)]]
+  [("p" "Project (multi-step)" org-gtd-project-new--one-off)
+   ("m" "Modify project: add this task" org-gtd-project-extend--one-off)]
   ["Non-actionable"
-   [("i" "Incubate" (lambda ()
-                      (interactive)
-                      (org-gtd-organize--call org-gtd-organize-incubate-func)))
-    ("a" "Archive this knowledge" (lambda ()
-                                    (interactive)
-                                    (org-gtd-organize--call org-gtd-organize-archive-func)))]
-   [("t" "Trash" (lambda ()
-                   (interactive)
-                   (org-gtd-organize--call org-gtd-organize-trash-func)))]])
+   [("i" "Incubate" org-gtd-incubate--one-off)
+    ("a" "Archive this knowledge" org-gtd-file--one-off)]
+   [("t" "Trash" org-gtd-trash--one-off)]])
 
 (transient-define-prefix org-gtd-organize-inbox ()
   ["Actionable"
-   [("q" "Quick action" (lambda ()
-                          (interactive)
-                          (org-gtd-organize-inbox-item
-                           org-gtd-organize-quick-action-func)))
-    ("s" "Single action" (lambda ()
-                           (interactive)
-                           (org-gtd-organize-inbox-item
-                            org-gtd-organize-single-action-func)))]
-   [("d" "Delegate" (lambda ()
-                      (interactive)
-                      (org-gtd-organize-inbox-item
-                       org-gtd-organize-delegate-func)))
-    ("c" "Calendar" (lambda ()
-                      (interactive)
-                      (org-gtd-organize-inbox-item
-                       org-gtd-organize-appointment-func)))]]
-  [("p" "Project (multi-step)" (lambda ()
-                                 (interactive)
-                                 (org-gtd-organize-inbox-item
-                                  org-gtd-organize-project-func)))
-   ("m" "Modify project: add this task" (lambda ()
-                                          (interactive)
-                                          (org-gtd-organize-inbox-item
-                                           org-gtd-organize-add-to-project-func)))]
+   [("q" "Quick action" org-gtd-quick-action--inbox-loop)
+    ("s" "Single action" org-gtd-single-action--inbox-loop)]
+   [("d" "Delegate" org-gtd-delegate--inbox-loop)
+    ("c" "Calendar" org-gtd-calendar--inbox-loop)]]
+  [("p" "Project (multi-step)" org-gtd-project-new--inbox-loop)
+   ("m" "Modify project: add this task" org-gtd-project-extend--inbox-loop)]
   ["Non-actionable"
-   [("i" "Incubate" (lambda ()
-                      (interactive)
-                      (org-gtd-organize-inbox-item
-                       org-gtd-organize-incubate-func)))
-    ("a" "Archive this knowledge" (lambda ()
-                                    (interactive)
-                                    (org-gtd-organize-inbox-item
-                                     org-gtd-organize-archive-func)))]
-   [("t" "Trash" (lambda ()
-                   (interactive)
-                   (org-gtd-organize-inbox-item
-                    org-gtd-organize-trash-func)))]]
+   [("i" "Incubate" org-gtd-incubate--inbox-loop)
+    ("a" "Archive this knowledge" org-gtd-file--inbox-loop)]
+   [("t" "Trash" org-gtd-trash--inbox-loop)]]
 
   ["Org GTD"
    ("x"
@@ -234,92 +116,6 @@ This handles the internal bits of `org-gtd'."
         (org-next-visible-heading 1))
       (save-restriction
         (funcall hook)))))
-
-(defun org-gtd-organize--task-at-point-as-single-action ()
-  "Item at point is a one-off action, ready to be executed."
-  (interactive)
-  (org-gtd-organize-decorate-item)
-  (org-todo org-gtd-next)
-  (org-gtd--refile org-gtd-actions))
-
-(defun org-gtd-organize--task-at-point-was-quick-action ()
-  "Process GTD inbox item by doing it now."
-  (interactive)
-  (org-gtd-organize-decorate-item)
-  (org-todo org-gtd-done)
-  (with-org-gtd-context (org-archive-subtree)))
-
-(defun org-gtd-organize--task-at-point-as-archived-knowledge ()
-  "Archive (in the GTD sense, which means file this knowledge)."
-  (interactive)
-  (org-todo org-gtd-done)
-  (with-org-gtd-context (org-archive-subtree)))
-
-(defun org-gtd-organize--task-at-point-as-new-project ()
-  "Process GTD inbox item by transforming it into a project.
-Allow the user apply user-defined tags from
-`org-tag-persistent-alist', `org-tag-alist' or file-local tags in
-the inbox.  Refile to `org-gtd-actionable-file-basename'."
-  (interactive)
-  (when (org-gtd-projects--poorly-formatted-p)
-    (org-gtd-projects--show-error)
-    (throw 'org-gtd-error "Malformed project"))
-
-
-    (org-gtd-organize-decorate-item)
-    (org-gtd-projects--nextify)
-    (let ((org-special-ctrl-a t))
-      (org-end-of-line))
-    (insert " [/]")
-    (org-update-statistics-cookies t)
-    (org-gtd--refile org-gtd-projects))
-
-(defun org-gtd-organize--task-at-point-add-to-existing-project ()
-  "Refile the org heading at point under a chosen heading in the agenda files."
-  (interactive)
-  (with-org-gtd-context
-      (let* ((org-gtd-refile-to-any-target nil)
-             (org-use-property-inheritance '("ORG_GTD"))
-             (headings (org-map-entries
-                        (lambda () (org-get-heading t t t t))
-                        org-gtd-project-headings
-                        'agenda))
-             (chosen-heading (completing-read "Choose a heading: " headings nil t))
-             (heading-marker (org-find-exact-heading-in-directory chosen-heading org-gtd-directory)))
-        (org-gtd-organize-decorate-item)
-        (org-refile 3 nil `(,chosen-heading
-                              ,(buffer-file-name (marker-buffer heading-marker))
-                              nil
-                              ,(marker-position heading-marker))
-                    nil)
-        (org-gtd-projects-fix-todo-keywords heading-marker))))
-
-(defun org-gtd-organize--task-at-point-as-appointment ()
-  "Add a date/time to this item and store in org gtd."
-  (interactive)
-  (org-gtd-organize-decorate-item)
-  (org-schedule 0)
-  (org-gtd--refile org-gtd-calendar))
-
-(defun org-gtd-organize--task-at-point-as-delegated ()
-  "Delegate this item and file it in the org-gtd system."
-  (interactive)
-  (org-gtd-organize-decorate-item)
-  (org-gtd-delegate)
-  (org-gtd--refile org-gtd-actions))
-
-(defun org-gtd-organize--task-at-point-as-incubated ()
-  "Incubate this item through org-gtd."
-  (interactive)
-  (org-gtd-organize-decorate-item)
-  (org-schedule 0)
-  (org-gtd--refile org-gtd-incubated))
-
-(defun org-gtd-organize--task-at-point-as-trash ()
-  "Mark GTD inbox item as cancelled and move it to the org-gtd task archives."
-  (interactive)
-  (org-todo org-gtd-canceled)
-  (with-org-gtd-context (org-archive-subtree)))
 
 (defun org-gtd-organize--decorate-element (element)
   "Apply `org-gtd--decorate-item' to org-element ELEMENT."
