@@ -63,6 +63,7 @@
 (require 'org-gtd-organize)
 (require 'org-gtd-process)
 (require 'org-gtd-mode)
+(require 'org-gtd-upgrades)
 
 (defvar org-gtd-update-ack "1.0.0"
   "Set this to the latest version you have upgraded to.
