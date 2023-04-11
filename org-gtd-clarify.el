@@ -97,12 +97,7 @@ The file shown can be configured in `org-gtd-horizons-file'"
       (setq-local org-gtd-clarify--window-config window-config
                   org-gtd-clarify--source-heading-marker source-heading-marker
                   org-gtd-clarify--clarify-id (org-id-get)))
-    (set-buffer processing-buffer)
-    (display-buffer processing-buffer)
-    (delete-other-windows (get-buffer-window processing-buffer))
-    (display-buffer-in-side-window
-     (org-gtd--horizons-file)
-     '((side . right) (dedicated . t)))))
+    (org-gtd-clarify-setup-windows processing-buffer)))
 
 ;;;###autoload
 (defun org-gtd-clarify-inbox-item ()
@@ -113,14 +108,24 @@ inbox clarification process."
   (setq-local org-gtd-clarify--inbox-p t))
 
 ;;;###autoload
-(defun org-gtd-clarify-select ()
+(defun org-gtd-clarify-switch-to-buffer ()
   "Prompt the user to choose one of the existing WIP buffers."
   (interactive)
   (let ((buf-names (mapcar #'buffer-name (org-gtd-clarify--get-buffers))))
     (if buf-names
-        (let ((chosen-buf-name (completing-read "Choose a buffer: " buf-names)))
-          (get-buffer chosen-buf-name))
+        (let ((chosen-buf-name (completing-read "Choose a buffer: " buf-names nil t)))
+          (org-gtd-clarify-setup-windows chosen-buf-name))
       (message "There are no Org-GTD WIP buffers."))))
+
+(defun org-gtd-clarify-setup-windows (buffer-or-name)
+  "Setup clarifying windows around BUFFER."
+  (let ((buffer (get-buffer buffer-or-name)))
+    (set-buffer buffer)
+    (display-buffer buffer)
+    (delete-other-windows (get-buffer-window buffer))
+    (if org-gtd-clarify-show-horizons
+        (display-buffer-in-side-window (org-gtd--horizons-file)
+                                       '((side . right) (dedicated . t))))))
 
 (defun org-gtd-clarify--buffer-name (id)
   "Retrieve the name of the WIP buffer for this particular ID."
