@@ -26,6 +26,18 @@
 
 (require 'org-gtd-id)
 
+(defgroup org-gtd-clarify nil
+  "Customize the behavior when clarifying an item."
+  :package-version '(org-gtd . "3.0")
+  :group 'org-gtd)
+
+(defcustom org-gtd-clarify-show-horizons nil
+  "When t, show a side buffer with the higher horizons during item clarification.
+The file shown can be configured in `org-gtd-horizons-file'"
+  :package-version '(org-gtd . "3.0")
+  :group 'org-gtd-clarify
+  :type 'boolean)
+
 (defconst org-gtd-clarify--prefix "Org-GTD WIP")
 
 (defvar-local org-gtd-clarify--window-config nil
@@ -43,6 +55,19 @@
 ;;;###autoload
 (defvar org-gtd-clarify-map (make-sparse-keymap)
   "Keymap for command `org-gtd-clarify-mode', a minor mode.")
+
+;; code to make windows atomic, from emacs manual
+;; (let ((window (split-window-right)))
+;;   (window-make-atom (window-parent window))
+;;   (display-buffer-in-atom-window
+;;    (get-buffer-create "*Messages*")
+;;    `((window . ,(window-parent window)) (window-height . 5))))
+
+;; code to make windows non-atomic
+;; (walk-window-subtree (lambda (window) (set-window-parameter window 'window-atom nil)) (window-parent (get-buffer-window (current-buffer))) t)
+
+;; dedicated side window
+;; (display-buffer-in-side-window (get-buffer "horizons.org") '((side . right) (dedicated . t)))
 
 ;;;###autoload
 (define-minor-mode org-gtd-clarify-mode
@@ -74,7 +99,10 @@
                   org-gtd-clarify--clarify-id (org-id-get)))
     (set-buffer processing-buffer)
     (display-buffer processing-buffer)
-    (delete-other-windows (get-buffer-window processing-buffer))))
+    (delete-other-windows (get-buffer-window processing-buffer))
+    (display-buffer-in-side-window
+     (org-gtd--horizons-file)
+     '((side . right) (dedicated . t)))))
 
 ;;;###autoload
 (defun org-gtd-clarify-inbox-item ()

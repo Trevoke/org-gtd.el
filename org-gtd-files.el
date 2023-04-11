@@ -34,11 +34,14 @@ This is the inbox. Everything goes in here when you capture it.
 "
   "Template for the GTD inbox.")
 
-;; TODO remove this entirely
-(defconst org-gtd-file-header "")
-
-
 (defconst org-gtd-default-file-name "org-gtd-tasks")
+
+(defconst org-gtd-file-horizons-template
+  "* Purpose and principles (why)
+* Vision (what)
+* Goals
+* Areas of focus / accountabilities
+")
 
 ;;;###autoload
 (defun org-gtd-inbox-path ()
@@ -47,6 +50,11 @@ This is the inbox. Everything goes in here when you capture it.
     (org-gtd--ensure-file-exists path org-gtd-inbox-template)
     path))
 
+(defun org-gtd--horizons-file ()
+  (let ((path (f-join org-gtd-directory org-gtd-horizons-file)))
+    (org-gtd--ensure-file-exists path org-gtd-file-horizons-template)
+    (find-file-noselect path)))
+
 (defun org-gtd--inbox-file ()
   "Create or return the buffer to the GTD inbox file."
   (find-file-noselect (org-gtd-inbox-path)))
@@ -54,14 +62,14 @@ This is the inbox. Everything goes in here when you capture it.
 (defun org-gtd--default-file ()
   "Create or return the buffer to the default GTD file."
   (let ((path (org-gtd--path org-gtd-default-file-name)))
-    (org-gtd--ensure-file-exists path org-gtd-file-header)
+    (org-gtd--ensure-file-exists path)
     (find-file-noselect path)))
 
-(defun org-gtd--ensure-file-exists (path initial-contents)
+(defun org-gtd--ensure-file-exists (path &optional initial-contents)
   "Create the file at PATH with INITIAL-CONTENTS if it does not exist."
   (unless (f-exists-p path)
     (with-current-buffer (find-file-noselect path)
-      (insert initial-contents)
+      (insert (or initial-contents ""))
       (org-gtd-core-prepare-buffer)
       (basic-save-buffer))))
 

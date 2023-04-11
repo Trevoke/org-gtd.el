@@ -8,8 +8,7 @@
 
 (describe "Create a default file"
 
-  (before-each
-   (ogt--configure-emacs))
+  (before-each (ogt--configure-emacs))
   (after-each (ogt--close-and-delete-files))
 
   (describe "with default content"

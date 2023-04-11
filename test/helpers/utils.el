@@ -27,13 +27,16 @@ Return the buffer visiting that file."
   (let ((filename (make-temp-file basename nil ".org" text)))
     (find-file-noselect filename)))
 
-(defun create-additional-project-target (filename)
-  (let* ((file (f-join org-gtd-directory (format "%s.org" filename)))
+(defun ogt--create-org-file-in-org-gtd-dir (basename &optional initial-contents)
+  (let* ((file (f-join org-gtd-directory (format "%s.org" basename)))
          (buffer (find-file-noselect file)))
     (with-current-buffer buffer
-      (insert ogt--base-project-heading)
+      (insert (or initial-contents ""))
       (basic-save-buffer))
     buffer))
+
+(defun create-additional-project-target (filename)
+  (ogt--create-org-file-in-org-gtd-dir filename ogt--base-project-heading))
 
 (defun ogt--buffer-string (buffer)
   "Return buffer's content."

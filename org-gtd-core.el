@@ -46,6 +46,15 @@ your own files if you want multiple refile targets (projects, etc.)."
   :package-version '(org-gtd . "0.1")
   :type 'directory)
 
+(defcustom org-gtd-horizons-file "horizons.org"
+  "File holding your GTD horizons.
+
+This may get displayed during item clarification for context and focus. This file
+must be in the `org-gtd-directory'."
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0")
+  :type 'file)
+
 (defcustom org-gtd-next "NEXT"
   "The org-mode keyword for an action ready to be done. Just the word."
   :group 'org-gtd
