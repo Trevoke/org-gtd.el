@@ -52,9 +52,8 @@ actually appointments or deadlines."
   (let ((date (org-read-date t nil nil "When is this going to happen? ")))
     (org-entry-put (point) org-gtd-calendar-property (format "<%s>" date))
     (save-excursion
-      (org-end-of-meta-data)
-      (newline)
-      (previous-line)
+      (org-end-of-meta-data t)
+      (open-line 1)
       (insert (format "<%s>" date))))
   (org-gtd-organize-decorate-item)
   (org-gtd--refile org-gtd-calendar))

@@ -39,7 +39,7 @@
        (with-current-buffer (org-gtd--default-file)
          (goto-char (point-min))
          (search-forward "Yowza")
-         (org-end-of-meta-data)
+         (org-end-of-meta-data t)
          (expect (buffer-substring (point) (point-max))
                  :to-match
                  (format "%s-%#02d-%#02d" year month day)))))))
