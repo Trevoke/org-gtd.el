@@ -126,11 +126,7 @@ inbox clarification process."
     (delete-other-windows (get-buffer-window buffer))
     (if org-gtd-clarify-show-horizons
         (display-buffer (org-gtd--horizons-file)
-                        '(display-buffer-in-side-window . ((side . right))))
-        ;; (display-buffer-in-side-window
-        ;;  (org-gtd--horizons-file)
-        ;;  '((side . right) (dedicated . t)))
-        )))
+                        '(display-buffer-in-side-window . ((side . right)))))))
 
 (defun org-gtd-clarify--buffer-name (id)
   "Retrieve the name of the WIP buffer for this particular ID."

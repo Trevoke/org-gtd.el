@@ -5,10 +5,10 @@
 (require 'buttercup)
 (require 'with-simulated-input)
 
-(defun ogt-add-calendar-item (label year month day)
+(defun ogt-add-incubate-item (label year month day)
   (ogt--add-single-item label)
   (org-gtd-process-inbox)
-  (execute-kbd-macro (kbd (format "C-c c c %s-%s-%s RET TAB RET" year month day))))
+  (execute-kbd-macro (kbd (format "C-c c i %s-%s-%s RET TAB RET" year month day))))
 
 (describe
  "A calendar item"
@@ -21,11 +21,11 @@
             (year (nth 5 timestamp))
             (month (nth 4 timestamp))
             (day (nth 3 timestamp)))
-       (ogt-add-calendar-item "Yowza" year month day)
+       (ogt-add-incubate-item "Yowza" year month day)
        (with-current-buffer (org-gtd--default-file)
          (goto-char (point-min))
          (search-forward "Yowza")
-         (expect (org-entry-get (point) "ORG_GTD_CALENDAR")
+         (expect (org-entry-get (point) "ORG_GTD_INCUBATE")
                  :to-match (format "%s-%#02d-%#02d" year month day))
          )))
  (describe
@@ -35,7 +35,7 @@
             (year (nth 5 timestamp))
             (month (nth 4 timestamp))
             (day (nth 3 timestamp)))
-       (ogt-add-calendar-item "Yowza" year month day)
+       (ogt-add-incubate-item "Yowza" year month day)
        (with-current-buffer (org-gtd--default-file)
          (goto-char (point-min))
          (search-forward "Yowza")

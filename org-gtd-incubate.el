@@ -24,6 +24,9 @@
 ;;
 ;;; Code:
 
+(defconst org-gtd-incubate-property "ORG_GTD_INCUBATE"
+  "The property storing the active timestamp used for agenda/incubation.")
+
 (defcustom org-gtd-organize-incubate-func
   #'org-gtd-incubate--apply
   "Function called when item at point is to be incubated."
@@ -43,8 +46,13 @@
 
 (defun org-gtd-incubate--apply ()
   "Incubate this item through org-gtd."
+  (let ((date (org-read-date t nil nil "When would you like this item to come up again? ")))
+    (org-entry-put (point) org-gtd-incubate-property (format "<%s>" date))
+    (save-excursion
+      (org-end-of-meta-data t)
+      (open-line 1)
+      (insert (format "<%s>" date))))
   (org-gtd-organize-decorate-item)
-  (org-schedule 0)
   (org-gtd--refile org-gtd-incubated))
 
 (provide 'org-gtd-incubate)

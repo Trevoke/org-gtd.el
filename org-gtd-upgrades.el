@@ -32,7 +32,7 @@
   (with-org-gtd-context
       (org-map-entries
        (lambda ()
-         (when (org-gtd-upgrades--upgradable-calendar-p)
+         (when (org-gtd-upgrades--scheduled-item-p)
            (let ((date (org-entry-get (point) "SCHEDULED")))
              (org-schedule '(4)) ;; pretend I am a universal argument
              (org-entry-put (point) org-gtd-calendar-property date)
@@ -42,7 +42,22 @@
        "+ORG_GTD=\"Calendar\"+LEVEL=2"
        'agenda)))
 
-(defun org-gtd-upgrades--upgradable-calendar-p ()
+(defun org-gtd-upgrades-incubated-items-to-v3 ()
+  (interactive)
+  (with-org-gtd-context
+      (org-map-entries
+       (lambda ()
+         (when (org-gtd-upgrades--scheduled-item-p)
+           (let ((date (org-entry-get (point) "SCHEDULED")))
+             (org-schedule '(4)) ;; pretend I am a universal argument
+             (org-entry-put (point) org-gtd-incubate-property date)
+             (org-end-of-meta-data t)
+             (open-line 1)
+             (insert date))))
+       "+ORG_GTD=\"Incubated\"+LEVEL=2"
+       'agenda)))
+
+(defun org-gtd-upgrades--scheduled-item-p ()
   (and (not (org-is-habit-p))
        (org-get-scheduled-time (point))))
 

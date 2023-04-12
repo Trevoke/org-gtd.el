@@ -58,5 +58,31 @@ Do that thing.
          (search-forward "memories")
          (expect (org-entry-get (point) "ORG_GTD_CALENDAR")
                  :to-equal "<2023-04-03>")
-         )
-       )))
+         ))
+   (it "moves incubate items away from using SCHEDULED"
+       (with-current-buffer (org-gtd--default-file)
+         (insert """
+* Incubated
+:PROPERTIES:
+:ORG_GTD:  Incubated
+:END:
+
+** take a nice nap
+
+** record meaningful memories
+SCHEDULED: <2023-04-03>
+
+Do that thing.
+""")
+         (basic-save-buffer))
+       (org-gtd-upgrades-incubated-items-to-v3)
+       (with-current-buffer (org-gtd--default-file)
+         (goto-char (point-min))
+         (search-forward "nice nap")
+         (expect (org-entry-get (point) "ORG_GTD_INCUBATE")
+                 :to-be nil)
+         (search-forward "memories")
+         (expect (org-entry-get (point) "ORG_GTD_INCUBATE")
+                 :to-equal "<2023-04-03>")
+         )))
+  )
