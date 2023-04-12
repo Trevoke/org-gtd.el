@@ -120,12 +120,17 @@ inbox clarification process."
 (defun org-gtd-clarify-setup-windows (buffer-or-name)
   "Setup clarifying windows around BUFFER."
   (let ((buffer (get-buffer buffer-or-name)))
+    (message "%s" buffer)
     (set-buffer buffer)
     (display-buffer buffer)
     (delete-other-windows (get-buffer-window buffer))
     (if org-gtd-clarify-show-horizons
-        (display-buffer-in-side-window (org-gtd--horizons-file)
-                                       '((side . right) (dedicated . t))))))
+        (display-buffer (org-gtd--horizons-file)
+                        '(display-buffer-in-side-window . ((side . right))))
+        ;; (display-buffer-in-side-window
+        ;;  (org-gtd--horizons-file)
+        ;;  '((side . right) (dedicated . t)))
+        )))
 
 (defun org-gtd-clarify--buffer-name (id)
   "Retrieve the name of the WIP buffer for this particular ID."
