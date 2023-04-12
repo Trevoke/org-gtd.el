@@ -26,6 +26,8 @@
 
 (require 'org)
 
+(defvar org-gtd-calendar-property)
+
 (defcustom org-gtd-delegate-read-func (lambda () (read-string "Who will do this? "))
   "Function that is called to read in the Person the task is delegated to.
 
@@ -53,8 +55,8 @@ Needs to return a string that will be used as the persons name."
 
 (defun org-gtd-delegate--apply ()
   "Delegate this item and file it in the org-gtd system."
-  (org-gtd-organize-decorate-item)
   (org-gtd-delegate)
+  (org-gtd-organize-decorate-item)
   (org-gtd--refile org-gtd-actions))
 
 ;; TODO this was requested as a surfaced bit of logic, now with the clarify
@@ -64,10 +66,15 @@ Needs to return a string that will be used as the persons name."
   "Delegate item at point."
   (interactive)
   (let ((delegated-to (apply org-gtd-delegate-read-func nil))
+        (date (org-read-date t nil nil "When do you want to check in on this task? "))
         (org-inhibit-logging 'note))
     (org-set-property "DELEGATED_TO" delegated-to)
+    (org-entry-put (point) org-gtd-calendar-property (format "<%s>" date))
+    (save-excursion
+      (org-end-of-meta-data t)
+      (open-line 1)
+      (insert (format "<%s>" date)))
     (org-todo org-gtd-wait)
-    (org-schedule 0)
     (save-excursion
       (goto-char (org-log-beginning t))
       (insert (format "programmatically delegated to %s\n" delegated-to)))))

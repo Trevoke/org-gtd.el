@@ -120,7 +120,6 @@ inbox clarification process."
 (defun org-gtd-clarify-setup-windows (buffer-or-name)
   "Setup clarifying windows around BUFFER."
   (let ((buffer (get-buffer buffer-or-name)))
-    (message "%s" buffer)
     (set-buffer buffer)
     (display-buffer buffer)
     (delete-other-windows (get-buffer-window buffer))

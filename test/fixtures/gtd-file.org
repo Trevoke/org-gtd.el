@@ -62,8 +62,9 @@ SCHEDULED: <2021-12-04 Sat .+1d>
 ** NEXT Do this soon
 
 ** WAIT Wait for someone
-SCHEDULED: <2025-03-23 Sun>
+
 :PROPERTIES:
+:ORG_GTD_CALENDAR: <2025-03-23 Sun>
 :DELEGATED_TO: future me
 :END:
 
@@ -77,6 +78,11 @@ SCHEDULED: <2025-03-23 Sun>
 :ORG_GTD:  Incubated
 :END:
 ** For later
-SCHEDULED: <2037-02-19 Thu>
+:PROPERTIES:
+:ORG_GTD_INCUBATE: <2037-02-19 Thu>
+:END:
+
 ** CNCL not worth thinking about
-SCHEDULED: <2021-11-21 Sun>
+:PROPERTIES:
+:ORG_GTD_INCUBATE: <2021-11-21 Sun>
+:END:

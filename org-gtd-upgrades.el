@@ -57,6 +57,25 @@
        "+ORG_GTD=\"Incubated\"+LEVEL=2"
        'agenda)))
 
+(defun org-gtd-upgrades-delegated-items-to-v3 ()
+  (interactive)
+  (with-org-gtd-context
+      (org-map-entries
+       (lambda ()
+         (when (org-gtd-upgrades--delegated-item-p)
+           (let ((date (org-entry-get (point) "SCHEDULED")))
+             (org-schedule '(4)) ;; pretend I am a universal argument
+             (org-entry-put (point) org-gtd-calendar-property date)
+             (org-end-of-meta-data t)
+             (open-line 1)
+             (insert date))))
+       "+ORG_GTD=\"Actions\"+LEVEL=2"
+       'agenda)))
+
+(defun org-gtd-upgrades--delegated-item-p ()
+  (and (org-entry-get (point) "DELEGATED_TO")
+       (string-equal (org-entry-get (point) "TODO") org-gtd-wait)))
+
 (defun org-gtd-upgrades--scheduled-item-p ()
   (and (not (org-is-habit-p))
        (org-get-scheduled-time (point))))
