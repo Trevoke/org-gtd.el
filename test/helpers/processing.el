@@ -10,8 +10,7 @@
   (execute-kbd-macro (kbd "M-> RET"))
   (with-current-buffer (current-buffer)
     (insert ogt--project-text))
-  (execute-kbd-macro (kbd "C-c c p"))
-  )
+  (execute-kbd-macro (kbd "C-c c p")))
 
 (defun ogt--add-and-process-calendar-item (label)
   "LABEL is the calendared item label."

@@ -24,48 +24,48 @@
 
      (execute-kbd-macro (kbd "M-> RET"))
      (insert ogt--project-text)
-     (execute-kbd-macro (kbd "C-c c p TAB RET"))
+     (execute-kbd-macro (kbd "C-c c p"))
 
-     (execute-kbd-macro (kbd "C-c c c RET TAB RET"))
+     (execute-kbd-macro (kbd "C-c c c RET"))
 
-     (execute-kbd-macro (kbd "C-c c d RET Someone RET TAB RET"))
+     (execute-kbd-macro (kbd "C-c c d RET Someone RET"))
 
-     (execute-kbd-macro (kbd "C-c c i RET TAB RET"))
+     (execute-kbd-macro (kbd "C-c c i RET"))
 
-     (execute-kbd-macro (kbd "C-c c s TAB RET"))
+     (execute-kbd-macro (kbd "C-c c s"))
 
-     (execute-kbd-macro (kbd "C-c c s TAB RET"))
+     (execute-kbd-macro (kbd "C-c c k"))
 
      (execute-kbd-macro (kbd "M-> RET"))
      (insert ogt--project-text)
-     (execute-kbd-macro (kbd "C-c c p TAB RET"))
+     (execute-kbd-macro (kbd "C-c c p"))
 
-     (execute-kbd-macro (kbd "C-c c c RET TAB RET"))
+     (execute-kbd-macro (kbd "C-c c c RET"))
 
      (dotimes (x 8)
        (ogt--add-single-item (format "single action %s" x)))
 
      (org-gtd-process-inbox)
 
-     (execute-kbd-macro (kbd "C-c c i RET TAB RET"))
+     (execute-kbd-macro (kbd "C-c c i RET"))
 
      (execute-kbd-macro (kbd "M-> RET"))
      (insert ogt--project-text)
-     (execute-kbd-macro (kbd "C-c c p TAB RET"))
+     (execute-kbd-macro (kbd "C-c c p"))
 
-     (execute-kbd-macro (kbd "C-c c s TAB RET"))
+     (execute-kbd-macro (kbd "C-c c s"))
 
-     (execute-kbd-macro (kbd "C-c c s TAB RET"))
+     (execute-kbd-macro (kbd "C-c c s"))
 
-     (execute-kbd-macro (kbd "C-c c c RET TAB RET"))
+     (execute-kbd-macro (kbd "C-c c c RET"))
 
-     (execute-kbd-macro (kbd "C-c c d RET Someone RET TAB RET"))
+     (execute-kbd-macro (kbd "C-c c d RET Someone RET"))
 
-     (execute-kbd-macro (kbd "C-c c i RET TAB RET"))
+     (execute-kbd-macro (kbd "C-c c i RET"))
 
-     (execute-kbd-macro (kbd "C-c c s TAB RET"))
+     (execute-kbd-macro (kbd "C-c c s"))
 
-     (execute-kbd-macro (kbd "C-c c s TAB RET"))
+     (execute-kbd-macro (kbd "C-c c k"))
 
 
      (with-current-buffer (org-gtd--inbox-file)
