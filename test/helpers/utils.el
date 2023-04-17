@@ -1,9 +1,5 @@
-(defun ogt--org-dir-buffer-string ()
-  (let ((ogt-files (progn (list-directory org-gtd-directory)
-                          (with-current-buffer "*Directory*"
-                            (buffer-string)))))
-    (kill-buffer "*Directory*")
-    ogt-files))
+(defun create-additional-project-target (filename)
+  (ogt--create-org-file-in-org-gtd-dir filename ogt--base-project-heading))
 
 (defun ogt--archive ()
   "Create or return the buffer to the archive file."
@@ -35,9 +31,6 @@ Return the buffer visiting that file."
       (basic-save-buffer))
     buffer))
 
-(defun create-additional-project-target (filename)
-  (ogt--create-org-file-in-org-gtd-dir filename ogt--base-project-heading))
-
 (defun ogt--buffer-string (buffer)
   "Return buffer's content."
   (with-current-buffer buffer
@@ -51,3 +44,10 @@ Return the buffer visiting that file."
   (message "*** Start List of active buffers")
   (mapc (lambda (x) (message (buffer-name x))) (buffer-list))
   (message "*** End List of active buffers"))
+
+(defun ogt--org-dir-buffer-string ()
+  (let ((ogt-files (progn (list-directory org-gtd-directory)
+                          (with-current-buffer "*Directory*"
+                            (buffer-string)))))
+    (kill-buffer "*Directory*")
+    ogt-files))
