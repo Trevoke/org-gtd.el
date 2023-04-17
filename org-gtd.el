@@ -52,6 +52,7 @@
 
 (require 'org-gtd-core)
 (require 'org-gtd-id)
+(require 'org-gtd-areas-of-focus)
 (require 'org-gtd-clarify)
 (require 'org-gtd-delegate)
 (require 'org-gtd-archive)

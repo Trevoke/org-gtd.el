@@ -63,7 +63,7 @@
                "single action")))
 
  (it "uses configurable decorations on the processed items"
-     (let ((org-gtd-process-item-hooks '(org-set-tags-command org-priority)))
+     (let ((org-gtd-decorate-item-hooks '(org-set-tags-command org-priority)))
        (org-gtd-process-inbox)
        (execute-kbd-macro (kbd "C-c c s RET A TAB RET")))
 

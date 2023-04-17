@@ -54,7 +54,7 @@
 ;;; TODO stat cookie should support percent and tally versions
 
 ;; (it "safely adds the stats cookie"
-;;     (setq org-gtd-process-item-hooks '(org-set-tags-command org-priority))
+;;     (setq org-gtd-decorate-item-hooks '(org-set-tags-command org-priority))
 ;;     (ogt-capture-single-item "project headline")
 ;;     (org-gtd-process-inbox)
 ;;     (execute-kbd-macro (kbd "M-> RET"))

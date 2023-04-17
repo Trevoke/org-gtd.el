@@ -54,7 +54,7 @@
    [("q" "Quick action" org-gtd-quick-action--one-off)
     ("s" "Single action" org-gtd-single-action--one-off)]
    [("d" "Delegate" org-gtd-delegate--one-off)
-    ("c" "Calendar" org-gtd-calendar-one-off)]]
+    ("c" "Calendar" org-gtd-calendar--one-off)]]
   [("p" "Project (multi-step)" org-gtd-project-new--one-off)
    ("a" "Add this task to an existing project" org-gtd-project-extend--one-off)]
   ["Non-actionable"
@@ -109,7 +109,7 @@ This handles the internal bits of `org-gtd'."
 
 (defun org-gtd-organize-decorate-item ()
   "Apply hooks to add metadata to a given GTD item."
-  (dolist (hook org-gtd-process-item-hooks)
+  (dolist (hook org-gtd-decorate-item-hooks)
     (save-excursion
       (goto-char (point-min))
       (when (org-before-first-heading-p)

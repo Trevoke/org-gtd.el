@@ -6,7 +6,8 @@
 (defun ogt--configure-emacs ()
   (setq last-command nil
         org-gtd-directory (make-temp-file "org-gtd" t)
-        org-gtd-process-item-hooks '()
+        org-gtd-areas-of-focus nil
+        org-gtd-decorate-item-hooks '()
         org-gtd-refile-to-any-target t
         org-edna-use-inheritance t)
   (org-edna-mode 1)

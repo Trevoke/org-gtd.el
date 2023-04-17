@@ -30,7 +30,7 @@
 (require 'org-gtd-refile)
 (require 'org-gtd-organize)
 
-(defcustom org-gtd-process-item-hooks '(org-set-tags-command)
+(defcustom org-gtd-decorate-item-hooks '(org-set-tags-command)
   "Enhancements to add to each item as they get processed from the inbox.
 
 This is a list of functions that modify an org element.  The default value has

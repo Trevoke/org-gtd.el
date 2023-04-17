@@ -205,7 +205,7 @@ the first non-done keyword is `org-gtd-next', all other non-done are
 
 Add the `org-gtd-todo' keyword to all subsequent actions/tasks."
   (org-map-entries (lambda () (org-gtd-organize--decorate-element
-                               (org-element-at-point)) )
+                               (org-element-at-point)))
                    "LEVEL=2"
                    'tree)
   (cl-destructuring-bind
