@@ -27,7 +27,7 @@
 (require 'transient)
 (require 'org-gtd-core)
 (require 'org-gtd-calendar)
-(require 'org-gtd-file)
+(require 'org-gtd-knowledge)
 (require 'org-gtd-incubate)
 (require 'org-gtd-quick-action)
 (require 'org-gtd-single-action)
