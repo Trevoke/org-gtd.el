@@ -56,10 +56,10 @@
    [("d" "Delegate" org-gtd-delegate--one-off)
     ("c" "Calendar" org-gtd-calendar-one-off)]]
   [("p" "Project (multi-step)" org-gtd-project-new--one-off)
-   ("m" "Modify project: add this task" org-gtd-project-extend--one-off)]
+   ("a" "Add this task to an existing project" org-gtd-project-extend--one-off)]
   ["Non-actionable"
    [("i" "Incubate" org-gtd-incubate--one-off)
-    ("a" "Archive this knowledge" org-gtd-file--one-off)]
+    ("k" "Knowledge to be stored" org-gtd-knowledge--one-off)]
    [("t" "Trash" org-gtd-trash--one-off)]])
 
 (transient-define-prefix org-gtd-organize-inbox ()
@@ -69,10 +69,10 @@
    [("d" "Delegate" org-gtd-delegate--inbox-loop)
     ("c" "Calendar" org-gtd-calendar--inbox-loop)]]
   [("p" "Project (multi-step)" org-gtd-project-new--inbox-loop)
-   ("m" "Modify project: add this task" org-gtd-project-extend--inbox-loop)]
+   ("a" "Add this task to an existing project" org-gtd-project-extend--inbox-loop)]
   ["Non-actionable"
    [("i" "Incubate" org-gtd-incubate--inbox-loop)
-    ("a" "Archive this knowledge" org-gtd-file--inbox-loop)]
+    ("k" "Knowledge to be stored" org-gtd-knowledge--inbox-loop)]
    [("t" "Trash" org-gtd-trash--inbox-loop)]]
 
   ["Org GTD"

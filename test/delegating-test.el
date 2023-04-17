@@ -33,7 +33,7 @@
        (expect (ogt--current-buffer-raw-text) :to-match "That Guy"))))
 
 (describe
- "A calendar item"
+ "A delegated item"
 
  (before-each (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))

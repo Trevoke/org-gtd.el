@@ -27,8 +27,16 @@
 
 (require 'org-habit)
 
-(defun org-gtd-upgrades-calendar-items-to-v3 ()
+(defun org-gtd-upgrade-v2-to-v3 ()
+  "Destructive operation, intended to be used only when upgrading org-gtd from
+v2 to v3. Changes state of org-gtd tasks to move away from incorrectly used
+SCHEDULED planning keyword in org-mode."
   (interactive)
+  (org-gtd-upgrades-calendar-items-to-v3)
+  (org-gtd-upgrades-delegated-items-to-v3)
+  (org-gtd-upgrades-incubated-items-to-v3))
+
+(defun org-gtd-upgrades-calendar-items-to-v3 ()
   (with-org-gtd-context
       (org-map-entries
        (lambda ()
@@ -43,7 +51,6 @@
        'agenda)))
 
 (defun org-gtd-upgrades-incubated-items-to-v3 ()
-  (interactive)
   (with-org-gtd-context
       (org-map-entries
        (lambda ()
@@ -58,7 +65,6 @@
        'agenda)))
 
 (defun org-gtd-upgrades-delegated-items-to-v3 ()
-  (interactive)
   (with-org-gtd-context
       (org-map-entries
        (lambda ()

@@ -37,7 +37,7 @@
 ;; (defconst org-gtd-calendar-weekly-review)
 ;; (defconst org-gtd-calendar-missed)
 
-(defcustom org-gtd-organize-calendar-func
+(defcustom org-gtd-calendar-func
   #'org-gtd-calendar--apply
   "Function called when item at point is a task that must happen on a given day.
 
@@ -61,12 +61,12 @@ actually appointments or deadlines."
 ;;;###autoload
 (defun org-gtd-calendar--one-off ()
   (interactive)
-  (org-gtd-organize--call org-gtd-organize-calendar-func))
+  (org-gtd-organize--call org-gtd-calendar-func))
 
 ;;;###autoload
 (defun org-gtd-calendar--inbox-loop ()
   (interactive)
-  (org-gtd-organize-inbox-item org-gtd-organize-calendar-func))
+  (org-gtd-organize-inbox-item org-gtd-calendar-func))
 
 (provide 'org-gtd-calendar)
 ;;; org-gtd-calendar.el ends here

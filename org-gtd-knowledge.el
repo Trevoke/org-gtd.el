@@ -1,4 +1,4 @@
-;;; org-gtd-file.el --- Define file/reference items in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
+;;; org-gtd-knowledge.el --- Define logic for handling knowledge in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2023 Aldric Giacomoni
 
@@ -20,12 +20,14 @@
 
 ;;; Commentary:
 ;;
-;; Filed/referenee items have their own logic, defined here
+;; GTD needs logic to handle items that are knowledge, this is it.
 ;;
 ;;; Code:
 
-(defcustom org-gtd-organize-file-func
-  #'org-gtd-file--apply
+(require 'org-gtd-archive)
+
+(defcustom org-gtd-knowledge-func
+  #'org-gtd-knowledge--apply
   "Function called when item at point is knowledge to be stored.
 Note that this function is used inside loops,for instance to process the inbox,
 so if you have manual steps you need to take when storing a heading
@@ -37,19 +39,20 @@ clarify step, before you call `org-gtd-organize')."
   :package-version '(org-gtd . "3.0.0"))
 
 ;;;###autoload
-(defun org-gtd-file--one-off ()
+(defun org-gtd-knowledge--one-off ()
   (interactive)
-  (org-gtd-organize--call org-gtd-organize-archive-func))
+  (org-gtd-organize--call org-gtd-knowledge-func))
 
 ;;;###autoload
-(defun org-gtd-file--inbox-loop ()
+(defun org-gtd-knowledge--inbox-loop ()
   (interactive)
-  (org-gtd-organize-inbox-item org-gtd-organize-archive-func))
+  (org-gtd-organize-inbox-item org-gtd-knowledge-func))
 
-(defun org-gtd-file--apply ()
+(defun org-gtd-knowledge--apply ()
   "Once the user has filed this knowledge, we can execute this logic."
   (org-todo org-gtd-done)
-  (with-org-gtd-context (org-archive-subtree)))
+  (with-org-gtd-context
+      (org-gtd-archive-item-at-point)))
 
-(provide 'org-gtd-file)
-;;; org-gtd-file.el ends here
+(provide 'org-gtd-knowledge)
+;;; org-gtd-knowledge.el ends here

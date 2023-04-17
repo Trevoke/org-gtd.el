@@ -11,7 +11,7 @@
   (execute-kbd-macro (kbd (format "C-c c i %s-%s-%s RET TAB RET" year month day))))
 
 (describe
- "A calendar item"
+ "An incubated item"
 
  (before-each (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))

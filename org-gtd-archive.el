@@ -24,15 +24,14 @@
 ;;
 ;;; Code:
 
+(require 'f)
 (require 'org-archive)
 (require 'org-element)
 (require 'org-gtd-core)
 (require 'org-gtd-agenda)
 
 (defcustom org-gtd-archive-location
-  (lambda ()
-    (let ((year (number-to-string (caddr (calendar-current-date)))))
-      (string-join `("gtd_archive_" ,year "::datetree/"))))
+  #'org-gtd-archive-location-func
   "Function to generate archive location for org gtd.
 
 That is to say, when items get cleaned up from the active files, they will go
@@ -48,6 +47,32 @@ into a datetree."
   :group 'org-gtd
   :type 'sexp
   :package-version '(org-gtd . "2.0.0"))
+
+(defconst org-gtd-archive-file-format "gtd_archive_%s"
+  "File name format for where org-gtd archives things by default.")
+
+(defun org-gtd-archive-item-at-point ()
+  "Dirty hack to force archiving where I know I can."
+  (interactive)
+  (let* ((last-command nil)
+         (temp-file (make-temp-file org-gtd-directory nil ".org"))
+         (buffer (find-file-noselect temp-file)))
+    (org-copy-subtree)
+    (org-gtd-core-prepare-buffer buffer)
+    (with-current-buffer buffer
+      (org-paste-subtree)
+      (goto-char (point-min))
+      (with-org-gtd-context (org-archive-subtree))
+      (basic-save-buffer)
+      (kill-buffer))
+    (delete-file temp-file)))
+
+(defun org-gtd-archive-location-func ()
+  (let* ((year (number-to-string (caddr (calendar-current-date))))
+         (full-org-gtd-path (expand-file-name org-gtd-directory))
+         (filename (format org-gtd-archive-file-format year))
+         (filepath (f-join full-org-gtd-path filename)))
+    (string-join `(,filepath "::" "datetree/"))))
 
 ;;;###autoload
 (defun org-gtd-archive-completed-items ()

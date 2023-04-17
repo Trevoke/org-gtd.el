@@ -22,7 +22,8 @@
    #'ogt--kill-buffer
    (-flatten (mapcar
               #'ogt--get-buffers
-              `(".*\\.org" ".*Agenda.*" "gtd_archive.*" ".*Calendar.*" ,(format ".*%s.*" org-gtd-clarify--prefix))))))
+              `(".*\\.org" ".*Agenda.*" "gtd_archive.*" ".*Calendar.*"
+                ,(format ".*%s.*" org-gtd-clarify--prefix))))))
 
 (defun ogt--clear-file-and-buffer (buffer)
   (if (bufferp buffer)
