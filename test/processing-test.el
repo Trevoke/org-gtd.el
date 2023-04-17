@@ -11,14 +11,14 @@
 
  (before-each
   (ogt--configure-emacs)
-  (ogt--add-single-item))
+  (ogt-capture-single-item))
  (after-each (ogt--close-and-delete-files)
              ;; TODO see if I can remove this after I remove the logdone header
              (remove-hook 'post-command-hook 'org-add-log-note))
 
  (it "processes all the elements"
      (dotimes (x 8)
-       (ogt--add-single-item (format "single action %s" x)))
+       (ogt-capture-single-item (format "single action %s" x)))
 
      (org-gtd-process-inbox)
 
@@ -43,7 +43,7 @@
      (execute-kbd-macro (kbd "C-c c c RET"))
 
      (dotimes (x 8)
-       (ogt--add-single-item (format "single action %s" x)))
+       (ogt-capture-single-item (format "single action %s" x)))
 
      (org-gtd-process-inbox)
 

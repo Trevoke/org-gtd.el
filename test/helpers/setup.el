@@ -1,3 +1,4 @@
+(load "test/helpers/clarifying.el")
 (load "test/helpers/project.el")
 (load "test/helpers/processing.el")
 (load "test/helpers/utils.el")

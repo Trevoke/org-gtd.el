@@ -12,13 +12,12 @@
 
  (after-each (ogt--close-and-delete-files)
              ;; TODO figure out if this can / should be removed
-             (remove-hook 'post-command-hook 'org-add-log-note)
-             )
+             (remove-hook 'post-command-hook 'org-add-log-note))
 
  (describe
   "marks all undone tasks of a canceled project as canceled"
   (it "on a task in the agenda"
-      (ogt--add-and-process-project "project headline")
+      (ogt-capture-and-process-project "project headline")
       (org-gtd-engage)
       (with-current-buffer org-agenda-buffer
         (goto-char (point-min))
@@ -30,7 +29,7 @@
         (expect archived-projects :to-match "project headline")))
 
   (it "when on the heading"
-      (ogt--add-and-process-project "project tailline")
+      (ogt-capture-and-process-project "project tailline")
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-min))
         (search-forward "project tailline")
@@ -56,7 +55,7 @@
 
 ;; (it "safely adds the stats cookie"
 ;;     (setq org-gtd-process-item-hooks '(org-set-tags-command org-priority))
-;;     (ogt--add-single-item "project headline")
+;;     (ogt-capture-single-item "project headline")
 ;;     (org-gtd-process-inbox)
 ;;     (execute-kbd-macro (kbd "M-> RET"))
 ;;     (insert ogt--project-text)

@@ -1,37 +1,51 @@
-(defun ogt--add-single-item (&optional label)
+(load "test/helpers/clarifying.el")
+
+(defun ogt-capture-single-item (&optional label)
   (org-gtd-capture nil "i")
   (insert (or label "single action"))
   (org-capture-finalize))
 
-(defun ogt--add-and-process-project (label)
+(defun ogt-capture-and-process-project (label)
   "LABEL is the project label."
-  (ogt--add-single-item label)
+  (ogt-capture-single-item label)
   (org-gtd-process-inbox)
   (execute-kbd-macro (kbd "M-> RET"))
   (with-current-buffer (current-buffer)
     (insert ogt--project-text))
-  (execute-kbd-macro (kbd "C-c c p")))
+  (ogt-clarify-as-project))
 
-(defun ogt--add-and-process-calendar-item (label)
-  "LABEL is the calendared item label."
-  (ogt--add-single-item label)
+(defun ogt-capture-and-process-calendar-item (label &optional date)
+  "DATE has to be like the output of `calendar-current-date' so (MM DD YYYY)."
+  (ogt-capture-single-item label)
   (org-gtd-process-inbox)
-  (execute-kbd-macro (kbd "C-c c c RET")))
+  (ogt-clarify-as-calendar-item date))
 
-(defun ogt--add-and-process-delegated-item (label)
-  "LABEL is the delegated label."
-  (ogt--add-single-item label)
+(defun ogt-capture-and-process-delegated-item (label &optional to-whom date)
+  (ogt-capture-single-item label)
   (org-gtd-process-inbox)
-  (execute-kbd-macro (kbd "C-c c d RET Someone RET")))
+  (ogt-clarify-as-delegated-item to-whom date))
 
-(defun ogt--add-and-process-incubated-item (label)
+(defun ogt-capture-and-process-incubated-item (label &optional date)
   "LABEL is the incubated label."
-  (ogt--add-single-item label)
+  (ogt-capture-single-item label)
   (org-gtd-process-inbox)
-  (execute-kbd-macro (kbd "C-c c i RET")))
+  (ogt-clarify-as-incubated-item date))
 
-(defun ogt--add-and-process-single-action (label)
+(defun ogt-capture-and-process-single-action (label)
   "LABEL is the single action label."
-  (ogt--add-single-item label)
+  (ogt-capture-single-item label)
   (org-gtd-process-inbox)
-  (execute-kbd-macro (kbd "C-c c s")))
+  (ogt-clarify-as-single-action))
+
+(defun ogt-capture-and-process-knowledge-item (label)
+  (ogt-capture-single-item label)
+  (org-gtd-process-inbox)
+  (ogt-clarify-as-knowledge-item))
+
+(defun ogt-capture-and-process-addition-to-project (label project-heading-simulated-input)
+  (ogt-capture-single-item label)
+  (org-gtd-process-inbox)
+
+  (with-simulated-input project-heading-simulated-input
+                        (org-gtd-organize-inbox-item
+                         org-gtd-organize-add-to-project-func)))

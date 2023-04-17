@@ -9,7 +9,6 @@
  "Modifying a project"
 
  (before-each (ogt--configure-emacs))
-
  (after-each (ogt--close-and-delete-files))
 
  (describe
@@ -19,14 +18,8 @@
   (after-each (ogt--reset-var 'org-reverse-note-order))
 
   (it "as the first NEXT task"
-      (ogt--add-and-process-project "project headline")
-      (ogt--add-single-item "Task 0")
-      (org-gtd-process-inbox)
-
-      (with-simulated-input "project SPC headline TAB RET"
-                            (org-gtd-organize-inbox-item
-                             org-gtd-organize-add-to-project-func)
-                            )
+      (ogt-capture-and-process-project "project headline")
+      (ogt-capture-and-process-addition-to-project "Task 0" "project SPC headline TAB RET")
       (org-gtd-engage)
       (with-current-buffer org-agenda-this-buffer-name
         (expect (ogt--current-buffer-raw-text) :to-match "Task 0")
@@ -35,13 +28,7 @@
   (it "keeps sanity of TODO states in modified project"
       (let* ((temporary-file-directory org-gtd-directory)
              (gtd-file-buffer (ogt--temp-org-file-buffer "foo" (org-file-contents "test/fixtures/gtd-file.org"))))
-        (ogt--add-single-item "Task 0")
-        (org-gtd-process-inbox)
-        (with-simulated-input "[1/3] SPC addtaskhere RET"
-                              (org-gtd-organize-inbox-item
-                               org-gtd-organize-add-to-project-func)
-                                        ;(org-gtd--modify-project)
-                              )
+        (ogt-capture-and-process-addition-to-project "Task 0" "[1/3] SPC addtaskhere RET")
         (with-current-buffer gtd-file-buffer
           (expect (ogt--current-buffer-raw-text) :to-match "NEXT Task 0")
           (expect (ogt--current-buffer-raw-text) :to-match "DONE finished task")
@@ -62,15 +49,8 @@
   (after-each (ogt--reset-var 'org-reverse-note-order))
 
   (it "as the last NEXT task"
-      (ogt--add-and-process-project "project headline")
-      (ogt--add-single-item "Task 0")
-      (org-gtd-process-inbox)
-
-      (with-simulated-input "project SPC headline TAB RET"
-                            (org-gtd-organize-inbox-item
-                             org-gtd-organize-add-to-project-func)
-                                        ;(org-gtd--modify-project)
-                            )
+      (ogt-capture-and-process-project "project headline")
+      (ogt-capture-and-process-addition-to-project "Task 0" "project SPC headline TAB RET")
       (org-gtd-engage)
       (with-current-buffer org-agenda-this-buffer-name
         (expect (ogt--current-buffer-raw-text) :not :to-match "Task 0")
@@ -79,13 +59,7 @@
  (it "keeps sanity of TODO states in modified project"
      (let* ((temporary-file-directory org-gtd-directory)
             (gtd-file (make-temp-file "foo" nil ".org" (org-file-contents "test/fixtures/gtd-file.org"))))
-       (ogt--add-single-item "Task 0")
-       (org-gtd-process-inbox)
-       (with-simulated-input "[1/3] SPC addtaskhere RET"
-                             (org-gtd-organize-inbox-item
-                              org-gtd-organize-add-to-project-func)
-                                        ;(org-gtd--modify-project)
-                             )
+       (ogt-capture-and-process-addition-to-project "Task 0" "[1/3] SPC addtaskhere RET")
 
        (with-current-buffer (find-file-noselect gtd-file)
          (search-forward "addtaskhere")
@@ -101,7 +75,4 @@
          (expect (ogt--current-buffer-raw-text) :to-match "DONE finished task")
          (expect (ogt--current-buffer-raw-text) :to-match "DONE initial next task")
          (expect (ogt--current-buffer-raw-text) :to-match "NEXT initial last task")
-         (expect (ogt--current-buffer-raw-text) :to-match "TODO Task 0"))))
-
-
- )
+         (expect (ogt--current-buffer-raw-text) :to-match "TODO Task 0")))))

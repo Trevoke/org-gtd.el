@@ -22,6 +22,7 @@
 
        (expect (compare-window-configurations (current-window-configuration) window-config)
                :to-be t)))
+
  (it "kills the temp buffer"
      (let ((source-buffer (ogt--temp-org-file-buffer "taskfile" "* This is the heading to clarify"))
            (org-gtd-refile-to-any-target t))

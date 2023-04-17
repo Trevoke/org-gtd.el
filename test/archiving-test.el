@@ -17,7 +17,7 @@
   "finished work"
 
   (it "archives completed and canceled projects"
-      (ogt--add-and-process-project "project headline")
+      (ogt-capture-and-process-project "project headline")
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-max))
         (newline)
@@ -32,9 +32,9 @@
         (expect archived-projects :to-match "canceled"))))
 
  (it "on a single action"
-     (ogt--add-and-process-single-action "one")
+     (ogt-capture-and-process-single-action "one")
      (ogt--save-all-buffers)
-     (ogt--add-and-process-single-action "two")
+     (ogt-capture-and-process-single-action "two")
      (ogt--save-all-buffers)
      (with-current-buffer (org-gtd--default-file)
        (goto-char (point-min))

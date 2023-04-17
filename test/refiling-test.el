@@ -9,7 +9,7 @@
  "When refiling a project"
  (before-each
   (ogt--configure-emacs)
-  (ogt--add-and-process-project "project headline")
+  (ogt-capture-and-process-project "project headline")
   (with-current-buffer (org-gtd--default-file)
     (basic-save-buffer)))
 
@@ -66,9 +66,7 @@
   (it "offers refiling targets"
       (let ((org-gtd-refile-to-any-target nil)
             (new-buffer (create-additional-project-target "more-projects"))
-            (temp-buffer (get-buffer-create (generate-new-buffer-name "wip")))
-                                        ;(temp-buffer (find-file "/tmp/test.org"))
-            )
+            (temp-buffer (get-buffer-create (generate-new-buffer-name "wip"))))
 
         (with-current-buffer temp-buffer
           (org-mode)
@@ -83,6 +81,4 @@
                 "choose-refile-target")
 
         (ogt--clear-file-and-buffer new-buffer)
-        (kill-buffer temp-buffer)
-                                        ;(ogt--clear-file-and-buffer temp-buffer)
-        ))))
+        (kill-buffer temp-buffer)))))

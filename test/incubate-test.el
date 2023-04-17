@@ -5,11 +5,6 @@
 (require 'buttercup)
 (require 'with-simulated-input)
 
-(defun ogt-add-incubate-item (label year month day)
-  (ogt--add-single-item label)
-  (org-gtd-process-inbox)
-  (execute-kbd-macro (kbd (format "C-c c i %s-%s-%s RET TAB RET" year month day))))
-
 (describe
  "An incubated item"
 
@@ -17,11 +12,11 @@
  (after-each (ogt--close-and-delete-files))
 
  (it "has a specific property with the active timestamp"
-     (let* ((timestamp (decode-time))
-            (year (nth 5 timestamp))
-            (month (nth 4 timestamp))
-            (day (nth 3 timestamp)))
-       (ogt-add-incubate-item "Yowza" year month day)
+     (let* ((date (calendar-current-date))
+            (year (nth 2 date))
+            (month (nth 0 date))
+            (day (nth 1 date)))
+       (ogt-capture-and-process-incubated-item "Yowza" date)
        (with-current-buffer (org-gtd--default-file)
          (goto-char (point-min))
          (search-forward "Yowza")
@@ -31,11 +26,11 @@
  (describe
   "compatibility with orgzly"
   (it "has a copy of the active timestamp in the body"
-      (let* ((timestamp (decode-time))
-            (year (nth 5 timestamp))
-            (month (nth 4 timestamp))
-            (day (nth 3 timestamp)))
-       (ogt-add-incubate-item "Yowza" year month day)
+      (let* ((date (calendar-current-date))
+            (year (nth 2 date))
+            (month (nth 0 date))
+            (day (nth 1 date)))
+       (ogt-capture-and-process-incubated-item "Yowza" date)
        (with-current-buffer (org-gtd--default-file)
          (goto-char (point-min))
          (search-forward "Yowza")
