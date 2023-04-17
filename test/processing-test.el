@@ -24,23 +24,19 @@
 
      (execute-kbd-macro (kbd "M-> RET"))
      (insert ogt--project-text)
-     (execute-kbd-macro (kbd "C-c c p"))
+     (ogt-clarify-as-project)
 
-     (execute-kbd-macro (kbd "C-c c c RET"))
-
-     (execute-kbd-macro (kbd "C-c c d RET Someone RET"))
-
-     (execute-kbd-macro (kbd "C-c c i RET"))
-
-     (execute-kbd-macro (kbd "C-c c s"))
-
-     (execute-kbd-macro (kbd "C-c c k"))
+     (ogt-clarify-as-calendar-item)
+     (ogt-clarify-as-delegated-item "Someone")
+     (ogt-clarify-as-incubated-item)
+     (ogt-clarify-as-single-action)
+     (ogt-clarify-as-knowledge-item)
 
      (execute-kbd-macro (kbd "M-> RET"))
      (insert ogt--project-text)
-     (execute-kbd-macro (kbd "C-c c p"))
+     (ogt-clarify-as-project)
 
-     (execute-kbd-macro (kbd "C-c c c RET"))
+     (ogt-clarify-as-calendar-item)
 
      (dotimes (x 8)
        (ogt-capture-single-item (format "single action %s" x)))
@@ -51,22 +47,15 @@
 
      (execute-kbd-macro (kbd "M-> RET"))
      (insert ogt--project-text)
-     (execute-kbd-macro (kbd "C-c c p"))
+     (ogt-clarify-as-project)
 
-     (execute-kbd-macro (kbd "C-c c s"))
-
-     (execute-kbd-macro (kbd "C-c c s"))
-
-     (execute-kbd-macro (kbd "C-c c c RET"))
-
-     (execute-kbd-macro (kbd "C-c c d RET Someone RET"))
-
-     (execute-kbd-macro (kbd "C-c c i RET"))
-
-     (execute-kbd-macro (kbd "C-c c s"))
-
-     (execute-kbd-macro (kbd "C-c c k"))
-
+     (ogt-clarify-as-single-action)
+     (ogt-clarify-as-single-action)
+     (ogt-clarify-as-calendar-item)
+     (ogt-clarify-as-delegated-item "Someone")
+     (ogt-clarify-as-incubated-item)
+     (ogt-clarify-as-single-action)
+     (ogt-clarify-as-knowledge-item)
 
      (with-current-buffer (org-gtd--inbox-file)
        (expect (ogt--current-buffer-raw-text)

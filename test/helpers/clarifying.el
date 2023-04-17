@@ -28,3 +28,7 @@
 
 (defun ogt-clarify-as-knowledge-item ()
   (execute-kbd-macro (kbd "C-c c k")))
+
+
+(defun ogt-clarify-as-trash-item ()
+  (execute-kbd-macro (kbd "C-c c t")))

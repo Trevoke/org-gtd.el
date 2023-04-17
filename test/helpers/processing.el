@@ -49,3 +49,8 @@
   (with-simulated-input project-heading-simulated-input
                         (org-gtd-organize-inbox-item
                          org-gtd-organize-add-to-project-func)))
+
+(defun ogt-capture-and-process-trash-item (label)
+  (ogt-capture-single-item label)
+  (org-gtd-process-inbox)
+  (ogt-clarify-as-trash-item))

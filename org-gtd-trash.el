@@ -44,7 +44,8 @@
 (defun org-gtd-trash--apply ()
   "Mark GTD inbox item as cancelled and move it to the org-gtd task archives."
   (org-todo org-gtd-canceled)
-  (with-org-gtd-context (org-archive-subtree)))
+  (with-org-gtd-context
+      (org-gtd-archive-item-at-point)))
 
 (provide 'org-gtd-trash)
 ;;; org-gtd-trash.el ends here
