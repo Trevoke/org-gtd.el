@@ -21,7 +21,7 @@ Upgrade information is also available therein.
 * Community
 If you want help, you can open an issue right on Github.
 
-You're also welcome to join my [[https://discord.gg/9UAXpCaVJb][discord server]] for all conversations related to org-gtd in particular and GTD in general. Many of the ideas for org-gtd came out of my reading the GTD book, and then reading some sections multiple times, but I am in no way an expert. Defining the GTD domain, which is to say, getting to clear nomenclature with clear actions, is still a work in progress.
+You're also welcome to join my [[https://discord.gg/2kAK6TfqJq][discord server]] for all conversations related to org-gtd in particular and GTD in general. Many of the ideas for org-gtd came out of my reading the GTD book, and then reading some sections multiple times, but I am in no way an expert. Defining the GTD domain, which is to say, getting to clear nomenclature with clear actions, is still a work in progress.
 * Animated demos of org-gtd
 ** Projects
 [[doc/project.gif]]
