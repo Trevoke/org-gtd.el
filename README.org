@@ -14,6 +14,26 @@ This package provides a system that allows you to capture incoming things into a
 For a comprehensive instruction manual, see the documentation.
 Either the info file or in the [[doc/]] directory of the repository.
 Upgrade information is also available therein.
+
+* Doom Config
+
+#+BEGIN_SRC elisp
+(use-package! org-gtd
+  :after org
+  :config
+  (org-edna-mode)
+  (setq org-edna-use-inheritance t)
+  (map! :leader
+        (:prefix ("d" . "org-gtd")
+         :desc "Capture"        "c"  #'org-gtd-capture
+         :desc "Engage"         "e"  #'org-gtd-engage
+         :desc "Process inbox"  "p"  #'org-gtd-process-inbox
+         :desc "Show all next"  "n"  #'org-gtd-show-all-next
+         :desc "Stuck projects" "s"  #'org-gtd-show-stuck-projects))
+  (map! :map org-gtd-process-map
+        :desc "Choose" "C-c c" #'org-gtd-choose))
+#+END_SRC
+
 * Directory tree
 - =dev= :: used as a jail environment. Spin up with ~$ HOME="dev/" emacs~.
 - =doc= :: where the documentation lives
