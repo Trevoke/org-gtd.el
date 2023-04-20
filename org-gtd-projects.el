@@ -82,24 +82,14 @@ If you do not need sub-headings, then organize this item as a 'single action'
 instead.")
 
 ;;;###autoload
-(defun org-gtd-project-new--one-off ()
+(defun org-gtd-project-new ()
   (interactive)
   (org-gtd-organize--call org-gtd-organize-project-func))
 
 ;;;###autoload
-(defun org-gtd-project-new--inbox-loop ()
-  (interactive)
-  (org-gtd-organize-inbox-item org-gtd-organize-project-func))
-
-;;;###autoload
-(defun org-gtd-project-extend--one-off ()
+(defun org-gtd-project-extend ()
   (interactive)
   (org-gtd-organize--call org-gtd-organize-add-to-project-func))
-
-;;;###autoload
-(defun org-gtd-project-extend--inbox-loop ()
-  (interactive)
-  (org-gtd-organize-inbox-item org-gtd-organize-add-to-project-func))
 
 (defun org-gtd-project-new--apply ()
   "Process GTD inbox item by transforming it into a project.
@@ -109,8 +99,6 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   (when (org-gtd-projects--poorly-formatted-p)
     (org-gtd-projects--show-error)
     (throw 'org-gtd-error "Malformed project"))
-
-
   (org-gtd-organize-decorate-item)
   (org-gtd-projects--nextify)
   (let ((org-special-ctrl-a t))

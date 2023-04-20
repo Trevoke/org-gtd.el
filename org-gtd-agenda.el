@@ -82,7 +82,7 @@ This assumes all GTD files are also agenda files."
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)
   (org-agenda-maybe-loop
-   #'org-gtd-agenda-projectify nil t nil
+   func nil t nil
    (let* ((marker (or (org-get-at-bol 'org-marker)
                       (org-agenda-error)))
           (buffer (marker-buffer marker))
@@ -147,7 +147,7 @@ This function is intended to be used on incubated items that come up."
        (with-current-buffer buffer
          (widen)
          (goto-char pos)
-         (org-gtd-delegate))
+         (org-gtd-delegate-item-at-point))
        (org-agenda-show-tags)))))
 
 ;;;###autoload

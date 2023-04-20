@@ -39,14 +39,9 @@ clarify step, before you call `org-gtd-organize')."
   :package-version '(org-gtd . "3.0.0"))
 
 ;;;###autoload
-(defun org-gtd-knowledge--one-off ()
+(defun org-gtd-knowledge ()
   (interactive)
   (org-gtd-organize--call org-gtd-knowledge-func))
-
-;;;###autoload
-(defun org-gtd-knowledge--inbox-loop ()
-  (interactive)
-  (org-gtd-organize-inbox-item org-gtd-knowledge-func))
 
 (defun org-gtd-knowledge--apply ()
   "Once the user has filed this knowledge, we can execute this logic."

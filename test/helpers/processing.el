@@ -47,7 +47,7 @@
   (org-gtd-process-inbox)
 
   (with-simulated-input project-heading-simulated-input
-                        (org-gtd-organize-inbox-item
+                        (org-gtd-organize--call
                          org-gtd-organize-add-to-project-func)))
 
 (defun ogt-capture-and-process-trash-item (label)

@@ -12,9 +12,7 @@
  (before-each
   (ogt--configure-emacs)
   (ogt-capture-single-item))
- (after-each (ogt--close-and-delete-files)
-             ;; TODO see if I can remove this after I remove the logdone header
-             (remove-hook 'post-command-hook 'org-add-log-note))
+ (after-each (ogt--close-and-delete-files))
 
  (it "processes all the elements"
      (dotimes (x 8)

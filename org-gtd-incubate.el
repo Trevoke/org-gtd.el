@@ -35,14 +35,9 @@
   :package-version '(org-gtd . "3.0.0"))
 
 ;;;###autoload
-(defun org-gtd-incubate--one-off ()
+(defun org-gtd-incubate ()
   (interactive)
   (org-gtd-organize--call org-gtd-organize-incubate-func))
-
-;;;###autoload
-(defun org-gtd-incubate--inbox-loop ()
-  (interactive)
-  (org-gtd-organize-inbox-item org-gtd-organize-incubate-func))
 
 (defun org-gtd-incubate--apply ()
   "Incubate this item through org-gtd."

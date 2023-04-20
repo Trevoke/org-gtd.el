@@ -32,14 +32,9 @@
   :package-version '(org-gtd . "3.0.0"))
 
 ;;;###autoload
-(defun org-gtd-trash--one-off ()
+(defun org-gtd-trash ()
   (interactive)
   (org-gtd-organize--call org-gtd-organize-trash-func))
-
-;;;###autoload
-(defun org-gtd-trash--inbox-loop ()
-  (interactive)
-  (org-gtd-organize-inbox-item org-gtd-organize-trash-func))
 
 (defun org-gtd-trash--apply ()
   "Mark GTD inbox item as cancelled and move it to the org-gtd task archives."

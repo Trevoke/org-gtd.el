@@ -38,14 +38,9 @@
   (with-org-gtd-context (org-archive-subtree)))
 
 ;;;###autoload
-(defun org-gtd-quick-action--one-off ()
+(defun org-gtd-quick-action ()
   (interactive)
   (org-gtd-organize--call org-gtd-organize-quick-action-func))
-
-;;;###autoload
-(defun org-gtd-quick-action--inbox-loop ()
-  (interactive)
-  (org-gtd-organize-inbox-item org-gtd-organize-quick-action-func))
 
 (provide 'org-gtd-quick-action)
 ;;; org-gtd-quick-action.el ends here

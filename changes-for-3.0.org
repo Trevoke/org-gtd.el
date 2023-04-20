@@ -2,6 +2,7 @@
 ** menu has changed
 (a)rchive is now (k)nowledge
 (m)odify project is now (a)dd to project
+** org-gtd-delegate is now org-gtd-delegate-item-at-point
 * new features
 ** you can now clarify single items with org-gtd-clarify-item
 ** you can customize what the functions do for each GTD action (e.g. incubate, single action, etc.)

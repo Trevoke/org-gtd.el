@@ -59,14 +59,9 @@ actually appointments or deadlines."
   (org-gtd--refile org-gtd-calendar))
 
 ;;;###autoload
-(defun org-gtd-calendar--one-off ()
+(defun org-gtd-calendar ()
   (interactive)
   (org-gtd-organize--call org-gtd-calendar-func))
-
-;;;###autoload
-(defun org-gtd-calendar--inbox-loop ()
-  (interactive)
-  (org-gtd-organize-inbox-item org-gtd-calendar-func))
 
 (provide 'org-gtd-calendar)
 ;;; org-gtd-calendar.el ends here

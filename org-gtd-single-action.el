@@ -32,14 +32,9 @@
   :package-version '(org-gtd . "3.0.0"))
 
 ;;;###autoload
-(defun org-gtd-single-action--one-off ()
+(defun org-gtd-single-action ()
   (interactive)
   (org-gtd-organize--call org-gtd-organize-single-action-func))
-
-;;;###autoload
-(defun org-gtd-single-action--inbox-loop ()
-  (interactive)
-  (org-gtd-organize-inbox-item org-gtd-organize-single-action-func))
 
 (defun org-gtd-single-action--apply ()
   "Item at point is a one-off action, ready to be executed."
