@@ -334,7 +334,25 @@ For other keybindings, do what you need. My bindings use ~C-c d~ as a prefix, i.
 - ~C-c d e~ :: ~org-gtd-engage~
 
 etc.
+*** Sample Doom Emacs Config
+If you are a Doom Emacs user, then your configuration may look something like this:
 
+#+BEGIN_SRC elisp
+(use-package! org-gtd
+  :after org
+  :config
+  (org-edna-mode)
+  (setq org-edna-use-inheritance t)
+  (map! :leader
+        (:prefix ("d" . "org-gtd")
+         :desc "Capture"        "c"  #'org-gtd-capture
+         :desc "Engage"         "e"  #'org-gtd-engage
+         :desc "Process inbox"  "p"  #'org-gtd-process-inbox
+         :desc "Show all next"  "n"  #'org-gtd-show-all-next
+         :desc "Stuck projects" "s"  #'org-gtd-show-stuck-projects))
+  (map! :map org-gtd-process-map
+        :desc "Choose" "C-c c" #'org-gtd-choose))
+#+END_SRC
 * Using Org GTD
 :PROPERTIES:
 :DESCRIPTION: How Org GTD maps to the GTD flow
