@@ -62,6 +62,7 @@ Configuring
 * Required configuration of sub-packages::
 * configuration options for org-gtd::
 * Recommended key bindings::
+* Sample Doom Emacs Config::
 
 
 Using Org GTD
@@ -462,6 +463,7 @@ File: org-gtd.info,  Node: Configuring,  Prev: Installing,  Up: Setting up Org G
 * Required configuration of sub-packages::
 * configuration options for org-gtd::
 * Recommended key bindings::
+* Sample Doom Emacs Config::
 
 
 File: org-gtd.info,  Node: The easy way,  Next: Required configuration of sub-packages,  Up: Configuring
@@ -574,7 +576,7 @@ File: org-gtd.info,  Node: configuration options for org-gtd,  Next: Recommended
           to ‘read-string’.
 
 
-File: org-gtd.info,  Node: Recommended key bindings,  Prev: configuration options for org-gtd,  Up: Configuring
+File: org-gtd.info,  Node: Recommended key bindings,  Next: Sample Doom Emacs Config,  Prev: configuration options for org-gtd,  Up: Configuring
 
 1.4.4 Recommended key bindings
 ------------------------------
@@ -595,6 +597,30 @@ a prefix, i.e.:
      ‘org-gtd-engage’
 
    etc.
+
+
+File: org-gtd.info,  Node: Sample Doom Emacs Config,  Prev: Recommended key bindings,  Up: Configuring
+
+1.4.5 Sample Doom Emacs Config
+------------------------------
+
+If you are a Doom Emacs user, then your configuration may look something
+like this:
+
+     (use-package! org-gtd
+       :after org
+       :config
+       (org-edna-mode)
+       (setq org-edna-use-inheritance t)
+       (map! :leader
+             (:prefix ("d" . "org-gtd")
+              :desc "Capture"        "c"  #'org-gtd-capture
+              :desc "Engage"         "e"  #'org-gtd-engage
+              :desc "Process inbox"  "p"  #'org-gtd-process-inbox
+              :desc "Show all next"  "n"  #'org-gtd-show-all-next
+              :desc "Stuck projects" "s"  #'org-gtd-show-stuck-projects))
+       (map! :map org-gtd-process-map
+             :desc "Choose" "C-c c" #'org-gtd-choose))
 
 
 File: org-gtd.info,  Node: Using Org GTD,  Next: Troubleshooting,  Prev: Setting up Org GTD,  Up: Top
@@ -1021,53 +1047,54 @@ project.
 
 Tag Table:
 Node: Top736
-Node: Setting up Org GTD2331
-Node: Summary2751
-Node: Upgrading6199
-Node: 220 <- 2106558
-Ref: respect org-mode's org-reverse-note-order variable6684
-Node: 210 <- 2007384
-Ref: Update org-edna trigger7529
-Node: 200 <- 11x8298
-Ref: Configuration8424
-Ref: Example upgrade9816
-Ref: Relevant commands with new names12756
-Ref: heading states (TODO etc)12973
-Ref: Differentiating GTD types of items13132
-Ref: Multiple refile targets14499
-Ref: Key bindings15351
-Node: Installing15628
-Node: use-package15923
-Node: Manually16135
-Node: Configuring16501
-Node: The easy way16757
-Node: Required configuration of sub-packages17326
-Ref: org-edna17574
-Node: configuration options for org-gtd17992
-Ref: I don't care just let me start using it18242
-Ref: Tell me all the levers I can pull18831
-Node: Recommended key bindings21902
-Node: Using Org GTD22630
-Node: Adding things to the inbox23312
-Node: Processing the inbox24127
-Node: Projects26827
-Node: Modify an existing project28163
-Node: Quick action29107
-Node: Trash29522
-Node: Calendar29842
-Node: Delegate30180
-Node: Single action30602
-Node: Archive30908
-Node: Incubate31371
-Node: Engaging with your GTD items31876
-Node: Interacting with org-agenda33013
-Node: Cleaning up / archiving completed work33884
-Node: Multiple files / refile targets34738
-Node: New project heading35081
-Node: Other headings35523
-Node: Troubleshooting36108
-Node: Projects without a NEXT item36326
-Node: I can't create a project when clarifying an inbox item!36996
+Node: Setting up Org GTD2360
+Node: Summary2780
+Node: Upgrading6228
+Node: 220 <- 2106587
+Ref: respect org-mode's org-reverse-note-order variable6713
+Node: 210 <- 2007413
+Ref: Update org-edna trigger7558
+Node: 200 <- 11x8327
+Ref: Configuration8453
+Ref: Example upgrade9845
+Ref: Relevant commands with new names12785
+Ref: heading states (TODO etc)13002
+Ref: Differentiating GTD types of items13161
+Ref: Multiple refile targets14528
+Ref: Key bindings15380
+Node: Installing15657
+Node: use-package15952
+Node: Manually16164
+Node: Configuring16530
+Node: The easy way16815
+Node: Required configuration of sub-packages17384
+Ref: org-edna17632
+Node: configuration options for org-gtd18050
+Ref: I don't care just let me start using it18300
+Ref: Tell me all the levers I can pull18889
+Node: Recommended key bindings21960
+Node: Sample Doom Emacs Config22721
+Node: Using Org GTD23579
+Node: Adding things to the inbox24261
+Node: Processing the inbox25076
+Node: Projects27776
+Node: Modify an existing project29112
+Node: Quick action30056
+Node: Trash30471
+Node: Calendar30791
+Node: Delegate31129
+Node: Single action31551
+Node: Archive31857
+Node: Incubate32320
+Node: Engaging with your GTD items32825
+Node: Interacting with org-agenda33962
+Node: Cleaning up / archiving completed work34833
+Node: Multiple files / refile targets35687
+Node: New project heading36030
+Node: Other headings36472
+Node: Troubleshooting37057
+Node: Projects without a NEXT item37275
+Node: I can't create a project when clarifying an inbox item!37945
 
 End Tag Table
 
