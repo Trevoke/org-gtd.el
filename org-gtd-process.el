@@ -44,7 +44,7 @@ the items once they have been processed and add them to that list."
 
 ;;;###autoload
 (defun org-gtd-process-inbox ()
-  "New stuff whodis"
+  "Start the inbox processing item, one heading at a time."
   (interactive)
   (set-buffer (org-gtd--inbox-file))
 

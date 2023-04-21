@@ -1,9 +1,9 @@
 * NOTICE
-This is org-gtd 2.0.0.
+This is org-gtd 3.0.0.
 
 Check documentation in [[doc/]] (and the info manual within emacs itself) if you're upgrading. Please report all defects as Github issues.
 
-Use existing tags if you'd rather stick to a pre-2.0 version.
+Use existing tags if you'd rather stick to a pre-3.0 version.
 
 * Sponsorship
 I've put many hours of reading, research, and coding, to put this together. If it delivers value to you, helps you manage your life, please consider sponsoring ([[https://github.com/sponsors/Trevoke/][Github sponsors]] or [[https://www.patreon.com/LokiConsulting][Patreon]]) and allowing me to continue putting work into this package and other projects.

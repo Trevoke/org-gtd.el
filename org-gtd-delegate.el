@@ -45,18 +45,19 @@ Needs to return a string that will be used as the persons name."
 
 ;;;###autoload
 (defun org-gtd-delegate ()
+  "Organize and refile item at point as a delegated item."
   (interactive)
   (org-gtd-organize--call org-gtd-organize-delegate-func))
 
 (defun org-gtd-delegate--apply ()
-  "Delegate this item and file it in the org-gtd system."
+  "Organize, decoare refile this as a delegated item in the `org-gtd' system."
   (org-gtd-delegate-item-at-point)
   (org-gtd-organize-decorate-item)
   (org-gtd--refile org-gtd-actions))
 
 ;;;###autoload
 (defun org-gtd-delegate-item-at-point ()
-  "Delegate item at point. Most useful to delegate a project task."
+  "Delegate item at point.  Use this if you do not want to refile the item."
   (interactive)
   (let ((delegated-to (apply org-gtd-delegate-read-func nil))
         (date (org-read-date t nil nil "When do you want to check in on this task? "))

@@ -70,7 +70,7 @@
   "Set this to the latest version you have upgraded to.
 
 You will only see warnings relevant to upgrade steps you must take to go up from
-your version to the one installed. Use a version string. For instance:
+your version to the one installed.  Use a version string.  For instance:
 
 If org-gtd is 2.0.0, use \"2.0.0\".
 If org-gtd is 2.3.5, use \"2.3.5\".")

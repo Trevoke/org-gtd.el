@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 ;;
-;; Set up emacs to helpfully clarify tasks so they can then be organized.
+;; Set up Emacs to helpfully clarify tasks so they can then be organized.
 ;;
 ;;; Code:
 
@@ -32,7 +32,7 @@
   :group 'org-gtd)
 
 (defcustom org-gtd-clarify-show-horizons nil
-  "When t, show a side buffer with the higher horizons during item clarification.
+  "If t, show a side buffer with the higher horizons during item clarification.
 The file shown can be configured in `org-gtd-horizons-file'"
   :package-version '(org-gtd . "3.0")
   :group 'org-gtd-clarify
@@ -101,8 +101,8 @@ The file shown can be configured in `org-gtd-horizons-file'"
 
 ;;;###autoload
 (defun org-gtd-clarify-inbox-item ()
-  "Process item at point through org-gtd. This function is called through the
-inbox clarification process."
+  "Process item at point through org-gtd.
+This function is called through the inbox clarification process."
   (interactive)
   (org-gtd-clarify-item)
   (setq-local org-gtd-clarify--inbox-p t))
@@ -118,7 +118,7 @@ inbox clarification process."
       (message "There are no Org-GTD WIP buffers."))))
 
 (defun org-gtd-clarify-setup-windows (buffer-or-name)
-  "Setup clarifying windows around BUFFER."
+  "Setup clarifying windows around BUFFER-OR-NAME."
   (let ((buffer (get-buffer buffer-or-name)))
     (set-buffer buffer)
     (display-buffer buffer)

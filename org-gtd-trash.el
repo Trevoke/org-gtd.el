@@ -33,6 +33,7 @@
 
 ;;;###autoload
 (defun org-gtd-trash ()
+  "Organize, decorate and refile item at point as trash."
   (interactive)
   (org-gtd-organize--call org-gtd-organize-trash-func))
 

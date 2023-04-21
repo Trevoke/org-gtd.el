@@ -40,6 +40,7 @@ clarify step, before you call `org-gtd-organize')."
 
 ;;;###autoload
 (defun org-gtd-knowledge ()
+  "Decorate, organize and refile item at point as knowledge."
   (interactive)
   (org-gtd-organize--call org-gtd-knowledge-func))
 

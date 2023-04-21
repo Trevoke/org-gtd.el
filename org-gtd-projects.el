@@ -32,9 +32,11 @@
 (require 'org-gtd-agenda)
 
 (defun org-edna-action/org-gtd-update-project-task! (_last-entry)
+  "`org-edna' extension to change the todo state to `org-gtd-next'."
   (org-todo org-gtd-next))
 
 (defun org-edna-finder/org-gtd-next-project-action ()
+  "`org-edna' extension to find the next action to show in the agenda."
   (org-edna-finder/relatives 'forward-no-wrap 'todo-only 1 'no-sort))
 
 (defcustom org-gtd-organize-project-func
@@ -56,7 +58,7 @@ depend on the way org-gtd structures and organizes the projects."
 
 (defconst org-gtd-project-headings
   "+LEVEL=2&+ORG_GTD=\"Projects\""
-  "How to tell org-mode to find project headings")
+  "How to tell `org-mode' to find project headings.")
 
 (defconst org-gtd-stuck-projects
   `(,org-gtd-project-headings
@@ -83,19 +85,22 @@ instead.")
 
 ;;;###autoload
 (defun org-gtd-project-new ()
+  "Organize, decorate and refile item as a new project."
   (interactive)
   (org-gtd-organize--call org-gtd-organize-project-func))
 
 ;;;###autoload
 (defun org-gtd-project-extend ()
+  "Organize, decorate and refile item as a new task in an existing project."
   (interactive)
   (org-gtd-organize--call org-gtd-organize-add-to-project-func))
 
 (defun org-gtd-project-new--apply ()
   "Process GTD inbox item by transforming it into a project.
-Allow the user apply user-defined tags from
-`org-tag-persistent-alist', `org-tag-alist' or file-local tags in
-the inbox.  Refile to `org-gtd-actionable-file-basename'."
+
+Allow the user apply user-defined tags from `org-tag-persistent-alist',
+`org-tag-alist' or file-local tags in the inbox.
+Refile to `org-gtd-actionable-file-basename'."
   (when (org-gtd-projects--poorly-formatted-p)
     (org-gtd-projects--show-error)
     (throw 'org-gtd-error "Malformed project"))
@@ -153,14 +158,15 @@ the inbox.  Refile to `org-gtd-actionable-file-basename'."
   "Ensure keywords for subheadings of project at point are sane.
 
 This means one and only one `org-gtd-next' keyword, and it is the first non-done
-state in the list - all others are `org-gtd-todo'.."
+state in the list - all others are `org-gtd-todo'."
   (interactive)
   (org-gtd-projects-fix-todo-keywords (point-marker)))
 
 (defun org-gtd-projects-fix-todo-keywords (marker)
-  "Ensure project at MARKER has only one `org-gtd-next' keyword. Ensures only
-the first non-done keyword is `org-gtd-next', all other non-done are
-`org-gtd-todo'."
+  "Ensure project at MARKER has only one `org-gtd-next' keyword.
+
+Ensures only the first non-done keyword is `org-gtd-next', all other non-done
+are `org-gtd-todo'."
   (with-current-buffer (marker-buffer marker)
     (org-gtd-core-prepare-buffer)
     (save-excursion
@@ -170,8 +176,7 @@ the first non-done keyword is `org-gtd-next', all other non-done are
        (lambda ()
          (unless (member
                   (org-element-property :todo-keyword (org-element-at-point))
-                  `(,org-gtd-todo ,org-gtd-wait ,org-gtd-done ,org-gtd-canceled)
-                  )
+                  `(,org-gtd-todo ,org-gtd-wait ,org-gtd-done ,org-gtd-canceled))
            (org-entry-put (org-gtd-projects--org-element-pom (org-element-at-point))
                           "TODO" org-gtd-todo)))
        "+LEVEL=3" 'tree))

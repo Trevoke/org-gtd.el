@@ -36,6 +36,7 @@
 
 ;;;###autoload
 (defun org-gtd-incubate ()
+  "Decorate, organize and refile item at point as incubated."
   (interactive)
   (org-gtd-organize--call org-gtd-organize-incubate-func))
 

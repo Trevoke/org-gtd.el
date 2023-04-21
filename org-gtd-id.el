@@ -47,13 +47,16 @@ This function is a modified copy of `org-id-get'."
         id))))
 
 (defun org-gtd-id--generate-sanitized-alnum-dash-string (str)
-  "Returns a string which contains only a-zA-Z0-9 with single dashes
- replacing all other characters in-between them.
+  "Clean up STR and make it fit to be used as an org id.
 
- Some parts were copied and adapted from org-hugo-slug
- from https://github.com/kaushalmodi/ox-hugo (GPLv3).
+Returns a string which contains only a-zA-Z0-9 with single dashes replacing
+all other characters in-between them.
 
-Taken from https://gitlab.com/publicvoit/orgmode-link-demo/-/raw/main/link_demo.org."
+Some parts were copied and adapted from org-hugo-slug from
+https://github.com/kaushalmodi/ox-hugo (GPLv3).
+
+Taken from
+https://gitlab.com/publicvoit/orgmode-link-demo/-/raw/main/link_demo.org ."
   (let* (;; Remove "<FOO>..</FOO>" HTML tags if present.
          (str (replace-regexp-in-string "<\\(?1:[a-z]+\\)[^>]*>.*</\\1>" "" str))
          ;; Remove URLs if present in the string.  The ")" in the
@@ -100,9 +103,9 @@ Taken from https://gitlab.com/publicvoit/orgmode-link-demo/-/raw/main/link_demo.
     str))
 
 (defun org-gtd-id--generate()
-  "Generates and returns a new id.
+  "Generate and return a new id.
 The generated ID is stripped off potential progress indicator cookies and
-sanitized to get a slug. Furthermore, it is suffixed with an ISO date-stamp."
+sanitized to get a slug.  Furthermore, it is suffixed with an ISO date-stamp."
   (let* ((my-heading-text (nth 4 (org-heading-components))) ;; retrieve heading string
          (my-heading-text (replace-regexp-in-string "\\(\\[[0-9]+%\\]\\)" "" my-heading-text)) ;; remove progress indicators like "[25%]"
          (my-heading-text (replace-regexp-in-string "\\(\\[[0-9]+/[0-9]+\\]\\)" "" my-heading-text)) ;; remove progress indicators like "[2/7]"

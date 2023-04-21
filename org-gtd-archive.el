@@ -68,6 +68,7 @@ into a datetree."
     (delete-file temp-file)))
 
 (defun org-gtd-archive-location-func ()
+  "Default function to define where to archive items."
   (let* ((year (number-to-string (caddr (calendar-current-date))))
          (full-org-gtd-path (expand-file-name org-gtd-directory))
          (filename (format org-gtd-archive-file-format year))
@@ -108,8 +109,7 @@ or `org-gtd-canceled'."
    'agenda))
 
 (defun org-gtd--all-subheadings-in-done-type-p ()
-  "Private function. Returns t if every sub-heading is in a `org-gtd-done' or
-`org-gtd-canceled' state."
+  "Return t if every sub-heading is `org-gtd-done' or `org-gtd-canceled'."
   (seq-every-p (lambda (x) (eq x 'done))
                (org-map-entries (lambda ()
                                   (org-element-property :todo-type (org-element-at-point)))

@@ -75,7 +75,6 @@ This assumes all GTD files are also agenda files."
       (org-gtd-core-prepare-agenda-buffers)
       (org-todo-list org-gtd-next)))
 
-;;;###autoload
 (defun org-gtd-agenda--apply (func)
   "Run FUNC on a single task shown in the agenda view."
   (interactive)
@@ -172,7 +171,7 @@ This function is intended to be used on incubated items that come up."
        (org-agenda-show-tags)))))
 
 (defun org-gtd-agenda--prefix-format ()
-  "format prefix for items in buffer"
+  "Format prefix for items in agenda buffer."
   (let* ((elt (org-element-at-point))
          (level (org-element-property :level elt))
          (category (org-entry-get (point) "CATEGORY" t))

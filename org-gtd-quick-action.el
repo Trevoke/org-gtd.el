@@ -39,6 +39,7 @@
 
 ;;;###autoload
 (defun org-gtd-quick-action ()
+  "Organize, decorate and refile item at point as a quick action."
   (interactive)
   (org-gtd-organize--call org-gtd-organize-quick-action-func))
 

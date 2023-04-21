@@ -51,6 +51,7 @@ This is the inbox. Everything goes in here when you capture it.
     path))
 
 (defun org-gtd--horizons-file ()
+  "Create or return the buffer to the file containing the GTD horizons."
   (let ((path (f-join org-gtd-directory org-gtd-horizons-file)))
     (org-gtd--ensure-file-exists path org-gtd-file-horizons-template)
     (find-file-noselect path)))

@@ -33,6 +33,7 @@
 
 ;;;###autoload
 (defun org-gtd-single-action ()
+  "Organize, decorate and refile item at point as a single action."
   (interactive)
   (org-gtd-organize--call org-gtd-organize-single-action-func))
 

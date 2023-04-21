@@ -60,6 +60,7 @@ actually appointments or deadlines."
 
 ;;;###autoload
 (defun org-gtd-calendar ()
+  "Decorate and refile item at point as a calendar item."
   (interactive)
   (org-gtd-organize--call org-gtd-calendar-func))
 

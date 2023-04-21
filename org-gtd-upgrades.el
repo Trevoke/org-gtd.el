@@ -28,15 +28,17 @@
 (require 'org-habit)
 
 (defun org-gtd-upgrade-v2-to-v3 ()
-  "Destructive operation, intended to be used only when upgrading org-gtd from
-v2 to v3. Changes state of org-gtd tasks to move away from incorrectly used
-SCHEDULED planning keyword in org-mode."
+  "Use only when upgrading org-gtd from v2 to v3.
+
+Changes state of org-gtd tasks to move away from incorrectly used SCHEDULED
+planning keyword in org-mode."
   (interactive)
   (org-gtd-upgrades-calendar-items-to-v3)
   (org-gtd-upgrades-delegated-items-to-v3)
   (org-gtd-upgrades-incubated-items-to-v3))
 
 (defun org-gtd-upgrades-calendar-items-to-v3 ()
+  "Change calendar items away from SCHEDULED to using a custom property."
   (with-org-gtd-context
       (org-map-entries
        (lambda ()
@@ -51,6 +53,7 @@ SCHEDULED planning keyword in org-mode."
        'agenda)))
 
 (defun org-gtd-upgrades-incubated-items-to-v3 ()
+  "Change incubated items away from SCHEDULED to using a custom property."
   (with-org-gtd-context
       (org-map-entries
        (lambda ()
@@ -65,6 +68,7 @@ SCHEDULED planning keyword in org-mode."
        'agenda)))
 
 (defun org-gtd-upgrades-delegated-items-to-v3 ()
+  "Change delegated items away from SCHEDULED to using a custom property."
   (with-org-gtd-context
       (org-map-entries
        (lambda ()
@@ -79,10 +83,12 @@ SCHEDULED planning keyword in org-mode."
        'agenda)))
 
 (defun org-gtd-upgrades--delegated-item-p ()
+  "Return t if item at point is delegated."
   (and (org-entry-get (point) "DELEGATED_TO")
        (string-equal (org-entry-get (point) "TODO") org-gtd-wait)))
 
 (defun org-gtd-upgrades--scheduled-item-p ()
+  "Return t if item at point is SCHEDULED and not a habit."
   (and (not (org-is-habit-p))
        (org-get-scheduled-time (point))))
 

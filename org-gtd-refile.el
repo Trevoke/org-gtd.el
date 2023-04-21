@@ -110,8 +110,7 @@ TYPE is one of the org-gtd action types."
     (unless (org-refile-get-targets) (org-gtd-refile--add-target type))
     (if org-gtd-refile-to-any-target
         (org-refile nil nil (car (org-refile-get-targets)))
-      (org-refile nil nil nil (org-gtd-refile--prompt type))))
-  )
+      (org-refile nil nil nil (org-gtd-refile--prompt type)))))
 
 (defun org-gtd-refile--add-target (gtd-type)
   "Private function used to create a missing org-gtd refile target.

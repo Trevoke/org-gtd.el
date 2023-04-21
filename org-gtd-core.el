@@ -49,20 +49,20 @@ your own files if you want multiple refile targets (projects, etc.)."
 (defcustom org-gtd-horizons-file "horizons.org"
   "File holding your GTD horizons.
 
-This may get displayed during item clarification for context and focus. This file
-must be in the `org-gtd-directory'."
+This may get displayed during item clarification for context and focus.
+This file must be in the `org-gtd-directory'."
   :group 'org-gtd
   :package-version '(org-gtd . "3.0")
   :type 'file)
 
 (defcustom org-gtd-next "NEXT"
-  "The org-mode keyword for an action ready to be done. Just the word."
+  "The `org-mode' keyword for an action ready to be done.  Just the word."
   :group 'org-gtd
   :package-version '(org-gtd . "3.0")
   :type 'string)
 
 (defcustom org-gtd-next-suffix "(n)"
-  "Additional org-mode tools for this keyword. Example: \"(w@/!)\".
+  "Additional `org-mode' tools for this keyword.  Example: \"(w@/!)\".
 
 You can define:
 - a key to be used with `org-use-fast-todo-selection'
@@ -75,7 +75,7 @@ See `org-todo-keywords' for definition."
   :type 'string)
 
 (defcustom org-gtd-todo "TODO"
-  "The org-mode keyword for an upcoming action (not yet ready, not blocked).
+  "The `org-mode' keyword for an upcoming action (not yet ready, not blocked).
 
 See `org-todo-keywords' for customization options."
   :group 'org-gtd
@@ -83,7 +83,7 @@ See `org-todo-keywords' for customization options."
   :type 'string)
 
 (defcustom org-gtd-todo-suffix "(t)"
-  "Additional org-mode tools for this keyword. Example: \"(w@/!)\".
+  "Additional `org-mode' tools for this keyword.  Example: \"(w@/!)\".
 
 You can define:
 - a key to be used with `org-use-fast-todo-selection'
@@ -96,7 +96,7 @@ See `org-todo-keywords' for definition."
   :type 'string)
 
 (defcustom org-gtd-wait "WAIT"
-  "The org-mode keyword when an action is blocked/delegated.
+  "The `org-mode' keyword when an action is blocked/delegated.
 
 See `org-todo-keywords' for customization options."
   :group 'org-gtd
@@ -104,7 +104,7 @@ See `org-todo-keywords' for customization options."
   :type 'string)
 
 (defcustom org-gtd-wait-suffix "(w@)"
-  "Additional org-mode tools for this keyword. Example: \"(w@/!)\".
+  "Additional `org-mode' tools for this keyword.  Example: \"(w@/!)\".
 
 You can define:
 - a key to be used with `org-use-fast-todo-selection'
@@ -117,7 +117,7 @@ See `org-todo-keywords' for definition."
   :type 'string)
 
 (defcustom org-gtd-done "DONE"
-  "The org-mode keyword for a finished task.
+  "The `org-mode' keyword for a finished task.
 
  See `org-todo-keywords' for customization options."
   :group 'org-gtd
@@ -125,7 +125,7 @@ See `org-todo-keywords' for definition."
   :type 'string)
 
 (defcustom org-gtd-done-suffix "(d)"
-  "Additional org-mode tools for this keyword. Example: \"(w@/!)\".
+  "Additional `org-mode' tools for this keyword.  Example: \"(w@/!)\".
 
 You can define:
 - a key to be used with `org-use-fast-todo-selection'
@@ -138,7 +138,7 @@ See `org-todo-keywords' for definition."
   :type 'string)
 
 (defcustom org-gtd-canceled "CNCL"
-  "The org-mode keyword for a canceled task.
+  "The `org-mode' keyword for a canceled task.
 
  See `org-todo-keywords' for customization options."
   :group 'org-gtd
@@ -146,7 +146,7 @@ See `org-todo-keywords' for definition."
   :type 'string)
 
 (defcustom org-gtd-canceled-suffix "(c@)"
-  "Additional org-mode tools for this keyword. Example: \"(w@/!)\".
+  "Additional `org-mode' tools for this keyword.  Example: \"(w@/!)\".
 
 You can define:
 - a key to be used with `org-use-fast-todo-selection'
@@ -178,7 +178,7 @@ See `org-todo-keywords' for definition."
 
 ;;;###autoload
 (defmacro with-org-gtd-context (&rest body)
-  "Wrap any BODY in this macro to inherit the org-gtd settings for your logic."
+  "Wrap BODY... in this macro to inherit the org-gtd settings for your logic."
   (declare (debug t) (indent 2))
   `(let* ((org-use-property-inheritance "ORG_GTD")
           (org-todo-keywords `((sequence ,(string-join `(,org-gtd-next ,org-gtd-next-suffix))
@@ -202,8 +202,9 @@ See `org-todo-keywords' for definition."
          (progn ,@body))))
 
 (defun org-gtd-core-prepare-buffer (&optional buffer)
-  "Make sure BUFFER is prepared to handle Org GTD operations. If BUFFER is nil,
-use current buffer."
+  "Make sure BUFFER is prepared to handle Org GTD operations.
+
+If BUFFER is nil, use current buffer."
   (with-current-buffer (or buffer (current-buffer))
     (unless (bound-and-true-p org-gtd--loading-p)
       (setq-local org-gtd--loading-p t)
@@ -211,13 +212,13 @@ use current buffer."
           (org-mode-restart)))))
 
 (defun org-gtd-core-prepare-agenda-buffers ()
+  "Ensure `org-mode' has the desired settings in the agenda buffers."
   (mapc
    (lambda (file) (org-gtd-core-prepare-buffer (find-file-noselect file)))
    (with-org-gtd-context (org-agenda-files))))
 
 (defun org-gtd-core--agenda-files ()
-  "Return the value of the `org-agenda-files' variable with `org-gtd-directory'
-added to it."
+  "Concatenate `org-agenda-files' variable with `org-gtd-directory' contents."
   (if (stringp org-agenda-files)
       (append (org-read-agenda-file-list)
               (ensure-list org-gtd-directory))
