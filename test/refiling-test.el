@@ -13,9 +13,7 @@
   (with-current-buffer (org-gtd--default-file)
     (basic-save-buffer)))
 
- (after-each (ogt--close-and-delete-files)
-             ;; TODO see if I can remove this after the logdone is gone
-             (remove-hook 'post-command-hook 'org-add-log-note))
+ (after-each (ogt--close-and-delete-files))
 
  (it "skips refiling choice if option is enabled"
      (let ((org-gtd-refile-to-any-target t)

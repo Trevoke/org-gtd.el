@@ -37,6 +37,4 @@
        (set-buffer source-buffer)
        (org-gtd-clarify-item)
        (org-gtd-single-action)
-       (expect (buffer-size) :to-equal 0))
-     ;; TODO after I remove the headers, test that I can remove this
-     (remove-hook 'post-command-hook 'org-add-log-note)))
+       (expect (buffer-size) :to-equal 0))))

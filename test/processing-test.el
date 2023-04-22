@@ -9,6 +9,7 @@
 (describe
  "Processing items"
 
+
  (before-each
   (ogt--configure-emacs)
   (ogt-capture-single-item))

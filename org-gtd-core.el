@@ -175,6 +175,10 @@ See `org-todo-keywords' for definition."
 
 (defvar org-gtd-project-headings)
 (defvar org-gtd-stuck-projects)
+(defvar org-gtd-archive-location)
+(defvar org-gtd-capture-templates)
+
+(define-error 'org-gtd-errors "Something went wrong with `org-gtd'" 'errors)
 
 ;;;###autoload
 (defmacro with-org-gtd-context (&rest body)

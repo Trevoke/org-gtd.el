@@ -1,3 +1,5 @@
+(setq org-gtd-update-ack "2.1.0")
+
 (load "test/helpers/clarifying.el")
 (load "test/helpers/project-fixtures.el")
 (load "test/helpers/processing.el")

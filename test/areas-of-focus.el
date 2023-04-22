@@ -15,22 +15,25 @@
              (remove-hook 'org-gtd-decorate-item-hooks #'org-gtd-areas-of-focus)
              (setq org-gtd-areas-of-focus nil))
 
- (it "sets the org-mode CATEGORY on clarified item from a customizable list"
-     (ogt-capture-single-item "Medical Appointment")
-     (org-gtd-process-inbox)
-     (execute-kbd-macro (kbd "C-c c s H e a l t h RET"))
-     (org-gtd-engage)
-     (expect (ogt--buffer-string org-agenda-buffer)
-             :to-match
-             "Health.*Medical"))
+ (describe
+  "org-mode CATEGORY"
 
- (it "sets the CATEGORY on item at point from the areas of focus"
-     (with-current-buffer (get-buffer-create "temp.org")
-       (org-mode)
-       (insert "* A heading")
-       (with-simulated-input "Health RET"
-                             (org-gtd-areas-of-focus))
-       (expect (org-entry-get (point) "CATEGORY")
-               :to-equal
-               "Health")
-       (kill-buffer))))
+  (it "is set on clarified item from a customizable list"
+      (ogt-capture-single-item "Medical Appointment")
+      (org-gtd-process-inbox)
+      (execute-kbd-macro (kbd "C-c c s H e a l t h RET"))
+      (org-gtd-engage)
+      (expect (ogt--buffer-string org-agenda-buffer)
+              :to-match
+              "Health.*Medical"))
+
+  (it "is set on item at point from the areas of focus decoration"
+      (with-current-buffer (get-buffer-create "temp.org")
+        (org-mode)
+        (insert "* A heading")
+        (with-simulated-input "Health RET"
+                              (org-gtd-areas-of-focus))
+        (expect (org-entry-get (point) "CATEGORY")
+                :to-equal
+                "Health")
+        (kill-buffer)))))

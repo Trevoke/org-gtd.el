@@ -21,14 +21,18 @@
 ;;; Commentary:
 ;;
 ;; Areas of Focus are horizon 2 for GTD.
-;; This logic helps handle them;
+;; This logic helps handle them.
 ;;
 ;;; Code:
 
 (require 'org)
+(require 'org-gtd-core)
 
 (defcustom org-gtd-areas-of-focus '("Home" "Health" "Family" "Career")
-  "The current major areas in your life where you don't want to drop balls.")
+  "The current major areas in your life where you don't want to drop balls."
+  :type 'list
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0.0"))
 
 (defun org-gtd-areas-of-focus ()
   "Use as a hook when decorating items after clarifying them.

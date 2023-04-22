@@ -25,9 +25,7 @@
 ;;; Code:
 (require 'subr-x)
 
-;; this was added in emacs 28.1
-(unless (fboundp 'string-pad)
-  (defun string-pad (string length &optional padding start)
+(defun org-gtd--string-pad (string length &optional padding start)
     "Pad STRING to LENGTH using PADDING.
 If PADDING is nil, the space character is used.  If not nil, it
 should be a character.
@@ -43,16 +41,23 @@ the string."
     (let ((pad-length (- length (length string))))
       (cond ((<= pad-length 0) string)
             (start (concat (make-string pad-length (or padding ?\s)) string))
-            (t (concat string (make-string pad-length (or padding ?\s))))))))
+            (t (concat string (make-string pad-length (or padding ?\s)))))))
 
-(unless (fboundp 'ensure-list)
-  (defun ensure-list (object)
+;; this was added in emacs 28.1
+(unless (fboundp 'string-pad)
+  (defalias 'string-pad 'org-gtd--string-pad))
+
+(defun org-gtd--ensure-list (object)
     "Return OBJECT as a list.
 If OBJECT is already a list, return OBJECT itself.  If it's
 not a list, return a one-element list containing OBJECT."
     (if (listp object)
         object
-      (list object))))
+      (list object)))
+
+;; this was added in emacs 28.1
+(unless (fboundp 'ensure-list)
+  (defalias 'ensure-list 'org-gtd--ensure-list))
 
 (provide 'org-gtd-backward-compatibility)
 ;;; org-gtd-backward-compatibility.el ends here
