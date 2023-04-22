@@ -26,19 +26,62 @@
 ;;; Code:
 
 (require 'org)
+(require 'org-gtd-core)
 (require 'org-gtd-areas-of-focus)
 (require 'org-gtd-agenda)
 
+(define-error
+ 'org-gtd-invalid-area-of-focus
+ "`%s' is not a member of `%s'"
+ 'org-gtd-error)
+
+;;;###autoload
 (defun org-gtd-review-area-of-focus (&optional area)
-  ""
+  "Generate an overview agenda for a given area of focus."
   (interactive (list (completing-read
                       "Which area of focus would you like to review? "
                       org-gtd-areas-of-focus
                       nil
                       t)))
-  (if (not (member area org-gtd-areas-of-focus))
-      (print (format "`%s' is not a member of %s" area org-gtd-areas-of-focus))
-    (message "fuck right off")))
+  (when (not (member area org-gtd-areas-of-focus))
+    (signal 'org-gtd-invalid-area-of-focus `(,area ,org-gtd-areas-of-focus)))
+  (with-org-gtd-context
+      (let ((org-agenda-custom-commands
+             `(("a" ,(format "Area of Focus: %s" area)
+                ((tags "+LEVEL=2+ORG_GTD=\"Projects\""
+                       ((org-agenda-overriding-header "Ongoing projects")))
+                 (tags ,(format "+TODO=\"%s\"" org-gtd-next)
+                       ((org-agenda-overriding-header "Ready actions")))
+                 (agenda ""
+                         ((org-agenda-overriding-header "Habits")
+                          (org-agenda-skip-function '(org-gtd--AND-skips '(org-gtd--skip-unless-habit
+                                                                           ,(org-gtd--skip-unless-area-of-focus-func area))))
+                          (org-agenda-span 1)))
+                 (tags "+ORG_GTD=\"Incubated\""
+                       ((org-agenda-overriding-header "Incubated items"))))
+                ((org-agenda-skip-function ,(org-gtd--skip-unless-area-of-focus-func area)))))))
+        (org-agenda nil "a")
+        (goto-char (point-min)))))
+
+(defun org-gtd--AND-skips (funcs)
+  "Ensure none of the functions want to skip the current entry"
+  (let ((non-nil-funcs (seq--drop-while-list (lambda (x) (not (funcall x))) funcs)))
+    (if non-nil-funcs
+        (funcall (car non-nil-funcs)))))
+
+(defun org-gtd--skip-unless-habit ()
+  (let ((subtree-end (save-excursion (org-end-of-subtree t))))
+    (if (string-equal "habit" (org-entry-get (point) "STYLE"))
+        nil
+      subtree-end)))
+
+(defun org-gtd--skip-unless-area-of-focus-func (area)
+  `(lambda ()
+     (let ((subtree-end (save-excursion (org-end-of-subtree t))))
+       (if (string-equal (downcase ,area)
+                         (downcase (org-entry-get (point) "CATEGORY")))
+           nil
+         subtree-end))))
 
 (provide 'org-gtd-review)
 ;;; org-gtd-review.el ends here

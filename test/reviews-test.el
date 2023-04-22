@@ -17,15 +17,8 @@
 
  (describe
   "Areas of focus"
-  (xit "prints an error if called programmatically with an area not in the list"
-      ;(kill-buffer "*Messages*")
-      (org-gtd-review-area-of-focus "Playing")
-      (message (current-message))
-      (ogt--print-buffer-list)
-      (expect (buffer-name) :to-equal "*scratch*")
-
-      (expect                           ;(current-message)
-       (ogt--buffer-string "*Messages*")
-       :to-match
-       (format "`Playing' is not a member of (Health Home Career)"))
-      )))
+  (it "throws an error if called programmatically with an area not in the list"
+      (expect
+       (org-gtd-review-area-of-focus "Playing")
+       :to-throw
+       'org-gtd-invalid-area-of-focus))))
