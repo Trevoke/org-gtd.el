@@ -14,7 +14,8 @@
   (ogt--buffer-string (ogt--archive)))
 
 (defun ogt--save-all-buffers ()
-  (with-simulated-input "!" (save-some-buffers)))
+  (let ((inhibit-message t))
+    (with-simulated-input "!" (save-some-buffers))))
 
 (defun ogt--temp-org-file-buffer (basename &optional text)
   "Create a new org-mode file with a unique name.

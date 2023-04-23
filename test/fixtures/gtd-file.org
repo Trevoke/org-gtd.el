@@ -1,5 +1,4 @@
-#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
-
+#+STARTUP: overview indent align inlineimages hidestars
 
 * Projects
 :PROPERTIES:

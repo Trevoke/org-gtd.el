@@ -7,8 +7,10 @@
 
 (describe
  "Organizing (in 3.0)"
- (before-each
-  (ogt--configure-emacs))
+
+ :var ((inhibit-message t))
+
+ (before-each (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
  (it "restores the window configuration"

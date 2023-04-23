@@ -8,8 +8,9 @@
 (describe
  "Project management"
 
- (before-each (ogt--configure-emacs))
+  :var ((inhibit-message t))
 
+ (before-each (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files)
              ;; TODO figure out if this can / should be removed
              (remove-hook 'post-command-hook 'org-add-log-note))

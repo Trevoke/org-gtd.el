@@ -9,6 +9,7 @@
 (describe
  "Processing items"
 
+  :var ((inhibit-message t))
 
  (before-each
   (ogt--configure-emacs)

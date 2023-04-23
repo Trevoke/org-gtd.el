@@ -9,7 +9,9 @@
 (describe
  "Upgrading org-gtd"
 
-  (before-each (ogt--configure-emacs))
+ :var ((inhibit-message t))
+
+ (before-each (ogt--configure-emacs))
   (after-each (ogt--close-and-delete-files))
 
   (describe

@@ -8,6 +8,8 @@
 (describe
  "An incubated item"
 
+ :var ((inhibit-message t))
+
  (before-each (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
@@ -27,14 +29,14 @@
   "compatibility with orgzly"
   (it "has a copy of the active timestamp in the body"
       (let* ((date (calendar-current-date))
-            (year (nth 2 date))
-            (month (nth 0 date))
-            (day (nth 1 date)))
-       (ogt-capture-and-process-incubated-item "Yowza" date)
-       (with-current-buffer (org-gtd--default-file)
-         (goto-char (point-min))
-         (search-forward "Yowza")
-         (org-end-of-meta-data t)
-         (expect (buffer-substring (point) (point-max))
-                 :to-match
-                 (format "<%s-%#02d-%#02d>" year month day)))))))
+             (year (nth 2 date))
+             (month (nth 0 date))
+             (day (nth 1 date)))
+        (ogt-capture-and-process-incubated-item "Yowza" date)
+        (with-current-buffer (org-gtd--default-file)
+          (goto-char (point-min))
+          (search-forward "Yowza")
+          (org-end-of-meta-data t)
+          (expect (buffer-substring (point) (point-max))
+                  :to-match
+                  (format "<%s-%#02d-%#02d>" year month day)))))))

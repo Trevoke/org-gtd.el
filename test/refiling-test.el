@@ -7,6 +7,9 @@
 
 (describe
  "When refiling a project"
+
+ :var ((inhibit-message t))
+
  (before-each
   (ogt--configure-emacs)
   (ogt-capture-and-process-project "project headline")

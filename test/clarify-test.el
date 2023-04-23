@@ -7,6 +7,9 @@
 
 (describe
  "Flow for clarifying items"
+
+ :var ((inhibit-message t))
+
  (it "stores a marker to the original heading as local variable in the WIP buffer"
      (let ((source-buffer (ogt--temp-org-file-buffer "taskfile" "* This is the heading to clarify")))
        (with-current-buffer source-buffer

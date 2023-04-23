@@ -8,6 +8,8 @@
 (describe
  "org-gtd-agenda-files"
 
+ :var ((inhibit-message t))
+
  (before-each (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 

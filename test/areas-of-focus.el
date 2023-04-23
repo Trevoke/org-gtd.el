@@ -8,6 +8,8 @@
 (describe
  "Areas of focus"
 
+ :var ((inhibit-message t))
+
  (before-each (ogt--configure-emacs)
               (add-hook 'org-gtd-decorate-item-hooks #'org-gtd-areas-of-focus)
               (setq org-gtd-areas-of-focus '("Health" "Home" "Career")))

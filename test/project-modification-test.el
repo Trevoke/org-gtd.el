@@ -8,6 +8,8 @@
 (describe
  "Modifying a project"
 
+ :var ((inhibit-message t))
+
  (before-each (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
