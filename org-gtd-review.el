@@ -54,7 +54,7 @@
                          ((org-agenda-overriding-header "Active projects")))
                    (todo ,org-gtd-next
                          ((org-agenda-overriding-header "Next actions")))
-                   (agenda ""; ,(format "+ORG_GTD_CALENDAR>=\"<%s>\"" start-date)
+                   (agenda ""
                          ((org-agenda-overriding-header "Reminders")
                           (org-agenda-start-day ,start-date)
                           (org-agenda-show-all-dates nil)
@@ -65,14 +65,12 @@
                                                                            ,(org-gtd--skip-unless-area-of-focus-func area))))))
                    (agenda ""
                            ((org-agenda-overriding-header "Routines")
-                            ;(org-agenda-entry-types '(:scheduled))
                             (org-agenda-time-grid '((require-timed) () "" ""))
                             (org-agenda-start-day ,start-date)
                             (org-agenda-span 'day)
                             (org-habit-show-habits-only-for-today nil)
                             (org-agenda-skip-function '(org-gtd--AND-skips '(org-gtd--skip-unless-habit
-                                                                            ,(org-gtd--skip-unless-area-of-focus-func area))
-                                                            ))))
+                                                                            ,(org-gtd--skip-unless-area-of-focus-func area))))))
                    (tags ,(format "+ORG_GTD_INCUBATE>\"<%s>\"" start-date)
                          ((org-agenda-overriding-header "Incubated items"))))
                   ((org-agenda-skip-function '(org-gtd--skip-unless-area-of-focus ,area))

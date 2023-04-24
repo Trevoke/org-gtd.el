@@ -23,6 +23,13 @@
     (org-gtd-process-inbox)
     (ogt-clarify-as-calendar-item date)))
 
+(defun ogt-capture-and-process-habit (label repeater)
+  "REPEATER is an org-mode date repeater, e.g. .+1d or ++1m, etc."
+  (let ((inhibit-message t))
+    (ogt-capture-single-item label)
+    (org-gtd-process-inbox)
+    (ogt-clarify-as-habit repeater)))
+
 (defun ogt-capture-and-process-delegated-item (label &optional to-whom date)
   (let ((inhibit-message t))
     (ogt-capture-single-item label)

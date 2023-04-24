@@ -27,6 +27,7 @@
 (require 'transient)
 (require 'org-gtd-core)
 (require 'org-gtd-calendar)
+(require 'org-gtd-habit)
 (require 'org-gtd-knowledge)
 (require 'org-gtd-incubate)
 (require 'org-gtd-quick-action)
@@ -48,7 +49,8 @@
    [("q" "Quick action" org-gtd-quick-action)
     ("s" "Single action" org-gtd-single-action)]
    [("d" "Delegate" org-gtd-delegate)
-    ("c" "Calendar" org-gtd-calendar)]]
+    ("c" "Calendar" org-gtd-calendar)
+    ("h" "Habit" org-gtd-habit)]]
   [("p" "Project (multi-step)" org-gtd-project-new)
    ("a" "Add this task to an existing project" org-gtd-project-extend)]
   ["Non-actionable"

@@ -31,6 +31,10 @@
            (day (nth 1 date)))
       (execute-kbd-macro (kbd (format "C-c c c %s-%s-%s RET" year month day))))))
 
+(defun ogt-clarify-as-habit (repeater)
+  (let ((inhibit-message t))
+    (execute-kbd-macro (kbd (format "C-c c h %s RET" repeater)))))
+
 (defun ogt-clarify-as-knowledge-item ()
   (let ((inhibit-message t))
     (execute-kbd-macro (kbd "C-c c k"))))
