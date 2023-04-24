@@ -25,6 +25,7 @@
 ;;; Code:
 
 (require 'org-gtd-id)
+(require 'org-gtd-horizons)
 
 (defgroup org-gtd-clarify nil
   "Customize the behavior when clarifying an item."
@@ -34,9 +35,10 @@
 (defcustom org-gtd-clarify-show-horizons nil
   "If t, show a side buffer with the higher horizons during item clarification.
 The file shown can be configured in `org-gtd-horizons-file'"
+  :options '('right 'top 'left 'bottom 'nil)
   :package-version '(org-gtd . "3.0")
   :group 'org-gtd-clarify
-  :type 'boolean)
+  :type 'symbol)
 
 (defconst org-gtd-clarify--prefix "Org-GTD WIP")
 
@@ -117,6 +119,21 @@ This function is called through the inbox clarification process."
           (org-gtd-clarify-setup-windows chosen-buf-name))
       (message "There are no Org-GTD WIP buffers."))))
 
+(defun org-gtd-clarify-toggle-horizons-window ()
+  "Toggle the window with the horizons buffer."
+  (interactive)
+  (let* ((buffer (org-gtd--horizons-file))
+         (window (get-buffer-window buffer)))
+    (if window
+        (quit-window nil window)
+      (org-gtd-clarify--display-horizons-window))))
+
+(defun org-gtd-clarify--display-horizons-window ()
+  "Display horizons window."
+  (let ((horizons-side (or org-gtd-clarify-show-horizons 'right)))
+    (display-buffer (org-gtd--horizons-file)
+                    `(display-buffer-in-side-window . ((side . ,horizons-side))))))
+
 (defun org-gtd-clarify-setup-windows (buffer-or-name)
   "Setup clarifying windows around BUFFER-OR-NAME."
   (let ((buffer (get-buffer buffer-or-name)))
@@ -124,8 +141,7 @@ This function is called through the inbox clarification process."
     (display-buffer buffer)
     (delete-other-windows (get-buffer-window buffer))
     (if org-gtd-clarify-show-horizons
-        (display-buffer (org-gtd--horizons-file)
-                        '(display-buffer-in-side-window . ((side . right)))))))
+        (org-gtd-clarify--display-horizons-window))))
 
 (defun org-gtd-clarify--buffer-name (id)
   "Retrieve the name of the WIP buffer for this particular ID."

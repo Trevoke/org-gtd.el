@@ -17,7 +17,7 @@
  (describe
   "when org-gtd should show the horizons"
 
-  (before-each (setq org-gtd-clarify-show-horizons t))
+  (before-each (setq org-gtd-clarify-show-horizons 'right))
   (after-each (setq org-gtd-clarify-show-horizons nil))
 
   (describe

@@ -8,6 +8,8 @@
 ** you can customize what the functions do for each GTD action (e.g. incubate, single action, etc.)
 ** you can customize your TODO keywords
 ** areas of focus customizable variable and optional decoration hook
+** horizons file customizable, can be displayed/toggled while clarifying items
+suggest keybinding on keymap in doc
 * required config changes
 ** org-gtd-process-mode is now org-gtd-clarify-mode
 ** org-gtd-process-map is now org-gtd-clarify-map

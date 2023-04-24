@@ -36,25 +36,12 @@ This is the inbox. Everything goes in here when you capture it.
 
 (defconst org-gtd-default-file-name "org-gtd-tasks")
 
-(defconst org-gtd-file-horizons-template
-  "* Purpose and principles (why)
-* Vision (what)
-* Goals
-* Areas of focus / accountabilities
-")
-
 ;;;###autoload
 (defun org-gtd-inbox-path ()
   "Return the full path to the inbox file."
   (let ((path (org-gtd--path org-gtd-inbox)))
     (org-gtd--ensure-file-exists path org-gtd-inbox-template)
     path))
-
-(defun org-gtd--horizons-file ()
-  "Create or return the buffer to the file containing the GTD horizons."
-  (let ((path (f-join org-gtd-directory org-gtd-horizons-file)))
-    (org-gtd--ensure-file-exists path org-gtd-file-horizons-template)
-    (find-file-noselect path)))
 
 (defun org-gtd--inbox-file ()
   "Create or return the buffer to the GTD inbox file."
