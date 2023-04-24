@@ -179,9 +179,9 @@ See `org-todo-keywords' for definition."
 (defvar org-gtd-capture-templates)
 
 (define-error
- 'org-gtd-error
- "Something went wrong with `org-gtd'"
- 'user-error)
+  'org-gtd-error
+  "Something went wrong with `org-gtd'"
+  'user-error)
 
 ;;;###autoload
 (defmacro with-org-gtd-context (&rest body)
@@ -222,7 +222,12 @@ If BUFFER is nil, use current buffer."
   "Ensure `org-mode' has the desired settings in the agenda buffers."
   (mapc
    (lambda (file) (org-gtd-core-prepare-buffer (find-file-noselect file)))
-   (with-org-gtd-context (org-agenda-files))))
+   (-flatten
+    (mapcar
+     (lambda (org-agenda-entry) (if (f-directory-p org-agenda-entry)
+                                    (directory-files org-agenda-entry t org-agenda-file-regexp t)
+                                  org-agenda-entry))
+     (with-org-gtd-context (org-gtd-core--agenda-files))))))
 
 (defun org-gtd-core--agenda-files ()
   "Concatenate `org-agenda-files' variable with `org-gtd-directory' contents."

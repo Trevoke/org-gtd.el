@@ -25,9 +25,10 @@ Return the buffer visiting that file."
     (find-file-noselect filename)))
 
 (defun ogt--create-org-file-in-org-gtd-dir (basename &optional initial-contents)
-  (let* ((file (f-join org-gtd-directory (format "%s.org" basename)))
+  (let* ((file (f-join org-gtd-directory (string-join `(,basename ".org"))))
          (buffer (find-file-noselect file)))
     (with-current-buffer buffer
+      (org-mode)
       (insert (or initial-contents ""))
       (basic-save-buffer))
     buffer))

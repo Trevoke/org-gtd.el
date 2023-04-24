@@ -36,7 +36,7 @@
  'org-gtd-error)
 
 ;;;###autoload
-(defun org-gtd-review-area-of-focus (&optional area)
+(defun org-gtd-review-area-of-focus (&optional area start-date)
   "Generate an overview agenda for a given area of focus."
   (interactive (list (completing-read
                       "Which area of focus would you like to review? "
@@ -45,33 +45,66 @@
                       t)))
   (when (not (member area org-gtd-areas-of-focus))
     (signal 'org-gtd-invalid-area-of-focus `(,area ,org-gtd-areas-of-focus)))
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands
-             `(("a" ,(format "Area of Focus: %s" area)
-                ((tags "+LEVEL=2+ORG_GTD=\"Projects\""
-                       ((org-agenda-overriding-header "Ongoing projects")))
-                 (tags ,(format "+TODO=\"%s\"" org-gtd-next)
-                       ((org-agenda-overriding-header "Ready actions")))
-                 (agenda ""
-                         ((org-agenda-overriding-header "Habits")
-                          (org-agenda-skip-function '(org-gtd--AND-skips '(org-gtd--skip-unless-habit
-                                                                           ,(org-gtd--skip-unless-area-of-focus-func area))))
-                          (org-agenda-span 1)))
-                 (tags "+ORG_GTD=\"Incubated\""
-                       ((org-agenda-overriding-header "Incubated items"))))
-                ((org-agenda-skip-function ,(org-gtd--skip-unless-area-of-focus-func area)))))))
-        (org-agenda nil "a")
-        (goto-char (point-min)))))
+  (let ((start-date (or start-date (format-time-string "%Y-%m-%d"))))
+    (org-gtd-core-prepare-agenda-buffers)
+    (with-org-gtd-context
+        (let ((org-agenda-custom-commands
+               `(("a" ,(format "Area of Focus: %s" area)
+                  ((tags ,org-gtd-project-headings
+                         ((org-agenda-overriding-header "Active projects")))
+                   (todo ,org-gtd-next
+                         ((org-agenda-overriding-header "Next actions")))
+                   (agenda ""; ,(format "+ORG_GTD_CALENDAR>=\"<%s>\"" start-date)
+                         ((org-agenda-overriding-header "Reminders")
+                          (org-agenda-start-day ,start-date)
+                          (org-agenda-show-all-dates nil)
+                          (org-agenda-show-future-repeats nil)
+                          (org-agenda-span 90)
+                          (org-agenda-skip-additional-timestamps-same-entry t)
+                          (org-agenda-skip-function '(org-gtd--AND-skips '(org-gtd--skip-unless-calendar
+                                                                           ,(org-gtd--skip-unless-area-of-focus-func area))))))
+                   (agenda ""
+                           ((org-agenda-overriding-header "Routines")
+                            ;(org-agenda-entry-types '(:scheduled))
+                            (org-agenda-time-grid '((require-timed) () "" ""))
+                            (org-agenda-start-day ,start-date)
+                            (org-agenda-span 'day)
+                            (org-habit-show-habits-only-for-today nil)
+                            (org-agenda-skip-function '(org-gtd--AND-skips '(org-gtd--skip-unless-habit
+                                                                            ,(org-gtd--skip-unless-area-of-focus-func area))
+                                                            ))))
+                   (tags ,(format "+ORG_GTD_INCUBATE>\"<%s>\"" start-date)
+                         ((org-agenda-overriding-header "Incubated items"))))
+                  ((org-agenda-skip-function '(org-gtd--skip-unless-area-of-focus ,area))
+                   (org-agenda-buffer-name ,(format "*Org Agenda: %s*" area)))))))
+          (org-agenda nil "a")
+          (goto-char (point-min))))))
 
 (defun org-gtd--AND-skips (funcs)
   "Ensure none of the functions want to skip the current entry"
-  (let ((non-nil-funcs (seq--drop-while-list (lambda (x) (not (funcall x))) funcs)))
+  (let ((non-nil-funcs (seq-drop-while (lambda (x) (not (funcall x))) funcs)))
     (if non-nil-funcs
         (funcall (car non-nil-funcs)))))
+
+(defun org-gtd--skip-unless-calendar ()
+  (let ((subtree-end (save-excursion (org-end-of-subtree t))))
+    (if (org-entry-get (point) org-gtd-calendar-property)
+        nil
+      subtree-end)))
 
 (defun org-gtd--skip-unless-habit ()
   (let ((subtree-end (save-excursion (org-end-of-subtree t))))
     (if (string-equal "habit" (org-entry-get (point) "STYLE"))
+        nil
+      subtree-end)))
+
+(defun org-gtd--skip-unless-area-of-focus-func (area)
+  (apply-partially #'org-gtd--skip-unless-area-of-focus area))
+
+(defun org-gtd--skip-unless-area-of-focus (area)
+  (let ((subtree-end (save-excursion (org-end-of-subtree t))))
+    (if (string-equal (downcase area)
+                      (downcase (org-entry-get (point) "CATEGORY")))
         nil
       subtree-end)))
 
