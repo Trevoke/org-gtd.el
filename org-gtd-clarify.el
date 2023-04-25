@@ -40,6 +40,12 @@ The file shown can be configured in `org-gtd-horizons-file'"
   :group 'org-gtd-clarify
   :type 'symbol)
 
+(defcustom org-gtd-clarify-project-templates nil
+  "alist of template title and template itself to use while clarifying an item."
+  :group 'org-gtd-clarify
+  :type '(alist :key-type string :value-type string)
+  :package-version '(org-gtd . "3.0.0"))
+
 (defconst org-gtd-clarify--prefix "Org-GTD WIP")
 
 (defvar-local org-gtd-clarify--window-config nil
@@ -133,6 +139,21 @@ This function is called through the inbox clarification process."
   (let ((horizons-side (or org-gtd-clarify-show-horizons 'right)))
     (display-buffer (org-gtd--horizons-file)
                     `(display-buffer-in-side-window . ((side . ,horizons-side))))))
+
+(defun org-gtd-clarify-project-insert-template ()
+  "Insert user-provided template under item at point"
+  (let* ((choice (completing-read
+                  "Choose a project template to insert: "
+                  org-gtd-clarify-project-templates nil t))
+         (chosen-template (alist-get
+                           choice
+                           org-gtd-clarify-project-templates nil nil 'equal)))
+    (save-excursion
+      (when (org-before-first-heading-p)
+        (org-next-visible-heading 1))
+      (when (equal (point-min) (point))
+       (goto-char 2))
+      (org-paste-subtree 2 chosen-template))))
 
 (defun org-gtd-clarify-setup-windows (buffer-or-name)
   "Setup clarifying windows around BUFFER-OR-NAME."

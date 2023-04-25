@@ -47,9 +47,34 @@
       (with-simulated-input "SPC"
                             (org-gtd-projects--show-error))
       (expect (ogt--buffer-string "*Message*")
-              :to-match "** First Task"))
-  )
- )
+              :to-match "** First Task"))))
+
+(describe
+ "Clarifying a project"
+
+  :var ((inhibit-message t))
+
+ (before-each (ogt--configure-emacs)
+              (setq org-gtd-clarify-project-templates
+         '(("prepare a video" . "* think of topic\n* record video\n* edit video"))))
+ (after-each (ogt--close-and-delete-files)
+             (setq org-gtd-clarify-project-templates nil)
+             ;; TODO figure out if this can / should be removed
+             ;(remove-hook 'post-command-hook 'org-add-log-note)
+             )
+
+ (it "allows insertion of a project template"
+     (ogt-capture-single-item "New project")
+     (org-gtd-process-inbox)
+     (with-simulated-input "prepare SPC a SPC video RET"
+                           (org-gtd-clarify-project-insert-template))
+     (org-gtd-organize)
+     (ogt-clarify-as-project)
+     (org-gtd-engage)
+     (with-current-buffer org-agenda-buffer
+       (expect (ogt--current-buffer-raw-text)
+               :to-match
+               "think of topic"))))
 
 ;;; TODO uncomment this test
 ;;; TODO stat cookie should support percent and tally versions
