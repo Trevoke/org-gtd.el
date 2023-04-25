@@ -45,6 +45,7 @@
                       t)))
   (when (not (member area org-gtd-areas-of-focus))
     (signal 'org-gtd-invalid-area-of-focus `(,area ,org-gtd-areas-of-focus)))
+
   (let ((start-date (or start-date (format-time-string "%Y-%m-%d"))))
     (org-gtd-core-prepare-agenda-buffers)
     (with-org-gtd-context
@@ -55,22 +56,25 @@
                    (todo ,org-gtd-next
                          ((org-agenda-overriding-header "Next actions")))
                    (agenda ""
-                         ((org-agenda-overriding-header "Reminders")
-                          (org-agenda-start-day ,start-date)
-                          (org-agenda-show-all-dates nil)
-                          (org-agenda-show-future-repeats nil)
-                          (org-agenda-span 90)
-                          (org-agenda-skip-additional-timestamps-same-entry t)
-                          (org-agenda-skip-function '(org-gtd--AND-skips '(org-gtd--skip-unless-calendar
-                                                                           ,(org-gtd--skip-unless-area-of-focus-func area))))))
+                           ((org-agenda-overriding-header "Reminders")
+                            (org-agenda-start-day ,start-date)
+                            (org-agenda-show-all-dates nil)
+                            (org-agenda-show-future-repeats nil)
+                            (org-agenda-span 90)
+                            (org-agenda-skip-additional-timestamps-same-entry t)
+                            (org-agenda-skip-function
+                             '(org-gtd--AND-skips '(org-gtd--skip-unless-calendar
+                                                    ,(org-gtd--skip-unless-area-of-focus-func area))))))
                    (agenda ""
                            ((org-agenda-overriding-header "Routines")
                             (org-agenda-time-grid '((require-timed) () "" ""))
+                            (org-agenda-entry-types '(:scheduled))
                             (org-agenda-start-day ,start-date)
                             (org-agenda-span 'day)
                             (org-habit-show-habits-only-for-today nil)
-                            (org-agenda-skip-function '(org-gtd--AND-skips '(org-gtd--skip-unless-habit
-                                                                            ,(org-gtd--skip-unless-area-of-focus-func area))))))
+                            (org-agenda-skip-function
+                             '(org-gtd--AND-skips '(org-gtd--skip-unless-habit
+                                                    ,(org-gtd--skip-unless-area-of-focus-func area))))))
                    (tags ,(format "+ORG_GTD_INCUBATE>\"<%s>\"" start-date)
                          ((org-agenda-overriding-header "Incubated items"))))
                   ((org-agenda-skip-function '(org-gtd--skip-unless-area-of-focus ,area))

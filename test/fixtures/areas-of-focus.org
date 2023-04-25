@@ -50,8 +50,8 @@
 :CATEGORY: Home
 :END:
 
-
-** probably overdue by now
+** some scheduled item
+SCHEDULED: <2021-11-20 Sat>
 :PROPERTIES:
 :ORG_GTD_CALENDAR: <2021-11-18 Thu>
 :END:
