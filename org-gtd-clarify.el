@@ -177,7 +177,8 @@ This function is called through the inbox clarification process."
 (defun org-gtd-clarify--get-buffer ()
   "Get or create a WIP buffer for heading at point."
   (org-gtd-id-get-create)
-  (let ((buffer (get-buffer-create (org-gtd-clarify--buffer-name (org-id-get)))))
+  (let* ((org-id (org-gtd-id-get-create))
+        (buffer (get-buffer-create (org-gtd-clarify--buffer-name org-id))))
     (with-current-buffer buffer
       (org-mode)
       (org-gtd-core-prepare-buffer)

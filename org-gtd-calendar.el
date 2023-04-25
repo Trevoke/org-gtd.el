@@ -47,9 +47,18 @@ actually appointments or deadlines."
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-(defun org-gtd-calendar--apply ()
+;;;###autoload
+(defun org-gtd-calendar (&optional appointment-date)
+  "Decorate and refile item at point as a calendar item."
+  (interactive)
+  (org-gtd-organize--call
+   (apply-partially org-gtd-calendar-func
+                    appointment-date)))
+
+(defun org-gtd-calendar--apply (&optional appointment-date)
   "Add a date/time to this item and store in org gtd."
-  (let ((date (org-read-date t nil nil "When is this going to happen? ")))
+  (let ((date (or appointment-date
+                  (org-read-date t nil nil "When is this going to happen? "))))
     (org-entry-put (point) org-gtd-calendar-property (format "<%s>" date))
     (save-excursion
       (org-end-of-meta-data t)
@@ -58,11 +67,17 @@ actually appointments or deadlines."
   (org-gtd-organize-decorate-item)
   (org-gtd--refile org-gtd-calendar))
 
-;;;###autoload
-(defun org-gtd-calendar ()
-  "Decorate and refile item at point as a calendar item."
-  (interactive)
-  (org-gtd-organize--call org-gtd-calendar-func))
+(defun org-gtd-calendar-create (topic appointment-date)
+  "Automatically create a calendar task in the GTD flow."
+  (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
+        (org-id-overriding-file-name "org-gtd"))
+    (with-current-buffer buffer
+      (org-mode)
+      (insert (format "* %s" topic))
+      (org-gtd-clarify-item)
+      (org-gtd-calendar appointment-date))
+    (kill-buffer buffer)))
+
 
 (provide 'org-gtd-calendar)
 ;;; org-gtd-calendar.el ends here

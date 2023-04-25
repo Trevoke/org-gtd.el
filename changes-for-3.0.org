@@ -11,6 +11,16 @@
 ** horizons file customizable, can be displayed/toggled while clarifying items
 suggest keybinding on keymap in doc
 ** project templates
+** functions you can call to automatically add items to the GTD flow
+(nothing for knowledge, projects, quick action, or trash)
+sample hook
+#+begin_src elisp
+  (defun org-gtd-delegate-from-email ()
+  (let ((delegated-to (message-fetch-field "to"))
+        (topic (format "Check in on %s" (message-fetch-field "subject")))
+        (checkin-date (format-time-string "%Y-%m-%d"))
+    (org-gtd-delegate-create topic delegated-to checkin-date)))
+#+end_src
 * required config changes
 ** org-gtd-process-mode is now org-gtd-clarify-mode
 ** org-gtd-process-map is now org-gtd-clarify-map

@@ -31,21 +31,34 @@
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-(defun org-gtd-habit--apply ()
+;;;###autoload
+(defun org-gtd-habit (&optional repeater)
+  "Decorate and refile item at point as a calendar item."
+  (interactive)
+  (org-gtd-organize--call
+   (apply-partially org-gtd-habit-func
+                    repeater)))
+
+(defun org-gtd-habit--apply (&optional repeater)
   "Add a repeater to this item and store in org gtd."
-  (let ((repeater (read-from-minibuffer "How do you want this to repeat? "))
+  (let ((repeater (or repeater
+                      (read-from-minibuffer "How do you want this to repeat? ")))
         (today (format-time-string "%Y-%m-%d")))
-    (message (format "<%s %s>" today repeater))
     (org-schedule nil (format "<%s %s>" today repeater))
     (org-entry-put (point) "STYLE" "habit"))
   (org-gtd-organize-decorate-item)
   (org-gtd--refile org-gtd-calendar))
 
-;;;###autoload
-(defun org-gtd-habit ()
-  "Decorate and refile item at point as a calendar item."
-  (interactive)
-  (org-gtd-organize--call org-gtd-habit-func))
+(defun org-gtd-habit-create (topic repeater)
+  "Automatically create a habit in the GTD flow."
+  (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
+        (org-id-overriding-file-name "org-gtd"))
+    (with-current-buffer buffer
+      (org-mode)
+      (insert (format "* %s" topic))
+      (org-gtd-clarify-item)
+      (org-gtd-habit repeater))
+    (kill-buffer buffer)))
 
 (provide 'org-gtd-habit)
 ;;; org-gtd-habit.el ends here

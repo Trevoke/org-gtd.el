@@ -35,14 +35,17 @@
   :package-version '(org-gtd . "3.0.0"))
 
 ;;;###autoload
-(defun org-gtd-incubate ()
+(defun org-gtd-incubate (&optional reminder-date)
   "Decorate, organize and refile item at point as incubated."
   (interactive)
-  (org-gtd-organize--call org-gtd-organize-incubate-func))
+  (org-gtd-organize--call
+   (apply-partially org-gtd-organize-incubate-func
+                    reminder-date)))
 
-(defun org-gtd-incubate--apply ()
+(defun org-gtd-incubate--apply (&optional reminder-date)
   "Incubate this item through org-gtd."
-  (let ((date (org-read-date t nil nil "When would you like this item to come up again? ")))
+  (let ((date (or reminder-date
+                  (org-read-date t nil nil "When would you like this item to come up again? "))))
     (org-entry-put (point) org-gtd-incubate-property (format "<%s>" date))
     (save-excursion
       (org-end-of-meta-data t)
@@ -50,6 +53,18 @@
       (insert (format "<%s>" date))))
   (org-gtd-organize-decorate-item)
   (org-gtd--refile org-gtd-incubated))
+
+(defun org-gtd-incubate-create (topic reminder-date)
+  "Automatically create a delegated task in the GTD flow."
+  (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
+        (org-id-overriding-file-name "org-gtd"))
+    (with-current-buffer buffer
+      (org-mode)
+      (insert (format "* %s" topic))
+      (org-gtd-clarify-item)
+      (org-gtd-incubate reminder-date))
+    (kill-buffer buffer)))
+
 
 (provide 'org-gtd-incubate)
 ;;; org-gtd-incubate.el ends here

@@ -23,10 +23,21 @@
          (goto-char (point-min))
          (search-forward "Yowza")
          (expect (org-entry-get (point) "ORG_GTD_INCUBATE")
-                 :to-match (format "%s-%#02d-%#02d" year month day))
-         )))
+                 :to-match (format "%s-%#02d-%#02d" year month day)))))
+
+  (it "can be added programmatically"
+     (org-gtd-incubate-create "Dentist appointment"
+                              (format-time-string "%Y-%m-%d"))
+     (org-gtd-engage)
+     (with-current-buffer org-agenda-buffer
+       (expect (ogt--current-buffer-raw-text)
+               :to-match
+               "Dentist appointment")))
+
+
  (describe
   "compatibility with orgzly"
+
   (it "has a copy of the active timestamp in the body"
       (let* ((date (calendar-current-date))
              (year (nth 2 date))

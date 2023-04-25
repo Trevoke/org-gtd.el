@@ -13,6 +13,16 @@
  (before-each (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
+ (it "can be added programmatically"
+     (org-gtd-habit-create "Dentist appointment"
+                              ".+3m")
+     (org-gtd-engage)
+     (with-current-buffer org-agenda-buffer
+       (expect (ogt--current-buffer-raw-text)
+               :to-match
+               "Dentist appointment")))
+
+
  (it "is formatted like org-mode wants"
      (let* ((repeater "++1m"))
        (ogt-capture-and-process-habit "Yowza" repeater)

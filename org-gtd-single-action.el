@@ -44,5 +44,17 @@
   (org-todo org-gtd-next)
   (org-gtd--refile org-gtd-actions))
 
+(defun org-gtd-single-action-create (topic)
+  "Automatically create a delegated task in the GTD flow."
+  (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
+        (org-id-overriding-file-name "org-gtd"))
+    (with-current-buffer buffer
+      (org-mode)
+      (insert (format "* %s" topic))
+      (org-gtd-clarify-item)
+      (org-gtd-single-action))
+    (kill-buffer buffer)))
+
+
 (provide 'org-gtd-single-action)
 ;;; org-gtd-single-action.el ends here

@@ -44,23 +44,29 @@ Needs to return a string that will be used as the persons name."
   :package-version '(org-gtd . "3.0.0"))
 
 ;;;###autoload
-(defun org-gtd-delegate ()
+(defun org-gtd-delegate (&optional delegated-to checkin-date)
   "Organize and refile item at point as a delegated item."
   (interactive)
-  (org-gtd-organize--call org-gtd-organize-delegate-func))
+  (org-gtd-organize--call
+   (apply-partially org-gtd-organize-delegate-func
+                    delegated-to
+                    checkin-date)))
 
-(defun org-gtd-delegate--apply ()
-  "Organize, decoare refile this as a delegated item in the `org-gtd' system."
-  (org-gtd-delegate-item-at-point)
+(defun org-gtd-delegate--apply (&optional delegated-to checkin-date)
+  "Organize, decorate and refile this as a delegated item in the `org-gtd' system."
+  (org-gtd-delegate-item-at-point delegated-to checkin-date)
   (org-gtd-organize-decorate-item)
   (org-gtd--refile org-gtd-actions))
 
 ;;;###autoload
-(defun org-gtd-delegate-item-at-point ()
+(defun org-gtd-delegate-item-at-point (&optional delegated-to checkin-date)
+  ;; TODO should this be called org-gtd-project-delegate-task?
   "Delegate item at point.  Use this if you do not want to refile the item."
-  (interactive)
-  (let ((delegated-to (apply org-gtd-delegate-read-func nil))
-        (date (org-read-date t nil nil "When do you want to check in on this task? "))
+  (interactive nil agenda-mode)
+  (let ((delegated-to (or delegated-to
+                          (apply org-gtd-delegate-read-func nil)))
+        (date (or checkin-date
+                  (org-read-date t nil nil "When do you want to check in on this task? ")))
         (org-inhibit-logging 'note))
     (org-set-property "DELEGATED_TO" delegated-to)
     (org-entry-put (point) org-gtd-calendar-property (format "<%s>" date))
@@ -72,6 +78,17 @@ Needs to return a string that will be used as the persons name."
     (save-excursion
       (goto-char (org-log-beginning t))
       (insert (format "programmatically delegated to %s\n" delegated-to)))))
+
+(defun org-gtd-delegate-create (topic delegated-to checkin-date)
+  "Automatically create a delegated task in the GTD flow."
+  (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
+        (org-id-overriding-file-name "org-gtd"))
+    (with-current-buffer buffer
+      (org-mode)
+      (insert (format "* %s" topic))
+      (org-gtd-clarify-item)
+      (org-gtd-delegate delegated-to checkin-date))
+    (kill-buffer buffer)))
 
 (provide 'org-gtd-delegate)
 ;;; org-gtd-delegate.el ends here

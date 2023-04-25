@@ -13,6 +13,15 @@
  (before-each (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
+ (it "can be added programmatically"
+     (org-gtd-calendar-create "Dentist appointment"
+                              (format-time-string "%Y-%m-%d"))
+     (org-gtd-engage)
+     (with-current-buffer org-agenda-buffer
+       (expect (ogt--current-buffer-raw-text)
+               :to-match
+               "Dentist appointment")))
+
  (it "has a specific property with the active timestamp"
      (let* ((date (calendar-current-date))
             (year (nth 2 date))
@@ -37,6 +46,6 @@
           (goto-char (point-min))
           (search-forward "Yowza")
           (org-end-of-meta-data t)
-          (expect (buffer-substring (point) (point-max))
+          (expect (ogt--current-buffer-raw-text)
                   :to-match
                   (format "<%s-%#02d-%#02d>" year month day)))))))

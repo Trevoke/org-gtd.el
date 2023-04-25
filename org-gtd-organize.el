@@ -43,8 +43,20 @@
   :package-version '(org-gtd . "3.0.0")
   :group 'org-gtd)
 
+(defcustom org-gtd-decorate-item-hooks '(org-set-tags-command)
+  "Enhancements to add to each item as they get processed from the inbox.
+
+This is a list of functions that modify an org element.  The default value has
+one function: setting org tags on the item.  Some built-in examples are
+provided as options here.  You can create your own functions to enhance/decorate
+the items once they have been processed and add them to that list."
+  :group 'org-gtd
+  :package-version '(org-gtd . "1.0.4")
+  :type 'hook
+  :options '(org-set-tags-command org-set-effort org-priority))
+
 (transient-define-prefix org-gtd-organize ()
-    "Choose how to categorize the current item."
+  "Choose how to categorize the current item."
   ["Actionable"
    [("q" "Quick action" org-gtd-quick-action)
     ("s" "Single action" org-gtd-single-action)]
