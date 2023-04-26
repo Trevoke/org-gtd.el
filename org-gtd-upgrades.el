@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 ;;
-;; Major versions aren't backward compatible. This code helps users move
+;; Major versions aren't backward compatible.  This code helps users move
 ;; their data forward.
 ;;
 ;;; Code:
@@ -31,7 +31,7 @@
   "Use only when upgrading org-gtd from v2 to v3.
 
 Changes state of org-gtd tasks to move away from incorrectly used SCHEDULED
-planning keyword in org-mode."
+planning keyword in `org-mode'."
   (interactive)
   (org-gtd-upgrades-calendar-items-to-v3)
   (org-gtd-upgrades-delegated-items-to-v3)

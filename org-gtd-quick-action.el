@@ -33,7 +33,7 @@
 
 (defun org-gtd-quick-action--apply ()
   "Process GTD inbox item by doing it now."
-  (org-gtd-organize-decorate-item)
+  (org-gtd-organize-apply-hooks)
   (org-todo org-gtd-done)
   (with-org-gtd-context (org-archive-subtree)))
 

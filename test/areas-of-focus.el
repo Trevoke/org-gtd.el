@@ -11,10 +11,10 @@
  :var ((inhibit-message t))
 
  (before-each (ogt--configure-emacs)
-              (add-hook 'org-gtd-decorate-item-hooks #'org-gtd-areas-of-focus)
+              (add-hook 'org-gtd-organize-hooks #'org-gtd-set-area-of-focus)
               (setq org-gtd-areas-of-focus '("Health" "Home" "Career")))
  (after-each (ogt--close-and-delete-files)
-             (remove-hook 'org-gtd-decorate-item-hooks #'org-gtd-areas-of-focus)
+             (remove-hook 'org-gtd-organize-hooks #'org-gtd-set-area-of-focus)
              (setq org-gtd-areas-of-focus nil))
 
  (describe
@@ -34,7 +34,7 @@
         (org-mode)
         (insert "* A heading")
         (with-simulated-input "Health RET"
-                              (org-gtd-areas-of-focus))
+                              (org-gtd-set-area-of-focus))
         (expect (org-entry-get (point) "CATEGORY")
                 :to-equal
                 "Health")

@@ -33,24 +33,36 @@
 
 ;;;###autoload
 (defun org-gtd-habit (&optional repeater)
-  "Decorate and refile item at point as a calendar item."
+  "Organize and refile item at point as a calendar item.
+
+If you want to call this non-interactively,
+REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
+determine how often you'll be reminded of this habit."
   (interactive)
   (org-gtd-organize--call
    (apply-partially org-gtd-habit-func
                     repeater)))
 
 (defun org-gtd-habit--apply (&optional repeater)
-  "Add a repeater to this item and store in org gtd."
+  "Add a repeater to this item and store in org gtd.
+
+If you want to call this non-interactively,
+REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
+determine how often you'll be reminded of this habit."
   (let ((repeater (or repeater
                       (read-from-minibuffer "How do you want this to repeat? ")))
         (today (format-time-string "%Y-%m-%d")))
     (org-schedule nil (format "<%s %s>" today repeater))
     (org-entry-put (point) "STYLE" "habit"))
-  (org-gtd-organize-decorate-item)
+  (org-gtd-organize-apply-hooks)
   (org-gtd--refile org-gtd-calendar))
 
 (defun org-gtd-habit-create (topic repeater)
-  "Automatically create a habit in the GTD flow."
+  "Automatically create a habit in the GTD flow.
+
+TOPIC is the string you want to see in the `org-agenda' view.
+REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
+determine how often you'll be reminded of this habit."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
         (org-id-overriding-file-name "org-gtd"))
     (with-current-buffer buffer

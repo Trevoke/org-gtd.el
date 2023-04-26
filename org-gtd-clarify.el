@@ -41,7 +41,10 @@ The file shown can be configured in `org-gtd-horizons-file'"
   :type 'symbol)
 
 (defcustom org-gtd-clarify-project-templates nil
-  "alist of template title and template itself to use while clarifying an item."
+  "This is an alist of (\"template title\" . \"template\").
+
+Used by `org-gtd-clarify-projects-insert-template', when clarifying an item
+which turns out to be a project."
   :group 'org-gtd-clarify
   :type '(alist :key-type string :value-type string)
   :package-version '(org-gtd . "3.0.0"))
@@ -141,7 +144,7 @@ This function is called through the inbox clarification process."
                     `(display-buffer-in-side-window . ((side . ,horizons-side))))))
 
 (defun org-gtd-clarify-project-insert-template ()
-  "Insert user-provided template under item at point"
+  "Insert user-provided template under item at point."
   (let* ((choice (completing-read
                   "Choose a project template to insert: "
                   org-gtd-clarify-project-templates nil t))

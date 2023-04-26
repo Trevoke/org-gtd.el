@@ -1,3 +1,4 @@
+* minimum emacs requirement: 27.2
 * update your mind
 ** menu has changed
 (a)rchive is now (k)nowledge
@@ -33,4 +34,4 @@ https://orgmode.org/manual/In_002dbuffer-Settings.html
 ** change org-edna triggers again
 ** calendar items no longer use SCHEDULED
 ** hook name has changed
-org-gtd-process-item-hooks -> org-gtd-decorate-item-hooks
+org-gtd-process-item-hooks -> org-gtd-organize-hooks

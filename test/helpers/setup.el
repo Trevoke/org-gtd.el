@@ -9,7 +9,7 @@
   (setq last-command nil
         org-gtd-directory (make-temp-file "org-gtd" t)
         org-gtd-areas-of-focus nil
-        org-gtd-decorate-item-hooks '()
+        org-gtd-organize-hooks '()
         org-gtd-refile-to-any-target t
         org-edna-use-inheritance t)
   (org-edna-mode 1)

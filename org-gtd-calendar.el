@@ -49,14 +49,20 @@ actually appointments or deadlines."
 
 ;;;###autoload
 (defun org-gtd-calendar (&optional appointment-date)
-  "Decorate and refile item at point as a calendar item."
+  "Decorate and refile item at point as a calendar item.
+
+You can pass APPOINTMENT-DATE as a YYYY-MM-DD string if you want to use this
+non-interactively."
   (interactive)
   (org-gtd-organize--call
    (apply-partially org-gtd-calendar-func
                     appointment-date)))
 
 (defun org-gtd-calendar--apply (&optional appointment-date)
-  "Add a date/time to this item and store in org gtd."
+  "Add a date/time to this item and store in org gtd.
+
+You can pass APPOINTMENT-DATE as a YYYY-MM-DD string if you want to use this
+non-interactively."
   (let ((date (or appointment-date
                   (org-read-date t nil nil "When is this going to happen? "))))
     (org-entry-put (point) org-gtd-calendar-property (format "<%s>" date))
@@ -64,11 +70,14 @@ actually appointments or deadlines."
       (org-end-of-meta-data t)
       (open-line 1)
       (insert (format "<%s>" date))))
-  (org-gtd-organize-decorate-item)
+  (org-gtd-organize-apply-hooks)
   (org-gtd--refile org-gtd-calendar))
 
 (defun org-gtd-calendar-create (topic appointment-date)
-  "Automatically create a calendar task in the GTD flow."
+  "Automatically create a calendar task in the GTD flow.
+
+Takes TOPIC as the string from which to make the heading to add to `org-gtd' and
+APPOINTMENT-DATE as a YYYY-MM-DD string."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
         (org-id-overriding-file-name "org-gtd"))
     (with-current-buffer buffer

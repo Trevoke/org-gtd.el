@@ -43,13 +43,16 @@
   :package-version '(org-gtd . "3.0.0")
   :group 'org-gtd)
 
-(defcustom org-gtd-decorate-item-hooks '(org-set-tags-command)
+(defcustom org-gtd-organize-hooks '(org-set-tags-command)
   "Enhancements to add to each item as they get processed from the inbox.
 
 This is a list of functions that modify an org element.  The default value has
 one function: setting org tags on the item.  Some built-in examples are
-provided as options here.  You can create your own functions to enhance/decorate
-the items once they have been processed and add them to that list."
+provided as options here.  You can create your own functions to further organize
+the items once they have been processed and add them to that list.
+
+Once you have your ground items managed, you might like to set the variable
+`org-gtd-areas-of-focus' and add `org-gtd-set-area-of-focus' to these hooks."
   :group 'org-gtd
   :package-version '(org-gtd . "1.0.4")
   :type 'hook
@@ -94,9 +97,9 @@ This handles the internal bits of `org-gtd'."
       (kill-buffer (org-gtd-clarify--buffer-name task-id))
       (if loop-p (org-gtd-process-inbox)))))
 
-(defun org-gtd-organize-decorate-item ()
+(defun org-gtd-organize-apply-hooks ()
   "Apply hooks to add metadata to a given GTD item."
-  (dolist (hook org-gtd-decorate-item-hooks)
+  (dolist (hook org-gtd-organize-hooks)
     (save-excursion
       (goto-char (point-min))
       (when (org-before-first-heading-p)
@@ -104,11 +107,11 @@ This handles the internal bits of `org-gtd'."
       (save-restriction
         (funcall hook)))))
 
-(defun org-gtd-organize--decorate-element (element)
-  "Apply `org-gtd--decorate-item' to org-element ELEMENT."
+(defun org-gtd-organize-apply-hooks-to-element (element)
+  "Apply `org-gtd-organize-hooks' to org-element ELEMENT."
   (org-with-point-at (org-gtd-projects--org-element-pom element)
     (org-narrow-to-element)
-    (org-gtd-organize-decorate-item)))
+    (org-gtd-organize-apply-hooks)))
 
 (provide 'org-gtd-organize)
 ;;; org-gtd-organize.el ends here

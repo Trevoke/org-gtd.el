@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 ;;
-;; Reviews are a crucial part of GTD. This code determines how to use
+;; Reviews are a crucial part of GTD.  This code determines how to use
 ;; the agenda views for review purposes.
 ;;
 ;;; Code:
@@ -37,7 +37,12 @@
 
 ;;;###autoload
 (defun org-gtd-review-area-of-focus (&optional area start-date)
-  "Generate an overview agenda for a given area of focus."
+  "Generate an overview agenda for a given area of focus.
+
+You can pass an optional AREA (must be a member of `org-gtd-areas-of-focus') to
+skip the menu to choose one.
+START-DATE tells the code what to use as the first day for the agenda.  It is
+mostly of value for testing purposes."
   (interactive (list (completing-read
                       "Which area of focus would you like to review? "
                       org-gtd-areas-of-focus
@@ -83,40 +88,36 @@
           (goto-char (point-min))))))
 
 (defun org-gtd--AND-skips (funcs)
-  "Ensure none of the functions want to skip the current entry"
+  "Ensure none of the functions FUNCS want to skip the current entry."
   (let ((non-nil-funcs (seq-drop-while (lambda (x) (not (funcall x))) funcs)))
     (if non-nil-funcs
         (funcall (car non-nil-funcs)))))
 
 (defun org-gtd--skip-unless-calendar ()
+  "Skip-function: only keep this if it's an org-gtd calendar entry."
   (let ((subtree-end (save-excursion (org-end-of-subtree t))))
     (if (org-entry-get (point) org-gtd-calendar-property)
         nil
       subtree-end)))
 
 (defun org-gtd--skip-unless-habit ()
+    "Skip-function: only keep this if it's a habit."
   (let ((subtree-end (save-excursion (org-end-of-subtree t))))
     (if (string-equal "habit" (org-entry-get (point) "STYLE"))
         nil
       subtree-end)))
 
 (defun org-gtd--skip-unless-area-of-focus-func (area)
+  "Return a skip-function to only keep if it's a specific GTD AREA of focus."
   (apply-partially #'org-gtd--skip-unless-area-of-focus area))
 
 (defun org-gtd--skip-unless-area-of-focus (area)
+    "Skip-function: only keep this if it's a specific GTD AREA of focus."
   (let ((subtree-end (save-excursion (org-end-of-subtree t))))
     (if (string-equal (downcase area)
                       (downcase (org-entry-get (point) "CATEGORY")))
         nil
       subtree-end)))
-
-(defun org-gtd--skip-unless-area-of-focus-func (area)
-  `(lambda ()
-     (let ((subtree-end (save-excursion (org-end-of-subtree t))))
-       (if (string-equal (downcase ,area)
-                         (downcase (org-entry-get (point) "CATEGORY")))
-           nil
-         subtree-end))))
 
 (provide 'org-gtd-review)
 ;;; org-gtd-review.el ends here

@@ -31,14 +31,6 @@
 (require 'org-gtd-core)
 (require 'org-gtd-agenda)
 
-(defun org-edna-action/org-gtd-update-project-task! (_last-entry)
-  "`org-edna' extension to change the todo state to `org-gtd-next'."
-  (org-todo org-gtd-next))
-
-(defun org-edna-finder/org-gtd-next-project-action ()
-  "`org-edna' extension to find the next action to show in the agenda."
-  (org-edna-finder/relatives 'forward-no-wrap 'todo-only 1 'no-sort))
-
 (defcustom org-gtd-organize-project-func
   #'org-gtd-project-new--apply
   "Function called when item at point is a project.
@@ -104,7 +96,8 @@ Refile to `org-gtd-actionable-file-basename'."
   (when (org-gtd-projects--poorly-formatted-p)
     (org-gtd-projects--show-error)
     (throw 'org-gtd-error "Malformed project"))
-  (org-gtd-organize-decorate-item)
+  (org-gtd-organize-apply-hooks)
+  (org-gtd-projects--decorate-tasks)
   (org-gtd-projects--nextify)
   (let ((org-special-ctrl-a t))
     (org-end-of-line))
@@ -123,7 +116,7 @@ Refile to `org-gtd-actionable-file-basename'."
                         'agenda))
              (chosen-heading (completing-read "Choose a heading: " headings nil t))
              (heading-marker (org-find-exact-heading-in-directory chosen-heading org-gtd-directory)))
-        (org-gtd-organize-decorate-item)
+        (org-gtd-organize-apply-hooks)
         (org-refile 3 nil `(,chosen-heading
                               ,(buffer-file-name (marker-buffer heading-marker))
                               nil
@@ -192,15 +185,19 @@ are `org-gtd-todo'."
   "Return buffer position for start of Org ELEMENT."
   (org-element-property :begin element))
 
+(defun org-gtd-projects--decorate-tasks ()
+  "Decorate tasks for project at point."
+  (org-map-entries (lambda ()
+                     (org-gtd-organize-apply-hooks-to-element
+                      (org-element-at-point)))
+                   "LEVEL=2"
+                   'tree))
+
 ;; TODO rename to something like initialize TODO states
 (defun org-gtd-projects--nextify ()
   "Add the `org-gtd-next' keyword to the first action/task of the project.
 
 Add the `org-gtd-todo' keyword to all subsequent actions/tasks."
-  (org-map-entries (lambda () (org-gtd-organize--decorate-element
-                               (org-element-at-point)))
-                   "LEVEL=2"
-                   'tree)
   (cl-destructuring-bind
       (first-entry . rest-entries)
       (cdr (org-map-entries (lambda () (org-element-at-point)) t 'tree))
@@ -231,6 +228,20 @@ Add the `org-gtd-todo' keyword to all subsequent actions/tasks."
     (read-key "Waiting for a keypress to return to clarifying... " t))
 
   (message ""))
+
+(defun org-gtd-projects--edna-update-project-task (_last-entry)
+  "`org-edna' extension to change the todo state to `org-gtd-next'."
+  (org-todo org-gtd-next))
+
+(defalias 'org-edna-action/org-gtd-update-project-task!
+  'org-gtd-projects--edna-update-project-task)
+
+(defun org-gtd-projects--edna-next-project-action ()
+  "`org-edna' extension to find the next action to show in the agenda."
+  (org-edna-finder/relatives 'forward-no-wrap 'todo-only 1 'no-sort))
+
+(defalias 'org-edna-finder/org-gtd-next-project-action
+    'org-gtd-projects--edna-next-project-action)
 
 (provide 'org-gtd-projects)
 ;;; org-gtd-projects.el ends here

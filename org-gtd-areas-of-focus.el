@@ -34,7 +34,7 @@
   :group 'org-gtd
   :package-version '(org-gtd . "3.0.0"))
 
-(defun org-gtd-areas-of-focus ()
+(defun org-gtd-areas-of-focus--set ()
   "Use as a hook when decorating items after clarifying them.
 
 This function requires that the user input find a match amongst the options.
@@ -46,6 +46,8 @@ variable."
                       nil
                       t)))
     (org-entry-put (point) "CATEGORY" chosen-area)))
+
+(defalias 'org-gtd-set-area-of-focus 'org-gtd-areas-of-focus--set)
 
 (provide 'org-gtd-areas-of-focus)
 ;;; org-gtd-areas-of-focus.el ends here

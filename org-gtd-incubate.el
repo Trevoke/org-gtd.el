@@ -36,14 +36,20 @@
 
 ;;;###autoload
 (defun org-gtd-incubate (&optional reminder-date)
-  "Decorate, organize and refile item at point as incubated."
+  "Decorate, organize and refile item at point as incubated.
+
+If you want to call this non-interactively,
+REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
   (interactive)
   (org-gtd-organize--call
    (apply-partially org-gtd-organize-incubate-func
                     reminder-date)))
 
 (defun org-gtd-incubate--apply (&optional reminder-date)
-  "Incubate this item through org-gtd."
+  "Incubate this item through org-gtd.
+
+If you want to call this non-interactively,
+REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
   (let ((date (or reminder-date
                   (org-read-date t nil nil "When would you like this item to come up again? "))))
     (org-entry-put (point) org-gtd-incubate-property (format "<%s>" date))
@@ -51,11 +57,14 @@
       (org-end-of-meta-data t)
       (open-line 1)
       (insert (format "<%s>" date))))
-  (org-gtd-organize-decorate-item)
+  (org-gtd-organize-apply-hooks)
   (org-gtd--refile org-gtd-incubated))
 
 (defun org-gtd-incubate-create (topic reminder-date)
-  "Automatically create a delegated task in the GTD flow."
+  "Automatically create a delegated task in the GTD flow.
+
+TOPIC is the string you want to see in the `org-agenda' view.
+REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
         (org-id-overriding-file-name "org-gtd"))
     (with-current-buffer buffer

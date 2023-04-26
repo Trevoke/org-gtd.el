@@ -40,12 +40,14 @@
 (defun org-gtd-single-action--apply ()
   "Item at point is a one-off action, ready to be executed."
   (interactive)
-  (org-gtd-organize-decorate-item)
+  (org-gtd-organize-apply-hooks)
   (org-todo org-gtd-next)
   (org-gtd--refile org-gtd-actions))
 
 (defun org-gtd-single-action-create (topic)
-  "Automatically create a delegated task in the GTD flow."
+  "Automatically create a delegated task in the GTD flow.
+
+TOPIC is what you want to see in the agenda view."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
         (org-id-overriding-file-name "org-gtd"))
     (with-current-buffer buffer
