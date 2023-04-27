@@ -4,6 +4,10 @@
 (a)rchive is now (k)nowledge
 (m)odify project is now (a)dd to project
 ** org-gtd-delegate is now org-gtd-delegate-item-at-point
+** org-gtd-agenda-projectify is now just org-gtd-clarify-agenda-item
+** org-gtd-agenda-delegate is now org-gtd-delegate-agenda-item
+** org-gtd-cancel-project is now org-gtd-project-cancel
+** org-gtd-agenda-cancel-project is now org-gtd-project-cancel-from-agenda
 * new features
 ** you can now clarify single items with org-gtd-clarify-item
 ** you can customize what the functions do for each GTD action (e.g. incubate, single action, etc.)

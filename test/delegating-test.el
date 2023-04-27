@@ -31,7 +31,7 @@
        (goto-char (point-min))
        (search-forward "delegateme")
        (with-simulated-input "That SPC Guy RET RET"
-                             (org-gtd-agenda-delegate)))
+                             (org-gtd-delegate-agenda-item)))
 
      (ogt--save-all-buffers)
      (org-gtd-engage)

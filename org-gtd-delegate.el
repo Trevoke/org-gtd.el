@@ -26,7 +26,9 @@
 
 (require 'org)
 
-(defvar org-gtd-calendar-property)
+(require 'org-gtd-calendar)
+
+(defconst org-gtd-delegate-property "DELEGATED_TO")
 
 (defcustom org-gtd-delegate-read-func (lambda () (read-string "Who will do this? "))
   "Function that is called to read in the Person the task is delegated to.
@@ -81,7 +83,7 @@ person to whom to delegate by using `org-gtd-delegate-read-func'."
         (date (or checkin-date
                   (org-read-date t nil nil "When do you want to check in on this task? ")))
         (org-inhibit-logging 'note))
-    (org-set-property "DELEGATED_TO" delegated-to)
+    (org-set-property org-gtd-delegate-property delegated-to)
     (org-entry-put (point) org-gtd-calendar-property (format "<%s>" date))
     (save-excursion
       (org-end-of-meta-data t)
@@ -91,6 +93,20 @@ person to whom to delegate by using `org-gtd-delegate-read-func'."
     (save-excursion
       (goto-char (org-log-beginning t))
       (insert (format "programmatically delegated to %s\n" delegated-to)))))
+
+;;;###autoload
+(defun org-gtd-delegate-agenda-item ()
+  "Delegate item at point on agenda view."
+  (interactive nil '(org-agenda-mode))
+  (org-agenda-check-type t 'agenda 'todo 'tags 'search)
+  (org-agenda-check-no-diary)
+  (let* ((heading-marker (or (org-get-at-bol 'org-marker)
+                             (org-agenda-error)))
+         (heading-buffer (marker-buffer heading-marker))
+         (heading-position (marker-position heading-marker)))
+    (with-current-buffer heading-buffer
+      (goto-char heading-position)
+      (org-gtd-delegate-item-at-point))))
 
 (defun org-gtd-delegate-create (topic delegated-to checkin-date)
   "Automatically create a delegated task in the GTD flow.

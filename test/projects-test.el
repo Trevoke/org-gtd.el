@@ -23,7 +23,7 @@
       (with-current-buffer org-agenda-buffer
         (goto-char (point-min))
         (search-forward "Task 1")
-        (org-gtd-agenda-cancel-project)
+        (org-gtd-project-cancel-from-agenda)
         (org-gtd-archive-completed-items))
 
       (let ((archived-projects (ogt--archive-string)))
@@ -34,7 +34,7 @@
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-min))
         (search-forward "project tailline")
-        (org-gtd-cancel-project)
+        (org-gtd-project-cancel)
         (org-gtd-archive-completed-items)
         (basic-save-buffer))
 

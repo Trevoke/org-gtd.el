@@ -24,6 +24,8 @@
 ;;
 ;;; Code:
 
+(require 'org-agenda)
+
 (require 'org-gtd-id)
 (require 'org-gtd-horizons)
 
@@ -95,28 +97,54 @@ which turns out to be a project."
 ;;;###autoload
 (defun org-gtd-clarify-item ()
   "Process item at point through org-gtd."
-  (interactive)
+  (interactive nil '(org-mode))
   (let ((processing-buffer (org-gtd-clarify--get-buffer))
         (window-config (current-window-configuration))
         (source-heading-marker (point-marker)))
-    (when (= (buffer-size processing-buffer) 0)
-      (let ((last-command nil))
-        (org-copy-subtree))
-      (with-current-buffer processing-buffer
-        (org-paste-subtree)))
+    (org-gtd-clarify--maybe-initialize-buffer-contents processing-buffer)
     (with-current-buffer processing-buffer
       (setq-local org-gtd-clarify--window-config window-config
                   org-gtd-clarify--source-heading-marker source-heading-marker
                   org-gtd-clarify--clarify-id (org-id-get)))
     (org-gtd-clarify-setup-windows processing-buffer)))
 
+(defun org-gtd-clarify--maybe-initialize-buffer-contents (buffer)
+  "If BUFFER is empty, then copy org heading at point and paste inside buffer."
+      (when (= (buffer-size buffer) 0)
+      (let ((last-command nil))
+        (org-copy-subtree))
+      (with-current-buffer buffer
+        (org-paste-subtree)
+        (org-entry-delete (point) org-gtd-calendar-property)
+        (org-entry-delete (point) org-gtd-incubate-property)
+        (org-entry-delete (point) org-gtd-delegate-property)
+        (org-entry-delete (point) "STYLE"))))
+
 ;;;###autoload
 (defun org-gtd-clarify-inbox-item ()
   "Process item at point through org-gtd.
+
 This function is called through the inbox clarification process."
   (interactive)
   (org-gtd-clarify-item)
   (setq-local org-gtd-clarify--inbox-p t))
+
+(defun org-gtd-clarify-agenda-item ()
+  "Process item at point on agenda view."
+  (interactive nil '(org-agenda-mode))
+  (org-agenda-check-type t 'agenda 'todo 'tags 'search)
+  (org-agenda-check-no-diary)
+  (let ((heading-marker (or (org-get-at-bol 'org-marker)
+                             (org-agenda-error))))
+    (org-gtd-clarify-item-at-marker heading-marker)))
+
+(defun org-gtd-clarify-item-at-marker (marker)
+  "MARKER must be a marker pointing to an org heading."
+  (let ((heading-buffer (marker-buffer marker))
+        (heading-position (marker-position marker)))
+    (with-current-buffer heading-buffer
+      (goto-char heading-position)
+      (org-gtd-clarify-item))))
 
 ;;;###autoload
 (defun org-gtd-clarify-switch-to-buffer ()

@@ -125,7 +125,7 @@ Refile to `org-gtd-actionable-file-basename'."
         (org-gtd-projects-fix-todo-keywords heading-marker))))
 
 ;;;###autoload
-(defun org-gtd-cancel-project ()
+(defun org-gtd-project-cancel ()
   "With point on topmost project heading, mark all undone tasks canceled."
   (interactive)
   (org-edna-mode -1)
@@ -138,6 +138,24 @@ Refile to `org-gtd-actionable-file-basename'."
        nil
        'tree))
   (org-edna-mode 1))
+
+;;;###autoload
+(defun org-gtd-project-cancel-from-agenda ()
+  "Cancel the project that has the highlighted task."
+  (interactive nil '(org-agenda-mode))
+  (org-agenda-check-type t 'agenda 'todo 'tags 'search)
+  (org-agenda-check-no-diary)
+  (let* ((marker (or (org-get-at-bol 'org-marker)
+                     (org-agenda-error)))
+         (buffer (marker-buffer marker))
+         (pos (marker-position marker)))
+    (set-marker-insertion-type marker t)
+    (org-with-remote-undo buffer
+      (with-current-buffer buffer
+        (widen)
+        (goto-char pos)
+        (org-up-heading-safe)
+        (org-gtd-project-cancel)))))
 
 ;;;###autoload
 (defun org-gtd-show-stuck-projects ()
