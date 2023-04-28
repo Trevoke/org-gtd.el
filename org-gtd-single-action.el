@@ -40,8 +40,9 @@
 (defun org-gtd-single-action--apply ()
   "Item at point is a one-off action, ready to be executed."
   (interactive)
-  (org-gtd-organize-apply-hooks)
   (org-todo org-gtd-next)
+  (setq-local org-gtd--organize-type 'single-action)
+  (org-gtd-organize-apply-hooks)
   (org-gtd--refile org-gtd-actions))
 
 (defun org-gtd-single-action-create (topic)

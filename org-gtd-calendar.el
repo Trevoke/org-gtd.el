@@ -70,6 +70,7 @@ non-interactively."
       (org-end-of-meta-data t)
       (open-line 1)
       (insert (format "<%s>" date))))
+  (setq-local org-gtd--organize-type 'calendar)
   (org-gtd-organize-apply-hooks)
   (org-gtd--refile org-gtd-calendar))
 

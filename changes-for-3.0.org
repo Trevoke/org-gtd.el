@@ -11,6 +11,7 @@
 * new features
 ** you can now clarify single items with org-gtd-clarify-item
 ** you can customize what the functions do for each GTD action (e.g. incubate, single action, etc.)
+** organize-hooks can be customized to apply to specific types of tasks (see org-gtd-organize-type-member-p )
 ** you can customize your TODO keywords
 ** areas of focus customizable variable and optional decoration hook
 ** horizons file customizable, can be displayed/toggled while clarifying items

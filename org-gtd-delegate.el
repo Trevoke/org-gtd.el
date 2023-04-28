@@ -65,6 +65,7 @@ You can pass DELEGATED-TO as the name of the person to whom this was delegated
 and CHECKIN-DATE as the YYYY-MM-DD string of when you want `org-gtd' to remind
 you if you want to call this non-interactively."
   (org-gtd-delegate-item-at-point delegated-to checkin-date)
+  (setq-local org-gtd--organize-type 'delegated)
   (org-gtd-organize-apply-hooks)
   (org-gtd--refile org-gtd-actions))
 

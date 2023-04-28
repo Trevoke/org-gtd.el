@@ -25,6 +25,8 @@
 ;;; Code:
 
 (require 'transient)
+
+(require 'org-gtd-backward-compatibility)
 (require 'org-gtd-core)
 (require 'org-gtd-calendar)
 (require 'org-gtd-habit)
@@ -57,6 +59,20 @@ Once you have your ground items managed, you might like to set the variable
   :package-version '(org-gtd . "1.0.4")
   :type 'hook
   :options '(org-set-tags-command org-set-effort org-priority))
+
+(defvar-local org-gtd--organize-type nil
+  "Type of action chosen by the user for this one item.")
+
+(defconst org-gtd-organize-action-types
+  '(quick-action single-action calendar habit
+                 delegated incubated knowledge trash
+                 project-heading project-task everything)
+  "Valid actions types as input for `org-gtd-organize-type-member-p'.")
+
+(define-error
+  'org-gtd-invalid-organize-action-type-error
+  "At least one element of %s is not in %s"
+  'org-gtd-error)
 
 (transient-define-prefix org-gtd-organize ()
   "Choose how to categorize the current item."
@@ -112,6 +128,30 @@ This handles the internal bits of `org-gtd'."
   (org-with-point-at (org-gtd-projects--org-element-pom element)
     (org-narrow-to-element)
     (org-gtd-organize-apply-hooks)))
+
+(defun org-gtd-organize-type-member-p (list)
+  "Return t if the action type chosen by the user is in LIST.
+
+Valid members of LIST include:
+- 'quick-action (done in less than two minutes)
+- 'single-action (do when possible)
+- 'calendar (do at a given time)
+- 'delegated (done by someone else)
+- 'habit (a recurring action)
+- 'incubated (remind me later)
+- 'knowledge (stored as reference)
+- 'trash (self-explanatory)
+- 'project-heading (top-level project info, e.g. area of focus)
+- 'project-task (task-specific info, similar in spirit to single-action)
+- 'everything (if this is in the list, always return t)"
+  (let ((list (ensure-list list)))
+    (unless (seq-every-p
+             (lambda (x) (member x org-gtd-organize-action-types))
+             list)
+      (signal 'org-gtd-invalid-organize-action-type-error
+              `(,list ,org-gtd-organize-action-types)))
+    (or (member 'everything list)
+        (member org-gtd--organize-type list))))
 
 (provide 'org-gtd-organize)
 ;;; org-gtd-organize.el ends here

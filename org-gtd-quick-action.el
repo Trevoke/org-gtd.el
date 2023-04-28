@@ -33,8 +33,9 @@
 
 (defun org-gtd-quick-action--apply ()
   "Process GTD inbox item by doing it now."
-  (org-gtd-organize-apply-hooks)
   (org-todo org-gtd-done)
+  (setq-local org-gtd--organize-type 'quick-action)
+  (org-gtd-organize-apply-hooks)
   (with-org-gtd-context (org-archive-subtree)))
 
 ;;;###autoload

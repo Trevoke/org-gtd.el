@@ -47,6 +47,8 @@ clarify step, before you call `org-gtd-organize')."
 (defun org-gtd-knowledge--apply ()
   "Once the user has filed this knowledge, we can execute this logic."
   (org-todo org-gtd-done)
+  (setq-local org-gtd--organize-type 'knowledge)
+  (org-gtd-organize-apply-hooks)
   (with-org-gtd-context
       (org-gtd-archive-item-at-point)))
 

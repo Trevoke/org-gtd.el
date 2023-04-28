@@ -40,6 +40,8 @@
 (defun org-gtd-trash--apply ()
   "Mark GTD inbox item as cancelled and move it to the org-gtd task archives."
   (org-todo org-gtd-canceled)
+  (setq-local org-gtd--organize-type 'trash)
+  (org-gtd-organize-apply-hooks)
   (with-org-gtd-context
       (org-gtd-archive-item-at-point)))
 

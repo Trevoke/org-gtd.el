@@ -57,6 +57,7 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
       (org-end-of-meta-data t)
       (open-line 1)
       (insert (format "<%s>" date))))
+  (setq-local org-gtd--organize-type 'incubated)
   (org-gtd-organize-apply-hooks)
   (org-gtd--refile org-gtd-incubated))
 

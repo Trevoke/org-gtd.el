@@ -54,6 +54,7 @@ determine how often you'll be reminded of this habit."
         (today (format-time-string "%Y-%m-%d")))
     (org-schedule nil (format "<%s %s>" today repeater))
     (org-entry-put (point) "STYLE" "habit"))
+  (setq-local org-gtd--organize-type 'habit)
   (org-gtd-organize-apply-hooks)
   (org-gtd--refile org-gtd-calendar))
 

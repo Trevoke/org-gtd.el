@@ -96,8 +96,10 @@ Refile to `org-gtd-actionable-file-basename'."
   (when (org-gtd-projects--poorly-formatted-p)
     (org-gtd-projects--show-error)
     (throw 'org-gtd-error "Malformed project"))
+  (setq-local org-gtd--organize-type 'project-heading)
   (org-gtd-organize-apply-hooks)
-  (org-gtd-projects--decorate-tasks)
+  (setq-local org-gtd--organize-type 'project-task)
+  (org-gtd-projects--apply-organize-hooks-to-tasks)
   (org-gtd-projects--nextify)
   (let ((org-special-ctrl-a t))
     (org-end-of-line))
@@ -116,6 +118,7 @@ Refile to `org-gtd-actionable-file-basename'."
                         'agenda))
              (chosen-heading (completing-read "Choose a heading: " headings nil t))
              (heading-marker (org-find-exact-heading-in-directory chosen-heading org-gtd-directory)))
+        (setq-local org-gtd--organize-type 'project-task)
         (org-gtd-organize-apply-hooks)
         (org-refile 3 nil `(,chosen-heading
                               ,(buffer-file-name (marker-buffer heading-marker))
@@ -197,13 +200,13 @@ are `org-gtd-todo'."
              (first-wait (-any (lambda (x) (and (string-equal org-gtd-wait (org-element-property :todo-keyword x)) x)) tasks))
              (first-todo (-any (lambda (x) (and (string-equal org-gtd-todo (org-element-property :todo-keyword x)) x)) tasks)))
         (unless first-wait
-          (org-entry-put (org-gtd-projects--org-element-pom first-todo) "TODO" org-gtd-next))))))
 
+          (org-entry-put (org-gtd-projects--org-element-pom first-todo) "TODO" org-gtd-next))))))
 (defun org-gtd-projects--org-element-pom (element)
   "Return buffer position for start of Org ELEMENT."
   (org-element-property :begin element))
 
-(defun org-gtd-projects--decorate-tasks ()
+(defun org-gtd-projects--apply-organize-hooks-to-tasks ()
   "Decorate tasks for project at point."
   (org-map-entries (lambda ()
                      (org-gtd-organize-apply-hooks-to-element
