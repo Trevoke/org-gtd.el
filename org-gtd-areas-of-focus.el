@@ -40,7 +40,7 @@
 This function requires that the user input find a match amongst the options.
 If a new area of focus pops up for you, change the value of the eponymous
 variable."
-  (unless (org-gtd-organize-type-member-p 'project-task)
+  (unless (org-gtd-organize-type-member-p '(project-task trash knowledge quick-action))
    (let ((chosen-area (completing-read
                        "Which area of focus does this belong to? "
                        org-gtd-areas-of-focus
