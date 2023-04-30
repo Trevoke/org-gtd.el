@@ -207,7 +207,8 @@ If BUFFER is nil, use current buffer."
     (unless (bound-and-true-p org-gtd--loading-p)
       (setq-local org-gtd--loading-p t)
       (with-org-gtd-context
-          (org-mode-restart)))))
+          (org-mode-restart))
+      (setq-local org-gtd--loading-p t))))
 
 (defun org-gtd-core-prepare-agenda-buffers ()
   "Ensure `org-mode' has the desired settings in the agenda buffers."

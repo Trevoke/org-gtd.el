@@ -120,14 +120,7 @@ This handles the internal bits of `org-gtd'."
       (goto-char (point-min))
       (when (org-before-first-heading-p)
         (org-next-visible-heading 1))
-      (save-restriction
-        (funcall hook)))))
-
-(defun org-gtd-organize-apply-hooks-to-element (element)
-  "Apply `org-gtd-organize-hooks' to org-element ELEMENT."
-  (org-with-point-at (org-gtd-projects--org-element-pom element)
-    (org-narrow-to-element)
-    (org-gtd-organize-apply-hooks)))
+      (save-restriction (funcall hook)))))
 
 (defun org-gtd-organize-type-member-p (list)
   "Return t if the action type chosen by the user is in LIST.
