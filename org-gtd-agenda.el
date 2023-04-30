@@ -75,6 +75,27 @@ This assumes all GTD files are also agenda files."
       (org-gtd-core-prepare-agenda-buffers)
       (org-todo-list org-gtd-next)))
 
+;;;###autoload
+(defun org-gtd-engage-grouped-by-context ()
+  (interactive)
+  (with-org-gtd-context
+      (let* ((contexts (seq-map
+                        (lambda (x) (substring-no-properties x))
+                        (seq-uniq
+                         (-flatten
+                          (org-map-entries
+                           (lambda () org-scanner-tags)
+                           (format "{^@}+TODO=\"%s\"" org-gtd-next)
+                           'agenda)))))
+             (blocks (seq-map
+                      (lambda (x) `(tags ,(format "+%s+TODO=\"%s\""
+                                                  x
+                                                  org-gtd-next)
+                                         ((org-agenda-overriding-header ,x))))
+                      contexts))
+             (org-agenda-custom-commands `(("g" "actions by context" ,blocks))))
+        (org-agenda nil "g"))))
+
 (defun org-gtd-agenda--prefix-format ()
   "Format prefix for items in agenda buffer."
   (let* ((elt (org-element-at-point))
