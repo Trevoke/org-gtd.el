@@ -31,7 +31,7 @@ sample hook
 ** org-gtd-process-mode is now org-gtd-clarify-mode
 ** org-gtd-process-map is now org-gtd-clarify-map
 ** org-gtd-choose is now org-gtd-organize
-** refile logic is now org-refile logic, not my crippled one
+** org-gtd-capture config is now org-capture config, not the 2.0 crippled one
 ** drop the headers
 point people to org documentation for startup / variables to determine logging behavior if they want to keep it
 -> logdone logrepeat logreschedule logredeadline
@@ -40,3 +40,17 @@ https://orgmode.org/manual/In_002dbuffer-Settings.html
 ** calendar items no longer use SCHEDULED
 ** hook name has changed
 org-gtd-process-item-hooks -> org-gtd-organize-hooks
+* implementation
+| delegate      | WAIT       | ORG_GTD_CALENDAR, DELEGATED_TO | actions  |
+| single action | NEXT       | N/A                            | actions  |
+| knowledge     | N/A        | N/A                            | archive  |
+| quick action  | N/A        | N/A                            | archive  |
+| trash         | N/A        | N/A                            | archive  |
+| calendar      | N/A        | ORG_GTD_CALENDAR               | calendar |
+| habit         | N/A        | STYLE=habit, SCHEDULED         | calendar |
+| incubate      | N/A        | ORG_GTD_INCUBATE               | incubate |
+| projects      | NEXT, TODO | N/A                            | projects |
+* adjustments?
+- ORG_GTD_TIMESTAMP instead of ORG_GTD_CALENDAR and ORG_GTD_INCUBATE
+- ORG_GTD="Habit" instead of habits in ORG_GTD="Calendar"
+-
