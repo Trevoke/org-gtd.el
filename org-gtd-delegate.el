@@ -26,6 +26,8 @@
 
 (require 'org)
 
+(require 'org-gtd-single-action)
+
 (defconst org-gtd-delegate-property "DELEGATED_TO")
 
 (defcustom org-gtd-delegate-read-func (lambda () (read-string "Who will do this? "))
@@ -65,7 +67,7 @@ you if you want to call this non-interactively."
   (org-gtd-delegate-item-at-point delegated-to checkin-date)
   (setq-local org-gtd--organize-type 'delegated)
   (org-gtd-organize-apply-hooks)
-  (org-gtd--refile org-gtd-actions org-gtd-actions-template))
+  (org-gtd--refile org-gtd-action org-gtd-action-template))
 
 ;;;###autoload
 (defun org-gtd-delegate-item-at-point (&optional delegated-to checkin-date)

@@ -27,6 +27,8 @@
 
 (require 'org-habit)
 
+(require 'org-gtd-habit)
+
 (defun org-gtd-upgrade-v2-to-v3 ()
   "Use only when upgrading org-gtd from v2 to v3.
 
@@ -35,7 +37,8 @@ planning keyword in `org-mode'."
   (interactive)
   (org-gtd-upgrades-calendar-items-to-v3)
   (org-gtd-upgrades-delegated-items-to-v3)
-  (org-gtd-upgrades-incubated-items-to-v3))
+  (org-gtd-upgrades-incubated-items-to-v3)
+  (org-gtd-upgrades-habits-to-v3))
 
 (defun org-gtd-upgrades-calendar-items-to-v3 ()
   "Change calendar items away from SCHEDULED to using a custom property."
@@ -81,6 +84,29 @@ planning keyword in `org-mode'."
              (insert date))))
        "+ORG_GTD=\"Actions\"+LEVEL=2"
        'agenda)))
+
+(defun org-gtd-upgrades-habits-to-v3 ()
+  "Move habits from wherever they may be to their own subtree."
+  (with-org-gtd-context
+      (org-gtd-refile--add-target org-gtd-habit-template)
+
+      (let ((org-gtd-refile-to-any-target t))
+        (org-map-entries #'org-gtd-upgrades--organize-habits-v3
+                         "+LEVEL=2&+ORG_GTD=\"Actions\""
+                         'agenda)
+        (org-map-entries #'org-gtd-upgrades--organize-habits-v3
+                         "+LEVEL=2&+ORG_GTD=\"Incubated\""
+                         'agenda)
+        (org-map-entries #'org-gtd-upgrades--organize-habits-v3
+                         "+LEVEL=2&+ORG_GTD=\"Calendar\""
+                         'agenda))))
+
+(defun org-gtd-upgrades--organize-habits-v3 ()
+  (when (org-is-habit-p)
+    (setq org-map-continue-from (- (org-element-property :begin
+                                                         (org-element-at-point))
+                                   1))
+    (org-gtd--refile org-gtd-habit org-gtd-habit-template)))
 
 (defun org-gtd-upgrades--delegated-item-p ()
   "Return t if item at point is delegated."

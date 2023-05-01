@@ -24,7 +24,14 @@
 ;;
 ;;; Code:
 
-(require 'org-gtd-calendar)
+(defconst org-gtd-habit "Habits")
+
+(defconst org-gtd-habit-template
+  (format "* Habits
+:PROPERTIES:
+:ORG_GTD: %s
+:END:
+" org-gtd-habit))
 
 (defcustom org-gtd-habit-func
   #'org-gtd-habit--apply
@@ -58,7 +65,7 @@ determine how often you'll be reminded of this habit."
     (org-entry-put (point) "STYLE" "habit"))
   (setq-local org-gtd--organize-type 'habit)
   (org-gtd-organize-apply-hooks)
-  (org-gtd--refile org-gtd-calendar org-gtd-calendar-template))
+  (org-gtd--refile org-gtd-habit org-gtd-habit-template))
 
 (defun org-gtd-habit-create (topic repeater)
   "Automatically create a habit in the GTD flow.

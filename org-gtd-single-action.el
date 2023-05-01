@@ -24,14 +24,14 @@
 ;;
 ;;; Code:
 
-(defconst org-gtd-actions "Actions")
+(defconst org-gtd-action "Actions")
 
-(defconst org-gtd-actions-template
+(defconst org-gtd-action-template
   (format "* Actions
 :PROPERTIES:
 :ORG_GTD: %s
 :END:
-" org-gtd-actions))
+" org-gtd-action))
 
 (defcustom org-gtd-organize-single-action-func
   #'org-gtd-single-action--apply
@@ -52,7 +52,7 @@
   (org-todo org-gtd-next)
   (setq-local org-gtd--organize-type 'single-action)
   (org-gtd-organize-apply-hooks)
-  (org-gtd--refile org-gtd-actions org-gtd-actions-template))
+  (org-gtd--refile org-gtd-action org-gtd-action-template))
 
 (defun org-gtd-single-action-create (topic)
   "Automatically create a delegated task in the GTD flow.

@@ -70,6 +70,7 @@ TYPE is one of the org-gtd action types."
   "Private function used to create a missing org-gtd refile target.
 
 GTD-TYPE is an action type."
+  (print "inserting the new refile target")
   (with-current-buffer (org-gtd--default-file)
     (goto-char (point-max))
     (newline)
