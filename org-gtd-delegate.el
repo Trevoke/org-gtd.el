@@ -67,7 +67,7 @@ you if you want to call this non-interactively."
   (org-gtd-delegate-item-at-point delegated-to checkin-date)
   (setq-local org-gtd--organize-type 'delegated)
   (org-gtd-organize-apply-hooks)
-  (org-gtd--refile org-gtd-actions))
+  (org-gtd--refile org-gtd-actions org-gtd-actions-template))
 
 ;;;###autoload
 (defun org-gtd-delegate-item-at-point (&optional delegated-to checkin-date)

@@ -24,6 +24,8 @@
 ;;
 ;;; Code:
 
+(require 'org-gtd-calendar)
+
 (defcustom org-gtd-habit-func
   #'org-gtd-habit--apply
   "Function called when item at point is a habit."
@@ -56,7 +58,7 @@ determine how often you'll be reminded of this habit."
     (org-entry-put (point) "STYLE" "habit"))
   (setq-local org-gtd--organize-type 'habit)
   (org-gtd-organize-apply-hooks)
-  (org-gtd--refile org-gtd-calendar))
+  (org-gtd--refile org-gtd-calendar org-gtd-calendar-template))
 
 (defun org-gtd-habit-create (topic repeater)
   "Automatically create a habit in the GTD flow.

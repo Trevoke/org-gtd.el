@@ -27,25 +27,7 @@
 (require 'f)
 (require 'org-gtd-core)
 
-(defconst org-gtd-inbox-template
-  "#+begin_comment
-This is the inbox. Everything goes in here when you capture it.
-#+end_comment
-"
-  "Template for the GTD inbox.")
-
 (defconst org-gtd-default-file-name "org-gtd-tasks")
-
-;;;###autoload
-(defun org-gtd-inbox-path ()
-  "Return the full path to the inbox file."
-  (let ((path (org-gtd--path org-gtd-inbox)))
-    (org-gtd--ensure-file-exists path org-gtd-inbox-template)
-    path))
-
-(defun org-gtd--inbox-file ()
-  "Create or return the buffer to the GTD inbox file."
-  (find-file-noselect (org-gtd-inbox-path)))
 
 (defun org-gtd--default-file ()
   "Create or return the buffer to the default GTD file."

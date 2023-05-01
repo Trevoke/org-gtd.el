@@ -149,21 +149,6 @@ See `org-todo-keywords' for definition."
   :package-version '(org-gtd . "3.0")
   :type 'string)
 
-(defconst org-gtd-inbox "inbox")
-(defconst org-gtd-incubated "incubated")
-(defconst org-gtd-projects "projects")
-(defconst org-gtd-actions "actions")
-(defconst org-gtd-delegated "delegated")
-(defconst org-gtd-calendar "calendar")
-
-(defconst org-gtd--properties
-  (let ((myhash (make-hash-table :test 'equal)))
-    (puthash org-gtd-actions "Actions" myhash)
-    (puthash org-gtd-incubated "Incubated" myhash)
-    (puthash org-gtd-projects "Projects" myhash)
-    (puthash org-gtd-calendar "Calendar" myhash)
-    myhash))
-
 (defvar org-gtd-project-headings)
 (defvar org-gtd-stuck-projects)
 (defvar org-gtd-archive-location)

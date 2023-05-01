@@ -24,6 +24,15 @@
 ;;
 ;;; Code:
 
+(defconst org-gtd-actions "Actions")
+
+(defconst org-gtd-actions-template
+  (format "* Actions
+:PROPERTIES:
+:ORG_GTD: %s
+:END:
+" org-gtd-actions))
+
 (defcustom org-gtd-organize-single-action-func
   #'org-gtd-single-action--apply
   "Function called when item at point is a single next action."
@@ -43,7 +52,7 @@
   (org-todo org-gtd-next)
   (setq-local org-gtd--organize-type 'single-action)
   (org-gtd-organize-apply-hooks)
-  (org-gtd--refile org-gtd-actions))
+  (org-gtd--refile org-gtd-actions org-gtd-actions-template))
 
 (defun org-gtd-single-action-create (topic)
   "Automatically create a delegated task in the GTD flow.

@@ -28,15 +28,24 @@
 (require 'org-gtd-core)
 (require 'org-gtd-files)
 
+(defconst org-gtd-inbox "inbox")
+
+(defconst org-gtd-inbox-template
+  "#+begin_comment
+This is the inbox. Everything goes in here when you capture it.
+#+end_comment
+"
+  "Template for the GTD inbox.")
+
 (defcustom org-gtd-capture-templates
   `(("i" "Inbox"
-        entry  (file ,#'org-gtd-inbox-path)
-        "* %?\n%U\n\n  %i"
-        :kill-buffer t)
+     entry  (file ,#'org-gtd-inbox-path)
+     "* %?\n%U\n\n  %i"
+     :kill-buffer t)
     ("l" "Inbox with link"
-        entry (file ,#'org-gtd-inbox-path)
-        "* %?\n%U\n\n  %i\n  %a"
-        :kill-buffer t))
+     entry (file ,#'org-gtd-inbox-path)
+     "* %?\n%U\n\n  %i\n  %a"
+     :kill-buffer t))
   "Capture templates to be used when adding something to the inbox.
 
 See `org-capture-templates' for the format of each capture template.
@@ -56,6 +65,13 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the same
   (interactive)
   (with-org-gtd-context
       (org-capture goto keys)))
+
+;;;###autoload
+(defun org-gtd-inbox-path ()
+  "Return the full path to the inbox file."
+  (let ((path (org-gtd--path org-gtd-inbox)))
+    (org-gtd--ensure-file-exists path org-gtd-inbox-template)
+    path))
 
 (provide 'org-gtd-capture)
 ;;; org-gtd-capture.el ends here

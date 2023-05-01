@@ -1,9 +1,12 @@
 (defun create-additional-project-target (filename)
   (ogt--create-org-file-in-org-gtd-dir filename ogt--base-project-heading))
 
+(defun ogt-inbox-buffer ()
+  (find-file-noselect (org-gtd-inbox-path)))
+
 (defun ogt--archive ()
   "Create or return the buffer to the archive file."
-  (with-current-buffer (org-gtd--inbox-file)
+  (with-current-buffer (ogt-inbox-buffer)
     (find-file-noselect
      (car (with-org-gtd-context
               (org-archive--compute-location

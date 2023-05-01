@@ -57,7 +57,7 @@
      (ogt-clarify-as-single-action)
      (ogt-clarify-as-knowledge-item)
 
-     (with-current-buffer (org-gtd--inbox-file)
+     (with-current-buffer (ogt-inbox-buffer)
        (expect (ogt--current-buffer-raw-text)
                :not :to-match
                "single action")))

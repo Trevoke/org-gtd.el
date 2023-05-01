@@ -17,7 +17,7 @@
  (describe
   "with default content"
   (it "for the inbox"
-      (with-current-buffer (org-gtd--inbox-file)
+      (with-current-buffer (ogt-inbox-buffer)
         (expect (ogt--current-buffer-raw-text)
                 :to-match
                 "This is the inbox")

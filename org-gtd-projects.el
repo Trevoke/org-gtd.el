@@ -61,6 +61,16 @@ depend on the way org-gtd structures and organizes the projects."
 
 This is a list of four items, the same type as in `org-stuck-projects'.")
 
+(defconst org-gtd-projects "Projects")
+
+(defconst org-gtd-projects-template
+  (format "* Projects
+:PROPERTIES:
+:TRIGGER: org-gtd-next-project-action org-gtd-update-project-task!
+:ORG_GTD: %s
+:END:
+" org-gtd-projects))
+
 (defconst org-gtd-projects--malformed
   "A 'project' in GTD is a finite set of steps after which a given task is
 complete. In Org GTD, this is defined as a top-level org heading with at least
@@ -149,7 +159,7 @@ Refile to `org-gtd-actionable-file-basename'."
     (org-end-of-line))
   (insert " [/]")
   (org-update-statistics-cookies t)
-  (org-gtd--refile org-gtd-projects))
+  (org-gtd--refile org-gtd-projects org-gtd-projects-template))
 
 (defun org-gtd-project-extend--apply ()
   "Refile the org heading at point under a chosen heading in the agenda files."

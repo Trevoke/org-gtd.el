@@ -77,6 +77,7 @@ This assumes all GTD files are also agenda files."
 
 ;;;###autoload
 (defun org-gtd-engage-grouped-by-context ()
+  "Show all `org-gtd-next' actions grouped by context (tag prefixed with @)."
   (interactive)
   (with-org-gtd-context
       (let* ((contexts (seq-map
@@ -88,9 +89,7 @@ This assumes all GTD files are also agenda files."
                            (format "{^@}+TODO=\"%s\"" org-gtd-next)
                            'agenda)))))
              (blocks (seq-map
-                      (lambda (x) `(tags ,(format "+%s+TODO=\"%s\""
-                                                  x
-                                                  org-gtd-next)
+                      (lambda (x) `(tags ,(format "+%s+TODO=\"%s\"" x org-gtd-next)
                                          ((org-agenda-overriding-header ,x))))
                       contexts))
              (org-agenda-custom-commands `(("g" "actions by context" ,blocks))))

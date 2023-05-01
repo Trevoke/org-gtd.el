@@ -25,7 +25,7 @@
        (with-current-buffer temp-buffer
          (org-mode)
          (insert "* foobar")
-         (org-gtd--refile org-gtd-projects))
+         (org-gtd--refile org-gtd-projects org-gtd-projects-template))
 
        (with-current-buffer (org-gtd--default-file)
          (expect (ogt--current-buffer-raw-text) :to-match "foobar"))
@@ -37,8 +37,7 @@
   (before-each (setq org-gtd-refile-to-any-target nil))
 
   (it "finds the Project target"
-      (let ((targets (caar (with-org-gtd-refile
-                               org-gtd-projects
+      (let ((targets (caar (with-org-gtd-refile org-gtd-projects
                              (org-refile-get-targets)))))
         (expect targets :to-equal "Projects")))
 
@@ -54,8 +53,7 @@
 :ORG_GTD: Incubated
 :END:")
         (save-buffer))
-      (with-org-gtd-refile
-          org-gtd-incubated
+      (with-org-gtd-refile org-gtd-incubate
         (let ((ogt-target-names (mapcar 'car (org-refile-get-targets))))
           (expect ogt-target-names
                   :to-have-same-items-as
@@ -75,7 +73,7 @@
           (point-min)
           (with-simulated-input
            "AdditionalHeading RET"
-           (org-gtd--refile org-gtd-projects)))
+           (org-gtd--refile org-gtd-projects org-gtd-projects-template)))
 
         (expect (with-current-buffer new-buffer (ogt--current-buffer-raw-text))
                 :to-match

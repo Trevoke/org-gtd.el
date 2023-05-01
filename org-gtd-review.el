@@ -28,6 +28,7 @@
 (require 'org)
 (require 'org-gtd-core)
 (require 'org-gtd-areas-of-focus)
+(require 'org-gtd-skip)
 (require 'org-gtd-agenda)
 
 (define-error
@@ -66,10 +67,11 @@ mostly of value for testing purposes."
                             (org-agenda-show-all-dates nil)
                             (org-agenda-show-future-repeats nil)
                             (org-agenda-span 90)
+                            (org-agenda-include-diary nil)
                             (org-agenda-skip-additional-timestamps-same-entry t)
                             (org-agenda-skip-function
-                             '(org-gtd--AND-skips '(org-gtd--skip-unless-calendar
-                                                    ,(org-gtd--skip-unless-area-of-focus-func area))))))
+                             '(org-gtd-skip-AND '(org-gtd-skip-unless-calendar
+                                                   ,(org-gtd-skip-unless-area-of-focus-func area))))))
                    (agenda ""
                            ((org-agenda-overriding-header "Routines")
                             (org-agenda-time-grid '((require-timed) () "" ""))
@@ -78,46 +80,28 @@ mostly of value for testing purposes."
                             (org-agenda-span 'day)
                             (org-habit-show-habits-only-for-today nil)
                             (org-agenda-skip-function
-                             '(org-gtd--AND-skips '(org-gtd--skip-unless-habit
-                                                    ,(org-gtd--skip-unless-area-of-focus-func area))))))
-                   (tags ,(format "+ORG_GTD_INCUBATE>\"<%s>\"" start-date)
+                             '(org-gtd-skip-AND '(org-gtd-skip-unless-habit
+                                                   ,(org-gtd-skip-unless-area-of-focus-func area))))))
+                   (tags ,(format "+%s>\"<%s>\"" org-gtd-incubate-property start-date)
                          ((org-agenda-overriding-header "Incubated items"))))
-                  ((org-agenda-skip-function '(org-gtd--skip-unless-area-of-focus ,area))
+                  ((org-agenda-skip-function '(org-gtd-skip-unless-area-of-focus ,area))
                    (org-agenda-buffer-name ,(format "*Org Agenda: %s*" area)))))))
           (org-agenda nil "a")
           (goto-char (point-min))))))
 
-(defun org-gtd--AND-skips (funcs)
-  "Ensure none of the functions FUNCS want to skip the current entry."
-  (let ((non-nil-funcs (seq-drop-while (lambda (x) (not (funcall x))) funcs)))
-    (if non-nil-funcs
-        (funcall (car non-nil-funcs)))))
-
-(defun org-gtd--skip-unless-calendar ()
-  "Skip-function: only keep this if it's an org-gtd calendar entry."
-  (let ((subtree-end (save-excursion (org-end-of-subtree t))))
-    (if (org-entry-get (point) org-gtd-calendar-property)
-        nil
-      subtree-end)))
-
-(defun org-gtd--skip-unless-habit ()
-    "Skip-function: only keep this if it's a habit."
-  (let ((subtree-end (save-excursion (org-end-of-subtree t))))
-    (if (string-equal "habit" (org-entry-get (point) "STYLE"))
-        nil
-      subtree-end)))
-
-(defun org-gtd--skip-unless-area-of-focus-func (area)
-  "Return a skip-function to only keep if it's a specific GTD AREA of focus."
-  (apply-partially #'org-gtd--skip-unless-area-of-focus area))
-
-(defun org-gtd--skip-unless-area-of-focus (area)
-    "Skip-function: only keep this if it's a specific GTD AREA of focus."
-  (let ((subtree-end (save-excursion (org-end-of-subtree t))))
-    (if (string-equal (downcase area)
-                      (downcase (org-entry-get (point) "CATEGORY")))
-        nil
-      subtree-end)))
+(defun org-gtd-review-stuck-calendar-actions ()
+  "Agenda view with all invalid Calendar actions."
+  (interactive)
+  (with-org-gtd-context
+      (let ((org-agenda-custom-commands
+             '(("g" "foobar"
+                ((tags "ORG_GTD=\"Calendar\""
+                       ((org-agenda-skip-function
+                         '(org-gtd-skip-AND '(org-gtd-skip-unless-calendar-empty-or-invalid
+                                              org-gtd-skip-if-habit)))
+                        (org-agenda-skip-additional-timestamps-same-entry t)
+                        )))))))
+        (org-agenda nil "g"))))
 
 (provide 'org-gtd-review)
 ;;; org-gtd-review.el ends here

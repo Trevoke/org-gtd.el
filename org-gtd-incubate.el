@@ -24,6 +24,16 @@
 ;;
 ;;; Code:
 
+(defconst org-gtd-incubate "Incubated")
+
+(defconst org-gtd-incubate-template
+  (format "* Incubate
+:PROPERTIES:
+:ORG_GTD: %s
+:END:
+" org-gtd-incubate)
+  "Template for the GTD someday/maybe list.")
+
 (defconst org-gtd-incubate-property "ORG_GTD_INCUBATE"
   "The property storing the active timestamp used for agenda/incubation.")
 
@@ -59,7 +69,7 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
       (insert (format "<%s>" date))))
   (setq-local org-gtd--organize-type 'incubated)
   (org-gtd-organize-apply-hooks)
-  (org-gtd--refile org-gtd-incubated))
+  (org-gtd--refile org-gtd-incubate org-gtd-incubate-template))
 
 (defun org-gtd-incubate-create (topic reminder-date)
   "Automatically create a delegated task in the GTD flow.

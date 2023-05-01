@@ -24,18 +24,17 @@
 ;;
 ;;; Code:
 
+(defconst org-gtd-calendar "Calendar")
+
+(defconst org-gtd-calendar-template
+  (format "* Calendar
+:PROPERTIES:
+:ORG_GTD: %s
+:END:
+" org-gtd-calendar))
+
 (defconst org-gtd-calendar-property "ORG_GTD_CALENDAR"
   "Org property used to store date when item shows up in agenda.")
-
-;; (defconst org-gtd-calendar-engage
-;;   `(tags
-;;     ,(string-join '(org-gtd-calendar-property "=\"<today>\""))
-;;     (;;options go in here
-;;      )))
-
-;; (defconst org-gtd-calendar-area-of-focus)
-;; (defconst org-gtd-calendar-weekly-review)
-;; (defconst org-gtd-calendar-missed)
 
 (defcustom org-gtd-calendar-func
   #'org-gtd-calendar--apply
@@ -72,7 +71,7 @@ non-interactively."
       (insert (format "<%s>" date))))
   (setq-local org-gtd--organize-type 'calendar)
   (org-gtd-organize-apply-hooks)
-  (org-gtd--refile org-gtd-calendar))
+  (org-gtd--refile org-gtd-calendar org-gtd-calendar-template))
 
 (defun org-gtd-calendar-create (topic appointment-date)
   "Automatically create a calendar task in the GTD flow.
@@ -87,7 +86,6 @@ APPOINTMENT-DATE as a YYYY-MM-DD string."
       (org-gtd-clarify-item)
       (org-gtd-calendar appointment-date))
     (kill-buffer buffer)))
-
 
 (provide 'org-gtd-calendar)
 ;;; org-gtd-calendar.el ends here
