@@ -54,7 +54,7 @@
        (with-current-buffer (org-gtd--default-file)
          (goto-char (point-min))
          (search-forward "TASK DESC")
-         (expect (org-entry-get (point) "ORG_GTD_CALENDAR")
+         (expect (org-entry-get (point) org-gtd-timestamp)
                  :to-match (format "%s-%#02d-%#02d" year month day)))))
 
  (describe

@@ -33,9 +33,6 @@
 :END:
 " org-gtd-calendar))
 
-(defconst org-gtd-calendar-property "ORG_GTD_CALENDAR"
-  "Org property used to store date when item shows up in agenda.")
-
 (defcustom org-gtd-calendar-func
   #'org-gtd-calendar--apply
   "Function called when item at point is a task that must happen on a given day.
@@ -64,7 +61,7 @@ You can pass APPOINTMENT-DATE as a YYYY-MM-DD string if you want to use this
 non-interactively."
   (let ((date (or appointment-date
                   (org-read-date t nil nil "When is this going to happen? "))))
-    (org-entry-put (point) org-gtd-calendar-property (format "<%s>" date))
+    (org-entry-put (point) org-gtd-timestamp (format "<%s>" date))
     (save-excursion
       (org-end-of-meta-data t)
       (open-line 1)

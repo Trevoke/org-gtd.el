@@ -71,7 +71,7 @@ mostly of value for testing purposes."
                             (org-agenda-skip-additional-timestamps-same-entry t)
                             (org-agenda-skip-function
                              '(org-gtd-skip-AND '(org-gtd-skip-unless-calendar
-                                                   ,(org-gtd-skip-unless-area-of-focus-func area))))))
+                                                  ,(org-gtd-skip-unless-area-of-focus-func area))))))
                    (agenda ""
                            ((org-agenda-overriding-header "Routines")
                             (org-agenda-time-grid '((require-timed) () "" ""))
@@ -82,7 +82,10 @@ mostly of value for testing purposes."
                             (org-agenda-skip-function
                              '(org-gtd-skip-AND '(org-gtd-skip-unless-habit
                                                    ,(org-gtd-skip-unless-area-of-focus-func area))))))
-                   (tags ,(format "+%s>\"<%s>\"" org-gtd-incubate-property start-date)
+                   (tags ,(format "+ORG_GTD=\"%s\"+%s>\"<%s>\""
+                                  org-gtd-incubate
+                                  org-gtd-timestamp
+                                  start-date)
                          ((org-agenda-overriding-header "Incubated items"))))
                   ((org-agenda-skip-function '(org-gtd-skip-unless-area-of-focus ,area))
                    (org-agenda-buffer-name ,(format "*Org Agenda: %s*" area)))))))
@@ -97,8 +100,7 @@ mostly of value for testing purposes."
              '(("g" "foobar"
                 ((tags "ORG_GTD=\"Calendar\""
                        ((org-agenda-skip-function
-                         '(org-gtd-skip-AND '(org-gtd-skip-unless-calendar-empty-or-invalid
-                                              org-gtd-skip-if-habit)))
+                         'org-gtd-skip-unless-timestamp-empty-or-invalid)
                         (org-agenda-skip-additional-timestamps-same-entry t)
                         )))))))
         (org-agenda nil "g"))))

@@ -31,19 +31,10 @@
     (if non-nil-funcs
         (funcall (car non-nil-funcs)))))
 
-(defun org-gtd-skip-unless-calendar-empty-or-invalid ()
-  "Return non-nil if the current headline's ORG_GTD_CALENDAR property is not set, null, or not a date."
+(defun org-gtd-skip-unless-timestamp-empty-or-invalid ()
+  "Return non-nil if the current headline's ORG_GTD_TIMESTAMP property is not set, null, or not a date."
   (let ((subtree-end (save-excursion (org-end-of-subtree t)))
-        (prop (org-entry-get nil org-gtd-calendar-property)))
-    (if (and prop
-             (org-string-match-p org-ts-regexp-both prop))
-        subtree-end
-      nil)))
-
-(defun org-gtd-skip-unless-incubated-empty-or-invalid ()
-  "Return non-nil if the current headline's ORG_GTD_INCUBATE property is not set, null, or not a date."
-  (let ((subtree-end (save-excursion (org-end-of-subtree t)))
-        (prop (org-entry-get nil org-gtd-incubate-property)))
+        (prop (org-entry-get nil org-gtd-timestamp)))
     (if (and prop
              (org-string-match-p org-ts-regexp-both prop))
         subtree-end
@@ -52,7 +43,8 @@
 (defun org-gtd-skip-unless-calendar ()
   "Skip-function: only keep this if it's an org-gtd calendar entry."
   (let ((subtree-end (save-excursion (org-end-of-subtree t))))
-    (if (org-entry-get (point) org-gtd-calendar-property)
+    (if (string-equal (org-entry-get (point) "ORG_GTD" t)
+                      org-gtd-calendar)
         nil
       subtree-end)))
 

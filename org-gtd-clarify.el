@@ -115,8 +115,7 @@ which turns out to be a project."
         (org-copy-subtree))
       (with-current-buffer buffer
         (org-paste-subtree)
-        (org-entry-delete (point) org-gtd-calendar-property)
-        (org-entry-delete (point) org-gtd-incubate-property)
+        (org-entry-delete (point) org-gtd-timestamp)
         (org-entry-delete (point) org-gtd-delegate-property)
         (org-entry-delete (point) "STYLE"))))
 

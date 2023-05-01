@@ -45,7 +45,7 @@ planning keyword in `org-mode'."
          (when (org-gtd-upgrades--scheduled-item-p)
            (let ((date (org-entry-get (point) "SCHEDULED")))
              (org-schedule '(4)) ;; pretend I am a universal argument
-             (org-entry-put (point) org-gtd-calendar-property date)
+             (org-entry-put (point) org-gtd-timestamp date)
              (org-end-of-meta-data t)
              (open-line 1)
              (insert date))))
@@ -60,7 +60,7 @@ planning keyword in `org-mode'."
          (when (org-gtd-upgrades--scheduled-item-p)
            (let ((date (org-entry-get (point) "SCHEDULED")))
              (org-schedule '(4)) ;; pretend I am a universal argument
-             (org-entry-put (point) org-gtd-incubate-property date)
+             (org-entry-put (point) org-gtd-timestamp date)
              (org-end-of-meta-data t)
              (open-line 1)
              (insert date))))
@@ -75,7 +75,7 @@ planning keyword in `org-mode'."
          (when (org-gtd-upgrades--delegated-item-p)
            (let ((date (org-entry-get (point) "SCHEDULED")))
              (org-schedule '(4)) ;; pretend I am a universal argument
-             (org-entry-put (point) org-gtd-calendar-property date)
+             (org-entry-put (point) org-gtd-timestamp date)
              (org-end-of-meta-data t)
              (open-line 1)
              (insert date))))

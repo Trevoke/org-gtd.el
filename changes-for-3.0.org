@@ -41,16 +41,15 @@ https://orgmode.org/manual/In_002dbuffer-Settings.html
 ** hook name has changed
 org-gtd-process-item-hooks -> org-gtd-organize-hooks
 * implementation
-| delegate      | WAIT       | ORG_GTD_CALENDAR, DELEGATED_TO | actions  |
-| single action | NEXT       | N/A                            | actions  |
-| knowledge     | N/A        | N/A                            | archive  |
-| quick action  | N/A        | N/A                            | archive  |
-| trash         | N/A        | N/A                            | archive  |
-| calendar      | N/A        | ORG_GTD_CALENDAR               | calendar |
-| habit         | N/A        | STYLE=habit, SCHEDULED         | calendar |
-| incubate      | N/A        | ORG_GTD_INCUBATE               | incubate |
-| projects      | NEXT, TODO | N/A                            | projects |
+| delegate      | WAIT       | ORG_GTD_TIMESTAMP, DELEGATED_TO | actions   |
+| single action | NEXT       | N/A                             | actions   |
+| knowledge     | N/A        | N/A                             | archive   |
+| quick action  | N/A        | N/A                             | archive   |
+| trash         | N/A        | N/A                             | archive   |
+| calendar      | N/A        | ORG_GTD_TIMESTAMP               | calendar  |
+| habit         | N/A        | STYLE=habit, SCHEDULED          | calendar  |
+| incubate      | N/A        | ORG_GTD_TIMESTAMP               | incubated |
+| projects      | NEXT, TODO | N/A                             | projects  |
 * adjustments?
-- ORG_GTD_TIMESTAMP instead of ORG_GTD_CALENDAR and ORG_GTD_INCUBATE
 - ORG_GTD="Habit" instead of habits in ORG_GTD="Calendar"
 -

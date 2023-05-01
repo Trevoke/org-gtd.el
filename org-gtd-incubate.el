@@ -34,9 +34,6 @@
 " org-gtd-incubate)
   "Template for the GTD someday/maybe list.")
 
-(defconst org-gtd-incubate-property "ORG_GTD_INCUBATE"
-  "The property storing the active timestamp used for agenda/incubation.")
-
 (defcustom org-gtd-organize-incubate-func
   #'org-gtd-incubate--apply
   "Function called when item at point is to be incubated."
@@ -62,7 +59,7 @@ If you want to call this non-interactively,
 REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
   (let ((date (or reminder-date
                   (org-read-date t nil nil "When would you like this item to come up again? "))))
-    (org-entry-put (point) org-gtd-incubate-property (format "<%s>" date))
+    (org-entry-put (point) org-gtd-timestamp (format "<%s>" date))
     (save-excursion
       (org-end-of-meta-data t)
       (open-line 1)

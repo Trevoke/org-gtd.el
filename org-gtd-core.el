@@ -149,6 +149,9 @@ See `org-todo-keywords' for definition."
   :package-version '(org-gtd . "3.0")
   :type 'string)
 
+(defconst org-gtd-timestamp "ORG_GTD_TIMESTAMP"
+  "Org property storing timestamps for `org-gtd' logic.")
+
 (defvar org-gtd-project-headings)
 (defvar org-gtd-stuck-projects)
 (defvar org-gtd-archive-location)

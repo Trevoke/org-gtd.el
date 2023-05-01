@@ -26,8 +26,6 @@
 
 (require 'org)
 
-(require 'org-gtd-calendar)
-
 (defconst org-gtd-delegate-property "DELEGATED_TO")
 
 (defcustom org-gtd-delegate-read-func (lambda () (read-string "Who will do this? "))
@@ -85,7 +83,7 @@ person to whom to delegate by using `org-gtd-delegate-read-func'."
                   (org-read-date t nil nil "When do you want to check in on this task? ")))
         (org-inhibit-logging 'note))
     (org-set-property org-gtd-delegate-property delegated-to)
-    (org-entry-put (point) org-gtd-calendar-property (format "<%s>" date))
+    (org-entry-put (point) org-gtd-timestamp (format "<%s>" date))
     (save-excursion
       (org-end-of-meta-data t)
       (open-line 1)
