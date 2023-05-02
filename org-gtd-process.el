@@ -37,7 +37,7 @@
 
   (let ((buffer (find-file-noselect (org-gtd-inbox-path))))
     (set-buffer buffer)
-    (condition-case err
+    (condition-case _err
         (progn
           (goto-char (point-min))
           (when (org-before-first-heading-p)

@@ -86,13 +86,6 @@ If you do not need sub-headings, then organize this item as a 'single action'
 instead.")
 
 ;;;###autoload
-(defun org-gtd-show-stuck-projects ()
-  "Show all projects that do not have a next action."
-  (interactive)
-  (with-org-gtd-context
-      (org-agenda-list-stuck-projects)))
-
-;;;###autoload
 (defun org-gtd-project-cancel ()
   "With point on topmost project heading, mark all undone tasks canceled."
   (interactive)
@@ -110,7 +103,8 @@ instead.")
 ;;;###autoload
 (defun org-gtd-project-cancel-from-agenda ()
   "Cancel the project that has the highlighted task."
-  (interactive nil '(org-agenda-mode))
+  (declare (modes org-agenda-mode)) ;; for 27.2 compatibility
+  (interactive "i")
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)
   (let* ((marker (or (org-get-at-bol 'org-marker)

@@ -78,7 +78,8 @@ and CHECKIN-DATE as the YYYY-MM-DD string of when you want `org-gtd' to remind
 you if you want to call this non-interactively.
 If you call this interactively, the function will ask for the name of the
 person to whom to delegate by using `org-gtd-delegate-read-func'."
-  (interactive nil agenda-mode)
+  (declare (modes org-mode)) ;; for 27.2 compatibility
+  (interactive "i")
   (let ((delegated-to (or delegated-to
                           (apply org-gtd-delegate-read-func nil)))
         (date (or checkin-date
@@ -98,7 +99,8 @@ person to whom to delegate by using `org-gtd-delegate-read-func'."
 ;;;###autoload
 (defun org-gtd-delegate-agenda-item ()
   "Delegate item at point on agenda view."
-  (interactive nil '(org-agenda-mode))
+  (declare (modes org-agenda-mode)) ;; for 27.2 compatibility
+  (interactive "i")
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)
   (let* ((heading-marker (or (org-get-at-bol 'org-marker)

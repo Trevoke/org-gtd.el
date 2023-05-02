@@ -26,6 +26,7 @@
 
 (require 'winner)
 (require 'org-agenda)
+
 (require 'org-gtd-core)
 (require 'org-gtd-backward-compatibility)
 
@@ -83,7 +84,7 @@ This assumes all GTD files are also agenda files."
       (let* ((contexts (seq-map
                         (lambda (x) (substring-no-properties x))
                         (seq-uniq
-                         (-flatten
+                         (flatten-list
                           (org-map-entries
                            (lambda () org-scanner-tags)
                            (format "{^@}+TODO=\"%s\"" org-gtd-next)

@@ -24,6 +24,7 @@
 ;;
 ;;; Code:
 
+(require 'org-gtd-core)
 (require 'org-gtd-archive)
 
 (defcustom org-gtd-knowledge-func

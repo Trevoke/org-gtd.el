@@ -26,19 +26,10 @@
 ;;; Code:
 
 (defun org-gtd-skip-AND (funcs)
-  "Ensure none of the functions FUNCS want to skip the current entry."
+  "Ensure all of the functions FUNCS want to skip the current entry."
   (let ((non-nil-funcs (seq-drop-while (lambda (x) (not (funcall x))) funcs)))
     (if non-nil-funcs
         (funcall (car non-nil-funcs)))))
-
-(defun org-gtd-skip-unless-timestamp-empty-or-invalid ()
-  "Return non-nil if the current headline's ORG_GTD_TIMESTAMP property is not set, null, or not a date."
-  (let ((subtree-end (save-excursion (org-end-of-subtree t)))
-        (prop (org-entry-get nil org-gtd-timestamp)))
-    (if (and prop
-             (org-string-match-p org-ts-regexp-both prop))
-        subtree-end
-      nil)))
 
 (defun org-gtd-skip-unless-calendar ()
   "Skip-function: only keep this if it's an org-gtd calendar entry."
@@ -55,12 +46,41 @@
         nil
       subtree-end)))
 
-(defun org-gtd-skip-if-habit ()
+(defun org-gtd-skip-unless-delegated-to-empty ()
   "Skip-function: only keep this if it's a habit."
   (let ((subtree-end (save-excursion (org-end-of-subtree t))))
-    (if (string-equal "habit" (org-entry-get (point) "STYLE"))
+    (if (org-entry-get (point) org-gtd-delegate-property)
+        nil
+      subtree-end)))
+
+(defun org-gtd-skip-unless-timestamp-empty-or-invalid ()
+  "Return non-nil if the current headline's ORG_GTD_TIMESTAMP property is not set, null, or not a date."
+  (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+        (prop (org-entry-get nil org-gtd-timestamp)))
+    (if (and prop
+             (org-string-match-p org-ts-regexp-both prop))
         subtree-end
       nil)))
+
+(defun org-gtd-skip-unless-habit-invalid ()
+  "Return non-nil if the current headline's ORG_GTD_TIMESTAMP property is not set, null, or not a date."
+  (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+        (style (or (org-entry-get nil "STYLE") ""))
+        (timestamp (or (org-entry-get nil "SCHEDULED") "")))
+    (if (and (string-equal style "habit")
+             (org-string-match-p org-repeat-re timestamp))
+        subtree-end
+      nil)))
+
+(defun org-gtd-skip-unless-action-invalid ()
+  "Return non-nil if the action wouldn't show up in the agenda."
+    (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+        (invalidp (or (not (org-entry-is-todo-p))
+                      (org-entry-get nil "TODO" org-gtd-todo)))
+        )
+    (if invalidp
+        nil
+      subtree-end)))
 
 (defun org-gtd-skip-unless-area-of-focus-func (area)
   "Return a skip-function to only keep if it's a specific GTD AREA of focus."
@@ -73,6 +93,13 @@
                       (downcase (org-entry-get (point) "CATEGORY")))
         nil
       subtree-end)))
+
+(defun org-gtd-skip-if-habit ()
+  "Skip-function: only keep this if it's a habit."
+  (let ((subtree-end (save-excursion (org-end-of-subtree t))))
+    (if (string-equal "habit" (org-entry-get (point) "STYLE"))
+        subtree-end
+      nil)))
 
 (provide 'org-gtd-skip)
 ;;; org-gtd-skip.el ends here

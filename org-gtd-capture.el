@@ -25,7 +25,7 @@
 ;;; Code:
 
 (require 'org-capture)
-(require 'org-gtd-core)
+
 (require 'org-gtd-files)
 
 (defconst org-gtd-inbox "inbox")
@@ -55,15 +55,22 @@ top level heading, or the behavior of org-gtd will be undefined."
   :type 'sexp
   :package-version '(org-gtd . "2.0.0"))
 
+(defmacro with-org-gtd-capture (&rest body)
+  "Wrap BODY... with let-bound `org-gtd' variables for capture purposes."
+  (declare (debug t) (indent 2))
+  `(let ((org-capture-templates org-gtd-capture-templates))
+    (unwind-protect
+        (progn ,@body))))
+
 ;;;###autoload
 (defun org-gtd-capture (&optional goto keys)
   "Capture something into the GTD inbox.
 
 Wraps the function `org-capture' to ensure the inbox exists.
-
-For GOTO and KEYS, see `org-capture' documentation for the variables of the same name."
+For GOTO and KEYS, see `org-capture' documentation for the variables of the
+same name."
   (interactive)
-  (with-org-gtd-context
+  (with-org-gtd-capture
       (org-capture goto keys)))
 
 ;;;###autoload

@@ -92,7 +92,7 @@ mostly of value for testing purposes."
           (org-agenda nil "a")
           (goto-char (point-min))))))
 
-(defun org-gtd-review-stuck-calendar-actions ()
+(defun org-gtd-review-stuck-calendar-items ()
   "Agenda view with all invalid Calendar actions."
   (interactive)
   (with-org-gtd-context
@@ -104,6 +104,67 @@ mostly of value for testing purposes."
                         (org-agenda-skip-additional-timestamps-same-entry t)
                         )))))))
         (org-agenda nil "g"))))
+
+(defun org-gtd-review-stuck-incubated-items ()
+  "Agenda view with all invalid Calendar actions."
+  (interactive)
+  (with-org-gtd-context
+      (let ((org-agenda-custom-commands
+             '(("g" "foobar"
+                ((tags "ORG_GTD=\"Incubated\""
+                       ((org-agenda-skip-function
+                         'org-gtd-skip-unless-timestamp-empty-or-invalid)
+                        (org-agenda-skip-additional-timestamps-same-entry t)
+                        )))))))
+        (org-agenda nil "g"))))
+
+(defun org-gtd-review-stuck-habit-items ()
+  "Agenda view with all invalid Calendar actions."
+  (interactive)
+  (with-org-gtd-context
+      (let ((org-agenda-custom-commands
+             '(("g" "foobar"
+                ((tags "ORG_GTD=\"Habits\""
+                       ((org-agenda-skip-function
+                         'org-gtd-skip-unless-timestamp-empty-or-invalid)
+                        (org-agenda-skip-additional-timestamps-same-entry t)
+                        )))))))
+        (org-agenda nil "g"))))
+
+(defun org-gtd-review-stuck-delegated-items ()
+  "Agenda view with all invalid Calendar actions."
+  (interactive)
+  (with-org-gtd-context
+      (let ((org-agenda-custom-commands
+             `(("g" "foobar"
+                ((tags (format "+TODO=\"%s\"" org-gtd-wait)
+                       ((org-agenda-skip-function
+                         '(org-gtd-skip-AND
+                           '(org-gtd-skip-unless-timestamp-empty-or-invalid
+                             org-gtd-skip-unless-delegated-to-empty)))
+                        (org-agenda-skip-additional-timestamps-same-entry t)
+                        )))))))
+        (org-agenda nil "g"))))
+
+(defun org-gtd-review-stuck-single-action-items ()
+  "Agenda view with all invalid Calendar actions."
+  (interactive)
+  (with-org-gtd-context
+      (let ((org-agenda-custom-commands
+             `(("g" "foobar"
+                ((tags (format "+ORG_GTD=\"%s\"" org-gtd-action)
+                       ((org-agenda-skip-function
+                         'org-gtd-skip-unless-timestamp-empty-or-invalid)
+                        (org-agenda-skip-additional-timestamps-same-entry t)
+                        )))))))
+        (org-agenda nil "g"))))
+
+;;;###autoload
+(defun org-gtd-review-stuck-projects ()
+  "Show all projects that do not have a next action."
+  (interactive)
+  (with-org-gtd-context
+      (org-agenda-list-stuck-projects)))
 
 (provide 'org-gtd-review)
 ;;; org-gtd-review.el ends here

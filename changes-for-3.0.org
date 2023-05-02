@@ -8,6 +8,7 @@
 ** org-gtd-agenda-delegate is now org-gtd-delegate-agenda-item
 ** org-gtd-cancel-project is now org-gtd-project-cancel
 ** org-gtd-agenda-cancel-project is now org-gtd-project-cancel-from-agenda
+** org-gtd-show-stuck-projects is now org-gtd-review-stuck-projects
 * new features
 ** you can now clarify single items with org-gtd-clarify-item
 ** you can customize what the functions do for each GTD action (e.g. incubate, single action, etc.)
@@ -41,12 +42,9 @@ https://orgmode.org/manual/In_002dbuffer-Settings.html
 ** hook name has changed
 org-gtd-process-item-hooks -> org-gtd-organize-hooks
 * implementation
-| delegate      | WAIT       | ORG_GTD_TIMESTAMP, DELEGATED_TO | actions   |
-| single action | NEXT       | N/A                             | actions   |
-| knowledge     | N/A        | N/A                             | archive   |
-| quick action  | N/A        | N/A                             | archive   |
-| trash         | N/A        | N/A                             | archive   |
-| calendar      | N/A        | ORG_GTD_TIMESTAMP               | calendar  |
-| habit         | N/A        | STYLE=habit, SCHEDULED          | habits    |
-| incubate      | N/A        | ORG_GTD_TIMESTAMP               | incubated |
-| projects      | NEXT, TODO | N/A                             | projects  |
+| x | delegate      | WAIT       | ORG_GTD_TIMESTAMP, DELEGATED_TO | actions   |
+| x | single action | NEXT       | N/A                             | actions   |
+| x | calendar      | N/A        | ORG_GTD_TIMESTAMP               | calendar  |
+| x | habit         | NEXT, TODO | STYLE=habit, SCHEDULED          | habits    |
+| x | incubate      | N/A        | ORG_GTD_TIMESTAMP               | incubated |
+| x | projects      | NEXT, TODO | N/A                             | projects  |

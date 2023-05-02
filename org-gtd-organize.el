@@ -28,6 +28,7 @@
 
 (require 'org-gtd-backward-compatibility)
 (require 'org-gtd-core)
+(require 'org-gtd-clarify)
 (require 'org-gtd-calendar)
 (require 'org-gtd-habit)
 (require 'org-gtd-knowledge)

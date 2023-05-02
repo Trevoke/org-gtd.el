@@ -26,7 +26,9 @@
 ;;; Code:
 
 (require 'org)
+
 (require 'org-gtd-core)
+(require 'org-gtd-organize)
 
 (defcustom org-gtd-areas-of-focus '("Home" "Health" "Family" "Career")
   "The current major areas in your life where you don't want to drop balls."

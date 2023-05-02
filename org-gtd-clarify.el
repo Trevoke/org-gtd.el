@@ -97,7 +97,8 @@ which turns out to be a project."
 ;;;###autoload
 (defun org-gtd-clarify-item ()
   "Process item at point through org-gtd."
-  (interactive nil '(org-mode))
+  (declare (modes org-mode)) ;; for 27.2 compatibility
+  (interactive "i")
   (let ((processing-buffer (org-gtd-clarify--get-buffer))
         (window-config (current-window-configuration))
         (source-heading-marker (point-marker)))
@@ -119,18 +120,17 @@ which turns out to be a project."
         (org-entry-delete (point) org-gtd-delegate-property)
         (org-entry-delete (point) "STYLE"))))
 
-;;;###autoload
 (defun org-gtd-clarify-inbox-item ()
   "Process item at point through org-gtd.
 
 This function is called through the inbox clarification process."
-  (interactive)
   (org-gtd-clarify-item)
   (setq-local org-gtd-clarify--inbox-p t))
 
 (defun org-gtd-clarify-agenda-item ()
   "Process item at point on agenda view."
-  (interactive nil '(org-agenda-mode))
+  (declare (modes org-agenda-mode)) ;; for 27.2 compatibility
+  (interactive nil)
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)
   (let ((heading-marker (or (org-get-at-bol 'org-marker)

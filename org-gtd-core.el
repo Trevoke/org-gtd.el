@@ -26,7 +26,7 @@
 ;;; Code:
 
 (require 'org-agenda-property)
-(require 'org-capture)
+
 (require 'org-gtd-backward-compatibility)
 
 (defgroup org-gtd nil
@@ -155,7 +155,9 @@ See `org-todo-keywords' for definition."
 (defvar org-gtd-project-headings)
 (defvar org-gtd-stuck-projects)
 (defvar org-gtd-archive-location)
-(defvar org-gtd-capture-templates)
+
+(defvar-local org-gtd--loading-p nil
+  "`Org-gtd' sets this variable after it has changed the state in this buffer.")
 
 (define-error
   'org-gtd-error
@@ -177,7 +179,7 @@ See `org-todo-keywords' for definition."
           ;; (org-log-done-with-time t)
           ;; (org-log-refile 'time)
           (org-archive-location (funcall org-gtd-archive-location))
-          (org-capture-templates org-gtd-capture-templates)
+          ;(org-capture-templates org-gtd-capture-templates)
           (org-refile-use-outline-path nil)
           (org-stuck-projects org-gtd-stuck-projects)
           (org-odd-levels-only nil)
