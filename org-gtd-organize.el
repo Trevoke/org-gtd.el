@@ -90,9 +90,6 @@ Once you have your ground items managed, you might like to set the variable
     ("k" "Knowledge to be stored" org-gtd-knowledge)]
    [("t" "Trash" org-gtd-trash)]])
 
-(defalias 'org-gtd-choose #'org-gtd-organize)
-(make-obsolete 'org-gtd-choose #'org-gtd-organize "2.3.0")
-
 (defun org-gtd-organize--call (func)
   "Wrap FUNC, which does the real work, to keep Emacs clean.
 This handles the internal bits of `org-gtd'."
