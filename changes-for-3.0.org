@@ -10,7 +10,7 @@
 ** org-gtd-agenda-cancel-project is now org-gtd-project-cancel-from-agenda
 ** org-gtd-show-stuck-projects is now org-gtd-review-stuck-projects
 * new features
-** org-gtd-oops for missed appointments
+** org-gtd-oops command for missed appointments
 ** you can now clarify single items with org-gtd-clarify-item
 ** you can customize what the functions do for each GTD action (e.g. incubate, single action, etc.)
 ** organize-hooks can be customized to apply to specific types of tasks (see org-gtd-organize-type-member-p )
