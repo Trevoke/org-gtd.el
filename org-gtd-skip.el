@@ -34,8 +34,7 @@
 (defun org-gtd-skip-unless-calendar ()
   "Skip-function: only keep this if it's an org-gtd calendar entry."
   (let ((subtree-end (save-excursion (org-end-of-subtree t))))
-    (if (and (equal 2 (org-element-property :level (org-element-at-point)))
-             (string-equal (org-entry-get (point) "ORG_GTD" t)
+    (if (and (string-equal (org-entry-get (point) "ORG_GTD" t)
                            org-gtd-calendar)
              (org-entry-get (point) "ORG_GTD_TIMESTAMP"))
         nil

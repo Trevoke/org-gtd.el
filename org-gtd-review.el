@@ -59,8 +59,10 @@ mostly of value for testing purposes."
                `(("a" ,(format "Area of Focus: %s" area)
                   ((tags ,org-gtd-project-headings
                          ((org-agenda-overriding-header "Active projects")))
+
                    (todo ,org-gtd-next
                          ((org-agenda-overriding-header "Next actions")))
+
                    (agenda ""
                            ((org-agenda-overriding-header "Reminders")
                             (org-agenda-start-day ,start-date)
@@ -72,6 +74,7 @@ mostly of value for testing purposes."
                             (org-agenda-skip-function
                              '(org-gtd-skip-AND '(org-gtd-skip-unless-calendar
                                                   ,(org-gtd-skip-unless-area-of-focus-func area))))))
+
                    (agenda ""
                            ((org-agenda-overriding-header "Routines")
                             (org-agenda-time-grid '((require-timed) () "" ""))
@@ -81,7 +84,7 @@ mostly of value for testing purposes."
                             (org-habit-show-habits-only-for-today nil)
                             (org-agenda-skip-function
                              '(org-gtd-skip-AND '(org-gtd-skip-unless-habit
-                                                   ,(org-gtd-skip-unless-area-of-focus-func area))))))
+                                                  ,(org-gtd-skip-unless-area-of-focus-func area))))))
                    (tags ,(format "+ORG_GTD=\"%s\"+%s>\"<%s>\""
                                   org-gtd-incubate
                                   org-gtd-timestamp
