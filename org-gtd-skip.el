@@ -34,8 +34,57 @@
 (defun org-gtd-skip-unless-calendar ()
   "Skip-function: only keep this if it's an org-gtd calendar entry."
   (let ((subtree-end (save-excursion (org-end-of-subtree t))))
-    (if (string-equal (org-entry-get (point) "ORG_GTD" t)
-                      org-gtd-calendar)
+    (if (and (equal 2 (org-element-property :level (org-element-at-point)))
+             (string-equal (org-entry-get (point) "ORG_GTD" t)
+                           org-gtd-calendar)
+             (org-entry-get (point) "ORG_GTD_TIMESTAMP"))
+        nil
+      subtree-end)))
+
+(defun org-gtd-skip-unless-project-heading ()
+  "Skip-function: only keep this if it's an org-gtd project heading entry."
+  (let ((subtree-end (save-excursion (org-end-of-subtree t))))
+    (if (and (equal 2 (org-element-property :level (org-element-at-point)))
+             (string-equal (org-entry-get (point) "ORG_GTD" t)
+                           org-gtd-projects))
+        nil
+      subtree-end)))
+
+(defun org-gtd-skip-unless-delegated ()
+  "Skip entry unless it is delegated."
+  (let ((subtree-end (save-excursion (org-end-of-subtree t))))
+    (if (org-entry-get (point) "DELEGATED_TO")
+        nil
+      subtree-end)))
+
+(defun org-gtd-skip-unless-scheduled-start-in-the-past ()
+  (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+        (scheduled-start (org-entry-get (point) "SCHEDULED"))
+        (start-of-day (org-gtd-skip--start-of-day (current-time))))
+    (if (and scheduled-start
+             (time-less-p (org-time-string-to-time scheduled-start)
+                          start-of-day))
+        nil
+      subtree-end)))
+
+(defun org-gtd-skip-unless-deadline-in-the-past ()
+  (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+        (deadline (org-entry-get (point) "DEADLINE"))
+        (start-of-day (org-gtd-skip--start-of-day (current-time))))
+    (if (and deadline
+             (time-less-p (org-time-string-to-time deadline)
+                          start-of-day))
+        nil
+      subtree-end)))
+
+(defun org-gtd-skip-unless-timestamp-in-the-past ()
+  "Skip unless ORG_GTD_TIMESTAMP is in the past."
+  (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+        (timestamp (org-entry-get (point) "ORG_GTD_TIMESTAMP"))
+        (start-of-day (org-gtd-skip--start-of-day (current-time))))
+    (if (and timestamp
+             (time-less-p (org-time-string-to-time timestamp)
+                          start-of-day))
         nil
       subtree-end)))
 
@@ -100,6 +149,13 @@
     (if (string-equal "habit" (org-entry-get (point) "STYLE"))
         subtree-end
       nil)))
+
+(defun org-gtd-skip--start-of-day (timestamp)
+  (let ((decoded (decode-time timestamp)))
+    (setf (nth 0 decoded) 0)
+    (setf (nth 1 decoded) 0)
+    (setf (nth 2 decoded) 0)
+    (apply #'encode-time decoded)))
 
 (provide 'org-gtd-skip)
 ;;; org-gtd-skip.el ends here

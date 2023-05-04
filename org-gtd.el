@@ -66,6 +66,7 @@
 (require 'org-gtd-process)
 (require 'org-gtd-mode)
 (require 'org-gtd-review)
+(require 'org-gtd-oops)
 (require 'org-gtd-upgrades)
 
 (defvar org-gtd-update-ack "1.0.0"

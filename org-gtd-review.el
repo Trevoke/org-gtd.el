@@ -98,8 +98,9 @@ mostly of value for testing purposes."
   (with-org-gtd-context
       (let ((org-agenda-custom-commands
              '(("g" "foobar"
-                ((tags "ORG_GTD=\"Calendar\""
-                       ((org-agenda-skip-function
+                ((tags "+ORG_GTD=\"Calendar\"+LEVEL=2"
+                       ((org-agenda-include-diary nil)
+                        (org-agenda-skip-function
                          'org-gtd-skip-unless-timestamp-empty-or-invalid)
                         (org-agenda-skip-additional-timestamps-same-entry t)
                         )))))))

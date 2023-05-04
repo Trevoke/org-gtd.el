@@ -39,7 +39,8 @@
   `(("g" "Scheduled today and all NEXT items"
      (
       (agenda "" ((org-agenda-span 1)
-                  (org-agenda-start-day nil)))
+                  (org-agenda-start-day nil)
+                  (org-agenda-skip-additional-timestamps-same-entry t)))
       (todo org-gtd-next ((org-agenda-overriding-header "All actions ready to be executed.")
                           (org-agenda-prefix-format '((todo . " %i %-12:(org-gtd-agenda--prefix-format)")))))
       (todo org-gtd-wait ((org-agenda-todo-ignore-with-date t)
@@ -65,7 +66,8 @@ or by wrapping your own custom functions with `with-org-gtd-context'."
   (interactive)
   (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
-      (org-agenda nil "g")))
+      (org-agenda nil "g")
+      (goto-char (point-min))))
 
 ;;;###autoload
 (defun org-gtd-show-all-next ()
