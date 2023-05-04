@@ -1,0 +1,107 @@
+#+STARTUP: overview indent align inlineimages hidestars
+
+* Projects
+:PROPERTIES:
+:TRIGGER: org-gtd-next-project-action org-gtd-update-project-task!
+:ORG_GTD:  Projects
+:END:
+
+** [0/3] Fix the roof
+:PROPERTIES:
+:CATEGORY: Home
+:END:
+*** NEXT Clean gutters
+
+*** TODO Replace broken tiles
+
+*** TODO Get cat trampoline
+
+
+** [1/3] Get promotion
+:PROPERTIES:
+:CATEGORY: Career
+:END:
+*** DONE Make list of accomplishments
+*** NEXT Figure out desired raise
+*** TODO Kidnap boss
+
+** [3/3] Get pregnant
+:PROPERTIES:
+:CATEGORY: Health
+:END:
+*** DONE Get doctor's appointment
+*** CNCL Find partner
+*** CNCL Have child
+** [1/3] Be happy in kitchen
+:PROPERTIES:
+:CATEGORY: Home
+:END:
+*** DONE Throw away boxes
+*** NEXT think of something that will make me enjoy being in the kitchen
+*** TODO Make the change and be happy
+* Calendar
+:PROPERTIES:
+:ORG_GTD:  Calendar
+:END:
+
+** Meet plumber
+:PROPERTIES:
+:ORG_GTD_TIMESTAMP: <2021-11-20 10:00-12:00 Sat>
+:CATEGORY: Home
+:END:
+
+<2021-11-20 10:00-12:00 Sat>
+** some scheduled item
+SCHEDULED: <2021-11-20 Sat>
+:PROPERTIES:
+:ORG_GTD_TIMESTAMP: <2021-11-18 Thu>
+:END:
+
+** Sweep the floor
+SCHEDULED: <2021-11-20 9:00-9:15 .+1d>
+:PROPERTIES:
+:STYLE:    habit
+:CATEGORY: Home
+:END:
+* Actions
+:PROPERTIES:
+:ORG_GTD:  Actions
+:END:
+
+** NEXT Open mail
+:PROPERTIES:
+:CATEGORY: Home
+:END:
+
+** NEXT Update resume
+:PROPERTIES:
+:CATEGORY: Career
+:END:
+
+
+** WAIT Wait for someone
+
+:PROPERTIES:
+:ORG_GTD_TIMESTAMP: <2025-03-23 Sun>
+:DELEGATED_TO: future me
+:END:
+
+- State "WAIT"       from "NEXT"       [2021-11-20 Sat 16:42] \\
+  wait for me
+** DONE this is done
+** CNCL this is canceled
+
+* Incubate
+:PROPERTIES:
+:ORG_GTD:  Incubated
+:END:
+** For later
+:PROPERTIES:
+:ORG_GTD_TIMESTAMP: <2037-02-19 Thu>
+:CATEGORY: Home
+:END:
+
+** CNCL not worth thinking about
+:PROPERTIES:
+:ORG_GTD_TIMESTAMP: <2021-11-21 Sun>
+:END:

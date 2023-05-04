@@ -26,6 +26,7 @@
 
 (require 'org-agenda)
 (require 'org-edna)
+
 (require 'org-gtd-core)
 
 (defvar org-gtd-edna-inheritance nil "Private.")

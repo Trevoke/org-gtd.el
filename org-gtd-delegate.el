@@ -25,20 +25,107 @@
 ;;; Code:
 
 (require 'org)
-(require 'org-gtd-customize)
+
+(require 'org-gtd-single-action)
+
+(defconst org-gtd-delegate-property "DELEGATED_TO")
+
+(defcustom org-gtd-delegate-read-func (lambda () (read-string "Who will do this? "))
+  "Function that is called to read in the Person the task is delegated to.
+
+Needs to return a string that will be used as the persons name."
+  :group 'org-gtd
+  :package-version '(org-gtd . "2.3.0")
+  :type 'function )
+
+(defcustom org-gtd-organize-delegate-func
+  #'org-gtd-delegate--apply
+  "Function called when item at at point is an action delegated to someone else."
+  :group 'org-gtd-organize
+  :type 'function
+  :package-version '(org-gtd . "3.0.0"))
 
 ;;;###autoload
-(defun org-gtd-delegate ()
-  "Delegate item at point."
+(defun org-gtd-delegate (&optional delegated-to checkin-date)
+  "Organize and refile item at point as a delegated item.
+
+You can pass DELEGATED-TO as the name of the person to whom this was delegated
+and CHECKIN-DATE as the YYYY-MM-DD string of when you want `org-gtd' to remind
+you if you want to call this non-interactively."
   (interactive)
-  (let ((delegated-to (apply org-gtd-delegate-read-func nil))
+  (org-gtd-organize--call
+   (apply-partially org-gtd-organize-delegate-func
+                    delegated-to
+                    checkin-date)))
+
+(defun org-gtd-delegate--apply (&optional delegated-to checkin-date)
+  "Organize and refile this as a delegated item in the `org-gtd' system.
+
+You can pass DELEGATED-TO as the name of the person to whom this was delegated
+and CHECKIN-DATE as the YYYY-MM-DD string of when you want `org-gtd' to remind
+you if you want to call this non-interactively."
+  (org-gtd-delegate-item-at-point delegated-to checkin-date)
+  (setq-local org-gtd--organize-type 'delegated)
+  (org-gtd-organize-apply-hooks)
+  (org-gtd--refile org-gtd-action org-gtd-action-template))
+
+;;;###autoload
+(defun org-gtd-delegate-item-at-point (&optional delegated-to checkin-date)
+  "Delegate item at point.  Use this if you do not want to refile the item.
+
+You can pass DELEGATED-TO as the name of the person to whom this was delegated
+and CHECKIN-DATE as the YYYY-MM-DD string of when you want `org-gtd' to remind
+you if you want to call this non-interactively.
+If you call this interactively, the function will ask for the name of the
+person to whom to delegate by using `org-gtd-delegate-read-func'."
+  (declare (modes org-mode)) ;; for 27.2 compatibility
+  (interactive "i")
+  (let ((delegated-to (or delegated-to
+                          (apply org-gtd-delegate-read-func nil)))
+        (date (or checkin-date
+                  (org-read-date t nil nil "When do you want to check in on this task? ")))
         (org-inhibit-logging 'note))
-    (org-set-property "DELEGATED_TO" delegated-to)
-    (org-todo "WAIT")
-    (org-schedule 0)
+    (org-set-property org-gtd-delegate-property delegated-to)
+    (org-entry-put (point) org-gtd-timestamp (format "<%s>" date))
+    (save-excursion
+      (org-end-of-meta-data t)
+      (open-line 1)
+      (insert (format "<%s>" date)))
+    (org-todo org-gtd-wait)
     (save-excursion
       (goto-char (org-log-beginning t))
       (insert (format "programmatically delegated to %s\n" delegated-to)))))
+
+;;;###autoload
+(defun org-gtd-delegate-agenda-item ()
+  "Delegate item at point on agenda view."
+  (declare (modes org-agenda-mode)) ;; for 27.2 compatibility
+  (interactive "i")
+  (org-agenda-check-type t 'agenda 'todo 'tags 'search)
+  (org-agenda-check-no-diary)
+  (let* ((heading-marker (or (org-get-at-bol 'org-marker)
+                             (org-agenda-error)))
+         (heading-buffer (marker-buffer heading-marker))
+         (heading-position (marker-position heading-marker)))
+    (with-current-buffer heading-buffer
+      (goto-char heading-position)
+      (org-gtd-delegate-item-at-point))))
+
+(defun org-gtd-delegate-create (topic delegated-to checkin-date)
+  "Automatically create a delegated task in the GTD flow.
+
+TOPIC is the string you want to see in the agenda when this comes up.
+DELEGATED-TO is the name of the person to whom this was delegated.
+CHECKIN-DATE is the YYYY-MM-DD string of when you want `org-gtd' to remind
+you."
+  (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
+        (org-id-overriding-file-name "org-gtd"))
+    (with-current-buffer buffer
+      (org-mode)
+      (insert (format "* %s" topic))
+      (org-gtd-clarify-item)
+      (org-gtd-delegate delegated-to checkin-date))
+    (kill-buffer buffer)))
 
 (provide 'org-gtd-delegate)
 ;;; org-gtd-delegate.el ends here
