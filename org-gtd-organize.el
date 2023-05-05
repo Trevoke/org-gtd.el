@@ -40,6 +40,7 @@
 (require 'org-gtd-agenda)
 (require 'org-gtd-projects)
 (require 'org-gtd-refile)
+(require 'org-gtd-process)
 
 (defgroup org-gtd-organize nil
   "Manage the functions for organizing the GTD actions."
