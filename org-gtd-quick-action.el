@@ -36,7 +36,7 @@
   (org-todo org-gtd-done)
   (setq-local org-gtd--organize-type 'quick-action)
   (org-gtd-organize-apply-hooks)
-  (with-org-gtd-context (org-archive-subtree)))
+  (with-org-gtd-context (org-gtd-archive-item-at-point)))
 
 ;;;###autoload
 (defun org-gtd-quick-action ()

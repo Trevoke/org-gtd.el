@@ -50,6 +50,13 @@
     (org-gtd-process-inbox)
     (ogt-clarify-as-single-action)))
 
+(defun ogt-capture-and-process-quick-action (label)
+  "LABEL is the quick action label."
+  (let ((inhibit-message t))
+    (ogt-capture-single-item label)
+    (org-gtd-process-inbox)
+    (ogt-clarify-as-quick-action)))
+
 (defun ogt-capture-and-process-knowledge-item (label)
   (let ((inhibit-message t))
     (ogt-capture-single-item label)

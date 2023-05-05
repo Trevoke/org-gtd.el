@@ -1,4 +1,4 @@
-(setq org-gtd-update-ack "2.1.0")
+(setq org-gtd-update-ack "3.0.0beta")
 
 (load "test/helpers/clarifying.el")
 (load "test/helpers/project-fixtures.el")

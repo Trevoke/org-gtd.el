@@ -2,6 +2,10 @@
   (let ((inhibit-message t))
     (execute-kbd-macro (kbd "C-c c s"))))
 
+(defun ogt-clarify-as-quick-action ()
+  (let ((inhibit-message t))
+    (execute-kbd-macro (kbd "C-c c q"))))
+
 (defun ogt-clarify-as-project ()
   (let ((inhibit-message t))
     (execute-kbd-macro (kbd "C-c c p"))))
