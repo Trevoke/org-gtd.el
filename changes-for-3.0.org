@@ -1,3 +1,7 @@
+* doom emacs
+clear your natively compiled files and re-sync
+
+There's been a lot of issues during beta testing with proper installation of org-mode >9.6 and org-gtd 3.0, and a clean install is the only fix we found. Part of the reason is likely that org-mode is a very complex beast to install properly and requires some delicate massaging by doom in order to be user-friendly, but leads to potentially weird edge cases. Don't quote me on this.
 * minimum emacs requirement: 27.2
 * update your mind
 ** menu has changed

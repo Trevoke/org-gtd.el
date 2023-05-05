@@ -185,6 +185,10 @@ Refile to `org-gtd-actionable-file-basename'."
    "LEVEL=2"
    'tree))
 
+(defun org-gtd-projects--org-element-pom (element)
+  "Return buffer position for start of Org ELEMENT."
+  (org-element-property :begin element))
+
 ;;;###autoload
 (defun org-gtd-projects-fix-todo-keywords-for-project-at-point ()
   "Ensure keywords for subheadings of project at point are sane.
@@ -258,10 +262,6 @@ Return `nil' if there isn't one."
   "Determine if current heading is a task that's not finished."
   (and (org-entry-is-todo-p)
        (not (org-entry-is-done-p))))
-
-(defun org-gtd-projects--org-element-pom (element)
-  "Return buffer position for start of Org ELEMENT."
-  (org-element-property :begin element))
 
 (defun org-gtd-projects--poorly-formatted-p ()
   "Return non-nil if the project is composed of only one heading."

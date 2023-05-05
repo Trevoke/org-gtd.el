@@ -87,6 +87,7 @@ which turns out to be a project."
   "Minor mode for org-gtd."
   :lighter " GPM"
   :keymap org-gtd-clarify-map
+  :group 'org-gtd
   (if org-gtd-clarify-mode
       (setq-local
        header-line-format

@@ -26,6 +26,7 @@
 ;;
 ;;; Code:
 
+(require 'org-macs)
 (require 'ffap)
 
 (defun org-gtd-id-get-create (&optional pom)
