@@ -37,6 +37,7 @@
   "Global minor mode to bound `org-agenda' to the org-gtd settings."
   :lighter " GTD"
   :global t
+  :group 'org-gtd
   (if org-gtd-mode
       (org-gtd--enable-org-gtd-mode)
     (org-gtd--disable-org-gtd-mode)))

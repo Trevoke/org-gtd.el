@@ -155,6 +155,7 @@ See `org-todo-keywords' for definition."
 (defvar org-gtd-project-headings)
 (defvar org-gtd-stuck-projects)
 (defvar org-gtd-archive-location)
+(defvar org-gtd-delegate-property)
 
 (defvar-local org-gtd--loading-p nil
   "`Org-gtd' sets this variable after it has changed the state in this buffer.")
@@ -183,7 +184,7 @@ See `org-todo-keywords' for definition."
           (org-stuck-projects org-gtd-stuck-projects)
           (org-odd-levels-only nil)
           (org-agenda-files (org-gtd-core--agenda-files))
-          (org-agenda-property-list '(,org-gtd-delegate-property))
+          (org-agenda-property-list `(,org-gtd-delegate-property))
           (org-agenda-custom-commands org-gtd-agenda-custom-commands))
      (unwind-protect
          (progn ,@body))))
