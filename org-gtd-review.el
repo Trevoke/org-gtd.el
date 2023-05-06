@@ -30,11 +30,12 @@
 (require 'org-gtd-areas-of-focus)
 (require 'org-gtd-skip)
 (require 'org-gtd-agenda)
+(require 'org-gtd-projects)
 
 (define-error
- 'org-gtd-invalid-area-of-focus
- "`%s' is not a member of `%s'"
- 'org-gtd-error)
+  'org-gtd-invalid-area-of-focus
+  "`%s' is not a member of `%s'"
+  'org-gtd-error)
 
 ;;;###autoload
 (defun org-gtd-review-area-of-focus (&optional area start-date)

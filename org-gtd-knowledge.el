@@ -26,6 +26,10 @@
 
 (require 'org-gtd-core)
 (require 'org-gtd-archive)
+(require 'org-gtd-clarify)
+
+(declare-function 'org-gtd-organize--call "org-gtd-organize")
+(declare-function 'org-gtd-organize-apply-hooks "org-gtd-organize")
 
 (defcustom org-gtd-knowledge-func
   #'org-gtd-knowledge--apply
@@ -50,8 +54,7 @@ clarify step, before you call `org-gtd-organize')."
   (org-todo org-gtd-done)
   (setq-local org-gtd--organize-type 'knowledge)
   (org-gtd-organize-apply-hooks)
-  (with-org-gtd-context
-      (org-gtd-archive-item-at-point)))
+  (org-gtd-archive-item-at-point))
 
 (provide 'org-gtd-knowledge)
 ;;; org-gtd-knowledge.el ends here

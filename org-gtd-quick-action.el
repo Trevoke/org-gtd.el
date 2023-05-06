@@ -24,6 +24,12 @@
 ;;
 ;;; Code:
 
+(require 'org-gtd-core)
+(require 'org-gtd-archive)
+
+(declare-function 'org-gtd-organize--call "org-gtd-organize")
+(declare-function 'org-gtd-organize-apply-hooks "org-gtd-organize")
+
 (defcustom org-gtd-organize-quick-action-func
   #'org-gtd-quick-action--apply
   "Function called when item at point was quick action."
@@ -36,7 +42,7 @@
   (org-todo org-gtd-done)
   (setq-local org-gtd--organize-type 'quick-action)
   (org-gtd-organize-apply-hooks)
-  (with-org-gtd-context (org-gtd-archive-item-at-point)))
+  (org-gtd-archive-item-at-point))
 
 ;;;###autoload
 (defun org-gtd-quick-action ()

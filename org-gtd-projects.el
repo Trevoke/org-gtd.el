@@ -28,8 +28,12 @@
 (require 'org)
 (require 'org-element)
 (require 'org-edna)
+
 (require 'org-gtd-core)
-(require 'org-gtd-agenda)
+(require 'org-gtd-refile)
+
+(declare-function 'org-gtd-organize--call "org-gtd-organize")
+(declare-function 'org-gtd-organize-apply-hooks "org-gtd-organize")
 
 (defcustom org-gtd-organize-project-func
   #'org-gtd-project-new--apply

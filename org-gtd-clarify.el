@@ -26,6 +26,7 @@
 
 (require 'org-agenda)
 
+(require 'org-gtd-core)
 (require 'org-gtd-id)
 (require 'org-gtd-horizons)
 

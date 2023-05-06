@@ -24,7 +24,10 @@
 ;;
 ;;; Code:
 
-;(require 'org-gtd-core)
+(require 'org-gtd-core)
+(require 'org-gtd-archive)
+
+(declare-function 'org-gtd-organize--call 'org-gtd-organize)
 
 (defcustom org-gtd-organize-trash-func
   #'org-gtd-trash--apply
@@ -44,8 +47,7 @@
   (org-todo org-gtd-canceled)
   (setq-local org-gtd--organize-type 'trash)
   (org-gtd-organize-apply-hooks)
-  (with-org-gtd-context
-      (org-gtd-archive-item-at-point)))
+  (org-gtd-archive-item-at-point))
 
 (provide 'org-gtd-trash)
 ;;; org-gtd-trash.el ends here

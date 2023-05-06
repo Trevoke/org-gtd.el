@@ -381,7 +381,7 @@ mostly of value for testing purposes.
 (autoload 'org-gtd-review-stuck-projects "org-gtd-review" "\
 Show all projects that do not have a next action." t nil)
 
-(register-definition-prefixes "org-gtd-review" '("org-gtd-"))
+(register-definition-prefixes "org-gtd-review" '("org-gtd-review-stuck-"))
 
 ;;;***
 
