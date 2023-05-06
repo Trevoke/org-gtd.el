@@ -24,6 +24,8 @@
 ;;
 ;;; Code:
 
+;(require 'org-gtd-core)
+
 (defcustom org-gtd-organize-trash-func
   #'org-gtd-trash--apply
   "Function called when  item at point is to be discarded."

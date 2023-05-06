@@ -4,6 +4,9 @@
 (eldev-use-package-archive 'gnu-elpa)
 (eldev-use-package-archive 'melpa)
 
+(eldev-use-plugin 'autoloads)
+(eldev-use-plugin 'maintainer)
+
 (setq eldev-test-framework 'buttercup)
 
 (eldev-add-extra-dependencies 'test 'with-simulated-input)
