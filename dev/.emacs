@@ -43,9 +43,12 @@
 (assq-delete-all 'org package--builtins)
 (assq-delete-all 'org package--builtin-versions)
 
-(straight-use-package '(org-gtd :type git :host github :repo "trevoke/org-gtd.el"))
-(setq org-gtd-update-ack "2.1.0")
-(require 'org-gtd)
+(setq org-gtd-update-ack "3.0.0beta")
+(quelpa '(org-gtd :fetcher file :path "/home/stag/src/projects/org-gtd.el/"))
+
+;(straight-use-package '(org-gtd :type git :host github :repo "trevoke/org-gtd.el"))
+
+;(require 'org-gtd)
 
 ;; (use-package org
 ;;   :quelpa ((org) :upgrade t)
