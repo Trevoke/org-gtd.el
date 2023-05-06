@@ -27,8 +27,8 @@
 (require 'org-gtd-core)
 (require 'org-gtd-archive)
 
-(declare-function 'org-gtd-organize--call "org-gtd-organize")
-(declare-function 'org-gtd-organize-apply-hooks "org-gtd-organize")
+(declare-function 'org-gtd-organize--call 'org-gtd-organize)
+(declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
 
 (defcustom org-gtd-organize-quick-action-func
   #'org-gtd-quick-action--apply

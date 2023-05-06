@@ -32,8 +32,8 @@
 (require 'org-gtd-clarify)
 (require 'org-gtd-refile)
 
-(declare-function 'org-gtd-organize--call "org-gtd-organize")
-(declare-function 'org-gtd-organize-apply-hooks "org-gtd-organize")
+(declare-function 'org-gtd-organize--call 'org-gtd-organize)
+(declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
 
 (defconst org-gtd-delegate-property "DELEGATED_TO")
 
