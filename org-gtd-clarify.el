@@ -100,7 +100,7 @@ which turns out to be a project."
 (defun org-gtd-clarify-item ()
   "Process item at point through org-gtd."
   (declare (modes org-mode)) ;; for 27.2 compatibility
-  (interactive "i")
+  (interactive)
   (let ((processing-buffer (org-gtd-clarify--get-buffer))
         (window-config (current-window-configuration))
         (source-heading-marker (point-marker)))

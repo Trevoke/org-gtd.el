@@ -24,6 +24,7 @@
 ;;
 ;;; Code:
 
+(require 'org-gtd-core)
 (require 'org-gtd-clarify)
 (require 'org-gtd-refile)
 
@@ -46,7 +47,6 @@
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-;;;###autoload
 (defun org-gtd-habit (&optional repeater)
   "Organize and refile item at point as a calendar item.
 

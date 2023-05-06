@@ -47,7 +47,6 @@
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-;;;###autoload
 (defun org-gtd-incubate (&optional reminder-date)
   "Decorate, organize and refile item at point as incubated.
 

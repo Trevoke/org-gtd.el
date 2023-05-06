@@ -44,7 +44,6 @@
   (org-gtd-organize-apply-hooks)
   (org-gtd-archive-item-at-point))
 
-;;;###autoload
 (defun org-gtd-quick-action ()
   "Organize, decorate and refile item at point as a quick action."
   (interactive)

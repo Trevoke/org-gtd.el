@@ -62,14 +62,6 @@ Archive everything that needs to be archived in your org-gtd." t nil)
 ;;;;;;  0 0 0))
 ;;; Generated autoloads from org-gtd-calendar.el
 
-(autoload 'org-gtd-calendar "org-gtd-calendar" "\
-Decorate and refile item at point as a calendar item.
-
-You can pass APPOINTMENT-DATE as a YYYY-MM-DD string if you want to use this
-non-interactively.
-
-\(fn &optional APPOINTMENT-DATE)" t nil)
-
 (register-definition-prefixes "org-gtd-calendar" '("org-gtd-calendar"))
 
 ;;;***
@@ -150,15 +142,6 @@ Wrap BODY... in this macro to inherit the org-gtd settings for your logic.
 ;;;;;;  0 0 0))
 ;;; Generated autoloads from org-gtd-delegate.el
 
-(autoload 'org-gtd-delegate "org-gtd-delegate" "\
-Organize and refile item at point as a delegated item.
-
-You can pass DELEGATED-TO as the name of the person to whom this was delegated
-and CHECKIN-DATE as the YYYY-MM-DD string of when you want `org-gtd' to remind
-you if you want to call this non-interactively.
-
-\(fn &optional DELEGATED-TO CHECKIN-DATE)" t nil)
-
 (autoload 'org-gtd-delegate-item-at-point "org-gtd-delegate" "\
 Delegate item at point.  Use this if you do not want to refile the item.
 
@@ -191,15 +174,6 @@ Delegate item at point on agenda view." t nil)
 ;;;### (autoloads nil "org-gtd-habit" "org-gtd-habit.el" (0 0 0 0))
 ;;; Generated autoloads from org-gtd-habit.el
 
-(autoload 'org-gtd-habit "org-gtd-habit" "\
-Organize and refile item at point as a calendar item.
-
-If you want to call this non-interactively,
-REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
-determine how often you'll be reminded of this habit.
-
-\(fn &optional REPEATER)" t nil)
-
 (register-definition-prefixes "org-gtd-habit" '("org-gtd-habit"))
 
 ;;;***
@@ -223,14 +197,6 @@ determine how often you'll be reminded of this habit.
 ;;;;;;  0 0 0))
 ;;; Generated autoloads from org-gtd-incubate.el
 
-(autoload 'org-gtd-incubate "org-gtd-incubate" "\
-Decorate, organize and refile item at point as incubated.
-
-If you want to call this non-interactively,
-REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again.
-
-\(fn &optional REMINDER-DATE)" t nil)
-
 (register-definition-prefixes "org-gtd-incubate" '("org-gtd-"))
 
 ;;;***
@@ -239,10 +205,7 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again.
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from org-gtd-knowledge.el
 
-(autoload 'org-gtd-knowledge "org-gtd-knowledge" "\
-Decorate, organize and refile item at point as knowledge." t nil)
-
-(register-definition-prefixes "org-gtd-knowledge" '("org-gtd-knowledge-"))
+(register-definition-prefixes "org-gtd-knowledge" '("org-gtd-knowledge"))
 
 ;;;***
 
@@ -318,30 +281,13 @@ With point on topmost project heading, mark all undone tasks canceled." t nil)
 (autoload 'org-gtd-project-cancel-from-agenda "org-gtd-projects" "\
 Cancel the project that has the highlighted task." t nil)
 
-(function-put 'org-gtd-project-cancel-from-agenda 'command-modes '(org-agenda-mode))
-
-(autoload 'org-gtd-project-new "org-gtd-projects" "\
-Organize, decorate and refile item as a new project." t nil)
-
-(autoload 'org-gtd-project-extend "org-gtd-projects" "\
-Organize, decorate and refile item as a new task in an existing project." t nil)
-
-(autoload 'org-gtd-projects-fix-todo-keywords-for-project-at-point "org-gtd-projects" "\
-Ensure keywords for subheadings of project at point are sane.
-
-This means one and only one `org-gtd-next' keyword, and it is the first non-done
-state in the list - all others are `org-gtd-todo'." t nil)
-
-(register-definition-prefixes "org-gtd-projects" '("org-"))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-projects" '("org-")))
 
 ;;;***
 
 ;;;### (autoloads nil "org-gtd-quick-action" "org-gtd-quick-action.el"
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from org-gtd-quick-action.el
-
-(autoload 'org-gtd-quick-action "org-gtd-quick-action" "\
-Organize, decorate and refile item at point as a quick action." t nil)
 
 (register-definition-prefixes "org-gtd-quick-action" '("org-gtd-"))
 
@@ -389,9 +335,6 @@ Show all projects that do not have a next action." t nil)
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from org-gtd-single-action.el
 
-(autoload 'org-gtd-single-action "org-gtd-single-action" "\
-Organize, decorate and refile item at point as a single action." t nil)
-
 (register-definition-prefixes "org-gtd-single-action" '("org-gtd-"))
 
 ;;;***
@@ -405,9 +348,6 @@ Organize, decorate and refile item at point as a single action." t nil)
 
 ;;;### (autoloads nil "org-gtd-trash" "org-gtd-trash.el" (0 0 0 0))
 ;;; Generated autoloads from org-gtd-trash.el
-
-(autoload 'org-gtd-trash "org-gtd-trash" "\
-Organize and refile item at point as trash." t nil)
 
 (register-definition-prefixes "org-gtd-trash" '("org-gtd-"))
 

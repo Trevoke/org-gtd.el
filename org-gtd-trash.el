@@ -36,7 +36,6 @@
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-;;;###autoload
 (defun org-gtd-trash ()
   "Organize and refile item at point as trash."
   (interactive)

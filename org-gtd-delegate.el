@@ -52,7 +52,6 @@ Needs to return a string that will be used as the persons name."
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-;;;###autoload
 (defun org-gtd-delegate (&optional delegated-to checkin-date)
   "Organize and refile item at point as a delegated item.
 
@@ -86,7 +85,7 @@ you if you want to call this non-interactively.
 If you call this interactively, the function will ask for the name of the
 person to whom to delegate by using `org-gtd-delegate-read-func'."
   (declare (modes org-mode)) ;; for 27.2 compatibility
-  (interactive "i")
+  (interactive)
   (let ((delegated-to (or delegated-to
                           (apply org-gtd-delegate-read-func nil)))
         (date (or checkin-date
@@ -107,7 +106,7 @@ person to whom to delegate by using `org-gtd-delegate-read-func'."
 (defun org-gtd-delegate-agenda-item ()
   "Delegate item at point on agenda view."
   (declare (modes org-agenda-mode)) ;; for 27.2 compatibility
-  (interactive "i")
+  (interactive)
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)
   (let* ((heading-marker (or (org-get-at-bol 'org-marker)

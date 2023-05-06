@@ -108,7 +108,7 @@ instead.")
 (defun org-gtd-project-cancel-from-agenda ()
   "Cancel the project that has the highlighted task."
   (declare (modes org-agenda-mode)) ;; for 27.2 compatibility
-  (interactive "i")
+  (interactive)
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)
   (let* ((marker (or (org-get-at-bol 'org-marker)
@@ -123,13 +123,11 @@ instead.")
         (org-up-heading-safe)
         (org-gtd-project-cancel)))))
 
-;;;###autoload
 (defun org-gtd-project-new ()
   "Organize, decorate and refile item as a new project."
   (interactive)
   (org-gtd-organize--call org-gtd-organize-project-func))
 
-;;;###autoload
 (defun org-gtd-project-extend ()
   "Organize, decorate and refile item as a new task in an existing project."
   (interactive)
@@ -193,7 +191,6 @@ Refile to `org-gtd-actionable-file-basename'."
   "Return buffer position for start of Org ELEMENT."
   (org-element-property :begin element))
 
-;;;###autoload
 (defun org-gtd-projects-fix-todo-keywords-for-project-at-point ()
   "Ensure keywords for subheadings of project at point are sane.
 

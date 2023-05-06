@@ -46,7 +46,6 @@
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-;;;###autoload
 (defun org-gtd-single-action ()
   "Organize, decorate and refile item at point as a single action."
   (interactive)

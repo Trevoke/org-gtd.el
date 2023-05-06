@@ -43,7 +43,6 @@ clarify step, before you call `org-gtd-organize')."
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-;;;###autoload
 (defun org-gtd-knowledge ()
   "Decorate, organize and refile item at point as knowledge."
   (interactive)

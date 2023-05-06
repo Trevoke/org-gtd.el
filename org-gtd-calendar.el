@@ -49,7 +49,6 @@ actually appointments or deadlines."
   :type 'function
   :package-version '(org-gtd . "3.0.0"))
 
-;;;###autoload
 (defun org-gtd-calendar (&optional appointment-date)
   "Decorate and refile item at point as a calendar item.
 
