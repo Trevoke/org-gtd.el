@@ -55,13 +55,13 @@ which turns out to be a project."
 (defconst org-gtd-clarify--prefix "Org-GTD WIP")
 
 (defvar-local org-gtd-clarify--window-config nil
-  "Store window configuration prior to clarifying task")
+  "Store window configuration prior to clarifying task.")
 
 (defvar-local org-gtd-clarify--source-heading-marker nil
-  "Store marker to item that is being clarified")
+  "Store marker to item that is being clarified.")
 
 (defvar-local org-gtd-clarify--clarify-id nil
-  "Reference to the org id of the heading currently in the WIP buffer")
+  "Reference to the org id of the heading currently in the WIP buffer.")
 
 (defvar-local org-gtd-clarify--inbox-p nil
   "Used to separate a one-off clarify from the inbox clarification.")

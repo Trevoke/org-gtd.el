@@ -59,7 +59,8 @@ TYPE is the org-gtd action type.  BODY is the rest of the code."
 (defun org-gtd--refile (type refile-target-element)
   "Refile an item to the single action file.
 
-TYPE is one of the org-gtd action types."
+TYPE is one of the org-gtd action types.
+REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
   (with-org-gtd-refile type
     (unless (org-refile-get-targets) (org-gtd-refile--add-target refile-target-element))
     (if org-gtd-refile-to-any-target
@@ -69,7 +70,8 @@ TYPE is one of the org-gtd action types."
 (defun org-gtd-refile--add-target (refile-target-element)
   "Private function used to create a missing org-gtd refile target.
 
-GTD-TYPE is an action type."
+GTD-TYPE is an action type.
+REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
   (print "inserting the new refile target")
   (with-current-buffer (org-gtd--default-file)
     (goto-char (point-max))

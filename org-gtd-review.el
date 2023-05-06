@@ -106,8 +106,7 @@ mostly of value for testing purposes."
                        ((org-agenda-include-diary nil)
                         (org-agenda-skip-function
                          'org-gtd-skip-unless-timestamp-empty-or-invalid)
-                        (org-agenda-skip-additional-timestamps-same-entry t)
-                        )))))))
+                        (org-agenda-skip-additional-timestamps-same-entry t))))))))
         (org-agenda nil "g"))))
 
 (defun org-gtd-review-stuck-incubated-items ()
@@ -119,8 +118,7 @@ mostly of value for testing purposes."
                 ((tags "ORG_GTD=\"Incubated\""
                        ((org-agenda-skip-function
                          'org-gtd-skip-unless-timestamp-empty-or-invalid)
-                        (org-agenda-skip-additional-timestamps-same-entry t)
-                        )))))))
+                        (org-agenda-skip-additional-timestamps-same-entry t))))))))
         (org-agenda nil "g"))))
 
 (defun org-gtd-review-stuck-habit-items ()
@@ -132,8 +130,7 @@ mostly of value for testing purposes."
                 ((tags "ORG_GTD=\"Habits\""
                        ((org-agenda-skip-function
                          'org-gtd-skip-unless-timestamp-empty-or-invalid)
-                        (org-agenda-skip-additional-timestamps-same-entry t)
-                        )))))))
+                        (org-agenda-skip-additional-timestamps-same-entry t))))))))
         (org-agenda nil "g"))))
 
 (defun org-gtd-review-stuck-delegated-items ()
@@ -147,8 +144,7 @@ mostly of value for testing purposes."
                          '(org-gtd-skip-AND
                            '(org-gtd-skip-unless-timestamp-empty-or-invalid
                              org-gtd-skip-unless-delegated-to-empty)))
-                        (org-agenda-skip-additional-timestamps-same-entry t)
-                        )))))))
+                        (org-agenda-skip-additional-timestamps-same-entry t))))))))
         (org-agenda nil "g"))))
 
 (defun org-gtd-review-stuck-single-action-items ()
@@ -160,8 +156,7 @@ mostly of value for testing purposes."
                 ((tags (format "+ORG_GTD=\"%s\"" org-gtd-action)
                        ((org-agenda-skip-function
                          'org-gtd-skip-unless-timestamp-empty-or-invalid)
-                        (org-agenda-skip-additional-timestamps-same-entry t)
-                        )))))))
+                        (org-agenda-skip-additional-timestamps-same-entry t))))))))
         (org-agenda nil "g"))))
 
 ;;;###autoload

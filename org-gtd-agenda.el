@@ -116,8 +116,7 @@ This assumes all GTD files are also agenda files."
                    11)
                   0 10)
        "…"))
-     (category (concat (substring (string-pad category 11) 0 10) "…"))
-     )))
+     (category (concat (substring (string-pad category 11) 0 10) "…")))))
 
 (provide 'org-gtd-agenda)
 ;;; org-gtd-agenda.el ends here

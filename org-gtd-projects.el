@@ -200,9 +200,10 @@ state in the list - all others are `org-gtd-todo'."
   (org-gtd-projects-fix-todo-keywords (point-marker)))
 
 (defun org-gtd-projects-fix-todo-keywords (heading-marker)
-  "Ensure the project tasks under heading at HEADING-MARKER have at most
-one `org-gtd-next' or `org-gtd-wait' task and all other undone tasks
-are marked as `org-gtd-todo'."
+  "Ensure keywords for subheadings of project at HEADING-MARKER are sane.
+
+This means at most one `org-gtd-next' or `org-gtd-wait' task and all
+other undone tasks are marked as `org-gtd-todo'."
   (let* ((buffer (marker-buffer heading-marker))
          (position (marker-position heading-marker))
          (heading-level (with-current-buffer buffer
@@ -231,7 +232,7 @@ are marked as `org-gtd-todo'."
 
 (defun org-gtd-projects--first-wait-task ()
   "Given an org tree at point, return the first subtask with `org-gtd-wait'.
-Return `nil' if there isn't one."
+Return nil if there isn't one."
   (let ((heading-level (org-current-level)))
     (car
      (seq-filter (lambda (x) x)
@@ -246,7 +247,7 @@ Return `nil' if there isn't one."
 
 (defun org-gtd-projects--first-todo-task ()
   "Given an org tree at point, return the first subtask with `org-gtd-todo'.
-Return `nil' if there isn't one."
+Return nil if there isn't one."
   (let ((heading-level (org-current-level)))
     (car
      (seq-filter (lambda (x) x)

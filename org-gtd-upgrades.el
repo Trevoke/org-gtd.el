@@ -102,6 +102,7 @@ planning keyword in `org-mode'."
                          'agenda))))
 
 (defun org-gtd-upgrades--organize-habits-v3 ()
+  "Move element at point to the habits home if it's a habit."
   (when (org-is-habit-p)
     (setq org-map-continue-from (- (org-element-property :begin
                                                          (org-element-at-point))

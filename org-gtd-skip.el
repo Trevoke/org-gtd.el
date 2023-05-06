@@ -21,7 +21,7 @@
 ;;; Commentary:
 ;;
 ;; Building agenda views is complex, and filtering them effectively can truly
-;; require its own language. This is that language.
+;; require its own language.  This is that language.
 ;;
 ;;; Code:
 
@@ -57,6 +57,7 @@
       subtree-end)))
 
 (defun org-gtd-skip-unless-scheduled-start-in-the-past ()
+  "Skip entry unless scheduled time is before now."
   (let ((subtree-end (save-excursion (org-end-of-subtree t)))
         (scheduled-start (org-entry-get (point) "SCHEDULED"))
         (start-of-day (org-gtd-skip--start-of-day (current-time))))
@@ -67,6 +68,7 @@
       subtree-end)))
 
 (defun org-gtd-skip-unless-deadline-in-the-past ()
+    "Skip entry unless deadline is before now."
   (let ((subtree-end (save-excursion (org-end-of-subtree t)))
         (deadline (org-entry-get (point) "DEADLINE"))
         (start-of-day (org-gtd-skip--start-of-day (current-time))))
@@ -124,8 +126,7 @@
   "Return non-nil if the action wouldn't show up in the agenda."
     (let ((subtree-end (save-excursion (org-end-of-subtree t)))
         (invalidp (or (not (org-entry-is-todo-p))
-                      (org-entry-get nil "TODO" org-gtd-todo)))
-        )
+                      (org-entry-get nil "TODO" org-gtd-todo))))
     (if invalidp
         nil
       subtree-end)))
@@ -150,6 +151,7 @@
       nil)))
 
 (defun org-gtd-skip--start-of-day (timestamp)
+  "Take TIMESTAMP and return start of day for that day."
   (let ((decoded (decode-time timestamp)))
     (setf (nth 0 decoded) 0)
     (setf (nth 1 decoded) 0)

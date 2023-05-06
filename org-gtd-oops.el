@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 ;;
-;; Life doesn't go as we expect sometimes. Here we can find all the things
+;; Life doesn't go as we expect sometimes.  Here we can find all the things
 ;; that for did not get updated when they should have.
 ;;
 ;;; Code:
@@ -34,16 +34,14 @@
                 ((tags "+DELEGATED_TO={.+}"
                          ((org-agenda-overriding-header "Missed check-ins on delegated items")
                           (org-agenda-skip-additional-timestamps-same-entry t)
-                          (org-agenda-skip-function 'org-gtd-skip-unless-timestamp-in-the-past)
-                          ))
+                          (org-agenda-skip-function 'org-gtd-skip-unless-timestamp-in-the-past)))
                  (tags "+ORG_GTD=\"Calendar\"+LEVEL=2"
                          ((org-agenda-overriding-header "Missed appointments")
                           (org-agenda-skip-additional-timestamps-same-entry t)
                           (org-agenda-skip-function
                            '(org-gtd-skip-AND
                             '(org-gtd-skip-unless-calendar
-                              org-gtd-skip-unless-timestamp-in-the-past))
-                           )))
+                              org-gtd-skip-unless-timestamp-in-the-past)))))
                  ;; (tags "+LEVEL=2+ORG_GTD=\"Projects\"+DEADLINE<\"<today>\""
                  ;;       ((org-agenda-overriding-header "??")))
                  ;; (tags "+LEVEL=2+ORG_GTD=\"Projects\"+SCHEDULED<\"<today>\""
@@ -66,8 +64,7 @@
                           (org-agenda-skip-function
                            '(org-gtd-skip-AND
                              '(org-gtd-skip-if-habit
-                               org-gtd-skip-unless-scheduled-start-in-the-past)))))
-                 )))))
+                               org-gtd-skip-unless-scheduled-start-in-the-past))))))))))
         (org-agenda nil "o")
         (goto-char (point-min)))))
 
