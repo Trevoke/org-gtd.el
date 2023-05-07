@@ -213,11 +213,11 @@ If BUFFER is nil, use current buffer."
 
 (defun org-gtd-core--agenda-files ()
   "Concatenate `org-agenda-files' variable with `org-gtd-directory' contents."
-  (if (stringp org-agenda-files)
-      (append (org-read-agenda-file-list)
-              (ensure-list org-gtd-directory))
-    (append (ensure-list org-agenda-files)
-            (ensure-list org-gtd-directory))))
+  (seq-uniq (if (stringp org-agenda-files)
+                (append (org-read-agenda-file-list)
+                        (ensure-list org-gtd-directory))
+              (append (ensure-list org-agenda-files)
+                      (ensure-list org-gtd-directory)))))
 
 (provide 'org-gtd-core)
 ;;; org-gtd-core.el ends here

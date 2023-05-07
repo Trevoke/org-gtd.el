@@ -27,7 +27,7 @@ This assumes all GTD files are also agenda files." t nil)
 (autoload 'org-gtd-engage-grouped-by-context "org-gtd-agenda" "\
 Show all `org-gtd-next' actions grouped by context (tag prefixed with @)." t nil)
 
-(register-definition-prefixes "org-gtd-agenda" '("org-gtd-agenda-"))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-agenda" '("org-gtd-agenda-")))
 
 ;;;***
 
@@ -96,31 +96,20 @@ Keymap for command `org-gtd-clarify-mode', a minor mode.")
 (autoload 'org-gtd-clarify-mode "org-gtd-clarify" "\
 Minor mode for org-gtd.
 
-This is a minor mode.  If called interactively, toggle the
-`Org-Gtd-Clarify mode' mode.  If the prefix argument is positive,
-enable the mode, and if it is zero or negative, disable the mode.
-
-If called from Lisp, toggle the mode if ARG is `toggle'.  Enable
-the mode if ARG is nil, omitted, or is a positive number.
-Disable the mode if ARG is a negative number.
-
-To check whether the minor mode is enabled in the current buffer,
-evaluate `org-gtd-clarify-mode'.
-
-The mode's hook is called both when the mode is enabled and when
-it is disabled.
+If called interactively, enable Org-Gtd-Clarify mode if ARG is
+positive, and disable it if ARG is zero or negative.  If called
+from Lisp, also enable the mode if ARG is omitted or nil, and
+toggle it if ARG is `toggle'; disable the mode otherwise.
 
 \(fn &optional ARG)" t nil)
 
 (autoload 'org-gtd-clarify-item "org-gtd-clarify" "\
 Process item at point through org-gtd." t nil)
 
-(function-put 'org-gtd-clarify-item 'command-modes '(org-mode))
-
 (autoload 'org-gtd-clarify-switch-to-buffer "org-gtd-clarify" "\
 Prompt the user to choose one of the existing WIP buffers." t nil)
 
-(register-definition-prefixes "org-gtd-clarify" '("org-gtd-clarify-"))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-clarify" '("org-gtd-clarify-")))
 
 ;;;***
 
@@ -134,7 +123,7 @@ Wrap BODY... in this macro to inherit the org-gtd settings for your logic.
 
 (function-put 'with-org-gtd-context 'lisp-indent-function '2)
 
-(register-definition-prefixes "org-gtd-core" '("org-gtd-"))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-core" '("org-gtd-")))
 
 ;;;***
 
@@ -248,7 +237,7 @@ it is disabled.
 ;;;### (autoloads nil "org-gtd-oops" "org-gtd-oops.el" (0 0 0 0))
 ;;; Generated autoloads from org-gtd-oops.el
 
-(register-definition-prefixes "org-gtd-oops" '("org-gtd-oops"))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-oops" '("org-gtd-oops")))
 
 ;;;***
 
@@ -306,7 +295,7 @@ TYPE is the org-gtd action type.  BODY is the rest of the code.
 
 (function-put 'with-org-gtd-refile 'lisp-indent-function '1)
 
-(register-definition-prefixes "org-gtd-refile" '("org-gtd-"))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-refile" '("org-gtd-")))
 
 ;;;***
 
@@ -327,7 +316,7 @@ mostly of value for testing purposes.
 (autoload 'org-gtd-review-stuck-projects "org-gtd-review" "\
 Show all projects that do not have a next action." t nil)
 
-(register-definition-prefixes "org-gtd-review" '("org-gtd-review-stuck-"))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-review" '("org-gtd-review-stuck-")))
 
 ;;;***
 
@@ -342,7 +331,7 @@ Show all projects that do not have a next action." t nil)
 ;;;### (autoloads nil "org-gtd-skip" "org-gtd-skip.el" (0 0 0 0))
 ;;; Generated autoloads from org-gtd-skip.el
 
-(register-definition-prefixes "org-gtd-skip" '("org-gtd-skip-"))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-skip" '("org-gtd-skip-")))
 
 ;;;***
 
@@ -357,7 +346,7 @@ Show all projects that do not have a next action." t nil)
 ;;;;;;  0 0 0))
 ;;; Generated autoloads from org-gtd-upgrades.el
 
-(register-definition-prefixes "org-gtd-upgrades" '("org-gtd-upgrade"))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-upgrades" '("org-gtd-upgrade")))
 
 ;;;***
 
