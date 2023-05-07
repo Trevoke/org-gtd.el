@@ -74,14 +74,15 @@ or by wrapping your own custom functions with `with-org-gtd-context'."
   "Show all next actions from all agenda files in a single list.
 This assumes all GTD files are also agenda files."
   (interactive)
+  (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
-      (org-gtd-core-prepare-agenda-buffers)
       (org-todo-list org-gtd-next)))
 
 ;;;###autoload
 (defun org-gtd-engage-grouped-by-context ()
   "Show all `org-gtd-next' actions grouped by context (tag prefixed with @)."
   (interactive)
+  (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
       (let* ((contexts (seq-map
                         (lambda (x) (substring-no-properties x))
