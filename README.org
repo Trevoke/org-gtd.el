@@ -21,8 +21,11 @@ For a comprehensive instruction manual, see the documentation:
 The documentation also details how to upgrade from one version to another.
 
 ** Lightning tour of the package
-Also known as, "I don't care about the documentation". This won't cover all the information, but it will get you going if you just want to take it for a test run.
+What follows is an incomplete description of the package. It is useful if you just want to take it for a test run. Read the full documentation for the full set of features and customizability.
 *** GTD Meta
+Modes:
+- ~org-gtd-mode~ :: If you want to be able to refresh the org-agenda views and have all the ~org-gtd~ files included in your ~org-agenda-files~, you'll need this to be enabled.
+
 Customizable variables:
 - ~org-gtd-directory~ :: Directory where org-gtd will look for its files
 - ~org-gtd-areas-of-focus~ :: List of strings representing Horizon 3. See Steps 4 and 6 for further details.
@@ -41,9 +44,25 @@ Functions:
 - ~org-gtd-clarify-item~ :: Call this from any org heading to clarify this item as a one-off and organize it into org-gtd.
 - ~org-gtd-clarify-agenda-item~ :: Call this from any item in the agenda to clarify this item and organize it into org-gtd.
 - ~org-gtd-clarify-switch-to-buffer~ :: Call this to switch back to any existing clarify buffer. Use this instead of switching back through the normal flow, as this manages some state.
+
+Keymaps:
+- ~org-gtd-clarify-map~ :: Sparse keymap for minor mode used in the clarify buffer.
 *** GTD Step 4/6 : Organize
+Functions:
+- ~org-gtd-organize~ :: Pop up a menu asking how to organize (e.g. single action, appointment, etc.) the item at point. Great function to bind on ~org-gtd-clarify-map~.
+
+Hooks:
+- ~org-gtd-organize-hooks~ :: Series of functions that get called to decorate each item (e.g. org tags, org effort, etc.). Add ~org-gtd-set-area-of-focus~ to this one to set areas of focus on each item.
 *** GTD Step 5/6 : Engage daily
+Functions:
+- ~org-gtd-engage~ :: Your daily view.
+- ~org-gtd-engage-grouped-by-context~ :: All NEXT actions, grouped by tags beginning with =@=. This may not work if you remove ~org-set-tags-command~ from ~org-gtd-organize-hooks~.
 *** GTD Step 6/6 : Review
+Functions:
+- ~org-gtd-oops~ :: Show all the missed appointments. Oops!
+- ~org-gtd-review-area-of-focus~ :: Show an agenda view designed for one of your areas of focus.
+- ~org-gtd-review-stuck-*~ :: The =*= here is any of the action types; you can find any of the ones that have fallen through the cracks.
+
 
 * Directory tree
 - =dev= :: used as a jail environment. Copy somewhere else and spin up with ~$ HOME="dev/" emacs~.
