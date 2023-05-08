@@ -88,7 +88,7 @@ which turns out to be a project."
   "Minor mode for org-gtd."
   :lighter " GPM"
   :keymap org-gtd-clarify-map
-  :group 'org-gtd
+  :group 'org-gtd-clarify
   (if org-gtd-clarify-mode
       (setq-local
        header-line-format
@@ -147,7 +147,6 @@ This function is called through the inbox clarification process."
       (goto-char heading-position)
       (org-gtd-clarify-item))))
 
-;;;###autoload
 (defun org-gtd-clarify-switch-to-buffer ()
   "Prompt the user to choose one of the existing WIP buffers."
   (interactive)

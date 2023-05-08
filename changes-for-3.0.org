@@ -13,6 +13,9 @@ There's been a lot of issues during beta testing with proper installation of org
 ** org-gtd-cancel-project is now org-gtd-project-cancel
 ** org-gtd-agenda-cancel-project is now org-gtd-project-cancel-from-agenda
 ** org-gtd-show-stuck-projects is now org-gtd-review-stuck-projects
+** org-gtd-agenda-custom-commands is gone
+Create your own functions and use ~with-org-gtd-context~ instead.
+See ~org-gtd-engage~ for an example.
 * new features
 ** org-gtd-oops command for missed appointments
 ** you can now clarify single items with org-gtd-clarify-item
@@ -23,6 +26,7 @@ There's been a lot of issues during beta testing with proper installation of org
 ** horizons file customizable, can be displayed/toggled while clarifying items
 suggest keybinding on keymap in doc
 ** project templates
+~org-gtd-clarify-project-insert-template~
 ** functions you can call to automatically add items to the GTD flow
 (nothing for knowledge, projects, quick action, or trash)
 sample hook

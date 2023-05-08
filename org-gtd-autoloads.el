@@ -27,7 +27,7 @@ This assumes all GTD files are also agenda files." t nil)
 (autoload 'org-gtd-engage-grouped-by-context "org-gtd-agenda" "\
 Show all `org-gtd-next' actions grouped by context (tag prefixed with @)." t nil)
 
-(register-definition-prefixes "org-gtd-agenda" '("org-gtd-agenda-"))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-agenda" '("org-gtd-agenda--prefix-format")))
 
 ;;;***
 
@@ -96,20 +96,28 @@ Keymap for command `org-gtd-clarify-mode', a minor mode.")
 (autoload 'org-gtd-clarify-mode "org-gtd-clarify" "\
 Minor mode for org-gtd.
 
-If called interactively, enable Org-Gtd-Clarify mode if ARG is
-positive, and disable it if ARG is zero or negative.  If called
-from Lisp, also enable the mode if ARG is omitted or nil, and
-toggle it if ARG is `toggle'; disable the mode otherwise.
+This is a minor mode.  If called interactively, toggle the
+`Org-Gtd-Clarify mode' mode.  If the prefix argument is positive,
+enable the mode, and if it is zero or negative, disable the mode.
+
+If called from Lisp, toggle the mode if ARG is `toggle'.  Enable
+the mode if ARG is nil, omitted, or is a positive number.
+Disable the mode if ARG is a negative number.
+
+To check whether the minor mode is enabled in the current buffer,
+evaluate `org-gtd-clarify-mode'.
+
+The mode's hook is called both when the mode is enabled and when
+it is disabled.
 
 \(fn &optional ARG)" t nil)
 
 (autoload 'org-gtd-clarify-item "org-gtd-clarify" "\
 Process item at point through org-gtd." t nil)
 
-(autoload 'org-gtd-clarify-switch-to-buffer "org-gtd-clarify" "\
-Prompt the user to choose one of the existing WIP buffers." t nil)
+(function-put 'org-gtd-clarify-item 'command-modes '(org-mode))
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-clarify" '("org-gtd-clarify-")))
+(register-definition-prefixes "org-gtd-clarify" '("org-gtd-clarify-"))
 
 ;;;***
 
@@ -202,7 +210,7 @@ Delegate item at point on agenda view." t nil)
 ;;; Generated autoloads from org-gtd-mode.el
 
 (defvar org-gtd-mode nil "\
-Non-nil if Org-GTD mode is enabled.
+Non-nil if Org-Gtd mode is enabled.
 See the `org-gtd-mode' command
 for a description of this minor mode.
 Setting this variable directly does not take effect;
@@ -214,23 +222,14 @@ or call the function `org-gtd-mode'.")
 (autoload 'org-gtd-mode "org-gtd-mode" "\
 Global minor mode to bound `org-agenda' to the org-gtd settings.
 
-This is a minor mode.  If called interactively, toggle the
-`Org-GTD mode' mode.  If the prefix argument is positive, enable
-the mode, and if it is zero or negative, disable the mode.
-
-If called from Lisp, toggle the mode if ARG is `toggle'.  Enable
-the mode if ARG is nil, omitted, or is a positive number.
-Disable the mode if ARG is a negative number.
-
-To check whether the minor mode is enabled in the current buffer,
-evaluate `(default-value \\='org-gtd-mode)'.
-
-The mode's hook is called both when the mode is enabled and when
-it is disabled.
+If called interactively, enable Org-Gtd mode if ARG is positive,
+and disable it if ARG is zero or negative.  If called from Lisp,
+also enable the mode if ARG is omitted or nil, and toggle it if
+ARG is `toggle'; disable the mode otherwise.
 
 \(fn &optional ARG)" t nil)
 
-(register-definition-prefixes "org-gtd-mode" '("org-gtd-"))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-mode" '("org-gtd-")))
 
 ;;;***
 

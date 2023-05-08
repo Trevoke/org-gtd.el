@@ -184,10 +184,13 @@ See `org-todo-keywords' for definition."
           (org-stuck-projects org-gtd-stuck-projects)
           (org-odd-levels-only nil)
           (org-agenda-files (org-gtd-core--agenda-files))
-          (org-agenda-property-list `(,org-gtd-delegate-property))
-          (org-agenda-custom-commands org-gtd-agenda-custom-commands))
+          (org-agenda-property-list `(,org-gtd-delegate-property)))
      (unwind-protect
-         (progn ,@body))))
+         (progn
+           (advice-add 'org-agenda-files :filter-return #'org-gtd-core--uniq)
+           ,@body)
+       (progn
+         (advice-remove 'org-agenda-files #'org-gtd-core--uniq)))))
 
 (defun org-gtd-core-prepare-buffer (&optional buffer)
   "Make sure BUFFER is prepared to handle Org GTD operations.
@@ -218,6 +221,9 @@ If BUFFER is nil, use current buffer."
                         (ensure-list org-gtd-directory))
               (append (ensure-list org-agenda-files)
                       (ensure-list org-gtd-directory)))))
+
+(defun org-gtd-core--uniq (list)
+  (seq-uniq list))
 
 (provide 'org-gtd-core)
 ;;; org-gtd-core.el ends here

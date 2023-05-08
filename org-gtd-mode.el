@@ -66,6 +66,7 @@ configuration."
   (mapc
    (lambda (x) (advice-add x :around #'org-gtd--wrap))
    org-gtd--agenda-functions)
+
   (setq org-gtd-edna-inheritance org-edna-use-inheritance
         org-gtd-edna org-edna-mode)
   (setq org-edna-use-inheritance 1)
@@ -79,6 +80,7 @@ previous values."
   (mapc
    (lambda (x) (advice-remove x #'org-gtd--wrap))
    org-gtd--agenda-functions)
+
   (setq org-edna-use-inheritance org-gtd-edna-inheritance)
   (org-edna-mode org-gtd-edna))
 

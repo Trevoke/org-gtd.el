@@ -30,44 +30,29 @@
 (require 'org-gtd-core)
 (require 'org-gtd-backward-compatibility)
 
-(defgroup org-gtd-agenda nil
-  "Options for org-gtd agenda views."
-  :package-version '(org-gtd . "3.0.0")
-  :group 'org-gtd)
-
-(defcustom org-gtd-agenda-custom-commands
-  `(("g" "Scheduled today and all NEXT items"
-     (
-      (agenda "" ((org-agenda-span 1)
-                  (org-agenda-start-day nil)
-                  (org-agenda-skip-additional-timestamps-same-entry t)))
-      (todo org-gtd-next ((org-agenda-overriding-header "All actions ready to be executed.")
-                          (org-agenda-prefix-format '((todo . " %i %-12:(org-gtd-agenda--prefix-format)")))))
-      (todo org-gtd-wait ((org-agenda-todo-ignore-with-date t)
-                          (org-agenda-overriding-header "Delegated/Blocked items")
-                          (org-agenda-prefix-format '((todo . " %i %-12 (org-gtd-agenda--prefix-format)"))))))))
-  "Agenda custom commands to be used for org-gtd.
-
-The provided default is to show the agenda for today and all TODOs marked as
-`org-gtd-next' or `org-gtd-wait'.  See documentation for
-`org-agenda-custom-commands' to customize this further.
-
-NOTE! The function `org-gtd-engage' assumes the 'g' shortcut exists.
-It's recommended you add to this list without modifying this first entry.  You
-can leverage this customization feature with command `org-gtd-mode'
-or by wrapping your own custom functions with `with-org-gtd-context'."
-  :group 'org-gtd-agenda
-  :type 'sexp
-  :package-version '(org-gtd . "2.0.0"))
-
 ;;;###autoload
 (defun org-gtd-engage ()
   "Display `org-agenda' customized by org-gtd."
   (interactive)
   (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
-      (org-agenda nil "g")
-      (goto-char (point-min))))
+      (let ((org-agenda-custom-commands
+             `(("g" "Scheduled today and all NEXT items"
+                ((agenda ""
+                         ((org-agenda-span 1)
+                          (org-agenda-start-day nil)
+                          (org-agenda-skip-additional-timestamps-same-entry t)))
+                 (todo org-gtd-next
+                       ((org-agenda-overriding-header "All actions ready to be executed.")
+                        (org-agenda-prefix-format
+                         '((todo . " %i %-12:(org-gtd-agenda--prefix-format)")))))
+                 (todo org-gtd-wait
+                       ((org-agenda-todo-ignore-with-date t)
+                        (org-agenda-overriding-header "Delegated/Blocked items")
+                        (org-agenda-prefix-format
+                         '((todo . " %i %-12 (org-gtd-agenda--prefix-format)"))))))))))
+        (org-agenda nil "g")
+       (goto-char (point-min)))))
 
 ;;;###autoload
 (defun org-gtd-show-all-next ()
