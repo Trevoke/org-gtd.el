@@ -70,7 +70,7 @@
 
     (with-simulated-input project-heading-simulated-input
                           (org-gtd-organize--call
-                           org-gtd-organize-add-to-project-func))))
+                           org-gtd-add-to-project-func))))
 
 (defun ogt-capture-and-process-trash-item (label)
   (let ((inhibit-message t))

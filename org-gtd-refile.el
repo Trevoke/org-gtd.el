@@ -41,7 +41,7 @@ to create new refile targets.
 
 Defaults to true to carry over pre-2.0 behavior.  You will need to change this
 setting as part of following the instructions to add your own refile targets."
-  :group 'org-gtd
+  :group 'org-gtd-organize
   :type 'boolean
   :package-version '(org-gtd . "2.0.0"))
 
@@ -56,7 +56,7 @@ TYPE is the org-gtd action type.  BODY is the rest of the code."
      (unwind-protect
          (with-org-gtd-context (progn ,@body)))))
 
-(defun org-gtd--refile (type refile-target-element)
+(defun org-gtd-refile--do (type refile-target-element)
   "Refile an item to the single action file.
 
 TYPE is one of the org-gtd action types.

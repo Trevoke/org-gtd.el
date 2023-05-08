@@ -40,12 +40,12 @@
 :END:
 " org-gtd-habit))
 
-(defcustom org-gtd-habit-func
-  #'org-gtd-habit--apply
-  "Function called when item at point is a habit."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
+(defconst org-gtd-habit-func #'org-gtd-habit--apply
+  "Function called when organizing item as a habit."
+  ;; :group 'org-gtd-organize
+  ;; :type 'function
+  ;; :package-version '(org-gtd . "3.0.0")
+  )
 
 (defun org-gtd-habit (&optional repeater)
   "Organize and refile item at point as a calendar item.
@@ -71,7 +71,7 @@ determine how often you'll be reminded of this habit."
     (org-entry-put (point) "STYLE" "habit"))
   (setq-local org-gtd--organize-type 'habit)
   (org-gtd-organize-apply-hooks)
-  (org-gtd--refile org-gtd-habit org-gtd-habit-template))
+  (org-gtd-refile--do org-gtd-habit org-gtd-habit-template))
 
 (defun org-gtd-habit-create (topic repeater)
   "Automatically create a habit in the GTD flow.

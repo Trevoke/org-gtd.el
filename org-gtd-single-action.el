@@ -39,17 +39,17 @@
 :END:
 " org-gtd-action))
 
-(defcustom org-gtd-organize-single-action-func
-  #'org-gtd-single-action--apply
-  "Function called when item at point is a single next action."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
+(defconst org-gtd-single-action-func #'org-gtd-single-action--apply
+  "Function called when organizing item at point as a single next action."
+  ;; :group 'org-gtd-organize
+  ;; :type 'function
+  ;; :package-version '(org-gtd . "3.0.0")
+  )
 
 (defun org-gtd-single-action ()
   "Organize, decorate and refile item at point as a single action."
   (interactive)
-  (org-gtd-organize--call org-gtd-organize-single-action-func))
+  (org-gtd-organize--call org-gtd-single-action-func))
 
 (defun org-gtd-single-action--apply ()
   "Item at point is a one-off action, ready to be executed."
@@ -57,7 +57,7 @@
   (org-todo org-gtd-next)
   (setq-local org-gtd--organize-type 'single-action)
   (org-gtd-organize-apply-hooks)
-  (org-gtd--refile org-gtd-action org-gtd-action-template))
+  (org-gtd-refile--do org-gtd-action org-gtd-action-template))
 
 (defun org-gtd-single-action-create (topic)
   "Automatically create a delegated task in the GTD flow.

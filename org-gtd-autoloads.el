@@ -27,7 +27,7 @@ This assumes all GTD files are also agenda files." t nil)
 (autoload 'org-gtd-engage-grouped-by-context "org-gtd-agenda" "\
 Show all `org-gtd-next' actions grouped by context (tag prefixed with @)." t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-agenda" '("org-gtd-agenda-")))
+(register-definition-prefixes "org-gtd-agenda" '("org-gtd-agenda-"))
 
 ;;;***
 
@@ -149,7 +149,7 @@ Delegate item at point on agenda view." t nil)
 
 (function-put 'org-gtd-delegate-agenda-item 'command-modes '(org-agenda-mode))
 
-(register-definition-prefixes "org-gtd-delegate" '("org-gtd-"))
+(register-definition-prefixes "org-gtd-delegate" '("org-gtd-delegate"))
 
 ;;;***
 
@@ -186,7 +186,7 @@ Delegate item at point on agenda view." t nil)
 ;;;;;;  0 0 0))
 ;;; Generated autoloads from org-gtd-incubate.el
 
-(register-definition-prefixes "org-gtd-incubate" '("org-gtd-"))
+(register-definition-prefixes "org-gtd-incubate" '("org-gtd-incubate"))
 
 ;;;***
 
@@ -270,7 +270,9 @@ With point on topmost project heading, mark all undone tasks canceled." t nil)
 (autoload 'org-gtd-project-cancel-from-agenda "org-gtd-projects" "\
 Cancel the project that has the highlighted task." t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-projects" '("org-")))
+(function-put 'org-gtd-project-cancel-from-agenda 'command-modes '(org-agenda-mode))
+
+(register-definition-prefixes "org-gtd-projects" '("org-"))
 
 ;;;***
 
@@ -278,7 +280,7 @@ Cancel the project that has the highlighted task." t nil)
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from org-gtd-quick-action.el
 
-(register-definition-prefixes "org-gtd-quick-action" '("org-gtd-"))
+(register-definition-prefixes "org-gtd-quick-action" '("org-gtd-quick-action"))
 
 ;;;***
 
@@ -295,7 +297,7 @@ TYPE is the org-gtd action type.  BODY is the rest of the code.
 
 (function-put 'with-org-gtd-refile 'lisp-indent-function '1)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-refile" '("org-gtd-")))
+(register-definition-prefixes "org-gtd-refile" '("org-gtd-refile-"))
 
 ;;;***
 
@@ -316,7 +318,7 @@ mostly of value for testing purposes.
 (autoload 'org-gtd-review-stuck-projects "org-gtd-review" "\
 Show all projects that do not have a next action." t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-review" '("org-gtd-review-stuck-")))
+(register-definition-prefixes "org-gtd-review" '("org-gtd-review-stuck-"))
 
 ;;;***
 
@@ -338,7 +340,7 @@ Show all projects that do not have a next action." t nil)
 ;;;### (autoloads nil "org-gtd-trash" "org-gtd-trash.el" (0 0 0 0))
 ;;; Generated autoloads from org-gtd-trash.el
 
-(register-definition-prefixes "org-gtd-trash" '("org-gtd-"))
+(register-definition-prefixes "org-gtd-trash" '("org-gtd-trash"))
 
 ;;;***
 
@@ -346,7 +348,7 @@ Show all projects that do not have a next action." t nil)
 ;;;;;;  0 0 0))
 ;;; Generated autoloads from org-gtd-upgrades.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-upgrades" '("org-gtd-upgrade")))
+(register-definition-prefixes "org-gtd-upgrades" '("org-gtd-upgrade"))
 
 ;;;***
 

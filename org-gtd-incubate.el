@@ -40,12 +40,12 @@
 " org-gtd-incubate)
   "Template for the GTD someday/maybe list.")
 
-(defcustom org-gtd-organize-incubate-func
-  #'org-gtd-incubate--apply
-  "Function called when item at point is to be incubated."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
+(defconst org-gtd-incubate-func #'org-gtd-incubate--apply
+  "Function called when organizing item as incubated."
+  ;; :group 'org-gtd-organize
+  ;; :type 'function
+  ;; :package-version '(org-gtd . "3.0.0")
+  )
 
 (defun org-gtd-incubate (&optional reminder-date)
   "Decorate, organize and refile item at point as incubated.
@@ -54,7 +54,7 @@ If you want to call this non-interactively,
 REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
   (interactive)
   (org-gtd-organize--call
-   (apply-partially org-gtd-organize-incubate-func
+   (apply-partially org-gtd-incubate-func
                     reminder-date)))
 
 (defun org-gtd-incubate--apply (&optional reminder-date)
@@ -71,7 +71,7 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
       (insert (format "<%s>" date))))
   (setq-local org-gtd--organize-type 'incubated)
   (org-gtd-organize-apply-hooks)
-  (org-gtd--refile org-gtd-incubate org-gtd-incubate-template))
+  (org-gtd-refile--do org-gtd-incubate org-gtd-incubate-template))
 
 (defun org-gtd-incubate-create (topic reminder-date)
   "Automatically create a delegated task in the GTD flow.

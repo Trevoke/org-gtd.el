@@ -31,17 +31,17 @@
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
 
-(defcustom org-gtd-knowledge-func
-  #'org-gtd-knowledge--apply
+(defconst org-gtd-knowledge-func #'org-gtd-knowledge--apply
   "Function called when item at point is knowledge to be stored.
 Note that this function is used inside loops,for instance to process the inbox,
 so if you have manual steps you need to take when storing a heading
 as knowledge, take them before calling this function
 \(for instance, during inbox processing, take the manual steps during the
 clarify step, before you call `org-gtd-organize')."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
+  ;; :group 'org-gtd-organize
+  ;; :type 'function
+  ;; :package-version '(org-gtd . "3.0.0")
+  )
 
 (defun org-gtd-knowledge ()
   "Decorate, organize and refile item at point as knowledge."

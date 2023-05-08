@@ -25,7 +25,7 @@
        (with-current-buffer temp-buffer
          (org-mode)
          (insert "* foobar")
-         (org-gtd--refile org-gtd-projects org-gtd-projects-template))
+         (org-gtd-refile--do org-gtd-projects org-gtd-projects-template))
 
        (with-current-buffer (org-gtd--default-file)
          (expect (ogt--current-buffer-raw-text) :to-match "foobar"))
@@ -73,7 +73,7 @@
           (point-min)
           (with-simulated-input
            "AdditionalHeading RET"
-           (org-gtd--refile org-gtd-projects org-gtd-projects-template)))
+           (org-gtd-refile--do org-gtd-projects org-gtd-projects-template)))
 
         (expect (with-current-buffer new-buffer (ogt--current-buffer-raw-text))
                 :to-match

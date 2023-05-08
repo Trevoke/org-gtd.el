@@ -57,7 +57,7 @@ the items once they have been processed and add them to that list.
 
 Once you have your ground items managed, you might like to set the variable
 `org-gtd-areas-of-focus' and add `org-gtd-set-area-of-focus' to these hooks."
-  :group 'org-gtd
+  :group 'org-gtd-organize
   :package-version '(org-gtd . "1.0.4")
   :type 'hook
   :options '(org-set-tags-command org-set-effort org-priority))

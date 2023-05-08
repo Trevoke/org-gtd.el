@@ -107,7 +107,7 @@ planning keyword in `org-mode'."
     (setq org-map-continue-from (- (org-element-property :begin
                                                          (org-element-at-point))
                                    1))
-    (org-gtd--refile org-gtd-habit org-gtd-habit-template)))
+    (org-gtd-refile--do org-gtd-habit org-gtd-habit-template)))
 
 (defun org-gtd-upgrades--delegated-item-p ()
   "Return t if item at point is delegated."

@@ -30,12 +30,12 @@
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
 
-(defcustom org-gtd-organize-quick-action-func
-  #'org-gtd-quick-action--apply
-  "Function called when item at point was quick action."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
+(defconst org-gtd-quick-action-func #'org-gtd-quick-action--apply
+  "Function called when organizing item at point as quick action."
+  ;; :group 'org-gtd-organize
+  ;; :type 'function
+  ;; :package-version '(org-gtd . "3.0.0")
+  )
 
 (defun org-gtd-quick-action--apply ()
   "Process GTD inbox item by doing it now."
@@ -47,7 +47,7 @@
 (defun org-gtd-quick-action ()
   "Organize, decorate and refile item at point as a quick action."
   (interactive)
-  (org-gtd-organize--call org-gtd-organize-quick-action-func))
+  (org-gtd-organize--call org-gtd-quick-action-func))
 
 (provide 'org-gtd-quick-action)
 ;;; org-gtd-quick-action.el ends here

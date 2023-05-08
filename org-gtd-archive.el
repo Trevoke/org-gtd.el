@@ -30,8 +30,12 @@
 (require 'org-gtd-core)
 (require 'org-gtd-agenda)
 
-(defcustom org-gtd-archive-location
-  #'org-gtd-archive-location-func
+(defgroup org-gtd-archive nil
+  "How to archive completed / canceled items."
+  :package-version '(org-gtd . "3.0.0")
+  :group 'org-gtd)
+
+(defcustom org-gtd-archive-location #'org-gtd-archive-location-func
   "Function to generate archive location for org gtd.
 
 That is to say, when items get cleaned up from the active files, they will go
@@ -44,7 +48,7 @@ org-gtd's archive behavior.
 This function has an arity of zero.  By default this generates a file
 called gtd_archive_<currentyear> in `org-gtd-directory' and puts the entries
 into a datetree."
-  :group 'org-gtd
+  :group 'org-gtd-archive
   :type 'sexp
   :package-version '(org-gtd . "2.0.0"))
 

@@ -41,16 +41,16 @@
   "Function that is called to read in the Person the task is delegated to.
 
 Needs to return a string that will be used as the persons name."
-  :group 'org-gtd
+  :group 'org-gtd-organize
   :package-version '(org-gtd . "2.3.0")
   :type 'function )
 
-(defcustom org-gtd-organize-delegate-func
-  #'org-gtd-delegate--apply
-  "Function called when item at at point is an action delegated to someone else."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
+(defconst org-gtd-delegate-func #'org-gtd-delegate--apply
+  "Function called when organizing item at at point as delegated."
+  ;; :group 'org-gtd-organize
+  ;; :type 'function
+  ;; :package-version '(org-gtd . "3.0.0")
+  )
 
 (defun org-gtd-delegate (&optional delegated-to checkin-date)
   "Organize and refile item at point as a delegated item.
@@ -60,7 +60,7 @@ and CHECKIN-DATE as the YYYY-MM-DD string of when you want `org-gtd' to remind
 you if you want to call this non-interactively."
   (interactive)
   (org-gtd-organize--call
-   (apply-partially org-gtd-organize-delegate-func
+   (apply-partially org-gtd-delegate-func
                     delegated-to
                     checkin-date)))
 
@@ -73,7 +73,7 @@ you if you want to call this non-interactively."
   (org-gtd-delegate-item-at-point delegated-to checkin-date)
   (setq-local org-gtd--organize-type 'delegated)
   (org-gtd-organize-apply-hooks)
-  (org-gtd--refile org-gtd-action org-gtd-action-template))
+  (org-gtd-refile--do org-gtd-action org-gtd-action-template))
 
 ;;;###autoload
 (defun org-gtd-delegate-item-at-point (&optional delegated-to checkin-date)

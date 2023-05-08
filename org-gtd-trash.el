@@ -29,17 +29,17 @@
 
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 
-(defcustom org-gtd-organize-trash-func
-  #'org-gtd-trash--apply
-  "Function called when  item at point is to be discarded."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
+(defconst org-gtd-trash-func #'org-gtd-trash--apply
+  "Function called when organizing item at point as trash."
+  ;; :group 'org-gtd-organize
+  ;; :type 'function
+  ;; :package-version '(org-gtd . "3.0.0")
+  )
 
 (defun org-gtd-trash ()
   "Organize and refile item at point as trash."
   (interactive)
-  (org-gtd-organize--call org-gtd-organize-trash-func))
+  (org-gtd-organize--call org-gtd-trash-func))
 
 (defun org-gtd-trash--apply ()
   "Mark GTD inbox item as cancelled and move it to the org-gtd task archives."

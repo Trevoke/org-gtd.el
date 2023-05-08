@@ -28,12 +28,13 @@
 (require 'org)
 
 (require 'org-gtd-core)
+(require 'org-gtd-horizons)
 (require 'org-gtd-organize)
 
 (defcustom org-gtd-areas-of-focus '("Home" "Health" "Family" "Career")
   "The current major areas in your life where you don't want to drop balls."
   :type 'list
-  :group 'org-gtd
+  :group 'org-gtd-horizons
   :package-version '(org-gtd . "3.0.0"))
 
 (defun org-gtd-areas-of-focus--set ()

@@ -35,22 +35,19 @@
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
 
-(defcustom org-gtd-organize-project-func
-  #'org-gtd-project-new--apply
-  "Function called when item at point is a project.
+(defconst org-gtd-project-func #'org-gtd-project-new--apply
+  "Function called when organizing item at point as a project."
+  ;; :group 'org-gtd-organize
+  ;; :type 'function
+  ;; :package-version '(org-gtd . "3.0.0")
+  )
 
-You *probably* should not change this from the default, as a lot of fiddly bits
-depend on the way org-gtd structures and organizes the projects."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
-
-(defcustom org-gtd-organize-add-to-project-func
-  #'org-gtd-project-extend--apply
-  "Function called when item at point is a new task in an existing project."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
+(defconst org-gtd-add-to-project-func #'org-gtd-project-extend--apply
+  "Function called when organizing item at point as a new task in a project."
+  ;; :group 'org-gtd-organize
+  ;; :type 'function
+  ;; :package-version '(org-gtd . "3.0.0")
+  )
 
 (defconst org-gtd-project-headings
   "+LEVEL=2&+ORG_GTD=\"Projects\""
@@ -126,12 +123,12 @@ instead.")
 (defun org-gtd-project-new ()
   "Organize, decorate and refile item as a new project."
   (interactive)
-  (org-gtd-organize--call org-gtd-organize-project-func))
+  (org-gtd-organize--call org-gtd-project-func))
 
 (defun org-gtd-project-extend ()
   "Organize, decorate and refile item as a new task in an existing project."
   (interactive)
-  (org-gtd-organize--call org-gtd-organize-add-to-project-func))
+  (org-gtd-organize--call org-gtd-add-to-project-func))
 
 (defun org-gtd-project-new--apply ()
   "Process GTD inbox item by transforming it into a project.
@@ -155,7 +152,7 @@ Refile to `org-gtd-actionable-file-basename'."
     (org-end-of-line))
   (insert " [/]")
   (org-update-statistics-cookies t)
-  (org-gtd--refile org-gtd-projects org-gtd-projects-template))
+  (org-gtd-refile--do org-gtd-projects org-gtd-projects-template))
 
 (defun org-gtd-project-extend--apply ()
   "Refile the org heading at point under a chosen heading in the agenda files."

@@ -28,12 +28,17 @@
 
 (require 'org-gtd-files)
 
+(defgroup org-gtd-horizons nil
+  "Variables handling GTD horizons-related logic."
+  :package-version '(org-gtd . "3.0.0")
+  :group 'org-gtd)
+
 (defcustom org-gtd-horizons-file "horizons.org"
   "File holding your GTD horizons.
 
 This may get displayed during item clarification for context and focus.
 This file must be in the `org-gtd-directory'."
-  :group 'org-gtd
+  :group 'org-gtd-horizons
   :package-version '(org-gtd . "3.0")
   :type 'file)
 

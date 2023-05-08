@@ -39,15 +39,15 @@
 :END:
 " org-gtd-calendar))
 
-(defcustom org-gtd-calendar-func
-  #'org-gtd-calendar--apply
+(defconst org-gtd-calendar-func #'org-gtd-calendar--apply
   "Function called when item at point is a task that must happen on a given day.
 
 Keep this clean and don't load your calendar with things that aren't
 actually appointments or deadlines."
-  :group 'org-gtd-organize
-  :type 'function
-  :package-version '(org-gtd . "3.0.0"))
+  ;; :group 'org-gtd-organize
+  ;; :type 'function
+  ;; :package-version '(org-gtd . "3.0.0")
+  )
 
 (defun org-gtd-calendar (&optional appointment-date)
   "Decorate and refile item at point as a calendar item.
@@ -73,7 +73,7 @@ non-interactively."
       (insert (format "<%s>" date))))
   (setq-local org-gtd--organize-type 'calendar)
   (org-gtd-organize-apply-hooks)
-  (org-gtd--refile org-gtd-calendar org-gtd-calendar-template))
+  (org-gtd-refile--do org-gtd-calendar org-gtd-calendar-template))
 
 (defun org-gtd-calendar-create (topic appointment-date)
   "Automatically create a calendar task in the GTD flow.
