@@ -19,7 +19,7 @@ Org GTD is an attempt to implement the GTD flow described in the GTD
 book as faithfully as possible.
 
 #+TEXINFO: @noindent
-This manual is for Org GtD version 2.2
+This manual is for Org GtD version 3.0
 
 :END:
 * Copying
@@ -646,12 +646,12 @@ Since Org provides the agenda, it is a convenient base of operations for interac
 
 Here are the actions available to you:
 
-- ~M-x org-gtd-agenda-cancel-project~ :: When the point is on a project action, this command will cancel the remaining actions in the project.
-- ~M-x org-gtd-agenda-delegate~ :: When the point is on an action, this will properly delegate the action to someone else.
-- ~M-x org-gtd-agenda-projectify~ :: This is intended to be used on an incubated item that has come up. Behavior in other situations has not been tested. This will properly let you transform an incubated item into a project.
+- ~M-x org-gtd-delegate-agenda-item~ :: When the point is on an action, this will properly delegate the action to someone else.
+- ~M-x org-gtd-project-cancel-from-agenda~ :: When the point is on a project action, this command will cancel the remaining actions in the project.
+- ~M-x org-gtd-clarify-agenda-item~ :: If you would like to clarify and organize an item through the agenda view, for whatever reason, this is your entry point.
 
 *** Defining your own agenda views
-You can define your own agenda views by defining your own functions like shown below, where "x" is whatever your defined key is.
+You can define your own agenda views by defining your own functions like shown below, where =x= is whatever your defined key is.
 
 #+begin_src elisp
   (defun my-agenda ()
@@ -663,6 +663,14 @@ You can define your own agenda views by defining your own functions like shown b
 :PROPERTIES:
 :CUSTOM_ID: hooks-framework
 :END:
+Adding useful metadata to the tasks allows you to enhance the agenda view to make it more useful to you, whether it be effort, tags, priority, or any other amount of information you might like.
+
+This being said, different types of tasks or items are not even created equal. For instance, there may be metadata you want to add to a project heading but not its tasks, or to a calendar item and not to a trash item.
+
+Org GTD therefore provides a helper function, ~org-gtd-organize-type-member-p~, which you can use when creating your own hooks. The function takes one argument, a list of types (provided in the function's documentation).
+When called as part of a hook, this function will check a buffer-local variable called ~org-gtd--organize-type~, managed by Org GTD, to determine truthiness.
+
+For an example, see the source code for ~org-gtd-areas-of-focus--set~, which will not run if the task being organized is a project task, trash, knowledge, or a quick action.
 * Troubleshooting
 ** Finding lost tasks
 Sometimes things break. The following functions will help you find these items:

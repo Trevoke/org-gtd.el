@@ -25,6 +25,8 @@
 ;;
 ;;; Code:
 
+(require 'org-gtd-delegate)
+
 (defun org-gtd-skip-AND (funcs)
   "Ensure all of the functions FUNCS want to skip the current entry."
   (let ((non-nil-funcs (seq-drop-while (lambda (x) (not (funcall x))) funcs)))
@@ -52,7 +54,7 @@
 (defun org-gtd-skip-unless-delegated ()
   "Skip entry unless it is delegated."
   (let ((subtree-end (save-excursion (org-end-of-subtree t))))
-    (if (org-entry-get (point) "DELEGATED_TO")
+    (if (org-entry-get (point) org-gtd-delegate-property)
         nil
       subtree-end)))
 

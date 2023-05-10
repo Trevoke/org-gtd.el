@@ -27,6 +27,7 @@
 
 (require 'org-habit)
 
+(require 'org-gtd-delegate)
 (require 'org-gtd-habit)
 
 (defun org-gtd-upgrade-v2-to-v3 ()
@@ -111,7 +112,7 @@ planning keyword in `org-mode'."
 
 (defun org-gtd-upgrades--delegated-item-p ()
   "Return t if item at point is delegated."
-  (and (org-entry-get (point) "DELEGATED_TO")
+  (and (org-entry-get (point) org-gtd-delegate-property)
        (string-equal (org-entry-get (point) "TODO") org-gtd-wait)))
 
 (defun org-gtd-upgrades--scheduled-item-p ()
