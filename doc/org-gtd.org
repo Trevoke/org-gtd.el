@@ -502,10 +502,17 @@ If you are a Doom Emacs user, then your configuration may look something like th
 :PROPERTIES:
 :DESCRIPTION: How Org GTD maps to the GTD flow
 :END:
-** org-mode building blocks for Org GTD
+** Org-mode building blocks for Org GTD
 This section introduces how Org GTD leverages org-mode.
 
 Org Gtd uses ~org-edna~ to automatically trigger state changes in projects, such that when you mark a NEXT item from a project as DONE, the next TODO in that project automatically becomes NEXT, such that the agenda is always up-to-date (you may need to refresh the agenda).
+
+Org GTD uses org keywords to figure out the relevant state of each task. By default, ~NEXT~, ~TODO~, ~WAIT~, ~CNCL~, and ~DONE~, though you can configure them.
+
+Org GTD uses the following properties:
+- ~ORG_GTD~ :: top-level property, used for simple filtering when it comes to agenda views
+- ~ORG_GTD_TIMESTAMP~ :: where the timestamp for appointments and other date-relevant actions is stored. It's separate from everything else org-mode related in order to allow you, the user, to use ~SCHEDULED~, ~DEADLINE~, or even plain timestamps as you see fit.
+- ~DELEGATED_TO~ :: used by a dependency, ~org-agenda-property~, to show the name of the person to whom the task is delegated in the agenda view.
 ** The GTD flow
 Here are the domain elements of GTD that we handle:
 *** Adding things to the inbox

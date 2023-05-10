@@ -50,10 +50,3 @@ https://orgmode.org/manual/In_002dbuffer-Settings.html
 ** calendar items no longer use SCHEDULED
 ** hook name has changed
 org-gtd-process-item-hooks -> org-gtd-organize-hooks
-* implementation
-| x | delegate      | WAIT       | ORG_GTD_TIMESTAMP, DELEGATED_TO | actions   |
-| x | single action | NEXT       | N/A                             | actions   |
-| x | calendar      | N/A        | ORG_GTD_TIMESTAMP               | calendar  |
-| x | habit         | NEXT, TODO | STYLE=habit, SCHEDULED          | habits    |
-| x | incubate      | N/A        | ORG_GTD_TIMESTAMP               | incubated |
-| x | projects      | NEXT, TODO | N/A                             | projects  |
