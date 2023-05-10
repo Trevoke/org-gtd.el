@@ -45,10 +45,12 @@ Org GTD is an attempt to implement the GTD flow described in the GTD
 book as faithfully as possible.
 
 @noindent
-This manual is for Org GtD version 2.2
+This manual is for Org GtD version 3.0
 @end ifnottex
 
 @menu
+* Summary::                      quick intro to GTD
+* What's new in 3.0: What's new in 30. 
 * Setting up Org GTD::
 * Using Org GTD::                How Org GTD maps to the GTD flow
 * Troubleshooting::
@@ -56,15 +58,28 @@ This manual is for Org GtD version 2.2
 @detailmenu
 --- The Detailed Node Listing ---
 
+What's new in 3.0
+
+* Minimum emacs version now 27.2: Minimum emacs version now 272. 
+* Organize menu has changed::
+* Easier to clarify more items::
+* Functions exist to create your own hooks::
+* Support habits::
+* Todo keywords can be customized::
+* Massive API changes::
+* Massive Data structure changes::
+* Include horizons::
+* You can create your own project templates and insert them while clarifying::
+
 Setting up Org GTD
 
-* Summary::                      quick intro to GTD
 * Upgrading::                    How to upgrade your local setup across major versions
 * Installing::                   Get Org GTD in your emacs
 * Configuring::                  Required and optional system configuration
 
 Upgrading
 
+* 3.0.0 <- 2.2.0: 300 <- 220. 
 * 2.2.0 <- 2.1.0: 220 <- 210. 
 * 2.1.0 <- 2.0.0: 210 <- 200. 
 * 2.0.0 <- 1.1.x: 200 <- 11x. 
@@ -87,56 +102,35 @@ Configuring
 
 Using Org GTD
 
+* Org-mode building blocks for Org GTD::
+* The GTD flow::
+* Automating through emacs::
+
+The GTD flow
+
 * Adding things to the inbox::
 * Processing the inbox::
+* Clarifying each item::
+* Organizing an item into the system::
 * Engaging with your GTD items::
+* Working with the GTD Horizons::
 * Cleaning up / archiving completed work::
-* Multiple files / refile targets::
-
-Processing the inbox
-
-* Projects::
-* Modify an existing project::
-* Quick action::
-* Trash::
-* Calendar::
-* Delegate::
-* Single action::
-* Archive::
-* Incubate::
-
-
-Engaging with your GTD items
-
-* Interacting with org-agenda::
-
-
-Multiple files / refile targets
-
-* New project heading::
-* Other headings::
+* Commands you can call on org-agenda::
+* Defining your own agenda views::
+* Adding your own hooks when organizing::
 
 
 Troubleshooting
 
+* Finding lost tasks::
 * Projects without a NEXT item::
 * I can't create a project when clarifying an inbox item!::
 
 @end detailmenu
 @end menu
 
-@node Setting up Org GTD
-@chapter Setting up Org GTD
-
-@menu
-* Summary::                      quick intro to GTD
-* Upgrading::                    How to upgrade your local setup across major versions
-* Installing::                   Get Org GTD in your emacs
-* Configuring::                  Required and optional system configuration
-@end menu
-
 @node Summary
-@section Summary
+@chapter Summary
 
 This package tries to replicate as closely as possible the GTD workflow (see diagram below).
 
@@ -185,16 +179,333 @@ This package provides a system that allows you to capture incoming things into a
                  Waiting For           Next Actions                 Calendar
 @end example
 
+@node What's new in 30
+@chapter What's new in 3.0
+
+@menu
+* Minimum emacs version now 27.2: Minimum emacs version now 272. 
+* Organize menu has changed::
+* Easier to clarify more items::
+* Functions exist to create your own hooks::
+* Support habits::
+* Todo keywords can be customized::
+* Massive API changes::
+* Massive Data structure changes::
+* Include horizons::
+* You can create your own project templates and insert them while clarifying::
+@end menu
+
+@node Minimum emacs version now 272
+@section Minimum emacs version now 27.2
+
+It became too difficult for me to support 27.1.
+
+@node Organize menu has changed
+@section Organize menu has changed
+
+@itemize
+@item
+Habits have their place now (h)
+@item
+What used to be called "archive" is now called "knowledge" (k)
+@item
+Modify project is now "Add to project" (a)
+@end itemize
+
+@node Easier to clarify more items
+@section Easier to clarify more items
+
+There's now two more powerful commands you can use to clarify almost anything:
+@itemize
+@item
+@code{org-gtd-clarify-item}
+@item
+@code{org-gtd-clarify-agenda-item}
+@end itemize
+
+These both allow you to enter a one-off clarify/organize flow.
+
+@node Functions exist to create your own hooks
+@section Functions exist to create your own hooks
+
+Make GTD truly a part of your emacs experience!
+These functions take various arguments (check the documentation in emacs) and automatically add something to your org-gtd. This would be useful after sending an email, for instance.
+Please share your own hooks as issues in Github or in the discord so we can create a community library!
+@itemize
+@item
+@code{org-gtd-habit-create}
+@item
+@code{org-gtd-calendar-create}
+@item
+@code{org-gtd-delegate-create}
+@item
+@code{org-gtd-incubate-create}
+@item
+@code{org-gtd-single-action-create}
+@end itemize
+
+@node Support habits
+@section Support habits
+
+Org mode's habits now have a specific place here.
+
+@node Todo keywords can be customized
+@section Todo keywords can be customized
+
+@ref{Tell me all the levers I can pull, , See all the configuration options}
+
+@node Massive API changes
+@section Massive API changes
+
+The package domain now is a better match for the domain language of GTD@.
+
+Functions use the words @samp{capture}, @samp{process}, @samp{clarify}, @samp{organize}, @samp{review}.
+
+@node Massive Data structure changes
+@section Massive Data structure changes
+
+@itemize
+@item
+SCHEDULED and DEADLINE are intended to be used for things that have to start and things that have to end, respectively. V2 abused them, v3 is more respectful of how org-mode wants to work.
+@item
+We use our own timestamp property. For compatibility with orgzly, we currently duplicate the timestamp into the body.
+@end itemize
+
+@node Include horizons
+@section Include horizons
+
+@itemize
+@item
+They can be displayed while clarifying.
+@item
+There's an optional organize-hook for areas of focus
+@item
+There's an agenda view for areas of focus
+@end itemize
+
+@node You can create your own project templates and insert them while clarifying
+@section You can create your own project templates and insert them while clarifying
+
+@ref{Options and commands related to clarification}
+
+@node Setting up Org GTD
+@chapter Setting up Org GTD
+
+@menu
+* Upgrading::                    How to upgrade your local setup across major versions
+* Installing::                   Get Org GTD in your emacs
+* Configuring::                  Required and optional system configuration
+@end menu
+
 @node Upgrading
 @section Upgrading
 
 If you are installing and not upgrading, you can skip this section entirely and just go to the next section, @ref{Installing}.
 
 @menu
+* 3.0.0 <- 2.2.0: 300 <- 220. 
 * 2.2.0 <- 2.1.0: 220 <- 210. 
 * 2.1.0 <- 2.0.0: 210 <- 200. 
 * 2.0.0 <- 1.1.x: 200 <- 11x. 
 @end menu
+
+@node 300 <- 220
+@subsection 3.0.0 <- 2.2.0
+
+There's a lot here, so you may want to make yourself some tea. We have to cover support for org habits, upgrading data, key changes in the configuration, a change in the menu, and the rest of the API changes. And once that's done, you should head back to the @ref{What's new in 30, , What's new in 3.0} section to see what else is available for you!
+
+@itemize
+@item
+@anchor{A note for doom emacs users}A note for doom emacs users
+
+
+Beta testers using doom emacs found they needed to do a fully clean install. The regular upgrades did not work. We could not find a clean fix. We suspect this is related to org-mode being a very complex beast, but we're not sure.
+
+@item
+@anchor{Support for org habits}Support for org habits
+
+
+For the sake of keeping the @samp{org-agenda-custom-commands} as simple as possible, habits are now stored under headings with the property @code{ORG_GTD: Habits}. The same rules for refiling apply to these headings.
+
+@item
+@anchor{Upgrading data}Upgrading data
+
+
+Some not-inconsequential data structure changes happened under the hood. To keep using @samp{org-gtd} you will need to upgrade your data, using @code{M-x org-gtd-upgrade-v2-to-v3}.
+@emph{Backups are always recommended, even though there are tests.}
+Note that if there are any habits managed by @samp{org-gtd v2} then they will be moved to a heading @code{* Habits}, in a file called @samp{org-gtd-tasks.org}, in @samp{org-gtd-directory}.
+
+@item
+@anchor{Key changes in configuration}Key changes in configuration
+
+
+Here's a table of the changes, with sample config change and explanations afterwards.
+@multitable {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem 2.0
+@tab 3.0
+@item @code{org-gtd-process-mode}
+@tab @code{org-gtd-clarify-mode}
+@item @code{org-gtd-process-map}
+@tab @code{org-gtd-clarify-map}
+@item @code{org-gtd-choose}
+@tab @code{org-gtd-organize}
+@item @code{org-gtd-process-item-hooks}
+@tab @code{org-gtd-organize-hooks}
+@item @code{org-gtd-capture-templates}
+@tab Now looks like @code{org-capture-templates}
+@item Projects :TRIGGER:
+@tab changed again (see below)
+@item @code{org-gtd-agenda-custom-config}
+@tab gone (see below)
+@item org file headers
+@tab Drop 'em (see below)
+@end multitable
+
+@itemize
+@item
+@anchor{Sample new config}Sample new config
+
+
+@lisp
+(use-package org-gtd
+  :after org
+  :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
+                   :commit "3.0.0" :upgrade t)
+  :demand t
+  :custom
+  (org-gtd-directory "~/org-gtd")
+  (org-edna-use-inheritance t)
+  (org-gtd-organize-hooks '(org-gtd-set-area-of-focus org-set-tags-command))
+  :config
+  (org-edna-mode)
+  :bind
+  (("C-c d c" . org-gtd-capture)
+   ("C-c d e" . org-gtd-engage)
+   ("C-c d p" . org-gtd-process-inbox)
+   :map org-gtd-clarify-map
+   ("C-c c" . org-gtd-organize)))
+@end lisp
+
+@item
+@anchor{Projects trigger}Projects trigger
+
+
+The new trigger line looks like this:
+
+@code{:TRIGGER: org-gtd-next-project-action org-gtd-update-project-task!}
+
+This allows us to define these functions as flexibly as we want, in the future, and
+that will mean we can expand what it means to be a project in the future.
+
+@item
+@anchor{@code{org-gtd-capture-templates}}@code{org-gtd-capture-templates}
+
+
+Most of you users have not had to touch this, so you probably won't have a use for this section of the upgrade documentation.
+The new data structure is now a complete parallel for the @code{org-capture-templates} structure, so you can see how to structure it by looking at the help file for that.
+
+The key elements are still the same, however:
+@itemize
+@item
+the template has to start with a single asterisk
+@item
+the entry has to be @code{entry  (file ,#'org-gtd-inbox-path)}
+@end itemize
+
+@item
+@anchor{@code{org-gtd-agenda-custom-config}}@code{org-gtd-agenda-custom-config}
+
+
+This customization is no longer in use. It wasn't an easy decision to make, but I have to make the way for bigger, future changes in org-gtd over the next major releases.
+
+If you have an existing @code{org-gtd-agenda-custom-commands} setup, then you can do something like this to keep using it. In short, for now, create your own function, and wrap the definition with the @code{with-org-gtd-context} macro. You can see the source code of @code{org-gtd-engage} for an example.
+
+@lisp
+; only so I refer to it with a name in this snippet
+(setq my-commands org-gtd-agenda-custom commands)
+
+(defun my-org-gtd-engage ()
+  (interactive)
+  (with-org-gtd-context
+      (let ((org-agenda-custom-commands my-commands))
+        ; "g" is what the previous command used, replace with what you need
+        (org-agenda nil "g"))))
+@end lisp
+
+@item
+@anchor{Dropping the org file headers}Dropping the org file headers
+
+
+The TODO keywords are now customizable (see @code{M-x customize-group org-gtd RET}), while they were hardcoded in v2. Those hardcoded values are now the defaults, but you should remove the hardcoded values anyway, so remove the following line:
+
+@samp{#+TODO: NEXT(n) TODO(t) WAIT(w@@) | DONE(d) CNCL(c@@)}
+@end itemize
+
+@item
+@anchor{A change in the menu}A change in the menu
+
+
+@itemize
+@item
+Habits have their place (@samp{h})
+@item
+What used to be called "archive" is now called "knowledge" (@samp{k})
+@item
+Modify project is now "Add to project" (@samp{a})
+@end itemize
+
+Do note that that "a" got completely reassigned! If you used to use it for items that went into your personal knowledge management system, you'll need to retrain yourself.
+
+I'm very sorry about this. In the future, you'll be able to customize this UI@.
+
+@item
+@anchor{Rest of API changes}Rest of API changes
+
+
+@itemize
+@item
+@anchor{@code{org-gtd-delegate} is now @code{org-gtd-delegate-item-at-point}}@code{org-gtd-delegate} is now @code{org-gtd-delegate-item-at-point}
+
+
+This is the function to call if you want to delegate without refiling.
+
+@item
+@anchor{@code{org-gtd-agenda-projectify} is now @code{just org-gtd-clarify-agenda-item}}@code{org-gtd-agenda-projectify} is now @code{just org-gtd-clarify-agenda-item}
+
+
+V3 means you can freely clarify and organize anything in the agenda with the above function.
+
+@item
+@anchor{@code{org-gtd-agenda-delegate} is now @code{org-gtd-delegate-agenda-item}}@code{org-gtd-agenda-delegate} is now @code{org-gtd-delegate-agenda-item}
+
+
+The nomenclature changes here because of an effort to, over time, define a better language for GTD, slicing vertically through org-mode features.
+
+@item
+@anchor{@code{org-gtd-cancel-project} is now @code{org-gtd-project-cancel}}@code{org-gtd-cancel-project} is now @code{org-gtd-project-cancel}
+
+
+Same reason as above.
+
+@item
+@anchor{@code{org-gtd-agenda-cancel-project} is now @code{org-gtd-project-cancel-from-agenda}}@code{org-gtd-agenda-cancel-project} is now @code{org-gtd-project-cancel-from-agenda}
+
+
+Same reason as above.
+
+@item
+@anchor{@code{org-gtd-show-stuck-projects} is now @code{org-gtd-review-stuck-projects}}@code{org-gtd-show-stuck-projects} is now @code{org-gtd-review-stuck-projects}
+
+
+Same reason as above.
+@end itemize
+
+@item
+@anchor{That's it!}That's it!
+
+
+Go check out @ref{What's new in 30, , What's new in 3.0} as well as @ref{Configuring}.
+@end itemize
 
 @node 220 <- 210
 @subsection 2.2.0 <- 2.1.0
@@ -475,7 +786,7 @@ Note, you should still head over to the @ref{Recommended key bindings} section.
 
 @itemize
 @item
-@anchor{org-edna}org-edna
+@anchor{Configuring org-edna}Configuring org-edna
 
 
 package: @uref{https://www.nongnu.org/org-edna-el/}
@@ -513,30 +824,56 @@ Make sure you also read about sub-package configuration: @ref{Required configura
 @table @asis
 @item @code{org-gtd-directory}
 set this to a directory. @samp{org-gtd} will look for all its files in this directory.
+@item @code{org-gtd-next}
+Keyword to use for actions ready to be taken
+@item @code{org-gtd-next-suffix}
+org-mode keyword suffix (e.g. !, @@)
+@item @code{org-gtd-todo}
+Keyword to use for actions not yet ready
+@item @code{org-gtd-todo-suffix}
+org-mode keyword suffix (e.g. !, @@)
+@item @code{org-gtd-wait}
+Keyword to use for blocked actions (e.g. delegated)
+@item @code{org-gtd-wait-suffix}
+org-mode keyword suffix (e.g. !, @@)
+@item @code{org-gtd-done}
+Keyword to use for completed actions
+@item @code{org-gtd-done-suffix}
+org-mode keyword suffix (e.g. !, @@)
+@item @code{org-gtd-canceled}
+Keyword to use for actions that won't be done
+@item @code{org-gtd-canceled-suffix}
+org-mode keyword suffix (e.g. !, @@)
 @item @code{org-gtd-capture-templates}
-(!note: take care when changing this) This defines the pre-filled text that will show up when capturing an item to the inbox. This is a simplified version of @code{org-capture-templates}. If you want to modify it, you should be able to get away with only reading the documentation for this one variable. The only recommendation is that the template string must define an org-mode top-level heading. That is to say, the first two characters must be a single asterisk followed by a space: "* ". @ref{Adding things to the inbox}.
-@item @code{org-gtd-agenda-custom-commands}
-(!note: take care when changing this) this is the exact same thing as @code{org-agenda-custom-commands}. @samp{Org-gtd} requires that the key @samp{g} be bound to a display view, so if you want to change what @samp{org-gtd} displays, make sure you leave the @samp{g} alone (or modify that one). @ref{Engaging with your GTD items}.
+(!note: take care when changing this) This defines the pre-filled text that will show up when capturing an item to the inbox. The only requirements are that the template string must define an org-mode top-level heading, and that the entry point to the inbox.  That is to say, the first two characters must be a single asterisk followed by a space: @code{"* "}, and the entry type must be like this: @samp{entry  (file ,#'org-gtd-inbox-path)}. @ref{Adding things to the inbox}.
 @item @code{org-reverse-note-order}
-(@samp{org-mode} variable) set this to @code{t} to add new items to the top of project tasks and to @code{nil} to add new items to the bottom of project tasks. Most relevant, see @ref{Projects} and @ref{Modify an existing project}.
-@item @code{org-gtd-process-item-hooks}
-this is a list of functions that you can use to decorate each item when you clarify it. For instance, you could add a function to set the effort, or the priority, or some category, etc. By default it has only one function, which lets you add tags. You could remove this function if you wanted. @ref{Processing the inbox}.
+(@samp{org-mode} variable) set this to @code{t} to add new items to the top of project tasks and to @code{nil} to add new items to the bottom of project tasks when organizing an item as such.
+@item @code{org-gtd-organize-hooks}
+this is a list of functions that you can use to decorate each item when you clarify it. For instance, you could add a function to set the effort, or the priority, or some category, etc. By default it has only one function, which lets you add tags, but of course you can change this entirely. @ref{Organizing an item into the system, , Organizing an item}.
 @item @code{org-gtd-archive-location}
-variable that holds a function to generate the archive file. I made this choice primarily because I want to refile to an archive file suffixed with the year, and I'm @strong{just too lazy} to manually rename them once a year. The function has an arity of zero and generates an org-mode file+outline path. @ref{Cleaning up / archiving completed work}.
+Points to a function to generate the archive file dynamically. Default value generates a file suffixed with the current year. The function has an arity of zero and generates an org-mode file+outline path. @ref{Cleaning up / archiving completed work}.
 @item @code{org-gtd-refile-to-any-target}
-when @code{t}, @samp{org-gtd} will refile to the first target it finds, and create a target if it doesn't find one. When false, it will ask for confirmation before refiling. @ref{Multiple files / refile targets}.
+when @code{t}, @samp{org-gtd} will refile to the first target it finds, and create a target if it doesn't find one. When false, it will ask for confirmation before refiling. @ref{Refiling to the appropriate area}.
 @item @code{org-gtd-delegate-read-func}
 function that is used to prompt for a person a task is delegated to. Must return a string. By default this is set to @code{read-string}.
+@item @code{org-gtd-areas-of-focus}
+list of strings representing your areas of focus (horizon 2 in GTD).
+@item @code{org-gtd-clarify-show-horizons}
+When clarifying, do you want the horizons buffer to be shown by default, or do you prefer it hidden?
+@item @code{org-gtd-clarify-project-templates}
+Alist of strings: @code{project template name . project template} where there template is a series of tasks you may want to insert automatically, if you have a generic type of project that comes up a lot.
+@item @code{org-gtd-horizons-file}
+Name of the file, in @code{org-gtd-directory}, that will be displayed when the horizons buffer is displayed when clarifying.
 @end table
 @end itemize
 
 @node Recommended key bindings
 @subsection Recommended key bindings
 
-There's an important keymap you'll want to make the flow of processing the inbox smoother. To limit impact on your emacs configuration, there is a specific keymap you can use. The function you'll want to bind is @code{org-gtd-choose}. I suggest @code{C-c c}, as in the following example.
+There's an important keymap you'll want to make the flow of processing the inbox smoother. To limit impact on your emacs configuration, there is a specific keymap you can use. The function you'll want to bind is @code{org-gtd-organize}. I suggest @code{C-c c}, as in the following example.
 
 @lisp
-(define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose)
+(define-key org-gtd-clarify-map (kbd "C-c c") #'org-gtd-organize)
 @end lisp
 
 For other keybindings, do what you need. My bindings use @code{C-c d} as a prefix, i.e.:
@@ -559,115 +896,123 @@ If you are a Doom Emacs user, then your configuration may look something like th
 (use-package! org-gtd
   :after org
   :config
-  (org-edna-mode)
   (setq org-edna-use-inheritance t)
+  (org-edna-mode)
   (map! :leader
         (:prefix ("d" . "org-gtd")
          :desc "Capture"        "c"  #'org-gtd-capture
          :desc "Engage"         "e"  #'org-gtd-engage
          :desc "Process inbox"  "p"  #'org-gtd-process-inbox
          :desc "Show all next"  "n"  #'org-gtd-show-all-next
-         :desc "Stuck projects" "s"  #'org-gtd-show-stuck-projects))
-  (map! :map org-gtd-process-map
-        :desc "Choose" "C-c c" #'org-gtd-choose))
+         :desc "Stuck projects" "s"  #'org-gtd-review-stuck-projects))
+  (map! :map org-gtd-clarify-map
+        :desc "Organize this item" "C-c c" #'org-gtd-organize))
 @end lisp
 
 @node Using Org GTD
 @chapter Using Org GTD
 
-Here are the categories of actions from GTD that we have to be able to handle:
+@menu
+* Org-mode building blocks for Org GTD::
+* The GTD flow::
+* Automating through emacs::
+@end menu
 
-@itemize
-@item
-adding things to the inbox
-@item
-processing the inbox
-@item
-Engage with your GTD system
-@item
-cleaning up / archiving completed work
-@end itemize
+@node Org-mode building blocks for Org GTD
+@section Org-mode building blocks for Org GTD
 
-Other elements of GTD, such as reviews, are currently unimplemented: as the user, you can simply open the files to review things for now.
+This section introduces how Org GTD leverages org-mode.
+
+Org Gtd uses @code{org-edna} to automatically trigger state changes in projects, such that when you mark a NEXT item from a project as DONE, the next TODO in that project automatically becomes NEXT, such that the agenda is always up-to-date (you may need to refresh the agenda).
+
+Org GTD uses org keywords to figure out the relevant state of each task. By default, @code{NEXT}, @code{TODO}, @code{WAIT}, @code{CNCL}, and @code{DONE}, though you can configure them.
+
+Org GTD uses the following properties:
+@table @asis
+@item @code{ORG_GTD}
+top-level property, used for simple filtering when it comes to agenda views
+@item @code{ORG_GTD_TIMESTAMP}
+where the timestamp for appointments and other date-relevant actions is stored. It's separate from everything else org-mode related in order to allow you, the user, to use @code{SCHEDULED}, @code{DEADLINE}, or even plain timestamps as you see fit.
+@item @code{DELEGATED_TO}
+used by a dependency, @code{org-agenda-property}, to show the name of the person to whom the task is delegated in the agenda view.
+@end table
+
+@node The GTD flow
+@section The GTD flow
+
+Here are the domain elements of GTD that we handle:
 
 @menu
 * Adding things to the inbox::
 * Processing the inbox::
+* Clarifying each item::
+* Organizing an item into the system::
 * Engaging with your GTD items::
+* Working with the GTD Horizons::
 * Cleaning up / archiving completed work::
-* Multiple files / refile targets::
+* Commands you can call on org-agenda::
+* Defining your own agenda views::
+* Adding your own hooks when organizing::
 @end menu
 
 @node Adding things to the inbox
-@section Adding things to the inbox
+@subsection Adding things to the inbox
 
-The inbox is a file called @code{inbox.org} in the directory stored in the variable @code{org-gtd-directory}. By default this variable is @code{~/gtd}.
+The trip through GTD arguably begins by adding things to the inbox. The inbox is a file called @code{inbox.org} in the directory stored in the variable @code{org-gtd-directory}. By default this means the file will be @code{~/gtd/inbox.org}.
 
-Org GTD provides one function to capture items: @code{M-x org-gtd-capture}. In my setup I have this booked globally as such:
+Org GTD provides one function to capture items: @code{M-x org-gtd-capture}. In my setup I have this bound globally as such:
 
 @lisp
 (global-set-key "C-c d c" #'org-gtd-capture)
 @end lisp
 
-This function overrides @code{org-capture} and uses the variable @code{org-gtd-capture-templates} to define org-gtd-specific capture templates. By default it comes with two templates, one to just capture a new item, and one to capture an item with a link to the file where you were when you started the capture.
+This function uses the variable @code{org-gtd-capture-templates} to define org-gtd-specific capture templates. By default it comes with two templates, one to just capture a new item, and one to capture an item with a link to the file where you were when you started the capture.
+
+You can customize these templates as you see fit. In order to maintain proper functioning of org-gtd, however, there are two constraints:
+
+@enumerate
+@item
+the first two characters of the template string must be a single asterisk followed by a space: @code{"* "}
+@item
+the entry type must be like this: @samp{entry  (file ,#'org-gtd-inbox-path)}
+@end enumerate
 
 @node Processing the inbox
-@section Processing the inbox
+@subsection Processing the inbox
 
 Processing the inbox means taking everything in the inbox, one at a time, and refining/categorizing them so they are instantly useful when you are looking at available next / scheduled actions.
 
-You can start processing the inbox with @code{org-gtd-process-inbox}. This will select the inbox buffer and hide everything but the first item in the inbox, then give you control to refine it.
+You can start processing the inbox with @code{org-gtd-process-inbox}. This starts a looping behavior of clarifying each item in the inbox.
 
-When you are done refining it, call @code{M-x org-gtd-choose} (or hit your keybinding for it, see @ref{Recommended key bindings}). This will open a transient menu to let you choose how Org GTD should categorize this item.
+@node Clarifying each item
+@subsection Clarifying each item
 
-You have a number of possible choices for each item you process. Subsections will explain how Org GTD handles each one.
+Clarifying an item means editing and adding the information that will be most valuable to you to the item. Note that task-specific information, such as appointment date, or name of person to whom it is delegated, or even area of focus, will be added during the Organize step, so don't worry about these yet.
+
+@itemize
+@item
+@anchor{How to start clarifying}How to start clarifying
+
+
+Besides ending up in here automatically while processing the inbox, there's two more ways to enter the clarifying flow:
 
 @table @asis
-@item *[P]rojects
-This is a multi-step action. @ref{Projects}.
-@item *[M]odify a project
-Add current task to pre-existing project. @ref{Modify an existing project}.
-@item *[Q]uick action
-Less than 2 minutes. Do it now, then choose this to mark the item as DONΕ and archive it. @ref{Quick action}.
-@item @strong{[T]rash}
-Not actionable; not knowledge. @ref{Trash}.
-@item @strong{[C]alendar}
-Single action to be done at a given date or time. @ref{Calendar}.
-@item *[D]elegate
-Let someone else do this. @ref{Delegate}.
-@item @strong{[S]ingle action}
-This is a one-off to be done when possible. @ref{Single action}.
-@item @strong{[A]rchive}
-This is knowledge to be stored away. @ref{Archive}.
-@item @strong{[I]ncubate}
-no action now; review later. @ref{Incubate}.
+@item @code{org-gtd-clarify-item}
+call this from any org-mode heading to do a one-off clarification.
+@item @code{org-gtd-clarify-agenda-item}
+call this from the agenda view, if you have anything you want to re-clarify, or possibly clarify for the first time, from somewhere outside the inbox.
 @end table
 
-In addition you have @strong{[x]} for "exit early", which you can use to stop processing the inbox and restore emacs to its non-inbox-processing state.
+@item
+@anchor{data shape requirements}data shape requirements
 
-After the item-type-specific behavior, you will have the option to add custom decorations to each item, based on how you prefer to think about (filter, find, etc.) the items when you do GTD@.
 
-This process will continue, item after item, until you hit @strong{x} to exit early or until you run out of items to process.
+There's two general shapes you'll be looking for.
+Almost everything will look like a simple org-mode heading.
+For instance, @code{* Task desc}.
 
-The decorations (priority, tags, categories, etc.) are customizable as you desire and managed by @code{org-gtd-process-item-hooks}, a list of functions. By default there is one element in the list, to add tags to the item. You can add your own functions to this list, as long as the functions do not modify the text in any "custom" way, separate from what org-mode understands.
 
-@menu
-* Projects::
-* Modify an existing project::
-* Quick action::
-* Trash::
-* Calendar::
-* Delegate::
-* Single action::
-* Archive::
-* Incubate::
-@end menu
-
-@node Projects
-@subsection Projects
-
-A "project" in GTD is a finite set of steps after which a given task is complete. In Org GTD, this is defined as a top-level org heading with a set of second-level org headings. Those second-level headings represent the sequentially-ordered set of tasks to be executed before the project can be called complete.
-When the item you are editing is intended to be a project, create such a headline structure, like so:
+The only exception will be a project, that will look like a top-level heading for the project description with, underneath, a series of second-level headings representing each task to be executed sequentially before the project is complete.
 
 @example
 * Project heading
@@ -676,204 +1021,310 @@ When the item you are editing is intended to be a project, create such a headlin
 ** Third task
 @end example
 
-Then call @code{M-x org-gtd-choose} or hit your chosen keybinding, tell Org GTD you chose a project, and move on to the next item in the inbox.
-
-A project is defined as "completed" when all its tasks are marked as DONE@.
-A project is defined as "canceled" when its last task is marked as CNCL@.
-
-You can cancel a project by calling @code{org-gtd-agenda-cancel-project} from the agenda view, when the point is on the next task of the project.
-
-DO NOTE: it is surprisingly difficult to add a custom note when canceling, so if you want to add a note explaining why you canceled the project, you will have to do so manually.
-
-Projects will show up in the agenda, but only the current NEXT task.
-
-@node Modify an existing project
-@subsection Modify an existing project
-
-When you choose this, the package will do the following:
-@itemize
 @item
-refile this as a task inside the project of the project (first or last, depending on value of @code{org-reverse-note-order})
-@item
-adjust the TODO keywords of the project such that:
-@itemize
-@item
-all DONE or CNCL keywords are untouched
-@item
-there is exactly one WAIT or NEXT keyword
-@item
-all other keywords are TODO
-@end itemize
+@anchor{Options and commands related to clarification}Options and commands related to clarification
+
+
+The clarify buffers are @code{org-mode} buffers that use the minor mode @code{org-gtd-clarify-mode}. There is a keymap, @code{org-gtd-clarify-map}, that you can use to bind useful
+
+While clarifying, you may find it useful to see your GTD horizons. You can use:
+@table @asis
+@item @code{org-gtd-clarify-toggle-horizons-window}
+a function that toggles the display of the horizons buffer
+@item @code{org-gtd-clarify-show-horizons}
+a boolean variable defining whether the horizons window should be shown (t) or hidden (nil) by default when clarifying an item. See  @ref{Working with the GTD Horizons} for more details.
+@end table
+
+If you are clarifying a project, you may be interested in project templates:
+@table @asis
+@item @code{org-gtd-clarify-project-insert-template}
+a function that will ask you to choose a template to insert.
+@item @code{org-gtd-clarify-project-templates}
+an alist of the form @samp{(name . template)} where both name and template are strings. @samp{name} will be used in the interactive menu, and @samp{template} will be inserted in the buffer.
+@end table
 @end itemize
 
-You can go to that project yourself and readjust the order of the headings as necessary, and then you can go to that project's top heading ("Project heading" in example below) and execute @code{M-x org-gtd-projects-fix-todo-keywords-for-project-at-point}
+@node Organizing an item into the system
+@subsection Organizing an item into the system
+
+When you are done clarifying, call @code{M-x org-gtd-organize} (or hit your keybinding for it, see @ref{Recommended key bindings}). This will open a transient menu to let you choose how Org GTD should categorize this item.
+
+Organizing is broken up into three steps:
+@itemize
+@item
+Choosing a task type
+@item
+Applying hooks to add additional relevant information
+@item
+Refiling to the appropriate area
+@end itemize
+
+@itemize
+@item
+@anchor{Choosing a task type}Choosing a task type
+
+
+Here are the following task types you can choose.
+
+@table @asis
+@item *[P]rojects
+This is a multi-step action. In Org GTD, this is defined as a top-level org heading with a set of second-level org headings. Those second-level headings represent the sequentially-ordered set of tasks to be executed before the project can be called complete.
+@item *[A]dd to existing project
+Add current task to pre-existing project. See @code{org-reverse-note-order} to choose a default position (first or last) for this new task. You can always adjust this yourself later, then put your point on the project heading and call @code{org-gtd-projects-fix-todo-keywords-for-project-at-point} to have Org GTD clean it up for you.
+@item @strong{[C]alendar}
+Single action to be done at a given date or time. Org GTD will ask you for a date/time for this appointment.
+@item *[D]elegate
+Let someone else do this. Org GTD will ask you for a name to whom to delegate to and a date/time when to check up on the task with that person. You can customize @code{org-gtd-delegate-read-func} to specify a custom name input function (e.g. for completion purposes).
+@item @strong{[S]ingle action}
+This is a one-off to be done when possible.
+@item @strong{[H]abit}
+org-mode-style habit. Org GTD will ask you for a valid org-mode repeating stamp and a date when to start the habit tracking. See the org-mode documentation for more information.
+@item @strong{[I]ncubate}
+no action now; review later. Org GTD will ask you for a date at which it should remind you about this.
+@item *[Q]uick action
+Less than 2 minutes. Do it now, then choose this to mark the item as DONΕ and archive it.
+@item @strong{[K]nowledge}
+This is knowledge to be stored away. Choose this @strong{after} you have properly saved this item as knowledge.
+@item @strong{[T]rash}
+Not actionable; not knowledge. Discard this item.
+@end table
+
+@item
+@anchor{Applying hooks}Applying hooks
+
+
+The decorations (priority, tags, categories, etc.) are customizable as you desire and managed by @code{org-gtd-organize-hooks}, a list of functions. You can add your own functions to this list, as long as the functions do not modify the text in any "custom" way, separate from what org-mode understands.
+
+See @ref{Adding your own hooks when organizing} for more details on how you can add your own or customize this further.
+
+@item
+@anchor{Refiling to the appropriate area}Refiling to the appropriate area
+
+
+By default, org-gtd will refile to a single file in the directory, but you can create your own headings if you find it helpful.
+
+If you would like to add new refile targets, it's simple, follow these instructions.
+
+@itemize
+@item
+@anchor{New project heading}New project heading
+
+
+Add a top-level heading in any @code{.org} file (including a new one) in @code{org-gtd-directory} and make sure its property drawer matches the one in the constant @code{org-gtd-projects-template}.
+
+@item
+@anchor{Other headings}Other headings
+
+
+Create a new top-level heading in any @code{.org} file (including a new one) in @code{org-gtd-directory} and make sure its property drawer matches the one in the relevant template constant:
+
+@itemize
+@item
+@code{org-gtd-habit-template}
+@item
+@code{org-gtd-calendar-template}
+@item
+@code{org-gtd-incubate-template}
+@item
+@code{org-gtd-action-template}
+@end itemize
+
+Here is an example:
 
 @example
-* Project heading
-** NEXT First task
-** TODO Second task
-** TODO Third task
+:PROPERTIES:
+:ORG_GTD: Action
+:END:
 @end example
-
-@node Quick action
-@subsection Quick action
-
-When you choose quick action, you indicate that not much more tracking is necessary. This item is automatically marked as DONE and archived, then Org GTD moves on to the next item.
-
-This won't show up in the agenda, because you've already done it.
-
-@node Trash
-@subsection Trash
-
-When you choose trash, the item is automatically marked as CNCL and archived, then Org GTD moves on to the next item.
-
-This won't show up in the agenda, because you don't care about it.
-
-@node Calendar
-@subsection Calendar
-
-When you you choose calendar, you will be asked to select a date (and time if you choose to add it), then Org GTD moves on to the next item.
-This will come up in the agenda when the time is right. Literally.
-
-@node Delegate
-@subsection Delegate
-
-When you choose delegate, you'll be asked for a name to whom to delegate this to, and a date on which to check in with the person. Org GTD automatically marks this item as "WAIT", then Org GTD moves on to the next item.
-
-This will show up in the "Blocked" section of the agenda.
-
-@node Single action
-@subsection Single action
-
-When you choose single action, Org GTD will mark it as a NEXT item, then Org GTD moves on to the next item.
-
-This will show up in the agenda as a NEXT item.
-
-@node Archive
-@subsection Archive
-
-When you choose archive, Org GTD will assume you have done what you needed to do to store this (e.g. put the information in org roam, bbdb, or wherever you will store it), then marks the item as DONE and archives it. Org GTD then moves on to the next item.
-
-This won't show up in the agenda because it's not actionable.
-
-@node Incubate
-@subsection Incubate
-
-Incubating an item is similar to simply scheduling one, though the idea is that you want to be reminded of it much later, and be able to review your incubated items separately.
-So, all this will really do is make you choose a date at which you want to be reminded of this, then it'll be refiled under an incubated target.
-
-This will show up in the agenda at the date of your choosing.
+@end itemize
+@end itemize
 
 @node Engaging with your GTD items
-@section Engaging with your GTD items
+@subsection Engaging with your GTD items
 
-You can see a list of all NEXT actions, and scheduled actions, with @code{M-x org-gtd-engage} . This opens an @code{org-agenda} view.
-
-The variable @code{org-gtd-agenda-custom-commands} has the settings to define what gets shown in that function.
-
-You can define other functions by adding new custom commands to the above, and defining your own functions like so, where "x" is whatever your defined key is.
-
-@lisp
-(defun my-agenda ()
-  (with-org-gtd-context
-      (org-agenda nil "x")))
-@end lisp
+You can see a list of all NEXT actions, and scheduled actions, with @code{M-x org-gtd-engage} .
 
 You can call @code{org-gtd-show-all-next} to only see NEXT actions, nothing scheduled.
 
-Org Gtd uses @code{org-edna} to automatically trigger state changes in projects, such that when you mark a NEXT item from a project as DONE, the next TODO in that project automatically becomes NEXT, such that the agenda is always up-to-date (you may need to refresh the agenda).
+You can use @code{org-gtd-oops} to see all the appointments you missed, and act on them accordingly.
 
-@menu
-* Interacting with org-agenda::
-@end menu
+The weekly review is not yet implemented.
 
-@node Interacting with org-agenda
-@subsection Interacting with org-agenda
+@node Working with the GTD Horizons
+@subsection Working with the GTD Horizons
+
+In GTD, the horizons are defined as such:
+
+@table @asis
+@item Ground
+the day-to-day
+@item Horizon 1
+projects
+@item Horizon 2
+areas of focus
+@item Horizon 3
+1-2 year goals
+@item Horizon 4
+3-5 year vision
+@item Horizon 5
+purpose and principles
+@end table
+
+Obviously, Ground and Horizons 1 are handled by the "capture/clarify/organize/engage" flow we've already seen.
+
+GTD recommends that you do not start using the horizons above Horizon 1 until you have both Ground and Horizon 1 under control. So, when you are ready@dots{}
+
+@itemize
+@item
+@anchor{Areas of focus}Areas of focus
+
+
+Horizon 2 is now handled by a variable and a hook you can add to @code{org-gtd-organize-hooks}:
+@itemize
+@item
+@code{org-gtd-areas-of-focus} is a list of strings, each representing one of your areas of focus.
+@item
+@code{org-gtd-set-area-of-focus} is the hook you would add, e.g. @code{(setq org-gtd-organize-hooks '(org-gtd-set-area-of-focus))}, it ensures each item you clarify will need to be part of a horizon.
+@end itemize
+
+You can then use the function @code{org-gtd-review-area-of-focus} to generate an agenda view to review a specific area of focus.
+
+@item
+@anchor{Longer-term horizons}Longer-term horizons
+
+
+The longer-term horizons can be stored in a file in the @code{org-gtd-directory}. A variable governs the name of the file, @code{org-gtd-horizons-file}, by default @samp{horizons.org}.
+
+At the moment it does not seem particularly useful to add any automation around these, since they will change so infrequently.
+
+They are, however, useful to display.
+
+A variable, @code{org-gtd-clarify-show-horizons}, determines whether/where to display the side buffer while clarifying.
+
+Regardless of the value of this variable, you can use the function @code{org-gtd-clarify-toggle-horizons-window} to display or hide the side window. If the above variable is nil, then the horizons window will be toggled on the right side of the screen.
+@end itemize
+
+@node Cleaning up / archiving completed work
+@subsection Cleaning up / archiving completed work
+
+Doing this without user intervention is tricky, as it makes undoing actions more complicated. As such, Org GTD provides a function that will go through the @code{org-gtd-directory} files, find the headings that belong to Org GTD (see @ref{Refiling to the appropriate area}), and archive the finished items.
+
+The variable @code{org-gtd-archive-location} points to a @strong{function} that returns a string matching the @code{org-archive-location} definition. It is a function in order to allow the filename to be dynamic.
+
+The function to archive everything is @code{M-x org-gtd-archive-completed-items}.
+
+@node Commands you can call on org-agenda
+@subsection Commands you can call on org-agenda
 
 Since Org provides the agenda, it is a convenient base of operations for interacting with things that come up through @code{org-gtd-engage}.
 
 Here are the actions available to you:
 
 @table @asis
-@item @code{M-x org-gtd-agenda-cancel-project}
-When the point is on a project action, this command will cancel the remaining actions in the project.
-@item @code{M-x org-gtd-agenda-delegate}
+@item @code{M-x org-gtd-delegate-agenda-item}
 When the point is on an action, this will properly delegate the action to someone else.
-@item @code{M-x org-gtd-agenda-projectify}
-This is intended to be used on an incubated item that has come up. Behavior in other situations has not been tested. This will properly let you transform an incubated item into a project.
+@item @code{M-x org-gtd-project-cancel-from-agenda}
+When the point is on a project action, this command will cancel the remaining actions in the project.
+@item @code{M-x org-gtd-clarify-agenda-item}
+If you would like to clarify and organize an item through the agenda view, for whatever reason, this is your entry point.
 @end table
 
-@node Cleaning up / archiving completed work
-@section Cleaning up / archiving completed work
+@node Defining your own agenda views
+@subsection Defining your own agenda views
 
-Doing this without user intervention is tricky, as it makes undoing actions more complicated. As such, Org GTD provides a function that will go through the @code{org-gtd-directory} files, find the headings that belong to Org GTD (see @ref{Multiple files / refile targets}), and archive the finished items.
+You can define your own agenda views by defining your own functions like shown below, where @samp{x} is whatever your defined key is.
 
-The variable @code{org-gtd-archive-location} hosts a @strong{function} that returns a string matching the @code{org-archive-location} definition. It is a function in order to make the filename entirely dynamic.
+@lisp
+(defun my-agenda ()
+  (with-org-gtd-context
+      (let ((org-agenda-custom-commands '(your-definition-here)))
+        (org-agenda nil "x"))))
+@end lisp
 
-The function to archive everything is @code{M-x org-gtd-archive-completed-items}.
+@node Adding your own hooks when organizing
+@subsection Adding your own hooks when organizing
 
-@node Multiple files / refile targets
-@section Multiple files / refile targets
+Adding useful metadata to the tasks allows you to enhance the agenda view to make it more useful to you, whether it be effort, tags, priority, or any other amount of information you might like.
 
-If you would like to add new refile targets, it's simple, follow these instructions.
+This being said, different types of tasks or items are not even created equal. For instance, there may be metadata you want to add to a project heading but not its tasks, or to a calendar item and not to a trash item.
 
-@menu
-* New project heading::
-* Other headings::
-@end menu
+Org GTD therefore provides a helper function, @code{org-gtd-organize-type-member-p}, which you can use when creating your own hooks. The function takes one argument, a list of types (provided in the function's documentation).
+When called as part of a hook, this function will check a buffer-local variable called @code{org-gtd--organize-type}, managed by Org GTD, to determine truthiness.
 
-@node New project heading
-@subsection New project heading
+For an example, see the source code for @code{org-gtd-areas-of-focus--set}, which will not run if the task being organized is a project task, trash, knowledge, or a quick action.
 
-Add a top-level heading in any @code{.org} file (including a new one) in @code{org-gtd-directory} and make sure it has the following properties drawer.
-@example
-:PROPERTIES:
-:TRIGGER: relatives(forward-no-wrap todo-only 1 no-sort) todo!(NEXT)
-:ORG_GTD: Projects
-:END:
-@end example
+@node Automating through emacs
+@section Automating through emacs
 
-@node Other headings
-@subsection Other headings
+There's now a few functions you can use when you are doing work within emacs and would like GTD to track something for you as a result:
+@itemize
+@item
+@code{org-gtd-habit-create}
+@item
+@code{org-gtd-calendar-create}
+@item
+@code{org-gtd-delegate-create}
+@item
+@code{org-gtd-incubate-create}
+@item
+@code{org-gtd-single-action-create}
+@end itemize
 
-Create a new top-level heading in any @code{.org} file (including a new one) and make sure it has an ORG@math{_GTD} property as such.
-@example
-:PROPERTIES:
-:ORG_GTD: Action
-:END:
-@end example
+See the documentation for each, but suffice it to say they all take, at the very least, a string that will be used as the text part of the org heading that gets stored in org-gtd.
 
-The ORG@math{_GTD} properties are set as follows, except for Projects (see @ref{New project heading}):
+For instance, one way this could work:
 
-@table @asis
-@item Scheduled actions
-@samp{ORG_GTD: Calendar}
-@item Incubated actions
-@samp{ORG_GTD: Incubated}
-@item Single & Delegated actions
-@samp{ORG_GTD: Actions}
-@end table
+@lisp
+(defun org-gtd-email-reminder ()
+  (let ((topic (message-fetch-field "subject"))
+        (delegated-to (message-fetch-field "to"))
+        (reminder-date (org-read-date nil nil "+3d")))
+    (org-gtd-delegate-create (format "Reminder: %s" topic)
+                             delegated-to
+                             reminder-date)))
+
+(add-hook 'message-send-hook 'org-gtd-email-reminder)
+@end lisp
 
 @node Troubleshooting
 @chapter Troubleshooting
 
 @menu
+* Finding lost tasks::
 * Projects without a NEXT item::
 * I can't create a project when clarifying an inbox item!::
 @end menu
 
+@node Finding lost tasks
+@section Finding lost tasks
+
+Sometimes things break. The following functions will help you find these items:
+
+@itemize
+@item
+@code{org-gtd-review-stuck-calendar-items}
+@item
+@code{org-gtd-review-stuck-incubated-items}
+@item
+@code{org-gtd-review-stuck-habit-items}
+@item
+@code{org-gtd-review-stuck-delegated-items}
+@item
+@code{org-gtd-review-stuck-single-action-items}
+@item
+@code{org-gtd-review-stuck-projects}
+@end itemize
+
 @node Projects without a NEXT item
 @section Projects without a NEXT item
 
-Sometimes things break. Use @code{M-x org-gtd-show-stuck-projects} to find all projects that don't have a NEXT item, which is to say, all projects that the package will not surface and help you finish.
-
-@code{org-edna} needs to be configured and enabled, see @ref{Required configuration of sub-packages}.
+@code{org-edna} needs to be configured and enabled, see @ref{Configuring org-edna}.
 
 To fix such a stuck project, put the point on the project heading and call @code{M-x org-gtd-projects-fix-todo-keywords-for-project-at-point}.
 
 @node I can't create a project when clarifying an inbox item!
 @section I can't create a project when clarifying an inbox item!
 
-@ref{Projects}. If this does not help you, please open an issue and show exactly what you have done before asking @samp{org-gtd} to create a project.
+See @ref{data shape requirements}. If this does not help you, please open an issue and show exactly what you have done before asking @samp{org-gtd} to create a project.
 
 @bye

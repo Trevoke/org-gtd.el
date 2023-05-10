@@ -92,6 +92,18 @@ This package provides a system that allows you to capture incoming things into a
 :PROPERTIES:
 :CUSTOM_ID: new-in-3.0
 :END:
+** Minimum emacs version now 27.2
+It became too difficult for me to support 27.1.
+** Organize menu has changed
+- Habits have their place now (h)
+- What used to be called "archive" is now called "knowledge" (k)
+- Modify project is now "Add to project" (a)
+** Easier to clarify more items
+There's now two more powerful commands you can use to clarify almost anything:
+- ~org-gtd-clarify-item~
+- ~org-gtd-clarify-agenda-item~
+
+These both allow you to enter a one-off clarify/organize flow.
 ** Functions exist to create your own hooks
 Make GTD truly a part of your emacs experience!
 These functions take various arguments (check the documentation in emacs) and automatically add something to your org-gtd. This would be useful after sending an email, for instance.
@@ -103,10 +115,8 @@ Please share your own hooks as issues in Github or in the discord so we can crea
 - ~org-gtd-single-action-create~
 ** Support habits
 Org mode's habits now have a specific place here.
-** Organize menu has changed
-- Habits have their place now (h)
-- What used to be called "archive" is now called "knowledge" (k)
-- Modify project is now "Add to project" (a)
+** Todo keywords can be customized
+[[#all-the-levers][See all the configuration options]]
 ** Massive API changes
 The package domain now is a better match for the domain language of GTD.
 
@@ -119,14 +129,18 @@ Functions use the words =capture=, =process=, =clarify=, =organize=, =review=.
 - There's an optional organize-hook for areas of focus
 - There's an agenda view for areas of focus
 ** You can create your own project templates and insert them while clarifying
+[[#options-and-behaviors-related-to-clarification-step][Options and commands related to clarification]]
+
 * Setting up Org GTD
 ** Upgrading
 :PROPERTIES:
 :DESCRIPTION: How to upgrade your local setup across major versions
 :END:
-If you are installing and not upgrading, you can skip this section entirely and just go to the next section, [[*Installing]].
+If you are installing and not upgrading, you can skip this section entirely and just go to the next section, [[#Installing][Installing]].
 *** 3.0.0 <- 2.2.0
 There's a lot here, so you may want to make yourself some tea. We have to cover support for org habits, upgrading data, key changes in the configuration, a change in the menu, and the rest of the API changes. And once that's done, you should head back to the [[#new-in-3.0][What's new in 3.0]] section to see what else is available for you!
+**** A note for doom emacs users
+Beta testers using doom emacs found they needed to do a fully clean install. The regular upgrades did not work. We could not find a clean fix. We suspect this is related to org-mode being a very complex beast, but we're not sure.
 **** Support for org habits
 For the sake of keeping the =org-agenda-custom-commands= as simple as possible, habits are now stored under headings with the property ~ORG_GTD: Habits~. The same rules for refiling apply to these headings.
 **** Upgrading data
@@ -188,7 +202,7 @@ This customization is no longer in use. It wasn't an easy decision to make, but 
 If you have an existing ~org-gtd-agenda-custom-commands~ setup, then you can do something like this to keep using it. In short, for now, create your own function, and wrap the definition with the ~with-org-gtd-context~ macro. You can see the source code of ~org-gtd-engage~ for an example.
 
 #+begin_src elisp
-  ; only so I refer to it with a new name
+  ; only so I refer to it with a name in this snippet
   (setq my-commands org-gtd-agenda-custom commands)
 
   (defun my-org-gtd-engage ()
@@ -224,7 +238,7 @@ Same reason as above.
 ***** ~org-gtd-show-stuck-projects~ is now ~org-gtd-review-stuck-projects~
 Same reason as above.
 **** That's it!
-Go check out [[*What's new in 3.0][What's new in 3.0]] as well as [[#configuring][Configuring]].
+Go check out [[#new-in-3.0][What's new in 3.0]] as well as [[#configuring][Configuring]].
 *** 2.2.0 <- 2.1.0
 **** respect org-mode's org-reverse-note-order variable
 The upgrade to =2.0.1= allowed addition of a task as the first task of an existing project while organizing a clarified item.
@@ -393,6 +407,7 @@ Version 1.x of Org GTD recommended a binding for ~org-gtd-clarify-finalize~. Thi
 ** Installing
 :PROPERTIES:
 :DESCRIPTION: Get Org GTD in your emacs
+:CUSTOM_ID: Installing
 :END:
 This package requires emacs 27.1 or higher.
 
@@ -420,9 +435,15 @@ Just turn on ~org-gtd-mode~ (~M-x org-gtd-mode~). This will set up emacs, Org mo
 
 Turn off ~org-gtd-mode~ to restore emacs to pre-org-gtd settings.
 
-Note, you should still head over to the [[*Recommended key bindings]] section.
+Note, you should still head over to the [[#recommended-key-bindings][Recommended key bindings]] section.
 *** Required configuration of sub-packages
+:PROPERTIES:
+:CUSTOM_ID: configuring-sub-packages
+:END:
 **** Configuring org-edna
+:PROPERTIES:
+:CUSTOM_ID: configuring-org-edna
+:END:
 package: https://www.nongnu.org/org-edna-el/
 
 This is one of the dependencies. This setting change is REQUIRED. It automatically changes the next TODO heading to NEXT in a project when you've finished the current task.
@@ -439,10 +460,13 @@ The most direct way to find out about the configuration options for org-gtd is t
 The only one you may want to change before starting to use Org GTD is ~org-gtd-directory~, which is the directory that Org GTD
 will look to for everything it needs to do.
 
-The configuration options will also be mentioned in the relevant subsections of [[*Using Org GTD]].
+The configuration options will also be mentioned in the relevant subsections of [[#using-org-gtd][Using Org GTD]].
 **** Tell me all the levers I can pull
+:PROPERTIES:
+:CUSTOM_ID: all-the-levers
+:END:
 
-Make sure you also read about sub-package configuration: [[*Required configuration of sub-packages]].
+Make sure you also read about sub-package configuration: [[#configuring-sub-packages][Required configuration of sub-packages]].
 
 - ~org-gtd-directory~ :: set this to a directory. =org-gtd= will look for all its files in this directory.
 - ~org-gtd-next~ :: Keyword to use for actions ready to be taken
@@ -455,17 +479,20 @@ Make sure you also read about sub-package configuration: [[*Required configurati
 - ~org-gtd-done-suffix~ :: org-mode keyword suffix (e.g. !, @)
 - ~org-gtd-canceled~ :: Keyword to use for actions that won't be done
 - ~org-gtd-canceled-suffix~ :: org-mode keyword suffix (e.g. !, @)
-- ~org-gtd-capture-templates~ :: (!note: take care when changing this) This defines the pre-filled text that will show up when capturing an item to the inbox. The only requirements are that the template string must define an org-mode top-level heading, and that the entry point to the inbox.  That is to say, the first two characters must be a single asterisk followed by a space: ~"* "~, and the entry type must be like this: =entry  (file ,#'org-gtd-inbox-path)=. [[*Adding things to the inbox]].
-- ~org-reverse-note-order~ :: (=org-mode= variable) set this to ~t~ to add new items to the top of project tasks and to ~nil~ to add new items to the bottom of project tasks. Most relevant, see [[*Projects]] and [[*Modify an existing project]].
-- ~org-gtd-organize-hooks~ :: this is a list of functions that you can use to decorate each item when you clarify it. For instance, you could add a function to set the effort, or the priority, or some category, etc. By default it has only one function, which lets you add tags. You could remove this function if you wanted. [[*Processing the inbox]].
-- ~org-gtd-archive-location~ :: Points to a function to generate the archive file dynamically. Default value generates a file suffixed with the current year. The function has an arity of zero and generates an org-mode file+outline path. [[*Cleaning up / archiving completed work]].
-- ~org-gtd-refile-to-any-target~ :: when ~t~, =org-gtd= will refile to the first target it finds, and create a target if it doesn't find one. When false, it will ask for confirmation before refiling. [[*Multiple files / refile targets]].
+- ~org-gtd-capture-templates~ :: (!note: take care when changing this) This defines the pre-filled text that will show up when capturing an item to the inbox. The only requirements are that the template string must define an org-mode top-level heading, and that the entry point to the inbox.  That is to say, the first two characters must be a single asterisk followed by a space: ~"* "~, and the entry type must be like this: =entry  (file ,#'org-gtd-inbox-path)=. [[#adding-things-to-the-inbox][Adding things to the inbox]].
+- ~org-reverse-note-order~ :: (=org-mode= variable) set this to ~t~ to add new items to the top of project tasks and to ~nil~ to add new items to the bottom of project tasks when organizing an item as such.
+- ~org-gtd-organize-hooks~ :: this is a list of functions that you can use to decorate each item when you clarify it. For instance, you could add a function to set the effort, or the priority, or some category, etc. By default it has only one function, which lets you add tags, but of course you can change this entirely. [[#organizing-an-item][Organizing an item]].
+- ~org-gtd-archive-location~ :: Points to a function to generate the archive file dynamically. Default value generates a file suffixed with the current year. The function has an arity of zero and generates an org-mode file+outline path. [[#cleaning-up-the-system][Cleaning up / archiving completed work]].
+- ~org-gtd-refile-to-any-target~ :: when ~t~, =org-gtd= will refile to the first target it finds, and create a target if it doesn't find one. When false, it will ask for confirmation before refiling. [[#refiling-after-organizing][Refiling to the appropriate area]].
 - ~org-gtd-delegate-read-func~ :: function that is used to prompt for a person a task is delegated to. Must return a string. By default this is set to ~read-string~.
 - ~org-gtd-areas-of-focus~ :: list of strings representing your areas of focus (horizon 2 in GTD).
 - ~org-gtd-clarify-show-horizons~ :: When clarifying, do you want the horizons buffer to be shown by default, or do you prefer it hidden?
 - ~org-gtd-clarify-project-templates~ :: Alist of strings: ~project template name . project template~ where there template is a series of tasks you may want to insert automatically, if you have a generic type of project that comes up a lot.
 - ~org-gtd-horizons-file~ :: Name of the file, in ~org-gtd-directory~, that will be displayed when the horizons buffer is displayed when clarifying.
 *** Recommended key bindings
+:PROPERTIES:
+:CUSTOM_ID: recommended-key-bindings
+:END:
 
 There's an important keymap you'll want to make the flow of processing the inbox smoother. To limit impact on your emacs configuration, there is a specific keymap you can use. The function you'll want to bind is ~org-gtd-organize~. I suggest ~C-c c~, as in the following example.
 
@@ -494,13 +521,14 @@ If you are a Doom Emacs user, then your configuration may look something like th
            :desc "Engage"         "e"  #'org-gtd-engage
            :desc "Process inbox"  "p"  #'org-gtd-process-inbox
            :desc "Show all next"  "n"  #'org-gtd-show-all-next
-           :desc "Stuck projects" "s"  #'org-gtd-show-stuck-projects))
+           :desc "Stuck projects" "s"  #'org-gtd-review-stuck-projects))
     (map! :map org-gtd-clarify-map
           :desc "Organize this item" "C-c c" #'org-gtd-organize))
 #+END_SRC
 * Using Org GTD
 :PROPERTIES:
 :DESCRIPTION: How Org GTD maps to the GTD flow
+:CUSTOM_ID: using-org-gtd
 :END:
 ** Org-mode building blocks for Org GTD
 This section introduces how Org GTD leverages org-mode.
@@ -516,6 +544,9 @@ Org GTD uses the following properties:
 ** The GTD flow
 Here are the domain elements of GTD that we handle:
 *** Adding things to the inbox
+:PROPERTIES:
+:CUSTOM_ID: adding-things-to-the-inbox
+:END:
 
 The trip through GTD arguably begins by adding things to the inbox. The inbox is a file called ~inbox.org~ in the directory stored in the variable ~org-gtd-directory~. By default this means the file will be ~~/gtd/inbox.org~.
 
@@ -533,11 +564,17 @@ You can customize these templates as you see fit. In order to maintain proper fu
 2. the entry type must be like this: =entry  (file ,#'org-gtd-inbox-path)=
 
 *** Processing the inbox
+:PROPERTIES:
+:CUSTOM_ID: processing-the-inbox
+:END:
 Processing the inbox means taking everything in the inbox, one at a time, and refining/categorizing them so they are instantly useful when you are looking at available next / scheduled actions.
 
 You can start processing the inbox with ~org-gtd-process-inbox~. This starts a looping behavior of clarifying each item in the inbox.
 
 *** Clarifying each item
+:PROPERTIES:
+:CUSTOM_ID: clarification
+:END:
 Clarifying an item means editing and adding the information that will be most valuable to you to the item. Note that task-specific information, such as appointment date, or name of person to whom it is delegated, or even area of focus, will be added during the Organize step, so don't worry about these yet.
 **** How to start clarifying
 Besides ending up in here automatically while processing the inbox, there's two more ways to enter the clarifying flow:
@@ -546,6 +583,9 @@ Besides ending up in here automatically while processing the inbox, there's two 
 - ~org-gtd-clarify-agenda-item~ :: call this from the agenda view, if you have anything you want to re-clarify, or possibly clarify for the first time, from somewhere outside the inbox.
 
 **** data shape requirements
+:PROPERTIES:
+:CUSTOM_ID: data-shape-requirement-while-clarifying
+:END:
 There's two general shapes you'll be looking for.
 Almost everything will look like a simple org-mode heading.
 For instance, ~* Task desc~.
@@ -561,6 +601,9 @@ The only exception will be a project, that will look like a top-level heading fo
 #+end_example
 
 **** Options and commands related to clarification
+:PROPERTIES:
+:CUSTOM_ID: options-and-behaviors-related-to-clarification-step
+:END:
 The clarify buffers are ~org-mode~ buffers that use the minor mode ~org-gtd-clarify-mode~. There is a keymap, ~org-gtd-clarify-map~, that you can use to bind useful
 
 While clarifying, you may find it useful to see your GTD horizons. You can use:
@@ -572,7 +615,10 @@ If you are clarifying a project, you may be interested in project templates:
 - ~org-gtd-clarify-project-templates~ :: an alist of the form =(name . template)= where both name and template are strings. =name= will be used in the interactive menu, and =template= will be inserted in the buffer.
 
 *** Organizing an item into the system
-When you are done clarifying, call ~M-x org-gtd-organize~ (or hit your keybinding for it, see [[*Recommended key bindings]]). This will open a transient menu to let you choose how Org GTD should categorize this item.
+:PROPERTIES:
+:CUSTOM_ID: organizing-an-item
+:END:
+When you are done clarifying, call ~M-x org-gtd-organize~ (or hit your keybinding for it, see [[#recommended-key-bindings][Recommended key bindings]]). This will open a transient menu to let you choose how Org GTD should categorize this item.
 
 Organizing is broken up into three steps:
 - Choosing a task type
@@ -596,9 +642,12 @@ Here are the following task types you can choose.
 **** Applying hooks
 The decorations (priority, tags, categories, etc.) are customizable as you desire and managed by ~org-gtd-organize-hooks~, a list of functions. You can add your own functions to this list, as long as the functions do not modify the text in any "custom" way, separate from what org-mode understands.
 
-See [[*Adding your own hooks when organizing][Adding your own hooks when organizing]] for more details on how you can add your own or customize this further.
+See [[#hooks-framework][Adding your own hooks when organizing]] for more details on how you can add your own or customize this further.
 
 **** Refiling to the appropriate area
+:PROPERTIES:
+:CUSTOM_ID: refiling-after-organizing
+:END:
 By default, org-gtd will refile to a single file in the directory, but you can create your own headings if you find it helpful.
 
 If you would like to add new refile targets, it's simple, follow these instructions.
@@ -629,7 +678,6 @@ You can call ~org-gtd-show-all-next~ to only see NEXT actions, nothing scheduled
 You can use ~org-gtd-oops~ to see all the appointments you missed, and act on them accordingly.
 
 The weekly review is not yet implemented.
-
 
 *** Working with the GTD Horizons
 :PROPERTIES:
@@ -666,7 +714,10 @@ A variable, ~org-gtd-clarify-show-horizons~, determines whether/where to display
 Regardless of the value of this variable, you can use the function ~org-gtd-clarify-toggle-horizons-window~ to display or hide the side window. If the above variable is nil, then the horizons window will be toggled on the right side of the screen.
 
 *** Cleaning up / archiving completed work
-Doing this without user intervention is tricky, as it makes undoing actions more complicated. As such, Org GTD provides a function that will go through the ~org-gtd-directory~ files, find the headings that belong to Org GTD (see [[*Multiple files / refile targets]]), and archive the finished items.
+:PROPERTIES:
+:CUSTOM_ID: cleaning-up-the-system
+:END:
+Doing this without user intervention is tricky, as it makes undoing actions more complicated. As such, Org GTD provides a function that will go through the ~org-gtd-directory~ files, find the headings that belong to Org GTD (see [[#refiling-after-organizing][Refiling to the appropriate area]]), and archive the finished items.
 
 The variable ~org-gtd-archive-location~ points to a *function* that returns a string matching the ~org-archive-location~ definition. It is a function in order to allow the filename to be dynamic.
 
@@ -738,8 +789,8 @@ Sometimes things break. The following functions will help you find these items:
 
 ** Projects without a NEXT item
 
-~org-edna~ needs to be configured and enabled, see [[*Configuring org-edna]].
+~org-edna~ needs to be configured and enabled, see [[#configuring-org-edna][Configuring org-edna]].
 
 To fix such a stuck project, put the point on the project heading and call ~M-x org-gtd-projects-fix-todo-keywords-for-project-at-point~.
 ** I can't create a project when clarifying an inbox item!
-[[*Projects]]. If this does not help you, please open an issue and show exactly what you have done before asking =org-gtd= to create a project.
+See [[#data-shape-requirement-while-clarifying][data shape requirements]]. If this does not help you, please open an issue and show exactly what you have done before asking =org-gtd= to create a project.
