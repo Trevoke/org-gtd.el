@@ -36,8 +36,10 @@
   :group 'org-gtd)
 
 (defcustom org-gtd-clarify-show-horizons nil
-  "If t, show a side buffer with the higher horizons during item clarification.
-The file shown can be configured in `org-gtd-horizons-file'"
+  "If non-nil, show a side buffer with the horizons during item clarification.
+The values can be: nil, top, right, left, bottom.
+
+The file shown can be configured in `org-gtd-horizons-file'."
   :options '('right 'top 'left 'bottom 'nil)
   :package-version '(org-gtd . "3.0")
   :group 'org-gtd-clarify
@@ -149,6 +151,7 @@ This function is called through the inbox clarification process."
 
 (defun org-gtd-clarify-switch-to-buffer ()
   "Prompt the user to choose one of the existing WIP buffers."
+  (declare (modes org-gtd-clarify-mode)) ;; for 27.2 compatibility
   (interactive)
   (let ((buf-names (mapcar #'buffer-name (org-gtd-clarify--get-buffers))))
     (if buf-names

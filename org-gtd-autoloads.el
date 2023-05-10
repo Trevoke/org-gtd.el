@@ -332,7 +332,7 @@ Show all projects that do not have a next action." t nil)
 ;;;### (autoloads nil "org-gtd-skip" "org-gtd-skip.el" (0 0 0 0))
 ;;; Generated autoloads from org-gtd-skip.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-skip" '("org-gtd-skip-")))
+(register-definition-prefixes "org-gtd-skip" '("org-gtd-skip-"))
 
 ;;;***
 
