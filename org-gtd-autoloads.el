@@ -27,7 +27,7 @@ This assumes all GTD files are also agenda files." t nil)
 (autoload 'org-gtd-engage-grouped-by-context "org-gtd-agenda" "\
 Show all `org-gtd-next' actions grouped by context (tag prefixed with @)." t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-agenda" '("org-gtd-agenda--prefix-format")))
+(register-definition-prefixes "org-gtd-agenda" '("org-gtd-agenda--prefix-format"))
 
 ;;;***
 
@@ -131,7 +131,7 @@ Wrap BODY... in this macro to inherit the org-gtd settings for your logic.
 
 (function-put 'with-org-gtd-context 'lisp-indent-function '2)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-core" '("org-gtd-")))
+(register-definition-prefixes "org-gtd-core" '("org-gtd-"))
 
 ;;;***
 

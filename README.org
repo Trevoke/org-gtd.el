@@ -20,7 +20,7 @@ For a comprehensive instruction manual, see the documentation:
 
 The documentation also details how to upgrade from one version to another.
 
-** Lightning tour of the package
+** Whirlwind tour of the package
 What follows is an incomplete description of the package. It is useful if you just want to take it for a test run. Read the full documentation for the full set of features and customizability.
 *** GTD Meta
 Modes:
