@@ -128,6 +128,8 @@ Functions use the words =capture=, =process=, =clarify=, =organize=, =review=.
 - They can be displayed while clarifying.
 - There's an optional organize-hook for areas of focus
 - There's an agenda view for areas of focus
+
+[[#working-with-horizons][Working with the GTD Horizons]].
 ** You can create your own project templates and insert them while clarifying
 [[#options-and-behaviors-related-to-clarification-step][Options and commands related to clarification]]
 
@@ -702,6 +704,8 @@ Horizon 2 is now handled by a variable and a hook you can add to ~org-gtd-organi
 - ~org-gtd-set-area-of-focus~ is the hook you would add, e.g. ~(setq org-gtd-organize-hooks '(org-gtd-set-area-of-focus))~, it ensures each item you clarify will need to be part of a horizon.
 
 You can then use the function ~org-gtd-review-area-of-focus~ to generate an agenda view to review a specific area of focus.
+
+In order to add areas of focus to pre-existing items in your system, without going through the clarifying flow, we provide ~org-gtd-area-of-focus-set-on-item-at-point~.
 **** Longer-term horizons
 The longer-term horizons can be stored in a file in the ~org-gtd-directory~. A variable governs the name of the file, ~org-gtd-horizons-file~, by default =horizons.org=.
 

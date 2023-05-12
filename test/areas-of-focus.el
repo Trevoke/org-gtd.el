@@ -34,8 +34,11 @@
         (org-mode)
         (insert "* A heading")
         (with-simulated-input "Health RET"
-                              (org-gtd-set-area-of-focus))
+                              (org-gtd-area-of-focus-set-on-item-at-point))
         (expect (org-entry-get (point) "CATEGORY")
                 :to-equal
                 "Health")
-        (kill-buffer)))))
+        (kill-buffer))))
+
+ (describe
+  "on arbitrary headings"))

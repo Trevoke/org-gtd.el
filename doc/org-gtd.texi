@@ -283,6 +283,8 @@ There's an optional organize-hook for areas of focus
 There's an agenda view for areas of focus
 @end itemize
 
+@ref{Working with the GTD Horizons}.
+
 @node You can create your own project templates and insert them while clarifying
 @section You can create your own project templates and insert them while clarifying
 
@@ -1188,6 +1190,8 @@ Horizon 2 is now handled by a variable and a hook you can add to @code{org-gtd-o
 @end itemize
 
 You can then use the function @code{org-gtd-review-area-of-focus} to generate an agenda view to review a specific area of focus.
+
+In order to add areas of focus to pre-existing items in your system, without going through the clarifying flow, we provide @code{org-gtd-area-of-focus-set-on-item-at-point}.
 
 @item
 @anchor{Longer-term horizons}Longer-term horizons

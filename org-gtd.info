@@ -282,6 +282,8 @@ File: org-gtd.info,  Node: Include horizons,  Next: You can create your own proj
    • There’s an optional organize-hook for areas of focus
    • There’s an agenda view for areas of focus
 
+   *note Working with the GTD Horizons::.
+
 
 File: org-gtd.info,  Node: You can create your own project templates and insert them while clarifying,  Prev: Include horizons,  Up: What's new in 30
 
@@ -1288,6 +1290,10 @@ are ready...
      You can then use the function ‘org-gtd-review-area-of-focus’ to
      generate an agenda view to review a specific area of focus.
 
+     In order to add areas of focus to pre-existing items in your
+     system, without going through the clarifying flow, we provide
+     ‘org-gtd-area-of-focus-set-on-item-at-point’.
+
    • Longer-term horizons
 
      The longer-term horizons can be stored in a file in the
@@ -1482,80 +1488,80 @@ Node: Todo keywords can be customized8903
 Node: Massive API changes9189
 Node: Massive Data structure changes9567
 Node: Include horizons10114
-Node: You can create your own project templates and insert them while clarifying10510
-Node: Setting up Org GTD10879
-Node: Upgrading11260
-Node: 300 <- 22011633
-Ref: A note for doom emacs users12116
-Ref: Support for org habits12408
-Ref: Upgrading data12676
-Ref: Key changes in configuration13165
-Ref: Sample new config13970
-Ref: Projects trigger14766
-Ref: org-gtd-capture-templates15128
-Ref: org-gtd-agenda-custom-config15724
-Ref: Dropping the org file headers16785
-Ref: A change in the menu17187
-Ref: Rest of API changes17701
-Ref: org-gtd-delegate is now org-gtd-delegate-item-at-point17734
-Ref: org-gtd-agenda-projectify is now just org-gtd-clarify-agenda-item17906
-Ref: org-gtd-agenda-delegate is now org-gtd-delegate-agenda-item18121
-Ref: org-gtd-cancel-project is now org-gtd-project-cancel18393
-Ref: org-gtd-agenda-cancel-project is now org-gtd-project-cancel-from-agenda18504
-Ref: org-gtd-show-stuck-projects is now org-gtd-review-stuck-projects18644
-Ref: That's it!18772
-Node: 220 <- 21018887
-Ref: respect org-mode's org-reverse-note-order variable19032
-Node: 210 <- 20019732
-Ref: Update org-edna trigger19877
-Node: 200 <- 11x20646
-Ref: Configuration20772
-Ref: Example upgrade22164
-Ref: Relevant commands with new names25104
-Ref: heading states (TODO etc)25321
-Ref: Differentiating GTD types of items25480
-Ref: Multiple refile targets26847
-Ref: Key bindings27699
-Node: Installing27976
-Node: use-package28271
-Node: Manually28483
-Node: Configuring28849
-Node: The easy way29134
-Node: Required configuration of sub-packages29703
-Ref: Configuring org-edna29951
-Node: configuration options for org-gtd30381
-Ref: I don't care just let me start using it30631
-Ref: Tell me all the levers I can pull31220
-Node: Recommended key bindings35204
-Node: Sample Doom Emacs Config35969
-Node: Using Org GTD36843
-Node: Org-mode building blocks for Org GTD37078
-Node: The GTD flow38388
-Node: Adding things to the inbox38974
-Node: Processing the inbox40194
-Node: Clarifying each item40720
-Ref: How to start clarifying41236
-Ref: data shape requirements41741
-Ref: Options and commands related to clarification42302
-Node: Organizing an item into the system43496
-Ref: Choosing a task type44137
-Ref: Applying hooks46270
-Ref: Refiling to the appropriate area46757
-Ref: New project heading47040
-Ref: Other headings47299
-Node: Engaging with your GTD items47839
-Node: Working with the GTD Horizons48405
-Ref: Areas of focus49148
-Ref: Longer-term horizons49775
-Node: Cleaning up / archiving completed work50582
-Node: Commands you can call on org-agenda51447
-Node: Defining your own agenda views52352
-Node: Adding your own hooks when organizing52894
-Node: Automating through emacs54106
-Node: Troubleshooting55243
-Node: Finding lost tasks55484
-Node: Projects without a NEXT item56014
-Node: I can't create a project when clarifying an inbox item!56485
+Node: You can create your own project templates and insert them while clarifying10553
+Node: Setting up Org GTD10922
+Node: Upgrading11303
+Node: 300 <- 22011676
+Ref: A note for doom emacs users12159
+Ref: Support for org habits12451
+Ref: Upgrading data12719
+Ref: Key changes in configuration13208
+Ref: Sample new config14013
+Ref: Projects trigger14809
+Ref: org-gtd-capture-templates15171
+Ref: org-gtd-agenda-custom-config15767
+Ref: Dropping the org file headers16828
+Ref: A change in the menu17230
+Ref: Rest of API changes17744
+Ref: org-gtd-delegate is now org-gtd-delegate-item-at-point17777
+Ref: org-gtd-agenda-projectify is now just org-gtd-clarify-agenda-item17949
+Ref: org-gtd-agenda-delegate is now org-gtd-delegate-agenda-item18164
+Ref: org-gtd-cancel-project is now org-gtd-project-cancel18436
+Ref: org-gtd-agenda-cancel-project is now org-gtd-project-cancel-from-agenda18547
+Ref: org-gtd-show-stuck-projects is now org-gtd-review-stuck-projects18687
+Ref: That's it!18815
+Node: 220 <- 21018930
+Ref: respect org-mode's org-reverse-note-order variable19075
+Node: 210 <- 20019775
+Ref: Update org-edna trigger19920
+Node: 200 <- 11x20689
+Ref: Configuration20815
+Ref: Example upgrade22207
+Ref: Relevant commands with new names25147
+Ref: heading states (TODO etc)25364
+Ref: Differentiating GTD types of items25523
+Ref: Multiple refile targets26890
+Ref: Key bindings27742
+Node: Installing28019
+Node: use-package28314
+Node: Manually28526
+Node: Configuring28892
+Node: The easy way29177
+Node: Required configuration of sub-packages29746
+Ref: Configuring org-edna29994
+Node: configuration options for org-gtd30424
+Ref: I don't care just let me start using it30674
+Ref: Tell me all the levers I can pull31263
+Node: Recommended key bindings35247
+Node: Sample Doom Emacs Config36012
+Node: Using Org GTD36886
+Node: Org-mode building blocks for Org GTD37121
+Node: The GTD flow38431
+Node: Adding things to the inbox39017
+Node: Processing the inbox40237
+Node: Clarifying each item40763
+Ref: How to start clarifying41279
+Ref: data shape requirements41784
+Ref: Options and commands related to clarification42345
+Node: Organizing an item into the system43539
+Ref: Choosing a task type44180
+Ref: Applying hooks46313
+Ref: Refiling to the appropriate area46800
+Ref: New project heading47083
+Ref: Other headings47342
+Node: Engaging with your GTD items47882
+Node: Working with the GTD Horizons48448
+Ref: Areas of focus49191
+Ref: Longer-term horizons50007
+Node: Cleaning up / archiving completed work50814
+Node: Commands you can call on org-agenda51679
+Node: Defining your own agenda views52584
+Node: Adding your own hooks when organizing53126
+Node: Automating through emacs54338
+Node: Troubleshooting55475
+Node: Finding lost tasks55716
+Node: Projects without a NEXT item56246
+Node: I can't create a project when clarifying an inbox item!56717
 
 End Tag Table
 
