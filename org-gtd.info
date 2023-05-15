@@ -1291,8 +1291,18 @@ are ready...
      generate an agenda view to review a specific area of focus.
 
      In order to add areas of focus to pre-existing items in your
-     system, without going through the clarifying flow, we provide
-     ‘org-gtd-area-of-focus-set-on-item-at-point’.
+     system, without going through the clarifying flow, we provide two
+     functions:
+        • ‘org-gtd-area-of-focus-set-on-item-at-point’, when you are on
+          a org heading
+        • ‘org-gtd-area-of-focus-set-on-agenda-item’, when you are on an
+          agenda item
+
+     Do note that calling the function on item at point will trust you
+     blindly to do the right thing, whereas setting the area of focus
+     through the agenda will attempt to recognize if you are on a
+     project task and thus set the category on the project itself
+     instead of the task.
 
    • Longer-term horizons
 
@@ -1552,16 +1562,16 @@ Ref: Other headings47342
 Node: Engaging with your GTD items47882
 Node: Working with the GTD Horizons48448
 Ref: Areas of focus49191
-Ref: Longer-term horizons50007
-Node: Cleaning up / archiving completed work50814
-Node: Commands you can call on org-agenda51679
-Node: Defining your own agenda views52584
-Node: Adding your own hooks when organizing53126
-Node: Automating through emacs54338
-Node: Troubleshooting55475
-Node: Finding lost tasks55716
-Node: Projects without a NEXT item56246
-Node: I can't create a project when clarifying an inbox item!56717
+Ref: Longer-term horizons50475
+Node: Cleaning up / archiving completed work51282
+Node: Commands you can call on org-agenda52147
+Node: Defining your own agenda views53052
+Node: Adding your own hooks when organizing53594
+Node: Automating through emacs54806
+Node: Troubleshooting55943
+Node: Finding lost tasks56184
+Node: Projects without a NEXT item56714
+Node: I can't create a project when clarifying an inbox item!57185
 
 End Tag Table
 

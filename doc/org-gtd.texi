@@ -1191,7 +1191,15 @@ Horizon 2 is now handled by a variable and a hook you can add to @code{org-gtd-o
 
 You can then use the function @code{org-gtd-review-area-of-focus} to generate an agenda view to review a specific area of focus.
 
-In order to add areas of focus to pre-existing items in your system, without going through the clarifying flow, we provide @code{org-gtd-area-of-focus-set-on-item-at-point}.
+In order to add areas of focus to pre-existing items in your system, without going through the clarifying flow, we provide two functions:
+@itemize
+@item
+@code{org-gtd-area-of-focus-set-on-item-at-point}, when you are on a org heading
+@item
+@code{org-gtd-area-of-focus-set-on-agenda-item}, when you are on an agenda item
+@end itemize
+
+Do note that calling the function on item at point will trust you blindly to do the right thing, whereas setting the area of focus through the agenda will attempt to recognize if you are on a project task and thus set the category on the project itself instead of the task.
 
 @item
 @anchor{Longer-term horizons}Longer-term horizons
