@@ -25,6 +25,20 @@
 ;;
 ;;; Code:
 
+;;; code for days overdue
+;; (defun stag-day-counter ()
+;;   (let ((date (org-entry-get nil "CREATED")))
+;;     (abs (org-time-stamp-to-now date))))
+
+;; (let ((org-agenda-files '("/tmp/foo.org"))
+;;       (org-agenda-custom-commands
+;;        '(("g" "wakatara country"
+;;           ((tags "+CREATED<=\"<today\""
+;;                  ((org-agenda-overriding-header "Ongoing situations")
+;;                   (org-agenda-prefix-format '((tags . " %(stag-day-counter) days: "))))))))))
+;;   (org-agenda nil "g"))
+
+
 (defun org-gtd-oops ()
   "Agenda view for all non-respected timely events."
   (interactive)
@@ -32,16 +46,16 @@
       (let ((org-agenda-custom-commands
              '(("o" "Show oopses"
                 ((tags "+DELEGATED_TO={.+}"
-                         ((org-agenda-overriding-header "Missed check-ins on delegated items")
-                          (org-agenda-skip-additional-timestamps-same-entry t)
-                          (org-agenda-skip-function 'org-gtd-skip-unless-timestamp-in-the-past)))
+                       ((org-agenda-overriding-header "Missed check-ins on delegated items")
+                        (org-agenda-skip-additional-timestamps-same-entry t)
+                        (org-agenda-skip-function 'org-gtd-skip-unless-timestamp-in-the-past)))
                  (tags "+ORG_GTD=\"Calendar\"+LEVEL=2"
-                         ((org-agenda-overriding-header "Missed appointments")
-                          (org-agenda-skip-additional-timestamps-same-entry t)
-                          (org-agenda-skip-function
-                           '(org-gtd-skip-AND
-                            '(org-gtd-skip-unless-calendar
-                              org-gtd-skip-unless-timestamp-in-the-past)))))
+                       ((org-agenda-overriding-header "Missed appointments")
+                        (org-agenda-skip-additional-timestamps-same-entry t)
+                        (org-agenda-skip-function
+                         '(org-gtd-skip-AND
+                           '(org-gtd-skip-unless-calendar
+                             org-gtd-skip-unless-timestamp-in-the-past)))))
                  ;; (tags "+LEVEL=2+ORG_GTD=\"Projects\"+DEADLINE<\"<today>\""
                  ;;       ((org-agenda-overriding-header "??")))
                  ;; (tags "+LEVEL=2+ORG_GTD=\"Projects\"+SCHEDULED<\"<today>\""
