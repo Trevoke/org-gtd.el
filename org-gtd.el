@@ -5,7 +5,7 @@
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; Homepage: https://github.com/Trevoke/org-gtd.el
 ;; Package-Requires: ((emacs "27.2") (org-edna "1.1.2") (f "0.20.0") (org "9.6") (org-agenda-property "1.3.1") (transient "0.3.7"))
-;; Package-Version: 3.0.0beta
+;; Package-Version: 3.0.0
 
 ;; This file is not part of GNU Emacs.
 
@@ -38,7 +38,7 @@
 ;; Upgrade information is also available therein.
 ;;
 ;;; Code:
-(defconst org-gtd-version "3.0.0beta")
+(defconst org-gtd-version "3.0.0")
 
 (require 'subr-x)
 (require 'cl-lib)
@@ -78,18 +78,18 @@ your version to the one installed.  Use a version string.  For instance:
 If org-gtd is 2.0.0, use \"2.0.0\".
 If org-gtd is 2.3.5, use \"2.3.5\".")
 
-(if (version< org-gtd-update-ack "3.0.0beta")
+(if (version< org-gtd-update-ack "3.0.0")
     (lwarn 'org-gtd :warning "
 
-|--------------------------|
-| WARNING: BETA RELEASE    |
-|--------------------------|
+|-------------------------|
+| WARNING: MAJOR VERSION  |
+|-------------------------|
 
-Thank you for testing the beta release of org-gtd 3.0.0 .
-The API is stable unless big breakages are discovered for some reason.
+See the changelog for a full set of changes.
 
-For a summary/dirty changelog, see a file called `changes-for-3.0.org' in the
-repository: `https://github.com/trevoke/org-gtd.el'.
+See the documentation for complete upgrade information:
+
+=> `C-h i m org gtd RET'
 
 Important notices involve:
 - run `org-gtd-upgrade-v2-to-v3'
@@ -101,12 +101,13 @@ Important notices involve:
 - `org-gtd-choose' is now `org-gtd-organize'
 - `org-gtd-process-item-hooks' is now `org-gtd-organize-hooks'
 
-So do review this, and join the discord in the readme to discuss the changes!
+So do review this, and join the discord in the readme if you want to meet
+more users!
 
 To make this warning go away, add the following setting to your config file
 (BEFORE ORG-GTD LOADS)
 
-(setq org-gtd-update-ack \"3.0.0beta\")
+(setq org-gtd-update-ack \"3.0.0\"
 
 "))
 

@@ -9,7 +9,7 @@
 #+TEXINFO_DIR_TITLE: Org GTD: (org-gtd)
 #+TEXINFO_DIR_DESC: An opinionated GTD flow implemented in org-mode
 #+TEXINFO_FILENAME: ../org-gtd.info
-#+SUBTITLE: for version 2.2
+#+SUBTITLE: for version 3.0
 #+TEXINFO_DEFFN: t
 #+OPTIONS: H:3 num:3 toc:2
 #+PROPERTY: header-args :eval never
