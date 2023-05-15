@@ -11,14 +11,17 @@
  :var ((inhibit-message t))
 
  (before-each (ogt--configure-emacs)
-              (add-hook 'org-gtd-organize-hooks #'org-gtd-set-area-of-focus)
               (setq org-gtd-areas-of-focus '("Health" "Home" "Career")))
  (after-each (ogt--close-and-delete-files)
-             (remove-hook 'org-gtd-organize-hooks #'org-gtd-set-area-of-focus)
              (setq org-gtd-areas-of-focus nil))
 
  (describe
   "org-mode CATEGORY"
+
+ (before-each
+  (add-hook 'org-gtd-organize-hooks #'org-gtd-set-area-of-focus))
+ (after-each
+  (remove-hook 'org-gtd-organize-hooks #'org-gtd-set-area-of-focus))
 
   (it "is set on clarified item from a customizable list"
       (ogt-capture-single-item "Medical Appointment")
@@ -41,4 +44,35 @@
         (kill-buffer))))
 
  (describe
-  "on arbitrary headings"))
+  "through the agenda"
+  (it "works on simple tasks"
+      (ogt-capture-and-process-single-action "foobar")
+      (org-gtd-engage)
+      (with-current-buffer org-agenda-buffer
+        (goto-char (point-min))
+        (search-forward "foobar")
+        (with-simulated-input
+         "Home RET"
+         (org-gtd-area-of-focus-set-on-agenda-item)))
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "foobar")
+        (expect (org-entry-get (point) "CATEGORY")
+                :to-equal
+                "Home")))
+
+  (it "sets category on project heading if on project task"
+      (ogt-capture-and-process-project "my project")
+      (org-gtd-engage)
+      (with-current-buffer org-agenda-buffer
+        (goto-char (point-min))
+        (search-forward "Task 1")
+        (with-simulated-input
+         "Home RET"
+         (org-gtd-area-of-focus-set-on-agenda-item)))
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "my project")
+        (expect (org-entry-get (point) "CATEGORY")
+                :to-equal
+                "Home")))))

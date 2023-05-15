@@ -30,6 +30,7 @@
 (require 'org-gtd-core)
 (require 'org-gtd-horizons)
 (require 'org-gtd-organize)
+(require 'org-gtd-projects)
 
 (defcustom org-gtd-areas-of-focus '("Home" "Health" "Family" "Career")
   "The current major areas in your life where you don't want to drop balls."
@@ -57,6 +58,25 @@ variable."
                       nil
                       t)))
     (org-entry-put (point) "CATEGORY" chosen-area)))
+
+(defun org-gtd-area-of-focus-set-on-agenda-item ()
+  (declare (modes org-agenda-mode)) ;; for 27.2 compatibility
+  (interactive)
+  (org-agenda-check-type t 'agenda 'todo 'tags 'search)
+  (org-agenda-check-no-diary)
+  (let* ((marker (or (org-get-at-bol 'org-marker)
+                     (org-agenda-error)))
+         (buffer (marker-buffer marker))
+         (pos (marker-position marker)))
+    (set-marker-insertion-type marker t)
+    (org-with-remote-undo buffer
+      (with-current-buffer buffer
+        (widen)
+        (goto-char pos)
+        (if (string-equal (org-entry-get nil "ORG_GTD" t)
+                          org-gtd-projects)
+            (org-up-heading-safe))
+        (org-gtd-area-of-focus-set-on-item-at-point)))))
 
 (provide 'org-gtd-areas-of-focus)
 ;;; org-gtd-areas-of-focus.el ends here

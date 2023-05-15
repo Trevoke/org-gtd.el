@@ -46,7 +46,7 @@ Archive everything that needs to be archived in your org-gtd." t nil)
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from org-gtd-areas-of-focus.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-areas-of-focus" '("org-gtd-")))
+(register-definition-prefixes "org-gtd-areas-of-focus" '("org-gtd-"))
 
 ;;;***
 
