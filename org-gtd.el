@@ -4,8 +4,8 @@
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; Homepage: https://github.com/Trevoke/org-gtd.el
-;; Package-Requires: ((emacs "27.1") (org-edna "1.1.2") (f "0.20.0") (org "9.6") (org-agenda-property "1.3.1") (transient "0.3.7"))
-;; Package-Version: 2.3.0
+;; Package-Requires: ((emacs "27.2") (org-edna "1.1.2") (f "0.20.0") (org "9.6") (org-agenda-property "1.3.1") (transient "0.3.7"))
+;; Package-Version: 3.0.0beta
 
 ;; This file is not part of GNU Emacs.
 
@@ -38,7 +38,7 @@
 ;; Upgrade information is also available therein.
 ;;
 ;;; Code:
-(defconst org-gtd-version "2.3.0")
+(defconst org-gtd-version "3.0.0beta")
 
 (require 'subr-x)
 (require 'cl-lib)
@@ -49,27 +49,66 @@
 (require 'org-element)
 (require 'org-agenda-property)
 (require 'org-edna)
-(require 'org-gtd-customize)
 
 (require 'org-gtd-core)
+(require 'org-gtd-id)
+(require 'org-gtd-files)
+(require 'org-gtd-horizons)
+(require 'org-gtd-areas-of-focus)
+(require 'org-gtd-clarify)
 (require 'org-gtd-delegate)
 (require 'org-gtd-archive)
 (require 'org-gtd-capture)
-(require 'org-gtd-files)
 (require 'org-gtd-refile)
 (require 'org-gtd-projects)
 (require 'org-gtd-agenda)
-(require 'org-gtd-inbox-processing)
+(require 'org-gtd-organize)
+(require 'org-gtd-process)
 (require 'org-gtd-mode)
+(require 'org-gtd-review)
+(require 'org-gtd-oops)
+(require 'org-gtd-upgrades)
 
 (defvar org-gtd-update-ack "1.0.0"
   "Set this to the latest version you have upgraded to.
 
 You will only see warnings relevant to upgrade steps you must take to go up from
-your version to the one installed. Use a version string. For instance:
+your version to the one installed.  Use a version string.  For instance:
 
 If org-gtd is 2.0.0, use \"2.0.0\".
 If org-gtd is 2.3.5, use \"2.3.5\".")
+
+(if (version< org-gtd-update-ack "3.0.0beta")
+    (lwarn 'org-gtd :warning "
+
+|--------------------------|
+| WARNING: BETA RELEASE    |
+|--------------------------|
+
+Thank you for testing the beta release of org-gtd 3.0.0 .
+The API is stable unless big breakages are discovered for some reason.
+
+For a summary/dirty changelog, see a file called `changes-for-3.0.org' in the
+repository: `https://github.com/trevoke/org-gtd.el'.
+
+Important notices involve:
+- run `org-gtd-upgrade-v2-to-v3'
+- this moves all your habits to a new sub-heading in the default org-gtd file
+- it will create this file if you don't have it
+- as long you respect the Habits structure, move them where you want
+
+- some of the key commands have changed, e.g.
+- `org-gtd-choose' is now `org-gtd-organize'
+- `org-gtd-process-item-hooks' is now `org-gtd-organize-hooks'
+
+So do review this, and join the discord in the readme to discuss the changes!
+
+To make this warning go away, add the following setting to your config file
+(BEFORE ORG-GTD LOADS)
+
+(setq org-gtd-update-ack \"3.0.0beta\")
+
+"))
 
 (if (version< org-gtd-update-ack "2.1.0")
     (lwarn 'org-gtd :warning "

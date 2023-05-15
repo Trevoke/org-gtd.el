@@ -25,50 +25,23 @@
 ;;; Code:
 
 (require 'f)
-
-(defconst org-gtd-inbox-template
-  "#+STARTUP: overview hidestars logrefile indent logdone
-#+TODO: NEXT TODO WAIT | DONE CNCL TRASH
-#+begin_comment
-This is the inbox. Everything goes in here when you capture it.
-#+end_comment
-"
-  "Template for the GTD inbox.")
-
-(defconst org-gtd-file-header
-  "#+STARTUP: overview indent align inlineimages hidestars logdone logrepeat logreschedule logredeadline
-#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)
-")
-
+(require 'org-gtd-core)
 
 (defconst org-gtd-default-file-name "org-gtd-tasks")
 
-;;;###autoload
-(defun org-gtd-inbox-path ()
-  "Return the full path to the inbox file."
-  (org-gtd--path org-gtd-inbox))
-
-(defun org-gtd--inbox-file ()
-  "Create or return the buffer to the GTD inbox file."
-  (let ((file-path (org-gtd--path org-gtd-inbox)))
-    (if (f-file-p file-path)
-        (find-file-noselect file-path)
-      (with-current-buffer (find-file-noselect file-path)
-        (insert org-gtd-inbox-template)
-        (org-mode-restart)
-        (basic-save-buffer)
-        (current-buffer)))))
-
 (defun org-gtd--default-file ()
   "Create or return the buffer to the default GTD file."
-  (let ((file-path (org-gtd--path org-gtd-default-file-name)))
-    (if (f-file-p file-path)
-        (find-file-noselect file-path)
-      (with-current-buffer (find-file-noselect file-path)
-        (insert org-gtd-file-header)
-        (org-mode-restart)
-        (basic-save-buffer)
-        (current-buffer)))))
+  (let ((path (org-gtd--path org-gtd-default-file-name)))
+    (org-gtd--ensure-file-exists path)
+    (find-file-noselect path)))
+
+(defun org-gtd--ensure-file-exists (path &optional initial-contents)
+  "Create the file at PATH with INITIAL-CONTENTS if it does not exist."
+  (unless (f-exists-p path)
+    (with-current-buffer (find-file-noselect path)
+      (insert (or initial-contents ""))
+      (org-gtd-core-prepare-buffer)
+      (basic-save-buffer))))
 
 (defun org-gtd--path (file)
   "Return the full path to FILE.org.

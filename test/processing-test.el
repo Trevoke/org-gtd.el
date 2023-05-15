@@ -6,95 +6,89 @@
 (require 'buttercup)
 (require 'with-simulated-input)
 
-(describe "Processing items"
+(describe
+ "Processing items"
 
-  (before-each
-    (ogt--configure-emacs)
-    (ogt--prepare-filesystem)
-    (ogt--add-single-item))
-  (after-each (ogt--close-and-delete-files))
+  :var ((inhibit-message t))
 
-  (it "processes all the elements"
-    (dotimes (x 8)
-      (ogt--add-single-item (format "single action %s" x)))
+ (before-each
+  (ogt--configure-emacs)
+  (ogt-capture-single-item))
+ (after-each (ogt--close-and-delete-files))
 
-    (org-gtd-process-inbox)
+ (it "processes all the elements"
+     (dotimes (x 8)
+       (ogt-capture-single-item (format "single action %s" x)))
 
-    (execute-kbd-macro (kbd "M-> RET"))
-    (insert ogt--project-text)
-    (execute-kbd-macro (kbd "C-c c p TAB RET"))
+     (org-gtd-process-inbox)
 
-    (execute-kbd-macro (kbd "C-c c c RET TAB RET"))
+     (execute-kbd-macro (kbd "M-> RET"))
+     (insert ogt--project-text)
+     (ogt-clarify-as-project)
 
-    (execute-kbd-macro (kbd "C-c c d RET Someone RET TAB RET"))
+     (ogt-clarify-as-calendar-item)
+     (ogt-clarify-as-delegated-item "Someone")
+     (ogt-clarify-as-incubated-item)
+     (ogt-clarify-as-single-action)
+     (ogt-clarify-as-knowledge-item)
 
-    (execute-kbd-macro (kbd "C-c c i RET TAB RET"))
+     (execute-kbd-macro (kbd "M-> RET"))
+     (insert ogt--project-text)
+     (ogt-clarify-as-project)
 
-    (execute-kbd-macro (kbd "C-c c s TAB RET"))
+     (ogt-clarify-as-calendar-item)
 
-    (execute-kbd-macro (kbd "C-c c s TAB RET"))
+     (dotimes (x 8)
+       (ogt-capture-single-item (format "single action %s" x)))
 
-    (execute-kbd-macro (kbd "M-> RET"))
-    (insert ogt--project-text)
-    (execute-kbd-macro (kbd "C-c c p TAB RET"))
+     (org-gtd-process-inbox)
 
-    (execute-kbd-macro (kbd "C-c c c RET TAB RET"))
+     (execute-kbd-macro (kbd "C-c c i RET"))
 
-    (dotimes (x 8)
-      (ogt--add-single-item (format "single action %s" x)))
+     (execute-kbd-macro (kbd "M-> RET"))
+     (insert ogt--project-text)
+     (ogt-clarify-as-project)
 
-    (org-gtd-process-inbox)
+     (ogt-clarify-as-single-action)
+     (ogt-clarify-as-single-action)
+     (ogt-clarify-as-calendar-item)
+     (ogt-clarify-as-delegated-item "Someone")
+     (ogt-clarify-as-incubated-item)
+     (ogt-clarify-as-single-action)
+     (ogt-clarify-as-knowledge-item)
 
-    (execute-kbd-macro (kbd "C-c c i RET TAB RET"))
+     (with-current-buffer (ogt-inbox-buffer)
+       (expect (ogt--current-buffer-raw-text)
+               :not :to-match
+               "single action")))
 
-    (execute-kbd-macro (kbd "M-> RET"))
-    (insert ogt--project-text)
-    (execute-kbd-macro (kbd "C-c c p TAB RET"))
+ (it "uses configurable decorations on the processed items"
+     (let ((org-gtd-organize-hooks '(org-set-tags-command org-priority)))
+       (org-gtd-process-inbox)
+       (execute-kbd-macro (kbd "C-c c s RET A TAB RET")))
 
-    (execute-kbd-macro (kbd "C-c c s TAB RET"))
+     (org-gtd-engage)
+     (let ((ogt-agenda-string (ogt--buffer-string org-agenda-buffer)))
+       (expect (string-match "NEXT \\[#A\\] single action" ogt-agenda-string)
+               :to-be-truthy)))
 
-    (execute-kbd-macro (kbd "C-c c s TAB RET"))
+ (it "shows item in agenda when done"
+     (org-gtd-process-inbox)
+     (execute-kbd-macro (kbd "C-c c s TAB RET"))
+     (expect (buffer-modified-p (org-gtd--default-file)) :to-equal t)
 
-    (execute-kbd-macro (kbd "C-c c c RET TAB RET"))
+     (org-gtd-engage)
+     (let ((ogt-agenda-string (ogt--buffer-string org-agenda-buffer)))
+       (expect (string-match "single action" ogt-agenda-string)
+               :to-be-truthy)))
 
-    (execute-kbd-macro (kbd "C-c c d RET Someone RET TAB RET"))
+ (describe
+  "error management"
+  (describe
+   "when project has incorrect shape"
+   (it "tells the user and returns to editing"
+       (org-gtd-process-inbox)
+       (execute-kbd-macro (kbd "C-c c p RET"))
 
-    (execute-kbd-macro (kbd "C-c c i RET TAB RET"))
-
-    (execute-kbd-macro (kbd "C-c c s TAB RET"))
-
-    (execute-kbd-macro (kbd "C-c c s TAB RET"))
-
-    (with-current-buffer (org-gtd--inbox-file)
-      (expect (ogt--current-buffer-raw-text)
-              :not :to-match
-              "single action")))
-
-  (it "uses configurable decorations on the processed items"
-    (let ((org-gtd-process-item-hooks '(org-set-tags-command org-priority)))
-      (org-gtd-process-inbox)
-      (execute-kbd-macro (kbd "C-c c s RET A TAB RET")))
-
-    (org-gtd-engage)
-    (let ((ogt-agenda-string (ogt--buffer-string org-agenda-buffer)))
-      (expect (string-match "NEXT \\[#A\\] single action" ogt-agenda-string)
-              :to-be-truthy)))
-
-  (it "shows item in agenda when done"
-    (org-gtd-process-inbox)
-    (execute-kbd-macro (kbd "C-c c s TAB RET"))
-    (expect (buffer-modified-p (org-gtd--default-file)) :to-equal t)
-
-    (org-gtd-engage)
-    (let ((ogt-agenda-string (ogt--buffer-string org-agenda-buffer)))
-      (expect (string-match "single action" ogt-agenda-string)
-              :to-be-truthy)))
-
-  (describe "error management"
-    (describe "when project has incorrect shape"
-      (it "tells the user and returns to editing"
-        (org-gtd-process-inbox)
-        (execute-kbd-macro (kbd "C-c c p"))
-        (expect (buffer-name) :to-match "inbox")
-        (with-current-buffer "*Message*"
-          (expect (ogt--current-buffer-raw-text) :to-match "First task"))))))
+       (expect (buffer-name) :to-match org-gtd-clarify--prefix)
+       (expect (ogt--buffer-string "*Message*") :to-match "** First task")))))

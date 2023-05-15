@@ -1,9 +1,13 @@
-; -*- mode: emacs-lisp; lexical-binding: t; no-byte-compile: t -*-
+; -*- mode: emacs-lisp; lexical-binding: t; -*-
 
 ;; Autodetermined by `eldev init'.
-(eldev-use-package-archive 'gnu)
+(eldev-use-package-archive 'gnu-elpa)
 (eldev-use-package-archive 'melpa)
+
+(eldev-use-plugin 'autoloads)
+(eldev-use-plugin 'maintainer)
 
 (setq eldev-test-framework 'buttercup)
 
 (eldev-add-extra-dependencies 'test 'with-simulated-input)
+(eldev-add-extra-dependencies 'test 'dash)

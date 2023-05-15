@@ -1,3 +1,23 @@
+* 3.0.0
+** Functions exist to create your own hooks
+Make GTD truly a part of your emacs experience.
+** Minimum emacs version now 27.2
+I can't find 27.1 anywhere.
+** Support habits
+org mode's habits now have a place here
+** Organize menu has changed
+- Habits have their place
+- What used to be called "archive" is now called "knowledge"
+- Modify project is now "Add to project"
+** Massive API changes
+- The package domain now is a better match for the domain language of GTD.
+** Massive Data structure changes
+- SCHEDULED and DEADLINE are intended to be used for things that have to start and things that have to end, respectively. V2 abused them, v3 is more respectful of how org-mode wants to work.
+** Include horizons
+- They can be displayed while clarifying.
+- There's an optional organize-hook for areas of focus
+- There's an agenda view for areas of focus
+** You can create your own project templates and insert them while clarifying
 * 2.0.0
 ** Complete overhaul of inbox processing
 We now respect that emacs is a GUI and that the user must have complete control at all times. The flow also provides control to the user *PRIOR* to the user choosing the way to categorize this item.

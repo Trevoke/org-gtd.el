@@ -8,89 +8,84 @@
 (describe
  "Modifying a project"
 
- (before-each
-  (ogt--configure-emacs)
-  (ogt--prepare-filesystem))
+ :var ((inhibit-message t))
 
+ (before-each (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
- (describe "when org-reverse-note-order is t"
+ (describe
+  "when org-reverse-note-order is t"
 
-           (before-each (setq org-reverse-note-order t))
-           (after-each (ogt--reset-var 'org-reverse-note-order))
+  (before-each (setq org-reverse-note-order t))
+  (after-each (ogt--reset-var 'org-reverse-note-order))
 
-           (it "as the first NEXT task"
-               (ogt--add-and-process-project "project headline")
-               (ogt--add-single-item "Task 0")
-               (org-gtd-process-inbox)
+  (it "as the first NEXT task"
+      (ogt-capture-and-process-project "project headline")
+      (ogt-capture-and-process-addition-to-project "Task 0" "project SPC headline TAB RET")
+      (org-gtd-engage)
+      (with-current-buffer org-agenda-this-buffer-name
+        (goto-char (point-min))
 
-               (with-simulated-input "project SPC headline TAB RET"
-                                     (org-gtd--modify-project))
-               (org-gtd-engage)
-               (with-current-buffer org-agenda-this-buffer-name
-                 (expect (ogt--current-buffer-raw-text) :to-match "Task 0")
-                 (expect (ogt--current-buffer-raw-text) :not :to-match "Task 1")))
+        (search-forward "Task 0")
+        (expect (ogt--current-buffer-raw-text) :not :to-match "Task 1")))
 
-           (it "keeps sanity of TODO states in modified project"
-               (let* ((temporary-file-directory org-gtd-directory)
-                      (gtd-file (make-temp-file "foo" nil ".org" (org-file-contents "test/fixtures/gtd-file.org"))))
-                 (ogt--add-single-item "Task 0")
-                 (org-gtd-process-inbox)
-                 (with-simulated-input "[1/3] SPC addtaskhere RET"
-                                       (org-gtd--modify-project))
-                 (with-current-buffer (find-file-noselect gtd-file)
-                   (expect (ogt--current-buffer-raw-text) :to-match "NEXT Task 0")
-                   (expect (ogt--current-buffer-raw-text) :to-match "DONE finished task")
-                   (expect (ogt--current-buffer-raw-text) :to-match "TODO initial next task")
-                   (expect (ogt--current-buffer-raw-text) :to-match "TODO initial last task")
+  (it "keeps sanity of TODO states in modified project"
+      (let* ((temporary-file-directory org-gtd-directory)
+             (gtd-file-buffer (ogt--temp-org-file-buffer "foo" (org-file-contents "test/fixtures/gtd-file.org"))))
+        (org-gtd-core-prepare-buffer gtd-file-buffer)
+        (ogt-capture-and-process-addition-to-project "Task 0" "[1/3] SPC addtaskhere RET")
+        (with-current-buffer gtd-file-buffer
+          (goto-char (point-min))
 
-                   (search-forward "NEXT Task 0")
-                   (org-todo 'done)
-                   (expect (ogt--current-buffer-raw-text) :to-match "DONE Task 0")
-                   (expect (ogt--current-buffer-raw-text) :to-match "DONE finished task")
-                   (expect (ogt--current-buffer-raw-text) :to-match "NEXT initial next task")
-                   (expect (ogt--current-buffer-raw-text) :to-match "TODO initial last task")))))
+          (search-forward "NEXT Task 0")
+          (search-forward "DONE finished task")
+          (search-forward "TODO initial next task")
+          (search-forward "TODO initial last task")
+          (goto-char (point-min))
 
- (describe "when org-reverse-note-order is nil"
+          (search-forward "NEXT Task 0")
+          (org-todo 'done)
+          (goto-char (point-min))
+          (search-forward "DONE Task 0")
+          (search-forward "DONE finished task")
+          (search-forward "NEXT initial next task")
+          (search-forward "TODO initial last task")))))
 
-           (before-each (setq org-reverse-note-order nil))
-           (after-each (ogt--reset-var 'org-reverse-note-order))
+ (describe
+  "when org-reverse-note-order is nil"
 
-           (it "as the last NEXT task"
-               (ogt--add-and-process-project "project headline")
-               (ogt--add-single-item "Task 0")
-               (org-gtd-process-inbox)
+  (before-each (setq org-reverse-note-order nil))
+  (after-each (ogt--reset-var 'org-reverse-note-order))
 
-               (with-simulated-input "project SPC headline TAB RET"
-                                     (org-gtd--modify-project))
-               (org-gtd-engage)
-               (with-current-buffer org-agenda-this-buffer-name
-                 (expect (ogt--current-buffer-raw-text) :not :to-match "Task 0")
-                 (expect (ogt--current-buffer-raw-text) :to-match "Task 1"))))
+  (it "as the last NEXT task"
+      (ogt-capture-and-process-project "project headline")
+      (ogt-capture-and-process-addition-to-project "Task 0" "project SPC headline TAB RET")
+      (org-gtd-engage)
+      (with-current-buffer org-agenda-this-buffer-name
+        (goto-char (point-min))
+
+        (expect (ogt--current-buffer-raw-text) :not :to-match "Task 0")
+        (search-forward "Task 1"))))
 
  (it "keeps sanity of TODO states in modified project"
      (let* ((temporary-file-directory org-gtd-directory)
             (gtd-file (make-temp-file "foo" nil ".org" (org-file-contents "test/fixtures/gtd-file.org"))))
-       (ogt--add-single-item "Task 0")
-       (org-gtd-process-inbox)
-       (with-simulated-input "[1/3] SPC addtaskhere RET"
-                             (org-gtd--modify-project))
+       (org-gtd-core-prepare-buffer (find-file-noselect gtd-file))
+       (ogt-capture-and-process-addition-to-project "Task 0" "[1/3] SPC addtaskhere RET")
 
        (with-current-buffer (find-file-noselect gtd-file)
          (search-forward "addtaskhere")
          (org-narrow-to-subtree)
-         (expect (ogt--current-buffer-raw-text) :to-match "DONE finished task")
-         (expect (ogt--current-buffer-raw-text) :to-match "NEXT initial next task")
-         (expect (ogt--current-buffer-raw-text) :to-match "TODO initial last task")
-         (expect (ogt--current-buffer-raw-text) :to-match "TODO Task 0")
+         (search-forward "DONE finished task")
+         (search-forward "NEXT initial next task")
+         (search-forward "TODO initial last task")
+         (search-forward "TODO Task 0")
 
+         (goto-char (point-min))
          (search-forward "NEXT")
          (org-entry-put (org-gtd-projects--org-element-pom (org-element-at-point)) "TODO" "DONE")
-
-         (expect (ogt--current-buffer-raw-text) :to-match "DONE finished task")
-         (expect (ogt--current-buffer-raw-text) :to-match "DONE initial next task")
-         (expect (ogt--current-buffer-raw-text) :to-match "NEXT initial last task")
-         (expect (ogt--current-buffer-raw-text) :to-match "TODO Task 0"))))
-
-
- )
+         (goto-char (point-min))
+         (search-forward "DONE finished task")
+         (search-forward "DONE initial next task")
+         (search-forward "NEXT initial last task")
+         (search-forward "TODO Task 0")))))

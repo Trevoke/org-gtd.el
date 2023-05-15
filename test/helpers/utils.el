@@ -1,13 +1,12 @@
-(defun ogt--org-dir-buffer-string ()
-  (let ((ogt-files (progn (list-directory org-gtd-directory)
-                          (with-current-buffer "*Directory*"
-                            (buffer-string)))))
-    (kill-buffer "*Directory*")
-    ogt-files))
+(defun create-additional-project-target (filename)
+  (ogt--create-org-file-in-org-gtd-dir filename ogt--base-project-heading))
+
+(defun ogt-inbox-buffer ()
+  (find-file-noselect (org-gtd-inbox-path)))
 
 (defun ogt--archive ()
   "Create or return the buffer to the archive file."
-  (with-current-buffer (org-gtd--inbox-file)
+  (with-current-buffer (ogt-inbox-buffer)
     (find-file-noselect
      (car (with-org-gtd-context
               (org-archive--compute-location
@@ -18,13 +17,22 @@
   (ogt--buffer-string (ogt--archive)))
 
 (defun ogt--save-all-buffers ()
-  (with-simulated-input "!" (save-some-buffers)))
+  (let ((inhibit-message t))
+    (with-simulated-input "!" (save-some-buffers))))
 
-(defun create-additional-project-target (filename)
-  (let* ((file (f-join org-gtd-directory (format "%s.org" filename)))
+(defun ogt--temp-org-file-buffer (basename &optional text)
+  "Create a new org-mode file with a unique name.
+The name is based on BASENAME, the TEXT is optional content.
+Return the buffer visiting that file."
+  (let ((filename (make-temp-file basename nil ".org" text)))
+    (find-file-noselect filename)))
+
+(defun ogt--create-org-file-in-org-gtd-dir (basename &optional initial-contents)
+  (let* ((file (f-join org-gtd-directory (string-join `(,basename ".org"))))
          (buffer (find-file-noselect file)))
     (with-current-buffer buffer
-      (insert ogt--base-project-heading)
+      (org-mode)
+      (insert (or initial-contents ""))
       (basic-save-buffer))
     buffer))
 
@@ -36,3 +44,15 @@
 (defun ogt--current-buffer-raw-text ()
   "Returns text without faces"
   (buffer-substring-no-properties (point-min) (point-max)))
+
+(defun ogt--print-buffer-list ()
+  (message "*** Start List of active buffers")
+  (mapc (lambda (x) (message (buffer-name x))) (buffer-list))
+  (message "*** End List of active buffers"))
+
+(defun ogt--org-dir-buffer-string ()
+  (let ((ogt-files (progn (list-directory org-gtd-directory)
+                          (with-current-buffer "*Directory*"
+                            (buffer-string)))))
+    (kill-buffer "*Directory*")
+    ogt-files))

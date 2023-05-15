@@ -1,0 +1,51 @@
+* DONE doom emacs
+clear your natively compiled files and re-sync
+
+There's been a lot of issues during beta testing with proper installation of org-mode >9.6 and org-gtd 3.0, and a clean install is the only fix we found. Part of the reason is likely that org-mode is a very complex beast to install properly and requires some delicate massaging by doom in order to be user-friendly, but leads to potentially weird edge cases. Don't quote me on this.
+* DONE minimum emacs requirement: 27.2
+* DONE update your mind
+** DONE menu has changed
+(a)rchive is now (k)nowledge
+(m)odify project is now (a)dd to project
+** DONE org-gtd-delegate is now org-gtd-delegate-item-at-point
+** DONE org-gtd-agenda-projectify is now just org-gtd-clarify-agenda-item
+** DONE org-gtd-agenda-delegate is now org-gtd-delegate-agenda-item
+** DONE org-gtd-cancel-project is now org-gtd-project-cancel
+** DONE org-gtd-agenda-cancel-project is now org-gtd-project-cancel-from-agenda
+** DONE org-gtd-show-stuck-projects is now org-gtd-review-stuck-projects
+** DONE org-gtd-agenda-custom-commands is gone
+Create your own functions and use ~with-org-gtd-context~ instead.
+See ~org-gtd-engage~ for an example.
+* DONE new features
+** DONE org-gtd-oops command for missed appointments
+** DONE you can now clarify single items with org-gtd-clarify-item
+** DONE organize-hooks can be customized to apply to specific types of tasks (see org-gtd-organize-type-member-p )
+** DONE you can customize your TODO keywords
+** DONE areas of focus customizable variable and optional decoration hook
+** DONE horizons file customizable, can be displayed/toggled while clarifying items
+suggest keybinding on keymap in doc
+** DONE project templates
+~org-gtd-clarify-project-insert-template~
+** DONE functions you can call to automatically add items to the GTD flow
+(nothing for knowledge, projects, quick action, or trash)
+sample hook
+#+begin_src elisp
+  (defun org-gtd-delegate-from-email ()
+  (let ((delegated-to (message-fetch-field "to"))
+        (topic (format "Check in on %s" (message-fetch-field "subject")))
+        (checkin-date (format-time-string "%Y-%m-%d"))
+    (org-gtd-delegate-create topic delegated-to checkin-date)))
+#+end_src
+* DONE required config changes
+** DONE org-gtd-process-mode is now org-gtd-clarify-mode
+** DONE org-gtd-process-map is now org-gtd-clarify-map
+** DONE org-gtd-choose is now org-gtd-organize
+** DONE org-gtd-capture config is now org-capture config, not the 2.0 crippled one
+** DONE drop the headers
+point people to org documentation for startup / variables to determine logging behavior if they want to keep it
+-> logdone logrepeat logreschedule logredeadline
+https://orgmode.org/manual/In_002dbuffer-Settings.html
+** DONE change org-edna triggers again
+** DONE calendar items no longer use SCHEDULED
+** DONE hook name has changed
+org-gtd-process-item-hooks -> org-gtd-organize-hooks

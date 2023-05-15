@@ -26,6 +26,7 @@
 
 (require 'org-agenda)
 (require 'org-edna)
+
 (require 'org-gtd-core)
 
 (defvar org-gtd-edna-inheritance nil "Private.")
@@ -36,6 +37,7 @@
   "Global minor mode to bound `org-agenda' to the org-gtd settings."
   :lighter " GTD"
   :global t
+  :group 'org-gtd
   (if org-gtd-mode
       (org-gtd--enable-org-gtd-mode)
     (org-gtd--disable-org-gtd-mode)))
@@ -64,6 +66,7 @@ configuration."
   (mapc
    (lambda (x) (advice-add x :around #'org-gtd--wrap))
    org-gtd--agenda-functions)
+
   (setq org-gtd-edna-inheritance org-edna-use-inheritance
         org-gtd-edna org-edna-mode)
   (setq org-edna-use-inheritance 1)
@@ -77,6 +80,7 @@ previous values."
   (mapc
    (lambda (x) (advice-remove x #'org-gtd--wrap))
    org-gtd--agenda-functions)
+
   (setq org-edna-use-inheritance org-gtd-edna-inheritance)
   (org-edna-mode org-gtd-edna))
 

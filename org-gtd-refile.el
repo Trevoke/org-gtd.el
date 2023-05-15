@@ -27,54 +27,23 @@
 (require 'org)
 (require 'org-refile)
 (require 'org-element)
+
 (require 'org-gtd-core)
 
-(defconst org-gtd-projects-template
-  "* Projects
-:PROPERTIES:
-:TRIGGER: relatives(forward-no-wrap todo-only 1 no-sort) todo!(NEXT)
-:ORG_GTD: Projects
-:END:
-")
+(defcustom org-gtd-refile-to-any-target t
+  "Set to true if you do not need to choose where to refile processed items.
 
-(defconst org-gtd-calendar-template
-  "* Calendar
-:PROPERTIES:
-:ORG_GTD: Calendar
-:END:
-")
+When this is true, org-gtd will refile to the first target it finds, or creates
+it if necessary, without confirmation.  When this is false, it will ask for
+confirmation regardless of the number of options.  Note that setting this to
+false does not mean you can safely create new targets.  See the documentation
+to create new refile targets.
 
-(defconst org-gtd-actions-template
-  "* Actions
-:PROPERTIES:
-:ORG_GTD: Actions
-:END:
-")
-
-(defconst org-gtd-incubated-template
-  "* Incubate
-:PROPERTIES:
-:ORG_GTD: Incubated
-:END:
-"
-  "Template for the GTD someday/maybe list.")
-
-(defconst org-gtd--file-template
-  (let ((myhash (make-hash-table :test 'equal)))
-    (puthash org-gtd-actions org-gtd-actions-template myhash)
-    (puthash org-gtd-calendar org-gtd-calendar-template myhash)
-    (puthash org-gtd-projects org-gtd-projects-template myhash)
-    (puthash org-gtd-incubated org-gtd-incubated-template myhash)
-    myhash))
-
-(defconst org-gtd-refile--prompt
-  (let ((myhash (make-hash-table :test 'equal)))
-    (puthash org-gtd-actions "Refile single action to: " myhash)
-    (puthash org-gtd-incubated "Refile incubated item to: " myhash)
-    (puthash org-gtd-delegated "Refile delegated item to: " myhash)
-    (puthash org-gtd-projects "Refile project to: " myhash)
-    (puthash org-gtd-calendar "Refile calendar item to: " myhash)
-    myhash))
+Defaults to true to carry over pre-2.0 behavior.  You will need to change this
+setting as part of following the instructions to add your own refile targets."
+  :group 'org-gtd-organize
+  :type 'boolean
+  :package-version '(org-gtd . "2.0.0"))
 
 ;;;###autoload
 (defmacro with-org-gtd-refile (type &rest body)
@@ -87,38 +56,33 @@ TYPE is the org-gtd action type.  BODY is the rest of the code."
      (unwind-protect
          (with-org-gtd-context (progn ,@body)))))
 
-(defun org-gtd--refile (type)
+(defun org-gtd-refile--do (type refile-target-element)
   "Refile an item to the single action file.
 
-TYPE is one of the org-gtd action types.  This is a private function."
+TYPE is one of the org-gtd action types.
+REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
   (with-org-gtd-refile type
-    (unless (org-refile-get-targets) (org-gtd-refile--add-target type))
+    (unless (org-refile-get-targets) (org-gtd-refile--add-target refile-target-element))
     (if org-gtd-refile-to-any-target
         (org-refile nil nil (car (org-refile-get-targets)))
-      (org-refile nil nil nil (org-gtd-refile--prompt type)))))
+      (org-refile nil nil nil "Finish organizing task under: "))))
 
-(defun org-gtd-refile--add-target (gtd-type)
+(defun org-gtd-refile--add-target (refile-target-element)
   "Private function used to create a missing org-gtd refile target.
 
-GTD-TYPE is an action type."
+GTD-TYPE is an action type.
+REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
+  (print "inserting the new refile target")
   (with-current-buffer (org-gtd--default-file)
     (goto-char (point-max))
     (newline)
-    (insert (gethash gtd-type org-gtd--file-template))
+    (insert refile-target-element)
     (basic-save-buffer)))
 
 (defun org-gtd-refile--group-p (type)
   "Determine whether the current heading is of a given gtd TYPE."
-  (string-equal (org-gtd-refile--group type)
+  (string-equal type
                 (org-element-property :ORG_GTD (org-element-at-point))))
-
-(defun org-gtd-refile--group (type)
-  "What kind of gtd group is TYPE."
-  (gethash type org-gtd--properties))
-
-(defun org-gtd-refile--prompt (type)
-  "What is the right refile prompt for this gtd TYPE."
-  (gethash type org-gtd-refile--prompt))
 
 (provide 'org-gtd-refile)
 ;;; org-gtd-refile.el ends here

@@ -18,12 +18,14 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
+(straight-use-package 'org)
+
 (require 'package)
 (package-initialize)
 
 (unless (package-installed-p 'quelpa)
   (with-temp-buffer
-    (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
+    (url-insert-file-contents "https://github.com/quelpa/quelpa/raw/master/quelpa.el")
     (eval-buffer)
     (quelpa-self-upgrade)))
 
@@ -41,8 +43,12 @@
 (assq-delete-all 'org package--builtins)
 (assq-delete-all 'org package--builtin-versions)
 
-(straight-use-package '(org-gtd :type git :host github :repo "trevoke/org-gtd.el"))
-(require 'org-gtd)
+(setq org-gtd-update-ack "3.0.0beta")
+(quelpa '(org-gtd :fetcher file :path "/home/stag/src/projects/org-gtd.el/"))
+
+;(straight-use-package '(org-gtd :type git :host github :repo "trevoke/org-gtd.el"))
+
+;(require 'org-gtd)
 
 ;; (use-package org
 ;;   :quelpa ((org) :upgrade t)
@@ -86,8 +92,8 @@
 
 (add-hook 'minibuffer-setup-hook 'my-minibuffer-setup)
 (defun my-minibuffer-setup ()
-       (set (make-local-variable 'face-remapping-alist)
-          '((default :height 2.0))))
+  (set (make-local-variable 'face-remapping-alist)
+       '((default :height 2.0))))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.

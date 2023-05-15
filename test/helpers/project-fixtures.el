@@ -1,7 +1,8 @@
 (defconst ogt--base-project-heading
   "* AdditionalHeading
 :PROPERTIES:
-:ORG_GTD: Projects
+:TRIGGER: org-gtd-next-project-action org-gtd-update-project-task!
+:ORG_GTD:  Projects
 :END:
 ")
 
