@@ -19,7 +19,7 @@ Org GTD is an attempt to implement the GTD flow described in the GTD
 book as faithfully as possible.
 
 #+TEXINFO: @noindent
-This manual is for Org GtD version 3.0
+This manual is for Org GTD version 3.0
 
 :END:
 * Copying
@@ -53,40 +53,41 @@ This package provides a system that allows you to capture incoming things into a
                                     +---+---+
                                         |
                                     +---v---+
-                                    |IN BOX |
-                                    +---+----+
-                                        |              Eliminate  +----------+
-                                        |            +------------>   Trash  |
-                                   +----v------+     |            +----------+
-                                   |What is it?|     |
-                                   +----+------+     |            +----------+
-                                        |            | Incubate   |  Someday/|
-                                        |            +------------>  Maybe   |
-+----------+  YES (Multi-Step)   +------v------+  NO |            +----------+
-| Projects <---------------------+    Is it    +-----+
-+-+----^---+                     |  Actionable?|     | File       +----------+
-  |    |   +----------------+    +------+------+     +------------>Reference |
-  |    |        Review For  |           |                         +----------+
-+-v----+---+     Actions    |           | YES
-| Planning |                +----------->
+                                    | INBOX |
+                                    +---+---+
+                                        |              Eliminate  +-----------+
+                                        |            +----------->|  Trash    |
+                                 +------v------+     |            +-----------+
+                                 | What is it? |     |
+                                 +------+------+     |            +-----------+
+                                        |            | Incubate   |  Someday/ |
+                                        |            +----------->|   Maybe   |
++----------+  YES (multi-step)   +------v------+  NO |            +-----------+
+| Projects |<--------------------|    Is it    |-----+
++-+----^---+                     | Actionable? |     | File       +-----------+
+  |    |   +----------------+    +------+------+     +----------->| Reference |
+  |    |        Review for  |           |                         +-----------+
++-v----+---+     Actions    |           |
+| Planning |                +---------->| YES
 +----------+                            |
-                                  +-----v------+     Less than
-                  Delegate        | What's the |     2 minutes     +--------+
-                     +------------+Next Action?+-------------------> DO IT  |
-                     |            +-------+----+                   +--------+
-                     |                    |
-                     |                    |  FOR ME
-                     |                    |           Specific Date or Time
-                     |                    +----------------------------+
-                     |              ASAP  |                            |
-                +----v-----+           +--v-------+              +-----v----+
-                |          |           |          |              |          |
-                |          |           |          |              |          |
-                |          |           |          |              |          |
-                |          |           |          |              |          |
-                |          |           |          |              |          |
-                +----------+           +----------+              +----------+
-                 Waiting For           Next Actions                 Calendar
+                                 +------v------+     Less than
+                       Delegate  | What's the  |     2 minutes    +-----------+
+                     +-----------+    NEXT     +----------------->|   DO IT   |
+                     |           |   Action?   |                  +-----------+
+                     |           +------+------+
+                     |                  |
+                     |                  | FOR ME:
+                     |                  |         Specific Date or Time
+                     |                  +-------------------------------+
+                     |              ASAP|                               |
+               +-----v-----+      +-----v-----+                   +-----v-----+
+               |           |      |           |                   |           |
+               |           |      |           |                   |           |
+               |           |      |           |                   |           |
+               |           |      |           |                   |           |
+               |           |      |           |                   |           |
+               +-----------+      +-----------+                   +-----------+
+                Waiting For        Next Actions                      Calendar
 #+end_example
 * What's new in 3.0
 :PROPERTIES:
@@ -125,7 +126,7 @@ Functions use the words =capture=, =process=, =clarify=, =organize=, =review=.
 - SCHEDULED and DEADLINE are intended to be used for things that have to start and things that have to end, respectively. V2 abused them, v3 is more respectful of how org-mode wants to work.
 - We use our own timestamp property. For compatibility with orgzly, we currently duplicate the timestamp into the body.
 ** Include horizons
-- They can be displayed while clarifying.
+- They can be displayed while clarifying
 - There's an optional organize-hook for areas of focus
 - There's an agenda view for areas of focus
 
@@ -199,7 +200,7 @@ The key elements are still the same, however:
 - the entry has to be ~entry  (file ,#'org-gtd-inbox-path)~
 
 ***** ~org-gtd-agenda-custom-config~
-This customization is no longer in use. It wasn't an easy decision to make, but I have to make the way for bigger, future changes in org-gtd over the next major releases.
+This customization is no longer in use. It wasn't an easy decision to make, but I have to make way for bigger, future changes in org-gtd over the next major releases.
 
 If you have an existing ~org-gtd-agenda-custom-commands~ setup, then you can do something like this to keep using it. In short, for now, create your own function, and wrap the definition with the ~with-org-gtd-context~ macro. You can see the source code of ~org-gtd-engage~ for an example.
 
@@ -215,7 +216,7 @@ If you have an existing ~org-gtd-agenda-custom-commands~ setup, then you can do 
           (org-agenda nil "g"))))
 #+end_src
 ***** Dropping the org file headers
-The TODO keywords are now customizable (see ~M-x customize-group org-gtd RET~), while they were hardcoded in v2. Those hardcoded values are now the defaults, but you should remove the hardcoded values anyway, so remove the following line:
+The TODO keywords are now customizable (see ~M-x customize-group org-gtd RET~), while they were hard-coded in v2. Those hard-coded values are now the defaults, but you should remove the hard-coded values anyway, so remove the following line:
 
 =#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)=
 **** A change in the menu
@@ -244,13 +245,13 @@ Go check out [[#new-in-3.0][What's new in 3.0]] as well as [[#configuring][Confi
 *** 2.2.0 <- 2.1.0
 **** respect org-mode's org-reverse-note-order variable
 The upgrade to =2.0.1= allowed addition of a task as the first task of an existing project while organizing a clarified item.
-=2.0.2= allows the user to choose what they prefer. Correspondibly, it lets the =org-mode= variable ~org-reverse-note-order~ operate as it should. In your configuration, use:
+=2.0.2= allows the user to choose what they prefer. Correspondingly, it lets the =org-mode= variable ~org-reverse-note-order~ operate as it should. In your configuration, use:
 #+begin_src emacs-lisp
-  (setq org-reverse-note-order t)   ;; refile to the top of the list
+  (setq org-reverse-note-order t)   ;; refile to the top of the list, or
   (setq org-reverse-note-order nil) ;; refile to the bottom of the list
 #+end_src
 
-Note that if you're upgrading straight from 2.0.0 you still need to make the adjustment to the TRIGGER for your project headings.
+Note that if you're upgrading directly from 2.0.0 you still need to make the adjustment to the TRIGGER for your project headings.
 
 *** 2.1.0 <- 2.0.0
 **** Update org-edna trigger
@@ -411,7 +412,7 @@ Version 1.x of Org GTD recommended a binding for ~org-gtd-clarify-finalize~. Thi
 :DESCRIPTION: Get Org GTD in your emacs
 :CUSTOM_ID: Installing
 :END:
-This package requires emacs 27.1 or higher.
+This package requires emacs 27.2 or higher.
 
 This package is on MELPA and MELPA stable under the name ~org-gtd~.
 *** use-package
