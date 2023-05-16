@@ -9,6 +9,7 @@ Without further ado, here's the list:
 3. code linting
 4. compilation
 5. autoloads
+6. documentation
 
 * Automated testing
 I use [[https://github.com/doublep/eldev/][eldev]] for local and CI-based testing. To run the test suite locally, install eldev, then run ~$ eldev test~.
@@ -17,8 +18,20 @@ If you need to step into the test suite, either because a test broke or you are 
 
 Every feature must be accompanied by at least one acceptance test (a test that replicates the user's typing, and checks for what should be on the screen after everything is done). Unit tests are also fantastic, and I don't have enough of them.
 
+** multiple versions of emacs
+Making this better is a work progress, but there is =dev/Containerfile= which can be used to generate local images with specific versions of emacs and run tests on them, like so:
+
+#+begin_src bash
+  # Assuming you want version 28.2 of emacs
+  # Creating an image called stag-28-2
+  $ podman build -t stag-28-2 -f dev/Containerfile --build-arg emacs_version=28-2 .
+  $ eldev -dt docker "localhost/stag-28-2" -C -dtp test
+#+end_src
+
+You can use this to test your change locally on all versions of emacs that we support.
+
 * Manual testing
-Despite all automated testing, ~emacs~ is a strange beast, and so is ~org-mode~, so it's important to test the new feature yourself manually. Among other things, I haven't figured out ways to test things like "this buffer is on a window displayed in front of the user" or "this is what the window configuration is at the moment".
+Despite all automated testing, ~emacs~ is a strange beast, and so is ~org-mode~, so it's important to do a manual, visual smoke test yourself.
 
 * code linting
 (this part is taken straight from MELPA's [[https://github.com/melpa/melpa/blob/master/CONTRIBUTING.org#making-your-package-ready-for-inclusion][CONTRIBUTING.org]] file)
@@ -36,3 +49,5 @@ It's great to get the code working locally, but it's better if it can compile an
 Autoloads are a funny lil' feature of emacs because basically they are functions that will load the code when you call them -- so you can call them without having used ~require~ or ~load~ beforehand, and that means the code has to load intelligently when the user calls any of them.
 
 There is a ~dev/~ subdirectory. You can use ~HOME=dev/ emacs~ from the root directory of the ~org-gtd~ project to start emacs using the provided init file (you may have to make an adjustment so that it pulls and compile from your repository and branch) but you should be able to use this to test the autoloads and make sure they load properly. If there are no compilation warnings, I believe there is nothing to worry about, but this is an area of emacs that I don't master yet.
+* documentation
+The main doc file is ~doc/org-gtd.org~ and we generate the =info= file from it with ~M-x org-texinfo-export-to-info~.

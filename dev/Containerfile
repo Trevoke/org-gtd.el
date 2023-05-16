@@ -1,0 +1,25 @@
+FROM nixos/nix:latest
+
+# Install Cachix.
+RUN nix-env -iA nixpkgs.cachix
+
+# Set the Cachix cache name.
+ENV CACHIX_NAME mycache
+
+# required?
+# Set the Cachix auth token.
+# ENV CACHIX_AUTH_TOKEN <your-cachix-auth-token>
+
+# Use Cachix.
+RUN cachix use $CACHIX_NAME
+
+ARG emacs_version
+
+# Install the desired software.
+RUN nix-env -iA emacs-$emacs_version -f https://github.com/purcell/nix-emacs-ci/archive/master.tar.gz
+
+# Set the working directory.
+WORKDIR /app
+
+# Run the application.
+#CMD ["my-app"]
