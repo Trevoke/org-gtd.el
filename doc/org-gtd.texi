@@ -28,7 +28,7 @@ General Public License for more details.
 @finalout
 @titlepage
 @title Org GTD User Manual
-@subtitle for version 2.2
+@subtitle for version 3.0
 @author Aldric Giacomoni
 @page
 @vskip 0pt plus 1filll
@@ -45,7 +45,7 @@ Org GTD is an attempt to implement the GTD flow described in the GTD
 book as faithfully as possible.
 
 @noindent
-This manual is for Org GtD version 3.0
+This manual is for Org GTD version 3.0
 @end ifnottex
 
 @menu
@@ -143,40 +143,41 @@ This package provides a system that allows you to capture incoming things into a
                                     +---+---+
                                         |
                                     +---v---+
-                                    |IN BOX |
-                                    +---+----+
-                                        |              Eliminate  +----------+
-                                        |            +------------>   Trash  |
-                                   +----v------+     |            +----------+
-                                   |What is it?|     |
-                                   +----+------+     |            +----------+
-                                        |            | Incubate   |  Someday/|
-                                        |            +------------>  Maybe   |
-+----------+  YES (Multi-Step)   +------v------+  NO |            +----------+
-| Projects <---------------------+    Is it    +-----+
-+-+----^---+                     |  Actionable?|     | File       +----------+
-  |    |   +----------------+    +------+------+     +------------>Reference |
-  |    |        Review For  |           |                         +----------+
-+-v----+---+     Actions    |           | YES
-| Planning |                +----------->
+                                    | INBOX |
+                                    +---+---+
+                                        |              Eliminate  +-----------+
+                                        |            +----------->|  Trash    |
+                                 +------v------+     |            +-----------+
+                                 | What is it? |     |
+                                 +------+------+     |            +-----------+
+                                        |            | Incubate   |  Someday/ |
+                                        |            +----------->|   Maybe   |
++----------+  YES (multi-step)   +------v------+  NO |            +-----------+
+| Projects |<--------------------|    Is it    |-----+
++-+----^---+                     | Actionable? |     | File       +-----------+
+  |    |   +----------------+    +------+------+     +----------->| Reference |
+  |    |        Review for  |           |                         +-----------+
++-v----+---+     Actions    |           |
+| Planning |                +---------->| YES
 +----------+                            |
-                                  +-----v------+     Less than
-                  Delegate        | What's the |     2 minutes     +--------+
-                     +------------+Next Action?+-------------------> DO IT  |
-                     |            +-------+----+                   +--------+
-                     |                    |
-                     |                    |  FOR ME
-                     |                    |           Specific Date or Time
-                     |                    +----------------------------+
-                     |              ASAP  |                            |
-                +----v-----+           +--v-------+              +-----v----+
-                |          |           |          |              |          |
-                |          |           |          |              |          |
-                |          |           |          |              |          |
-                |          |           |          |              |          |
-                |          |           |          |              |          |
-                +----------+           +----------+              +----------+
-                 Waiting For           Next Actions                 Calendar
+                                 +------v------+     Less than
+                       Delegate  | What's the  |     2 minutes    +-----------+
+                     +-----------+    NEXT     +----------------->|   DO IT   |
+                     |           |   Action?   |                  +-----------+
+                     |           +------+------+
+                     |                  |
+                     |                  | FOR ME:
+                     |                  |         Specific Date or Time
+                     |                  +-------------------------------+
+                     |              ASAP|                               |
+               +-----v-----+      +-----v-----+                   +-----v-----+
+               |           |      |           |                   |           |
+               |           |      |           |                   |           |
+               |           |      |           |                   |           |
+               |           |      |           |                   |           |
+               |           |      |           |                   |           |
+               +-----------+      +-----------+                   +-----------+
+                Waiting For        Next Actions                      Calendar
 @end example
 
 @node What's new in 30
@@ -276,7 +277,7 @@ We use our own timestamp property. For compatibility with orgzly, we currently d
 
 @itemize
 @item
-They can be displayed while clarifying.
+They can be displayed while clarifying
 @item
 There's an optional organize-hook for areas of focus
 @item
@@ -418,7 +419,7 @@ the entry has to be @code{entry  (file ,#'org-gtd-inbox-path)}
 @anchor{@code{org-gtd-agenda-custom-config}}@code{org-gtd-agenda-custom-config}
 
 
-This customization is no longer in use. It wasn't an easy decision to make, but I have to make the way for bigger, future changes in org-gtd over the next major releases.
+This customization is no longer in use. It wasn't an easy decision to make, but I have to make way for bigger, future changes in org-gtd over the next major releases.
 
 If you have an existing @code{org-gtd-agenda-custom-commands} setup, then you can do something like this to keep using it. In short, for now, create your own function, and wrap the definition with the @code{with-org-gtd-context} macro. You can see the source code of @code{org-gtd-engage} for an example.
 
@@ -438,7 +439,7 @@ If you have an existing @code{org-gtd-agenda-custom-commands} setup, then you ca
 @anchor{Dropping the org file headers}Dropping the org file headers
 
 
-The TODO keywords are now customizable (see @code{M-x customize-group org-gtd RET}), while they were hardcoded in v2. Those hardcoded values are now the defaults, but you should remove the hardcoded values anyway, so remove the following line:
+The TODO keywords are now customizable (see @code{M-x customize-group org-gtd RET}), while they were hard-coded in v2. Those hard-coded values are now the defaults, but you should remove the hard-coded values anyway, so remove the following line:
 
 @samp{#+TODO: NEXT(n) TODO(t) WAIT(w@@) | DONE(d) CNCL(c@@)}
 @end itemize
@@ -518,13 +519,13 @@ Go check out @ref{What's new in 30, , What's new in 3.0} as well as @ref{Configu
 
 
 The upgrade to @samp{2.0.1} allowed addition of a task as the first task of an existing project while organizing a clarified item.
-@samp{2.0.2} allows the user to choose what they prefer. Correspondibly, it lets the @samp{org-mode} variable @code{org-reverse-note-order} operate as it should. In your configuration, use:
+@samp{2.0.2} allows the user to choose what they prefer. Correspondingly, it lets the @samp{org-mode} variable @code{org-reverse-note-order} operate as it should. In your configuration, use:
 @lisp
-(setq org-reverse-note-order t)   ;; refile to the top of the list
+(setq org-reverse-note-order t)   ;; refile to the top of the list, or
 (setq org-reverse-note-order nil) ;; refile to the bottom of the list
 @end lisp
 
-Note that if you're upgrading straight from 2.0.0 you still need to make the adjustment to the TRIGGER for your project headings.
+Note that if you're upgrading directly from 2.0.0 you still need to make the adjustment to the TRIGGER for your project headings.
 @end itemize
 
 @node 210 <- 200
@@ -678,7 +679,7 @@ You need to rename CANCELED to CNCL@. a simple string replace in the @code{org-g
 @anchor{Differentiating GTD types of items}Differentiating GTD types of items
 
 
-Org GTD no longer uses the name of the heading to figure out how to refile things, and which headings are useful. Instead it uses a custom Org property called ORG@math{_GTD}. This means you are free to rename the existing headings whatever you want, but you DO need to make some adjustments to your current files.
+Org GTD no longer uses the name of the heading to figure out how to refile things, and which headings are useful. Instead it uses a custom Org property called ORG_GTD. This means you are free to rename the existing headings whatever you want, but you DO need to make some adjustments to your current files.
 
 If you would like to add new refile targets, it's simple, follow these instructions.
 
@@ -690,9 +691,9 @@ For projects, make sure the heading has the following two properties.
 :END:
 @end example
 
-For other headings, make sure there is an ORG@math{_GTD} property, like for the project, above.
+For other headings, make sure there is an ORG_GTD property, like for the project, above.
 
-The other ORG@math{_GTD} properties are set as follows. Note that Single and Delegated actions are together now, so you can merge those headings if you want.
+The other ORG_GTD properties are set as follows. Note that Single and Delegated actions are together now, so you can merge those headings if you want.
 
 @table @asis
 @item Scheduled actions
@@ -735,7 +736,7 @@ Version 1.x of Org GTD recommended a binding for @code{org-gtd-clarify-finalize}
 @node Installing
 @section Installing
 
-This package requires emacs 27.1 or higher.
+This package requires emacs 27.2 or higher.
 
 This package is on MELPA and MELPA stable under the name @code{org-gtd}.
 

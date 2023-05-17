@@ -1,4 +1,4 @@
-This is org-gtd.info, produced by makeinfo version 6.8 from
+This is org-gtd.info, produced by makeinfo version 6.7 from
 org-gtd.texi.
 
 Copyright (C) 2018-2023 Aldric Giacomoni <trevoke@gmail.com>
@@ -26,7 +26,7 @@ Org GTD User Manual
 Org GTD is an attempt to implement the GTD flow described in the GTD
 book as faithfully as possible.
 
-This manual is for Org GtD version 3.0
+This manual is for Org GTD version 3.0
 
 * Menu:
 
@@ -130,40 +130,41 @@ sequential.
                                          +---+---+
                                              |
                                          +---v---+
-                                         |IN BOX |
-                                         +---+----+
-                                             |              Eliminate  +----------+
-                                             |            +------------>   Trash  |
-                                        +----v------+     |            +----------+
-                                        |What is it?|     |
-                                        +----+------+     |            +----------+
-                                             |            | Incubate   |  Someday/|
-                                             |            +------------>  Maybe   |
-     +----------+  YES (Multi-Step)   +------v------+  NO |            +----------+
-     | Projects <---------------------+    Is it    +-----+
-     +-+----^---+                     |  Actionable?|     | File       +----------+
-       |    |   +----------------+    +------+------+     +------------>Reference |
-       |    |        Review For  |           |                         +----------+
-     +-v----+---+     Actions    |           | YES
-     | Planning |                +----------->
+                                         | INBOX |
+                                         +---+---+
+                                             |              Eliminate  +-----------+
+                                             |            +----------->|  Trash    |
+                                      +------v------+     |            +-----------+
+                                      | What is it? |     |
+                                      +------+------+     |            +-----------+
+                                             |            | Incubate   |  Someday/ |
+                                             |            +----------->|   Maybe   |
+     +----------+  YES (multi-step)   +------v------+  NO |            +-----------+
+     | Projects |<--------------------|    Is it    |-----+
+     +-+----^---+                     | Actionable? |     | File       +-----------+
+       |    |   +----------------+    +------+------+     +----------->| Reference |
+       |    |        Review for  |           |                         +-----------+
+     +-v----+---+     Actions    |           |
+     | Planning |                +---------->| YES
      +----------+                            |
-                                       +-----v------+     Less than
-                       Delegate        | What's the |     2 minutes     +--------+
-                          +------------+Next Action?+-------------------> DO IT  |
-                          |            +-------+----+                   +--------+
-                          |                    |
-                          |                    |  FOR ME
-                          |                    |           Specific Date or Time
-                          |                    +----------------------------+
-                          |              ASAP  |                            |
-                     +----v-----+           +--v-------+              +-----v----+
-                     |          |           |          |              |          |
-                     |          |           |          |              |          |
-                     |          |           |          |              |          |
-                     |          |           |          |              |          |
-                     |          |           |          |              |          |
-                     +----------+           +----------+              +----------+
-                      Waiting For           Next Actions                 Calendar
+                                      +------v------+     Less than
+                            Delegate  | What's the  |     2 minutes    +-----------+
+                          +-----------+    NEXT     +----------------->|   DO IT   |
+                          |           |   Action?   |                  +-----------+
+                          |           +------+------+
+                          |                  |
+                          |                  | FOR ME:
+                          |                  |         Specific Date or Time
+                          |                  +-------------------------------+
+                          |              ASAP|                               |
+                    +-----v-----+      +-----v-----+                   +-----v-----+
+                    |           |      |           |                   |           |
+                    |           |      |           |                   |           |
+                    |           |      |           |                   |           |
+                    |           |      |           |                   |           |
+                    |           |      |           |                   |           |
+                    +-----------+      +-----------+                   +-----------+
+                     Waiting For        Next Actions                      Calendar
 
 
 File: org-gtd.info,  Node: What's new in 30,  Next: Setting up Org GTD,  Prev: Summary,  Up: Top
@@ -278,7 +279,7 @@ File: org-gtd.info,  Node: Include horizons,  Next: You can create your own proj
 2.9 Include horizons
 ====================
 
-   • They can be displayed while clarifying.
+   • They can be displayed while clarifying
    • There’s an optional organize-hook for areas of focus
    • There’s an agenda view for areas of focus
 
@@ -417,8 +418,8 @@ And once that’s done, you should head back to the *note What’s new in
         • ‘org-gtd-agenda-custom-config’
 
           This customization is no longer in use.  It wasn’t an easy
-          decision to make, but I have to make the way for bigger,
-          future changes in org-gtd over the next major releases.
+          decision to make, but I have to make way for bigger, future
+          changes in org-gtd over the next major releases.
 
           If you have an existing ‘org-gtd-agenda-custom-commands’
           setup, then you can do something like this to keep using it.
@@ -439,9 +440,9 @@ And once that’s done, you should head back to the *note What’s new in
         • Dropping the org file headers
 
           The TODO keywords are now customizable (see ‘M-x
-          customize-group org-gtd RET’), while they were hardcoded in
-          v2.  Those hardcoded values are now the defaults, but you
-          should remove the hardcoded values anyway, so remove the
+          customize-group org-gtd RET’), while they were hard-coded in
+          v2.  Those hard-coded values are now the defaults, but you
+          should remove the hard-coded values anyway, so remove the
           following line:
 
           ‘#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)’
@@ -509,13 +510,13 @@ File: org-gtd.info,  Node: 220 <- 210,  Next: 210 <- 200,  Prev: 300 <- 220,  Up
 
      The upgrade to ‘2.0.1’ allowed addition of a task as the first task
      of an existing project while organizing a clarified item.  ‘2.0.2’
-     allows the user to choose what they prefer.  Correspondibly, it
+     allows the user to choose what they prefer.  Correspondingly, it
      lets the ‘org-mode’ variable ‘org-reverse-note-order’ operate as it
      should.  In your configuration, use:
-          (setq org-reverse-note-order t)   ;; refile to the top of the list
+          (setq org-reverse-note-order t)   ;; refile to the top of the list, or
           (setq org-reverse-note-order nil) ;; refile to the bottom of the list
 
-     Note that if you’re upgrading straight from 2.0.0 you still need to
+     Note that if you’re upgrading directly from 2.0.0 you still need to
      make the adjustment to the TRIGGER for your project headings.
 
 
@@ -731,7 +732,7 @@ File: org-gtd.info,  Node: Installing,  Next: Configuring,  Prev: Upgrading,  Up
 3.2 Installing
 ==============
 
-This package requires emacs 27.1 or higher.
+This package requires emacs 27.2 or higher.
 
    This package is on MELPA and MELPA stable under the name ‘org-gtd’.
 
@@ -1488,90 +1489,90 @@ open an issue and show exactly what you have done before asking
 Tag Table:
 Node: Top736
 Node: Summary2828
-Node: What's new in 306276
-Node: Minimum emacs version now 2726816
-Node: Organize menu has changed7053
-Node: Easier to clarify more items7428
-Node: Functions exist to create your own hooks7884
-Node: Support habits8654
-Node: Todo keywords can be customized8903
-Node: Massive API changes9189
-Node: Massive Data structure changes9567
-Node: Include horizons10114
-Node: You can create your own project templates and insert them while clarifying10553
-Node: Setting up Org GTD10922
-Node: Upgrading11303
-Node: 300 <- 22011676
-Ref: A note for doom emacs users12159
-Ref: Support for org habits12451
-Ref: Upgrading data12719
-Ref: Key changes in configuration13208
-Ref: Sample new config14013
-Ref: Projects trigger14809
-Ref: org-gtd-capture-templates15171
-Ref: org-gtd-agenda-custom-config15767
-Ref: Dropping the org file headers16828
-Ref: A change in the menu17230
-Ref: Rest of API changes17744
-Ref: org-gtd-delegate is now org-gtd-delegate-item-at-point17777
-Ref: org-gtd-agenda-projectify is now just org-gtd-clarify-agenda-item17949
-Ref: org-gtd-agenda-delegate is now org-gtd-delegate-agenda-item18164
-Ref: org-gtd-cancel-project is now org-gtd-project-cancel18436
-Ref: org-gtd-agenda-cancel-project is now org-gtd-project-cancel-from-agenda18547
-Ref: org-gtd-show-stuck-projects is now org-gtd-review-stuck-projects18687
-Ref: That's it!18815
-Node: 220 <- 21018930
-Ref: respect org-mode's org-reverse-note-order variable19075
-Node: 210 <- 20019775
-Ref: Update org-edna trigger19920
-Node: 200 <- 11x20689
-Ref: Configuration20815
-Ref: Example upgrade22207
-Ref: Relevant commands with new names25147
-Ref: heading states (TODO etc)25364
-Ref: Differentiating GTD types of items25523
-Ref: Multiple refile targets26890
-Ref: Key bindings27742
-Node: Installing28019
-Node: use-package28314
-Node: Manually28526
-Node: Configuring28892
-Node: The easy way29177
-Node: Required configuration of sub-packages29746
-Ref: Configuring org-edna29994
-Node: configuration options for org-gtd30424
-Ref: I don't care just let me start using it30674
-Ref: Tell me all the levers I can pull31263
-Node: Recommended key bindings35247
-Node: Sample Doom Emacs Config36012
-Node: Using Org GTD36886
-Node: Org-mode building blocks for Org GTD37121
-Node: The GTD flow38431
-Node: Adding things to the inbox39017
-Node: Processing the inbox40237
-Node: Clarifying each item40763
-Ref: How to start clarifying41279
-Ref: data shape requirements41784
-Ref: Options and commands related to clarification42345
-Node: Organizing an item into the system43539
-Ref: Choosing a task type44180
-Ref: Applying hooks46313
-Ref: Refiling to the appropriate area46800
-Ref: New project heading47083
-Ref: Other headings47342
-Node: Engaging with your GTD items47882
-Node: Working with the GTD Horizons48448
-Ref: Areas of focus49191
-Ref: Longer-term horizons50475
-Node: Cleaning up / archiving completed work51282
-Node: Commands you can call on org-agenda52147
-Node: Defining your own agenda views53052
-Node: Adding your own hooks when organizing53594
-Node: Automating through emacs54806
-Node: Troubleshooting55943
-Node: Finding lost tasks56184
-Node: Projects without a NEXT item56714
-Node: I can't create a project when clarifying an inbox item!57185
+Node: What's new in 306354
+Node: Minimum emacs version now 2726894
+Node: Organize menu has changed7131
+Node: Easier to clarify more items7506
+Node: Functions exist to create your own hooks7962
+Node: Support habits8732
+Node: Todo keywords can be customized8981
+Node: Massive API changes9267
+Node: Massive Data structure changes9645
+Node: Include horizons10192
+Node: You can create your own project templates and insert them while clarifying10630
+Node: Setting up Org GTD10999
+Node: Upgrading11380
+Node: 300 <- 22011753
+Ref: A note for doom emacs users12236
+Ref: Support for org habits12528
+Ref: Upgrading data12796
+Ref: Key changes in configuration13285
+Ref: Sample new config14090
+Ref: Projects trigger14886
+Ref: org-gtd-capture-templates15248
+Ref: org-gtd-agenda-custom-config15844
+Ref: Dropping the org file headers16901
+Ref: A change in the menu17306
+Ref: Rest of API changes17820
+Ref: org-gtd-delegate is now org-gtd-delegate-item-at-point17853
+Ref: org-gtd-agenda-projectify is now just org-gtd-clarify-agenda-item18025
+Ref: org-gtd-agenda-delegate is now org-gtd-delegate-agenda-item18240
+Ref: org-gtd-cancel-project is now org-gtd-project-cancel18512
+Ref: org-gtd-agenda-cancel-project is now org-gtd-project-cancel-from-agenda18623
+Ref: org-gtd-show-stuck-projects is now org-gtd-review-stuck-projects18763
+Ref: That's it!18891
+Node: 220 <- 21019006
+Ref: respect org-mode's org-reverse-note-order variable19151
+Node: 210 <- 20019856
+Ref: Update org-edna trigger20001
+Node: 200 <- 11x20770
+Ref: Configuration20896
+Ref: Example upgrade22288
+Ref: Relevant commands with new names25228
+Ref: heading states (TODO etc)25445
+Ref: Differentiating GTD types of items25604
+Ref: Multiple refile targets26971
+Ref: Key bindings27823
+Node: Installing28100
+Node: use-package28395
+Node: Manually28607
+Node: Configuring28973
+Node: The easy way29258
+Node: Required configuration of sub-packages29827
+Ref: Configuring org-edna30075
+Node: configuration options for org-gtd30505
+Ref: I don't care just let me start using it30755
+Ref: Tell me all the levers I can pull31344
+Node: Recommended key bindings35328
+Node: Sample Doom Emacs Config36093
+Node: Using Org GTD36967
+Node: Org-mode building blocks for Org GTD37202
+Node: The GTD flow38512
+Node: Adding things to the inbox39098
+Node: Processing the inbox40318
+Node: Clarifying each item40844
+Ref: How to start clarifying41360
+Ref: data shape requirements41865
+Ref: Options and commands related to clarification42426
+Node: Organizing an item into the system43620
+Ref: Choosing a task type44261
+Ref: Applying hooks46394
+Ref: Refiling to the appropriate area46881
+Ref: New project heading47164
+Ref: Other headings47423
+Node: Engaging with your GTD items47963
+Node: Working with the GTD Horizons48529
+Ref: Areas of focus49272
+Ref: Longer-term horizons50556
+Node: Cleaning up / archiving completed work51363
+Node: Commands you can call on org-agenda52228
+Node: Defining your own agenda views53133
+Node: Adding your own hooks when organizing53675
+Node: Automating through emacs54887
+Node: Troubleshooting56024
+Node: Finding lost tasks56265
+Node: Projects without a NEXT item56795
+Node: I can't create a project when clarifying an inbox item!57266
 
 End Tag Table
 
