@@ -104,13 +104,16 @@ which turns out to be a project."
   (declare (modes org-mode)) ;; for 27.2 compatibility
   (interactive)
   (let ((processing-buffer (org-gtd-clarify--get-buffer))
-        (window-config (current-window-configuration))
-        (source-heading-marker (point-marker)))
+        (window-config (current-window-configuration))        
+        (source-heading-marker (point-marker))
+        (inbox-current-tags-alist org-current-tag-alist)
+        )
     (org-gtd-clarify--maybe-initialize-buffer-contents processing-buffer)
     (with-current-buffer processing-buffer
       (setq-local org-gtd-clarify--window-config window-config
                   org-gtd-clarify--source-heading-marker source-heading-marker
-                  org-gtd-clarify--clarify-id (org-id-get)))
+                  org-gtd-clarify--clarify-id (org-id-get)
+                  org-current-tag-alist inbox-current-tags-alist))
     (org-gtd-clarify-setup-windows processing-buffer)))
 
 (defun org-gtd-clarify--maybe-initialize-buffer-contents (buffer)
