@@ -75,6 +75,8 @@
 
 ;;;; Functions
 
+(defalias 'org-gtd-set-area-of-focus 'org-gtd-areas-of-focus--set)
+
 ;;;;; Private
 
 (defun org-gtd-areas-of-focus--set ()
@@ -85,8 +87,6 @@ If a new area of focus pops up for you, change the value of the eponymous
 variable."
   (unless (org-gtd-organize-type-member-p '(project-task trash knowledge quick-action))
     (org-gtd-area-of-focus-set-on-item-at-point)))
-
-(defalias 'org-gtd-set-area-of-focus 'org-gtd-areas-of-focus--set)
 
 ;;;; Footer
 
