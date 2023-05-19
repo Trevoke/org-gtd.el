@@ -26,7 +26,11 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'org-gtd-files)
+
+;;;; Customization
 
 (defgroup org-gtd-horizons nil
   "Variables handling GTD horizons-related logic."
@@ -42,6 +46,8 @@ This file must be in the `org-gtd-directory'."
   :package-version '(org-gtd . "3.0")
   :type 'file)
 
+;;;; Constants
+
 (defconst org-gtd-file-horizons-template
   "* Purpose and principles (why)
 * Vision (what)
@@ -49,11 +55,18 @@ This file must be in the `org-gtd-directory'."
 * Areas of focus / accountabilities
 ")
 
+;;;; Functions
+
+;;;;; Private
+
 (defun org-gtd--horizons-file ()
   "Create or return the buffer to the file containing the GTD horizons."
   (let ((path (f-join org-gtd-directory org-gtd-horizons-file)))
     (org-gtd--ensure-file-exists path org-gtd-file-horizons-template)
     (find-file-noselect path)))
 
+;;;; Footer
+
 (provide 'org-gtd-horizons)
+
 ;;; org-gtd-horizons.el ends here
