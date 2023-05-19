@@ -25,17 +25,16 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
 (require 'org)
+
 (require 'org-gtd-core)
 (require 'org-gtd-areas-of-focus)
 (require 'org-gtd-skip)
 (require 'org-gtd-agenda)
 (require 'org-gtd-projects)
 
-(define-error
-  'org-gtd-invalid-area-of-focus
-  "`%s' is not a member of `%s'"
-  'org-gtd-error)
+;;;; Commands
 
 ;;;###autoload
 (defun org-gtd-review-area-of-focus (&optional area start-date)
@@ -52,7 +51,6 @@ mostly of value for testing purposes."
                       t)))
   (when (not (member area org-gtd-areas-of-focus))
     (signal 'org-gtd-invalid-area-of-focus `(,area ,org-gtd-areas-of-focus)))
-
   (let ((start-date (or start-date (format-time-string "%Y-%m-%d"))))
     (org-gtd-core-prepare-agenda-buffers)
     (with-org-gtd-context
@@ -60,10 +58,8 @@ mostly of value for testing purposes."
                `(("a" ,(format "Area of Focus: %s" area)
                   ((tags ,org-gtd-project-headings
                          ((org-agenda-overriding-header "Active projects")))
-
                    (todo ,org-gtd-next
                          ((org-agenda-overriding-header "Next actions")))
-
                    (agenda ""
                            ((org-agenda-overriding-header "Reminders")
                             (org-agenda-start-day ,start-date)
@@ -75,7 +71,6 @@ mostly of value for testing purposes."
                             (org-agenda-skip-function
                              '(org-gtd-skip-AND '(org-gtd-skip-unless-calendar
                                                   ,(org-gtd-skip-unless-area-of-focus-func area))))))
-
                    (agenda ""
                            ((org-agenda-overriding-header "Routines")
                             (org-agenda-time-grid '((require-timed) () "" ""))
@@ -109,15 +104,17 @@ mostly of value for testing purposes."
                         (org-agenda-skip-additional-timestamps-same-entry t))))))))
         (org-agenda nil "g"))))
 
-(defun org-gtd-review-stuck-incubated-items ()
+(defun org-gtd-review-stuck-delegated-items ()
   "Agenda view with all invalid Calendar actions."
   (interactive)
   (with-org-gtd-context
       (let ((org-agenda-custom-commands
-             '(("g" "foobar"
-                ((tags "ORG_GTD=\"Incubated\""
+             `(("g" "foobar"
+                ((tags (format "+TODO=\"%s\"" org-gtd-wait)
                        ((org-agenda-skip-function
-                         'org-gtd-skip-unless-timestamp-empty-or-invalid)
+                         '(org-gtd-skip-AND
+                           '(org-gtd-skip-unless-timestamp-empty-or-invalid
+                             org-gtd-skip-unless-delegated-to-empty)))
                         (org-agenda-skip-additional-timestamps-same-entry t))))))))
         (org-agenda nil "g"))))
 
@@ -133,19 +130,24 @@ mostly of value for testing purposes."
                         (org-agenda-skip-additional-timestamps-same-entry t))))))))
         (org-agenda nil "g"))))
 
-(defun org-gtd-review-stuck-delegated-items ()
+(defun org-gtd-review-stuck-incubated-items ()
   "Agenda view with all invalid Calendar actions."
   (interactive)
   (with-org-gtd-context
       (let ((org-agenda-custom-commands
-             `(("g" "foobar"
-                ((tags (format "+TODO=\"%s\"" org-gtd-wait)
+             '(("g" "foobar"
+                ((tags "ORG_GTD=\"Incubated\""
                        ((org-agenda-skip-function
-                         '(org-gtd-skip-AND
-                           '(org-gtd-skip-unless-timestamp-empty-or-invalid
-                             org-gtd-skip-unless-delegated-to-empty)))
+                         'org-gtd-skip-unless-timestamp-empty-or-invalid)
                         (org-agenda-skip-additional-timestamps-same-entry t))))))))
         (org-agenda nil "g"))))
+
+;;;###autoload
+(defun org-gtd-review-stuck-projects ()
+  "Show all projects that do not have a next action."
+  (interactive)
+  (with-org-gtd-context
+      (org-agenda-list-stuck-projects)))
 
 (defun org-gtd-review-stuck-single-action-items ()
   "Agenda view with all invalid Calendar actions."
@@ -159,12 +161,17 @@ mostly of value for testing purposes."
                         (org-agenda-skip-additional-timestamps-same-entry t))))))))
         (org-agenda nil "g"))))
 
-;;;###autoload
-(defun org-gtd-review-stuck-projects ()
-  "Show all projects that do not have a next action."
-  (interactive)
-  (with-org-gtd-context
-      (org-agenda-list-stuck-projects)))
+;;;; Functions
+
+;;;;; Private
+
+(define-error
+  'org-gtd-invalid-area-of-focus
+  "`%s' is not a member of `%s'"
+  'org-gtd-error)
+
+;;;; Footer
 
 (provide 'org-gtd-review)
+
 ;;; org-gtd-review.el ends here
