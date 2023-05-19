@@ -24,20 +24,17 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'org-gtd-refile)
 (require 'org-gtd-clarify)
 
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
 
-(defconst org-gtd-calendar "Calendar")
+;;;; Constants
 
-(defconst org-gtd-calendar-template
-  (format "* Calendar
-:PROPERTIES:
-:ORG_GTD: %s
-:END:
-" org-gtd-calendar))
+(defconst org-gtd-calendar "Calendar")
 
 (defconst org-gtd-calendar-func #'org-gtd-calendar--apply
   "Function called when item at point is a task that must happen on a given day.
@@ -49,6 +46,17 @@ actually appointments or deadlines."
   ;; :package-version '(org-gtd . "3.0.0")
   )
 
+(defconst org-gtd-calendar-template
+  (format "* Calendar
+:PROPERTIES:
+:ORG_GTD: %s
+:END:
+" org-gtd-calendar))
+
+;;;; Functions
+
+;;;;; Public
+
 (defun org-gtd-calendar (&optional appointment-date)
   "Decorate and refile item at point as a calendar item.
 
@@ -58,6 +66,22 @@ non-interactively."
   (org-gtd-organize--call
    (apply-partially org-gtd-calendar-func
                     appointment-date)))
+
+(defun org-gtd-calendar-create (topic appointment-date)
+  "Automatically create a calendar task in the GTD flow.
+
+Takes TOPIC as the string from which to make the heading to add to `org-gtd' and
+APPOINTMENT-DATE as a YYYY-MM-DD string."
+  (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
+        (org-id-overriding-file-name "org-gtd"))
+    (with-current-buffer buffer
+      (org-mode)
+      (insert (format "* %s" topic))
+      (org-gtd-clarify-item)
+      (org-gtd-calendar appointment-date))
+    (kill-buffer buffer)))
+
+;;;;; Private
 
 (defun org-gtd-calendar--apply (&optional appointment-date)
   "Add a date/time to this item and store in org gtd.
@@ -75,19 +99,8 @@ non-interactively."
   (org-gtd-organize-apply-hooks)
   (org-gtd-refile--do org-gtd-calendar org-gtd-calendar-template))
 
-(defun org-gtd-calendar-create (topic appointment-date)
-  "Automatically create a calendar task in the GTD flow.
-
-Takes TOPIC as the string from which to make the heading to add to `org-gtd' and
-APPOINTMENT-DATE as a YYYY-MM-DD string."
-  (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd"))
-    (with-current-buffer buffer
-      (org-mode)
-      (insert (format "* %s" topic))
-      (org-gtd-clarify-item)
-      (org-gtd-calendar appointment-date))
-    (kill-buffer buffer)))
+;;;; Footer
 
 (provide 'org-gtd-calendar)
+
 ;;; org-gtd-calendar.el ends here
