@@ -38,7 +38,8 @@
 ;; Upgrade information is also available therein.
 ;;
 ;;; Code:
-(defconst org-gtd-version "3.0.0")
+
+;;;; Requirements
 
 (require 'subr-x)
 (require 'cl-lib)
@@ -68,6 +69,12 @@
 (require 'org-gtd-review)
 (require 'org-gtd-oops)
 (require 'org-gtd-upgrades)
+
+;;;; Constants
+
+(defconst org-gtd-version "3.0.0")
+
+;;;; Variables
 
 (defvar org-gtd-update-ack "1.0.0"
   "Set this to the latest version you have upgraded to.
@@ -130,6 +137,8 @@ to disable this warning.
 
 "))
 
+;;;; Footer
 
 (provide 'org-gtd)
+
 ;;; org-gtd.el ends here
