@@ -24,11 +24,16 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'f)
 (require 'org-archive)
 (require 'org-element)
+
 (require 'org-gtd-core)
 (require 'org-gtd-agenda)
+
+;;;; Customization
 
 (defgroup org-gtd-archive nil
   "How to archive completed / canceled items."
@@ -52,32 +57,12 @@ into a datetree."
   :type 'sexp
   :package-version '(org-gtd . "2.0.0"))
 
+;;;; Constants
+
 (defconst org-gtd-archive-file-format "gtd_archive_%s"
   "File name format for where org-gtd archives things by default.")
 
-(defun org-gtd-archive-item-at-point ()
-  "Dirty hack to force archiving where I know I can."
-  (interactive)
-  (let* ((last-command nil)
-         (temp-file (make-temp-file org-gtd-directory nil ".org"))
-         (buffer (find-file-noselect temp-file)))
-    (org-copy-subtree)
-    (org-gtd-core-prepare-buffer buffer)
-    (with-current-buffer buffer
-      (org-paste-subtree)
-      (goto-char (point-min))
-      (with-org-gtd-context (org-archive-subtree))
-      (basic-save-buffer)
-      (kill-buffer))
-    (delete-file temp-file)))
-
-(defun org-gtd-archive-location-func ()
-  "Default function to define where to archive items."
-  (let* ((year (number-to-string (caddr (calendar-current-date))))
-         (full-org-gtd-path (expand-file-name org-gtd-directory))
-         (filename (format org-gtd-archive-file-format year))
-         (filepath (f-join full-org-gtd-path filename)))
-    (string-join `(,filepath "::" "datetree/"))))
+;;;; Commands
 
 ;;;###autoload
 (defun org-gtd-archive-completed-items ()
@@ -96,6 +81,44 @@ into a datetree."
                      "+LEVEL=2&+ORG_GTD=\"Incubated\""
                      'agenda)))
 
+(defun org-gtd-archive-item-at-point ()
+  "Dirty hack to force archiving where I know I can."
+  (interactive)
+  (let* ((last-command nil)
+         (temp-file (make-temp-file org-gtd-directory nil ".org"))
+         (buffer (find-file-noselect temp-file)))
+    (org-copy-subtree)
+    (org-gtd-core-prepare-buffer buffer)
+    (with-current-buffer buffer
+      (org-paste-subtree)
+      (goto-char (point-min))
+      (with-org-gtd-context (org-archive-subtree))
+      (basic-save-buffer)
+      (kill-buffer))
+    (delete-file temp-file)))
+
+;;;; Functions
+
+;;;;; Public
+
+(defun org-gtd-archive-location-func ()
+  "Default function to define where to archive items."
+  (let* ((year (number-to-string (caddr (calendar-current-date))))
+         (full-org-gtd-path (expand-file-name org-gtd-directory))
+         (filename (format org-gtd-archive-file-format year))
+         (filepath (f-join full-org-gtd-path filename)))
+    (string-join `(,filepath "::" "datetree/"))))
+
+;;;;; Private
+
+(defun org-gtd--all-subheadings-in-done-type-p ()
+  "Return t if every sub-heading is `org-gtd-done' or `org-gtd-canceled'."
+  (seq-every-p (lambda (x) (eq x 'done))
+               (org-map-entries (lambda ()
+                                  (org-element-property :todo-type (org-element-at-point)))
+                                "+LEVEL=3"
+                                'tree)))
+
 (defun org-gtd--archive-complete-projects ()
   "Archive all projects for which all actions/tasks are marked as done.
 
@@ -112,14 +135,6 @@ or `org-gtd-canceled'."
    "+LEVEL=2&+ORG_GTD=\"Projects\""
    'agenda))
 
-(defun org-gtd--all-subheadings-in-done-type-p ()
-  "Return t if every sub-heading is `org-gtd-done' or `org-gtd-canceled'."
-  (seq-every-p (lambda (x) (eq x 'done))
-               (org-map-entries (lambda ()
-                                  (org-element-property :todo-type (org-element-at-point)))
-                                "+LEVEL=3"
-                                'tree)))
-
 (defun org-gtd--archive-completed-actions ()
   "Private function.  With point on heading, archive if entry is done."
   (if (org-entry-is-done-p)
@@ -129,5 +144,8 @@ or `org-gtd-canceled'."
                                      (org-element-at-point)))
         (org-archive-subtree-default))))
 
+;;;; Footer
+
 (provide 'org-gtd-archive)
+
 ;;; org-gtd-archive.el ends here
