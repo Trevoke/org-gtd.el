@@ -24,11 +24,15 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'winner)
 (require 'org-agenda)
 
 (require 'org-gtd-core)
 (require 'org-gtd-backward-compatibility)
+
+;;;; Commands
 
 ;;;###autoload
 (defun org-gtd-engage ()
@@ -52,16 +56,7 @@
                         (org-agenda-prefix-format
                          '((todo . " %i %-12 (org-gtd-agenda--prefix-format)"))))))))))
         (org-agenda nil "g")
-       (goto-char (point-min)))))
-
-;;;###autoload
-(defun org-gtd-show-all-next ()
-  "Show all next actions from all agenda files in a single list.
-This assumes all GTD files are also agenda files."
-  (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-  (with-org-gtd-context
-      (org-todo-list org-gtd-next)))
+        (goto-char (point-min)))))
 
 ;;;###autoload
 (defun org-gtd-engage-grouped-by-context ()
@@ -84,6 +79,19 @@ This assumes all GTD files are also agenda files."
              (org-agenda-custom-commands `(("g" "actions by context" ,blocks))))
         (org-agenda nil "g"))))
 
+;;;###autoload
+(defun org-gtd-show-all-next ()
+  "Show all next actions from all agenda files in a single list.
+This assumes all GTD files are also agenda files."
+  (interactive)
+  (org-gtd-core-prepare-agenda-buffers)
+  (with-org-gtd-context
+      (org-todo-list org-gtd-next)))
+
+;;;; Functions
+
+;;;;; Private
+
 (defun org-gtd-agenda--prefix-format ()
   "Format prefix for items in agenda buffer."
   (let* ((elt (org-element-at-point))
@@ -104,5 +112,8 @@ This assumes all GTD files are also agenda files."
        "…"))
      (category (concat (substring (string-pad category 11) 0 10) "…")))))
 
+;;;; Footer
+
 (provide 'org-gtd-agenda)
+
 ;;; org-gtd-agenda.el ends here
