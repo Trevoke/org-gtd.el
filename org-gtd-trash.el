@@ -24,10 +24,14 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'org-gtd-core)
 (require 'org-gtd-archive)
 
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
+
+;;;; Constants
 
 (defconst org-gtd-trash-func #'org-gtd-trash--apply
   "Function called when organizing item at point as trash."
@@ -36,10 +40,16 @@
   ;; :package-version '(org-gtd . "3.0.0")
   )
 
+;;;; Commands
+
 (defun org-gtd-trash ()
   "Organize and refile item at point as trash."
   (interactive)
   (org-gtd-organize--call org-gtd-trash-func))
+
+;;;; Functions
+
+;;;;; Private
 
 (defun org-gtd-trash--apply ()
   "Mark GTD inbox item as cancelled and move it to the org-gtd task archives."
@@ -48,5 +58,8 @@
   (org-gtd-organize-apply-hooks)
   (org-gtd-archive-item-at-point))
 
+;;;; Footer
+
 (provide 'org-gtd-trash)
+
 ;;; org-gtd-trash.el ends here
