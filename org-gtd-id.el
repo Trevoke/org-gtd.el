@@ -26,8 +26,12 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'org-macs)
 (require 'ffap)
+
+;;;; Commands
 
 (defun org-gtd-id-get-create (&optional pom)
   "Get the ID property of the entry at point-or-marker POM.
@@ -46,6 +50,25 @@ This function is a modified copy of `org-id-get'."
         (org-id-add-location id (or org-id-overriding-file-name
                                     (buffer-file-name (buffer-base-buffer))))
         id))))
+
+;;;; Functions
+
+;;;;; Private
+
+(defun org-gtd-id--generate ()
+  "Generate and return a new id.
+The generated ID is stripped off potential progress indicator cookies and
+sanitized to get a slug.  Furthermore, it is suffixed with an ISO date-stamp."
+  (let* ((my-heading-text (nth 4 (org-heading-components))) ;; retrieve heading string
+         (my-heading-text (replace-regexp-in-string "\\(\\[[0-9]+%\\]\\)" "" my-heading-text)) ;; remove progress indicators like "[25%]"
+         (my-heading-text (replace-regexp-in-string "\\(\\[[0-9]+/[0-9]+\\]\\)" "" my-heading-text)) ;; remove progress indicators like "[2/7]"
+         (my-heading-text (replace-regexp-in-string "\\(\\[#[ABC]\\]\\)" "" my-heading-text)) ;; remove priority indicators like "[#A]"
+         (my-heading-text (replace-regexp-in-string "\\[\\[\\(.+?\\)\\]\\[" "" my-heading-text t)) ;; removes links, keeps their description and ending brackets
+         (my-heading-text (replace-regexp-in-string "<[12][0-9]\\{3\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\( .*?\\)>" "" my-heading-text t)) ;; removes day of week and time from active date- and time-stamps
+         (my-heading-text (replace-regexp-in-string "\\[[12][0-9]\\{3\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\( .*?\\)\\]" "" my-heading-text t)) ;; removes day of week and time from inactive date- and time-stamps
+         (raw-id (org-gtd-id--generate-sanitized-alnum-dash-string my-heading-text)) ;; get slug from heading text
+         (timestamp (format-time-string "%Y-%m-%d")))
+    (concat raw-id "-" timestamp)))
 
 (defun org-gtd-id--generate-sanitized-alnum-dash-string (str)
   "Clean up STR and make it fit to be used as an org id.
@@ -103,20 +126,8 @@ https://gitlab.com/publicvoit/orgmode-link-demo/-/raw/main/link_demo.org ."
          (str (replace-regexp-in-string "\\(^[-]*\\|[-]*$\\)" "" str)))
     str))
 
-(defun org-gtd-id--generate()
-  "Generate and return a new id.
-The generated ID is stripped off potential progress indicator cookies and
-sanitized to get a slug.  Furthermore, it is suffixed with an ISO date-stamp."
-  (let* ((my-heading-text (nth 4 (org-heading-components))) ;; retrieve heading string
-         (my-heading-text (replace-regexp-in-string "\\(\\[[0-9]+%\\]\\)" "" my-heading-text)) ;; remove progress indicators like "[25%]"
-         (my-heading-text (replace-regexp-in-string "\\(\\[[0-9]+/[0-9]+\\]\\)" "" my-heading-text)) ;; remove progress indicators like "[2/7]"
-         (my-heading-text (replace-regexp-in-string "\\(\\[#[ABC]\\]\\)" "" my-heading-text)) ;; remove priority indicators like "[#A]"
-         (my-heading-text (replace-regexp-in-string "\\[\\[\\(.+?\\)\\]\\[" "" my-heading-text t)) ;; removes links, keeps their description and ending brackets
-         (my-heading-text (replace-regexp-in-string "<[12][0-9]\\{3\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\( .*?\\)>" "" my-heading-text t)) ;; removes day of week and time from active date- and time-stamps
-         (my-heading-text (replace-regexp-in-string "\\[[12][0-9]\\{3\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\( .*?\\)\\]" "" my-heading-text t)) ;; removes day of week and time from inactive date- and time-stamps
-         (raw-id (org-gtd-id--generate-sanitized-alnum-dash-string my-heading-text)) ;; get slug from heading text
-         (timestamp (format-time-string "%Y-%m-%d")))
-    (concat raw-id "-" timestamp)))
+;;;; Footer
 
 (provide 'org-gtd-id)
+
 ;;; org-gtd-id.el ends here
