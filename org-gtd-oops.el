@@ -38,6 +38,7 @@
 ;;                   (org-agenda-prefix-format '((tags . " %(stag-day-counter) days: "))))))))))
 ;;   (org-agenda nil "g"))
 
+;;;; Commands
 
 (defun org-gtd-oops ()
   "Agenda view for all non-respected timely events."
@@ -82,5 +83,8 @@
         (org-agenda nil "o")
         (goto-char (point-min)))))
 
+;;;; Footer
+
 (provide 'org-gtd-oops)
+
 ;;; org-gtd-oops.el ends here
