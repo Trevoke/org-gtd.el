@@ -24,6 +24,8 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'org-gtd-core)
 (require 'org-gtd-capture)
 (require 'org-gtd-agenda)
@@ -31,11 +33,12 @@
 (require 'org-gtd-refile)
 (require 'org-gtd-clarify)
 
+;;;; Commands
+
 ;;;###autoload
 (defun org-gtd-process-inbox ()
   "Start the inbox processing item, one heading at a time."
   (interactive)
-
   (let ((buffer (find-file-noselect (org-gtd-inbox-path))))
     (set-buffer buffer)
     (condition-case _err
@@ -47,10 +50,17 @@
           (org-gtd-clarify-inbox-item))
       (user-error (org-gtd-process--stop)))))
 
+;;;; Functions
+
+;;;;; Private
+
 (defun org-gtd-process--stop ()
   "Stop processing the inbox."
   (interactive)
   (whitespace-cleanup))
 
+;;;; Footer
+
 (provide 'org-gtd-process)
+
 ;;; org-gtd-process.el ends here

@@ -24,13 +24,24 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'org-gtd-clarify)
 (require 'org-gtd-refile)
 
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
 
+;;;; Constants
+
 (defconst org-gtd-incubate "Incubated")
+
+(defconst org-gtd-incubate-func #'org-gtd-incubate--apply
+  "Function called when organizing item as incubated."
+  ;; :group 'org-gtd-organize
+  ;; :type 'function
+  ;; :package-version '(org-gtd . "3.0.0")
+  )
 
 (defconst org-gtd-incubate-template
   (format "* Incubate
@@ -40,12 +51,7 @@
 " org-gtd-incubate)
   "Template for the GTD someday/maybe list.")
 
-(defconst org-gtd-incubate-func #'org-gtd-incubate--apply
-  "Function called when organizing item as incubated."
-  ;; :group 'org-gtd-organize
-  ;; :type 'function
-  ;; :package-version '(org-gtd . "3.0.0")
-  )
+;;;; Commands
 
 (defun org-gtd-incubate (&optional reminder-date)
   "Decorate, organize and refile item at point as incubated.
@@ -56,6 +62,26 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
   (org-gtd-organize--call
    (apply-partially org-gtd-incubate-func
                     reminder-date)))
+
+;;;; Functions
+
+;;;;; Public
+
+(defun org-gtd-incubate-create (topic reminder-date)
+  "Automatically create a delegated task in the GTD flow.
+
+TOPIC is the string you want to see in the `org-agenda' view.
+REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
+  (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
+        (org-id-overriding-file-name "org-gtd"))
+    (with-current-buffer buffer
+      (org-mode)
+      (insert (format "* %s" topic))
+      (org-gtd-clarify-item)
+      (org-gtd-incubate reminder-date))
+    (kill-buffer buffer)))
+
+;;;;; Private
 
 (defun org-gtd-incubate--apply (&optional reminder-date)
   "Incubate this item through org-gtd.
@@ -73,20 +99,8 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
   (org-gtd-organize-apply-hooks)
   (org-gtd-refile--do org-gtd-incubate org-gtd-incubate-template))
 
-(defun org-gtd-incubate-create (topic reminder-date)
-  "Automatically create a delegated task in the GTD flow.
-
-TOPIC is the string you want to see in the `org-agenda' view.
-REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
-  (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd"))
-    (with-current-buffer buffer
-      (org-mode)
-      (insert (format "* %s" topic))
-      (org-gtd-clarify-item)
-      (org-gtd-incubate reminder-date))
-    (kill-buffer buffer)))
-
+;;;; Footer
 
 (provide 'org-gtd-incubate)
+
 ;;; org-gtd-incubate.el ends here

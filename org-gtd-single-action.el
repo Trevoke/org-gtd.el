@@ -24,11 +24,15 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'org-gtd-clarify)
 (require 'org-gtd-refile)
 
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
+
+;;;; Constants
 
 (defconst org-gtd-action "Actions")
 
@@ -46,18 +50,16 @@
   ;; :package-version '(org-gtd . "3.0.0")
   )
 
+;;;; Commands
+
 (defun org-gtd-single-action ()
   "Organize, decorate and refile item at point as a single action."
   (interactive)
   (org-gtd-organize--call org-gtd-single-action-func))
 
-(defun org-gtd-single-action--apply ()
-  "Item at point is a one-off action, ready to be executed."
-  (interactive)
-  (org-todo org-gtd-next)
-  (setq-local org-gtd--organize-type 'single-action)
-  (org-gtd-organize-apply-hooks)
-  (org-gtd-refile--do org-gtd-action org-gtd-action-template))
+;;;; Functions
+
+;;;;; Public
 
 (defun org-gtd-single-action-create (topic)
   "Automatically create a delegated task in the GTD flow.
@@ -72,6 +74,18 @@ TOPIC is what you want to see in the agenda view."
       (org-gtd-single-action))
     (kill-buffer buffer)))
 
+;;;;; Private
+
+(defun org-gtd-single-action--apply ()
+  "Item at point is a one-off action, ready to be executed."
+  (interactive)
+  (org-todo org-gtd-next)
+  (setq-local org-gtd--organize-type 'single-action)
+  (org-gtd-organize-apply-hooks)
+  (org-gtd-refile--do org-gtd-action org-gtd-action-template))
+
+;;;; Footer
 
 (provide 'org-gtd-single-action)
+
 ;;; org-gtd-single-action.el ends here

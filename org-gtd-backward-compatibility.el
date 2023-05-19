@@ -23,10 +23,29 @@
 ;; Functions that don't exist in older vanilla emacsen
 ;;
 ;;; Code:
+
+;;;; Requirements
+
 (require 'subr-x)
 
+;;;; Functions
+
+;;;;; Private
+
+(defun org-gtd--ensure-list (object)
+  "Return OBJECT as a list.
+If OBJECT is already a list, return OBJECT itself.  If it's
+not a list, return a one-element list containing OBJECT."
+  (if (listp object)
+      object
+    (list object)))
+
+;; this was added in emacs 28.1
+(unless (fboundp 'ensure-list)
+  (defalias 'ensure-list 'org-gtd--ensure-list))
+
 (defun org-gtd--string-pad (string length &optional padding start)
-    "Pad STRING to LENGTH using PADDING.
+  "Pad STRING to LENGTH using PADDING.
 If PADDING is nil, the space character is used.  If not nil, it
 should be a character.
 
@@ -36,28 +55,19 @@ is done.
 If START is nil (or not present), the padding is done to the end
 of the string, and if non-nil, padding is done to the start of
 the string."
-    (unless (natnump length)
-      (signal 'wrong-type-argument (list 'natnump length)))
-    (let ((pad-length (- length (length string))))
-      (cond ((<= pad-length 0) string)
-            (start (concat (make-string pad-length (or padding ?\s)) string))
-            (t (concat string (make-string pad-length (or padding ?\s)))))))
+  (unless (natnump length)
+    (signal 'wrong-type-argument (list 'natnump length)))
+  (let ((pad-length (- length (length string))))
+    (cond ((<= pad-length 0) string)
+          (start (concat (make-string pad-length (or padding ?\s)) string))
+          (t (concat string (make-string pad-length (or padding ?\s)))))))
 
 ;; this was added in emacs 28.1
 (unless (fboundp 'string-pad)
   (defalias 'string-pad 'org-gtd--string-pad))
 
-(defun org-gtd--ensure-list (object)
-    "Return OBJECT as a list.
-If OBJECT is already a list, return OBJECT itself.  If it's
-not a list, return a one-element list containing OBJECT."
-    (if (listp object)
-        object
-      (list object)))
-
-;; this was added in emacs 28.1
-(unless (fboundp 'ensure-list)
-  (defalias 'ensure-list 'org-gtd--ensure-list))
+;;;; Footer
 
 (provide 'org-gtd-backward-compatibility)
+
 ;;; org-gtd-backward-compatibility.el ends here

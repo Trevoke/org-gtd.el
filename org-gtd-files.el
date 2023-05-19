@@ -24,10 +24,19 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'f)
+
 (require 'org-gtd-core)
 
+;;;; Constants
+
 (defconst org-gtd-default-file-name "org-gtd-tasks")
+
+;;;; Functions
+
+;;;;; Private
 
 (defun org-gtd--default-file ()
   "Create or return the buffer to the default GTD file."
@@ -48,5 +57,8 @@
 This assumes the file is located in `org-gtd-directory'."
   (f-join org-gtd-directory (concat file ".org")))
 
+;;;; Footer
+
 (provide 'org-gtd-files)
+
 ;;; org-gtd-files.el ends here

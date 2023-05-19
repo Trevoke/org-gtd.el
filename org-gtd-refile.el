@@ -24,11 +24,15 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'org)
 (require 'org-refile)
 (require 'org-element)
 
 (require 'org-gtd-core)
+
+;;;; Customization
 
 (defcustom org-gtd-refile-to-any-target t
   "Set to true if you do not need to choose where to refile processed items.
@@ -45,6 +49,8 @@ setting as part of following the instructions to add your own refile targets."
   :type 'boolean
   :package-version '(org-gtd . "2.0.0"))
 
+;;;; Macros
+
 ;;;###autoload
 (defmacro with-org-gtd-refile (type &rest body)
   "Macro to refile specifically within org-gtd context.
@@ -56,16 +62,9 @@ TYPE is the org-gtd action type.  BODY is the rest of the code."
      (unwind-protect
          (with-org-gtd-context (progn ,@body)))))
 
-(defun org-gtd-refile--do (type refile-target-element)
-  "Refile an item to the single action file.
+;;;; Functions
 
-TYPE is one of the org-gtd action types.
-REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
-  (with-org-gtd-refile type
-    (unless (org-refile-get-targets) (org-gtd-refile--add-target refile-target-element))
-    (if org-gtd-refile-to-any-target
-        (org-refile nil nil (car (org-refile-get-targets)))
-      (org-refile nil nil nil "Finish organizing task under: "))))
+;;;;; Private
 
 (defun org-gtd-refile--add-target (refile-target-element)
   "Private function used to create a missing org-gtd refile target.
@@ -79,10 +78,24 @@ REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
     (insert refile-target-element)
     (basic-save-buffer)))
 
+(defun org-gtd-refile--do (type refile-target-element)
+  "Refile an item to the single action file.
+
+TYPE is one of the org-gtd action types.
+REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
+  (with-org-gtd-refile type
+    (unless (org-refile-get-targets) (org-gtd-refile--add-target refile-target-element))
+    (if org-gtd-refile-to-any-target
+        (org-refile nil nil (car (org-refile-get-targets)))
+      (org-refile nil nil nil "Finish organizing task under: "))))
+
 (defun org-gtd-refile--group-p (type)
   "Determine whether the current heading is of a given gtd TYPE."
   (string-equal type
                 (org-element-property :ORG_GTD (org-element-at-point))))
 
+;;;; Footer
+
 (provide 'org-gtd-refile)
+
 ;;; org-gtd-refile.el ends here

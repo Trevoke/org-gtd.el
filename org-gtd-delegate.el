@@ -24,18 +24,19 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'org)
 
 (require 'org-gtd-core)
 (require 'org-gtd-single-action)
-
 (require 'org-gtd-clarify)
 (require 'org-gtd-refile)
 
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
 
-(defconst org-gtd-delegate-property "DELEGATED_TO")
+;;;; Customization
 
 (defcustom org-gtd-delegate-read-func (lambda () (read-string "Who will do this? "))
   "Function that is called to read in the Person the task is delegated to.
@@ -45,12 +46,18 @@ Needs to return a string that will be used as the persons name."
   :package-version '(org-gtd . "2.3.0")
   :type 'function )
 
+;;;; Constants
+
+(defconst org-gtd-delegate-property "DELEGATED_TO")
+
 (defconst org-gtd-delegate-func #'org-gtd-delegate--apply
   "Function called when organizing item at at point as delegated."
   ;; :group 'org-gtd-organize
   ;; :type 'function
   ;; :package-version '(org-gtd . "3.0.0")
   )
+
+;;;; Commands
 
 (defun org-gtd-delegate (&optional delegated-to checkin-date)
   "Organize and refile item at point as a delegated item.
@@ -64,16 +71,20 @@ you if you want to call this non-interactively."
                     delegated-to
                     checkin-date)))
 
-(defun org-gtd-delegate--apply (&optional delegated-to checkin-date)
-  "Organize and refile this as a delegated item in the `org-gtd' system.
-
-You can pass DELEGATED-TO as the name of the person to whom this was delegated
-and CHECKIN-DATE as the YYYY-MM-DD string of when you want `org-gtd' to remind
-you if you want to call this non-interactively."
-  (org-gtd-delegate-item-at-point delegated-to checkin-date)
-  (setq-local org-gtd--organize-type 'delegated)
-  (org-gtd-organize-apply-hooks)
-  (org-gtd-refile--do org-gtd-action org-gtd-action-template))
+;;;###autoload
+(defun org-gtd-delegate-agenda-item ()
+  "Delegate item at point on agenda view."
+  (declare (modes org-agenda-mode)) ;; for 27.2 compatibility
+  (interactive)
+  (org-agenda-check-type t 'agenda 'todo 'tags 'search)
+  (org-agenda-check-no-diary)
+  (let* ((heading-marker (or (org-get-at-bol 'org-marker)
+                             (org-agenda-error)))
+         (heading-buffer (marker-buffer heading-marker))
+         (heading-position (marker-position heading-marker)))
+    (with-current-buffer heading-buffer
+      (goto-char heading-position)
+      (org-gtd-delegate-item-at-point))))
 
 ;;;###autoload
 (defun org-gtd-delegate-item-at-point (&optional delegated-to checkin-date)
@@ -102,20 +113,9 @@ person to whom to delegate by using `org-gtd-delegate-read-func'."
       (goto-char (org-log-beginning t))
       (insert (format "programmatically delegated to %s\n" delegated-to)))))
 
-;;;###autoload
-(defun org-gtd-delegate-agenda-item ()
-  "Delegate item at point on agenda view."
-  (declare (modes org-agenda-mode)) ;; for 27.2 compatibility
-  (interactive)
-  (org-agenda-check-type t 'agenda 'todo 'tags 'search)
-  (org-agenda-check-no-diary)
-  (let* ((heading-marker (or (org-get-at-bol 'org-marker)
-                             (org-agenda-error)))
-         (heading-buffer (marker-buffer heading-marker))
-         (heading-position (marker-position heading-marker)))
-    (with-current-buffer heading-buffer
-      (goto-char heading-position)
-      (org-gtd-delegate-item-at-point))))
+;;;; Functions
+
+;;;;; Public
 
 (defun org-gtd-delegate-create (topic delegated-to checkin-date)
   "Automatically create a delegated task in the GTD flow.
@@ -133,5 +133,21 @@ you."
       (org-gtd-delegate delegated-to checkin-date))
     (kill-buffer buffer)))
 
+;;;;; Private
+
+(defun org-gtd-delegate--apply (&optional delegated-to checkin-date)
+  "Organize and refile this as a delegated item in the `org-gtd' system.
+
+You can pass DELEGATED-TO as the name of the person to whom this was delegated
+and CHECKIN-DATE as the YYYY-MM-DD string of when you want `org-gtd' to remind
+you if you want to call this non-interactively."
+  (org-gtd-delegate-item-at-point delegated-to checkin-date)
+  (setq-local org-gtd--organize-type 'delegated)
+  (org-gtd-organize-apply-hooks)
+  (org-gtd-refile--do org-gtd-action org-gtd-action-template))
+
+;;;; Footer
+
 (provide 'org-gtd-delegate)
+
 ;;; org-gtd-delegate.el ends here

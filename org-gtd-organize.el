@@ -24,6 +24,8 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'transient)
 
 (require 'org-gtd-backward-compatibility)
@@ -41,6 +43,8 @@
 (require 'org-gtd-projects)
 (require 'org-gtd-refile)
 (require 'org-gtd-process)
+
+;;;; Customization
 
 (defgroup org-gtd-organize nil
   "Manage the functions for organizing the GTD actions."
@@ -62,8 +66,7 @@ Once you have your ground items managed, you might like to set the variable
   :type 'hook
   :options '(org-set-tags-command org-set-effort org-priority))
 
-(defvar-local org-gtd--organize-type nil
-  "Type of action chosen by the user for this one item.")
+;;;; Constants
 
 (defconst org-gtd-organize-action-types
   '(quick-action single-action calendar habit
@@ -71,10 +74,12 @@ Once you have your ground items managed, you might like to set the variable
                  project-heading project-task everything)
   "Valid actions types as input for `org-gtd-organize-type-member-p'.")
 
-(define-error
-  'org-gtd-invalid-organize-action-type-error
-  "At least one element of %s is not in %s"
-  'org-gtd-error)
+;;;; Variables
+
+(defvar-local org-gtd--organize-type nil
+  "Type of action chosen by the user for this one item.")
+
+;;;; Macros
 
 (transient-define-prefix org-gtd-organize ()
   "Choose how to categorize the current item."
@@ -91,26 +96,9 @@ Once you have your ground items managed, you might like to set the variable
     ("k" "Knowledge to be stored" org-gtd-knowledge)]
    [("t" "Trash" org-gtd-trash)]])
 
-(defun org-gtd-organize--call (func)
-  "Wrap FUNC, which does the real work, to keep Emacs clean.
-This handles the internal bits of `org-gtd'."
-  (goto-char (point-min))
-  (when (org-before-first-heading-p)
-    (org-next-visible-heading 1))
-  (catch 'org-gtd-error
-    (with-org-gtd-context
-        (save-excursion (funcall func)))
-    (let ((loop-p (and (boundp org-gtd-clarify--inbox-p) org-gtd-clarify--inbox-p))
-          (task-id org-gtd-clarify--clarify-id)
-          (window-config org-gtd-clarify--window-config)
-          (buffer (marker-buffer org-gtd-clarify--source-heading-marker))
-          (position (marker-position org-gtd-clarify--source-heading-marker)))
-      (with-current-buffer buffer
-        (goto-char position)
-        (org-cut-subtree))
-      (set-window-configuration window-config)
-      (kill-buffer (org-gtd-clarify--buffer-name task-id))
-      (if loop-p (org-gtd-process-inbox)))))
+;;;; Functions
+
+;;;;; Public
 
 (defun org-gtd-organize-apply-hooks ()
   "Apply hooks to add metadata to a given GTD item."
@@ -145,5 +133,36 @@ Valid members of LIST include:
     (or (member 'everything list)
         (member org-gtd--organize-type list))))
 
+;;;;; Private
+
+(define-error
+  'org-gtd-invalid-organize-action-type-error
+  "At least one element of %s is not in %s"
+  'org-gtd-error)
+
+(defun org-gtd-organize--call (func)
+  "Wrap FUNC, which does the real work, to keep Emacs clean.
+This handles the internal bits of `org-gtd'."
+  (goto-char (point-min))
+  (when (org-before-first-heading-p)
+    (org-next-visible-heading 1))
+  (catch 'org-gtd-error
+    (with-org-gtd-context
+        (save-excursion (funcall func)))
+    (let ((loop-p (and (boundp org-gtd-clarify--inbox-p) org-gtd-clarify--inbox-p))
+          (task-id org-gtd-clarify--clarify-id)
+          (window-config org-gtd-clarify--window-config)
+          (buffer (marker-buffer org-gtd-clarify--source-heading-marker))
+          (position (marker-position org-gtd-clarify--source-heading-marker)))
+      (with-current-buffer buffer
+        (goto-char position)
+        (org-cut-subtree))
+      (set-window-configuration window-config)
+      (kill-buffer (org-gtd-clarify--buffer-name task-id))
+      (if loop-p (org-gtd-process-inbox)))))
+
+;;;; Footer
+
 (provide 'org-gtd-organize)
+
 ;;; org-gtd-organize.el ends here

@@ -25,6 +25,8 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'org)
 
 (require 'org-gtd-core)
@@ -32,22 +34,15 @@
 (require 'org-gtd-organize)
 (require 'org-gtd-projects)
 
+;;;; Customization
+
 (defcustom org-gtd-areas-of-focus '("Home" "Health" "Family" "Career")
   "The current major areas in your life where you don't want to drop balls."
   :type 'list
   :group 'org-gtd-horizons
   :package-version '(org-gtd . "3.0.0"))
 
-(defun org-gtd-areas-of-focus--set ()
-  "Use as a hook when decorating items after clarifying them.
-
-This function requires that the user input find a match amongst the options.
-If a new area of focus pops up for you, change the value of the eponymous
-variable."
-  (unless (org-gtd-organize-type-member-p '(project-task trash knowledge quick-action))
-   (org-gtd-area-of-focus-set-on-item-at-point)))
-
-(defalias 'org-gtd-set-area-of-focus 'org-gtd-areas-of-focus--set)
+;;;; Commands
 
 (defun org-gtd-area-of-focus-set-on-item-at-point ()
   (declare (modes org-mode)) ;; for 27.2 compatibility
@@ -78,5 +73,23 @@ variable."
             (org-up-heading-safe))
         (org-gtd-area-of-focus-set-on-item-at-point)))))
 
+;;;; Functions
+
+(defalias 'org-gtd-set-area-of-focus 'org-gtd-areas-of-focus--set)
+
+;;;;; Private
+
+(defun org-gtd-areas-of-focus--set ()
+  "Use as a hook when decorating items after clarifying them.
+
+This function requires that the user input find a match amongst the options.
+If a new area of focus pops up for you, change the value of the eponymous
+variable."
+  (unless (org-gtd-organize-type-member-p '(project-task trash knowledge quick-action))
+    (org-gtd-area-of-focus-set-on-item-at-point)))
+
+;;;; Footer
+
 (provide 'org-gtd-areas-of-focus)
+
 ;;; org-gtd-areas-of-focus.el ends here
