@@ -24,6 +24,8 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'org-gtd-core)
 (require 'org-gtd-clarify)
 (require 'org-gtd-refile)
@@ -31,7 +33,16 @@
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
 
+;;;; Constants
+
 (defconst org-gtd-habit "Habits")
+
+(defconst org-gtd-habit-func #'org-gtd-habit--apply
+  "Function called when organizing item as a habit."
+  ;; :group 'org-gtd-organize
+  ;; :type 'function
+  ;; :package-version '(org-gtd . "3.0.0")
+  )
 
 (defconst org-gtd-habit-template
   (format "* Habits
@@ -40,12 +51,7 @@
 :END:
 " org-gtd-habit))
 
-(defconst org-gtd-habit-func #'org-gtd-habit--apply
-  "Function called when organizing item as a habit."
-  ;; :group 'org-gtd-organize
-  ;; :type 'function
-  ;; :package-version '(org-gtd . "3.0.0")
-  )
+;;;; Commands
 
 (defun org-gtd-habit (&optional repeater)
   "Organize and refile item at point as a calendar item.
@@ -58,20 +64,9 @@ determine how often you'll be reminded of this habit."
    (apply-partially org-gtd-habit-func
                     repeater)))
 
-(defun org-gtd-habit--apply (&optional repeater)
-  "Add a repeater to this item and store in org gtd.
+;;;; Functions
 
-If you want to call this non-interactively,
-REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
-determine how often you'll be reminded of this habit."
-  (let ((repeater (or repeater
-                      (read-from-minibuffer "How do you want this to repeat? ")))
-        (today (format-time-string "%Y-%m-%d")))
-    (org-schedule nil (format "<%s %s>" today repeater))
-    (org-entry-put (point) "STYLE" "habit"))
-  (setq-local org-gtd--organize-type 'habit)
-  (org-gtd-organize-apply-hooks)
-  (org-gtd-refile--do org-gtd-habit org-gtd-habit-template))
+;;;;; Public
 
 (defun org-gtd-habit-create (topic repeater)
   "Automatically create a habit in the GTD flow.
@@ -88,5 +83,25 @@ determine how often you'll be reminded of this habit."
       (org-gtd-habit repeater))
     (kill-buffer buffer)))
 
+;;;;; Private
+
+(defun org-gtd-habit--apply (&optional repeater)
+  "Add a repeater to this item and store in org gtd.
+
+If you want to call this non-interactively,
+REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
+determine how often you'll be reminded of this habit."
+  (let ((repeater (or repeater
+                      (read-from-minibuffer "How do you want this to repeat? ")))
+        (today (format-time-string "%Y-%m-%d")))
+    (org-schedule nil (format "<%s %s>" today repeater))
+    (org-entry-put (point) "STYLE" "habit"))
+  (setq-local org-gtd--organize-type 'habit)
+  (org-gtd-organize-apply-hooks)
+  (org-gtd-refile--do org-gtd-habit org-gtd-habit-template))
+
+;;;; Footer
+
 (provide 'org-gtd-habit)
+
 ;;; org-gtd-habit.el ends here
