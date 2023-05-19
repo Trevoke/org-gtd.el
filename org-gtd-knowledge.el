@@ -24,12 +24,16 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'org-gtd-core)
 (require 'org-gtd-archive)
 (require 'org-gtd-clarify)
 
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
+
+;;;; Constants
 
 (defconst org-gtd-knowledge-func #'org-gtd-knowledge--apply
   "Function called when item at point is knowledge to be stored.
@@ -43,10 +47,16 @@ clarify step, before you call `org-gtd-organize')."
   ;; :package-version '(org-gtd . "3.0.0")
   )
 
+;;;; Commands
+
 (defun org-gtd-knowledge ()
   "Decorate, organize and refile item at point as knowledge."
   (interactive)
   (org-gtd-organize--call org-gtd-knowledge-func))
+
+;;;; Functions
+
+;;;;; Private
 
 (defun org-gtd-knowledge--apply ()
   "Once the user has filed this knowledge, we can execute this logic."
@@ -55,5 +65,8 @@ clarify step, before you call `org-gtd-organize')."
   (org-gtd-organize-apply-hooks)
   (org-gtd-archive-item-at-point))
 
+;;;; Footer
+
 (provide 'org-gtd-knowledge)
+
 ;;; org-gtd-knowledge.el ends here
