@@ -38,9 +38,9 @@
 
 (defcustom org-gtd-areas-of-focus '("Home" "Health" "Family" "Career")
   "The current major areas in your life where you don't want to drop balls."
-  :type 'list
   :group 'org-gtd-horizons
-  :package-version '(org-gtd . "3.0.0"))
+  :package-version '(org-gtd . "3.0.0")
+  :type 'list)
 
 ;;;; Commands
 
@@ -74,6 +74,8 @@
         (org-gtd-area-of-focus-set-on-item-at-point)))))
 
 ;;;; Functions
+
+;;;;; Public
 
 (defalias 'org-gtd-set-area-of-focus 'org-gtd-areas-of-focus--set)
 

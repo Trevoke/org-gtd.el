@@ -46,8 +46,8 @@ to create new refile targets.
 Defaults to true to carry over pre-2.0 behavior.  You will need to change this
 setting as part of following the instructions to add your own refile targets."
   :group 'org-gtd-organize
-  :type 'boolean
-  :package-version '(org-gtd . "2.0.0"))
+  :package-version '(org-gtd . "2.0.0")
+  :type 'boolean)
 
 ;;;; Macros
 

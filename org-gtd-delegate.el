@@ -51,11 +51,7 @@ Needs to return a string that will be used as the persons name."
 (defconst org-gtd-delegate-property "DELEGATED_TO")
 
 (defconst org-gtd-delegate-func #'org-gtd-delegate--apply
-  "Function called when organizing item at at point as delegated."
-  ;; :group 'org-gtd-organize
-  ;; :type 'function
-  ;; :package-version '(org-gtd . "3.0.0")
-  )
+  "Function called when organizing item at at point as delegated.")
 
 ;;;; Commands
 

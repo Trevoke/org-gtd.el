@@ -44,11 +44,7 @@
 " org-gtd-action))
 
 (defconst org-gtd-single-action-func #'org-gtd-single-action--apply
-  "Function called when organizing item at point as a single next action."
-  ;; :group 'org-gtd-organize
-  ;; :type 'function
-  ;; :package-version '(org-gtd . "3.0.0")
-  )
+  "Function called when organizing item at point as a single next action.")
 
 ;;;; Commands
 

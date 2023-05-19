@@ -37,8 +37,8 @@
 
 (defgroup org-gtd-archive nil
   "How to archive completed / canceled items."
-  :package-version '(org-gtd . "3.0.0")
-  :group 'org-gtd)
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0.0"))
 
 (defcustom org-gtd-archive-location #'org-gtd-archive-location-func
   "Function to generate archive location for org gtd.
@@ -54,8 +54,8 @@ This function has an arity of zero.  By default this generates a file
 called gtd_archive_<currentyear> in `org-gtd-directory' and puts the entries
 into a datetree."
   :group 'org-gtd-archive
-  :type 'sexp
-  :package-version '(org-gtd . "2.0.0"))
+  :package-version '(org-gtd . "2.0.0")
+  :type 'sexp)
 
 ;;;; Constants
 
@@ -126,11 +126,9 @@ Done here is any done `org-todo-keyword'.  For org-gtd this means `org-gtd-done'
 or `org-gtd-canceled'."
   (org-map-entries
    (lambda ()
-
      (when (org-gtd--all-subheadings-in-done-type-p)
        (setq org-map-continue-from
              (org-element-property :begin (org-element-at-point)))
-
        (org-archive-subtree-default)))
    "+LEVEL=2&+ORG_GTD=\"Projects\""
    'agenda))

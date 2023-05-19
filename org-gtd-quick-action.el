@@ -35,11 +35,7 @@
 ;;;; Constants
 
 (defconst org-gtd-quick-action-func #'org-gtd-quick-action--apply
-  "Function called when organizing item at point as quick action."
-  ;; :group 'org-gtd-organize
-  ;; :type 'function
-  ;; :package-version '(org-gtd . "3.0.0")
-  )
+  "Function called when organizing item at point as quick action.")
 
 ;;;; Commands
 

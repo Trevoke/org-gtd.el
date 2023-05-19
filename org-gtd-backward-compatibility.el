@@ -30,6 +30,16 @@
 
 ;;;; Functions
 
+;;;;; Public
+
+;; this was added in emacs 28.1
+(unless (fboundp 'ensure-list)
+  (defalias 'ensure-list 'org-gtd--ensure-list))
+
+;; this was added in emacs 28.1
+(unless (fboundp 'string-pad)
+  (defalias 'string-pad 'org-gtd--string-pad))
+
 ;;;;; Private
 
 (defun org-gtd--ensure-list (object)
@@ -39,10 +49,6 @@ not a list, return a one-element list containing OBJECT."
   (if (listp object)
       object
     (list object)))
-
-;; this was added in emacs 28.1
-(unless (fboundp 'ensure-list)
-  (defalias 'ensure-list 'org-gtd--ensure-list))
 
 (defun org-gtd--string-pad (string length &optional padding start)
   "Pad STRING to LENGTH using PADDING.
@@ -61,10 +67,6 @@ the string."
     (cond ((<= pad-length 0) string)
           (start (concat (make-string pad-length (or padding ?\s)) string))
           (t (concat string (make-string pad-length (or padding ?\s)))))))
-
-;; this was added in emacs 28.1
-(unless (fboundp 'string-pad)
-  (defalias 'string-pad 'org-gtd--string-pad))
 
 ;;;; Footer
 

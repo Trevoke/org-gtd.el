@@ -37,11 +37,7 @@
 (defconst org-gtd-incubate "Incubated")
 
 (defconst org-gtd-incubate-func #'org-gtd-incubate--apply
-  "Function called when organizing item as incubated."
-  ;; :group 'org-gtd-organize
-  ;; :type 'function
-  ;; :package-version '(org-gtd . "3.0.0")
-  )
+  "Function called when organizing item as incubated.")
 
 (defconst org-gtd-incubate-template
   (format "* Incubate
