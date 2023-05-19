@@ -25,15 +25,40 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'org-agenda-property)
 
 (require 'org-gtd-backward-compatibility)
+
+;;;; Customization
 
 (defgroup org-gtd nil
   "Customize the org-gtd package."
   :link '(url-link "https://github.com/Trevoke/org-gtd.el")
   :package-version '(org-gtd . "0.1")
   :group 'org)
+
+(defcustom org-gtd-canceled "CNCL"
+  "The `org-mode' keyword for a canceled task.
+
+ See `org-todo-keywords' for customization options."
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0")
+  :type 'string)
+
+(defcustom org-gtd-canceled-suffix "(c@)"
+  "Additional `org-mode' tools for this keyword.  Example: \"(w@/!)\".
+
+You can define:
+- a key to be used with `org-use-fast-todo-selection'
+- behavior (optional note/timestamp) for entering state
+- behavior (optional note/timestamp) for leaving state.
+
+See `org-todo-keywords' for definition."
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0")
+  :type 'string)
 
 (defcustom org-gtd-directory "~/gtd/"
   "Directory for org-gtd.
@@ -45,6 +70,27 @@ your own files if you want multiple refile targets (projects, etc.)."
   :group 'org-gtd
   :package-version '(org-gtd . "0.1")
   :type 'directory)
+
+(defcustom org-gtd-done "DONE"
+  "The `org-mode' keyword for a finished task.
+
+ See `org-todo-keywords' for customization options."
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0")
+  :type 'string)
+
+(defcustom org-gtd-done-suffix "(d)"
+  "Additional `org-mode' tools for this keyword.  Example: \"(w@/!)\".
+
+You can define:
+- a key to be used with `org-use-fast-todo-selection'
+- behavior (optional note/timestamp) for entering state
+- behavior (optional note/timestamp) for leaving state.
+
+See `org-todo-keywords' for definition."
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0")
+  :type 'string)
 
 (defcustom org-gtd-next "NEXT"
   "The `org-mode' keyword for an action ready to be done.  Just the word."
@@ -107,63 +153,22 @@ See `org-todo-keywords' for definition."
   :package-version '(org-gtd . "3.0")
   :type 'string)
 
-(defcustom org-gtd-done "DONE"
-  "The `org-mode' keyword for a finished task.
-
- See `org-todo-keywords' for customization options."
-  :group 'org-gtd
-  :package-version '(org-gtd . "3.0")
-  :type 'string)
-
-(defcustom org-gtd-done-suffix "(d)"
-  "Additional `org-mode' tools for this keyword.  Example: \"(w@/!)\".
-
-You can define:
-- a key to be used with `org-use-fast-todo-selection'
-- behavior (optional note/timestamp) for entering state
-- behavior (optional note/timestamp) for leaving state.
-
-See `org-todo-keywords' for definition."
-  :group 'org-gtd
-  :package-version '(org-gtd . "3.0")
-  :type 'string)
-
-(defcustom org-gtd-canceled "CNCL"
-  "The `org-mode' keyword for a canceled task.
-
- See `org-todo-keywords' for customization options."
-  :group 'org-gtd
-  :package-version '(org-gtd . "3.0")
-  :type 'string)
-
-(defcustom org-gtd-canceled-suffix "(c@)"
-  "Additional `org-mode' tools for this keyword.  Example: \"(w@/!)\".
-
-You can define:
-- a key to be used with `org-use-fast-todo-selection'
-- behavior (optional note/timestamp) for entering state
-- behavior (optional note/timestamp) for leaving state.
-
-See `org-todo-keywords' for definition."
-  :group 'org-gtd
-  :package-version '(org-gtd . "3.0")
-  :type 'string)
+;;;; Constants
 
 (defconst org-gtd-timestamp "ORG_GTD_TIMESTAMP"
   "Org property storing timestamps for `org-gtd' logic.")
 
-(defvar org-gtd-project-headings)
-(defvar org-gtd-stuck-projects)
+;;;; Variables
+
 (defvar org-gtd-archive-location)
 (defvar org-gtd-delegate-property)
+(defvar org-gtd-project-headings)
+(defvar org-gtd-stuck-projects)
 
 (defvar-local org-gtd--loading-p nil
   "`Org-gtd' sets this variable after it has changed the state in this buffer.")
 
-(define-error
-  'org-gtd-error
-  "Something went wrong with `org-gtd'"
-  'user-error)
+;;;; Macros
 
 ;;;###autoload
 (defmacro with-org-gtd-context (&rest body)
@@ -192,16 +197,9 @@ See `org-todo-keywords' for definition."
        (progn
          (advice-remove 'org-agenda-files #'org-gtd-core--uniq)))))
 
-(defun org-gtd-core-prepare-buffer (&optional buffer)
-  "Make sure BUFFER is prepared to handle Org GTD operations.
+;;;; Functions
 
-If BUFFER is nil, use current buffer."
-  (with-current-buffer (or buffer (current-buffer))
-    (unless (bound-and-true-p org-gtd--loading-p)
-      (setq-local org-gtd--loading-p t)
-      (with-org-gtd-context
-          (org-mode-restart))
-      (setq-local org-gtd--loading-p t))))
+;;;;; Public
 
 (defun org-gtd-core-prepare-agenda-buffers ()
   "Ensure `org-mode' has the desired settings in the agenda buffers."
@@ -214,6 +212,24 @@ If BUFFER is nil, use current buffer."
                                   org-agenda-entry))
      (with-org-gtd-context (org-gtd-core--agenda-files))))))
 
+(defun org-gtd-core-prepare-buffer (&optional buffer)
+  "Make sure BUFFER is prepared to handle Org GTD operations.
+
+If BUFFER is nil, use current buffer."
+  (with-current-buffer (or buffer (current-buffer))
+    (unless (bound-and-true-p org-gtd--loading-p)
+      (setq-local org-gtd--loading-p t)
+      (with-org-gtd-context
+          (org-mode-restart))
+      (setq-local org-gtd--loading-p t))))
+
+;;;;; Private
+
+(define-error
+  'org-gtd-error
+  "Something went wrong with `org-gtd'"
+  'user-error)
+
 (defun org-gtd-core--agenda-files ()
   "Concatenate `org-agenda-files' variable with `org-gtd-directory' contents."
   (seq-uniq (if (stringp org-agenda-files)
@@ -225,5 +241,8 @@ If BUFFER is nil, use current buffer."
 (defun org-gtd-core--uniq (list)
   (seq-uniq list))
 
+;;;; Footer
+
 (provide 'org-gtd-core)
+
 ;;; org-gtd-core.el ends here
