@@ -34,8 +34,8 @@
 
 (defgroup org-gtd-capture nil
   "Manage the functions for organizing the GTD actions."
-  :package-version '(org-gtd . "3.0.0")
-  :group 'org-gtd)
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0.0"))
 
 (defcustom org-gtd-capture-templates
   `(("i" "Inbox"
@@ -52,8 +52,8 @@ See `org-capture-templates' for the format of each capture template.
 Make the sure the template string starts with a single asterisk to denote a
 top level heading, or the behavior of org-gtd will be undefined."
   :group 'org-gtd-capture
-  :type 'sexp
-  :package-version '(org-gtd . "2.0.0"))
+  :package-version '(org-gtd . "2.0.0")
+  :type 'sexp)
 
 ;;;; Constants
 

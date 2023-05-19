@@ -34,11 +34,7 @@
 ;;;; Constants
 
 (defconst org-gtd-trash-func #'org-gtd-trash--apply
-  "Function called when organizing item at point as trash."
-  ;; :group 'org-gtd-organize
-  ;; :type 'function
-  ;; :package-version '(org-gtd . "3.0.0")
-  )
+  "Function called when organizing item at point as trash.")
 
 ;;;; Commands
 

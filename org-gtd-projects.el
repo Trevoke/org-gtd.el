@@ -40,18 +40,10 @@
 ;;;; Constants
 
 (defconst org-gtd-add-to-project-func #'org-gtd-project-extend--apply
-  "Function called when organizing item at point as a new task in a project."
-  ;; :group 'org-gtd-organize
-  ;; :type 'function
-  ;; :package-version '(org-gtd . "3.0.0")
-  )
+  "Function called when organizing item at point as a new task in a project.")
 
 (defconst org-gtd-project-func #'org-gtd-project-new--apply
-  "Function called when organizing item at point as a project."
-  ;; :group 'org-gtd-organize
-  ;; :type 'function
-  ;; :package-version '(org-gtd . "3.0.0")
-  )
+  "Function called when organizing item at point as a project.")
 
 (defconst org-gtd-project-headings
   "+LEVEL=2&+ORG_GTD=\"Projects\""

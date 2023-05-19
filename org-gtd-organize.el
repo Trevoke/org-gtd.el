@@ -48,8 +48,8 @@
 
 (defgroup org-gtd-organize nil
   "Manage the functions for organizing the GTD actions."
-  :package-version '(org-gtd . "3.0.0")
-  :group 'org-gtd)
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0.0"))
 
 (defcustom org-gtd-organize-hooks '(org-set-tags-command)
   "Enhancements to add to each item as they get processed from the inbox.
@@ -62,9 +62,9 @@ the items once they have been processed and add them to that list.
 Once you have your ground items managed, you might like to set the variable
 `org-gtd-areas-of-focus' and add `org-gtd-set-area-of-focus' to these hooks."
   :group 'org-gtd-organize
+  :options '(org-set-tags-command org-set-effort org-priority)
   :package-version '(org-gtd . "1.0.4")
-  :type 'hook
-  :options '(org-set-tags-command org-set-effort org-priority))
+  :type 'hook)
 
 ;;;; Constants
 

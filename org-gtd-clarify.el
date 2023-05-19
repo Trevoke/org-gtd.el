@@ -36,8 +36,8 @@
 
 (defgroup org-gtd-clarify nil
   "Customize the behavior when clarifying an item."
-  :package-version '(org-gtd . "3.0")
-  :group 'org-gtd)
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0"))
 
 (defcustom org-gtd-clarify-project-templates nil
   "This is an alist of (\"template title\" . \"template\").
@@ -53,9 +53,9 @@ which turns out to be a project."
 The values can be: nil, top, right, left, bottom.
 
 The file shown can be configured in `org-gtd-horizons-file'."
+  :group 'org-gtd-clarify
   :options '('right 'top 'left 'bottom 'nil)
   :package-version '(org-gtd . "3.0")
-  :group 'org-gtd-clarify
   :type 'symbol)
 
 ;;;; Constants
@@ -112,6 +112,16 @@ The file shown can be configured in `org-gtd-horizons-file'."
 
 ;;;; Commands
 
+(defun org-gtd-clarify-agenda-item ()
+  "Process item at point on agenda view."
+  (declare (modes org-agenda-mode)) ;; for 27.2 compatibility
+  (interactive nil)
+  (org-agenda-check-type t 'agenda 'todo 'tags 'search)
+  (org-agenda-check-no-diary)
+  (let ((heading-marker (or (org-get-at-bol 'org-marker)
+                            (org-agenda-error))))
+    (org-gtd-clarify-item-at-marker heading-marker)))
+
 ;;;###autoload
 (defun org-gtd-clarify-item ()
   "Process item at point through org-gtd."
@@ -149,16 +159,6 @@ The file shown can be configured in `org-gtd-horizons-file'."
 ;;;; Functions
 
 ;;;;; Public
-
-(defun org-gtd-clarify-agenda-item ()
-  "Process item at point on agenda view."
-  (declare (modes org-agenda-mode)) ;; for 27.2 compatibility
-  (interactive nil)
-  (org-agenda-check-type t 'agenda 'todo 'tags 'search)
-  (org-agenda-check-no-diary)
-  (let ((heading-marker (or (org-get-at-bol 'org-marker)
-                            (org-agenda-error))))
-    (org-gtd-clarify-item-at-marker heading-marker)))
 
 (defun org-gtd-clarify-inbox-item ()
   "Process item at point through org-gtd.

@@ -35,9 +35,9 @@
 
 (defgroup org-gtd nil
   "Customize the org-gtd package."
+  :group 'org
   :link '(url-link "https://github.com/Trevoke/org-gtd.el")
-  :package-version '(org-gtd . "0.1")
-  :group 'org)
+  :package-version '(org-gtd . "0.1"))
 
 (defcustom org-gtd-canceled "CNCL"
   "The `org-mode' keyword for a canceled task.

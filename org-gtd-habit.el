@@ -38,11 +38,7 @@
 (defconst org-gtd-habit "Habits")
 
 (defconst org-gtd-habit-func #'org-gtd-habit--apply
-  "Function called when organizing item as a habit."
-  ;; :group 'org-gtd-organize
-  ;; :type 'function
-  ;; :package-version '(org-gtd . "3.0.0")
-  )
+  "Function called when organizing item as a habit.")
 
 (defconst org-gtd-habit-template
   (format "* Habits

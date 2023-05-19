@@ -34,8 +34,8 @@
 
 (defgroup org-gtd-horizons nil
   "Variables handling GTD horizons-related logic."
-  :package-version '(org-gtd . "3.0.0")
-  :group 'org-gtd)
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.0.0"))
 
 (defcustom org-gtd-horizons-file "horizons.org"
   "File holding your GTD horizons.
