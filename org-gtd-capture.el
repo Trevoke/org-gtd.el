@@ -24,18 +24,13 @@
 ;;
 ;;; Code:
 
+;;;; Requirements
+
 (require 'org-capture)
 
 (require 'org-gtd-files)
 
-(defconst org-gtd-inbox "inbox")
-
-(defconst org-gtd-inbox-template
-  "#+begin_comment
-This is the inbox. Everything goes in here when you capture it.
-#+end_comment
-"
-  "Template for the GTD inbox.")
+;;;; Customization
 
 (defgroup org-gtd-capture nil
   "Manage the functions for organizing the GTD actions."
@@ -60,12 +55,27 @@ top level heading, or the behavior of org-gtd will be undefined."
   :type 'sexp
   :package-version '(org-gtd . "2.0.0"))
 
+;;;; Constants
+
+(defconst org-gtd-inbox "inbox")
+
+(defconst org-gtd-inbox-template
+  "#+begin_comment
+This is the inbox. Everything goes in here when you capture it.
+#+end_comment
+"
+  "Template for the GTD inbox.")
+
+;;;; Macros
+
 (defmacro with-org-gtd-capture (&rest body)
   "Wrap BODY... with let-bound `org-gtd' variables for capture purposes."
   (declare (debug t) (indent 2))
   `(let ((org-capture-templates org-gtd-capture-templates))
-    (unwind-protect
-        (progn ,@body))))
+     (unwind-protect
+         (progn ,@body))))
+
+;;;; Commands
 
 ;;;###autoload
 (defun org-gtd-capture (&optional goto keys)
@@ -76,7 +86,11 @@ For GOTO and KEYS, see `org-capture' documentation for the variables of the
 same name."
   (interactive)
   (with-org-gtd-capture
-      (org-capture goto keys)))
+   (org-capture goto keys)))
+
+;;;; Functions
+
+;;;; Public
 
 ;;;###autoload
 (defun org-gtd-inbox-path ()
@@ -85,5 +99,8 @@ same name."
     (org-gtd--ensure-file-exists path org-gtd-inbox-template)
     path))
 
+;;;; Footer
+
 (provide 'org-gtd-capture)
+
 ;;; org-gtd-capture.el ends here
