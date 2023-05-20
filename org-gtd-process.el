@@ -56,7 +56,6 @@
 
 (defun org-gtd-process--stop ()
   "Stop processing the inbox."
-  (interactive)
   (whitespace-cleanup))
 
 ;;;; Footer
