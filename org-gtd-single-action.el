@@ -74,7 +74,6 @@ TOPIC is what you want to see in the agenda view."
 
 (defun org-gtd-single-action--apply ()
   "Item at point is a one-off action, ready to be executed."
-  (interactive)
   (org-todo org-gtd-next)
   (setq-local org-gtd--organize-type 'single-action)
   (org-gtd-organize-apply-hooks)
