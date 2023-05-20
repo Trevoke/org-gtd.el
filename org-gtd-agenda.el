@@ -32,6 +32,10 @@
 (require 'org-gtd-core)
 (require 'org-gtd-backward-compatibility)
 
+(defvar org-gtd-agenda-width-project-name 12
+  "width of the project name in the agenda view. Name will be truncated to this length"
+  )
+
 ;;;; Commands
 
 ;;;###autoload
@@ -40,7 +44,9 @@
   (interactive)
   (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
-      (let ((org-agenda-custom-commands
+      (let* ((project-format-prefix  (format " %%i %%-%d"
+                                            org-gtd-agenda-width-project-name) )
+             (org-agenda-custom-commands
              `(("g" "Scheduled today and all NEXT items"
                 ((agenda ""
                          ((org-agenda-span 1)
@@ -49,12 +55,12 @@
                  (todo org-gtd-next
                        ((org-agenda-overriding-header "All actions ready to be executed.")
                         (org-agenda-prefix-format
-                         '((todo . " %i %-12:(org-gtd-agenda--prefix-format)")))))
+                         '((todo . ,(eval (concat project-format-prefix ":(org-gtd-agenda--prefix-format) ")))))))
                  (todo org-gtd-wait
                        ((org-agenda-todo-ignore-with-date t)
                         (org-agenda-overriding-header "Delegated/Blocked items")
                         (org-agenda-prefix-format
-                         '((todo . " %i %-12 (org-gtd-agenda--prefix-format)"))))))))))
+                         '((todo . ,(eval (concat project-format-prefix " (org-gtd-agenda--prefix-format) "))))))))))))
         (org-agenda nil "g")
         (goto-char (point-min)))))
 
@@ -101,16 +107,17 @@ This assumes all GTD files are also agenda files."
                         :raw-value
                         (org-element-property :parent elt)))
          (tally-cookie-regexp "\[[[:digit:]]+/[[:digit:]]+\][[:space:]]*"))
-
-    (cond
-     ((eq level 3)
-      (concat
-       (substring (string-pad
-                   (replace-regexp-in-string tally-cookie-regexp "" parent-title)
-                   11)
-                  0 10)
-       "…"))
-     (category (concat (substring (string-pad category 11) 0 10) "…")))))
+    (truncate-string-to-width
+     ;; if level 3, use the parent
+     ;; otherwise if it has category, use category
+     ;; else "no project" so we avoid failing
+     (cond
+      ((eq level 3) (replace-regexp-in-string tally-cookie-regexp "" parent-title))
+      (category     category)
+      (t  "no project")
+      )
+     org-gtd-agenda-width-project-name nil ?\s  "…"
+     )))
 
 ;;;; Footer
 
