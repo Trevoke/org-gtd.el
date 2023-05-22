@@ -66,17 +66,26 @@ TYPE is the org-gtd action type.  BODY is the rest of the code."
 
 ;;;;; Private
 
-(defun org-gtd-refile--add-target (refile-target-element)
-  "Private function used to create a missing org-gtd refile target.
+(defun org-gtd-refile--do-project-task ()
+  "Refile task at point to an existing project.
 
-GTD-TYPE is an action type.
-REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
-  (print "inserting the new refile target")
-  (with-current-buffer (org-gtd--default-file)
-    (goto-char (point-max))
-    (newline)
-    (insert refile-target-element)
-    (basic-save-buffer)))
+Return marker to destination project heading."
+  (with-org-gtd-context
+      (let* ((org-gtd-refile-to-any-target nil)
+             (org-use-property-inheritance '("ORG_GTD"))
+             (headings (org-map-entries
+                        (lambda () (org-get-heading t t t t))
+                        org-gtd-project-headings
+                        'agenda))
+             (chosen-heading (completing-read "Choose a heading: " headings nil t))
+             (heading-marker (org-find-exact-heading-in-directory chosen-heading org-gtd-directory)))
+
+        (org-refile 3 nil `(,chosen-heading
+                            ,(buffer-file-name (marker-buffer heading-marker))
+                            nil
+                            ,(marker-position heading-marker))
+                    nil)
+        heading-marker)))
 
 (defun org-gtd-refile--do (type refile-target-element)
   "Refile an item to the single action file.
@@ -88,6 +97,18 @@ REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
     (if org-gtd-refile-to-any-target
         (org-refile nil nil (car (org-refile-get-targets)))
       (org-refile nil nil nil "Finish organizing task under: "))))
+
+(defun org-gtd-refile--add-target (refile-target-element)
+  "Private function used to create a missing org-gtd refile target.
+
+GTD-TYPE is an action type.
+REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
+  (print "inserting the new refile target")
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-max))
+    (newline)
+    (insert refile-target-element)
+    (basic-save-buffer)))
 
 (defun org-gtd-refile--group-p (type)
   "Determine whether the current heading is of a given gtd TYPE."

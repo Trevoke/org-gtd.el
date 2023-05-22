@@ -172,25 +172,37 @@ other undone tasks are marked as `org-gtd-todo'."
 
 ;;;;; Private
 
+(defun org-gtd-project-new--apply ()
+  "Process GTD inbox item by transforming it into a project.
+
+Allow the user apply user-defined tags from `org-tag-persistent-alist',
+`org-tag-alist' or file-local tags in the inbox.
+Refile to `org-gtd-actionable-file-basename'."
+  (when (org-gtd-projects--poorly-formatted-p)
+    (org-gtd-projects--show-error)
+    (throw 'org-gtd-error "Malformed project"))
+
+  (setq-local org-gtd--organize-type 'project-heading)
+  (org-gtd-organize-apply-hooks)
+
+  (setq-local org-gtd--organize-type 'project-task)
+  (org-gtd-projects--apply-organize-hooks-to-tasks)
+
+  (org-gtd-projects-fix-todo-keywords-for-project-at-point)
+  (let ((org-special-ctrl-a t))
+    (org-end-of-line))
+  (insert " [/]")
+  (org-update-statistics-cookies t)
+  (org-gtd-refile--do org-gtd-projects org-gtd-projects-template))
+
 (defun org-gtd-project-extend--apply ()
   "Refile the org heading at point under a chosen heading in the agenda files."
   (with-org-gtd-context
-      (let* ((org-gtd-refile-to-any-target nil)
-             (org-use-property-inheritance '("ORG_GTD"))
-             (headings (org-map-entries
-                        (lambda () (org-get-heading t t t t))
-                        org-gtd-project-headings
-                        'agenda))
-             (chosen-heading (completing-read "Choose a heading: " headings nil t))
-             (heading-marker (org-find-exact-heading-in-directory chosen-heading org-gtd-directory)))
-        (setq-local org-gtd--organize-type 'project-task)
-        (org-gtd-organize-apply-hooks)
-        (org-refile 3 nil `(,chosen-heading
-                            ,(buffer-file-name (marker-buffer heading-marker))
-                            nil
-                            ,(marker-position heading-marker))
-                    nil)
-        (org-gtd-projects-fix-todo-keywords heading-marker))))
+      (setq-local org-gtd--organize-type 'project-task)
+      (org-gtd-organize-apply-hooks)
+
+    (let ((heading-marker (org-gtd-refile--do-project-task)))
+      (org-gtd-projects-fix-todo-keywords heading-marker))))
 
 (defun org-gtd-projects--apply-organize-hooks-to-tasks ()
   "Decorate tasks for project at point."
@@ -250,26 +262,6 @@ Return nil if there isn't one."
   "Determine if current heading is a task that's not finished."
   (and (org-entry-is-todo-p)
        (not (org-entry-is-done-p))))
-
-(defun org-gtd-project-new--apply ()
-  "Process GTD inbox item by transforming it into a project.
-
-Allow the user apply user-defined tags from `org-tag-persistent-alist',
-`org-tag-alist' or file-local tags in the inbox.
-Refile to `org-gtd-actionable-file-basename'."
-  (when (org-gtd-projects--poorly-formatted-p)
-    (org-gtd-projects--show-error)
-    (throw 'org-gtd-error "Malformed project"))
-  (setq-local org-gtd--organize-type 'project-heading)
-  (org-gtd-organize-apply-hooks)
-  (setq-local org-gtd--organize-type 'project-task)
-  (org-gtd-projects--apply-organize-hooks-to-tasks)
-  (org-gtd-projects-fix-todo-keywords-for-project-at-point)
-  (let ((org-special-ctrl-a t))
-    (org-end-of-line))
-  (insert " [/]")
-  (org-update-statistics-cookies t)
-  (org-gtd-refile--do org-gtd-projects org-gtd-projects-template))
 
 (defun org-gtd-projects--org-element-pom (element)
   "Return buffer position for start of Org ELEMENT."

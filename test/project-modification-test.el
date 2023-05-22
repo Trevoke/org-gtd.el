@@ -88,4 +88,28 @@
          (search-forward "DONE finished task")
          (search-forward "DONE initial next task")
          (search-forward "NEXT initial last task")
-         (search-forward "TODO Task 0")))))
+         (search-forward "TODO Task 0"))))
+
+ (describe
+  "can refile"
+  (before-each
+   (setq ogt-agenda-dir (make-temp-file "org-agenda-dir" t)
+         org-agenda-files `(,ogt-agenda-dir)
+         org-gtd-refile-to-any-target nil)
+   (with-current-buffer (find-file-noselect (f-join org-gtd-directory "inside.org"))
+     (insert org-gtd-projects-template)
+     (goto-char (point-max))
+     (insert "\n** ProjectInside\n*** Task 1\n*** Task 2")
+     (basic-save-buffer))
+   (with-current-buffer (find-file-noselect (f-join ogt-agenda-dir "outside.org"))
+     (insert org-gtd-projects-template)
+     (goto-char (point-max))
+     (insert "\n** ProjectOutside\n*** Task 1\n*** Task 2")
+     (basic-save-buffer)))
+
+  (after-each
+   (setq org-agenda-files nil
+         org-gtd-refile-to-any-target t))
+
+  (it "outside org-gtd-directory"
+      (ogt-capture-and-process-addition-to-project "new task" "ProjectOutside RET"))))
