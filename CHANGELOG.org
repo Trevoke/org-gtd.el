@@ -1,3 +1,7 @@
+* Unreleased
+** Changed
+- Command org-gtd-show-all-next renamed to org-gtd-engage-next
+- File org-gtd-agenda.el renamed to org-gtd-engage.el
 * 3.0.0
 ** Functions exist to create your own hooks
 Make GTD truly a part of your emacs experience.

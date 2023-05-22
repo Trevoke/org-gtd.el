@@ -601,7 +601,7 @@ File: org-gtd.info,  Node: 200 <- 11x,  Prev: 210 <- 200,  Up: Upgrading
                  (("C-c d c" . org-gtd-capture)
                   ("C-c d a" . org-agenda-list)
                   ("C-c d p" . org-gtd-process-inbox)
-                  ("C-c d n" . org-gtd-show-all-next)
+                  ("C-c d n" . org-gtd-engage-next)
                   ("C-c d s" . org-gtd-show-stuck-projects)
                   :map org-gtd-process-map
                   ("C-c c" . org-gtd-choose)))
@@ -645,7 +645,7 @@ File: org-gtd.info,  Node: 200 <- 11x,  Prev: 210 <- 200,  Up: Upgrading
                  (("C-c d c" . org-gtd-capture)
                   ("C-c d e" . org-gtd-engage)
                   ("C-c d p" . org-gtd-process-inbox)
-                  ("C-c d n" . org-gtd-show-all-next)
+                  ("C-c d n" . org-gtd-engage-next)
                   ("C-c d s" . org-gtd-show-stuck-projects)
                   :map org-gtd-process-map
                   ("C-c c" . org-gtd-choose)))
@@ -952,7 +952,7 @@ like this:
               :desc "Capture"        "c"  #'org-gtd-capture
               :desc "Engage"         "e"  #'org-gtd-engage
               :desc "Process inbox"  "p"  #'org-gtd-process-inbox
-              :desc "Show all next"  "n"  #'org-gtd-show-all-next
+              :desc "Show all next"  "n"  #'org-gtd-engage-next
               :desc "Stuck projects" "s"  #'org-gtd-review-stuck-projects))
        (map! :map org-gtd-clarify-map
              :desc "Organize this item" "C-c c" #'org-gtd-organize))
@@ -1241,8 +1241,8 @@ File: org-gtd.info,  Node: Engaging with your GTD items,  Next: Working with the
 You can see a list of all NEXT actions, and scheduled actions, with ‘M-x
 org-gtd-engage’ .
 
-   You can call ‘org-gtd-show-all-next’ to only see NEXT actions,
-nothing scheduled.
+   You can call ‘org-gtd-engage-next’ to only see NEXT actions, nothing
+scheduled.
 
    You can use ‘org-gtd-oops’ to see all the appointments you missed,
 and act on them accordingly.
@@ -1528,51 +1528,51 @@ Ref: Update org-edna trigger20001
 Node: 200 <- 11x20770
 Ref: Configuration20896
 Ref: Example upgrade22288
-Ref: Relevant commands with new names25228
-Ref: heading states (TODO etc)25445
-Ref: Differentiating GTD types of items25604
-Ref: Multiple refile targets26971
-Ref: Key bindings27823
-Node: Installing28100
-Node: use-package28395
-Node: Manually28607
-Node: Configuring28973
-Node: The easy way29258
-Node: Required configuration of sub-packages29827
-Ref: Configuring org-edna30075
-Node: configuration options for org-gtd30505
-Ref: I don't care just let me start using it30755
-Ref: Tell me all the levers I can pull31344
-Node: Recommended key bindings35328
-Node: Sample Doom Emacs Config36093
-Node: Using Org GTD36967
-Node: Org-mode building blocks for Org GTD37202
-Node: The GTD flow38512
-Node: Adding things to the inbox39098
-Node: Processing the inbox40318
-Node: Clarifying each item40844
-Ref: How to start clarifying41360
-Ref: data shape requirements41865
-Ref: Options and commands related to clarification42426
-Node: Organizing an item into the system43620
-Ref: Choosing a task type44261
-Ref: Applying hooks46394
-Ref: Refiling to the appropriate area46881
-Ref: New project heading47164
-Ref: Other headings47423
-Node: Engaging with your GTD items47963
-Node: Working with the GTD Horizons48529
-Ref: Areas of focus49272
-Ref: Longer-term horizons50556
-Node: Cleaning up / archiving completed work51363
-Node: Commands you can call on org-agenda52228
-Node: Defining your own agenda views53133
-Node: Adding your own hooks when organizing53675
-Node: Automating through emacs54887
-Node: Troubleshooting56024
-Node: Finding lost tasks56265
-Node: Projects without a NEXT item56795
-Node: I can't create a project when clarifying an inbox item!57266
+Ref: Relevant commands with new names25224
+Ref: heading states (TODO etc)25441
+Ref: Differentiating GTD types of items25600
+Ref: Multiple refile targets26967
+Ref: Key bindings27819
+Node: Installing28096
+Node: use-package28391
+Node: Manually28603
+Node: Configuring28969
+Node: The easy way29254
+Node: Required configuration of sub-packages29823
+Ref: Configuring org-edna30071
+Node: configuration options for org-gtd30501
+Ref: I don't care just let me start using it30751
+Ref: Tell me all the levers I can pull31340
+Node: Recommended key bindings35324
+Node: Sample Doom Emacs Config36089
+Node: Using Org GTD36961
+Node: Org-mode building blocks for Org GTD37196
+Node: The GTD flow38506
+Node: Adding things to the inbox39092
+Node: Processing the inbox40312
+Node: Clarifying each item40838
+Ref: How to start clarifying41354
+Ref: data shape requirements41859
+Ref: Options and commands related to clarification42420
+Node: Organizing an item into the system43614
+Ref: Choosing a task type44255
+Ref: Applying hooks46388
+Ref: Refiling to the appropriate area46875
+Ref: New project heading47158
+Ref: Other headings47417
+Node: Engaging with your GTD items47957
+Node: Working with the GTD Horizons48521
+Ref: Areas of focus49264
+Ref: Longer-term horizons50548
+Node: Cleaning up / archiving completed work51355
+Node: Commands you can call on org-agenda52220
+Node: Defining your own agenda views53125
+Node: Adding your own hooks when organizing53667
+Node: Automating through emacs54879
+Node: Troubleshooting56016
+Node: Finding lost tasks56257
+Node: Projects without a NEXT item56787
+Node: I can't create a project when clarifying an inbox item!57258
 
 End Tag Table
 

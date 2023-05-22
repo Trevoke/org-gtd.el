@@ -1,4 +1,4 @@
-;;; org-gtd-agenda.el --- Manage the agenda view -*- lexical-binding: t; coding: utf-8 -*-
+;;; org-gtd-engage.el --- Engage actionable tasks -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2023 Aldric Giacomoni
 
@@ -80,13 +80,17 @@
         (org-agenda nil "g"))))
 
 ;;;###autoload
-(defun org-gtd-show-all-next ()
+(defun org-gtd-engage-next ()
   "Show all next actions from all agenda files in a single list.
 This assumes all GTD files are also agenda files."
   (interactive)
   (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
       (org-todo-list org-gtd-next)))
+
+;;;###autoload
+(defalias 'org-gtd-show-all-next 'org-gtd-engage-next)
+(make-obsolete 'org-gtd-show-all-next "use `org-gtd-engage-next' instead." "3.0.0")
 
 ;;;; Functions
 
@@ -114,6 +118,6 @@ This assumes all GTD files are also agenda files."
 
 ;;;; Footer
 
-(provide 'org-gtd-agenda)
+(provide 'org-gtd-engage)
 
-;;; org-gtd-agenda.el ends here
+;;; org-gtd-engage.el ends here

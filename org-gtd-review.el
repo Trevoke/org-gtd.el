@@ -31,7 +31,7 @@
 (require 'org-gtd-core)
 (require 'org-gtd-areas-of-focus)
 (require 'org-gtd-skip)
-(require 'org-gtd-agenda)
+(require 'org-gtd-engage)
 (require 'org-gtd-projects)
 
 ;;;; Commands

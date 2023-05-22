@@ -13,24 +13,6 @@
 
 ;;;***
 
-;;;### (autoloads nil "org-gtd-agenda" "org-gtd-agenda.el" (0 0 0
-;;;;;;  0))
-;;; Generated autoloads from org-gtd-agenda.el
-
-(autoload 'org-gtd-engage "org-gtd-agenda" "\
-Display `org-agenda' customized by org-gtd." t nil)
-
-(autoload 'org-gtd-show-all-next "org-gtd-agenda" "\
-Show all next actions from all agenda files in a single list.
-This assumes all GTD files are also agenda files." t nil)
-
-(autoload 'org-gtd-engage-grouped-by-context "org-gtd-agenda" "\
-Show all `org-gtd-next' actions grouped by context (tag prefixed with @)." t nil)
-
-(register-definition-prefixes "org-gtd-agenda" '("org-gtd-agenda--prefix-format"))
-
-;;;***
-
 ;;;### (autoloads nil "org-gtd-archive" "org-gtd-archive.el" (0 0
 ;;;;;;  0 0))
 ;;; Generated autoloads from org-gtd-archive.el
@@ -158,6 +140,26 @@ Delegate item at point on agenda view." t nil)
 (function-put 'org-gtd-delegate-agenda-item 'command-modes '(org-agenda-mode))
 
 (register-definition-prefixes "org-gtd-delegate" '("org-gtd-delegate"))
+
+;;;***
+
+;;;### (autoloads nil "org-gtd-engage" "org-gtd-engage.el" (0 0 0
+;;;;;;  0))
+;;; Generated autoloads from org-gtd-engage.el
+
+(autoload 'org-gtd-engage "org-gtd-engage" "\
+Display `org-agenda' customized by org-gtd." t nil)
+
+(autoload 'org-gtd-engage-grouped-by-context "org-gtd-engage" "\
+Show all `org-gtd-next' actions grouped by context (tag prefixed with @)." t nil)
+
+(autoload 'org-gtd-engage-next "org-gtd-engage" "\
+Show all next actions from all agenda files in a single list.
+This assumes all GTD files are also agenda files." t nil)
+
+(defalias 'org-gtd-show-all-next 'org-gtd-engage-next)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-engage" '("org-gtd-agenda--prefix-format")))
 
 ;;;***
 

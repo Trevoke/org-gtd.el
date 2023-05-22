@@ -31,7 +31,7 @@
 (require 'org-element)
 
 (require 'org-gtd-core)
-(require 'org-gtd-agenda)
+(require 'org-gtd-engage)
 
 ;;;; Customization
 

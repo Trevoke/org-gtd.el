@@ -311,7 +311,7 @@ My org-gtd config for 1.x was as follows:
     (("C-c d c" . org-gtd-capture)
      ("C-c d a" . org-agenda-list)
      ("C-c d p" . org-gtd-process-inbox)
-     ("C-c d n" . org-gtd-show-all-next)
+     ("C-c d n" . org-gtd-engage-next)
      ("C-c d s" . org-gtd-show-stuck-projects)
      :map org-gtd-process-map
      ("C-c c" . org-gtd-choose)))
@@ -357,7 +357,7 @@ And my config for 2.0 is:
     (("C-c d c" . org-gtd-capture)
      ("C-c d e" . org-gtd-engage)
      ("C-c d p" . org-gtd-process-inbox)
-     ("C-c d n" . org-gtd-show-all-next)
+     ("C-c d n" . org-gtd-engage-next)
      ("C-c d s" . org-gtd-show-stuck-projects)
      :map org-gtd-process-map
      ("C-c c" . org-gtd-choose)))
@@ -523,7 +523,7 @@ If you are a Doom Emacs user, then your configuration may look something like th
            :desc "Capture"        "c"  #'org-gtd-capture
            :desc "Engage"         "e"  #'org-gtd-engage
            :desc "Process inbox"  "p"  #'org-gtd-process-inbox
-           :desc "Show all next"  "n"  #'org-gtd-show-all-next
+           :desc "Show all next"  "n"  #'org-gtd-engage-next
            :desc "Stuck projects" "s"  #'org-gtd-review-stuck-projects))
     (map! :map org-gtd-clarify-map
           :desc "Organize this item" "C-c c" #'org-gtd-organize))
@@ -676,7 +676,7 @@ Here is an example:
 
 You can see a list of all NEXT actions, and scheduled actions, with ~M-x org-gtd-engage~ .
 
-You can call ~org-gtd-show-all-next~ to only see NEXT actions, nothing scheduled.
+You can call ~org-gtd-engage-next~ to only see NEXT actions, nothing scheduled.
 
 You can use ~org-gtd-oops~ to see all the appointments you missed, and act on them accordingly.
 

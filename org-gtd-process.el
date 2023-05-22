@@ -28,7 +28,7 @@
 
 (require 'org-gtd-core)
 (require 'org-gtd-capture)
-(require 'org-gtd-agenda)
+(require 'org-gtd-engage)
 (require 'org-gtd-projects)
 (require 'org-gtd-refile)
 (require 'org-gtd-clarify)

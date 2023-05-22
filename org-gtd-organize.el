@@ -39,7 +39,7 @@
 (require 'org-gtd-single-action)
 (require 'org-gtd-trash)
 (require 'org-gtd-delegate)
-(require 'org-gtd-agenda)
+(require 'org-gtd-engage)
 (require 'org-gtd-projects)
 (require 'org-gtd-refile)
 (require 'org-gtd-process)
