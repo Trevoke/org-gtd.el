@@ -70,22 +70,37 @@ TYPE is the org-gtd action type.  BODY is the rest of the code."
   "Refile task at point to an existing project.
 
 Return marker to destination project heading."
-  (with-org-gtd-context
-      (let* ((org-gtd-refile-to-any-target nil)
-             (org-use-property-inheritance '("ORG_GTD"))
-             (headings (org-map-entries
-                        (lambda () (org-get-heading t t t t))
-                        org-gtd-project-headings
-                        'agenda))
-             (chosen-heading (completing-read "Choose a heading: " headings nil t))
-             (heading-marker (org-find-exact-heading-in-directory chosen-heading org-gtd-directory)))
+  (let* ((org-gtd-refile-to-any-target nil)
+         (org-use-property-inheritance '("ORG_GTD"))
+         (headings-targets (org-gtd-refile--project-targets))
+         (chosen-heading (completing-read "Choose a heading: " headings-targets nil t))
+         (heading-and-buffer (alist-get
+                              chosen-heading
+                              headings-targets nil nil 'equal))
+         (heading (car heading-and-buffer))
+         (buffer (cdr heading-and-buffer))
+         (heading-marker (org-find-exact-headline-in-buffer heading buffer)))
 
-        (org-refile 3 nil `(,chosen-heading
-                            ,(buffer-file-name (marker-buffer heading-marker))
-                            nil
-                            ,(marker-position heading-marker))
-                    nil)
-        heading-marker)))
+    (org-refile 3 nil `(,heading
+                        ,(buffer-file-name buffer)
+                        nil
+                        ,(marker-position heading-marker))
+                nil)
+    heading-marker))
+
+(defun org-gtd-refile--project-targets ()
+  "Find all possible projects you could add a task to."
+  (with-org-gtd-context
+      (org-map-entries #'org-gtd-refile--completion-target
+                       org-gtd-project-headings
+                       'agenda)))
+
+(defun org-gtd-refile--completion-target ()
+  "Map heading at point to data structure for pseudo-refiling."
+  (let ((buffer (current-buffer))
+        (buffer-name (buffer-name))
+        (heading (substring-no-properties (org-get-heading t t t t))))
+    `(,(format "%s/%s" buffer-name heading) . (,heading . ,buffer))))
 
 (defun org-gtd-refile--do (type refile-target-element)
   "Refile an item to the single action file.

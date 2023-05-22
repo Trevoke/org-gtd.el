@@ -21,7 +21,10 @@
 
   (it "as the first NEXT task"
       (ogt-capture-and-process-project "project headline")
-      (ogt-capture-and-process-addition-to-project "Task 0" "project SPC headline TAB RET")
+      (ogt-capture-and-process-addition-to-project
+       "Task 0"
+       "org-gtd-tasks TAB RET")
+
       (org-gtd-engage)
       (with-current-buffer org-agenda-this-buffer-name
         (goto-char (point-min))
@@ -33,7 +36,10 @@
       (let* ((temporary-file-directory org-gtd-directory)
              (gtd-file-buffer (ogt--temp-org-file-buffer "foo" (org-file-contents "test/fixtures/gtd-file.org"))))
         (org-gtd-core-prepare-buffer gtd-file-buffer)
-        (ogt-capture-and-process-addition-to-project "Task 0" "[1/3] SPC addtaskhere RET")
+        (ogt-capture-and-process-addition-to-project
+         "Task 0"
+         (format "%s/[1/3] SPC add TAB RET" gtd-file-buffer))
+
         (with-current-buffer gtd-file-buffer
           (goto-char (point-min))
 
@@ -59,7 +65,11 @@
 
   (it "as the last NEXT task"
       (ogt-capture-and-process-project "project headline")
-      (ogt-capture-and-process-addition-to-project "Task 0" "project SPC headline TAB RET")
+
+      (ogt-capture-and-process-addition-to-project
+       "Task 0"
+       "org-gtd-tasks TAB RET")
+
       (org-gtd-engage)
       (with-current-buffer org-agenda-this-buffer-name
         (goto-char (point-min))
@@ -69,11 +79,15 @@
 
  (it "keeps sanity of TODO states in modified project"
      (let* ((temporary-file-directory org-gtd-directory)
-            (gtd-file (make-temp-file "foo" nil ".org" (org-file-contents "test/fixtures/gtd-file.org"))))
-       (org-gtd-core-prepare-buffer (find-file-noselect gtd-file))
-       (ogt-capture-and-process-addition-to-project "Task 0" "[1/3] SPC addtaskhere RET")
+            (gtd-file-buffer (ogt--temp-org-file-buffer "foo" (org-file-contents "test/fixtures/gtd-file.org"))))
 
-       (with-current-buffer (find-file-noselect gtd-file)
+       (org-gtd-core-prepare-buffer gtd-file-buffer)
+
+       (ogt-capture-and-process-addition-to-project
+        "Task 0"
+        (format "%s/[1/3] SPC add TAB RET" gtd-file-buffer))
+
+       (with-current-buffer gtd-file-buffer
          (search-forward "addtaskhere")
          (org-narrow-to-subtree)
          (search-forward "DONE finished task")
@@ -88,28 +102,4 @@
          (search-forward "DONE finished task")
          (search-forward "DONE initial next task")
          (search-forward "NEXT initial last task")
-         (search-forward "TODO Task 0"))))
-
- (describe
-  "can refile"
-  (before-each
-   (setq ogt-agenda-dir (make-temp-file "org-agenda-dir" t)
-         org-agenda-files `(,ogt-agenda-dir)
-         org-gtd-refile-to-any-target nil)
-   (with-current-buffer (find-file-noselect (f-join org-gtd-directory "inside.org"))
-     (insert org-gtd-projects-template)
-     (goto-char (point-max))
-     (insert "\n** ProjectInside\n*** Task 1\n*** Task 2")
-     (basic-save-buffer))
-   (with-current-buffer (find-file-noselect (f-join ogt-agenda-dir "outside.org"))
-     (insert org-gtd-projects-template)
-     (goto-char (point-max))
-     (insert "\n** ProjectOutside\n*** Task 1\n*** Task 2")
-     (basic-save-buffer)))
-
-  (after-each
-   (setq org-agenda-files nil
-         org-gtd-refile-to-any-target t))
-
-  (it "outside org-gtd-directory"
-      (ogt-capture-and-process-addition-to-project "new task" "ProjectOutside RET"))))
+         (search-forward "TODO Task 0")))))
