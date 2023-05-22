@@ -176,6 +176,7 @@ This function is called through the inbox clarification process."
 
 (defun org-gtd-clarify-project-insert-template ()
   "Insert user-provided template under item at point."
+  (interactive)
   (let* ((choice (completing-read
                   "Choose a project template to insert: "
                   org-gtd-clarify-project-templates nil t))
