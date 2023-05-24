@@ -47,8 +47,7 @@ This function is a modified copy of `org-id-get'."
           id
         (setq id (org-gtd-id--generate))
         (org-entry-put pom "ID" id)
-        (org-id-add-location id (or org-id-overriding-file-name
-                                    (buffer-file-name (buffer-base-buffer))))
+        (org-id-add-location id "Org GTD WIP buffer")
         id))))
 
 ;;;; Functions
@@ -59,16 +58,36 @@ This function is a modified copy of `org-id-get'."
   "Generate and return a new id.
 The generated ID is stripped off potential progress indicator cookies and
 sanitized to get a slug.  Furthermore, it is suffixed with an ISO date-stamp."
-  (let* ((my-heading-text (nth 4 (org-heading-components))) ;; retrieve heading string
-         (my-heading-text (replace-regexp-in-string "\\(\\[[0-9]+%\\]\\)" "" my-heading-text)) ;; remove progress indicators like "[25%]"
-         (my-heading-text (replace-regexp-in-string "\\(\\[[0-9]+/[0-9]+\\]\\)" "" my-heading-text)) ;; remove progress indicators like "[2/7]"
-         (my-heading-text (replace-regexp-in-string "\\(\\[#[ABC]\\]\\)" "" my-heading-text)) ;; remove priority indicators like "[#A]"
-         (my-heading-text (replace-regexp-in-string "\\[\\[\\(.+?\\)\\]\\[" "" my-heading-text t)) ;; removes links, keeps their description and ending brackets
-         (my-heading-text (replace-regexp-in-string "<[12][0-9]\\{3\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\( .*?\\)>" "" my-heading-text t)) ;; removes day of week and time from active date- and time-stamps
-         (my-heading-text (replace-regexp-in-string "\\[[12][0-9]\\{3\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\( .*?\\)\\]" "" my-heading-text t)) ;; removes day of week and time from inactive date- and time-stamps
-         (raw-id (org-gtd-id--generate-sanitized-alnum-dash-string my-heading-text)) ;; get slug from heading text
-         (timestamp (format-time-string "%Y-%m-%d")))
+  (let* ((my-heading-text (or (nth 4 (org-heading-components))
+                              "org-gtd-makeshift-id"))
+         (clean-text (org-gtd-id--remove-week-time-from-inactive-timestamps
+                      (org-gtd-id--remove-day-time-from-active-timestamps
+                       (org-gtd-id--remove-links
+                        (org-gtd-id--remove-priority-indicators
+                         (org-gtd-id--remove-tally-progress-indicators
+                          (org-gtd-id--remove-percent-progress-indicators
+                           my-heading-text)))))))
+         (raw-id (org-gtd-id--generate-sanitized-alnum-dash-string clean-text))
+         (timestamp (format-time-string "%F-%H-%M-%S")))
     (concat raw-id "-" timestamp)))
+
+(defun org-gtd-id--remove-percent-progress-indicators (heading)
+  (replace-regexp-in-string "\\(\\[[0-9]+%\\]\\)" "" heading))
+
+(defun org-gtd-id--remove-tally-progress-indicators (heading)
+  (replace-regexp-in-string "\\(\\[[0-9]+/[0-9]+\\]\\)" "" heading))
+
+(defun org-gtd-id--remove-priority-indicators (heading)
+  (replace-regexp-in-string "\\(\\[#[ABC]\\]\\)" "" heading))
+
+(defun org-gtd-id--remove-links (heading)
+  (replace-regexp-in-string "\\[\\[\\(.+?\\)\\]\\[" "" heading t))
+
+(defun org-gtd-id--remove-day-time-from-active-timestamps (heading)
+  (replace-regexp-in-string "<[12][0-9]\\{3\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\( .*?\\)>" "" heading t))
+
+(defun org-gtd-id--remove-week-time-from-inactive-timestamps (heading)
+  (replace-regexp-in-string "\\[[12][0-9]\\{3\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\( .*?\\)\\]" "" heading t))
 
 (defun org-gtd-id--generate-sanitized-alnum-dash-string (str)
   "Clean up STR and make it fit to be used as an org id.

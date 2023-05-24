@@ -134,7 +134,7 @@ The file shown can be configured in `org-gtd-horizons-file'."
     (with-current-buffer processing-buffer
       (setq-local org-gtd-clarify--window-config window-config
                   org-gtd-clarify--source-heading-marker source-heading-marker
-                  org-gtd-clarify--clarify-id (org-id-get)))
+                  org-gtd-clarify--clarify-id (org-gtd-id-get-create)))
     (org-gtd-clarify-setup-windows processing-buffer)))
 
 (defun org-gtd-clarify-switch-to-buffer ()
@@ -213,7 +213,6 @@ This function is called through the inbox clarification process."
 
 (defun org-gtd-clarify--get-buffer ()
   "Get or create a WIP buffer for heading at point."
-  (org-gtd-id-get-create)
   (let* ((org-id (org-gtd-id-get-create))
          (buffer (get-buffer-create (org-gtd-clarify--buffer-name org-id))))
     (with-current-buffer buffer
