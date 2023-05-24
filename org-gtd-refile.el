@@ -67,26 +67,22 @@ TYPE is the org-gtd action type.  BODY is the rest of the code."
 ;;;;; Private
 
 (defun org-gtd-refile--do-project-task ()
-  "Refile task at point to an existing project.
+  (let ((org-gtd-refile-to-any-target nil)
+        (org-refile-use-outline-path 'buffer-name)
+        (org-outline-path-complete-in-steps nil)
+        (org-refile-allow-creating-parent-nodes nil)
+        (org-refile-targets '((org-agenda-files :level . 2)))
+        (org-refile-target-verify-function
+         (lambda () (string-equal org-gtd-projects
+                                  (org-entry-get nil "ORG_GTD" t)))))
 
-Return marker to destination project heading."
-  (let* ((org-gtd-refile-to-any-target nil)
-         (org-use-property-inheritance '("ORG_GTD"))
-         (headings-targets (org-gtd-refile--project-targets))
-         (chosen-heading (completing-read "Choose a heading: " headings-targets nil t))
-         (heading-and-buffer (alist-get
-                              chosen-heading
-                              headings-targets nil nil 'equal))
-         (heading (car heading-and-buffer))
-         (buffer (cdr heading-and-buffer))
-         (heading-marker (org-find-exact-headline-in-buffer heading buffer)))
+    (with-org-gtd-context
+        (org-refile 3 nil nil "Which project should this task go to? "))
 
-    (org-refile 3 nil `(,heading
-                        ,(buffer-file-name buffer)
-                        nil
-                        ,(marker-position heading-marker))
-                nil)
-    heading-marker))
+    (save-excursion
+      (org-refile-goto-last-stored)
+      (org-up-heading-safe)
+      (point-marker))))
 
 (defun org-gtd-refile--project-targets ()
   "Find all possible projects you could add a task to."

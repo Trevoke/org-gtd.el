@@ -193,6 +193,7 @@ Refile to `org-gtd-actionable-file-basename'."
     (org-end-of-line))
   (insert " [/]")
   (org-update-statistics-cookies t)
+
   (org-gtd-refile--do org-gtd-projects org-gtd-projects-template))
 
 (defun org-gtd-project-extend--apply ()
@@ -201,8 +202,8 @@ Refile to `org-gtd-actionable-file-basename'."
       (setq-local org-gtd--organize-type 'project-task)
       (org-gtd-organize-apply-hooks)
 
-    (let ((heading-marker (org-gtd-refile--do-project-task)))
-      (org-gtd-projects-fix-todo-keywords heading-marker))))
+    (let ((project-marker (org-gtd-refile--do-project-task)))
+      (org-gtd-projects-fix-todo-keywords project-marker))))
 
 (defun org-gtd-projects--apply-organize-hooks-to-tasks ()
   "Decorate tasks for project at point."

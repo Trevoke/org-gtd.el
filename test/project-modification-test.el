@@ -23,7 +23,7 @@
       (ogt-capture-and-process-project "project headline")
       (ogt-capture-and-process-addition-to-project
        "Task 0"
-       "org-gtd-tasks TAB RET")
+       "project SPC headline TAB RET")
 
       (org-gtd-engage)
       (with-current-buffer org-agenda-this-buffer-name
@@ -38,7 +38,7 @@
         (org-gtd-core-prepare-buffer gtd-file-buffer)
         (ogt-capture-and-process-addition-to-project
          "Task 0"
-         (format "%s/[1/3] SPC add TAB RET" gtd-file-buffer))
+         "[1/3] SPC addtaskhere TAB RET")
 
         (with-current-buffer gtd-file-buffer
           (goto-char (point-min))
@@ -68,7 +68,7 @@
 
       (ogt-capture-and-process-addition-to-project
        "Task 0"
-       "org-gtd-tasks TAB RET")
+       "project SPC headline TAB RET")
 
       (org-gtd-engage)
       (with-current-buffer org-agenda-this-buffer-name
@@ -85,7 +85,7 @@
 
        (ogt-capture-and-process-addition-to-project
         "Task 0"
-        (format "%s/[1/3] SPC add TAB RET" gtd-file-buffer))
+        "[1/3] SPC addtaskhere TAB RET")
 
        (with-current-buffer gtd-file-buffer
          (search-forward "addtaskhere")
