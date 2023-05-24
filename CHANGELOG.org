@@ -1,4 +1,6 @@
 * 3.1.0 (unstable)
+** Better messages in minibuffer
+- discover ~with-temp-message~ to hide things we don't care about.
 ** Adding task to a project works
 - Now uses org-refile like it was meant to be used
 - Now works for projects outside ~org-gtd-directory~.
