@@ -100,6 +100,9 @@ This assumes all GTD files are also agenda files."
 
 (defun org-gtd-agenda--prefix-format ()
   "Format prefix for items in agenda buffer."
+  (defun truncate (st)
+    (truncate-string-to-width (string-trim st) org-gtd-agenda-width-project-name nil ?\s  "…")
+    )
   (let* ((elt (org-element-at-point))
          (level (org-element-property :level elt))
          (category (org-entry-get (point) "CATEGORY" t))
@@ -107,7 +110,7 @@ This assumes all GTD files are also agenda files."
                         :raw-value
                         (org-element-property :parent elt)))
          (tally-cookie-regexp "\[[[:digit:]]+/[[:digit:]]+\][[:space:]]*"))
-    (truncate-string-to-width
+    (truncate
      ;; if level 3, use the parent
      ;; otherwise if it has category, use category
      ;; else "no project" so we avoid failing
@@ -115,9 +118,7 @@ This assumes all GTD files are also agenda files."
       ((eq level 3) (replace-regexp-in-string tally-cookie-regexp "" parent-title))
       (category     category)
       (t  "no project")
-      )
-     org-gtd-agenda-width-project-name nil ?\s  "…"
-     )))
+      ))))
 
 ;;;; Footer
 

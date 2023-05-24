@@ -17,7 +17,7 @@
   (it "can have a specific agenda width"
     (ogt-capture-and-process-project "My long project name which needs shortening") ;; see test/helpers/processing.el
     (org-gtd-engage)
-    (expect (message (ogt--buffer-string org-agenda-buffer))
+    (expect (ogt--buffer-string org-agenda-buffer)
             :to-match
             "My long project …")
     ))
@@ -35,7 +35,7 @@
   (it "can have a specific agenda width"
     (ogt-capture-and-process-project "P234567890")
     (org-gtd-engage)
-    (expect (message (ogt--buffer-string org-agenda-buffer))
+    (expect (ogt--buffer-string org-agenda-buffer)
             :to-match
             "P234…")
     ))
@@ -53,7 +53,7 @@
   (it "can have a specific agenda width"
     (ogt-capture-and-process-project "P234567890")
     (org-gtd-engage)
-    (expect (message (ogt--buffer-string org-agenda-buffer))
+    (expect (ogt--buffer-string org-agenda-buffer)
             :to-match
             "…")
     ))
@@ -71,7 +71,7 @@
   (it "can have a specific agenda width"
     (ogt-capture-and-process-project "P234567890")
     (org-gtd-engage)
-    (expect (message (ogt--buffer-string org-agenda-buffer))
+    (expect (ogt--buffer-string org-agenda-buffer)
             :to-match
             "P234567890")
     ))
@@ -89,7 +89,7 @@
   (it "can have a specific agenda width"
     (ogt-capture-and-process-project "P234567890")
     (org-gtd-engage)
-    (expect (message (ogt--buffer-string org-agenda-buffer))
+    (expect (ogt--buffer-string org-agenda-buffer)
             :to-match
             "P234567890  ")
     ))
@@ -107,7 +107,7 @@
   (it "can have a specific agenda width"
     (ogt-capture-and-process-project "P234567890")
     (org-gtd-engage)
-    (expect (message (ogt--buffer-string org-agenda-buffer))
+    (expect (ogt--buffer-string org-agenda-buffer)
             :to-match
             "P234567890                                        ")
     ))
