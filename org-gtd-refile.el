@@ -51,23 +51,23 @@ setting as part of following the instructions to add your own refile targets."
 
 ;;;; Macros
 
-;;;###autoload
 (defmacro with-org-gtd-refile (type &rest body)
   "Macro to refile specifically within org-gtd context.
 
-TYPE is the org-gtd action type.  BODY is the rest of the code."
+TYPE is the org-gtd action type.  BODY... is the rest of the code."
   (declare (debug t) (indent 1))
   `(let ((org-refile-target-verify-function (lambda () (org-gtd-refile--group-p ,type)))
-         (org-refile-targets '((org-agenda-files :level . 1))))
+         (org-refile-targets '((org-agenda-files :level . 1)))
+         (org-refile-use-outline-path nil)
+         (org-outline-path-complete-in-steps nil))
      (unwind-protect
          (with-org-gtd-context (progn ,@body)))))
 
-;;;; Functions
-
-;;;;; Private
-
-(defun org-gtd-refile--do-project-task ()
-  (let ((org-gtd-refile-to-any-target nil)
+(defmacro with-org-gtd-refile-project-task (&rest body)
+  "Refile specifically into an existing project.
+BODY... is the rest of the code."
+  (declare (debug t) (indent 1))
+  `(let ((org-gtd-refile-to-any-target nil)
         (org-refile-use-outline-path t)
         (org-outline-path-complete-in-steps nil)
         (org-refile-allow-creating-parent-nodes nil)
@@ -75,29 +75,36 @@ TYPE is the org-gtd action type.  BODY is the rest of the code."
         (org-refile-target-verify-function
          (lambda () (string-equal org-gtd-projects
                                   (org-entry-get nil "ORG_GTD" t)))))
+    (unwind-protect
+        (with-org-gtd-context (progn ,@body)))))
 
-    (with-org-gtd-context
-        (org-refile 3 nil nil "Which project should this task go to? "))))
+;;;; Functions
+
+;;;;; Private
 
 (defun org-gtd-refile--do (type refile-target-element)
   "Refile an item to the single action file.
 
 TYPE is one of the org-gtd action types.
 REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
+
   (with-org-gtd-refile type
-    (unless (org-refile-get-targets) (org-gtd-refile--add-target refile-target-element))
+      (unless (org-refile-get-targets)
+        (org-gtd-refile--add-target refile-target-element))
+
     (if org-gtd-refile-to-any-target
-        (let ((org-refile-use-outline-path nil)
-              (org-outline-path-complete-in-steps nil))
-          (org-refile nil nil (car (org-refile-get-targets))))
+        (org-refile nil nil (car (org-refile-get-targets)))
       (org-refile nil nil nil "Finish organizing task under: "))))
+
+(defun org-gtd-refile--do-project-task ()
+  (with-org-gtd-refile-project-task
+      (org-refile 3 nil nil "Which project should this task go to? ")))
 
 (defun org-gtd-refile--add-target (refile-target-element)
   "Private function used to create a missing org-gtd refile target.
 
 GTD-TYPE is an action type.
 REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
-  (print "inserting the new refile target")
   (with-current-buffer (org-gtd--default-file)
     (goto-char (point-max))
     (newline)

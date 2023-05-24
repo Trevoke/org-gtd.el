@@ -285,16 +285,7 @@ Cancel the project that has the highlighted task." t nil)
 ;;;;;;  0))
 ;;; Generated autoloads from org-gtd-refile.el
 
-(autoload 'with-org-gtd-refile "org-gtd-refile" "\
-Macro to refile specifically within org-gtd context.
-
-TYPE is the org-gtd action type.  BODY is the rest of the code.
-
-\(fn TYPE &rest BODY)" nil t)
-
-(function-put 'with-org-gtd-refile 'lisp-indent-function '1)
-
-(register-definition-prefixes "org-gtd-refile" '("org-gtd-refile-"))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-refile" '("org-gtd-refile-" "with-org-gtd-refile")))
 
 ;;;***
 
