@@ -202,8 +202,12 @@ Refile to `org-gtd-actionable-file-basename'."
       (setq-local org-gtd--organize-type 'project-task)
       (org-gtd-organize-apply-hooks)
 
-    (let ((project-marker (org-gtd-refile--do-project-task)))
-      (org-gtd-projects-fix-todo-keywords project-marker))))
+    (org-gtd-refile--do-project-task)
+    (let ((marker (save-excursion
+                    (org-refile-goto-last-stored)
+                    (org-up-heading-safe)
+                    (point-marker))))
+      (org-gtd-projects-fix-todo-keywords marker))))
 
 (defun org-gtd-projects--apply-organize-hooks-to-tasks ()
   "Decorate tasks for project at point."

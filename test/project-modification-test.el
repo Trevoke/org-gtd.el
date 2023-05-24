@@ -36,9 +36,10 @@
       (let* ((temporary-file-directory org-gtd-directory)
              (gtd-file-buffer (ogt--temp-org-file-buffer "foo" (org-file-contents "test/fixtures/gtd-file.org"))))
         (org-gtd-core-prepare-buffer gtd-file-buffer)
+
         (ogt-capture-and-process-addition-to-project
          "Task 0"
-         "[1/3] SPC addtaskhere TAB RET")
+         "Projects/addtaskhere TAB RET")
 
         (with-current-buffer gtd-file-buffer
           (goto-char (point-min))
@@ -85,7 +86,7 @@
 
        (ogt-capture-and-process-addition-to-project
         "Task 0"
-        "[1/3] SPC addtaskhere TAB RET")
+        "Projects/addtaskhere TAB RET")
 
        (with-current-buffer gtd-file-buffer
          (search-forward "addtaskhere")

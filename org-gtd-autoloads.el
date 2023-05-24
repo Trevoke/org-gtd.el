@@ -120,7 +120,7 @@ Wrap BODY... in this macro to inherit the org-gtd settings for your logic.
 
 (function-put 'with-org-gtd-context 'lisp-indent-function '2)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-core" '("org-gtd-")))
+(register-definition-prefixes "org-gtd-core" '("org-gtd-"))
 
 ;;;***
 
@@ -294,7 +294,7 @@ TYPE is the org-gtd action type.  BODY is the rest of the code.
 
 (function-put 'with-org-gtd-refile 'lisp-indent-function '1)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-refile" '("org-gtd-refile-")))
+(register-definition-prefixes "org-gtd-refile" '("org-gtd-refile-"))
 
 ;;;***
 

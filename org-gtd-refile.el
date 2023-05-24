@@ -68,7 +68,7 @@ TYPE is the org-gtd action type.  BODY is the rest of the code."
 
 (defun org-gtd-refile--do-project-task ()
   (let ((org-gtd-refile-to-any-target nil)
-        (org-refile-use-outline-path 'buffer-name)
+        (org-refile-use-outline-path t)
         (org-outline-path-complete-in-steps nil)
         (org-refile-allow-creating-parent-nodes nil)
         (org-refile-targets '((org-agenda-files :level . 2)))
@@ -77,12 +77,7 @@ TYPE is the org-gtd action type.  BODY is the rest of the code."
                                   (org-entry-get nil "ORG_GTD" t)))))
 
     (with-org-gtd-context
-        (org-refile 3 nil nil "Which project should this task go to? "))
-
-    (save-excursion
-      (org-refile-goto-last-stored)
-      (org-up-heading-safe)
-      (point-marker))))
+        (org-refile 3 nil nil "Which project should this task go to? "))))
 
 (defun org-gtd-refile--do (type refile-target-element)
   "Refile an item to the single action file.
@@ -92,7 +87,9 @@ REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
   (with-org-gtd-refile type
     (unless (org-refile-get-targets) (org-gtd-refile--add-target refile-target-element))
     (if org-gtd-refile-to-any-target
-        (org-refile nil nil (car (org-refile-get-targets)))
+        (let ((org-refile-use-outline-path nil)
+              (org-outline-path-complete-in-steps nil))
+          (org-refile nil nil (car (org-refile-get-targets))))
       (org-refile nil nil nil "Finish organizing task under: "))))
 
 (defun org-gtd-refile--add-target (refile-target-element)
