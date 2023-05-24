@@ -65,6 +65,7 @@ TYPE is the org-gtd action type.  BODY... is the rest of the code."
 
 (defmacro with-org-gtd-refile-project-task (&rest body)
   "Refile specifically into an existing project.
+
 BODY... is the rest of the code."
   (declare (debug t) (indent 1))
   `(let ((org-gtd-refile-to-any-target nil)
