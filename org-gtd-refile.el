@@ -84,20 +84,6 @@ TYPE is the org-gtd action type.  BODY is the rest of the code."
       (org-up-heading-safe)
       (point-marker))))
 
-(defun org-gtd-refile--project-targets ()
-  "Find all possible projects you could add a task to."
-  (with-org-gtd-context
-      (org-map-entries #'org-gtd-refile--completion-target
-                       org-gtd-project-headings
-                       'agenda)))
-
-(defun org-gtd-refile--completion-target ()
-  "Map heading at point to data structure for pseudo-refiling."
-  (let ((buffer (current-buffer))
-        (buffer-name (buffer-name))
-        (heading (substring-no-properties (org-get-heading t t t t))))
-    `(,(format "%s/%s" buffer-name heading) . (,heading . ,buffer))))
-
 (defun org-gtd-refile--do (type refile-target-element)
   "Refile an item to the single action file.
 
