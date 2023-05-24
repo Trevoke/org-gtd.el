@@ -1,3 +1,7 @@
+* 3.1.0 (unstable)
+** Adding task to a project works
+- Now uses org-refile like it was meant to be used
+- Now works for projects outside ~org-gtd-directory~.
 * 3.0.0
 ** Functions exist to create your own hooks
 Make GTD truly a part of your emacs experience.

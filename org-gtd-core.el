@@ -185,7 +185,7 @@ See `org-todo-keywords' for definition."
           ;; (org-log-done-with-time t)
           ;; (org-log-refile 'time)
           (org-archive-location (funcall org-gtd-archive-location))
-          (org-refile-use-outline-path nil)
+          ;(org-refile-use-outline-path nil)
           (org-stuck-projects org-gtd-stuck-projects)
           (org-odd-levels-only nil)
           (org-agenda-files (org-gtd-core--agenda-files))

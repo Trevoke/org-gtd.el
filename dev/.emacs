@@ -43,7 +43,7 @@
 (assq-delete-all 'org package--builtins)
 (assq-delete-all 'org package--builtin-versions)
 
-(setq org-gtd-update-ack "3.0.0beta")
+(setq org-gtd-update-ack "3.0.0")
 (quelpa '(org-gtd :fetcher file :path "/home/stag/src/projects/org-gtd.el/"))
 
 ;(straight-use-package '(org-gtd :type git :host github :repo "trevoke/org-gtd.el"))
@@ -62,7 +62,7 @@
 ;; (use-package org-gtd
 ;;   :after org
 ;;   :quelpa ((org-gtd :fetcher github :repo "trevoke/org-gtd.el")
-;; 	   :upgrade t)
+;;         :upgrade t)
 ;;   :demand t
 ;;   :custom
 ;;   (org-agenda-property-position 'next-line)

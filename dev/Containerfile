@@ -1,4 +1,4 @@
-FROM nixos/nix:latest
+FROM docker.io/nixos/nix:latest
 
 # Install Cachix.
 RUN nix-env -iA nixpkgs.cachix

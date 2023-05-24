@@ -21,7 +21,10 @@
 
   (it "as the first NEXT task"
       (ogt-capture-and-process-project "project headline")
-      (ogt-capture-and-process-addition-to-project "Task 0" "project SPC headline TAB RET")
+      (ogt-capture-and-process-addition-to-project
+       "Task 0"
+       "project SPC headline TAB RET")
+
       (org-gtd-engage)
       (with-current-buffer org-agenda-this-buffer-name
         (goto-char (point-min))
@@ -33,7 +36,11 @@
       (let* ((temporary-file-directory org-gtd-directory)
              (gtd-file-buffer (ogt--temp-org-file-buffer "foo" (org-file-contents "test/fixtures/gtd-file.org"))))
         (org-gtd-core-prepare-buffer gtd-file-buffer)
-        (ogt-capture-and-process-addition-to-project "Task 0" "[1/3] SPC addtaskhere RET")
+
+        (ogt-capture-and-process-addition-to-project
+         "Task 0"
+         "Projects/addtaskhere TAB RET")
+
         (with-current-buffer gtd-file-buffer
           (goto-char (point-min))
 
@@ -59,7 +66,11 @@
 
   (it "as the last NEXT task"
       (ogt-capture-and-process-project "project headline")
-      (ogt-capture-and-process-addition-to-project "Task 0" "project SPC headline TAB RET")
+
+      (ogt-capture-and-process-addition-to-project
+       "Task 0"
+       "project SPC headline TAB RET")
+
       (org-gtd-engage)
       (with-current-buffer org-agenda-this-buffer-name
         (goto-char (point-min))
@@ -69,11 +80,15 @@
 
  (it "keeps sanity of TODO states in modified project"
      (let* ((temporary-file-directory org-gtd-directory)
-            (gtd-file (make-temp-file "foo" nil ".org" (org-file-contents "test/fixtures/gtd-file.org"))))
-       (org-gtd-core-prepare-buffer (find-file-noselect gtd-file))
-       (ogt-capture-and-process-addition-to-project "Task 0" "[1/3] SPC addtaskhere RET")
+            (gtd-file-buffer (ogt--temp-org-file-buffer "foo" (org-file-contents "test/fixtures/gtd-file.org"))))
 
-       (with-current-buffer (find-file-noselect gtd-file)
+       (org-gtd-core-prepare-buffer gtd-file-buffer)
+
+       (ogt-capture-and-process-addition-to-project
+        "Task 0"
+        "Projects/addtaskhere TAB RET")
+
+       (with-current-buffer gtd-file-buffer
          (search-forward "addtaskhere")
          (org-narrow-to-subtree)
          (search-forward "DONE finished task")
