@@ -156,7 +156,8 @@ This handles the internal bits of `org-gtd'."
           (position (marker-position org-gtd-clarify--source-heading-marker)))
       (with-current-buffer buffer
         (goto-char position)
-        (org-cut-subtree))
+        (with-temp-message ""
+          (org-cut-subtree)))
       (set-window-configuration window-config)
       (kill-buffer (org-gtd-clarify--buffer-name task-id))
       (if loop-p (org-gtd-process-inbox)))))

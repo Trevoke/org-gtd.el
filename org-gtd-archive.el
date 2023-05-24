@@ -84,18 +84,19 @@ into a datetree."
 (defun org-gtd-archive-item-at-point ()
   "Dirty hack to force archiving where I know I can."
   (interactive)
-  (let* ((last-command nil)
-         (temp-file (make-temp-file org-gtd-directory nil ".org"))
-         (buffer (find-file-noselect temp-file)))
-    (org-copy-subtree)
-    (org-gtd-core-prepare-buffer buffer)
-    (with-current-buffer buffer
-      (org-paste-subtree)
-      (goto-char (point-min))
-      (with-org-gtd-context (org-archive-subtree))
-      (basic-save-buffer)
-      (kill-buffer))
-    (delete-file temp-file)))
+  (with-temp-message ""
+    (let* ((last-command nil)
+           (temp-file (make-temp-file org-gtd-directory nil ".org"))
+           (buffer (find-file-noselect temp-file)))
+      (org-copy-subtree)
+      (org-gtd-core-prepare-buffer buffer)
+      (with-current-buffer buffer
+        (org-paste-subtree)
+        (goto-char (point-min))
+        (with-org-gtd-context (org-archive-subtree))
+        (basic-save-buffer)
+        (kill-buffer))
+      (delete-file temp-file))))
 
 ;;;; Functions
 

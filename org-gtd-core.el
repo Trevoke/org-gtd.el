@@ -220,7 +220,8 @@ If BUFFER is nil, use current buffer."
     (unless (bound-and-true-p org-gtd--loading-p)
       (setq-local org-gtd--loading-p t)
       (with-org-gtd-context
-          (org-mode-restart))
+          (with-temp-message ""
+            (org-mode-restart)))
       (setq-local org-gtd--loading-p t))))
 
 ;;;;; Private
