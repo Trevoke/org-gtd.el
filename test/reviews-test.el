@@ -22,7 +22,7 @@
 
   (it "throws an error if called programmatically with an area not in the list"
       (expect
-       (org-gtd-review-area-of-focus "Playing")
+       (org-gtd-reflect-area-of-focus "Playing")
        :to-throw
        'org-gtd-invalid-area-of-focus))
 
@@ -32,7 +32,7 @@
                           (org-file-contents
                            "test/fixtures/areas-of-focus.org"))))
 
-        (org-gtd-review-area-of-focus "Home" "2021-11-20")
+        (org-gtd-reflect-area-of-focus "Home" "2021-11-20")
 
         (with-current-buffer org-agenda-buffer
           (let ((active-projects "Active projects[[:space:]].*?Fix the roof")

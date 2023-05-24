@@ -238,7 +238,7 @@ The nomenclature changes here because of an effort to, over time, define a bette
 Same reason as above.
 ***** ~org-gtd-agenda-cancel-project~ is now ~org-gtd-project-cancel-from-agenda~
 Same reason as above.
-***** ~org-gtd-show-stuck-projects~ is now ~org-gtd-review-stuck-projects~
+***** ~org-gtd-show-stuck-projects~ is now ~org-gtd-reflect-stuck-projects~
 Same reason as above.
 **** That's it!
 Go check out [[#new-in-3.0][What's new in 3.0]] as well as [[#configuring][Configuring]].
@@ -524,7 +524,7 @@ If you are a Doom Emacs user, then your configuration may look something like th
            :desc "Engage"         "e"  #'org-gtd-engage
            :desc "Process inbox"  "p"  #'org-gtd-process-inbox
            :desc "Show all next"  "n"  #'org-gtd-show-all-next
-           :desc "Stuck projects" "s"  #'org-gtd-review-stuck-projects))
+           :desc "Stuck projects" "s"  #'org-gtd-reflect-stuck-projects))
     (map! :map org-gtd-clarify-map
           :desc "Organize this item" "C-c c" #'org-gtd-organize))
 #+END_SRC
@@ -704,7 +704,7 @@ Horizon 2 is now handled by a variable and a hook you can add to ~org-gtd-organi
 - ~org-gtd-areas-of-focus~ is a list of strings, each representing one of your areas of focus.
 - ~org-gtd-set-area-of-focus~ is the hook you would add, e.g. ~(setq org-gtd-organize-hooks '(org-gtd-set-area-of-focus))~, it ensures each item you clarify will need to be part of a horizon.
 
-You can then use the function ~org-gtd-review-area-of-focus~ to generate an agenda view to review a specific area of focus.
+You can then use the function ~org-gtd-reflect-area-of-focus~ to generate an agenda view to review a specific area of focus.
 
 In order to add areas of focus to pre-existing items in your system, without going through the clarifying flow, we provide two functions:
 - ~org-gtd-area-of-focus-set-on-item-at-point~, when you are on a org heading
@@ -790,12 +790,12 @@ For instance, one way this could work:
 ** Finding lost tasks
 Sometimes things break. The following functions will help you find these items:
 
-- ~org-gtd-review-stuck-calendar-items~
-- ~org-gtd-review-stuck-incubated-items~
-- ~org-gtd-review-stuck-habit-items~
-- ~org-gtd-review-stuck-delegated-items~
-- ~org-gtd-review-stuck-single-action-items~
-- ~org-gtd-review-stuck-projects~
+- ~org-gtd-reflect-stuck-calendar-items~
+- ~org-gtd-reflect-stuck-incubated-items~
+- ~org-gtd-reflect-stuck-habit-items~
+- ~org-gtd-reflect-stuck-delegated-items~
+- ~org-gtd-reflect-stuck-single-action-items~
+- ~org-gtd-reflect-stuck-projects~
 
 ** Projects without a NEXT item
 

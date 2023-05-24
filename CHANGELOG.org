@@ -1,3 +1,6 @@
+* Unreleased
+** Changed
+- File org-gtd-review.el renamed to org-gtd-reflect.el
 * 3.0.0
 ** Functions exist to create your own hooks
 Make GTD truly a part of your emacs experience.

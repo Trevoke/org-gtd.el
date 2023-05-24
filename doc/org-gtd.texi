@@ -497,7 +497,7 @@ Same reason as above.
 Same reason as above.
 
 @item
-@anchor{@code{org-gtd-show-stuck-projects} is now @code{org-gtd-review-stuck-projects}}@code{org-gtd-show-stuck-projects} is now @code{org-gtd-review-stuck-projects}
+@anchor{@code{org-gtd-show-stuck-projects} is now @code{org-gtd-reflect-stuck-projects}}@code{org-gtd-show-stuck-projects} is now @code{org-gtd-reflect-stuck-projects}
 
 
 Same reason as above.
@@ -907,7 +907,7 @@ If you are a Doom Emacs user, then your configuration may look something like th
          :desc "Engage"         "e"  #'org-gtd-engage
          :desc "Process inbox"  "p"  #'org-gtd-process-inbox
          :desc "Show all next"  "n"  #'org-gtd-show-all-next
-         :desc "Stuck projects" "s"  #'org-gtd-review-stuck-projects))
+         :desc "Stuck projects" "s"  #'org-gtd-reflect-stuck-projects))
   (map! :map org-gtd-clarify-map
         :desc "Organize this item" "C-c c" #'org-gtd-organize))
 @end lisp
@@ -1190,7 +1190,7 @@ Horizon 2 is now handled by a variable and a hook you can add to @code{org-gtd-o
 @code{org-gtd-set-area-of-focus} is the hook you would add, e.g. @code{(setq org-gtd-organize-hooks '(org-gtd-set-area-of-focus))}, it ensures each item you clarify will need to be part of a horizon.
 @end itemize
 
-You can then use the function @code{org-gtd-review-area-of-focus} to generate an agenda view to review a specific area of focus.
+You can then use the function @code{org-gtd-reflect-area-of-focus} to generate an agenda view to review a specific area of focus.
 
 In order to add areas of focus to pre-existing items in your system, without going through the clarifying flow, we provide two functions:
 @itemize
@@ -1315,17 +1315,17 @@ Sometimes things break. The following functions will help you find these items:
 
 @itemize
 @item
-@code{org-gtd-review-stuck-calendar-items}
+@code{org-gtd-reflect-stuck-calendar-items}
 @item
-@code{org-gtd-review-stuck-incubated-items}
+@code{org-gtd-reflect-stuck-incubated-items}
 @item
-@code{org-gtd-review-stuck-habit-items}
+@code{org-gtd-reflect-stuck-habit-items}
 @item
-@code{org-gtd-review-stuck-delegated-items}
+@code{org-gtd-reflect-stuck-delegated-items}
 @item
-@code{org-gtd-review-stuck-single-action-items}
+@code{org-gtd-reflect-stuck-single-action-items}
 @item
-@code{org-gtd-review-stuck-projects}
+@code{org-gtd-reflect-stuck-projects}
 @end itemize
 
 @node Projects without a NEXT item

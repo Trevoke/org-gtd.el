@@ -1,4 +1,4 @@
-;;; org-gtd-review.el --- GTD review logic for org-gtd -*- lexical-binding: t; coding: utf-8 -*-
+;;; org-gtd-reflect.el --- Reflect on system contents -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2023 Aldric Giacomoni
 
@@ -26,6 +26,7 @@
 ;;; Code:
 
 ;;;; Requirements
+
 (require 'org)
 
 (require 'org-gtd-core)
@@ -37,7 +38,7 @@
 ;;;; Commands
 
 ;;;###autoload
-(defun org-gtd-review-area-of-focus (&optional area start-date)
+(defun org-gtd-reflect-area-of-focus (&optional area start-date)
   "Generate an overview agenda for a given area of focus.
 
 You can pass an optional AREA (must be a member of `org-gtd-areas-of-focus') to
@@ -91,7 +92,11 @@ mostly of value for testing purposes."
           (org-agenda nil "a")
           (goto-char (point-min))))))
 
-(defun org-gtd-review-stuck-calendar-items ()
+;;;###autoload
+(defalias 'org-gtd-review-area-of-focus 'org-gtd-reflect-area-of-focus)
+(make-obsolete 'org-gtd-review-area-of-focus "use `org-gtd-reflect-area-of-focus' instead." "2023-05-24")
+
+(defun org-gtd-reflect-stuck-calendar-items ()
   "Agenda view with all invalid Calendar actions."
   (interactive)
   (with-org-gtd-context
@@ -104,7 +109,11 @@ mostly of value for testing purposes."
                         (org-agenda-skip-additional-timestamps-same-entry t))))))))
         (org-agenda nil "g"))))
 
-(defun org-gtd-review-stuck-delegated-items ()
+;;;###autoload
+(defalias 'org-gtd-review-stuck-calendar-items 'org-gtd-reflect-stuck-calendar-items)
+(make-obsolete 'org-gtd-review-stuck-calendar-items "use `org-gtd-reflect-stuck-calendar-items' instead." "2023-05-24")
+
+(defun org-gtd-reflect-stuck-delegated-items ()
   "Agenda view with all invalid Calendar actions."
   (interactive)
   (with-org-gtd-context
@@ -118,7 +127,11 @@ mostly of value for testing purposes."
                         (org-agenda-skip-additional-timestamps-same-entry t))))))))
         (org-agenda nil "g"))))
 
-(defun org-gtd-review-stuck-habit-items ()
+;;;###autoload
+(defalias 'org-gtd-review-stuck-delegated-items 'org-gtd-reflect-stuck-delegated-items)
+(make-obsolete 'org-gtd-review-stuck-delegated-items "use `org-gtd-reflect-stuck-delegated-items' instead." "2023-05-24")
+
+(defun org-gtd-reflect-stuck-habit-items ()
   "Agenda view with all invalid Calendar actions."
   (interactive)
   (with-org-gtd-context
@@ -130,7 +143,11 @@ mostly of value for testing purposes."
                         (org-agenda-skip-additional-timestamps-same-entry t))))))))
         (org-agenda nil "g"))))
 
-(defun org-gtd-review-stuck-incubated-items ()
+;;;###autoload
+(defalias 'org-gtd-review-stuck-habit-items 'org-gtd-reflect-stuck-habit-items)
+(make-obsolete 'org-gtd-review-stuck-habit-items "use `org-gtd-reflect-stuck-habit-items' instead." "2023-05-24")
+
+(defun org-gtd-reflect-stuck-incubated-items ()
   "Agenda view with all invalid Calendar actions."
   (interactive)
   (with-org-gtd-context
@@ -143,13 +160,21 @@ mostly of value for testing purposes."
         (org-agenda nil "g"))))
 
 ;;;###autoload
-(defun org-gtd-review-stuck-projects ()
+(defalias 'org-gtd-review-stuck-incubated-items 'org-gtd-reflect-stuck-incubated-items)
+(make-obsolete 'org-gtd-review-stuck-incubated-items "use `org-gtd-reflect-stuck-incubated-items' instead." "2023-05-24")
+
+;;;###autoload
+(defun org-gtd-reflect-stuck-projects ()
   "Show all projects that do not have a next action."
   (interactive)
   (with-org-gtd-context
       (org-agenda-list-stuck-projects)))
 
-(defun org-gtd-review-stuck-single-action-items ()
+;;;###autoload
+(defalias 'org-gtd-review-stuck-projects 'org-gtd-reflect-stuck-projects)
+(make-obsolete 'org-gtd-review-stuck-projects "use `org-gtd-reflect-stuck-projects' instead." "2023-05-24")
+
+(defun org-gtd-reflect-stuck-single-action-items ()
   "Agenda view with all invalid Calendar actions."
   (interactive)
   (with-org-gtd-context
@@ -160,6 +185,10 @@ mostly of value for testing purposes."
                          'org-gtd-skip-unless-timestamp-empty-or-invalid)
                         (org-agenda-skip-additional-timestamps-same-entry t))))))))
         (org-agenda nil "g"))))
+
+;;;###autoload
+(defalias 'org-gtd-review-stuck-single-action-items 'org-gtd-reflect-stuck-single-action-items)
+(make-obsolete 'org-gtd-review-stuck-single-action-items "use `org-gtd-reflect-stuck-single-action-items' instead." "2023-05-24")
 
 ;;;; Functions
 
@@ -172,6 +201,6 @@ mostly of value for testing purposes."
 
 ;;;; Footer
 
-(provide 'org-gtd-review)
+(provide 'org-gtd-reflect)
 
-;;; org-gtd-review.el ends here
+;;; org-gtd-reflect.el ends here

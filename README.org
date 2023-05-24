@@ -60,8 +60,8 @@ Functions:
 *** GTD Step 6/6 : Review
 Functions:
 - ~org-gtd-oops~ :: Show all the missed appointments. Oops!
-- ~org-gtd-review-area-of-focus~ :: Show an agenda view designed for one of your areas of focus.
-- ~org-gtd-review-stuck-*~ :: The =*= here is any of the action types; you can find any of the ones that have fallen through the cracks.
+- ~org-gtd-reflect-area-of-focus~ :: Show an agenda view designed for one of your areas of focus.
+- ~org-gtd-reflect-stuck-*~ :: The =*= here is any of the action types; you can find any of the ones that have fallen through the cracks.
 
 
 * Directory tree

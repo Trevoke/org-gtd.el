@@ -300,11 +300,11 @@ TYPE is the org-gtd action type.  BODY is the rest of the code.
 
 ;;;***
 
-;;;### (autoloads nil "org-gtd-review" "org-gtd-review.el" (0 0 0
-;;;;;;  0))
-;;; Generated autoloads from org-gtd-review.el
+;;;### (autoloads nil "org-gtd-reflect" "org-gtd-reflect.el" (25709
+;;;;;;  52734 332852 530000))
+;;; Generated autoloads from org-gtd-reflect.el
 
-(autoload 'org-gtd-review-area-of-focus "org-gtd-review" "\
+(autoload 'org-gtd-reflect-area-of-focus "org-gtd-reflect" "\
 Generate an overview agenda for a given area of focus.
 
 You can pass an optional AREA (must be a member of `org-gtd-areas-of-focus') to
@@ -314,10 +314,24 @@ mostly of value for testing purposes.
 
 \(fn &optional AREA START-DATE)" t nil)
 
-(autoload 'org-gtd-review-stuck-projects "org-gtd-review" "\
+(defalias 'org-gtd-review-area-of-focus 'org-gtd-reflect-area-of-focus)
+
+(defalias 'org-gtd-review-stuck-calendar-items 'org-gtd-reflect-stuck-calendar-items)
+
+(defalias 'org-gtd-review-stuck-delegated-items 'org-gtd-reflect-stuck-delegated-items)
+
+(defalias 'org-gtd-review-stuck-habit-items 'org-gtd-reflect-stuck-habit-items)
+
+(defalias 'org-gtd-review-stuck-incubated-items 'org-gtd-reflect-stuck-incubated-items)
+
+(autoload 'org-gtd-reflect-stuck-projects "org-gtd-reflect" "\
 Show all projects that do not have a next action." t nil)
 
-(register-definition-prefixes "org-gtd-review" '("org-gtd-review-stuck-"))
+(defalias 'org-gtd-review-stuck-projects 'org-gtd-reflect-stuck-projects)
+
+(defalias 'org-gtd-review-stuck-single-action-items 'org-gtd-reflect-stuck-single-action-items)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-gtd-reflect" '("org-gtd-reflect-stuck-")))
 
 ;;;***
 

@@ -12,7 +12,7 @@ There's been a lot of issues during beta testing with proper installation of org
 ** DONE org-gtd-agenda-delegate is now org-gtd-delegate-agenda-item
 ** DONE org-gtd-cancel-project is now org-gtd-project-cancel
 ** DONE org-gtd-agenda-cancel-project is now org-gtd-project-cancel-from-agenda
-** DONE org-gtd-show-stuck-projects is now org-gtd-review-stuck-projects
+** DONE org-gtd-show-stuck-projects is now org-gtd-reflect-stuck-projects
 ** DONE org-gtd-agenda-custom-commands is gone
 Create your own functions and use ~with-org-gtd-context~ instead.
 See ~org-gtd-engage~ for an example.
