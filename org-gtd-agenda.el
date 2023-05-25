@@ -32,9 +32,18 @@
 (require 'org-gtd-core)
 (require 'org-gtd-backward-compatibility)
 
-(defvar org-gtd-agenda-width-project-name 12
-  "width of the project name in the agenda view. Name will be truncated to this length"
-  )
+(defgroup org-gtd-engage nil
+  "Customize the engage views in the org-gtd package."
+  :group 'org-gtd
+  :package-version '(org-gtd . "3.1"))
+
+(defcustom org-gtd-engage-prefix-width 12
+  "How many characters to dedicate to the agenda prefix in the engage view.
+
+This is where the project name is displayed, on the left side."
+  :group 'org-gtd-engage
+  :package-version '(org-gtd . "3.1")
+  :type 'integer)
 
 ;;;; Commands
 
@@ -44,8 +53,9 @@
   (interactive)
   (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
-      (let* ((project-format-prefix  (format " %%i %%-%d"
-                                            org-gtd-agenda-width-project-name) )
+      (let* ((project-format-prefix
+              (format " %%i %%-%d:(org-gtd-agenda--prefix-format) "
+                      org-gtd-engage-prefix-width))
              (org-agenda-custom-commands
              `(("g" "Scheduled today and all NEXT items"
                 ((agenda ""
@@ -55,12 +65,12 @@
                  (todo org-gtd-next
                        ((org-agenda-overriding-header "All actions ready to be executed.")
                         (org-agenda-prefix-format
-                         '((todo . ,(eval (concat project-format-prefix ":(org-gtd-agenda--prefix-format) ")))))))
+                         '((todo . ,project-format-prefix)))))
                  (todo org-gtd-wait
                        ((org-agenda-todo-ignore-with-date t)
                         (org-agenda-overriding-header "Delegated/Blocked items")
                         (org-agenda-prefix-format
-                         '((todo . ,(eval (concat project-format-prefix " (org-gtd-agenda--prefix-format) "))))))))))))
+                         '((todo . ,project-format-prefix))))))))))
         (org-agenda nil "g")
         (goto-char (point-min)))))
 
@@ -101,7 +111,7 @@ This assumes all GTD files are also agenda files."
 (defun org-gtd-agenda--prefix-format ()
   "Format prefix for items in agenda buffer."
   (defun truncate (st)
-    (truncate-string-to-width (string-trim st) org-gtd-agenda-width-project-name nil ?\s  "…")
+    (truncate-string-to-width (string-trim st) org-gtd-engage-prefix-width nil ?\s  "…")
     )
   (let* ((elt (org-element-at-point))
          (level (org-element-property :level elt))
