@@ -94,8 +94,9 @@ mostly of value for testing purposes."
 
 ;;;###autoload
 (defalias 'org-gtd-review-area-of-focus 'org-gtd-reflect-area-of-focus)
-(make-obsolete 'org-gtd-review-area-of-focus "use `org-gtd-reflect-area-of-focus' instead." "2023-05-24")
+(make-obsolete 'org-gtd-review-area-of-focus 'org-gtd-reflect-area-of-focus "3.1.0")
 
+;;;###autoload
 (defun org-gtd-reflect-stuck-calendar-items ()
   "Agenda view with all invalid Calendar actions."
   (interactive)
@@ -111,8 +112,9 @@ mostly of value for testing purposes."
 
 ;;;###autoload
 (defalias 'org-gtd-review-stuck-calendar-items 'org-gtd-reflect-stuck-calendar-items)
-(make-obsolete 'org-gtd-review-stuck-calendar-items "use `org-gtd-reflect-stuck-calendar-items' instead." "2023-05-24")
+(make-obsolete 'org-gtd-review-stuck-calendar-items 'org-gtd-reflect-stuck-calendar-items "3.1.0")
 
+;;;###autoload
 (defun org-gtd-reflect-stuck-delegated-items ()
   "Agenda view with all invalid Calendar actions."
   (interactive)
@@ -129,8 +131,9 @@ mostly of value for testing purposes."
 
 ;;;###autoload
 (defalias 'org-gtd-review-stuck-delegated-items 'org-gtd-reflect-stuck-delegated-items)
-(make-obsolete 'org-gtd-review-stuck-delegated-items "use `org-gtd-reflect-stuck-delegated-items' instead." "2023-05-24")
+(make-obsolete 'org-gtd-review-stuck-delegated-items 'org-gtd-reflect-stuck-delegated-items "3.1.0")
 
+;;;###autoload
 (defun org-gtd-reflect-stuck-habit-items ()
   "Agenda view with all invalid Calendar actions."
   (interactive)
@@ -145,8 +148,9 @@ mostly of value for testing purposes."
 
 ;;;###autoload
 (defalias 'org-gtd-review-stuck-habit-items 'org-gtd-reflect-stuck-habit-items)
-(make-obsolete 'org-gtd-review-stuck-habit-items "use `org-gtd-reflect-stuck-habit-items' instead." "2023-05-24")
+(make-obsolete 'org-gtd-review-stuck-habit-items 'org-gtd-reflect-stuck-habit-items "3.1.0")
 
+;;;###autoload
 (defun org-gtd-reflect-stuck-incubated-items ()
   "Agenda view with all invalid Calendar actions."
   (interactive)
@@ -161,7 +165,7 @@ mostly of value for testing purposes."
 
 ;;;###autoload
 (defalias 'org-gtd-review-stuck-incubated-items 'org-gtd-reflect-stuck-incubated-items)
-(make-obsolete 'org-gtd-review-stuck-incubated-items "use `org-gtd-reflect-stuck-incubated-items' instead." "2023-05-24")
+(make-obsolete 'org-gtd-review-stuck-incubated-items 'org-gtd-reflect-stuck-incubated-items "3.1.0")
 
 ;;;###autoload
 (defun org-gtd-reflect-stuck-projects ()
@@ -172,8 +176,9 @@ mostly of value for testing purposes."
 
 ;;;###autoload
 (defalias 'org-gtd-review-stuck-projects 'org-gtd-reflect-stuck-projects)
-(make-obsolete 'org-gtd-review-stuck-projects "use `org-gtd-reflect-stuck-projects' instead." "2023-05-24")
+(make-obsolete 'org-gtd-review-stuck-projects 'org-gtd-reflect-stuck-projects "3.1.0")
 
+;;;###autoload
 (defun org-gtd-reflect-stuck-single-action-items ()
   "Agenda view with all invalid Calendar actions."
   (interactive)
@@ -188,7 +193,7 @@ mostly of value for testing purposes."
 
 ;;;###autoload
 (defalias 'org-gtd-review-stuck-single-action-items 'org-gtd-reflect-stuck-single-action-items)
-(make-obsolete 'org-gtd-review-stuck-single-action-items "use `org-gtd-reflect-stuck-single-action-items' instead." "2023-05-24")
+(make-obsolete 'org-gtd-review-stuck-single-action-items 'org-gtd-reflect-stuck-single-action-items "3.1.0")
 
 ;;;; Functions
 
