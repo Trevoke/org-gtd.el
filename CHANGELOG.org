@@ -1,5 +1,11 @@
-* Unreleased
-** Changed
+* 3.1.0 (unstable)
+** Fix edge case of processing empty heading ( #169 )
+** Better messages in minibuffer
+- discover ~with-temp-message~ to hide things we don't care about.
+** Adding task to a project works ( #160 )
+- Now uses org-refile like it was meant to be used
+- Now works for projects outside ~org-gtd-directory~.
+** Better alignment with step names used by David Allen
 - File org-gtd-review.el renamed to org-gtd-reflect.el
 * 3.0.0
 ** Functions exist to create your own hooks
