@@ -1,4 +1,5 @@
 * 3.1.0 (unstable)
+** New variable to configure agenda prefix width in engage view
 ** Fix edge case of processing empty heading ( #169 )
 ** Better messages in minibuffer
 - discover ~with-temp-message~ to hide things we don't care about.
