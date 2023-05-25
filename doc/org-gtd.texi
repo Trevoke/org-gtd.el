@@ -679,7 +679,7 @@ You need to rename CANCELED to CNCL@. a simple string replace in the @code{org-g
 @anchor{Differentiating GTD types of items}Differentiating GTD types of items
 
 
-Org GTD no longer uses the name of the heading to figure out how to refile things, and which headings are useful. Instead it uses a custom Org property called ORG_GTD. This means you are free to rename the existing headings whatever you want, but you DO need to make some adjustments to your current files.
+Org GTD no longer uses the name of the heading to figure out how to refile things, and which headings are useful. Instead it uses a custom Org property called ORG@math{_GTD}. This means you are free to rename the existing headings whatever you want, but you DO need to make some adjustments to your current files.
 
 If you would like to add new refile targets, it's simple, follow these instructions.
 
@@ -691,9 +691,9 @@ For projects, make sure the heading has the following two properties.
 :END:
 @end example
 
-For other headings, make sure there is an ORG_GTD property, like for the project, above.
+For other headings, make sure there is an ORG@math{_GTD} property, like for the project, above.
 
-The other ORG_GTD properties are set as follows. Note that Single and Delegated actions are together now, so you can merge those headings if you want.
+The other ORG@math{_GTD} properties are set as follows. Note that Single and Delegated actions are together now, so you can merge those headings if you want.
 
 @table @asis
 @item Scheduled actions
@@ -867,6 +867,8 @@ When clarifying, do you want the horizons buffer to be shown by default, or do y
 Alist of strings: @code{project template name . project template} where there template is a series of tasks you may want to insert automatically, if you have a generic type of project that comes up a lot.
 @item @code{org-gtd-horizons-file}
 Name of the file, in @code{org-gtd-directory}, that will be displayed when the horizons buffer is displayed when clarifying.
+@item @code{org-gtd-engage-prefix-width}
+how many characters to dedicate to the prefix, on the left side of the TODO items, so the project name, if any, can show clearly.
 @end table
 @end itemize
 

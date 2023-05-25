@@ -1,4 +1,4 @@
-This is org-gtd.info, produced by makeinfo version 6.7 from
+This is org-gtd.info, produced by makeinfo version 6.8 from
 org-gtd.texi.
 
 Copyright (C) 2018-2023 Aldric Giacomoni <trevoke@gmail.com>
@@ -909,6 +909,10 @@ File: org-gtd.info,  Node: configuration options for org-gtd,  Next: Recommended
           Name of the file, in ‘org-gtd-directory’, that will be
           displayed when the horizons buffer is displayed when
           clarifying.
+     ‘org-gtd-engage-prefix-width’
+          how many characters to dedicate to the prefix, on the left
+          side of the TODO items, so the project name, if any, can show
+          clearly.
 
 
 File: org-gtd.info,  Node: Recommended key bindings,  Next: Sample Doom Emacs Config,  Prev: configuration options for org-gtd,  Up: Configuring
@@ -1543,36 +1547,36 @@ Ref: Configuring org-edna30075
 Node: configuration options for org-gtd30505
 Ref: I don't care just let me start using it30755
 Ref: Tell me all the levers I can pull31344
-Node: Recommended key bindings35328
-Node: Sample Doom Emacs Config36093
-Node: Using Org GTD36967
-Node: Org-mode building blocks for Org GTD37202
-Node: The GTD flow38512
-Node: Adding things to the inbox39098
-Node: Processing the inbox40318
-Node: Clarifying each item40844
-Ref: How to start clarifying41360
-Ref: data shape requirements41865
-Ref: Options and commands related to clarification42426
-Node: Organizing an item into the system43620
-Ref: Choosing a task type44261
-Ref: Applying hooks46394
-Ref: Refiling to the appropriate area46881
-Ref: New project heading47164
-Ref: Other headings47423
-Node: Engaging with your GTD items47963
-Node: Working with the GTD Horizons48529
-Ref: Areas of focus49272
-Ref: Longer-term horizons50556
-Node: Cleaning up / archiving completed work51363
-Node: Commands you can call on org-agenda52228
-Node: Defining your own agenda views53133
-Node: Adding your own hooks when organizing53675
-Node: Automating through emacs54887
-Node: Troubleshooting56024
-Node: Finding lost tasks56265
-Node: Projects without a NEXT item56795
-Node: I can't create a project when clarifying an inbox item!57266
+Node: Recommended key bindings35527
+Node: Sample Doom Emacs Config36292
+Node: Using Org GTD37166
+Node: Org-mode building blocks for Org GTD37401
+Node: The GTD flow38711
+Node: Adding things to the inbox39297
+Node: Processing the inbox40517
+Node: Clarifying each item41043
+Ref: How to start clarifying41559
+Ref: data shape requirements42064
+Ref: Options and commands related to clarification42625
+Node: Organizing an item into the system43819
+Ref: Choosing a task type44460
+Ref: Applying hooks46593
+Ref: Refiling to the appropriate area47080
+Ref: New project heading47363
+Ref: Other headings47622
+Node: Engaging with your GTD items48162
+Node: Working with the GTD Horizons48728
+Ref: Areas of focus49471
+Ref: Longer-term horizons50755
+Node: Cleaning up / archiving completed work51562
+Node: Commands you can call on org-agenda52427
+Node: Defining your own agenda views53332
+Node: Adding your own hooks when organizing53874
+Node: Automating through emacs55086
+Node: Troubleshooting56223
+Node: Finding lost tasks56464
+Node: Projects without a NEXT item56994
+Node: I can't create a project when clarifying an inbox item!57465
 
 End Tag Table
 

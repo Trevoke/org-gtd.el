@@ -492,6 +492,7 @@ Make sure you also read about sub-package configuration: [[#configuring-sub-pack
 - ~org-gtd-clarify-show-horizons~ :: When clarifying, do you want the horizons buffer to be shown by default, or do you prefer it hidden?
 - ~org-gtd-clarify-project-templates~ :: Alist of strings: ~project template name . project template~ where there template is a series of tasks you may want to insert automatically, if you have a generic type of project that comes up a lot.
 - ~org-gtd-horizons-file~ :: Name of the file, in ~org-gtd-directory~, that will be displayed when the horizons buffer is displayed when clarifying.
+- ~org-gtd-engage-prefix-width~ :: how many characters to dedicate to the prefix, on the left side of the TODO items, so the project name, if any, can show clearly.
 *** Recommended key bindings
 :PROPERTIES:
 :CUSTOM_ID: recommended-key-bindings
