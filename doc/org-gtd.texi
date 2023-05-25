@@ -497,7 +497,7 @@ Same reason as above.
 Same reason as above.
 
 @item
-@anchor{@code{org-gtd-show-stuck-projects} is now @code{org-gtd-reflect-stuck-projects}}@code{org-gtd-show-stuck-projects} is now @code{org-gtd-reflect-stuck-projects}
+@anchor{@code{org-gtd-show-stuck-projects} is now @code{org-gtd-review-stuck-projects}}@code{org-gtd-show-stuck-projects} is now @code{org-gtd-review-stuck-projects}
 
 
 Same reason as above.

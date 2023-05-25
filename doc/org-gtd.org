@@ -238,7 +238,7 @@ The nomenclature changes here because of an effort to, over time, define a bette
 Same reason as above.
 ***** ~org-gtd-agenda-cancel-project~ is now ~org-gtd-project-cancel-from-agenda~
 Same reason as above.
-***** ~org-gtd-show-stuck-projects~ is now ~org-gtd-reflect-stuck-projects~
+***** ~org-gtd-show-stuck-projects~ is now ~org-gtd-review-stuck-projects~
 Same reason as above.
 **** That's it!
 Go check out [[#new-in-3.0][What's new in 3.0]] as well as [[#configuring][Configuring]].
