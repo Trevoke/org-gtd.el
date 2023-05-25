@@ -57,7 +57,7 @@ Hooks:
 Functions:
 - ~org-gtd-engage~ :: Your daily view.
 - ~org-gtd-engage-grouped-by-context~ :: All NEXT actions, grouped by tags beginning with =@=. This may not work if you remove ~org-set-tags-command~ from ~org-gtd-organize-hooks~.
-*** GTD Step 6/6 : Review
+*** GTD Step 6/6 : Reflect
 Functions:
 - ~org-gtd-oops~ :: Show all the missed appointments. Oops!
 - ~org-gtd-reflect-area-of-focus~ :: Show an agenda view designed for one of your areas of focus.
