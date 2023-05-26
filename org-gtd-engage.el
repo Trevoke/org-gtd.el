@@ -90,7 +90,7 @@ This assumes all GTD files are also agenda files."
 
 ;;;###autoload
 (defalias 'org-gtd-show-all-next 'org-gtd-engage-next)
-(make-obsolete 'org-gtd-show-all-next "use `org-gtd-engage-next' instead." "3.0.0")
+(make-obsolete 'org-gtd-show-all-next 'org-gtd-engage-next "3.1.0")
 
 ;;;; Functions
 
