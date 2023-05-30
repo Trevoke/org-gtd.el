@@ -108,11 +108,13 @@ This assumes all GTD files are also agenda files."
 
 ;;;;; Private
 
+(defun org-gtd--truncate-project-to-width (st)
+  "Truncates the string to the width indicated by org-gtd-engage-prefix-width."
+  (truncate-string-to-width (string-trim st) org-gtd-engage-prefix-width nil ?\s  "…")
+  )
+
 (defun org-gtd-agenda--prefix-format ()
   "Format prefix for items in agenda buffer."
-  (defun truncate (st)
-    (truncate-string-to-width (string-trim st) org-gtd-engage-prefix-width nil ?\s  "…")
-    )
   (let* ((elt (org-element-at-point))
          (level (org-element-property :level elt))
          (category (org-entry-get (point) "CATEGORY" t))
@@ -120,7 +122,7 @@ This assumes all GTD files are also agenda files."
                         :raw-value
                         (org-element-property :parent elt)))
          (tally-cookie-regexp "\[[[:digit:]]+/[[:digit:]]+\][[:space:]]*"))
-    (truncate
+    (org-gtd--truncate-project-to-width
      ;; if level 3, use the parent
      ;; otherwise if it has category, use category
      ;; else "no project" so we avoid failing
