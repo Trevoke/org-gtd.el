@@ -46,8 +46,9 @@
           (goto-char (point-min))
           (when (org-before-first-heading-p)
             (outline-next-visible-heading 1))
-          (org-N-empty-lines-before-current 1)
-          (org-gtd-clarify-inbox-item))
+          (when (org-at-heading-p)
+            (org-N-empty-lines-before-current 1)
+            (org-gtd-clarify-inbox-item)))
       (user-error (org-gtd-process--stop)))))
 
 ;;;; Functions
