@@ -45,7 +45,7 @@
     (when (org-before-first-heading-p)
       (org-next-visible-heading 1))
     (if (not (org-at-heading-p))
-        (user-error "No items to process" (org-gtd-process--stop))
+        (message "No items to process" (org-gtd-process--stop))
       (org-N-empty-lines-before-current 1)
       (org-gtd-clarify-inbox-item))))
 
