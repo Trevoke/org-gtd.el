@@ -41,15 +41,13 @@
   (interactive)
   (let ((buffer (find-file-noselect (org-gtd-inbox-path))))
     (set-buffer buffer)
-    (condition-case _err
-        (progn
-          (goto-char (point-min))
-          (when (org-before-first-heading-p)
-            (outline-next-visible-heading 1))
-          (when (org-at-heading-p)
-            (org-N-empty-lines-before-current 1)
-            (org-gtd-clarify-inbox-item)))
-      (user-error (org-gtd-process--stop)))))
+    (goto-char (point-min))
+    (when (org-before-first-heading-p)
+      (org-next-visible-heading 1))
+    (if (not (org-at-heading-p))
+        (user-error "No more items to process" (org-gtd-process--stop))
+      (org-N-empty-lines-before-current 1)
+      (org-gtd-clarify-inbox-item))))
 
 ;;;; Functions
 
