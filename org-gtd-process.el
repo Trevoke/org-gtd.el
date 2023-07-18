@@ -43,11 +43,12 @@
     (set-buffer buffer)
     (goto-char (point-min))
     (when (org-before-first-heading-p)
-      (org-next-visible-heading 1))
-    (if (not (org-at-heading-p))
-        (message "No items to process" (org-gtd-process--stop))
-      (org-N-empty-lines-before-current 1)
-      (org-gtd-clarify-inbox-item))))
+      (org-next-visible-heading 1)
+      (org-N-empty-lines-before-current 1))
+    (if (org-at-heading-p)
+        (org-gtd-clarify-inbox-item)
+      (message "Inbox is empty. No items to process.")
+      (org-gtd-process--stop))))
 
 ;;;; Functions
 
