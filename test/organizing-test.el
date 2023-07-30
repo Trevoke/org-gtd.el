@@ -45,7 +45,7 @@
         (set-buffer source-buffer)
         (org-gtd-clarify-item)
         (org-gtd-single-action)
-        (expect (org-gtd-clarify--get-buffers) :to-be nil)))
+        (expect (org-gtd-wip--get-buffers) :to-be nil)))
 
   (it "deletes the source heading"
       (let ((source-buffer (ogt--temp-org-file-buffer "taskfile" "* This is the heading to clarify"))

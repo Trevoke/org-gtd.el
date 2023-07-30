@@ -30,6 +30,7 @@
 
 (require 'org-gtd-backward-compatibility)
 (require 'org-gtd-core)
+(require 'org-gtd-wip)
 (require 'org-gtd-clarify)
 (require 'org-gtd-calendar)
 (require 'org-gtd-habit)
@@ -159,7 +160,7 @@ This handles the internal bits of `org-gtd'."
         (with-temp-message ""
           (org-cut-subtree)))
       (set-window-configuration window-config)
-      (kill-buffer (org-gtd-clarify--buffer-name task-id))
+      (kill-buffer (org-gtd-wip--buffer-name task-id))
       (if loop-p (org-gtd-process-inbox)))))
 
 ;;;; Footer

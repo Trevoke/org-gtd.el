@@ -29,7 +29,7 @@
 (require 'org-agenda)
 
 (require 'org-gtd-core)
-(require 'org-gtd-id)
+(require 'org-gtd-wip)
 (require 'org-gtd-horizons)
 
 ;;;; Customization
@@ -58,9 +58,6 @@ The file shown can be configured in `org-gtd-horizons-file'."
   :package-version '(org-gtd . "3.0")
   :type 'symbol)
 
-;;;; Constants
-
-(defconst org-gtd-clarify--prefix "Org-GTD WIP")
 
 ;;;; Variables
 
@@ -78,9 +75,10 @@ The file shown can be configured in `org-gtd-horizons-file'."
 
 ;;;;; Keymaps
 
-;;;###autoload
-(defvar org-gtd-clarify-map (make-sparse-keymap)
-  "Keymap for command `org-gtd-clarify-mode', a minor mode.")
+(defvar org-gtd-clarify-map)
+
+(defalias org-gtd-clarify-map org-gtd-wip-mode-map)
+(make-obsolete-variable 'org-gtd-clarify-map 'org-gtd-wip-mode-map "3.1.0")
 
 ;; code to make windows atomic, from emacs manual
 ;; (let ((window (split-window-right)))
@@ -127,10 +125,10 @@ The file shown can be configured in `org-gtd-horizons-file'."
   "Process item at point through org-gtd."
   (declare (modes org-mode)) ;; for 27.2 compatibility
   (interactive)
-  (let ((processing-buffer (org-gtd-clarify--get-buffer))
+  (let ((processing-buffer (org-gtd-wip--get-buffer))
         (window-config (current-window-configuration))
         (source-heading-marker (point-marker)))
-    (org-gtd-clarify--maybe-initialize-buffer-contents processing-buffer)
+    (org-gtd-wip--maybe-initialize-buffer-contents processing-buffer)
     (with-current-buffer processing-buffer
       (setq-local org-gtd-clarify--window-config window-config
                   org-gtd-clarify--source-heading-marker source-heading-marker
@@ -141,7 +139,7 @@ The file shown can be configured in `org-gtd-horizons-file'."
   "Prompt the user to choose one of the existing WIP buffers."
   (declare (modes org-gtd-clarify-mode)) ;; for 27.2 compatibility
   (interactive)
-  (let ((buf-names (mapcar #'buffer-name (org-gtd-clarify--get-buffers))))
+  (let ((buf-names (mapcar #'buffer-name (org-gtd-wip--get-buffers))))
     (if buf-names
         (let ((chosen-buf-name (completing-read "Choose a buffer: " buf-names nil t)))
           (org-gtd-clarify-setup-windows chosen-buf-name))
@@ -201,43 +199,11 @@ This function is called through the inbox clarification process."
 
 ;;;;; Private
 
-(defun org-gtd-clarify--buffer-name (id)
-  "Retrieve the name of the WIP buffer for this particular ID."
-  (format "*%s: %s*" org-gtd-clarify--prefix id))
-
 (defun org-gtd-clarify--display-horizons-window ()
   "Display horizons window."
   (let ((horizons-side (or org-gtd-clarify-show-horizons 'right)))
     (display-buffer (org-gtd--horizons-file)
                     `(display-buffer-in-side-window . ((side . ,horizons-side))))))
-
-(defun org-gtd-clarify--get-buffer ()
-  "Get or create a WIP buffer for heading at point."
-  (let* ((org-id (org-gtd-id-get-create))
-         (buffer (get-buffer-create (org-gtd-clarify--buffer-name org-id))))
-    (with-current-buffer buffer
-      (unless (eq major-mode 'org-mode) (org-mode))
-      (org-gtd-core-prepare-buffer)
-      (org-gtd-clarify-mode 1)
-      buffer)))
-
-(defun org-gtd-clarify--get-buffers ()
-  "Retrieve a list of Org GTD WIP buffers."
-  (seq-filter (lambda (buf)
-                (string-match-p org-gtd-clarify--prefix (buffer-name buf)))
-              (buffer-list)))
-
-(defun org-gtd-clarify--maybe-initialize-buffer-contents (buffer)
-  "If BUFFER is empty, then copy org heading at point and paste inside buffer."
-  (with-temp-message ""
-    (when (= (buffer-size buffer) 0)
-      (let ((last-command nil))
-        (org-copy-subtree))
-      (with-current-buffer buffer
-        (org-paste-subtree)
-        (org-entry-delete (point) org-gtd-timestamp)
-        (org-entry-delete (point) org-gtd-delegate-property)
-        (org-entry-delete (point) "STYLE")))))
 
 ;;;; Footer
 
