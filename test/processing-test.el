@@ -90,5 +90,5 @@
        (org-gtd-process-inbox)
        (execute-kbd-macro (kbd "C-c c p RET"))
 
-       (expect (buffer-name) :to-match org-gtd-clarify--prefix)
+       (expect (buffer-name) :to-match org-gtd-wip--prefix)
        (expect (ogt--buffer-string "*Message*") :to-match "** First task")))))

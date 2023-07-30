@@ -43,7 +43,7 @@ is enabled.")
 (defvar org-gtd-edna nil "Private.")
 (defvar org-gtd-edna-inheritance nil "Private.")
 
-;;;; Macros
+;;;; Modes
 
 ;;;###autoload
 (define-minor-mode org-gtd-mode

@@ -29,7 +29,7 @@
        (expect (get-buffer-window "horizons.org")
                :not :to-be
                nil)
-       (expect (get-buffer-window (car (org-gtd-clarify--get-buffers)))
+       (expect (get-buffer-window (car (org-gtd-wip--get-buffers)))
                :not :to-be
                nil))
 
@@ -42,7 +42,7 @@
        (expect (get-buffer-window "horizons.org")
                :not :to-be
                nil)
-       (expect (get-buffer-window (car (org-gtd-clarify--get-buffers)))
+       (expect (get-buffer-window (car (org-gtd-wip--get-buffers)))
                :not :to-be
                nil)
        (expect (ogt--buffer-string "horizons.org")

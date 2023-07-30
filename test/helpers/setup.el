@@ -27,7 +27,7 @@
    (-flatten (mapcar
               #'ogt--get-buffers
               `(".*\\.org" ".*Agenda.*" "gtd_archive.*" ".*Calendar.*"
-                ,(format ".*%s.*" org-gtd-clarify--prefix))))))
+                ,(format ".*%s.*" org-gtd-wip--prefix))))))
 
 (defun ogt--clear-file-and-buffer (buffer)
   (if (bufferp buffer)

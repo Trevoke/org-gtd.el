@@ -33,7 +33,7 @@ because I need to run this on older emacsen than 28.1 which has
        (with-current-buffer source-buffer
          (org-gtd-clarify-item))
 
-       (expect (ogt--buffer-string (car (org-gtd-clarify--get-buffers)))
+       (expect (ogt--buffer-string (car (org-gtd-wip--get-buffers)))
                :to-match
                "This is the heading to clarify")))
 
@@ -42,6 +42,6 @@ because I need to run this on older emacsen than 28.1 which has
        (with-current-buffer source-buffer
          (org-gtd-clarify-item))
 
-       (let ((wip-buffer (car (org-gtd-clarify--get-buffers))))
+       (let ((wip-buffer (car (org-gtd-wip--get-buffers))))
          (with-current-buffer wip-buffer
            (expect (ogt-manage-active-minor-modes) :to-contain 'org-gtd-clarify-mode))))))
