@@ -189,6 +189,7 @@ Refile to `org-gtd-actionable-file-basename'."
   (org-gtd-projects--apply-organize-hooks-to-tasks)
 
   (org-gtd-projects-fix-todo-keywords-for-project-at-point)
+
   (let ((org-special-ctrl-a t))
     (org-end-of-line))
   (insert " [/]")

@@ -46,7 +46,8 @@
       (org-next-visible-heading 1)
       (org-N-empty-lines-before-current 1))
     (if (org-at-heading-p)
-        (org-gtd-clarify-inbox-item)
+        (org-gtd-clarify-inbox-item (point-marker)
+                                    (current-window-configuration))
       (message "Inbox is empty. No items to process.")
       (org-gtd-process--stop))))
 
