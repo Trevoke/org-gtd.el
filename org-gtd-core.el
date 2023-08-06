@@ -202,7 +202,7 @@ See `org-todo-keywords' for definition."
 ;;;;; Public
 
 (defun org-gtd-core-prepare-agenda-buffers ()
-  "Ensure `org-mode' has the desired settings in the agenda buffers."
+  "Ensure `org-mode' uses org-gtd settings in the relevant agenda buffers."
   (mapc
    (lambda (file) (org-gtd-core-prepare-buffer (find-file-noselect file)))
    (-flatten

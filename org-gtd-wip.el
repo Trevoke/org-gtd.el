@@ -45,6 +45,7 @@
 a file without breaking users' setups.
 
 \\[org-gtd-wip-mode-map]"
+  (setq-local org-gtd--loading-p t)
   (setq-local
    header-line-format
    (substitute-command-keys
@@ -64,14 +65,12 @@ a file without breaking users' setups.
   "Retrieve the name of the WIP buffer for this particular ID."
   (format "*%s: %s*" org-gtd-wip--prefix id))
 
-(defun org-gtd-wip--get-buffer ()
-  "Get or create a WIP buffer for heading at point."
-  (let* ((org-id (org-gtd-id-get-create))
-         (buffer (get-buffer-create (org-gtd-wip--buffer-name org-id))))
+(defun org-gtd-wip--get-buffer (org-id)
+  "Get or create a WIP buffer with name based on ORG-ID."
+  (let* ((buffer (get-buffer-create (org-gtd-wip--buffer-name org-id))))
     (with-current-buffer buffer
-      (unless (eq major-mode 'org-mode) (org-mode))
-      (org-gtd-core-prepare-buffer)
-      (org-gtd-wip-mode 1)
+      (unless (eq major-mode #'org-gtd-wip-mode)
+        (with-org-gtd-context (org-gtd-wip-mode)))
       buffer)))
 
 (defun org-gtd-wip--get-buffers ()
@@ -80,12 +79,13 @@ a file without breaking users' setups.
                 (string-match-p org-gtd-wip--prefix (buffer-name buf)))
               (buffer-list)))
 
-(defun org-gtd-wip--maybe-initialize-buffer-contents (buffer)
-  "If BUFFER is empty, then copy org heading at point and paste inside buffer."
+(defun org-gtd-wip--maybe-initialize-buffer-contents (marker buffer)
+  "If BUFFER is empty, then copy org heading at marker and paste inside buffer."
   (with-temp-message ""
     (when (= (buffer-size buffer) 0)
       (let ((last-command nil))
-        (org-copy-subtree))
+        (org-with-point-at marker
+          (org-copy-subtree)))
       (with-current-buffer buffer
         (org-paste-subtree)
         (org-entry-delete (point) org-gtd-timestamp)

@@ -9,3 +9,4 @@
 /dev/gtd
 dist/
 org-gtd-autoloads.el
+.idea

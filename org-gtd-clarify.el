@@ -75,10 +75,7 @@ The file shown can be configured in `org-gtd-horizons-file'."
 
 ;;;;; Keymaps
 
-(defvar org-gtd-clarify-map)
-
-(defalias org-gtd-clarify-map org-gtd-wip-mode-map)
-(make-obsolete-variable 'org-gtd-clarify-map 'org-gtd-wip-mode-map "3.1.0")
+(defvar org-gtd-clarify-map (make-sparse-keymap))
 
 ;; code to make windows atomic, from emacs manual
 ;; (let ((window (split-window-right)))
@@ -118,21 +115,27 @@ The file shown can be configured in `org-gtd-horizons-file'."
   (org-agenda-check-no-diary)
   (let ((heading-marker (or (org-get-at-bol 'org-marker)
                             (org-agenda-error))))
-    (org-gtd-clarify-item-at-marker heading-marker)))
+    (org-gtd-clarify-item heading-marker
+                          (current-window-configuration))))
 
 ;;;###autoload
-(defun org-gtd-clarify-item ()
-  "Process item at point through org-gtd."
+(defun org-gtd-clarify-item (&optional marker window-config)
+  "Process item at point through org-gtd.
+
+MARKER must be a marker pointing to an org heading.
+WINDOW-CONFIG is the window config to set after clarification finishes."
   (declare (modes org-mode)) ;; for 27.2 compatibility
   (interactive)
-  (let ((processing-buffer (org-gtd-wip--get-buffer))
-        (window-config (current-window-configuration))
-        (source-heading-marker (point-marker)))
-    (org-gtd-wip--maybe-initialize-buffer-contents processing-buffer)
+  (let* ((window-config (or window-config (current-window-configuration)))
+         (source-heading-marker (or marker (point-marker)))
+         (clarify-id (org-gtd-id-get-create source-heading-marker))
+         (processing-buffer (org-gtd-wip--get-buffer clarify-id)))
+    (org-gtd-wip--maybe-initialize-buffer-contents source-heading-marker processing-buffer)
     (with-current-buffer processing-buffer
+      (org-gtd-clarify-mode 1)
       (setq-local org-gtd-clarify--window-config window-config
                   org-gtd-clarify--source-heading-marker source-heading-marker
-                  org-gtd-clarify--clarify-id (org-gtd-id-get-create)))
+                  org-gtd-clarify--clarify-id clarify-id))
     (org-gtd-clarify-setup-windows processing-buffer)))
 
 (defun org-gtd-clarify-switch-to-buffer ()
@@ -158,19 +161,14 @@ The file shown can be configured in `org-gtd-horizons-file'."
 
 ;;;;; Public
 
-(defun org-gtd-clarify-inbox-item ()
+(defun org-gtd-clarify-inbox-item (marker window-config)
   "Process item at point through org-gtd.
-This function is called through the inbox clarification process."
-  (org-gtd-clarify-item)
-  (setq-local org-gtd-clarify--inbox-p t))
+This function is called through the inbox clarification process.
 
-(defun org-gtd-clarify-item-at-marker (marker)
-  "MARKER must be a marker pointing to an org heading."
-  (let ((heading-buffer (marker-buffer marker))
-        (heading-position (marker-position marker)))
-    (with-current-buffer heading-buffer
-      (goto-char heading-position)
-      (org-gtd-clarify-item))))
+MARKER must be a marker pointing to an org heading.
+WINDOW-CONFIG is the window config to set after clarification finishes."
+  (org-gtd-clarify-item marker window-config)
+  (setq-local org-gtd-clarify--inbox-p t))
 
 (defun org-gtd-clarify-project-insert-template ()
   "Insert user-provided template under item at point."
