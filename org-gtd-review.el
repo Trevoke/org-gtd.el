@@ -105,7 +105,7 @@ mostly of value for testing purposes."
         (org-agenda nil "g"))))
 
 (defun org-gtd-review-stuck-delegated-items ()
-  "Agenda view with all invalid Calendar actions."
+  "Agenda view with all invalid delegated actions."
   (interactive)
   (with-org-gtd-context
       (let ((org-agenda-custom-commands
@@ -119,7 +119,7 @@ mostly of value for testing purposes."
         (org-agenda nil "g"))))
 
 (defun org-gtd-review-stuck-habit-items ()
-  "Agenda view with all invalid Calendar actions."
+  "Agenda view with all invalid habit actions."
   (interactive)
   (with-org-gtd-context
       (let ((org-agenda-custom-commands
@@ -131,7 +131,7 @@ mostly of value for testing purposes."
         (org-agenda nil "g"))))
 
 (defun org-gtd-review-stuck-incubated-items ()
-  "Agenda view with all invalid Calendar actions."
+  "Agenda view with all invalid incubated actions."
   (interactive)
   (with-org-gtd-context
       (let ((org-agenda-custom-commands
@@ -140,6 +140,23 @@ mostly of value for testing purposes."
                        ((org-agenda-skip-function
                          'org-gtd-skip-unless-timestamp-empty-or-invalid)
                         (org-agenda-skip-additional-timestamps-same-entry t))))))))
+        (org-agenda nil "g"))))
+
+(defun org-gtd-review-missed-items ()
+  "Agenda view with all incubated or delegated actions whose date is in the past."
+  (interactive)
+  (with-org-gtd-context
+      (let ((org-agenda-custom-commands
+             '(("g" "foobar"
+                ((tags "ORG_GTD=\"Incubated\"+ITEM<>\"Incubate\"|"
+                       ((org-agenda-skip-function
+                         'org-gtd-skip-unless-timestamp-in-the-past)
+                        (org-agenda-skip-additional-timestamp-same-entry t)))
+                 (tags (format "+TODO=\"%s\"" org-gtd-wait)
+                       ((org-agenda-skip-function
+                         'org-gtd-skip-unless-timestamp-in-the-past)
+                        (org-agenda-skip-additional-timestamps-same-entry t)))
+                 )))))
         (org-agenda nil "g"))))
 
 ;;;###autoload

@@ -797,6 +797,7 @@ Sometimes things break. The following functions will help you find these items:
 - ~org-gtd-review-stuck-delegated-items~
 - ~org-gtd-review-stuck-single-action-items~
 - ~org-gtd-review-stuck-projects~
+- ~org-gtd-review-missed-items~
 
 ** Projects without a NEXT item
 
