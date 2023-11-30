@@ -27,6 +27,7 @@
 
 ;;;; Requirements
 
+(require 'f)
 (require 'org-agenda-property)
 
 (require 'org-gtd-backward-compatibility)
