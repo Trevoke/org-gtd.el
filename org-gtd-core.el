@@ -171,9 +171,7 @@ See `org-todo-keywords' for definition."
   "Wrap BODY... in this macro to inherit the org-gtd settings for your logic."
   (declare (debug t) (indent 2))
   `(progn
-     (require 'org-gtd-archive)
-     (require 'org-gtd-projects)
-     (require 'org-gtd-delegate)
+     (require 'org-gtd)
      (let* ((org-use-property-inheritance "ORG_GTD")
             (org-todo-keywords `((sequence ,(string-join `(,org-gtd-next ,org-gtd-next-suffix))
                                            ,(string-join `(,org-gtd-todo ,org-gtd-todo-suffix))
