@@ -46,3 +46,17 @@
     (with-current-buffer buffer
       (revert-buffer t t)))
   (kill-buffer buffer))
+
+(defun ogt--recursive-eldev-test (file)
+  (unless (file-readable-p (file-name-concat "test" file))
+    (error "Cannot find or read file %s" file))
+  (with-temp-buffer
+    (prog1 (call-process
+            eldev-shell-command
+            nil
+            t
+            nil
+            "test"
+            "-f"
+            file)
+      (princ (buffer-substring 1 (point-max))))))
