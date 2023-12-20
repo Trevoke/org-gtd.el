@@ -27,6 +27,7 @@
 
 ;;;; Requirements
 
+(require 'f)
 (require 'org-agenda-property)
 
 (require 'org-gtd-backward-compatibility)
@@ -160,11 +161,6 @@ See `org-todo-keywords' for definition."
 
 ;;;; Variables
 
-(defvar org-gtd-archive-location)
-(defvar org-gtd-delegate-property)
-(defvar org-gtd-project-headings)
-(defvar org-gtd-stuck-projects)
-
 (defvar-local org-gtd--loading-p nil
   "`Org-gtd' sets this variable after it has changed the state in this buffer.")
 
@@ -174,28 +170,30 @@ See `org-todo-keywords' for definition."
 (defmacro with-org-gtd-context (&rest body)
   "Wrap BODY... in this macro to inherit the org-gtd settings for your logic."
   (declare (debug t) (indent 2))
-  `(let* ((org-use-property-inheritance "ORG_GTD")
-          (org-todo-keywords `((sequence ,(string-join `(,org-gtd-next ,org-gtd-next-suffix))
-                                         ,(string-join `(,org-gtd-todo ,org-gtd-todo-suffix))
-                                         ,(string-join `(,org-gtd-wait ,org-gtd-wait-suffix))
-                                         "|"
-                                         ,(string-join `(,org-gtd-done ,org-gtd-done-suffix))
-                                         ,(string-join `(,org-gtd-canceled ,org-gtd-canceled-suffix)))))
-          ;; (org-log-done 'time)
-          ;; (org-log-done-with-time t)
-          ;; (org-log-refile 'time)
-          (org-archive-location (funcall org-gtd-archive-location))
-          ;(org-refile-use-outline-path nil)
-          (org-stuck-projects org-gtd-stuck-projects)
-          (org-odd-levels-only nil)
-          (org-agenda-files (org-gtd-core--agenda-files))
-          (org-agenda-property-list `(,org-gtd-delegate-property)))
-     (unwind-protect
+  `(progn
+     (require 'org-gtd)
+     (let* ((org-use-property-inheritance "ORG_GTD")
+            (org-todo-keywords `((sequence ,(string-join `(,org-gtd-next ,org-gtd-next-suffix))
+                                           ,(string-join `(,org-gtd-todo ,org-gtd-todo-suffix))
+                                           ,(string-join `(,org-gtd-wait ,org-gtd-wait-suffix))
+                                           "|"
+                                           ,(string-join `(,org-gtd-done ,org-gtd-done-suffix))
+                                           ,(string-join `(,org-gtd-canceled ,org-gtd-canceled-suffix)))))
+            ;; (org-log-done 'time)
+            ;; (org-log-done-with-time t)
+            ;; (org-log-refile 'time)
+            (org-archive-location (funcall org-gtd-archive-location))
+                                        ;(org-refile-use-outline-path nil)
+            (org-stuck-projects org-gtd-stuck-projects)
+            (org-odd-levels-only nil)
+            (org-agenda-files (org-gtd-core--agenda-files))
+            (org-agenda-property-list `(,org-gtd-delegate-property)))
+       (unwind-protect
+           (progn
+             (advice-add 'org-agenda-files :filter-return #'org-gtd-core--uniq)
+             ,@body)
          (progn
-           (advice-add 'org-agenda-files :filter-return #'org-gtd-core--uniq)
-           ,@body)
-       (progn
-         (advice-remove 'org-agenda-files #'org-gtd-core--uniq)))))
+           (advice-remove 'org-agenda-files #'org-gtd-core--uniq))))))
 
 ;;;; Functions
 
