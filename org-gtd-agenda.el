@@ -108,10 +108,18 @@ This assumes all GTD files are also agenda files."
 
 ;;;;; Private
 
+(defun org-gtd--replace-link-with-description (text)
+  "Replace all org-mode links in the given text with their descriptions."
+    (replace-regexp-in-string org-link-bracket-re "\\2" text))
+
+  ;; (while (string-match org-link-bracket-re text)
+  ;;   (let ((description (match-string 3 text)))
+  ;;     (setq text (replace-match description nil t text))))
+  ;; text)
+
 (defun org-gtd--truncate-project-to-width (st)
   "Truncates the string to the width indicated by org-gtd-engage-prefix-width."
-  (truncate-string-to-width (string-trim st) org-gtd-engage-prefix-width nil ?\s  "…")
-  )
+  (truncate-string-to-width (string-trim st) org-gtd-engage-prefix-width nil ?\s  "…"))
 
 (defun org-gtd-agenda--prefix-format ()
   "Format prefix for items in agenda buffer."
@@ -126,11 +134,12 @@ This assumes all GTD files are also agenda files."
      ;; if level 3, use the parent
      ;; otherwise if it has category, use category
      ;; else "no project" so we avoid failing
-     (cond
-      ((eq level 3) (replace-regexp-in-string tally-cookie-regexp "" parent-title))
-      (category     category)
-      (t  "no project")
-      ))))
+     (org-gtd--replace-link-with-description
+      (cond
+       ((eq level 3) (replace-regexp-in-string tally-cookie-regexp "" parent-title))
+       (category     category)
+       (t  "no project")
+       )))))
 
 ;;;; Footer
 
