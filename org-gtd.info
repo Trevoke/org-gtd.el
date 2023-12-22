@@ -1465,6 +1465,7 @@ these items:
    • ‘org-gtd-review-stuck-delegated-items’
    • ‘org-gtd-review-stuck-single-action-items’
    • ‘org-gtd-review-stuck-projects’
+   • ‘org-gtd-review-missed-items’
 
 
 File: org-gtd.info,  Node: Projects without a NEXT item,  Next: I can't create a project when clarifying an inbox item!,  Prev: Finding lost tasks,  Up: Troubleshooting

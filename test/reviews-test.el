@@ -45,4 +45,55 @@
             (expect (ogt--current-buffer-raw-text) :to-match next-actions)
             (expect (ogt--current-buffer-raw-text) :to-match reminders)
             (expect (ogt--current-buffer-raw-text) :to-match routines)
-            (expect (ogt--current-buffer-raw-text) :to-match incubated-items)))))))
+            (expect (ogt--current-buffer-raw-text) :to-match incubated-items))))))
+ (describe
+  "Missed events"
+
+  (it "shows unfinished items that have a timestamp in the past"
+      (let ((task-buffer (ogt--create-org-file-in-org-gtd-dir
+                          "foo"
+                          (org-file-contents
+                           "test/fixtures/gtd-file.org"))))
+        (org-gtd-review-missed-items "2021-11-20")
+        (let ((agenda-contents (ogt--buffer-string org-agenda-buffer)))
+          ;; these are *DONE OR CANCELED*
+          (expect agenda-contents :not :to-match "not worth thinking about")
+          (expect agenda-contents :not :to-match "write a nice test")
+          ;; these are *IN THE FUTURE*
+          (expect agenda-contents :not :to-match "repeating item")
+          (expect agenda-contents :not :to-match "For later")
+          ;; these are *UNDONE IN THE PAST*
+          (expect agenda-contents :to-match "probably overdue by now")
+          (expect agenda-contents :to-match "Time to review this one")
+          ;; this is *OVERDUE DELEGATED*
+          (expect agenda-contents :to-match "Overdue delegated")
+          )))))
+
+
+;; (let* ((yesterday (format-org-date -1))
+;;        (tomorrow (format-org-date 1))
+;;        (mock-org-content (concat
+;;                           "* Incubate
+;; :PROPERTIES:
+;; :ORG_GTD: Incubated
+;; :END:
+;; ** DONE write a test
+;; :PROPERTIES:
+;; :ORG_GTD_TIMESTAMP: " yesterday "
+;; :END:
+
+;; * Actions
+;; :PROPERTIES:
+;; :ORG_GTD: Actions
+;; :END:
+;; ** WAIT Wait for someone
+;; :PROPERTIES:
+;; :ORG_GTD_TIMESTAMP: " tomorrow "
+;; :DELEGATED_TO: future me
+;; :END:"
+;;  )))
+
+;;   (with-temp-buffer
+;;     (org-mode)
+;;     (insert mock-org-content)
+;;     (setq temp-org-buffer (current-buffer))))

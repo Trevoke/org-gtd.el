@@ -1328,6 +1328,8 @@ Sometimes things break. The following functions will help you find these items:
 @code{org-gtd-review-stuck-single-action-items}
 @item
 @code{org-gtd-review-stuck-projects}
+@item
+@code{org-gtd-review-missed-items}
 @end itemize
 
 @node Projects without a NEXT item
