@@ -39,6 +39,10 @@
     (if non-nil-funcs
         (funcall (car non-nil-funcs)))))
 
+(defun org-gtd-skip-unless-in-progress ()
+    "Skip-function: only keep if it's not one of the DONE keywords"
+  (org-agenda-skip-entry-if 'todo org-done-keywords))
+
 (defun org-gtd-skip-if-habit ()
   "Skip-function: only keep this if it's a habit."
   (let ((subtree-end (save-excursion (org-end-of-subtree t))))

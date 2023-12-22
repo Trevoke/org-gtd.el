@@ -179,6 +179,8 @@ See `org-todo-keywords' for definition."
                                            "|"
                                            ,(string-join `(,org-gtd-done ,org-gtd-done-suffix))
                                            ,(string-join `(,org-gtd-canceled ,org-gtd-canceled-suffix)))))
+            (org-done-keywords '(,org-gtd-done ,org-gtd-canceled))
+            (org-not-done-keywords '(,org-gtd-next ,org-gtd-todo ,org-gtd-wait))
             ;; (org-log-done 'time)
             ;; (org-log-done-with-time t)
             ;; (org-log-refile 'time)

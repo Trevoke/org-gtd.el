@@ -91,6 +91,47 @@ mostly of value for testing purposes."
           (org-agenda nil "a")
           (goto-char (point-min))))))
 
+(defun org-gtd-review-missed-items (&optional start-date)
+  "Agenda view with all incubated, delegated, or calendar items whose dates
+are in the past.
+
+You can pass an optional START-DATE to tell the code what to use as the first
+day for the agenda.  It is mostly of value for testing purposes."
+  (interactive)
+  (org-gtd-core-prepare-agenda-buffers)
+  (with-org-gtd-context
+      (let* ((start-date (or start-date (format-time-string "%Y-%m-%d")))
+            (org-agenda-custom-commands
+             `(("g" "foobar"
+                (
+                 (tags ,(format "+ORG_GTD=\"%s\"+LEVEL=2" org-gtd-calendar)
+                       ((org-agenda-overriding-header "Missed calendar events")
+                        (org-agenda-skip-function '(org-gtd-skip-AND
+                                                    '(org-gtd-skip-unless-timestamp-in-the-past
+                                                      org-gtd-skip-unless-in-progress
+                                                      )))))
+                 (tags ,(format "+ORG_GTD=\"%s\"+LEVEL=2" org-gtd-incubate)
+                       ((org-agenda-overriding-header "Incubated events to review")
+                        (org-agenda-start-day ,start-date)
+                        (org-agenda-skip-function
+                         '(org-gtd-skip-AND
+                           '(org-gtd-skip-unless-timestamp-in-the-past
+                             org-gtd-skip-unless-in-progress
+                             )))
+                        (org-agenda-skip-additional-timestamp-same-entry t)
+                        (org-agenda-show-all-dates nil)
+                        (org-agenda-show-future-repeats nil)))
+                 (tags (format "+TODO=\"%s\"" org-gtd-wait)
+                       ((org-agenda-overriding-header "Missed delegated events")
+                        (org-agenda-start-day ,start-date)
+                        (org-agenda-skip-function
+                         'org-gtd-skip-unless-timestamp-in-the-past)
+                        (org-agenda-skip-additional-timestamps-same-entry t)
+                        (org-agenda-show-all-dates nil)
+                        (org-agenda-show-future-repeats nil)))
+                 )))))
+        (org-agenda nil "g"))))
+
 (defun org-gtd-review-stuck-calendar-items ()
   "Agenda view with all invalid Calendar actions."
   (interactive)
@@ -140,23 +181,6 @@ mostly of value for testing purposes."
                        ((org-agenda-skip-function
                          'org-gtd-skip-unless-timestamp-empty-or-invalid)
                         (org-agenda-skip-additional-timestamps-same-entry t))))))))
-        (org-agenda nil "g"))))
-
-(defun org-gtd-review-missed-items ()
-  "Agenda view with all incubated or delegated actions whose date is in the past."
-  (interactive)
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands
-             '(("g" "foobar"
-                ((tags "ORG_GTD=\"Incubated\"+ITEM<>\"Incubate\"|"
-                       ((org-agenda-skip-function
-                         'org-gtd-skip-unless-timestamp-in-the-past)
-                        (org-agenda-skip-additional-timestamp-same-entry t)))
-                 (tags (format "+TODO=\"%s\"" org-gtd-wait)
-                       ((org-agenda-skip-function
-                         'org-gtd-skip-unless-timestamp-in-the-past)
-                        (org-agenda-skip-additional-timestamps-same-entry t)))
-                 )))))
         (org-agenda nil "g"))))
 
 ;;;###autoload

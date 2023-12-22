@@ -76,8 +76,13 @@ SCHEDULED: <2021-12-04 Sat .+1d>
 :CATEGORY: Home
 :END:
 
-** WAIT Wait for someone
+** WAIT Overdue delegated
+:PROPERTIES:
+:ORG_GTD_TIMESTAMP: <2021-11-18 Sun>
+:DELEGATED_TO: future me
+:END:
 
+** WAIT Wait for someone
 :PROPERTIES:
 :ORG_GTD_TIMESTAMP: <2025-03-23 Sun>
 :DELEGATED_TO: future me
@@ -91,6 +96,11 @@ SCHEDULED: <2021-12-04 Sat .+1d>
 * Incubate
 :PROPERTIES:
 :ORG_GTD:  Incubated
+:END:
+** Time to review this one
+:PROPERTIES:
+:ORG_GTD_TIMESTAMP: <2021-11-19 Thu>
+:CATEGORY: Home
 :END:
 ** For later
 :PROPERTIES:
