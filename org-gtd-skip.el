@@ -23,6 +23,30 @@
 ;; Building agenda views is complex, and filtering them effectively can truly
 ;; require its own language.  This is that language.
 ;;
+;; HERE, COPIED, IS DOCUMENTATION FOR `org-agenda-skip-function',
+;; because it reminds us what the API needs to be for all of these helpers.
+;;
+;; ----
+;; Function to be called at each match during agenda construction.
+;; If this function returns nil, the current match should not be skipped.
+;; Otherwise, the function must return a position from where the search
+;; should be continued.
+
+;; This may also be a Lisp form that will be evaluated.  Useful
+;; forms include ‘org-agenda-skip-entry-if’ and
+;; ‘org-agenda-skip-subtree-if’.  See the Info node ‘(org) Special
+;; Agenda Views’ for more details and examples.
+
+;; Never set this variable using ‘setq’ or similar, because then it
+;; will apply to all future agenda commands.  If you want a global
+;; skipping condition, use the option ‘org-agenda-skip-function-global’
+;; instead.
+
+;; The correct way to use ‘org-agenda-skip-function’ is to bind it with ‘let’
+;; to scope it dynamically into the agenda-constructing command.
+;; A good way to set it is through options in ‘org-agenda-custom-commands’.
+;; -----
+
 ;;; Code:
 
 ;;;; Requirements
@@ -39,8 +63,14 @@
     (if non-nil-funcs
         (funcall (car non-nil-funcs)))))
 
+(defun org-gtd-keep-ANY (funcs)
+  "Keep if any FUNCS  want to keep this entry."
+  (let ((non-nil-funcs (seq-filter (lambda (x) (funcall x)) funcs)))
+    (if (= (length funcs) (length non-nil-funcs))
+        (funcall (car non-nil-funcs)))))
+
 (defun org-gtd-skip-unless-in-progress ()
-    "Skip-function: only keep if it's not one of the DONE keywords"
+  "Skip-function: only keep if it's not one of the DONE keywords"
   (org-agenda-skip-entry-if 'todo org-done-keywords))
 
 (defun org-gtd-skip-if-habit ()

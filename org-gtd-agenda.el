@@ -65,11 +65,6 @@ This is where the project name is displayed, on the left side."
                  (todo org-gtd-next
                        ((org-agenda-overriding-header "All actions ready to be executed.")
                         (org-agenda-prefix-format
-                         '((todo . ,project-format-prefix)))))
-                 (todo org-gtd-wait
-                       ((org-agenda-todo-ignore-with-date t)
-                        (org-agenda-overriding-header "Delegated/Blocked items")
-                        (org-agenda-prefix-format
                          '((todo . ,project-format-prefix))))))))))
         (org-agenda nil "g")
         (goto-char (point-min)))))
