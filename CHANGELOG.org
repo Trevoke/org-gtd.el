@@ -1,8 +1,11 @@
 * 3.1.0 (unstable)
+** WIP buffer is now a major mode derived from org-mode
+No action is currently required. This does mean we make obsolete ~org-gtd-clarify-map~ in favor of ~org-gtd-wip-mode-map~.
+This handles #178 even though technically that is incorrect user code, but since no one thinks of org-mode buffers as being disconnected from files, this is probably a good idea anyway, and it gives me a clean place for additional setup in the WIP buffers.
 ** New variable to configure agenda prefix width in engage view
 ** Fix edge case of processing empty heading ( #169 )
 ** Better messages in minibuffer
-- discover ~with-temp-message~ to hide things we don't care about.
+- use ~with-temp-message~ to hide things we don't care about.
 ** Adding task to a project works ( #160 )
 - Now uses org-refile like it was meant to be used
 - Now works for projects outside ~org-gtd-directory~.
