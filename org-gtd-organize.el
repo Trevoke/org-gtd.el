@@ -136,6 +136,31 @@ Valid members of LIST include:
 
 ;;;;; Private
 
+(defun org-gtd-organize--call (func)
+  "Wrap FUNC, which does the real work, to keep Emacs clean.
+This handles the internal bits of `org-gtd'."
+  (goto-char (point-min))
+  (when (org-before-first-heading-p)
+    (org-next-visible-heading 1))
+  (catch 'org-gtd-error
+    (with-org-gtd-context
+        (save-excursion (funcall func)))
+    (let ((loop-p (and (boundp org-gtd-clarify--inbox-p) org-gtd-clarify--inbox-p))
+          (task-id org-gtd-clarify--clarify-id)
+          (window-config org-gtd-clarify--window-config)
+          (buffer (marker-buffer org-gtd-clarify--source-heading-marker))
+          (position (marker-position org-gtd-clarify--source-heading-marker)))
+      (with-current-buffer buffer
+        (goto-char position)
+        (with-temp-message ""
+          (org-cut-subtree)))
+      (set-window-configuration window-config)
+      (kill-buffer (org-gtd-wip--buffer-name task-id))
+      (if loop-p (org-gtd-process-inbox))
+      ;; Save buffers if the user has set the option
+      (when org-gtd-save-after-organize
+        (save-some-buffers t)))))
+
 (define-error
   'org-gtd-invalid-organize-action-type-error
   "At least one element of %s is not in %s"

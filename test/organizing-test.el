@@ -93,3 +93,15 @@
         (setq-local org-gtd--organize-type 'trash)
         (expect (org-gtd-organize-type-member-p '(incubated quick-action delegated))
                 :not :to-be-truthy)))))
+(describe "Saving buffers after organizing"
+  (it "saves buffers if org-gtd-save-after-organize is t"
+    (let ((org-gtd-save-after-organize t))
+      (spy-on 'save-some-buffers :and-call-through)
+      (org-gtd-organize--call (lambda () (insert "Test")))
+      (expect 'save-some-buffers :to-have-been-called-with t)))
+
+  (it "does not save buffers if org-gtd-save-after-organize is nil"
+    (let ((org-gtd-save-after-organize nil))
+      (spy-on 'save-some-buffers)
+      (org-gtd-organize--call (lambda () (insert "Test")))
+      (expect 'save-some-buffers :not :to-have-been-called))))

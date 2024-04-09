@@ -154,6 +154,13 @@ See `org-todo-keywords' for definition."
   :package-version '(org-gtd . "3.0")
   :type 'string)
 
+;; New user option to control buffer saving behavior after organizing
+(defcustom org-gtd-save-after-organize nil
+  "If non-nil, save all modified buffers after each organize step."
+  :group 'org-gtd
+  :type 'boolean
+  :package-version '(org-gtd . "3.1"))
+
 ;;;; Constants
 
 (defconst org-gtd-timestamp "ORG_GTD_TIMESTAMP"
