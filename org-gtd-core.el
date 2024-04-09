@@ -164,12 +164,30 @@ See `org-todo-keywords' for definition."
 (defvar-local org-gtd--loading-p nil
   "`Org-gtd' sets this variable after it has changed the state in this buffer.")
 
+;;;; Commands
+
+(defun org-gtd-set-event-date-on-heading-at-point ()
+  (interactive)
+  (let ((old-timestamp (org-entry-get nil "ORG_GTD_TIMESTAMP"))
+        (new-timestamp (org-read-date nil t)))
+    ;; Replace the ORG_GTD_TIMESTAMP property
+    (org-entry-put nil "ORG_GTD_TIMESTAMP" new-timestamp)
+
+    ;; Move to the end of the current heading
+    (save-excursion
+      (org-end-of-subtree)
+      (if (search-backward old-timestamp nil t)
+          (replace-match new-timestamp)
+        ;; If the timestamp is not found, insert it at the end of the body
+        (insert "\n" new-timestamp)))))
+
 ;;;; Macros
 
 ;;;###autoload
 (defmacro with-org-gtd-context (&rest body)
   "Wrap BODY... in this macro to inherit the org-gtd settings for your logic."
   (declare (debug t) (indent 2))
+<<<<<<< Updated upstream
   `(progn
      (require 'org-gtd)
      (let* ((org-use-property-inheritance "ORG_GTD")
@@ -194,6 +212,25 @@ See `org-todo-keywords' for definition."
            (progn
              (advice-add 'org-agenda-files :filter-return #'org-gtd-core--uniq)
              ,@body)
+=======
+  `(let* ((org-use-property-inheritance "ORG_GTD")
+          (org-todo-keywords `((sequence ,(string-join `(,org-gtd-next ,org-gtd-next-suffix))
+                                         ,(string-join `(,org-gtd-todo ,org-gtd-todo-suffix))
+                                         ,(string-join `(,org-gtd-wait ,org-gtd-wait-suffix))
+                                         "|"
+                                         ,(string-join `(,org-gtd-done ,org-gtd-done-suffix))
+                                         ,(string-join `(,org-gtd-canceled ,org-gtd-canceled-suffix)))))
+          ;; (org-log-done 'time)
+          ;; (org-log-done-with-time t)
+          ;; (org-log-refile 'time)
+          (org-archive-location (funcall org-gtd-archive-location))
+                                        ;(org-refile-use-outline-path nil)
+          (org-stuck-projects org-gtd-stuck-projects)
+          (org-odd-levels-only nil)
+          (org-agenda-files (org-gtd-core--agenda-files))
+          (org-agenda-property-list `(,org-gtd-delegate-property)))
+     (unwind-protect
+>>>>>>> Stashed changes
          (progn
            (advice-remove 'org-agenda-files #'org-gtd-core--uniq))))))
 
