@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(eldev doctor:*)",
+      "Bash(eldev dependencies:*)",
+      "Bash(eldev test:*)",
+      "Bash(eldev -d test --file=\"test/core-test.el\")",
+      "Bash(eldev lint:*)",
+      "Bash(eldev compile:*)"
+    ],
+    "deny": []
+  }
+}
