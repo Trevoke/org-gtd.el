@@ -7,6 +7,8 @@
 /dev/.config/
 /doc/org-gtd.info
 /dev/gtd
+/gtd-test
 dist/
 org-gtd-autoloads.el
 .idea
+*.elc
