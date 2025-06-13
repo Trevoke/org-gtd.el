@@ -1,6 +1,6 @@
 ;;; org-gtd-knowledge.el --- Define logic for handling knowledge in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -29,6 +29,7 @@
 (require 'org-gtd-core)
 (require 'org-gtd-archive)
 (require 'org-gtd-clarify)
+(require 'org-gtd-configure)
 
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
@@ -56,7 +57,7 @@ clarify step, before you call `org-gtd-organize').")
 
 (defun org-gtd-knowledge--apply ()
   "Once the user has filed this knowledge, we can execute this logic."
-  (org-todo org-gtd-done)
+  (org-gtd-configure-item (point) :knowledge)
   (setq-local org-gtd--organize-type 'knowledge)
   (org-gtd-organize-apply-hooks)
   (org-gtd-archive-item-at-point))

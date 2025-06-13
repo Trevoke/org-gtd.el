@@ -1,6 +1,6 @@
 ;;; org-gtd-delegate.el --- logic to delegate items -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -32,6 +32,7 @@
 (require 'org-gtd-single-action)
 (require 'org-gtd-clarify)
 (require 'org-gtd-refile)
+(require 'org-gtd-configure)
 
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
@@ -93,21 +94,33 @@ If you call this interactively, the function will ask for the name of the
 person to whom to delegate by using `org-gtd-delegate-read-func'."
   (declare (modes org-mode)) ;; for 27.2 compatibility
   (interactive)
-  (let ((delegated-to (or delegated-to
-                          (apply org-gtd-delegate-read-func nil)))
-        (date (or checkin-date
-                  (org-read-date t nil nil "When do you want to check in on this task? ")))
-        (org-inhibit-logging 'note))
-    (org-set-property org-gtd-delegate-property delegated-to)
-    (org-entry-put (point) org-gtd-timestamp (format "<%s>" date))
-    (save-excursion
-      (org-end-of-meta-data t)
-      (open-line 1)
-      (insert (format "<%s>" date)))
-    (org-todo org-gtd-wait)
-    (save-excursion
-      (goto-char (org-log-beginning t))
-      (insert (format "programmatically delegated to %s\n" delegated-to)))))
+  (let ((org-inhibit-logging 'note))
+    (if (and delegated-to checkin-date)
+        ;; Non-interactive: set properties directly
+        (progn
+          (org-entry-put (point) "ORG_GTD" "Action")
+          (org-entry-put (point) "TODO" org-gtd-wait)
+          (org-entry-put (point) "ID" (org-gtd-id-get-create))
+          (org-entry-put (point) org-gtd-delegate-property delegated-to)
+          (org-entry-put (point) org-gtd-timestamp (format "<%s>" checkin-date))
+          ;; Insert timestamp in content
+          (save-excursion
+            (org-end-of-meta-data t)
+            (open-line 1)
+            (insert (format "<%s>" checkin-date))))
+      ;; Interactive: use configuration system
+      (org-gtd-configure-item (point) :delegated)
+      ;; Insert timestamp in content
+      (let ((timestamp (org-entry-get (point) org-gtd-timestamp)))
+        (save-excursion
+          (org-end-of-meta-data t)
+          (open-line 1)
+          (insert timestamp))))
+    ;; Add delegation note
+    (let ((person (org-entry-get (point) org-gtd-delegate-property)))
+      (save-excursion
+        (goto-char (org-log-beginning t))
+        (insert (format "programmatically delegated to %s\n" person))))))
 
 ;;;; Functions
 

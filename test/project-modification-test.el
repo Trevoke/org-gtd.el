@@ -10,7 +10,9 @@
 
  :var ((inhibit-message t))
 
- (before-each (ogt--configure-emacs))
+ (before-each
+  (ogt--configure-emacs)
+  (setq org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL"))))
  (after-each (ogt--close-and-delete-files))
 
  (describe

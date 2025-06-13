@@ -1,6 +1,6 @@
 ;;; org-gtd-single-action.el --- Define single action items in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -26,8 +26,10 @@
 
 ;;;; Requirements
 
+(require 'org-gtd-core)
 (require 'org-gtd-clarify)
 (require 'org-gtd-refile)
+(require 'org-gtd-configure)
 
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
@@ -74,7 +76,7 @@ TOPIC is what you want to see in the agenda view."
 
 (defun org-gtd-single-action--apply ()
   "Item at point is a one-off action, ready to be executed."
-  (org-todo org-gtd-next)
+  (org-gtd-configure-item (point) :next)
   (setq-local org-gtd--organize-type 'single-action)
   (org-gtd-organize-apply-hooks)
   (org-gtd-refile--do org-gtd-action org-gtd-action-template))

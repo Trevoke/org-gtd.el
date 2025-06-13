@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 (require 'buttercup)
 (setq org-gtd-update-ack "3.0.0")
 (load "org-gtd-autoloads")
@@ -10,5 +12,3 @@
 
  (it "org-gtd-review-stuck-projects"
      (org-gtd-review-stuck-projects)))
-
-

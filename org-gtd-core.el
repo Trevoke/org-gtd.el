@@ -1,6 +1,6 @@
 ;;; org-gtd-core.el --- Core code for org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -31,6 +31,33 @@
 (require 'org-agenda-property)
 
 (require 'org-gtd-backward-compatibility)
+
+;;;; Forward declarations
+(defvar org-gtd-delegate-property)
+(defvar org-gtd-stuck-projects)
+(defvar org-gtd-archive-location)
+(defvar org-gtd-projects)
+
+;;;; Essential variables for autoload compatibility
+;; These provide fallback values when the full modules aren't loaded
+(unless (boundp 'org-gtd-archive-location)
+  (defvar org-gtd-archive-location
+    (lambda ()
+      (let* ((year (number-to-string (caddr (calendar-current-date))))
+             (full-org-gtd-path (expand-file-name org-gtd-directory))
+             (filename (format "gtd_archive_%s" year))
+             (filepath (f-join full-org-gtd-path filename)))
+        (string-join `(,filepath "::" "datetree/"))))))
+
+(unless (boundp 'org-gtd-stuck-projects)
+  (defvar org-gtd-stuck-projects
+    '("ORG_GTD=\"Projects\""
+      ("TODO" "NEXT")
+      ("@computer" "@phone" "@travel" "@agenda")
+      "")))
+
+(unless (boundp 'org-gtd-delegate-property)
+  (defvar org-gtd-delegate-property "DELEGATED_TO"))
 
 ;;;; Customization
 
@@ -194,39 +221,15 @@ See `org-todo-keywords' for definition."
 (defmacro with-org-gtd-context (&rest body)
   "Wrap BODY... in this macro to inherit the org-gtd settings for your logic."
   (declare (debug t) (indent 2))
-<<<<<<< Updated upstream
-  `(progn
-     (require 'org-gtd)
-     (let* ((org-use-property-inheritance "ORG_GTD")
-            (org-todo-keywords `((sequence ,(string-join `(,org-gtd-next ,org-gtd-next-suffix))
-                                           ,(string-join `(,org-gtd-todo ,org-gtd-todo-suffix))
-                                           ,(string-join `(,org-gtd-wait ,org-gtd-wait-suffix))
-                                           "|"
-                                           ,(string-join `(,org-gtd-done ,org-gtd-done-suffix))
-                                           ,(string-join `(,org-gtd-canceled ,org-gtd-canceled-suffix)))))
-            (org-done-keywords '(,org-gtd-done ,org-gtd-canceled))
-            (org-not-done-keywords '(,org-gtd-next ,org-gtd-todo ,org-gtd-wait))
-            ;; (org-log-done 'time)
-            ;; (org-log-done-with-time t)
-            ;; (org-log-refile 'time)
-            (org-archive-location (funcall org-gtd-archive-location))
-                                        ;(org-refile-use-outline-path nil)
-            (org-stuck-projects org-gtd-stuck-projects)
-            (org-odd-levels-only nil)
-            (org-agenda-files (org-gtd-core--agenda-files))
-            (org-agenda-property-list `(,org-gtd-delegate-property)))
-       (unwind-protect
-           (progn
-             (advice-add 'org-agenda-files :filter-return #'org-gtd-core--uniq)
-             ,@body)
-=======
   `(let* ((org-use-property-inheritance "ORG_GTD")
-          (org-todo-keywords `((sequence ,(string-join `(,org-gtd-next ,org-gtd-next-suffix))
-                                         ,(string-join `(,org-gtd-todo ,org-gtd-todo-suffix))
-                                         ,(string-join `(,org-gtd-wait ,org-gtd-wait-suffix))
+          (org-todo-keywords `((sequence ,(string-join `(,(symbol-value 'org-gtd-next) ,(symbol-value 'org-gtd-next-suffix)))
+                                         ,(string-join `(,(symbol-value 'org-gtd-todo) ,(symbol-value 'org-gtd-todo-suffix)))
+                                         ,(string-join `(,(symbol-value 'org-gtd-wait) ,(symbol-value 'org-gtd-wait-suffix)))
                                          "|"
-                                         ,(string-join `(,org-gtd-done ,org-gtd-done-suffix))
-                                         ,(string-join `(,org-gtd-canceled ,org-gtd-canceled-suffix)))))
+                                         ,(string-join `(,(symbol-value 'org-gtd-done) ,(symbol-value 'org-gtd-done-suffix)))
+                                         ,(string-join `(,(symbol-value 'org-gtd-canceled) ,(symbol-value 'org-gtd-canceled-suffix))))))
+          (org-done-keywords `(,(symbol-value 'org-gtd-done) ,(symbol-value 'org-gtd-canceled)))
+          (org-not-done-keywords `(,(symbol-value 'org-gtd-next) ,(symbol-value 'org-gtd-todo) ,(symbol-value 'org-gtd-wait)))
           ;; (org-log-done 'time)
           ;; (org-log-done-with-time t)
           ;; (org-log-refile 'time)
@@ -237,9 +240,11 @@ See `org-todo-keywords' for definition."
           (org-agenda-files (org-gtd-core--agenda-files))
           (org-agenda-property-list `(,org-gtd-delegate-property)))
      (unwind-protect
->>>>>>> Stashed changes
          (progn
-           (advice-remove 'org-agenda-files #'org-gtd-core--uniq))))))
+           (advice-add 'org-agenda-files :filter-return #'org-gtd-core--uniq)
+           ,@body)
+       (progn
+         (advice-remove 'org-agenda-files #'org-gtd-core--uniq)))))
 
 ;;;; Functions
 
@@ -271,9 +276,9 @@ If BUFFER is nil, use current buffer."
 ;;;;; Private
 
 (define-error
-  'org-gtd-error
-  "Something went wrong with `org-gtd'"
-  'user-error)
+ 'org-gtd-error
+ "Something went wrong with `org-gtd'"
+ 'user-error)
 
 (defun org-gtd-core--agenda-files ()
   "Concatenate `org-agenda-files' variable with `org-gtd-directory' contents."

@@ -1,6 +1,6 @@
 ;;; org-gtd-calendar.el --- Define calendar items in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -26,8 +26,10 @@
 
 ;;;; Requirements
 
+(require 'org-gtd-core)
 (require 'org-gtd-refile)
 (require 'org-gtd-clarify)
+(require 'org-gtd-configure)
 
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
@@ -86,13 +88,27 @@ APPOINTMENT-DATE as a YYYY-MM-DD string."
 
 You can pass APPOINTMENT-DATE as a YYYY-MM-DD string if you want to use this
 non-interactively."
-  (let ((date (or appointment-date
-                  (org-read-date t nil nil "When is this going to happen? "))))
-    (org-entry-put (point) org-gtd-timestamp (format "<%s>" date))
-    (save-excursion
-      (org-end-of-meta-data t)
-      (open-line 1)
-      (insert (format "<%s>" date))))
+
+  (if appointment-date
+      ;; Non-interactive: use provided date
+      (let ((formatted-date (format "<%s>" appointment-date)))
+        ;; Set properties directly
+        (org-entry-put (point) "ORG_GTD" "Calendar")
+        (org-entry-put (point) "ID" (org-gtd-id-get-create))
+        (org-entry-put (point) org-gtd-timestamp formatted-date)
+        ;; Insert timestamp in content
+        (save-excursion
+          (org-end-of-meta-data t)
+          (open-line 1)
+          (insert formatted-date)))
+    ;; Interactive: use configuration system which will prompt
+    (org-gtd-configure-item (point) :calendar)
+    ;; Insert timestamp in content
+    (let ((timestamp (org-entry-get (point) org-gtd-timestamp)))
+      (save-excursion
+        (org-end-of-meta-data t)
+        (open-line 1)
+        (insert timestamp))))
   (setq-local org-gtd--organize-type 'calendar)
   (org-gtd-organize-apply-hooks)
   (org-gtd-refile--do org-gtd-calendar org-gtd-calendar-template))

@@ -1,6 +1,6 @@
 ;;; org-gtd-review.el --- GTD review logic for org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -101,35 +101,32 @@ day for the agenda.  It is mostly of value for testing purposes."
   (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
       (let* ((start-date (or start-date (format-time-string "%Y-%m-%d")))
+             ;; Create specialized skip functions for this date
+             (skip-unless-timestamp-in-past-fn 
+              (lambda () (org-gtd-skip-unless-timestamp-in-the-past-relative-to start-date)))
+             (combined-skip-fn
+              (lambda () (org-gtd-skip-AND
+                          (list skip-unless-timestamp-in-past-fn
+                                'org-gtd-skip-unless-in-progress))))
             (org-agenda-custom-commands
              `(("g" "foobar"
-                (
-                 (tags ,(format "+ORG_GTD=\"%s\"+LEVEL=2" org-gtd-calendar)
+                ((tags ,(format "+ORG_GTD=\"%s\"+LEVEL=2" org-gtd-calendar)
                        ((org-agenda-overriding-header "Missed calendar events")
-                        (org-agenda-skip-function '(org-gtd-skip-AND
-                                                    '(org-gtd-skip-unless-timestamp-in-the-past
-                                                      org-gtd-skip-unless-in-progress
-                                                      )))))
+                        (org-agenda-skip-function ,combined-skip-fn)))
                  (tags ,(format "+ORG_GTD=\"%s\"+LEVEL=2" org-gtd-incubate)
                        ((org-agenda-overriding-header "Incubated events to review")
                         (org-agenda-start-day ,start-date)
-                        (org-agenda-skip-function
-                         '(org-gtd-skip-AND
-                           '(org-gtd-skip-unless-timestamp-in-the-past
-                             org-gtd-skip-unless-in-progress
-                             )))
+                        (org-agenda-skip-function ,combined-skip-fn)
                         (org-agenda-skip-additional-timestamp-same-entry t)
                         (org-agenda-show-all-dates nil)
                         (org-agenda-show-future-repeats nil)))
-                 (tags (format "+TODO=\"%s\"" org-gtd-wait)
+                 (tags ,(format "+TODO=\"%s\"" org-gtd-wait)
                        ((org-agenda-overriding-header "Missed delegated events")
                         (org-agenda-start-day ,start-date)
-                        (org-agenda-skip-function
-                         'org-gtd-skip-unless-timestamp-in-the-past)
+                        (org-agenda-skip-function ,skip-unless-timestamp-in-past-fn)
                         (org-agenda-skip-additional-timestamps-same-entry t)
                         (org-agenda-show-all-dates nil)
-                        (org-agenda-show-future-repeats nil)))
-                 )))))
+                        (org-agenda-show-future-repeats nil))))))))
         (org-agenda nil "g"))))
 
 (defun org-gtd-review-stuck-calendar-items ()

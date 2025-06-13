@@ -1,6 +1,6 @@
 ;;; org-gtd-skip.el --- various org-agenda-skip-functions -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -186,6 +186,18 @@
   (let ((subtree-end (save-excursion (org-end-of-subtree t)))
         (timestamp (org-entry-get (point) "ORG_GTD_TIMESTAMP"))
         (start-of-day (org-gtd-skip--start-of-day (current-time))))
+    (if (and timestamp
+             (time-less-p (org-time-string-to-time timestamp)
+                          start-of-day))
+        nil
+      subtree-end)))
+
+(defun org-gtd-skip-unless-timestamp-in-the-past-relative-to (reference-date)
+  "Skip unless ORG_GTD_TIMESTAMP is in the past relative to REFERENCE-DATE."
+  (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+        (timestamp (org-entry-get (point) "ORG_GTD_TIMESTAMP"))
+        (start-of-day (org-gtd-skip--start-of-day 
+                       (org-time-string-to-time reference-date))))
     (if (and timestamp
              (time-less-p (org-time-string-to-time timestamp)
                           start-of-day))

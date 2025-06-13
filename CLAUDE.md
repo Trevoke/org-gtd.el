@@ -13,20 +13,23 @@ curl -fsSL https://raw.github.com/doublep/eldev/master/webinstall/github-eldev |
 
 ### Testing
 ```bash
-# Run all tests
+# Run all tests (standard - minimal output)
+eldev test -B
+
+# Run all tests with backtraces (debugging)
 eldev test
 
 # Run tests with full debugging (CI command)
 eldev -p -dtT test
 
 # Run specific test file
-eldev test --file="test/organizing-test.el"
+eldev test -B --file="test/organizing-test.el"
 
 # Stop on first failure
-eldev test --stop
+eldev test -B --stop
 
 # Test specific functions (buttercup selectors)
-eldev test "clarify"
+eldev test -B "clarify"
 ```
 
 ### Build and Compilation

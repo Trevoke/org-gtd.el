@@ -1,10 +1,10 @@
 ;;; org-gtd.el --- An implementation of GTD -*- lexical-binding: t; coding: utf-8 -*-
 
-;; Copyright (C) 2019-2023 Aldric Giacomoni
+;; Copyright (C) 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; Homepage: https://github.com/Trevoke/org-gtd.el
-;; Package-Requires: ((emacs "27.2") (org-edna "1.1.2") (f "0.20.0") (org "9.6") (org-agenda-property "1.3.1") (transient "0.3.7"))
+;; Package-Requires: ((emacs "27.2") (org-edna "1.1.2") (f "0.20.0") (org "9.6") (org-agenda-property "1.3.1") (transient "0.3.7") (org-ql "0.8.10"))
 ;; Package-Version: 3.0.0
 
 ;; This file is not part of GNU Emacs.
@@ -73,6 +73,52 @@
 ;;;; Constants
 
 (defconst org-gtd-version "3.0.0")
+
+(defcustom org-gtd-user-item-config '()
+  "Overrides for `org-gtd-items'. Write your usual config in here. Note that if
+`org-gtd' finds an item type in here, it will use this information instead of
+the built-in one."
+  :group 'org-gtd
+  :type 'alist
+  :package-version '(org-gtd . "3.1"))
+
+(defvar org-gtd-items
+  '((:calendar . ((ORG_GTD . "Calendar")
+                  (ID . org-gtd-id-get-create)
+                  (ORG_GTD_TIMESTAMP . ((type . 'active-timestamp)
+                                        (prompt . "When is this going to happen?: ")))))
+    (:next . ((ORG_GTD . "Actions")
+              (TODO . org-gtd-next)
+              (ID . org-gtd-id-get-create)))
+    (:habit . ((ORG_GTD . "Habit")
+               (SCHEDULED . ((type . 'active-timestamp-with-repeater)
+                             (prompt . "When and how often do you want this to repeat?")))
+               (STYLE . "habit")
+               (ID . org-gtd-id-get-create)))
+    (:incubate . ((ORG_GTD . "Incubated")
+                  (ID . org-gtd-id-get-create)
+                  (ORG_GTD_TIMESTAMP . ((type . 'active-timestamp)
+                                        (prompt . "When do you want to be reminded of this?: ")))))
+    (:delegated . ((ORG_GTD . "Actions")
+                   (TODO . org-gtd-wait)
+                   (ID . org-gtd-id-get-create)
+                   (DELEGATED_TO . ((type . 'text)
+                                    (prompt . "Who will do this?: ")))
+                   (ORG_GTD_TIMESTAMP . ((type . 'active-timestamp)
+                                         (prompt . "When do you want to check on this?: ")))))
+    (:project-heading . ((ORG_GTD . "Projects")
+                         (ID . org-gtd-id-get-create)))
+    (:project-task . ((ID . org-gtd-id-get-create)
+                      (TODO . org-gtd-todo)))
+    (:knowledge . ((ORG_GTD . "Reference")
+                   (ID . org-gtd-id-get-create)
+                   (TODO . org-gtd-done)))
+    (:trash . ((ORG_GTD . "Trash")
+               (ID . org-gtd-id-get-create)
+               (TODO . org-gtd-canceled)))
+    (:quick-action . ((ORG_GTD . "Actions")
+                      (ID . org-gtd-id-get-create)
+                      (TODO . org-gtd-done)))))
 
 ;;;; Variables
 

@@ -1,6 +1,6 @@
 ;;; org-gtd-incubate.el --- Define incubated items in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -26,8 +26,10 @@
 
 ;;;; Requirements
 
+(require 'org-gtd-core)
 (require 'org-gtd-clarify)
 (require 'org-gtd-refile)
+(require 'org-gtd-configure)
 
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
@@ -84,13 +86,25 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
 
 If you want to call this non-interactively,
 REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
-  (let ((date (or reminder-date
-                  (org-read-date t nil nil "When would you like this item to come up again? "))))
-    (org-entry-put (point) org-gtd-timestamp (format "<%s>" date))
-    (save-excursion
-      (org-end-of-meta-data t)
-      (open-line 1)
-      (insert (format "<%s>" date))))
+  (if reminder-date
+      ;; Non-interactive: set properties directly
+      (let ((formatted-date (format "<%s>" reminder-date)))
+        (org-entry-put (point) "ORG_GTD" "Incubate")
+        (org-entry-put (point) "ID" (org-gtd-id-get-create))
+        (org-entry-put (point) org-gtd-timestamp formatted-date)
+        ;; Insert timestamp in content
+        (save-excursion
+          (org-end-of-meta-data t)
+          (open-line 1)
+          (insert formatted-date)))
+    ;; Interactive: use configuration system
+    (org-gtd-configure-item (point) :incubate)
+    ;; Insert timestamp in content
+    (let ((timestamp (org-entry-get (point) org-gtd-timestamp)))
+      (save-excursion
+        (org-end-of-meta-data t)
+        (open-line 1)
+        (insert timestamp))))
   (setq-local org-gtd--organize-type 'incubated)
   (org-gtd-organize-apply-hooks)
   (org-gtd-refile--do org-gtd-incubate org-gtd-incubate-template))

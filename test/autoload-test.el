@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: t; -*-
+
 (load "test/helpers/setup.el")
 (require 'buttercup)
 (describe

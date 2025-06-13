@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; coding: utf-8 -*-
+
 (load "test/helpers/setup.el")
 (require 'org-gtd)
 (require 'buttercup)

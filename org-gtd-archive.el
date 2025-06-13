@@ -1,6 +1,6 @@
 ;;; org-gtd-archive.el --- Logic to archive tasks -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -68,12 +68,17 @@ into a datetree."
 (defun org-gtd-archive-completed-items ()
   "Archive everything that needs to be archived in your org-gtd."
   (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
+      ;; Prepare all agenda buffers first
+      (org-gtd-core-prepare-agenda-buffers)
+
+      ;; Archive projects
       (org-gtd--archive-complete-projects)
-      (org-map-entries #'org-gtd--archive-completed-actions
-                       "+LEVEL=2&+ORG_GTD=\"Actions\""
-                       'agenda)
+
+    ;; Archive actions, calendar items, and incubated items
+    (org-map-entries #'org-gtd--archive-completed-actions
+                     "+LEVEL=2&+ORG_GTD=\"Actions\""
+                     'agenda)
     (org-map-entries #'org-gtd--archive-completed-actions
                      "+LEVEL=2&+ORG_GTD=\"Calendar\""
                      'agenda)

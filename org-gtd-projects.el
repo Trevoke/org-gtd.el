@@ -1,6 +1,6 @@
 ;;; org-gtd-projects.el --- project management in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -33,6 +33,7 @@
 
 (require 'org-gtd-core)
 (require 'org-gtd-refile)
+(require 'org-gtd-configure)
 
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
@@ -199,16 +200,15 @@ Refile to `org-gtd-actionable-file-basename'."
 
 (defun org-gtd-project-extend--apply ()
   "Refile the org heading at point under a chosen heading in the agenda files."
-  (with-org-gtd-context
-      (setq-local org-gtd--organize-type 'project-task)
-      (org-gtd-organize-apply-hooks)
-
-    (org-gtd-refile--do-project-task)
-    (let ((marker (save-excursion
-                    (org-refile-goto-last-stored)
-                    (org-up-heading-safe)
-                    (point-marker))))
-      (org-gtd-projects-fix-todo-keywords marker))))
+  (org-gtd-configure-item (point) :project-task)
+  (setq-local org-gtd--organize-type 'project-task)
+  (org-gtd-organize-apply-hooks)
+  (org-gtd-refile--do-project-task)
+  (let ((marker (save-excursion
+                  (org-refile-goto-last-stored)
+                  (org-up-heading-safe)
+                  (point-marker))))
+    (org-gtd-projects-fix-todo-keywords marker)))
 
 (defun org-gtd-projects--apply-organize-hooks-to-tasks ()
   "Decorate tasks for project at point."
@@ -229,7 +229,8 @@ Refile to `org-gtd-actionable-file-basename'."
 
 (defun org-gtd-projects--edna-update-project-task (_last-entry)
   "`org-edna' extension to change the todo state to `org-gtd-next'."
-  (org-todo org-gtd-next))
+  (with-org-gtd-context
+    (org-todo org-gtd-next)))
 
 (defalias 'org-edna-action/org-gtd-update-project-task!
   'org-gtd-projects--edna-update-project-task)

@@ -1,6 +1,6 @@
 ;;; org-gtd-habit.el --- Define habits in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -29,6 +29,7 @@
 (require 'org-gtd-core)
 (require 'org-gtd-clarify)
 (require 'org-gtd-refile)
+(require 'org-gtd-configure)
 
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
@@ -87,11 +88,15 @@ determine how often you'll be reminded of this habit."
 If you want to call this non-interactively,
 REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
 determine how often you'll be reminded of this habit."
-  (let ((repeater (or repeater
-                      (read-from-minibuffer "How do you want this to repeat? ")))
-        (today (format-time-string "%Y-%m-%d")))
-    (org-schedule nil (format "<%s %s>" today repeater))
-    (org-entry-put (point) "STYLE" "habit"))
+  (if repeater
+      ;; Non-interactive: set properties directly
+      (let ((scheduled-value (format "<%s %s>" (format-time-string "%Y-%m-%d") repeater)))
+        (org-entry-put (point) "ORG_GTD" "Habit")
+        (org-entry-put (point) "ID" (org-gtd-id-get-create))
+        (org-schedule nil scheduled-value)
+        (org-entry-put (point) "STYLE" "habit"))
+    ;; Interactive: use configuration system which handles SCHEDULED and STYLE
+    (org-gtd-configure-item (point) :habit))
   (setq-local org-gtd--organize-type 'habit)
   (org-gtd-organize-apply-hooks)
   (org-gtd-refile--do org-gtd-habit org-gtd-habit-template))
