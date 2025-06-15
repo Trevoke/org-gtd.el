@@ -88,15 +88,11 @@ determine how often you'll be reminded of this habit."
 If you want to call this non-interactively,
 REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
 determine how often you'll be reminded of this habit."
-  (if repeater
-      ;; Non-interactive: set properties directly
-      (let ((scheduled-value (format "<%s %s>" (format-time-string "%Y-%m-%d") repeater)))
-        (org-entry-put (point) "ORG_GTD" "Habit")
-        (org-entry-put (point) "ID" (org-gtd-id-get-create))
-        (org-schedule nil scheduled-value)
-        (org-entry-put (point) "STYLE" "habit"))
-    ;; Interactive: use configuration system which handles SCHEDULED and STYLE
-    (org-gtd-configure-item (point) :habit))
+  (let ((scheduled-value (if repeater
+                             (format "<%s %s>" (format-time-string "%Y-%m-%d") repeater)
+                           (org-gtd-prompt-for-active-date-with-repeater "When and how often do you want this to repeat?"))))
+    ;; Use configure-item with overriding repeater argument
+    (org-gtd-configure-item (point) :habit nil `(('active-timestamp-with-repeater . ,(lambda (x) scheduled-value)))))
   (setq-local org-gtd--organize-type 'habit)
   (org-gtd-organize-apply-hooks)
   (org-gtd-refile--do org-gtd-habit org-gtd-habit-template))

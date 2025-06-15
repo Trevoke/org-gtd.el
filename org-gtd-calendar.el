@@ -88,27 +88,15 @@ APPOINTMENT-DATE as a YYYY-MM-DD string."
 
 You can pass APPOINTMENT-DATE as a YYYY-MM-DD string if you want to use this
 non-interactively."
-
-  (if appointment-date
-      ;; Non-interactive: use provided date
-      (let ((formatted-date (format "<%s>" appointment-date)))
-        ;; Set properties directly
-        (org-entry-put (point) "ORG_GTD" "Calendar")
-        (org-entry-put (point) "ID" (org-gtd-id-get-create))
-        (org-entry-put (point) org-gtd-timestamp formatted-date)
-        ;; Insert timestamp in content
-        (save-excursion
-          (org-end-of-meta-data t)
-          (open-line 1)
-          (insert formatted-date)))
-    ;; Interactive: use configuration system which will prompt
-    (org-gtd-configure-item (point) :calendar)
+  (let ((date (or appointment-date
+                  (org-read-date t nil nil "When is this going to happen? "))))
+    ;; Use configure-item with overriding date argument
+    (org-gtd-configure-item (point) :calendar nil `(('active-timestamp . ,(lambda (x) (format "<%s>" date)))))
     ;; Insert timestamp in content
-    (let ((timestamp (org-entry-get (point) org-gtd-timestamp)))
-      (save-excursion
-        (org-end-of-meta-data t)
-        (open-line 1)
-        (insert timestamp))))
+    (save-excursion
+      (org-end-of-meta-data t)
+      (open-line 1)
+      (insert (format "<%s>" date))))
   (setq-local org-gtd--organize-type 'calendar)
   (org-gtd-organize-apply-hooks)
   (org-gtd-refile--do org-gtd-calendar org-gtd-calendar-template))

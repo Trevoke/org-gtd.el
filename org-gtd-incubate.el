@@ -86,25 +86,15 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
 
 If you want to call this non-interactively,
 REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
-  (if reminder-date
-      ;; Non-interactive: set properties directly
-      (let ((formatted-date (format "<%s>" reminder-date)))
-        (org-entry-put (point) "ORG_GTD" "Incubate")
-        (org-entry-put (point) "ID" (org-gtd-id-get-create))
-        (org-entry-put (point) org-gtd-timestamp formatted-date)
-        ;; Insert timestamp in content
-        (save-excursion
-          (org-end-of-meta-data t)
-          (open-line 1)
-          (insert formatted-date)))
-    ;; Interactive: use configuration system
-    (org-gtd-configure-item (point) :incubate)
+  (let ((date (or reminder-date
+                  (org-read-date t nil nil "When do you want to be reminded of this?: "))))
+    ;; Use configure-item with overriding date argument
+    (org-gtd-configure-item (point) :incubate nil `(('active-timestamp . ,(lambda (x) (format "<%s>" date)))))
     ;; Insert timestamp in content
-    (let ((timestamp (org-entry-get (point) org-gtd-timestamp)))
-      (save-excursion
-        (org-end-of-meta-data t)
-        (open-line 1)
-        (insert timestamp))))
+    (save-excursion
+      (org-end-of-meta-data t)
+      (open-line 1)
+      (insert (format "<%s>" date))))
   (setq-local org-gtd--organize-type 'incubated)
   (org-gtd-organize-apply-hooks)
   (org-gtd-refile--do org-gtd-incubate org-gtd-incubate-template))

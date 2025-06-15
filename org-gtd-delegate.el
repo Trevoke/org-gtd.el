@@ -94,33 +94,21 @@ If you call this interactively, the function will ask for the name of the
 person to whom to delegate by using `org-gtd-delegate-read-func'."
   (declare (modes org-mode)) ;; for 27.2 compatibility
   (interactive)
-  (let ((org-inhibit-logging 'note))
-    (if (and delegated-to checkin-date)
-        ;; Non-interactive: set properties directly
-        (progn
-          (org-entry-put (point) "ORG_GTD" "Action")
-          (org-entry-put (point) "TODO" org-gtd-wait)
-          (org-entry-put (point) "ID" (org-gtd-id-get-create))
-          (org-entry-put (point) org-gtd-delegate-property delegated-to)
-          (org-entry-put (point) org-gtd-timestamp (format "<%s>" checkin-date))
-          ;; Insert timestamp in content
-          (save-excursion
-            (org-end-of-meta-data t)
-            (open-line 1)
-            (insert (format "<%s>" checkin-date))))
-      ;; Interactive: use configuration system
-      (org-gtd-configure-item (point) :delegated)
-      ;; Insert timestamp in content
-      (let ((timestamp (org-entry-get (point) org-gtd-timestamp)))
-        (save-excursion
-          (org-end-of-meta-data t)
-          (open-line 1)
-          (insert timestamp))))
+  (let ((org-inhibit-logging 'note)
+        (person (or delegated-to (funcall org-gtd-delegate-read-func)))
+        (date (or checkin-date (org-read-date t nil nil "When do you want to check on this?: "))))
+    ;; Use configure-item with overriding arguments
+    (org-gtd-configure-item (point) :delegated nil `(('text . ,(lambda (x) person))
+                                                      ('active-timestamp . ,(lambda (x) (format "<%s>" date)))))
+    ;; Insert timestamp in content
+    (save-excursion
+      (org-end-of-meta-data t)
+      (open-line 1)
+      (insert (format "<%s>" date)))
     ;; Add delegation note
-    (let ((person (org-entry-get (point) org-gtd-delegate-property)))
-      (save-excursion
-        (goto-char (org-log-beginning t))
-        (insert (format "programmatically delegated to %s\n" person))))))
+    (save-excursion
+      (goto-char (org-log-beginning t))
+      (insert (format "programmatically delegated to %s\n" person)))))
 
 ;;;; Functions
 
