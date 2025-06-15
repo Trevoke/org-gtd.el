@@ -31,18 +31,13 @@
 (require 'org-gtd-clarify)
 (require 'org-gtd-configure)
 
-(declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
+(declare-function 'org-gtd-clarify-item 'org-gtd-clarify)
 
 ;;;; Constants
 
 (defconst org-gtd-calendar "Calendar")
 
-(defconst org-gtd-calendar-func #'org-gtd-calendar--apply
-  "Function called when item at point is a task that must happen on a given day.
-
-Keep this clean and don't load your calendar with things that aren't
-actually appointments or deadlines.")
 
 (defconst org-gtd-calendar-template
   (format "* Calendar
@@ -59,9 +54,10 @@ actually appointments or deadlines.")
 You can pass APPOINTMENT-DATE as a YYYY-MM-DD string if you want to use this
 non-interactively."
   (interactive)
-  (org-gtd-organize--call
-   (apply-partially org-gtd-calendar-func
-                    appointment-date)))
+  (let ((config-override (when appointment-date
+                           `(('active-timestamp . ,(lambda (x) (format "<%s>" appointment-date)))))))
+    (org-gtd-organize--call
+     (lambda () (org-gtd-calendar--apply config-override)))))
 
 ;;;; Functions
 
@@ -73,30 +69,30 @@ non-interactively."
 Takes TOPIC as the string from which to make the heading to add to `org-gtd' and
 APPOINTMENT-DATE as a YYYY-MM-DD string."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd"))
+        (org-id-overriding-file-name "org-gtd")
+        (config-override `(('active-timestamp . ,(lambda (x) (format "<%s>" appointment-date))))))
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
       (org-gtd-clarify-item)
-      (org-gtd-calendar appointment-date))
+      (org-gtd-calendar--apply config-override))
     (kill-buffer buffer)))
 
 ;;;;; Private
 
-(defun org-gtd-calendar--apply (&optional appointment-date)
+(defun org-gtd-calendar--apply (&optional config-override)
   "Add a date/time to this item and store in org gtd.
 
-You can pass APPOINTMENT-DATE as a YYYY-MM-DD string if you want to use this
-non-interactively."
-  (let ((date (or appointment-date
-                  (org-read-date t nil nil "When is this going to happen? "))))
-    ;; Use configure-item with overriding date argument
-    (org-gtd-configure-item (point) :calendar nil `(('active-timestamp . ,(lambda (x) (format "<%s>" date)))))
-    ;; Insert timestamp in content
-    (save-excursion
-      (org-end-of-meta-data t)
-      (open-line 1)
-      (insert (format "<%s>" date))))
+CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
+  ;; Use configure-item with optional config override
+  (org-gtd-configure-item (point) :calendar nil config-override)
+  ;; Insert timestamp in content (get it from the property that was just set)
+  (let ((timestamp (org-entry-get (point) "ORG_GTD_TIMESTAMP")))
+    (when timestamp
+      (save-excursion
+        (org-end-of-meta-data t)
+        (open-line 1)
+        (insert timestamp))))
   (setq-local org-gtd--organize-type 'calendar)
   (org-gtd-organize-apply-hooks)
   (org-gtd-refile--do org-gtd-calendar org-gtd-calendar-template))
