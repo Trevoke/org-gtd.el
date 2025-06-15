@@ -57,9 +57,10 @@ If you want to call this non-interactively,
 REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
 determine how often you'll be reminded of this habit."
   (interactive)
-  (org-gtd-organize--call
-   (apply-partially org-gtd-habit-func
-                    repeater)))
+  (let ((config-override (when repeater
+                           `(('active-timestamp-with-repeater . ,(lambda (x) (format "<%s %s>" (format-time-string "%Y-%m-%d") repeater)))))))
+    (org-gtd-organize--call
+     (lambda () (org-gtd-habit--apply config-override)))))
 
 ;;;; Functions
 
@@ -72,27 +73,23 @@ TOPIC is the string you want to see in the `org-agenda' view.
 REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
 determine how often you'll be reminded of this habit."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd"))
+        (org-id-overriding-file-name "org-gtd")
+        (config-override `(('active-timestamp-with-repeater . ,(lambda (x) (format "<%s %s>" (format-time-string "%Y-%m-%d") repeater))))))
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
       (org-gtd-clarify-item)
-      (org-gtd-habit repeater))
+      (org-gtd-habit--apply config-override))
     (kill-buffer buffer)))
 
 ;;;;; Private
 
-(defun org-gtd-habit--apply (&optional repeater)
+(defun org-gtd-habit--apply (&optional config-override)
   "Add a repeater to this item and store in org gtd.
 
-If you want to call this non-interactively,
-REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
-determine how often you'll be reminded of this habit."
-  (let ((scheduled-value (if repeater
-                             (format "<%s %s>" (format-time-string "%Y-%m-%d") repeater)
-                           (org-gtd-prompt-for-active-date-with-repeater "When and how often do you want this to repeat?"))))
-    ;; Use configure-item with overriding repeater argument
-    (org-gtd-configure-item (point) :habit nil `(('active-timestamp-with-repeater . ,(lambda (x) scheduled-value)))))
+CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
+  ;; Use configure-item with optional config override
+  (org-gtd-configure-item (point) :habit nil config-override)
   (setq-local org-gtd--organize-type 'habit)
   (org-gtd-organize-apply-hooks)
   (org-gtd-refile--do org-gtd-habit org-gtd-habit-template))

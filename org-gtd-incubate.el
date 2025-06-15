@@ -57,9 +57,10 @@
 If you want to call this non-interactively,
 REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
   (interactive)
-  (org-gtd-organize--call
-   (apply-partially org-gtd-incubate-func
-                    reminder-date)))
+  (let ((config-override (when reminder-date
+                           `(('active-timestamp . ,(lambda (x) (format "<%s>" reminder-date)))))))
+    (org-gtd-organize--call
+     (lambda () (org-gtd-incubate--apply config-override)))))
 
 ;;;; Functions
 
@@ -71,30 +72,30 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
 TOPIC is the string you want to see in the `org-agenda' view.
 REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd"))
+        (org-id-overriding-file-name "org-gtd")
+        (config-override `(('active-timestamp . ,(lambda (x) (format "<%s>" reminder-date))))))
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
       (org-gtd-clarify-item)
-      (org-gtd-incubate reminder-date))
+      (org-gtd-incubate--apply config-override))
     (kill-buffer buffer)))
 
 ;;;;; Private
 
-(defun org-gtd-incubate--apply (&optional reminder-date)
+(defun org-gtd-incubate--apply (&optional config-override)
   "Incubate this item through org-gtd.
 
-If you want to call this non-interactively,
-REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
-  (let ((date (or reminder-date
-                  (org-read-date t nil nil "When do you want to be reminded of this?: "))))
-    ;; Use configure-item with overriding date argument
-    (org-gtd-configure-item (point) :incubate nil `(('active-timestamp . ,(lambda (x) (format "<%s>" date)))))
-    ;; Insert timestamp in content
-    (save-excursion
-      (org-end-of-meta-data t)
-      (open-line 1)
-      (insert (format "<%s>" date))))
+CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
+  ;; Use configure-item with optional config override
+  (org-gtd-configure-item (point) :incubate nil config-override)
+  ;; Insert timestamp in content (get it from the property that was just set)
+  (let ((timestamp (org-entry-get (point) "ORG_GTD_TIMESTAMP")))
+    (when timestamp
+      (save-excursion
+        (org-end-of-meta-data t)
+        (open-line 1)
+        (insert timestamp))))
   (setq-local org-gtd--organize-type 'incubated)
   (org-gtd-organize-apply-hooks)
   (org-gtd-refile--do org-gtd-incubate org-gtd-incubate-template))
