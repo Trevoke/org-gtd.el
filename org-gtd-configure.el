@@ -95,7 +95,10 @@
                                    ((pred listp) (eval value))
                                    (_ value))))
 
-            (org-entry-put pos (upcase key) (format "%s" computed-value))))))))
+            ;; Special handling for TODO keyword vs properties
+            (if (string-equal key "TODO")
+                (org-with-point-at pos (org-todo computed-value))
+              (org-entry-put pos (upcase key) (format "%s" computed-value)))))))))
 
 (defun org-gtd--merge-inputs (&optional user-config)
   (let ((user-config (or user-config '())))
@@ -117,12 +120,6 @@
   (let-alist value
     (let ((form `(pcase ,.type ,@(org-gtd--pcase-inputs user-entry-config))))
       `(funcall ,(eval form) ,.prompt))))
-
-;;;
-;; (let ((checks '(('active-timestamp "yes") (_ "no"))))
-;;   (eval `(pcase 'active-timestamp
-;;            ,@checks)))
-
 
 (provide 'org-gtd-configure)
 ;;; org-gtd-configure.el ends here

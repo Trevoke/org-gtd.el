@@ -23,7 +23,7 @@
                      (org-entry-put (point) "HOOK1" "YES")))
                (defun hook2 ()
                  (if (org-gtd-organize-type-member-p '(single-action))
-                                   (org-entry-put (point) "HOOK2" "YES"))))
+                     (org-entry-put (point) "HOOK2" "YES"))))
   (after-each (fmakunbound 'hook1)
               (fmakunbound 'hook2))
 
@@ -93,15 +93,32 @@
         (setq-local org-gtd--organize-type 'trash)
         (expect (org-gtd-organize-type-member-p '(incubated quick-action delegated))
                 :not :to-be-truthy)))))
-(describe "Saving buffers after organizing"
-  (it "saves buffers if org-gtd-save-after-organize is t"
-    (let ((org-gtd-save-after-organize t))
-      (spy-on 'save-some-buffers :and-call-through)
-      (org-gtd-organize--call (lambda () (insert "Test")))
-      (expect 'save-some-buffers :to-have-been-called-with t)))
 
-  (it "does not save buffers if org-gtd-save-after-organize is nil"
-    (let ((org-gtd-save-after-organize nil))
-      (spy-on 'save-some-buffers)
-      (org-gtd-organize--call (lambda () (insert "Test")))
-      (expect 'save-some-buffers :not :to-have-been-called))))
+(describe
+ "Saving buffers after organizing"
+ (before-each (ogt--configure-emacs))
+ (after-each (ogt--close-and-delete-files))
+
+ (it "saves buffers if org-gtd-save-after-organize is t"
+     (let ((org-gtd-save-after-organize t)
+           (test-buffer (get-buffer-create "*org-gtd-test*")))
+       (spy-on 'save-some-buffers :and-call-through)
+       (with-current-buffer test-buffer
+         (org-mode)
+         (insert "* Test heading\n")
+         (goto-char (point-min))
+         (org-gtd-organize--call (lambda () (insert "Test"))))
+       (expect 'save-some-buffers :to-have-been-called-with t)
+       (kill-buffer test-buffer)))
+
+ (it "does not save buffers if org-gtd-save-after-organize is nil"
+     (let ((org-gtd-save-after-organize nil)
+           (test-buffer (get-buffer-create "*org-gtd-test*")))
+       (spy-on 'save-some-buffers)
+       (with-current-buffer test-buffer
+         (org-mode)
+         (insert "* Test heading\n")
+         (goto-char (point-min))
+         (org-gtd-organize--call (lambda () (insert "Test"))))
+       (expect 'save-some-buffers :not :to-have-been-called)
+       (kill-buffer test-buffer))))

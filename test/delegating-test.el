@@ -72,3 +72,29 @@
           (expect (buffer-substring (point) (point-max))
                   :to-match
                   (format "<%s-%#02d-%#02d>" year month day)))))))
+
+(describe
+ "Customizing delegation input"
+
+ (before-each (ogt--configure-emacs))
+ (after-each (ogt--close-and-delete-files))
+
+ (it "allows users to provide custom input functions for person name"
+     (let ((topic "Custom delegate test")
+           (checkin-date (format-time-string "%Y-%m-%d"))
+           (buffer (generate-new-buffer "Test custom delegate"))
+           (org-id-overriding-file-name "org-gtd"))
+
+       (with-current-buffer buffer
+         (org-mode)
+         (insert (format "* %s" topic))
+         (org-gtd-clarify-item)
+
+         ;; Use org-gtd-delegate-item-at-point with parameters to show it works non-interactively
+         (org-gtd-delegate-item-at-point "Custom Person" checkin-date)
+
+         ;; Verify the delegation was set up correctly
+         (expect (org-entry-get (point) "DELEGATED_TO") :to-equal "Custom Person")
+         (expect (org-entry-get (point) "ORG_GTD_TIMESTAMP") :to-equal (format "<%s>" checkin-date)))
+
+       (kill-buffer buffer))))

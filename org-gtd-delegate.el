@@ -39,14 +39,6 @@
 
 ;;;; Customization
 
-(defcustom org-gtd-delegate-read-func (lambda () (read-string "Who will do this? "))
-  "Function that is called to read in the Person the task is delegated to.
-
-Needs to return a string that will be used as the persons name."
-  :group 'org-gtd-organize
-  :package-version '(org-gtd . "2.3.0")
-  :type 'function )
-
 ;;;; Constants
 
 (defconst org-gtd-delegate-property "DELEGATED_TO")
@@ -63,10 +55,11 @@ You can pass DELEGATED-TO as the name of the person to whom this was delegated
 and CHECKIN-DATE as the YYYY-MM-DD string of when you want `org-gtd' to remind
 you if you want to call this non-interactively."
   (interactive)
-  (org-gtd-organize--call
-   (apply-partially org-gtd-delegate-func
-                    delegated-to
-                    checkin-date)))
+  (let ((config-override (when (or delegated-to checkin-date)
+                           `(,@(when delegated-to `(('text . ,(lambda (x) delegated-to))))
+                             ,@(when checkin-date `(('active-timestamp . ,(lambda (x) (format "<%s>" checkin-date)))))))))
+    (org-gtd-organize--call
+     (lambda () (org-gtd-delegate--apply config-override)))))
 
 ;;;###autoload
 (defun org-gtd-delegate-agenda-item ()
@@ -90,25 +83,28 @@ you if you want to call this non-interactively."
 You can pass DELEGATED-TO as the name of the person to whom this was delegated
 and CHECKIN-DATE as the YYYY-MM-DD string of when you want `org-gtd' to remind
 you if you want to call this non-interactively.
-If you call this interactively, the function will ask for the name of the
-person to whom to delegate by using `org-gtd-delegate-read-func'."
+If you call this interactively, the function will prompt for the person's name."
   (declare (modes org-mode)) ;; for 27.2 compatibility
   (interactive)
   (let ((org-inhibit-logging 'note)
-        (person (or delegated-to (funcall org-gtd-delegate-read-func)))
-        (date (or checkin-date (org-read-date t nil nil "When do you want to check on this?: "))))
-    ;; Use configure-item with overriding arguments
-    (org-gtd-configure-item (point) :delegated nil `(('text . ,(lambda (x) person))
-                                                      ('active-timestamp . ,(lambda (x) (format "<%s>" date)))))
-    ;; Insert timestamp in content
-    (save-excursion
-      (org-end-of-meta-data t)
-      (open-line 1)
-      (insert (format "<%s>" date)))
-    ;; Add delegation note
-    (save-excursion
-      (goto-char (org-log-beginning t))
-      (insert (format "programmatically delegated to %s\n" person)))))
+        (config-override (when (or delegated-to checkin-date)
+                           `(,@(when delegated-to `(('text . ,(lambda (x) delegated-to))))
+                             ,@(when checkin-date `(('active-timestamp . ,(lambda (x) (format "<%s>" checkin-date)))))))))
+    ;; Use configure-item with optional config override (uses default text prompting)
+    (org-gtd-configure-item (point) :delegated nil config-override)
+    ;; Insert timestamp in content (get it from the property that was just set)
+    (let ((timestamp (org-entry-get (point) "ORG_GTD_TIMESTAMP"))
+          (person (org-entry-get (point) "DELEGATED_TO")))
+      (when timestamp
+        (save-excursion
+          (org-end-of-meta-data t)
+          (open-line 1)
+          (insert timestamp)))
+      ;; Add delegation note
+      (when person
+        (save-excursion
+          (goto-char (org-log-beginning t))
+          (insert (format "programmatically delegated to %s\n" person)))))))
 
 ;;;; Functions
 
@@ -122,23 +118,37 @@ DELEGATED-TO is the name of the person to whom this was delegated.
 CHECKIN-DATE is the YYYY-MM-DD string of when you want `org-gtd' to remind
 you."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd"))
+        (org-id-overriding-file-name "org-gtd")
+        (config-override `(('text . ,(lambda (x) delegated-to))
+                           ('active-timestamp . ,(lambda (x) (format "<%s>" checkin-date))))))
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
       (org-gtd-clarify-item)
-      (org-gtd-delegate delegated-to checkin-date))
+      (org-gtd-delegate--apply config-override))
     (kill-buffer buffer)))
 
 ;;;;; Private
 
-(defun org-gtd-delegate--apply (&optional delegated-to checkin-date)
+(defun org-gtd-delegate--apply (&optional config-override)
   "Organize and refile this as a delegated item in the `org-gtd' system.
 
-You can pass DELEGATED-TO as the name of the person to whom this was delegated
-and CHECKIN-DATE as the YYYY-MM-DD string of when you want `org-gtd' to remind
-you if you want to call this non-interactively."
-  (org-gtd-delegate-item-at-point delegated-to checkin-date)
+CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
+  ;; Use configure-item with optional config override
+  (org-gtd-configure-item (point) :delegated nil config-override)
+  ;; Insert timestamp in content (get it from the property that was just set)
+  (let ((timestamp (org-entry-get (point) "ORG_GTD_TIMESTAMP"))
+        (person (org-entry-get (point) "DELEGATED_TO")))
+    (when timestamp
+      (save-excursion
+        (org-end-of-meta-data t)
+        (open-line 1)
+        (insert timestamp)))
+    ;; Add delegation note
+    (when person
+      (save-excursion
+        (goto-char (org-log-beginning t))
+        (insert (format "programmatically delegated to %s\n" person)))))
   (setq-local org-gtd--organize-type 'delegated)
   (org-gtd-organize-apply-hooks)
   (org-gtd-refile--do org-gtd-action org-gtd-action-template))

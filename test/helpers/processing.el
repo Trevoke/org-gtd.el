@@ -11,9 +11,9 @@
   (let ((inhibit-message t))
     (ogt-capture-single-item label)
     (org-gtd-process-inbox)
-    (execute-kbd-macro (kbd "M-> RET"))
-    (with-current-buffer (current-buffer)
-      (insert ogt--project-text))
+    (goto-char (point-max))
+    (newline)
+    (insert ogt--project-text)
     (ogt-clarify-as-project)))
 
 (defun ogt-capture-and-process-calendar-item (label &optional date)
@@ -21,7 +21,7 @@
   (let ((inhibit-message t))
     (ogt-capture-single-item label)
     (org-gtd-process-inbox)
-    (ogt-clarify-as-calendar-item date)))
+    (ogt-clarify-as-calendar-item (or date (calendar-current-date)))))
 
 (defun ogt-capture-and-process-habit (label repeater)
   "REPEATER is an org-mode date repeater, e.g. .+1d or ++1m, etc."
@@ -34,14 +34,14 @@
   (let ((inhibit-message t))
     (ogt-capture-single-item label)
     (org-gtd-process-inbox)
-    (ogt-clarify-as-delegated-item to-whom date)))
+    (ogt-clarify-as-delegated-item (or to-whom "Someone") (or date (calendar-current-date)))))
 
 (defun ogt-capture-and-process-incubated-item (label &optional date)
   "LABEL is the incubated label."
   (let ((inhibit-message t))
     (ogt-capture-single-item label)
     (org-gtd-process-inbox)
-    (ogt-clarify-as-incubated-item date)))
+    (ogt-clarify-as-incubated-item (or date (calendar-current-date)))))
 
 (defun ogt-capture-and-process-single-action (label)
   "LABEL is the single action label."

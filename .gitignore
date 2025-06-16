@@ -3,6 +3,7 @@
 /Eldev-local
 /dev/.emacs.d
 /dev/.emacs~
+/dev/eln-cache/
 /dev/.cache
 /dev/.config/
 /doc/org-gtd.info

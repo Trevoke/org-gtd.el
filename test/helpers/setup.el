@@ -11,7 +11,8 @@
         org-gtd-areas-of-focus nil
         org-gtd-organize-hooks '()
         org-gtd-refile-to-any-target t
-        org-edna-use-inheritance t)
+        org-edna-use-inheritance t
+        org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
   (org-edna-mode 1)
   (define-key org-gtd-clarify-map (kbd "C-c c") #'org-gtd-organize))
 
@@ -22,12 +23,40 @@
 (defun ogt--close-and-delete-files ()
   "Run after every test to clear open buffers state"
 
-  (mapc
-   #'ogt--kill-buffer
-   (-flatten (mapcar
-              #'ogt--get-buffers
-              `(".*\\.org" ".*Agenda.*" "gtd_archive.*" ".*Calendar.*"
-                ,(format ".*%s.*" org-gtd-wip--prefix))))))
+  ;; Kill GTD-related buffers but preserve essential system buffers
+  (let ((buffers-to-kill '()))
+    (dolist (buffer (buffer-list))
+      (when (and (buffer-live-p buffer)
+                 ;; Don't kill essential system buffers
+                 (not (member (buffer-name buffer) '("*scratch*" "*Messages*")))
+                 (or (string-match-p "org-gtd" (buffer-name buffer))
+                     (string-match-p "\\.org" (buffer-name buffer))
+                     (string-match-p "Agenda" (buffer-name buffer))
+                     (string-match-p "gtd_archive" (buffer-name buffer))
+                     (string-match-p "Calendar" (buffer-name buffer))
+                     (string-match-p org-gtd-wip--prefix (buffer-name buffer))
+                     ;; Kill some transient-related buffers but not all
+                     (string-match-p "\\*Help\\*" (buffer-name buffer))
+                     (string-match-p "\\*Warnings\\*" (buffer-name buffer))
+                     ;; Also kill any buffer with file name containing GTD paths
+                     (and (buffer-file-name buffer)
+                          (string-match-p "org-gtd" (buffer-file-name buffer)))))
+        (push buffer buffers-to-kill)))
+
+    ;; Kill buffers but ensure we don't kill the current buffer without setting a new one
+    (when buffers-to-kill
+      ;; Switch to scratch buffer first to avoid killing current buffer issues
+      (set-buffer (get-buffer-create "*scratch*"))
+      (dolist (buffer buffers-to-kill)
+        (when (buffer-live-p buffer)
+          (when (buffer-file-name buffer)
+            (with-current-buffer buffer
+              (set-buffer-modified-p nil)))
+          (kill-buffer buffer)))))
+
+  ;; Clear all org-mode internal state
+  (ogt--clear-org-mode-state)
+  )
 
 (defun ogt--clear-file-and-buffer (buffer)
   (if (bufferp buffer)
@@ -46,6 +75,52 @@
     (with-current-buffer buffer
       (revert-buffer t t)))
   (kill-buffer buffer))
+
+(defun ogt--clear-org-mode-state ()
+  "Clear org-mode internal state that might contaminate between tests"
+  (setq org-agenda-files nil
+        org-agenda-buffer nil
+        org-todo-keywords-1 nil
+        org-todo-keywords-for-agenda nil
+        org-done-keywords-for-agenda nil
+        org-agenda-markers nil
+        org-agenda-contributing-files nil
+        org-agenda-last-search-view-search-was-boolean nil
+        ;; Clear file-name to buffer mapping to prevent find-file-noselect from
+        ;; returning stale buffers from previous test directories
+        file-name-history nil)
+
+  ;; Clear transient state that might be left over from previous tests
+  (when (fboundp 'transient--emergency-exit)
+    (transient--emergency-exit))
+
+  ;; Clear any active transient
+  (when (and (boundp 'transient--prefix) transient--prefix)
+    (setq transient--prefix nil))
+
+  ;; Reset transient history
+  (when (boundp 'transient-history)
+    (setq transient-history nil))
+
+  ;; Clear input event queue and keyboard state
+  (discard-input)
+
+  ;; Clear any save-related state
+  (setq buffer-save-without-query nil)
+
+  ;; Clear any agenda-related current buffer confusion
+  (setq current-prefix-arg nil)
+
+  ;; Reset window configuration to clean state
+  (delete-other-windows)
+
+  ;; Ensure we end up in a clean buffer state
+  (set-buffer (get-buffer-create "*scratch*"))
+  (with-current-buffer "*scratch*"
+    (emacs-lisp-mode))
+
+  ;; Let org-mode handle its own cache state
+  )
 
 (defun ogt--recursive-eldev-test (file)
   (unless (file-readable-p (file-name-concat "test" file))

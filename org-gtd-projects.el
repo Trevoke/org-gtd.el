@@ -183,20 +183,36 @@ Refile to `org-gtd-actionable-file-basename'."
     (org-gtd-projects--show-error)
     (throw 'org-gtd-error "Malformed project"))
 
+  ;; Configure the main project heading using the new pattern
+  (org-gtd-configure-item (point) :project-heading)
   (setq-local org-gtd--organize-type 'project-heading)
   (org-gtd-organize-apply-hooks)
 
+  ;; Configure all sub-tasks as project tasks
+  (org-gtd-projects--configure-all-tasks)
   (setq-local org-gtd--organize-type 'project-task)
   (org-gtd-projects--apply-organize-hooks-to-tasks)
 
+  ;; Project-specific business logic
   (org-gtd-projects-fix-todo-keywords-for-project-at-point)
+  (org-gtd-projects--add-progress-cookie)
 
+  (org-gtd-refile--do org-gtd-projects org-gtd-projects-template))
+
+(defun org-gtd-projects--configure-all-tasks ()
+  "Configure all sub-tasks in the project as project-task items."
+  (org-map-entries
+   (lambda ()
+     (org-gtd-configure-item (point) :project-task))
+   "LEVEL=2"
+   'tree))
+
+(defun org-gtd-projects--add-progress-cookie ()
+  "Add progress tracking cookie to the project heading."
   (let ((org-special-ctrl-a t))
     (org-end-of-line))
   (insert " [/]")
-  (org-update-statistics-cookies t)
-
-  (org-gtd-refile--do org-gtd-projects org-gtd-projects-template))
+  (org-update-statistics-cookies t))
 
 (defun org-gtd-project-extend--apply ()
   "Refile the org heading at point under a chosen heading in the agenda files."
