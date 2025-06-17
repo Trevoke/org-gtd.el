@@ -62,7 +62,7 @@ This is where the project name is displayed, on the left side."
                          ((org-agenda-span 1)
                           (org-agenda-start-day nil)
                           (org-agenda-skip-additional-timestamps-same-entry t)))
-                 (todo org-gtd-next
+                 (todo ,(org-gtd-keywords--next)
                        ((org-agenda-overriding-header "All actions ready to be executed.")
                         (org-agenda-prefix-format
                          '((todo . ,project-format-prefix))))))))))
@@ -81,10 +81,10 @@ This is where the project name is displayed, on the left side."
                          (flatten-list
                           (org-map-entries
                            (lambda () org-scanner-tags)
-                           (format "{^@}+TODO=\"%s\"" org-gtd-next)
+                           (format "{^@}+TODO=\"%s\"" (org-gtd-keywords--next))
                            'agenda)))))
              (blocks (seq-map
-                      (lambda (x) `(tags ,(format "+%s+TODO=\"%s\"" x org-gtd-next)
+                      (lambda (x) `(tags ,(format "+%s+TODO=\"%s\"" x (org-gtd-keywords--next))
                                          ((org-agenda-overriding-header ,x))))
                       contexts))
              (org-agenda-custom-commands `(("g" "actions by context" ,blocks))))
@@ -97,7 +97,7 @@ This assumes all GTD files are also agenda files."
   (interactive)
   (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
-      (org-todo-list org-gtd-next)))
+      (org-todo-list (org-gtd-keywords--next))))
 
 ;;;; Functions
 

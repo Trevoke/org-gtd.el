@@ -115,7 +115,7 @@ planning keyword in `org-mode'."
 (defun org-gtd-upgrades--delegated-item-p ()
   "Return t if item at point is delegated."
   (and (org-entry-get (point) org-gtd-delegate-property)
-       (string-equal (org-entry-get (point) "TODO") org-gtd-wait)))
+       (string-equal (org-entry-get (point) "TODO") (org-gtd-keywords--wait))))
 
 (defun org-gtd-upgrades--organize-habits-v3 ()
   "Move element at point to the habits home if it's a habit."

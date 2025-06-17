@@ -67,7 +67,7 @@
 
 (defun org-gtd-configure-item (pos item-type &optional user-config input-config)
   "Configure item at POS according to ITEM-TYPE."
-  (let* ((items org-gtd-items)
+  (let* ((items (org-gtd-items))
          (item-data (alist-get item-type items))
          (item-config item-data)
          (input-config (or input-config '()))

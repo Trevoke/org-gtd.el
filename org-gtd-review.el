@@ -58,7 +58,7 @@ mostly of value for testing purposes."
                `(("a" ,(format "Area of Focus: %s" area)
                   ((tags ,org-gtd-project-headings
                          ((org-agenda-overriding-header "Active projects")))
-                   (todo ,org-gtd-next
+                   (todo ,(org-gtd-keywords--next)
                          ((org-agenda-overriding-header "Next actions")))
                    (agenda ""
                            ((org-agenda-overriding-header "Reminders")
@@ -120,7 +120,7 @@ day for the agenda.  It is mostly of value for testing purposes."
                         (org-agenda-skip-additional-timestamp-same-entry t)
                         (org-agenda-show-all-dates nil)
                         (org-agenda-show-future-repeats nil)))
-                 (tags ,(format "+TODO=\"%s\"" org-gtd-wait)
+                 (tags ,(format "+TODO=\"%s\"" (org-gtd-keywords--wait))
                        ((org-agenda-overriding-header "Missed delegated events")
                         (org-agenda-start-day ,start-date)
                         (org-agenda-skip-function ,skip-unless-timestamp-in-past-fn)
@@ -148,7 +148,7 @@ day for the agenda.  It is mostly of value for testing purposes."
   (with-org-gtd-context
       (let ((org-agenda-custom-commands
              `(("g" "foobar"
-                ((tags (format "+TODO=\"%s\"" org-gtd-wait)
+                ((tags (format "+TODO=\"%s\"" (org-gtd-keywords--wait))
                        ((org-agenda-skip-function
                          '(org-gtd-skip-AND
                            '(org-gtd-skip-unless-timestamp-empty-or-invalid

@@ -6,9 +6,9 @@
 ;; This file is not part of GNU Emacs.
 
 ;; This file is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 3, or (at your option)
-;; any later version.
+;; it under the terms of the GNU General Public License as published
+;; by the Free Software Foundation; either version 3, or
+;; (at your option) any later version.
 
 ;; This file is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -41,8 +41,10 @@
 
 ;;;###autoload
 (define-derived-mode org-gtd-wip-mode org-mode "GTD-WIP"
-  "Inherits from org-mode to allow for an org buffer that isn't connected to
-a file without breaking users' setups.
+  "Inherits from `org-mode'.
+
+Allow for an org buffer that isn't connected to a file without
+breaking users' setups.
 
 \\[org-gtd-wip-mode-map]"
   (setq-local org-gtd--loading-p t)
@@ -67,7 +69,8 @@ a file without breaking users' setups.
 
 (defun org-gtd-wip--get-buffer (org-id)
   "Get or create a WIP buffer with name based on ORG-ID."
-  (let* ((buffer (get-buffer-create (org-gtd-wip--buffer-name org-id))))
+  (let* ((buffer (get-buffer-create
+                  (org-gtd-wip--buffer-name org-id))))
     (with-current-buffer buffer
       (unless (eq major-mode #'org-gtd-wip-mode)
         (with-org-gtd-context (org-gtd-wip-mode)))
@@ -76,11 +79,15 @@ a file without breaking users' setups.
 (defun org-gtd-wip--get-buffers ()
   "Retrieve a list of Org GTD WIP buffers."
   (seq-filter (lambda (buf)
-                (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                (string-match-p org-gtd-wip--prefix
+                                (buffer-name buf)))
               (buffer-list)))
 
 (defun org-gtd-wip--maybe-initialize-buffer-contents (marker buffer)
-  "If BUFFER is empty, then copy org heading at marker and paste inside buffer."
+  "Prepare BUFFER with org heading at MARKER if possible.
+
+If BUFFER is empty, then copy org heading at MARKER and paste inside
+ BUFFER."
   (with-temp-message ""
     (when (= (buffer-size buffer) 0)
       (let ((last-command nil))

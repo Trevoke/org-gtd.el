@@ -74,14 +74,13 @@ instead.")
 :END:
 " org-gtd-projects))
 
-(defconst org-gtd-stuck-projects
+;;;###autoload
+(defun org-gtd-stuck-projects ()
+  "Return the stuck projects configuration for the current GTD setup."
   `(,org-gtd-project-headings
-    (,org-gtd-next ,org-gtd-wait)
+    (,(org-gtd-keywords--next) ,(org-gtd-keywords--wait))
     nil
-    "")
-  "How to identify stuck projects in the GTD system.
-
-This is a list of four items, the same type as in `org-stuck-projects'.")
+    ""))
 
 ;;;; Commands
 
@@ -95,7 +94,7 @@ This is a list of four items, the same type as in `org-stuck-projects'.")
        (lambda ()
          (when (org-gtd-projects--incomplete-task-p)
            (let ((org-inhibit-logging 'note))
-             (org-todo org-gtd-canceled))))
+             (org-todo (org-gtd-keywords--canceled)))))
        nil
        'tree))
   (org-edna-mode 1))
@@ -158,9 +157,12 @@ other undone tasks are marked as `org-gtd-todo'."
         (org-map-entries
          (lambda ()
            (unless (or (equal heading-level (org-current-level))
-                       (member (org-entry-get (point) "TODO")
-                               `(,org-gtd-todo ,org-gtd-wait ,org-gtd-done ,org-gtd-canceled)))
-             (org-entry-put (point) "TODO" org-gtd-todo)
+                       (let ((todo-state (org-entry-get (point) "TODO")))
+                         (or (equal todo-state (org-gtd-keywords--todo))
+                             (equal todo-state (org-gtd-keywords--wait))
+                             (equal todo-state (org-gtd-keywords--canceled))
+                             (org-gtd-keywords--is-done-p todo-state))))
+             (org-entry-put (point) "TODO" (org-gtd-keywords--todo))
              (setq org-map-continue-from (end-of-line))))
          t
          'tree)
@@ -169,7 +171,7 @@ other undone tasks are marked as `org-gtd-todo'."
           (unless first-wait
             (org-entry-put (org-gtd-projects--org-element-pom first-todo)
                            "TODO"
-                           org-gtd-next)))))))
+                           (org-gtd-keywords--next))))))))
 
 ;;;;; Private
 
@@ -246,7 +248,7 @@ Refile to `org-gtd-actionable-file-basename'."
 (defun org-gtd-projects--edna-update-project-task (_last-entry)
   "`org-edna' extension to change the todo state to `org-gtd-next'."
   (with-org-gtd-context
-    (org-todo org-gtd-next)))
+    (org-todo (org-gtd-keywords--next))))
 
 (defalias 'org-edna-action/org-gtd-update-project-task!
   'org-gtd-projects--edna-update-project-task)
@@ -260,7 +262,7 @@ Return nil if there isn't one."
                  (org-map-entries
                   (lambda ()
                     (and (not (equal heading-level (org-current-level)))
-                         (string-equal org-gtd-todo
+                         (string-equal (org-gtd-keywords--todo)
                                        (org-entry-get (point) "TODO"))
                          (org-element-at-point)))
                   t
@@ -275,7 +277,7 @@ Return nil if there isn't one."
                  (org-map-entries
                   (lambda ()
                     (and (not (equal heading-level (org-current-level)))
-                         (string-equal org-gtd-wait
+                         (string-equal (org-gtd-keywords--wait)
                                        (org-entry-get (point) "TODO"))
                          (org-element-at-point)))
                   t

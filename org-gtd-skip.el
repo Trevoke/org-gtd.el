@@ -84,7 +84,7 @@
   "Return non-nil if the action wouldn't show up in the agenda."
   (let ((subtree-end (save-excursion (org-end-of-subtree t)))
         (invalidp (or (not (org-entry-is-todo-p))
-                      (org-entry-get nil "TODO" org-gtd-todo))))
+                      (org-entry-get nil "TODO" (org-gtd-keywords--todo)))))
     (if invalidp
         nil
       subtree-end)))
