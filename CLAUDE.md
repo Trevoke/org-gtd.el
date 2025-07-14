@@ -16,6 +16,9 @@ curl -fsSL https://raw.github.com/doublep/eldev/master/webinstall/github-eldev |
 # Run all tests (standard - minimal output)
 eldev test -B
 
+# Run all tests for a specific version of emacs
+eldev docker 30 test
+
 # Run all tests with backtraces (debugging)
 eldev test
 
@@ -94,14 +97,14 @@ org-gtd.el implements David Allen's Getting Things Done (GTD) methodology as an 
 
 **Entry Point**: `org-gtd.el` loads all modules and manages versioning
 
-**Core Infrastructure**: 
+**Core Infrastructure**:
 - `org-gtd-core.el`: Customization variables, macros, context management
 - `org-gtd-files.el`: File path management and GTD directory structure
 - `org-gtd-mode.el`: Minor mode integration with org-agenda
 
 **GTD Workflow Modules** (organized by GTD steps):
 1. **Capture**: `org-gtd-capture.el` - Inbox collection
-2. **Process**: `org-gtd-process.el` - Inbox processing loop  
+2. **Process**: `org-gtd-process.el` - Inbox processing loop
 3. **Clarify**: `org-gtd-clarify.el` + `org-gtd-wip.el` - Item clarification with WIP buffers
 4. **Organize**: `org-gtd-organize.el` + category modules - Transient-based organization dispatcher
 5. **Engage**: `org-gtd-agenda.el` - Daily engagement views
@@ -109,7 +112,7 @@ org-gtd.el implements David Allen's Getting Things Done (GTD) methodology as an 
 
 **Organization Categories** (each has dedicated module):
 - Projects: `org-gtd-projects.el` (multi-step)
-- Single Actions: `org-gtd-single-action.el` 
+- Single Actions: `org-gtd-single-action.el`
 - Calendar: `org-gtd-calendar.el` (time-specific)
 - Delegate: `org-gtd-delegate.el` (waiting for others)
 - Incubate: `org-gtd-incubate.el` (someday/maybe)
@@ -135,7 +138,7 @@ org-gtd.el implements David Allen's Getting Things Done (GTD) methodology as an 
 
 GTD files are organized in `org-gtd-directory` (default: `~/gtd/`):
 - `inbox.org` - Capture target
-- `org-gtd-tasks.org` - Main GTD file 
+- `org-gtd-tasks.org` - Main GTD file
 - `org-gtd-incubate.org` - Someday/maybe items
 - `org-gtd-calendar.org` - Calendar items
 
@@ -167,7 +170,7 @@ Key testing dependencies: `with-simulated-input`, `dash`
 
 - **Emacs 27.2+**: Minimum version
 - **org 9.6**: Core org-mode functionality
-- **org-edna 1.1.2**: Task dependencies  
+- **org-edna 1.1.2**: Task dependencies
 - **org-agenda-property 1.3.1**: Agenda enhancements
 - **transient 0.3.7**: Menu interface
 - **f 0.20.0**: File utilities
@@ -178,6 +181,10 @@ The `dev/` directory contains a sandboxed environment for testing. Use `HOME="de
 
 ## Documentation
 
-- Info manual: `C-h i m org gtd RET` 
+- Info manual: `C-h i m org gtd RET`
 - Source: `doc/org-gtd.org` (exports to Texinfo)
 - Comprehensive README.org with quick tour
+
+## Memory Annotations
+
+- When using the emacs mcp server, always redefine or eval-buffer, don't use file loads, because of emacs' caching mechanism

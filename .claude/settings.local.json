@@ -47,8 +47,25 @@
       "Bash(timeout 30 eldev test:*)",
       "Bash(timeout 90 eldev test:*)",
       "Bash(timeout 180 eldev test -B 2 >& 1)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(HOME=\"tmp/sandbox/\" emacs --batch -l tmp/sandbox/init.el -l tmp/sandbox/test-flexible-projects.el --eval \"(org-gtd-test-create-sample-project)\" 2>&1)",
+      "mcp__emacs__eval_elisp",
+      "mcp__emacs__get_buffer_info",
+      "mcp__emacs__create_buffer",
+      "mcp__emacs__insert_text",
+      "mcp__emacs__search_buffers",
+      "mcp__emacs__replace_text",
+      "mcp__emacs__goto_line",
+      "mcp__emacs__get_package_info",
+      "mcp__emacs__compile_elisp",
+      "mcp__emacs__load_file",
+      "mcp__emacs__save_buffer",
+      "mcp__fetch__fetch"
     ],
     "deny": []
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "emacs", "tdd-knowledge-graph"
+  ]
 }
