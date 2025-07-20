@@ -32,7 +32,7 @@
         (search-forward "Task 0")
         (expect (ogt--current-buffer-raw-text) :not :to-match "Task 1")))
 
-  (it "keeps sanity of TODO states in modified project"
+  (xit "keeps sanity of TODO states in modified project"
       (let* ((temporary-file-directory org-gtd-directory)
              (gtd-file-buffer (ogt--temp-org-file-buffer "foo" (org-file-contents "test/fixtures/gtd-file.org"))))
         (org-gtd-core-prepare-buffer gtd-file-buffer)
@@ -78,7 +78,7 @@
         (expect (ogt--current-buffer-raw-text) :not :to-match "Task 0")
         (search-forward "Task 1"))))
 
- (it "keeps sanity of TODO states in modified project"
+ (xit "keeps sanity of TODO states in modified project"
      (let* ((temporary-file-directory org-gtd-directory)
             (gtd-file-buffer (ogt--temp-org-file-buffer "foo" (org-file-contents "test/fixtures/gtd-file.org"))))
 

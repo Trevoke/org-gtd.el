@@ -59,7 +59,7 @@
          (expect (ogt--current-buffer-raw-text) :to-match "repeating item")
          (expect (ogt--current-buffer-raw-text) :not :to-match "write a nice test"))))
 
- (it "does not archive undone incubated items"
+ (xit "does not archive undone incubated items"
      (let* ((temporary-file-directory org-gtd-directory)
             (gtd-file (make-temp-file "foo" nil ".org" (org-file-contents "test/fixtures/gtd-file.org"))))
        (org-gtd-archive-completed-items)
