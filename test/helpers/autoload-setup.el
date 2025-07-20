@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t; -*-
 ;; NEVER put loads or requires in here.  That's the point of this helper: to
 ;; help test things in an environment where things aren't loaded.
 

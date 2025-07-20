@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t; -*-
 (defun create-additional-project-target (filename)
   (ogt--create-org-file-in-org-gtd-dir filename ogt--base-project-heading))
 

@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t; -*-
 (defconst ogt--base-project-heading
   "* AdditionalHeading
 :PROPERTIES:

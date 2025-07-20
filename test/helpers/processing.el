@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t; -*-
 (load "test/helpers/clarifying.el")
 
 (defun ogt-capture-single-item (&optional label)

@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t; -*-
 (defun ogt-clarify-as-single-action ()
   (let ((inhibit-message t))
     (execute-kbd-macro (kbd "C-c c s"))))
