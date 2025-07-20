@@ -51,6 +51,7 @@
 
 ;;;; Requirements
 
+(require 'org-gtd-core)
 (require 'org-gtd-delegate)
 
 ;;;; Functions
@@ -71,7 +72,7 @@
 
 (defun org-gtd-skip-unless-in-progress ()
   "Skip-function: only keep if it's not one of the DONE keywords"
-  (org-agenda-skip-entry-if 'todo org-done-keywords))
+  (org-agenda-skip-entry-if 'todo (list org-gtd-done org-gtd-canceled)))
 
 (defun org-gtd-skip-if-habit ()
   "Skip-function: only keep this if it's a habit."
