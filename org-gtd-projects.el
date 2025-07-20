@@ -164,11 +164,33 @@ other undone tasks are marked as `org-gtd-todo'."
          t
          'tree)
         (let ((first-wait (org-gtd-projects--first-wait-task))
-              (first-todo (org-gtd-projects--first-todo-task)))
-          (unless first-wait
-            (org-entry-put (org-gtd-projects--org-element-pom first-todo)
-                           "TODO"
-                           org-gtd-next)))))))
+              (first-todo (org-gtd-projects--first-todo-task))
+              (last-todo (org-gtd-projects--last-todo-task))
+              (existing-next (org-gtd-projects--first-next-task)))
+          (cond
+           ;; If there's a WAIT task, don't change anything
+           (first-wait nil)
+           ;; If org-reverse-note-order is t, make the first TODO task NEXT
+           ;; (newly added tasks appear first and should become NEXT)
+           (org-reverse-note-order
+            (when existing-next
+              (org-entry-put (org-gtd-projects--org-element-pom existing-next)
+                             "TODO"
+                             org-gtd-todo))
+            (when first-todo
+              (org-entry-put (org-gtd-projects--org-element-pom first-todo)
+                             "TODO"
+                             org-gtd-next)))
+           ;; If org-reverse-note-order is nil, keep existing NEXT unchanged
+           ;; (newly added tasks appear last and should stay TODO)
+           ((and (not org-reverse-note-order) existing-next)
+            nil) ; Keep existing NEXT as is
+           ;; Fallback: if no existing NEXT, make first TODO NEXT
+           ((not existing-next)
+            (when first-todo
+              (org-entry-put (org-gtd-projects--org-element-pom first-todo)
+                             "TODO"
+                             org-gtd-next)))))))))
 
 ;;;;; Private
 
@@ -233,6 +255,21 @@ Refile to `org-gtd-actionable-file-basename'."
 (defalias 'org-edna-action/org-gtd-update-project-task!
   'org-gtd-projects--edna-update-project-task)
 
+(defun org-gtd-projects--first-next-task ()
+  "Given an org tree at point, return the first subtask with `org-gtd-next'.
+Return nil if there isn't one."
+  (let ((heading-level (org-current-level)))
+    (car
+     (seq-filter (lambda (x) x)
+                 (org-map-entries
+                  (lambda ()
+                    (and (not (equal heading-level (org-current-level)))
+                         (string-equal org-gtd-next
+                                       (org-entry-get (point) "TODO"))
+                         (org-element-at-point)))
+                  t
+                  'tree)))))
+
 (defun org-gtd-projects--first-todo-task ()
   "Given an org tree at point, return the first subtask with `org-gtd-todo'.
 Return nil if there isn't one."
@@ -247,6 +284,22 @@ Return nil if there isn't one."
                          (org-element-at-point)))
                   t
                   'tree)))))
+
+(defun org-gtd-projects--last-todo-task ()
+  "Given an org tree at point, return the last subtask with `org-gtd-todo'.
+Return nil if there isn't one."
+  (let ((heading-level (org-current-level)))
+    (car
+     (reverse
+      (seq-filter (lambda (x) x)
+                  (org-map-entries
+                   (lambda ()
+                     (and (not (equal heading-level (org-current-level)))
+                          (string-equal org-gtd-todo
+                                        (org-entry-get (point) "TODO"))
+                          (org-element-at-point)))
+                   t
+                   'tree))))))
 
 (defun org-gtd-projects--first-wait-task ()
   "Given an org tree at point, return the first subtask with `org-gtd-wait'.
