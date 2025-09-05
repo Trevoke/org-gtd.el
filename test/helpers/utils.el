@@ -1,3 +1,6 @@
+;; Load guard to prevent redundant loading
+(unless (featurep 'org-gtd-test-helper-utils)
+
 (defun create-additional-project-target (filename)
   (ogt--create-org-file-in-org-gtd-dir filename ogt--base-project-heading))
 
@@ -56,3 +59,6 @@ Return the buffer visiting that file."
                             (buffer-string)))))
     (kill-buffer "*Directory*")
     ogt-files))
+
+;; End load guard and provide feature
+(provide 'org-gtd-test-helper-utils))

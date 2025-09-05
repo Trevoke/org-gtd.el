@@ -1,4 +1,8 @@
-(load "test/helpers/clarifying.el")
+;; Load guard to prevent redundant loading  
+(unless (featurep 'org-gtd-test-helper-processing)
+
+;; Load dependencies
+(require 'org-gtd-test-helper-clarifying (file-name-concat default-directory "test/helpers/clarifying.el"))
 
 (defun ogt-capture-single-item (&optional label)
   (let ((inhibit-message t))
@@ -77,3 +81,6 @@
     (ogt-capture-single-item label)
     (org-gtd-process-inbox)
     (ogt-clarify-as-trash-item)))
+
+;; End load guard and provide feature
+(provide 'org-gtd-test-helper-processing))

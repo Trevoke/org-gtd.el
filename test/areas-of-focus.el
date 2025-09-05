@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
-(load "test/helpers/setup.el")
+(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -8,9 +8,9 @@
 (describe
  "Areas of focus"
 
- :var ((inhibit-message t))
 
- (before-each (ogt--configure-emacs)
+ (before-each (setq inhibit-message t)
+              (ogt--configure-emacs)
               (setq org-gtd-areas-of-focus '("Health" "Home" "Career")))
  (after-each (ogt--close-and-delete-files)
              (setq org-gtd-areas-of-focus nil))

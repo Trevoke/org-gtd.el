@@ -1,7 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
-(load "test/helpers/setup.el")
-(load "test/helpers/utils.el")
+;; Load test helpers via setup.el (which now uses require internally)
+(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)

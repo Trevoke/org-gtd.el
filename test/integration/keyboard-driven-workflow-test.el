@@ -1,7 +1,6 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
-(load "test/helpers/setup.el")
-(load "test/helpers/utils.el")
+(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -9,9 +8,8 @@
 (describe
  "Keyboard-Driven GTD Workflow Integration Tests"
 
- :var ((inhibit-message t))
 
- (before-each (ogt--configure-emacs))
+ (before-each (setq inhibit-message t) (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
  (describe "Single Action with keyboard simulation"

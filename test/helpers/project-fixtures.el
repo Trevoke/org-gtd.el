@@ -1,3 +1,6 @@
+;; Load guard to prevent redundant loading
+(unless (featurep 'org-gtd-test-helper-project-fixtures)
+
 (defconst ogt--base-project-heading
   "* AdditionalHeading
 :PROPERTIES:
@@ -28,3 +31,6 @@
 *** DONE Task 1
 *** CNCL Task 2
 *** CNCL Task 3")
+
+;; End load guard and provide feature
+(provide 'org-gtd-test-helper-project-fixtures))

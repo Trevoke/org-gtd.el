@@ -1,19 +1,15 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
-(load "test/helpers/setup.el")
-(load "test/helpers/utils.el")
-(load "test/helpers/processing.el")
-(load "test/helpers/clarifying.el")
-(load "test/helpers/keyboard-integration.el")
+(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'keyboard-integration (file-name-concat default-directory "test/helpers/keyboard-integration.el"))
 (require 'org-gtd)
 (require 'buttercup)
 
 (describe
  "Full User Experience Integration Tests with Real End-to-End Workflows"
 
- :var ((inhibit-message t))
 
- (before-each (ogt--configure-emacs))
+ (before-each (setq inhibit-message t) (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
  (it "processes multiple GTD item types using org-gtd-process-inbox with keyboard integration"

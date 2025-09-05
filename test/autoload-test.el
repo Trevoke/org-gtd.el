@@ -1,6 +1,6 @@
 ;;; -*- lexical-binding: t; -*-
 
-(load "test/helpers/setup.el")
+(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 (require 'buttercup)
 (describe
     "autoloaded entry point"

@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
-(load "test/helpers/setup.el")
+(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -8,17 +8,17 @@
 (describe
  "Organizing (in 3.0)"
 
- :var ((inhibit-message t))
 
- (before-each (ogt--configure-emacs))
+ (before-each (setq inhibit-message t)
+              (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
  (describe
   "cleanup"
 
-  :var ((inhibit-message t))
 
-  (before-each (defun hook1 ()
+  (before-each (setq inhibit-message t)
+               (defun hook1 ()
                  (if (org-gtd-organize-type-member-p '(quick-action))
                      (org-entry-put (point) "HOOK1" "YES")))
                (defun hook2 ()

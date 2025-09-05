@@ -1,6 +1,6 @@
 ;; ;; -*- lexical-binding: t; coding: utf-8 -*-
 
-;; (load "test/helpers/setup.el")
+;; (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 ;; (load "test/helpers/utils.el")
 ;; (require 'org-gtd)
 ;; (require 'buttercup)

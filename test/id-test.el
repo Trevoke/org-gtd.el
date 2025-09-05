@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
-(load "test/helpers/setup.el")
+(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -8,7 +8,8 @@
 (describe
  "Generating ID for headings"
 
- :var ((inhibit-message t))
+
+ (before-each (setq inhibit-message t))
 
  (it "generates a makeshift id if the heading is empty"
      (with-temp-buffer

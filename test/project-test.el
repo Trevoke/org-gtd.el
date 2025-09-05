@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
-(load "test/helpers/setup.el")
+(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -8,9 +8,9 @@
 (describe
  "Project management"
 
-  :var ((inhibit-message t))
 
- (before-each (ogt--configure-emacs))
+ (before-each (setq inhibit-message t)
+              (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files)
              ;; TODO figure out if this can / should be removed
              (remove-hook 'post-command-hook 'org-add-log-note))
@@ -52,9 +52,9 @@
 (describe
  "Clarifying a project"
 
-  :var ((inhibit-message t))
 
- (before-each (ogt--configure-emacs)
+ (before-each (setq inhibit-message t)
+              (ogt--configure-emacs)
               (setq org-gtd-clarify-project-templates
          '(("prepare a video" . "* think of topic\n* record video\n* edit video"))))
  (after-each (ogt--close-and-delete-files)

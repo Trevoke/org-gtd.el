@@ -1,3 +1,6 @@
+;; Load guard to prevent redundant loading
+(unless (featurep 'org-gtd-test-helper-clarifying)
+
 (defun ogt-clarify-as-single-action ()
   (let ((inhibit-message t))
     (org-gtd-single-action)))
@@ -49,3 +52,6 @@
 (defun ogt-clarify-as-trash-item ()
   (let ((inhibit-message t))
     (org-gtd-trash)))
+
+;; End load guard and provide feature
+(provide 'org-gtd-test-helper-clarifying))
