@@ -16,7 +16,11 @@
         org-gtd-organize-hooks '()
         org-gtd-refile-to-any-target t
         org-edna-use-inheritance t
-        org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+        org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL"))
+        org-gtd-keyword-mapping '((todo . "TODO")
+                                  (next . "NEXT")
+                                  (wait . "WAIT")
+                                  (canceled . "CNCL")))
   (org-edna-mode 1)
   (define-key org-gtd-clarify-map (kbd "C-c c") #'org-gtd-organize))
 

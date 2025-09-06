@@ -22,6 +22,26 @@ The documentation also details how to upgrade from one version to another.
 
 ** Whirlwind tour of the package
 What follows is an incomplete description of the package. It is useful if you just want to take it for a test run. Read the full documentation for the full set of features and customizability.
+
+*** Quick Configuration
+Before using org-gtd, you need to configure your org-mode TODO keywords and map them to GTD semantic states:
+
+#+begin_src emacs-lisp
+;; Configure org-mode TODO keywords
+(setq org-todo-keywords 
+      '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+
+;; Map GTD semantics to your keywords  
+(customize-set-variable 'org-gtd-keyword-mapping
+      '((todo . "TODO")      ; not ready to act
+        (next . "NEXT")      ; ready to act
+        (wait . "WAIT")      ; blocked/delegated  
+        (canceled . "CNCL"))) ; terminated
+
+;; Optional: Enable org-gtd-mode for automatic agenda integration
+(org-gtd-mode 1)
+#+end_src
+
 *** GTD Meta
 Modes:
 - ~org-gtd-mode~ :: If you want to be able to refresh the org-agenda views and have all the ~org-gtd~ files included in your ~org-agenda-files~, you'll need this to be enabled.

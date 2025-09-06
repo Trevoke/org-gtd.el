@@ -5,7 +5,11 @@
   "Run before autoload test that needs the gtd directory to exist."
   (setq org-gtd-directory (make-temp-file "org-gtd" t)
         ;; Configure org-todo-keywords to prevent GTD keyword configuration errors
-        org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL"))))
+        org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL"))
+        org-gtd-keyword-mapping '((todo . "TODO")
+                                  (next . "NEXT")
+                                  (wait . "WAIT")
+                                  (canceled . "CNCL"))))
 
 (defmacro ogt--with-temp-org-buffer (contents &rest body)
   "Like `with-temp-buffer', but in Org mode.

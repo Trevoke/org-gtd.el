@@ -11,7 +11,11 @@
 
  (before-each (setq inhibit-message t)
   (ogt--configure-emacs)
-  (setq org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL"))))
+  (setq org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL"))
+        org-gtd-keyword-mapping '((todo . "TODO")
+                                  (next . "NEXT")
+                                  (wait . "WAIT")
+                                  (canceled . "CNCL"))))
  (after-each (ogt--close-and-delete-files))
 
  (describe

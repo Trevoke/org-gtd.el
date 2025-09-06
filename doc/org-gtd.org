@@ -5,6 +5,8 @@
 #+DATE: 2015-{{{year}}}
 #+LANGUAGE: en
 
+# TODO: Update for org-gtd 4.0 - Document new org-gtd-keyword-mapping structure and required org-todo-keywords setup
+
 #+TEXINFO_DIR_CATEGORY: Emacs
 #+TEXINFO_DIR_TITLE: Org GTD: (org-gtd)
 #+TEXINFO_DIR_DESC: An opinionated GTD flow implemented in org-mode
@@ -140,6 +142,15 @@ Functions use the words =capture=, =process=, =clarify=, =organize=, =review=.
 :DESCRIPTION: How to upgrade your local setup across major versions
 :END:
 If you are installing and not upgrading, you can skip this section entirely and just go to the next section, [[#Installing][Installing]].
+*** 4.0.0 <- 3.x.x
+**** Content TK
+Migration instructions for the new ~org-gtd-keyword-mapping~ structure and handling of #+TODO: lines need to be written here.
+
+Key changes:
+- Replace individual keyword variables with single ~org-gtd-keyword-mapping~ structure
+- Remove any #+TODO: lines from GTD files - use global ~org-todo-keywords~ configuration instead
+- All GTD keywords must be in the same sequence within ~org-todo-keywords~
+
 *** 3.0.0 <- 2.2.0
 There's a lot here, so you may want to make yourself some tea. We have to cover support for org habits, upgrading data, key changes in the configuration, a change in the menu, and the rest of the API changes. And once that's done, you should head back to the [[#new-in-3.0][What's new in 3.0]] section to see what else is available for you!
 **** A note for doom emacs users
