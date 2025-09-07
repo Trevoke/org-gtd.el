@@ -71,6 +71,7 @@
 (require 'org-gtd-review)
 (require 'org-gtd-oops)
 (require 'org-gtd-upgrades)
+(require 'org-gtd-id-overlay)
 
 ;;;; Constants
 
