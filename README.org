@@ -32,11 +32,11 @@ Before using org-gtd, you need to configure your org-mode TODO keywords and map 
       '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
 
 ;; Map GTD semantics to your keywords  
-(customize-set-variable 'org-gtd-keyword-mapping
-      '((todo . "TODO")      ; not ready to act
-        (next . "NEXT")      ; ready to act
-        (wait . "WAIT")      ; blocked/delegated  
-        (canceled . "CNCL"))) ; terminated
+(setopt org-gtd-keyword-mapping
+        '((todo . "TODO")      ; not ready to act
+          (next . "NEXT")      ; ready to act
+          (wait . "WAIT")      ; blocked/delegated  
+          (canceled . "CNCL"))) ; terminated
 
 ;; Optional: Enable org-gtd-mode for automatic agenda integration
 (org-gtd-mode 1)
