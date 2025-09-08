@@ -212,14 +212,61 @@ HEADING-TEXT is the heading content, ID is optional custom ID."
 
   (describe "clarification workflow integration"
     
-    (xit "works with org-gtd-clarify-item workflow"
-      ;; This will be a more complex integration test
-      ;; Testing the full clarification workflow
-      (pending "Integration test to be implemented"))
 
-    (xit "handles newly created IDs in WIP buffer"
-      ;; Test for IDs not yet in org-id-locations
-      (pending "Test for unsaved IDs to be implemented")))
+    (it "handles newly created IDs in WIP buffer"
+      ;; Test overlay functionality with IDs created during workflow
+      (message "DEBUG: Starting second integration test")
+      (ogt-capture-single-item "Set up office equipment") 
+      (message "DEBUG: Capture completed")
+      (org-gtd-process-inbox)
+      (message "DEBUG: Process inbox completed")
+      
+      ;; Work in the WIP buffer where IDs will be created
+      (let ((wip-buffers (seq-filter (lambda (buf) 
+                                       (string-match-p org-gtd-wip--prefix (buffer-name buf))) 
+                                     (buffer-list))))
+        (when wip-buffers
+          (with-current-buffer (car wip-buffers)
+            ;; Add subtasks and create IDs for task dependencies
+            (goto-char (point-max))
+            (newline)
+            (insert "** TODO Buy standing desk")
+            (org-gtd-id-get-create)  ; Create ID for this task
+            (let ((desk-id (org-gtd-id-get-create)))
+              (insert "\n** TODO Install accessories")
+              (org-gtd-id-get-create)
+              (end-of-line)
+              (insert (format "\n:PROPERTIES:\n:BLOCKED_BY: %s\n:END:" desk-id))
+              
+              ;; Enable overlay mode and test that overlays work
+              (message "DEBUG: About to enable overlay mode")
+              (org-gtd-id-overlay-mode 1)
+              (message "DEBUG: Overlay mode enabled")
+              (let ((overlay-count (ogt-count-overlays-in-buffer)))
+                (message "DEBUG: Found %d overlays in WIP buffer" overlay-count)
+                (expect (> overlay-count 0) :to-be t))))))))
+
+  (describe "dynamic overlay updates"
+    
+    (it "updates overlays when BLOCKED_BY property changes"
+      (with-temp-buffer
+        (org-mode)
+        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
+        (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:END:\n")
+        
+        ;; Enable overlay mode
+        (org-gtd-id-overlay-mode 1)
+        (let ((initial-count (ogt-count-overlays-in-buffer)))
+          
+          ;; Add BLOCKED_BY property to Task B
+          (goto-char (point-min))
+          (re-search-forward "Task B")
+          (org-back-to-heading t)
+          (org-set-property "BLOCKED_BY" "task-a-id")
+          
+          ;; Check that overlays increased due to the new property
+          (let ((new-count (ogt-count-overlays-in-buffer)))
+            (expect (> new-count initial-count) :to-be t))))))
 
   ;;;; Performance Tests
 

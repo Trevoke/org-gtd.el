@@ -157,14 +157,34 @@ Removes TODO keywords and statistics cookies."
 ;;;;; Private - Overlay Management
 
 (defun org-gtd-id-overlay--create-overlays ()
-  "Create overlays for all ID properties in the current buffer."
+  "Create overlays for all ID, BLOCKED_BY, and BLOCKS properties in the current buffer."
   (save-excursion
     (goto-char (point-min))
-    (while (re-search-forward "^[ \t]*:ID:[ \t]+\\(\\S-+\\)" nil t)
-      (let* ((id (match-string 1))
-             (id-start (match-beginning 1))
-             (id-end (match-end 1)))
-        (org-gtd-id-overlay--create-overlay id id-start id-end)))))
+    (while (re-search-forward "^[ \t]*:\\(ID\\|BLOCKED_BY\\|BLOCKS\\):[ \t]+\\(.+\\)$" nil t)
+      (let* ((property-type (match-string 1))
+             (property-value (match-string 2))
+             (value-start (match-beginning 2))
+             (value-end (match-end 2)))
+        (if (string-equal property-type "ID")
+            ;; Single ID for :ID: property
+            (org-gtd-id-overlay--create-overlay property-value value-start value-end)
+          ;; Multiple space-separated IDs for :BLOCKED_BY: and :BLOCKS: properties
+          (org-gtd-id-overlay--create-overlays-for-multiple-ids 
+           property-value value-start))))))
+
+(defun org-gtd-id-overlay--create-overlays-for-multiple-ids (property-value value-start)
+  "Create individual overlays for each space-separated ID in PROPERTY-VALUE.
+VALUE-START is the buffer position where the property value begins."
+  (let ((ids (split-string (string-trim property-value) "\\s-+" t))
+        (current-pos value-start))
+    (dolist (id ids)
+      ;; Find the start position of this ID within the property value
+      (goto-char current-pos)
+      (when (re-search-forward (regexp-quote id) (line-end-position) t)
+        (let ((id-start (match-beginning 0))
+              (id-end (match-end 0)))
+          (org-gtd-id-overlay--create-overlay id id-start id-end)
+          (setq current-pos id-end))))))
 
 (defun org-gtd-id-overlay--create-overlay (id start end)
   "Create an overlay for ID between START and END positions."
@@ -199,12 +219,19 @@ Removes TODO keywords and statistics cookies."
 ;;;;; Private - ID Resolution
 
 (defun org-gtd-id-overlay--get-heading-text (id)
-  "Get heading text for ID with fallback strategies."
+  "Get heading text for ID with fallback strategies.
+Prioritizes current buffer (especially WIP buffers) over global org-id system."
   (or (org-gtd-id-overlay--cache-get id)
-      (let ((heading-text (or (org-gtd-id-overlay--resolve-from-current-buffer id)
-                              (org-gtd-id-overlay--resolve-from-org-id id)
-                              (format "Unknown ID: %s" 
-                                    (org-gtd-id-overlay--truncate-text id 8)))))
+      (let ((heading-text (or 
+                           ;; First: try current buffer (prioritizes WIP buffer content)
+                           (org-gtd-id-overlay--resolve-from-current-buffer id)
+                           ;; Second: try org-id system for saved content
+                           (org-gtd-id-overlay--resolve-from-org-id id)
+                           ;; Third: try other GTD files as fallback
+                           (org-gtd-id-overlay--resolve-from-gtd-files id)
+                           ;; Final fallback: show truncated ID
+                           (format "Unknown ID: %s" 
+                                 (org-gtd-id-overlay--truncate-text id 8)))))
         (org-gtd-id-overlay--cache-put id heading-text)
         heading-text)))
 
@@ -232,24 +259,48 @@ Removes TODO keywords and statistics cookies."
         (org-gtd-id-overlay--extract-heading-text 
          (nth 4 (org-heading-components)))))))
 
+(defun org-gtd-id-overlay--resolve-from-gtd-files (id)
+  "Resolve heading text for ID by searching GTD files as last resort."
+  ;; This is a fallback for when org-id-find fails but we might find
+  ;; the ID in GTD files that aren't yet indexed
+  (let ((gtd-files (org-gtd-core--agenda-files)))
+    (catch 'found
+      (dolist (file gtd-files)
+        (when (and (file-exists-p file) (file-readable-p file))
+          (with-temp-buffer
+            (insert-file-contents file)
+            (org-mode)
+            (goto-char (point-min))
+            (when (re-search-forward (format "^[ \t]*:ID:[ \t]+%s" (regexp-quote id)) nil t)
+              ;; Go back to find the heading
+              (beginning-of-line)
+              (while (and (not (org-at-heading-p)) (not (bobp)))
+                (forward-line -1))
+              (when (org-at-heading-p)
+                (throw 'found (org-gtd-id-overlay--extract-heading-text 
+                              (nth 4 (org-heading-components))))))))))))
+
 ;;;;; Private - Navigation
 
 (defun org-gtd-id-overlay--navigate-to-id (id)
-  "Navigate to the heading with the given ID."
-  (let ((marker (org-id-find id t)))
-    (if marker
+  "Navigate to the heading with the given ID.
+Prioritizes current buffer (especially WIP buffers) over global org-id system."
+  ;; First: try current buffer (prioritizes WIP buffer content)
+  (let ((current-buffer-pos (org-gtd-id-overlay--find-id-in-current-buffer id)))
+    (if current-buffer-pos
         (progn
-          (switch-to-buffer (marker-buffer marker))
-          (goto-char marker)
+          (goto-char current-buffer-pos)
           (org-reveal)
           (org-fold-show-entry))
-      ;; Fallback: search in current buffer
-      (let ((pos (org-gtd-id-overlay--find-id-in-current-buffer id)))
-        (if pos
+      ;; Second: try org-id system for saved content
+      (let ((marker (org-id-find id t)))
+        (if marker
             (progn
-              (goto-char pos)
+              (switch-to-buffer (marker-buffer marker))
+              (goto-char marker)
               (org-reveal)
               (org-fold-show-entry))
+          ;; Final fallback: inform user
           (message "Cannot find heading with ID: %s" id))))))
 
 (defun org-gtd-id-overlay--find-id-in-current-buffer (id)
@@ -308,18 +359,24 @@ _LEN is the length of the deleted text (unused)."
   (save-excursion
     (goto-char start)
     (while (and (< (point) end)
-                (re-search-forward "^[ \t]*:ID:[ \t]+\\(\\S-+\\)" end t))
-      (let* ((id (match-string 1))
-             (id-start (match-beginning 1))
-             (id-end (match-end 1)))
-        (org-gtd-id-overlay--create-overlay id id-start id-end)))))
+                (re-search-forward "^[ \t]*:\\(ID\\|BLOCKED_BY\\|BLOCKS\\):[ \t]+\\(.+\\)$" end t))
+      (let* ((property-type (match-string 1))
+             (property-value (match-string 2))
+             (value-start (match-beginning 2))
+             (value-end (match-end 2)))
+        (if (string-equal property-type "ID")
+            ;; Single ID for :ID: property
+            (org-gtd-id-overlay--create-overlay property-value value-start value-end)
+          ;; Multiple space-separated IDs for :BLOCKED_BY: and :BLOCKS: properties
+          (org-gtd-id-overlay--create-overlays-for-multiple-ids 
+           property-value value-start))))))
 
 (defun org-gtd-id-overlay--property-changed (property _value &optional begin end)
-  "Handle property changes, refreshing overlays if ID property changed.
+  "Handle property changes, refreshing overlays if ID-related property changed.
 PROPERTY is the property name, _VALUE is the new value (unused).
 BEGIN and END mark the affected region."
   (when (and org-gtd-id-overlay-mode 
-             (string-equal property "ID"))
+             (member property '("ID" "BLOCKED_BY" "BLOCKS")))
     ;; Refresh the current heading area
     (save-excursion
       (let ((heading-start (or begin (progn (org-back-to-heading t) (point))))

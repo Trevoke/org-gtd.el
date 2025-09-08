@@ -1,0 +1,214 @@
+;;; org-gtd-task-management.el --- Task dependency and relationship management -*- lexical-binding: t; coding: utf-8 -*-
+;;
+;; Copyright © 2025 Aldric Giacomoni
+
+;; Author: Aldric Giacomoni <trevoke@gmail.com>
+;; This file is not part of GNU Emacs.
+
+;; This file is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 3, or (at your option)
+;; any later version.
+
+;; This file is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+;;
+;; Interactive commands for managing task relationships and dependencies
+;; in the org-gtd system. Provides commands to create BLOCKS and BLOCKED_BY
+;; relationships between tasks.
+;;
+
+;;; Code:
+
+;;;; Requirements
+
+(require 'org)
+(require 'org-gtd-core)
+(require 'org-gtd-id)
+
+;;;; Interactive Commands
+
+;;;###autoload
+(defun org-gtd-task-add-blocker ()
+  "Add a task that blocks the current task.
+Prompts user to select a task, then adds that task's ID to the current task's BLOCKED_BY property."
+  (interactive)
+  (unless (org-at-heading-p)
+    (user-error "Point must be on an org heading"))
+  
+  (let* ((current-heading (nth 4 (org-heading-components)))
+         (selected-id (org-gtd-task-management--select-task-id 
+                       (format "Select task that blocks '%s': " current-heading))))
+    (when selected-id
+      (org-gtd-task-management--add-to-property "BLOCKED_BY" selected-id)
+      (message "Added blocker relationship: %s blocks %s" 
+               (org-gtd-task-management--get-heading-for-id selected-id)
+               current-heading))))
+
+;;;###autoload  
+(defun org-gtd-task-add-dependent ()
+  "Add a task that depends on the current task.
+Prompts user to select a task, then adds the current task's ID to that task's BLOCKED_BY property."
+  (interactive)
+  (unless (org-at-heading-p)
+    (user-error "Point must be on an org heading"))
+  
+  (let* ((current-heading (nth 4 (org-heading-components)))
+         (current-id (or (org-entry-get (point) "ID")
+                        (org-gtd-id-get-create)))
+         (selected-id (org-gtd-task-management--select-task-id
+                       (format "Select task that depends on '%s': " current-heading))))
+    (when selected-id
+      (org-gtd-task-management--add-to-other-task-property selected-id "BLOCKED_BY" current-id)
+      (message "Added dependency relationship: %s depends on %s"
+               (org-gtd-task-management--get-heading-for-id selected-id)
+               current-heading))))
+
+;;;; Private Helper Functions
+
+(defun org-gtd-task-management--select-task-id (prompt)
+  "Prompt user to select a task ID using PROMPT.
+Returns the selected ID or nil if cancelled."
+  ;; For now, simple implementation using completing-read
+  ;; Could be enhanced with a more sophisticated picker later
+  (let* ((all-ids (org-gtd-task-management--collect-all-task-ids))
+         (id-alist (mapcar (lambda (id)
+                            (cons (format "%s (%s)" 
+                                         (org-gtd-task-management--get-heading-for-id id)
+                                         id) 
+                                  id))
+                          all-ids))
+         (selection (completing-read prompt id-alist nil t)))
+    (cdr (assoc selection id-alist))))
+
+(defun org-gtd-task-management--collect-all-task-ids ()
+  "Collect all undone task IDs from current buffer and org-agenda-files."
+  (let ((ids '()))
+    ;; Collect from current buffer
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward "^\\(\\*+\\)[ \t]+\\([^*\n]*\\)" nil t)
+        (when (org-at-heading-p)
+          (let ((todo-state (org-get-todo-state)))
+            ;; Only include if it's an undone TODO item or has no todo state but has an ID
+            (when (or (and todo-state (not (org-entry-is-done-p)))
+                     (and (not todo-state) (org-entry-get (point) "ID")))
+              (let ((id (org-entry-get (point) "ID")))
+                (when id
+                  (push id ids))))))))
+    
+    ;; Collect from org-agenda-files (not just GTD files)
+    (dolist (file (org-agenda-files))
+      (when (and (file-exists-p file) (file-readable-p file))
+        (with-temp-buffer
+          (insert-file-contents file)
+          (org-mode)
+          (goto-char (point-min))
+          (while (re-search-forward "^\\(\\*+\\)[ \t]+\\([^*\n]*\\)" nil t)
+            (when (org-at-heading-p)
+              (let ((todo-state (org-get-todo-state))
+                    (id (org-entry-get (point) "ID")))
+                (when (and id
+                          (or (and todo-state (not (org-entry-is-done-p)))
+                              (and (not todo-state))))
+                  (unless (member id ids)
+                    (push id ids)))))))))
+    
+    (reverse ids)))
+
+(defun org-gtd-task-management--add-to-property (property value)
+  "Add VALUE to the PROPERTY of the current heading.
+Handles space-separated values properly."
+  (let ((current-value (org-entry-get (point) property)))
+    (if current-value
+        (unless (string-match-p (regexp-quote value) current-value)
+          (org-entry-put (point) property (concat current-value " " value)))
+      (org-entry-put (point) property value))))
+
+(defun org-gtd-task-management--add-to-other-task-property (task-id property value)
+  "Find heading with TASK-ID and add VALUE to its PROPERTY."
+  ;; First try current buffer
+  (let ((pos (org-gtd-task-management--find-id-in-current-buffer task-id)))
+    (if pos
+        (progn
+          (save-excursion
+            (goto-char pos)
+            (org-gtd-task-management--add-to-property property value)))
+      ;; Fall back to org-id system
+      (let ((marker (org-id-find task-id t)))
+        (if marker
+            (with-current-buffer (marker-buffer marker)
+              (goto-char marker)
+              (org-gtd-task-management--add-to-property property value))
+          (user-error "Could not find task with ID: %s" task-id))))))
+
+(defun org-gtd-task-management--find-id-in-current-buffer (id)
+  "Find position of heading with ID in current buffer.
+Returns position of the heading or nil if not found."
+  (save-excursion
+    (goto-char (point-min))
+    (when (re-search-forward (format "^[ \t]*:ID:[ \t]+%s" (regexp-quote id)) nil t)
+      ;; Go to the beginning of the property block, then find the heading
+      (beginning-of-line)
+      (while (and (not (org-at-heading-p)) (not (bobp)))
+        (forward-line -1))
+      (when (org-at-heading-p)
+        (point)))))
+
+(defun org-gtd-task-management--get-heading-for-id (id)
+  "Get heading text for ID, searching current buffer and GTD files."
+  (or (org-gtd-task-management--resolve-from-current-buffer id)
+      (org-gtd-task-management--resolve-from-id-system id)  
+      (org-gtd-task-management--resolve-from-gtd-files id)
+      (format "Unknown task (%s)" id)))
+
+(defun org-gtd-task-management--resolve-from-current-buffer (id)
+  "Resolve heading text for ID by searching current buffer."
+  (save-excursion
+    (goto-char (point-min))
+    (when (re-search-forward (format "^[ \t]*:ID:[ \t]+%s" (regexp-quote id)) nil t)
+      ;; Go to the beginning of the property block, then find the heading
+      (beginning-of-line)
+      (while (and (not (org-at-heading-p)) (not (bobp)))
+        (forward-line -1))
+      (when (org-at-heading-p)
+        (nth 4 (org-heading-components))))))
+
+(defun org-gtd-task-management--resolve-from-id-system (id)
+  "Resolve heading text for ID using org-id system."
+  (let ((marker (org-id-find id t)))
+    (when marker
+      (with-current-buffer (marker-buffer marker)
+        (goto-char marker)
+        (nth 4 (org-heading-components))))))
+
+(defun org-gtd-task-management--resolve-from-gtd-files (id)
+  "Resolve heading text for ID by searching GTD files as last resort."
+  (let ((gtd-files (org-gtd-core--agenda-files)))
+    (catch 'found
+      (dolist (file gtd-files)
+        (when (and (file-exists-p file) (file-readable-p file))
+          (with-temp-buffer
+            (insert-file-contents file)
+            (org-mode)
+            (goto-char (point-min))
+            (when (re-search-forward (format "^[ \t]*:ID:[ \t]+%s" (regexp-quote id)) nil t)
+              ;; Go back to find the heading
+              (beginning-of-line)
+              (while (and (not (org-at-heading-p)) (not (bobp)))
+                (forward-line -1))
+              (when (org-at-heading-p)
+                (throw 'found (nth 4 (org-heading-components)))))))))))
+
+;;;; Footer
+
+(provide 'org-gtd-task-management)
+
+;;; org-gtd-task-management.el ends here
