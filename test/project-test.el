@@ -111,6 +111,13 @@
 
 (describe
  "Default sequential dependencies (Story 7)"
+
+ (before-each (setq inhibit-message t)
+              (ogt--configure-emacs))
+ (after-each (ogt--close-and-delete-files)
+             ;; TODO figure out if this can / should be removed
+             (remove-hook 'post-command-hook 'org-add-log-note))
+
  (it "creates sequential dependencies for tasks without existing relationships"
      ;; Create a project with 3 tasks and verify sequential dependencies are created
      (ogt-capture-and-process-project "sequential project")
