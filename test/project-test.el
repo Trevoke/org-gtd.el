@@ -108,3 +108,95 @@
 ;;       (expect (org-element-property :priority (org-element-at-point))
 ;;               :to-equal (org-priority-to-value "A"))))
 ;; )
+
+(describe
+ "Default sequential dependencies (Story 7)"
+ (it "creates sequential dependencies for tasks without existing relationships"
+     ;; Create a project with 3 tasks and verify sequential dependencies are created
+     (ogt-capture-and-process-project "sequential project")
+     
+     ;; Verify the project was created and check the sequential dependencies
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "sequential project")
+       
+       ;; Find Task 1 - should have no DEPENDS_ON but should BLOCK Task 2
+       (search-forward "Task 1")
+       (org-back-to-heading t)
+       (let ((task1-depends (org-entry-get-multivalued-property (point) "DEPENDS_ON"))
+             (task1-blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+         (expect task1-depends :to-be nil)  ;; First task depends on nothing
+         (expect (length task1-blocks) :to-equal 1))  ;; But blocks one task
+       
+       ;; Find Task 2 - should DEPEND_ON Task 1 and BLOCK Task 3  
+       (search-forward "Task 2")
+       (org-back-to-heading t)
+       (let ((task2-depends (org-entry-get-multivalued-property (point) "DEPENDS_ON"))
+             (task2-blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+         (expect (length task2-depends) :to-equal 1)  ;; Depends on Task 1
+         (expect (length task2-blocks) :to-equal 1))  ;; Blocks Task 3
+       
+       ;; Find Task 3 - should DEPEND_ON Task 2 but block nothing
+       (search-forward "Task 3")
+       (org-back-to-heading t) 
+       (let ((task3-depends (org-entry-get-multivalued-property (point) "DEPENDS_ON"))
+             (task3-blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+         (expect (length task3-depends) :to-equal 1)  ;; Depends on Task 2
+         (expect task3-blocks :to-be nil))))  ;; Last task blocks nothing
+
+ (it "preserves existing dependencies when organizing project"
+     ;; This tests Story 8: Custom Dependencies Override Defaults
+     ;; Create a project, add custom dependencies, then organize - custom dependencies should be preserved
+     (ogt-capture-single-item "custom dependencies project")
+     (org-gtd-process-inbox)
+     (goto-char (point-max))
+     (newline)
+     (insert ogt--project-text)
+     
+     ;; Add custom dependency: Task 3 depends on Task 1 (skipping Task 2)
+     (goto-char (point-min))
+     (search-forward "Task 3")
+     (org-back-to-heading t)
+     (let ((task3-id (org-gtd-id-get-create)))
+       (goto-char (point-min))
+       (search-forward "Task 1") 
+       (org-back-to-heading t)
+       (let ((task1-id (org-gtd-id-get-create)))
+         ;; Create custom dependency: Task 3 depends on Task 1
+         (goto-char (point-min))
+         (search-forward "Task 3")
+         (org-back-to-heading t)
+         (org-entry-add-to-multivalued-property (point) "DEPENDS_ON" task1-id)
+         (goto-char (point-min))
+         (search-forward "Task 1")
+         (org-back-to-heading t)
+         (org-entry-add-to-multivalued-property (point) "BLOCKS" task3-id)))
+     
+     ;; Now organize as project
+     (ogt-clarify-as-project)
+     
+     ;; Verify custom dependencies are preserved  
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "custom dependencies project")
+       
+       ;; Task 3 should still depend on Task 1
+       (search-forward "Task 3")
+       (org-back-to-heading t)
+       (let ((task3-depends (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+         (expect (length task3-depends) :to-equal 1))
+       
+       ;; Task 1 should block both Task 3 (custom) and Task 2 (default sequential)
+       (goto-char (point-min))
+       (search-forward "Task 1")
+       (org-back-to-heading t) 
+       (let ((task1-blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+         (expect (length task1-blocks) :to-equal 2))
+       
+       ;; Task 2 should get default sequential dependency (depends on Task 1)
+       ;; since it has no custom dependencies
+       (goto-char (point-min))
+       (search-forward "Task 2")
+       (org-back-to-heading t)
+       (let ((task2-depends (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+         (expect (length task2-depends) :to-equal 1)))))

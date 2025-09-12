@@ -197,6 +197,7 @@ Refile to `org-gtd-actionable-file-basename'."
 
   ;; Project-specific business logic
   (org-gtd-projects-fix-todo-keywords-for-project-at-point)
+  (org-gtd-projects--add-default-sequential-dependencies)
   (org-gtd-projects--add-progress-cookie)
 
   (org-gtd-refile--do org-gtd-projects org-gtd-projects-template))
@@ -208,6 +209,59 @@ Refile to `org-gtd-actionable-file-basename'."
      (org-gtd-configure-item (point) :project-task))
    "LEVEL=2"
    'tree))
+
+(defun org-gtd-projects--add-default-sequential-dependencies ()
+  "Create default sequential dependencies for tasks without DEPENDS_ON.
+For Story 7: Create chain where Task 1 → Task 2 → Task 3, etc.
+For Story 8: Only apply to tasks that don't have DEPENDS_ON relationships."
+  (require 'org-gtd-task-management) ; Ensure task management functions are available
+  (let ((all-tasks (org-gtd-projects--collect-all-tasks))
+        (unconnected-tasks '()))
+    ;; Collect tasks that don't have DEPENDS_ON relationships (they can have BLOCKS)
+    (dolist (task all-tasks)
+      (save-excursion
+        (goto-char task)
+        (unless (org-entry-get-multivalued-property (point) "DEPENDS_ON")
+          (push task unconnected-tasks))))
+    ;; Reverse to maintain document order
+    (setq unconnected-tasks (nreverse unconnected-tasks))
+    ;; Create sequential dependencies for consecutive unconnected tasks
+    (when (> (length unconnected-tasks) 1)
+      (cl-loop for i from 1 below (length unconnected-tasks)
+               do (let ((current-task (nth i unconnected-tasks))
+                        (previous-task (nth (1- i) unconnected-tasks)))
+                    (org-gtd-projects--create-dependency-relationship previous-task current-task))))))
+
+(defun org-gtd-projects--collect-all-tasks ()
+  "Collect all level 2 tasks in document order.
+Returns list of markers pointing to task headings."
+  (let ((tasks '()))
+    (org-map-entries
+     (lambda ()
+       (push (point-marker) tasks))
+     "LEVEL=2"
+     'tree)
+    ;; Return tasks in document order (reverse since we pushed)
+    (nreverse tasks)))
+
+(defun org-gtd-projects--create-dependency-relationship (blocker-marker dependent-marker)
+  "Create bidirectional dependency: BLOCKER-MARKER blocks DEPENDENT-MARKER."
+  (let ((blocker-id (save-excursion
+                      (goto-char blocker-marker)
+                      (or (org-entry-get (point) "ID")
+                          (org-gtd-id-get-create))))
+        (dependent-id (save-excursion
+                        (goto-char dependent-marker)
+                        (or (org-entry-get (point) "ID")
+                            (org-gtd-id-get-create)))))
+    ;; Add BLOCKS property to blocker task
+    (save-excursion
+      (goto-char blocker-marker)
+      (org-entry-add-to-multivalued-property (point) "BLOCKS" dependent-id))
+    ;; Add DEPENDS_ON property to dependent task
+    (save-excursion
+      (goto-char dependent-marker)
+      (org-entry-add-to-multivalued-property (point) "DEPENDS_ON" blocker-id))))
 
 (defun org-gtd-projects--add-progress-cookie ()
   "Add progress tracking cookie to the project heading."
@@ -248,7 +302,7 @@ Refile to `org-gtd-actionable-file-basename'."
 (defun org-gtd-projects--edna-update-project-task (_last-entry)
   "`org-edna' extension to change the todo state to `org-gtd-next'."
   (with-org-gtd-context
-    (org-todo (org-gtd-keywords--next))))
+      (org-todo (org-gtd-keywords--next))))
 
 (defalias 'org-edna-action/org-gtd-update-project-task!
   'org-gtd-projects--edna-update-project-task)
