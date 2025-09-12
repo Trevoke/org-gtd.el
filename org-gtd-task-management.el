@@ -36,26 +36,32 @@
 ;;;; Interactive Commands
 
 ;;;###autoload
-(defun org-gtd-task-add-blocker ()
-  "Add a task that blocks the current task.
-Prompts user to select a task, then adds that task's ID to the current task's BLOCKED_BY property."
+(defun org-gtd-task-add-blockers ()
+  "Add tasks that block the current task.
+Prompts user to select multiple tasks, then creates bidirectional BLOCKS/DEPENDS_ON relationships."
   (interactive)
   (unless (org-at-heading-p)
     (user-error "Point must be on an org heading"))
   
   (let* ((current-heading (nth 4 (org-heading-components)))
-         (selected-id (org-gtd-task-management--select-task-id 
-                       (format "Select task that blocks '%s': " current-heading))))
-    (when selected-id
-      (org-gtd-task-management--add-to-property "BLOCKED_BY" selected-id)
-      (message "Added blocker relationship: %s blocks %s" 
-               (org-gtd-task-management--get-heading-for-id selected-id)
+         (current-id (or (org-entry-get (point) "ID")
+                        (org-gtd-id-get-create)))
+         (selected-ids (org-gtd-task-management--select-multiple-task-ids 
+                        (format "Select tasks that block '%s' (complete with empty selection): " current-heading))))
+    (when selected-ids
+      ;; Add bidirectional relationships for each selected task
+      (dolist (selected-id selected-ids)
+        ;; Selected task BLOCKS current task, current task DEPENDS_ON selected task
+        (org-gtd-task-management--add-to-multivalued-property "DEPENDS_ON" selected-id)
+        (org-gtd-task-management--add-to-other-task-multivalued-property selected-id "BLOCKS" current-id))
+      (message "Added blocker relationships: %s block %s" 
+               (mapconcat (lambda (id) (org-gtd-task-management--get-heading-for-id id)) selected-ids ", ")
                current-heading))))
 
 ;;;###autoload  
 (defun org-gtd-task-add-dependent ()
   "Add a task that depends on the current task.
-Prompts user to select a task, then adds the current task's ID to that task's BLOCKED_BY property."
+Prompts user to select a task, then creates bidirectional BLOCKS/DEPENDS_ON relationship."
   (interactive)
   (unless (org-at-heading-p)
     (user-error "Point must be on an org heading"))
@@ -66,7 +72,9 @@ Prompts user to select a task, then adds the current task's ID to that task's BL
          (selected-id (org-gtd-task-management--select-task-id
                        (format "Select task that depends on '%s': " current-heading))))
     (when selected-id
-      (org-gtd-task-management--add-to-other-task-property selected-id "BLOCKED_BY" current-id)
+      ;; Add bidirectional relationship: current task BLOCKS selected task, selected task DEPENDS_ON current task
+      (org-gtd-task-management--add-to-multivalued-property "BLOCKS" selected-id)
+      (org-gtd-task-management--add-to-other-task-multivalued-property selected-id "DEPENDS_ON" current-id)
       (message "Added dependency relationship: %s depends on %s"
                (org-gtd-task-management--get-heading-for-id selected-id)
                current-heading))))
@@ -87,6 +95,34 @@ Returns the selected ID or nil if cancelled."
                           all-ids))
          (selection (completing-read prompt id-alist nil t)))
     (cdr (assoc selection id-alist))))
+
+(defun org-gtd-task-management--select-multiple-task-ids (prompt)
+  "Prompt user to select multiple task IDs using PROMPT.
+Returns a list of selected IDs or nil if cancelled/empty."
+  (let* ((all-ids (org-gtd-task-management--collect-all-task-ids))
+         (id-alist (mapcar (lambda (id)
+                            (cons (format "%s (%s)" 
+                                         (org-gtd-task-management--get-heading-for-id id)
+                                         id) 
+                                  id))
+                          all-ids))
+         (selected-ids '())
+         (continue t))
+    ;; Multi-select loop: keep prompting until user selects empty or cancels
+    (while (and continue id-alist)
+      (let ((selection (completing-read prompt id-alist nil t)))
+        (if (string-empty-p selection)
+            (setq continue nil) ; Empty selection completes the multi-select
+          ;; Add selected ID to list and remove from available options
+          (let ((selected-id (cdr (assoc selection id-alist))))
+            (when selected-id
+              (push selected-id selected-ids)
+              ;; Remove selected item from future selections
+              (setq id-alist (remove (assoc selection id-alist) id-alist))
+              (setq prompt (format "%s (selected: %d, complete with empty): " 
+                                   (car (split-string prompt " ("))
+                                   (length selected-ids))))))))
+    (reverse selected-ids)))
 
 (defun org-gtd-task-management--collect-all-task-ids ()
   "Collect all undone task IDs from current buffer and org-agenda-files."
@@ -123,30 +159,25 @@ Returns the selected ID or nil if cancelled."
     
     (reverse ids)))
 
-(defun org-gtd-task-management--add-to-property (property value)
-  "Add VALUE to the PROPERTY of the current heading.
-Handles space-separated values properly."
-  (let ((current-value (org-entry-get (point) property)))
-    (if current-value
-        (unless (string-match-p (regexp-quote value) current-value)
-          (org-entry-put (point) property (concat current-value " " value)))
-      (org-entry-put (point) property value))))
+(defun org-gtd-task-management--add-to-multivalued-property (property value)
+  "Add VALUE to the multivalued PROPERTY of the current heading."
+  (org-entry-add-to-multivalued-property (point) property value))
 
-(defun org-gtd-task-management--add-to-other-task-property (task-id property value)
-  "Find heading with TASK-ID and add VALUE to its PROPERTY."
+(defun org-gtd-task-management--add-to-other-task-multivalued-property (task-id property value)
+  "Find heading with TASK-ID and add VALUE to its multivalued PROPERTY."
   ;; First try current buffer
   (let ((pos (org-gtd-task-management--find-id-in-current-buffer task-id)))
     (if pos
         (progn
           (save-excursion
             (goto-char pos)
-            (org-gtd-task-management--add-to-property property value)))
+            (org-gtd-task-management--add-to-multivalued-property property value)))
       ;; Fall back to org-id system
       (let ((marker (org-id-find task-id t)))
         (if marker
             (with-current-buffer (marker-buffer marker)
               (goto-char marker)
-              (org-gtd-task-management--add-to-property property value))
+              (org-gtd-task-management--add-to-multivalued-property property value))
           (user-error "Could not find task with ID: %s" task-id))))))
 
 (defun org-gtd-task-management--find-id-in-current-buffer (id)

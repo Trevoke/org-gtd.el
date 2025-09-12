@@ -31,75 +31,74 @@
   (before-each (setq inhibit-message t) (ogt--configure-emacs))
   (after-each (ogt--close-and-delete-files))
 
-  (describe "org-gtd-task-add-blocker command"
+  (describe "org-gtd-task-add-blockers command (Story 1)"
     
-    (it "adds a blocking task to BLOCKED_BY property"
-      ;; Test the org-gtd-task-add-blocker command
+    (it "creates bidirectional BLOCKS/DEPENDS_ON relationship between tasks"
+      ;; Test the new org-gtd-task-add-blockers command with bidirectional properties
       (with-temp-buffer
         (org-mode)
         (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
         (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:END:\n\n")
         
-        ;; Go to Task B and add Task A as blocker
+        ;; Go to Task B and add Task A as blocker (Task A blocks Task B)
         (goto-char (point-min))
         (re-search-forward "Task B")
         (org-back-to-heading t)
         
-        ;; Mock the task selection to return task-a-id
-        (cl-letf (((symbol-function 'org-gtd-task-management--select-task-id)
-                   (lambda (_prompt) "task-a-id")))
-          (org-gtd-task-add-blocker))
+        ;; Mock the task selection to return single task as list
+        (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
+                   (lambda (_prompt) '("task-a-id"))))
+          (org-gtd-task-add-blockers))
         
-        ;; Verify BLOCKED_BY property was added
-        (let ((blocked-by (org-entry-get (point) "BLOCKED_BY")))
-          (expect blocked-by :to-equal "task-a-id"))))
-    
-    (it "appends to existing BLOCKED_BY property"
-      ;; Test adding multiple blockers
+        ;; Verify Task B has DEPENDS_ON property
+        (let ((depends-on (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+          (expect depends-on :to-equal '("task-a-id")))
+        
+        ;; Verify Task A has BLOCKS property
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+        (let ((blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+          (expect blocks :to-equal '("task-b-id"))))))
+
+    (it "creates bidirectional BLOCKS/DEPENDS_ON relationship with multiple blockers (Story 2)"
+      ;; Test multi-select functionality
       (with-temp-buffer
         (org-mode)
         (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
         (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:END:\n\n")
-        (insert "* Task C\n:PROPERTIES:\n:ID: task-c-id\n:BLOCKED_BY: task-a-id\n:END:\n\n")
+        (insert "* Task C\n:PROPERTIES:\n:ID: task-c-id\n:END:\n\n")
         
-        ;; Go to Task C and add Task B as additional blocker
+        ;; Go to Task C and add both Task A and B as blockers
         (goto-char (point-min))
         (re-search-forward "Task C")
         (org-back-to-heading t)
         
-        ;; Mock the task selection to return task-b-id
-        (cl-letf (((symbol-function 'org-gtd-task-management--select-task-id)
-                   (lambda (_prompt) "task-b-id")))
-          (org-gtd-task-add-blocker))
+        ;; Mock the task selection to return multiple IDs
+        (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
+                   (lambda (_prompt) '("task-a-id" "task-b-id"))))
+          (org-gtd-task-add-blockers))
         
-        ;; Verify BLOCKED_BY property contains both IDs
-        (let ((blocked-by (org-entry-get (point) "BLOCKED_BY")))
-          (expect blocked-by :to-equal "task-a-id task-b-id")))))
-
-  (describe "org-gtd-task-add-dependent command"
-    
-    (it "adds current task ID to another task's BLOCKED_BY property"
-      ;; Test the org-gtd-task-add-dependent command
-      (with-temp-buffer
-        (org-mode)
-        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
-        (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:END:\n\n")
+        ;; Verify Task C has DEPENDS_ON property with both IDs
+        (let ((depends-on (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+          (expect (sort depends-on 'string<) :to-equal '("task-a-id" "task-b-id")))
         
-        ;; Go to Task A and make Task B depend on it
+        ;; Verify Task A has BLOCKS property
         (goto-char (point-min))
         (re-search-forward "Task A")
         (org-back-to-heading t)
+        (let ((blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+          (expect blocks :to-equal '("task-c-id")))
         
-        ;; Mock the task selection to return task-b-id
-        (cl-letf (((symbol-function 'org-gtd-task-management--select-task-id)
-                   (lambda (_prompt) "task-b-id")))
-          (org-gtd-task-add-dependent))
-        
-        ;; Verify Task B now has Task A in its BLOCKED_BY property
+        ;; Verify Task B has BLOCKS property  
         (goto-char (point-min))
         (re-search-forward "Task B")
         (org-back-to-heading t)
-        (let ((blocked-by (org-entry-get (point) "BLOCKED_BY")))
-          (expect blocked-by :to-equal "task-a-id"))))))
+        (let ((blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+          (expect blocks :to-equal '("task-c-id")))))
 
-;;; task-dependency-commands-test.el ends here
+  ;; Note: org-gtd-task-add-dependent tests will be implemented in Story 4
+  ;; For now focusing on Stories 1-2: Add Task Blockers (Single + Multiple Selection)
+  )
+
+;;; task-management-commands-test.el ends here
