@@ -60,12 +60,18 @@
       "mcp__emacs__compile_elisp",
       "mcp__emacs__load_file",
       "mcp__emacs__save_buffer",
-      "mcp__fetch__fetch"
+      "mcp__fetch__fetch",
+      "WebFetch(domain:www.nongnu.org)",
+      "WebFetch(domain:orgmode.org)",
+      "WebFetch(domain:orgmode.org)",
+      "WebFetch(domain:www.gnu.org)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": []
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
-    "emacs", "tdd-knowledge-graph"
+    "emacs",
+    "tdd-knowledge-graph"
   ]
 }

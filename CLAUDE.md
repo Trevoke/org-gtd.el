@@ -188,3 +188,11 @@ The `dev/` directory contains a sandboxed environment for testing. Use `HOME="de
 ## Memory Annotations
 
 - When using the emacs mcp server, always redefine or eval-buffer, don't use file loads, because of emacs' caching mechanism
+
+## Long-term TODO Items
+
+### Progress Cookie Implementation
+- **Issue**: Built-in org-mode progress cookies may not work correctly with flexible project structure
+- **Solution**: Implement custom progress tracking that understands task dependencies
+- **Priority**: Low - disable built-in cookies first, implement custom solution later
+- **Files**: `org-gtd-projects.el` (line 212-217 has current cookie logic)
