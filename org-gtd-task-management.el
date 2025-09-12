@@ -273,6 +273,79 @@ Returns position of the heading or nil if not found."
               (when (org-at-heading-p)
                 (throw 'found (nth 4 (org-heading-components)))))))))))
 
+;;;; Automatic Next Action Updates (Story 15)
+
+(defun org-gtd-task-management--update-dependent-tasks (task-id)
+  "Automatically update tasks that depend on TASK-ID when it becomes DONE.
+For Story 15: When a task is marked DONE, all tasks blocked by it should become NEXT
+if all their dependencies are satisfied."
+  (let ((blocked-tasks (org-gtd-task-management--get-blocked-tasks task-id)))
+    (dolist (blocked-task-id blocked-tasks)
+      (when (org-gtd-task-management--all-dependencies-satisfied-p blocked-task-id)
+        (org-gtd-task-management--update-task-to-next blocked-task-id)))))
+
+(defun org-gtd-task-management--get-blocked-tasks (blocker-id)
+  "Get list of task IDs that are blocked by BLOCKER-ID.
+Returns the BLOCKS property value as a list."
+  (let ((marker (org-id-find blocker-id t)))
+    (if marker
+        (with-current-buffer (marker-buffer marker)
+          (save-excursion
+            (goto-char marker)
+            (org-entry-get-multivalued-property (point) "BLOCKS")))
+      '())))
+
+(defun org-gtd-task-management--all-dependencies-satisfied-p (task-id)
+  "Check if all dependencies for TASK-ID are satisfied (DONE).
+A task's dependencies are satisfied when all tasks in its DEPENDS_ON property are DONE."
+  (let ((marker (org-id-find task-id t)))
+    (if marker
+        (with-current-buffer (marker-buffer marker)
+          (save-excursion
+            (goto-char marker)
+            (let ((dependencies (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+              (if dependencies
+                  ;; All dependencies must be DONE
+                  (cl-every 'org-gtd-task-management--task-is-done-p dependencies)
+                ;; No dependencies = ready to go
+                t))))
+      nil))) ; If we can't find the task, assume not ready
+
+(defun org-gtd-task-management--task-is-done-p (task-id)
+  "Check if TASK-ID is marked as DONE."
+  (let ((marker (org-id-find task-id t)))
+    (if marker
+        (with-current-buffer (marker-buffer marker)
+          (save-excursion
+            (goto-char marker)
+            (let ((todo-state (org-entry-get (point) "TODO")))
+              (and todo-state (org-gtd-keywords--is-done-p todo-state)))))
+      nil))) ; If we can't find the task, assume not done
+
+(defun org-gtd-task-management--update-task-to-next (task-id)
+  "Update TASK-ID to NEXT state if it's currently TODO."
+  (let ((marker (org-id-find task-id t)))
+    (when marker
+      (with-current-buffer (marker-buffer marker)
+        (save-excursion
+          (goto-char marker)
+          (let ((current-state (org-entry-get (point) "TODO")))
+            ;; Only update if it's currently TODO (not already NEXT, DONE, etc.)
+            (when (equal current-state "TODO")
+              (org-todo (org-gtd-keywords--next)))))))))
+
+(defun org-gtd-task-management--after-todo-state-change ()
+  "Hook function to be called after TODO state changes.
+For Story 15: Automatically update dependent tasks when a task becomes DONE."
+  (when (org-entry-get (point) "ID")
+    (let ((current-state (org-entry-get (point) "TODO"))
+          (task-id (org-entry-get (point) "ID")))
+      (when (and current-state (org-gtd-keywords--is-done-p current-state))
+        (org-gtd-task-management--update-dependent-tasks task-id)))))
+
+;; Install the hook for automatic updates
+(add-hook 'org-after-todo-state-change-hook #'org-gtd-task-management--after-todo-state-change)
+
 ;;;; Footer
 
 (provide 'org-gtd-task-management)

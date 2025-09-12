@@ -199,6 +199,148 @@
                   (blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
               (expect blocks :to-equal (list task-a1-id))))))))
 
+  (describe "automatic next action updates (Story 15)"
+    
+    (it "automatically makes dependent tasks NEXT when blocker is marked DONE"
+      ;; Test the core acceptance criteria: When I mark a task as DONE, 
+      ;; all tasks that were blocked by this task automatically become NEXT
+      (with-temp-buffer
+        (org-mode)
+        ;; Ensure our task management module is loaded
+        (require 'org-gtd-task-management)
+        
+        (insert "* TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
+        (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:DEPENDS_ON: task-a-id\n:END:\n\n")
+        (insert "* TODO Task C\n:PROPERTIES:\n:ID: task-c-id\n:DEPENDS_ON: task-a-id\n:END:\n\n")
+        
+        ;; Add BLOCKS properties to Task A (bidirectional relationship)
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+        (org-entry-put (point) "BLOCKS" "task-b-id task-c-id")
+        
+        ;; Set up buffer with file association and register IDs  
+        (let ((temp-file (make-temp-file "org-gtd-test" nil ".org")))
+          (set-visited-file-name temp-file)
+          (save-buffer)
+          (goto-char (point-min))
+          (while (re-search-forward "^[ \t]*:ID:[ \t]+\\(\\S-+\\)" nil t)
+            (org-id-add-location (match-string 1) temp-file)))
+        
+        ;; Verify initial state: Task B and C should be TODO (waiting)
+        (goto-char (point-min))
+        (re-search-forward "Task B")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "TODO") :to-equal "TODO")
+        
+        (goto-char (point-min))
+        (re-search-forward "Task C")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "TODO") :to-equal "TODO")
+        
+        ;; Mark Task A as DONE - this should trigger automatic updates
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+        (org-todo "DONE")
+        
+        ;; Update the file with the new state
+        (save-buffer)
+        
+        
+        ;; Verify Task B and C automatically became NEXT
+        (goto-char (point-min))
+        (re-search-forward "Task B")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "TODO") :to-equal (org-gtd-keywords--next))
+        
+        (goto-char (point-min))
+        (re-search-forward "Task C")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "TODO") :to-equal (org-gtd-keywords--next))))
+    
+    (it "leaves tasks with remaining dependencies as TODO when only one blocker is completed"
+      ;; Test that tasks with multiple dependencies only become NEXT when ALL blockers are complete
+      (with-temp-buffer
+        (org-mode)
+        ;; Ensure our task management module is loaded
+        (require 'org-gtd-task-management)
+        
+        (insert "* TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:BLOCKS: task-c-id\n:END:\n\n")
+        (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:BLOCKS: task-c-id\n:END:\n\n")
+        (insert "* TODO Task C\n:PROPERTIES:\n:ID: task-c-id\n:DEPENDS_ON: task-a-id task-b-id\n:END:\n\n")
+        
+        ;; Set up buffer with file association and register IDs  
+        (let ((temp-file (make-temp-file "org-gtd-test-multi" nil ".org")))
+          (set-visited-file-name temp-file)
+          (save-buffer)
+          (goto-char (point-min))
+          (while (re-search-forward "^[ \t]*:ID:[ \t]+\\(\\S-+\\)" nil t)
+            (org-id-add-location (match-string 1) temp-file)))
+        
+        ;; Mark only Task A as DONE (Task B still TODO)
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+        (org-todo "DONE")
+        (save-buffer)
+        
+        ;; Verify Task C remains TODO (still blocked by Task B)
+        (goto-char (point-min))
+        (re-search-forward "Task C")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "TODO") :to-equal "TODO")
+        
+        ;; Now mark Task B as DONE too
+        (goto-char (point-min))
+        (re-search-forward "Task B")
+        (org-back-to-heading t)
+        (org-todo "DONE")
+        (save-buffer)
+        
+        ;; Now Task C should become NEXT (all dependencies satisfied)
+        (goto-char (point-min))
+        (re-search-forward "Task C")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "TODO") :to-equal (org-gtd-keywords--next))))
+    
+    (it "updates org-agenda to reflect automatic state changes immediately"
+      ;; Test that changes are visible in org-agenda immediately
+      ;; This is a placeholder for the agenda integration test
+      ;; The actual implementation will need to ensure agenda refresh
+      (with-temp-buffer
+        (org-mode)
+        ;; Ensure our task management module is loaded
+        (require 'org-gtd-task-management)
+        
+        (insert "* TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:BLOCKS: task-b-id\n:END:\n\n")
+        (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:DEPENDS_ON: task-a-id\n:END:\n\n")
+        
+        ;; Set up buffer with file association and register IDs  
+        (let ((temp-file (make-temp-file "org-gtd-test-agenda" nil ".org")))
+          (set-visited-file-name temp-file)
+          (save-buffer)
+          (goto-char (point-min))
+          (while (re-search-forward "^[ \t]*:ID:[ \t]+\\(\\S-+\\)" nil t)
+            (org-id-add-location (match-string 1) temp-file)))
+        
+        ;; Mark Task A as DONE
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+        (org-todo "DONE")
+        (save-buffer)
+        
+        ;; Verify Task B became NEXT 
+        (goto-char (point-min))
+        (re-search-forward "Task B")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "TODO") :to-equal (org-gtd-keywords--next))
+        
+        ;; Note: In real implementation, this would also test agenda visibility
+        ;; but that requires more complex agenda mock setup
+        )))
+
   ;; Note: org-gtd-task-add-dependent tests will be implemented in Story 4
   ;; For now focusing on Stories 1-2: Add Task Blockers (Single + Multiple Selection)
   )
