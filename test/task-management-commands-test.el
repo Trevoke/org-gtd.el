@@ -97,6 +97,108 @@
         (let ((blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
           (expect blocks :to-equal '("task-c-id")))))
 
+  (describe "cross-project dependencies (Story 5)"
+    
+    (it "shows tasks from different projects with project labels when selecting blockers"
+      ;; This test verifies the acceptance criteria: "tasks from all existing agenda files clearly labeled by project"
+      ;; Set up Project A in main GTD tasks file  
+      (ogt-capture-single-item "Project A")
+      (org-gtd-process-inbox)
+      (goto-char (point-max))
+      (newline)
+      (insert "** Task A1")
+      (ogt-clarify-as-project)
+      
+      ;; Create a second GTD file with Project B
+      (let ((second-file (org-gtd--path "secondary-project")))
+        (with-temp-file second-file
+          (insert "* Project B\n** Task B1\n:PROPERTIES:\n:ID: task-b1-id\n:END:\n"))
+        
+        ;; Add second file to org-agenda-files for this test
+        (let ((org-agenda-files (append (org-agenda-files) (list second-file))))
+          
+          ;; Capture what task selection interface shows
+          (with-current-buffer (org-gtd--default-file)
+            (goto-char (point-min))
+            (search-forward "Task A1")
+            (org-back-to-heading t)
+            
+            ;; Mock the completing-read to capture the options presented
+            (let ((presented-options nil)
+                  (call-count 0))
+              (cl-letf (((symbol-function 'completing-read)
+                         (lambda (_prompt collection &rest _args)
+                           (when (= call-count 0) ; Only capture on first call
+                             (setq presented-options collection))
+                           (setq call-count (1+ call-count))
+                           ;; Return empty string on second call to exit multi-select loop
+                           (if (= call-count 1) "task-b1-id" ""))))
+                (org-gtd-task-management--select-multiple-task-ids "Test prompt: "))
+              
+              ;; Verify that tasks are labeled with project information
+              ;; The collection should include project context for cross-project tasks
+              (let ((has-project-labels (cl-some (lambda (option)
+                                                   ;; option is a cons cell (display . value)
+                                                   (string-match-p "Project B" (car option)))
+                                                 presented-options)))
+                (expect has-project-labels :to-be-truthy)))))))
+    
+    (it "creates dependencies between tasks in different projects"
+      ;; Test cross-project blocking relationships
+      ;; Set up Project A in main GTD tasks file  
+      (ogt-capture-single-item "Project A")
+      (org-gtd-process-inbox)
+      (goto-char (point-max))
+      (newline)
+      (insert "** Task A1")
+      (ogt-clarify-as-project)
+      
+      ;; Create a second GTD file manually 
+      (let ((second-file (org-gtd--path "secondary-project")))
+        ;; Set up Project B in the secondary file
+        (with-temp-file second-file
+          (insert "* Project B\n** Task B1\n:PROPERTIES:\n:ID: task-b1-id\n:END:\n"))
+        
+        ;; Ensure the ID is registered in the org-id system by visiting the file
+        (with-current-buffer (find-file-noselect second-file)
+          (org-mode) ; Make sure org-mode is active
+          (goto-char (point-min))
+          (search-forward "Task B1")
+          (org-back-to-heading t)
+          ;; Force org-id to recognize this ID
+          (org-id-add-location "task-b1-id" second-file))
+        
+        ;; Add second file to org-agenda-files for this test
+        (let ((org-agenda-files (append (org-agenda-files) (list second-file))))
+          
+          ;; Now create cross-project dependency: Task A1 depends on Task B1
+          (with-current-buffer (org-gtd--default-file)
+            (goto-char (point-min))
+            (search-forward "Task A1")
+            (org-back-to-heading t)
+            
+            ;; Mock task selection to return Task B1 from different project  
+            (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
+                       (lambda (_prompt) '("task-b1-id"))))
+              (org-gtd-task-add-blockers))
+            
+            ;; Verify Task A1 has DEPENDS_ON pointing to Task B1
+            (let ((depends-on (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+              (expect depends-on :to-equal '("task-b1-id"))))
+          
+          ;; Verify Task B1 in the other file has BLOCKS pointing to Task A1
+          (with-current-buffer (find-file-noselect second-file)
+            (goto-char (point-min))
+            (search-forward "Task B1")
+            (org-back-to-heading t)
+            (let ((task-a1-id (with-current-buffer (org-gtd--default-file)
+                                (goto-char (point-min))
+                                (search-forward "Task A1")
+                                (org-back-to-heading t)
+                                (org-entry-get (point) "ID")))
+                  (blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+              (expect blocks :to-equal (list task-a1-id))))))))
+
   ;; Note: org-gtd-task-add-dependent tests will be implemented in Story 4
   ;; For now focusing on Stories 1-2: Add Task Blockers (Single + Multiple Selection)
   )

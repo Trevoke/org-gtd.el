@@ -99,13 +99,17 @@ Returns the selected ID or nil if cancelled."
 (defun org-gtd-task-management--select-multiple-task-ids (prompt)
   "Prompt user to select multiple task IDs using PROMPT.
 Returns a list of selected IDs or nil if cancelled/empty."
-  (let* ((all-ids (org-gtd-task-management--collect-all-task-ids))
-         (id-alist (mapcar (lambda (id)
-                            (cons (format "%s (%s)" 
-                                         (org-gtd-task-management--get-heading-for-id id)
-                                         id) 
-                                  id))
-                          all-ids))
+  (let* ((all-task-info (org-gtd-task-management--collect-all-task-info))
+         (id-alist (mapcar (lambda (task-info)
+                            (let ((id (plist-get task-info :id))
+                                  (heading (plist-get task-info :heading))
+                                  (project (plist-get task-info :project))
+                                  (file (plist-get task-info :file)))
+                              (cons (if project
+                                        (format "%s [%s] (%s)" heading project id)
+                                      (format "%s (%s)" heading id))
+                                    id)))
+                          all-task-info))
          (selected-ids '())
          (continue t))
     ;; Multi-select loop: keep prompting until user selects empty or cancels
@@ -124,40 +128,71 @@ Returns a list of selected IDs or nil if cancelled/empty."
                                    (length selected-ids))))))))
     (reverse selected-ids)))
 
-(defun org-gtd-task-management--collect-all-task-ids ()
-  "Collect all undone task IDs from current buffer and org-agenda-files."
-  (let ((ids '()))
+(defun org-gtd-task-management--collect-all-task-info ()
+  "Collect all undone task information from current buffer and org-agenda-files.
+Returns a list of plists with :id, :heading, :project, :file properties."
+  (let ((task-info-list '()))
     ;; Collect from current buffer
+    (setq task-info-list
+          (org-gtd-task-management--collect-task-info-from-buffer (buffer-name)))
+    
+    ;; Collect from org-agenda-files (avoiding duplicates)
+    (dolist (file (org-agenda-files))
+      (when (and (file-exists-p file) (file-readable-p file))
+        (let ((file-task-info (org-gtd-task-management--collect-task-info-from-file file)))
+          ;; Only add tasks not already present (avoid duplicates from current buffer)
+          (dolist (task-info file-task-info)
+            (let ((id (plist-get task-info :id)))
+              (unless (cl-find id task-info-list :key (lambda (info) (plist-get info :id)) :test 'string=)
+                (push task-info task-info-list)))))))
+    
+    (reverse task-info-list)))
+
+(defun org-gtd-task-management--collect-task-info-from-buffer (file-name)
+  "Collect task information from current buffer with FILE-NAME context."
+  (let ((task-info-list '()))
     (save-excursion
       (goto-char (point-min))
       (while (re-search-forward "^\\(\\*+\\)[ \t]+\\([^*\n]*\\)" nil t)
         (when (org-at-heading-p)
-          (let ((todo-state (org-get-todo-state)))
-            ;; Only include if it's an undone TODO item or has no todo state but has an ID
-            (when (or (and todo-state (not (org-entry-is-done-p)))
-                     (and (not todo-state) (org-entry-get (point) "ID")))
-              (let ((id (org-entry-get (point) "ID")))
-                (when id
-                  (push id ids))))))))
-    
-    ;; Collect from org-agenda-files (not just GTD files)
-    (dolist (file (org-agenda-files))
-      (when (and (file-exists-p file) (file-readable-p file))
-        (with-temp-buffer
-          (insert-file-contents file)
-          (org-mode)
-          (goto-char (point-min))
-          (while (re-search-forward "^\\(\\*+\\)[ \t]+\\([^*\n]*\\)" nil t)
-            (when (org-at-heading-p)
-              (let ((todo-state (org-get-todo-state))
-                    (id (org-entry-get (point) "ID")))
-                (when (and id
-                          (or (and todo-state (not (org-entry-is-done-p)))
-                              (and (not todo-state))))
-                  (unless (member id ids)
-                    (push id ids)))))))))
-    
-    (reverse ids)))
+          (when-let ((task-info (org-gtd-task-management--extract-task-info-at-point file-name)))
+            (push task-info task-info-list)))))
+    task-info-list))
+
+(defun org-gtd-task-management--collect-task-info-from-file (file)
+  "Collect task information from FILE."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (org-mode)
+    (org-gtd-task-management--collect-task-info-from-buffer (file-name-base file))))
+
+(defun org-gtd-task-management--extract-task-info-at-point (file-name)
+  "Extract task information at current point, returning plist or nil.
+FILE-NAME is used for the :file property."
+  (let ((todo-state (org-get-todo-state))
+        (id (org-entry-get (point) "ID")))
+    (when (and id
+               (or (and todo-state (not (org-entry-is-done-p)))
+                   (not todo-state)))
+      (list :id id 
+            :heading (nth 4 (org-heading-components))
+            :project (org-gtd-task-management--find-project-heading)
+            :file file-name))))
+
+(defun org-gtd-task-management--collect-all-task-ids ()
+  "Collect all undone task IDs from current buffer and org-agenda-files.
+This function is kept for backward compatibility."
+  (mapcar (lambda (task-info) (plist-get task-info :id))
+          (org-gtd-task-management--collect-all-task-info)))
+
+(defun org-gtd-task-management--find-project-heading ()
+  "Find the project heading (first level heading) for the current task."
+  (save-excursion
+    (when (org-up-heading-safe)
+      ;; Keep going up until we reach level 1 or can't go higher
+      (while (and (> (org-current-level) 1) (org-up-heading-safe)))
+      (when (= (org-current-level) 1)
+        (nth 4 (org-heading-components))))))
 
 (defun org-gtd-task-management--add-to-multivalued-property (property value)
   "Add VALUE to the multivalued PROPERTY of the current heading."
