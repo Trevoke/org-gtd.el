@@ -63,6 +63,35 @@ Prevents circular dependencies with clear error messages."
                (mapconcat (lambda (id) (org-gtd-task-management--get-heading-for-id id)) selected-ids ", ")
                current-heading))))
 
+;;;###autoload
+(defun org-gtd-task-remove-blockers ()
+  "Remove blocking relationships from the current task.
+Prompts user to select from current blockers, then removes bidirectional BLOCKS/DEPENDS_ON relationships."
+  (interactive)
+  (unless (org-at-heading-p)
+    (user-error "Point must be on an org heading"))
+  
+  (let* ((current-heading (nth 4 (org-heading-components)))
+         (current-id (or (org-entry-get (point) "ID")
+                        (org-gtd-id-get-create)))
+         (current-blockers (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+    
+    (if (not current-blockers)
+        (message "Task '%s' has no blockers to remove" current-heading)
+      (let ((selected-ids (org-gtd-task-management--select-multiple-blocking-task-ids
+                          (format "Select blockers to remove from '%s' (complete with empty selection): " current-heading)
+                          current-blockers)))
+        (when selected-ids
+          ;; Remove bidirectional relationships for each selected task
+          (dolist (selected-id selected-ids)
+            ;; Remove selected task from current task's DEPENDS_ON property
+            (org-gtd-task-management--remove-from-multivalued-property "DEPENDS_ON" selected-id)
+            ;; Remove current task from selected task's BLOCKS property
+            (org-gtd-task-management--remove-from-other-task-multivalued-property selected-id "BLOCKS" current-id))
+          (message "Removed blocker relationships: %s no longer block %s"
+                   (mapconcat (lambda (id) (org-gtd-task-management--get-heading-for-id id)) selected-ids ", ")
+                   current-heading))))))
+
 ;;;###autoload  
 (defun org-gtd-task-add-dependent ()
   "Add a task that depends on the current task.
@@ -107,28 +136,27 @@ This happens if there's already a dependency path from BLOCKER-ID to DEPENDENT-I
   "Check if there's a dependency path from FROM-ID to TO-ID.
 Uses depth-first search to traverse the dependency graph."
   (when (equal from-id to-id)
-    t) ; Direct match
+    nil) ; Self-reference doesn't constitute a meaningful dependency path for cycle detection
   (let ((visited (make-hash-table :test 'equal)))
     (org-gtd-task-management--dfs-dependency-path from-id to-id visited)))
 
 (defun org-gtd-task-management--dfs-dependency-path (current-id target-id visited)
   "Depth-first search for dependency path from CURRENT-ID to TARGET-ID.
 VISITED is a hash table to prevent infinite loops."
-  (when (gethash current-id visited)
-    (return nil)) ; Avoid infinite loops
-  
-  (puthash current-id t visited)
-  
-  ;; Get tasks that current task blocks (for cycle detection)
-  (let ((dependencies (org-gtd-task-management--get-blocked-tasks-for-cycle-detection current-id)))
-    (catch 'found
-      (dolist (dep-id dependencies)
-        (when (equal dep-id target-id)
-          (throw 'found t)) ; Found target
-        ;; Recursively check dependencies
-        (when (org-gtd-task-management--dfs-dependency-path dep-id target-id visited)
-          (throw 'found t)))
-      nil))) ; Not found
+  (if (gethash current-id visited)
+      nil ; Avoid infinite loops - already visited this node
+    (puthash current-id t visited)
+    
+    ;; Get tasks that current task blocks (for cycle detection)
+    (let ((dependencies (org-gtd-task-management--get-blocked-tasks-for-cycle-detection current-id)))
+      (catch 'found
+        (dolist (dep-id dependencies)
+          (when (equal dep-id target-id)
+            (throw 'found t)) ; Found target
+          ;; Recursively check dependencies
+          (when (org-gtd-task-management--dfs-dependency-path dep-id target-id visited)
+            (throw 'found t)))
+        nil)))) ; Not found
 
 (defun org-gtd-task-management--get-task-dependencies (task-id)
   "Get list of task IDs that TASK-ID depends on (its DEPENDS_ON property).
@@ -145,13 +173,20 @@ Returns empty list if task not found or has no dependencies."
   "Get list of task IDs that TASK-ID blocks (its BLOCKS property).
 For circular dependency detection, we follow the BLOCKS relationship to find chains.
 Returns empty list if task not found or blocks nothing."
-  (let ((marker (org-id-find task-id t)))
-    (if marker
-        (with-current-buffer (marker-buffer marker)
-          (save-excursion
-            (goto-char marker)
-            (org-entry-get-multivalued-property (point) "BLOCKS")))
-      '())))
+  ;; First try current buffer  
+  (let ((pos (org-gtd-task-management--find-id-in-current-buffer task-id)))
+    (if pos
+        (save-excursion
+          (goto-char pos)
+          (org-entry-get-multivalued-property (point) "BLOCKS"))
+      ;; Fall back to org-id system
+      (let ((marker (org-id-find task-id t)))
+        (if marker
+            (with-current-buffer (marker-buffer marker)
+              (save-excursion
+                (goto-char marker)
+                (org-entry-get-multivalued-property (point) "BLOCKS")))
+          '())))))
 
 (defun org-gtd-task-management--find-dependency-path (from-id to-id)
   "Find and return the dependency path from FROM-ID to TO-ID as a list of IDs.
@@ -162,21 +197,20 @@ Returns nil if no path exists."
 (defun org-gtd-task-management--dfs-find-path (current-id target-id visited)
   "Depth-first search to find path from CURRENT-ID to TARGET-ID.
 Returns the path as a list of IDs, or nil if no path exists."
-  (when (gethash current-id visited)
-    (return nil)) ; Avoid infinite loops
-  
-  (puthash current-id t visited)
-  
-  (if (equal current-id target-id)
-      (list current-id) ; Found target, return path with just current
-    ;; Get tasks that current task blocks (for cycle detection)
-    (let ((dependencies (org-gtd-task-management--get-blocked-tasks-for-cycle-detection current-id)))
-      (catch 'found
-        (dolist (dep-id dependencies)
-          (let ((sub-path (org-gtd-task-management--dfs-find-path dep-id target-id visited)))
-            (when sub-path
-              (throw 'found (cons current-id sub-path)))))
-        nil)))) ; No path found
+  (if (gethash current-id visited)
+      nil ; Avoid infinite loops - already visited this node
+    (puthash current-id t visited)
+    
+    (if (equal current-id target-id)
+        (list current-id) ; Found target, return path with just current
+      ;; Get tasks that current task blocks (for cycle detection)
+      (let ((dependencies (org-gtd-task-management--get-blocked-tasks-for-cycle-detection current-id)))
+        (catch 'found
+          (dolist (dep-id dependencies)
+            (let ((sub-path (org-gtd-task-management--dfs-find-path dep-id target-id visited)))
+              (when sub-path
+                (throw 'found (cons current-id sub-path)))))
+          nil))))) ; No path found
 
 ;;;; Private Helper Functions
 
@@ -209,6 +243,33 @@ Returns a list of selected IDs or nil if cancelled/empty."
                                       (format "%s (%s)" heading id))
                                     id)))
                           all-task-info))
+         (selected-ids '())
+         (continue t))
+    ;; Multi-select loop: keep prompting until user selects empty or cancels
+    (while (and continue id-alist)
+      (let ((selection (completing-read prompt id-alist nil t)))
+        (if (string-empty-p selection)
+            (setq continue nil) ; Empty selection completes the multi-select
+          ;; Add selected ID to list and remove from available options
+          (let ((selected-id (cdr (assoc selection id-alist))))
+            (when selected-id
+              (push selected-id selected-ids)
+              ;; Remove selected item from future selections
+              (setq id-alist (remove (assoc selection id-alist) id-alist))
+              (setq prompt (format "%s (selected: %d, complete with empty): " 
+                                   (car (split-string prompt " ("))
+                                   (length selected-ids))))))))
+    (reverse selected-ids)))
+
+(defun org-gtd-task-management--select-multiple-blocking-task-ids (prompt current-blockers)
+  "Prompt user to select multiple task IDs from CURRENT-BLOCKERS using PROMPT.
+Returns a list of selected IDs or nil if cancelled/empty."
+  (let* ((id-alist (mapcar (lambda (id)
+                            (cons (format "%s (%s)" 
+                                         (org-gtd-task-management--get-heading-for-id id)
+                                         id) 
+                                  id))
+                          current-blockers))
          (selected-ids '())
          (continue t))
     ;; Multi-select loop: keep prompting until user selects empty or cancels
@@ -312,6 +373,27 @@ This function is kept for backward compatibility."
             (with-current-buffer (marker-buffer marker)
               (goto-char marker)
               (org-gtd-task-management--add-to-multivalued-property property value))
+          (user-error "Could not find task with ID: %s" task-id))))))
+
+(defun org-gtd-task-management--remove-from-multivalued-property (property value)
+  "Remove VALUE from the multivalued PROPERTY of the current heading."
+  (org-entry-remove-from-multivalued-property (point) property value))
+
+(defun org-gtd-task-management--remove-from-other-task-multivalued-property (task-id property value)
+  "Find heading with TASK-ID and remove VALUE from its multivalued PROPERTY."
+  ;; First try current buffer
+  (let ((pos (org-gtd-task-management--find-id-in-current-buffer task-id)))
+    (if pos
+        (progn
+          (save-excursion
+            (goto-char pos)
+            (org-gtd-task-management--remove-from-multivalued-property property value)))
+      ;; Fall back to org-id system
+      (let ((marker (org-id-find task-id t)))
+        (if marker
+            (with-current-buffer (marker-buffer marker)
+              (goto-char marker)
+              (org-gtd-task-management--remove-from-multivalued-property property value))
           (user-error "Could not find task with ID: %s" task-id))))))
 
 (defun org-gtd-task-management--find-id-in-current-buffer (id)

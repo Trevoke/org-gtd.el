@@ -439,6 +439,63 @@
           ;; C should not block A (circular dependency prevented)
           (expect (member "task-a-id" blocks) :to-be nil)))))
 
+  (describe "remove task blockers (Story 3)"
+    
+    (it "removes selected blocking relationships from task with existing blockers"
+      ;; Test Story 3 acceptance criteria: remove specific blockers from task
+      (with-temp-buffer
+        (org-mode)
+        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:BLOCKS: task-c-id\n:END:\n\n")
+        (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:BLOCKS: task-c-id\n:END:\n\n")
+        (insert "* Task C\n:PROPERTIES:\n:ID: task-c-id\n:DEPENDS_ON: task-a-id task-b-id\n:END:\n\n")
+        
+        ;; Go to Task C (which has blockers A and B)
+        (goto-char (point-min))
+        (re-search-forward "Task C")
+        (org-back-to-heading t)
+        
+        ;; Mock the task selection to remove just Task A as blocker
+        (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-blocking-task-ids)
+                   (lambda (_prompt _current-blockers) '("task-a-id"))))
+          (org-gtd-task-remove-blockers))
+        
+        ;; Verify Task C no longer depends on Task A, but still depends on Task B
+        (let ((depends-on (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+          (expect depends-on :to-equal '("task-b-id")))
+        
+        ;; Verify Task A no longer blocks Task C
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+        (let ((blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+          (expect blocks :to-be nil))
+        
+        ;; Verify Task B still blocks Task C
+        (goto-char (point-min))
+        (re-search-forward "Task B") 
+        (org-back-to-heading t)
+        (let ((blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+          (expect blocks :to-equal '("task-c-id")))))
+    
+    (it "handles task with no blockers gracefully"
+      ;; Test edge case: trying to remove blockers from task that has none
+      (with-temp-buffer
+        (org-mode)
+        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
+        
+        ;; Go to Task A (which has no blockers)
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+        
+        ;; This should not error, just show a helpful message
+        (let ((message-output nil))
+          (cl-letf (((symbol-function 'message)
+                     (lambda (format-string &rest args)
+                       (setq message-output (apply #'format format-string args)))))
+            (org-gtd-task-remove-blockers)
+            (expect message-output :to-equal "Task 'Task A' has no blockers to remove"))))))
+
   ;; Note: org-gtd-task-add-dependent tests will be implemented in Story 4
   ;; For now focusing on Stories 1-2: Add Task Blockers (Single + Multiple Selection)
   )
