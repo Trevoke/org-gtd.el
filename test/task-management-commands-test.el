@@ -341,6 +341,104 @@
         ;; but that requires more complex agenda mock setup
         )))
 
+  (describe "circular dependency detection (Story 13)"
+    
+    (it "prevents direct circular dependency (A blocks B, B cannot block A)"
+      ;; Test the core acceptance criteria: system prevents circular dependency creation
+      (with-temp-buffer
+        (org-mode)
+        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
+        (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:END:\n\n")
+        
+        ;; First create A blocks B relationship
+        (goto-char (point-min))
+        (re-search-forward "Task B")
+        (org-back-to-heading t)
+        
+        ;; Mock the task selection to return task A as blocker for B
+        (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
+                   (lambda (_prompt) '("task-a-id"))))
+          (org-gtd-task-add-blockers))
+        
+        ;; Verify A blocks B relationship was created
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+        (expect (org-entry-get-multivalued-property (point) "BLOCKS") :to-equal '("task-b-id"))
+        
+        (goto-char (point-min))
+        (re-search-forward "Task B")
+        (org-back-to-heading t)
+        (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON") :to-equal '("task-a-id"))
+        
+        ;; Now try to create reverse relationship: B blocks A (should fail)
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+        
+        ;; Mock the task selection to return task B as blocker for A (circular!)
+        (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
+                   (lambda (_prompt) '("task-b-id"))))
+          ;; This should signal an error due to circular dependency
+          (expect (org-gtd-task-add-blockers) :to-throw 'error '("Circular dependency detected: task-a-id -> task-b-id -> task-a-id")))
+        
+        ;; Verify that the circular relationship was NOT created
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+        (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON") :to-be nil)
+        
+        (goto-char (point-min))
+        (re-search-forward "Task B")
+        (org-back-to-heading t)
+        (expect (org-entry-get-multivalued-property (point) "BLOCKS") :to-be nil)))
+    
+    (it "prevents indirect circular dependency (A -> B -> C -> A)"
+      ;; Test more complex circular dependency: A blocks B, B blocks C, trying to make C block A
+      (with-temp-buffer
+        (org-mode)
+        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
+        (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:END:\n\n") 
+        (insert "* Task C\n:PROPERTIES:\n:ID: task-c-id\n:END:\n\n")
+        
+        ;; Create A blocks B
+        (goto-char (point-min))
+        (re-search-forward "Task B")
+        (org-back-to-heading t)
+        (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
+                   (lambda (_prompt) '("task-a-id"))))
+          (org-gtd-task-add-blockers))
+        
+        ;; Create B blocks C
+        (goto-char (point-min))
+        (re-search-forward "Task C")
+        (org-back-to-heading t)
+        (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
+                   (lambda (_prompt) '("task-b-id"))))
+          (org-gtd-task-add-blockers))
+        
+        ;; Now try to create C blocks A (would create cycle: A -> B -> C -> A)
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+        (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
+                   (lambda (_prompt) '("task-c-id"))))
+          ;; This should signal an error due to circular dependency
+          (expect (org-gtd-task-add-blockers) :to-throw 'error '("Circular dependency detected: task-a-id -> task-b-id -> task-c-id -> task-a-id")))
+        
+        ;; Verify that the circular relationship was NOT created
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+        (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON") :to-be nil)
+        
+        (goto-char (point-min))
+        (re-search-forward "Task C")
+        (org-back-to-heading t)
+        (let ((blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+          ;; C should not block A (circular dependency prevented)
+          (expect (member "task-a-id" blocks) :to-be nil)))))
+
   ;; Note: org-gtd-task-add-dependent tests will be implemented in Story 4
   ;; For now focusing on Stories 1-2: Add Task Blockers (Single + Multiple Selection)
   )
