@@ -516,8 +516,56 @@
             (org-gtd-task-remove-blockers)
             (expect message-output :to-equal "Task 'Task A' has no blockers to remove"))))))
 
- ;; Note: org-gtd-task-add-dependent tests will be implemented in Story 4
- ;; For now focusing on Stories 1-2: Add Task Blockers (Single + Multiple Selection)
+ (describe
+  "org-gtd-task-add-dependents command (Story 4)"
+
+  (it "creates bidirectional BLOCKS/DEPENDS_ON relationship where current task blocks selected tasks"
+      ;; Test the new org-gtd-task-add-dependents command (plural) - the inverse of add-blockers
+      (with-temp-buffer
+        (org-mode)
+        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
+        (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:END:\n\n")
+        (insert "* Task C\n:PROPERTIES:\n:ID: task-c-id\n:END:\n\n")
+
+        ;; Go to Task A and add Tasks B and C as dependents (Task A blocks Tasks B & C)
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+
+        ;; Mock the multi-task selection to return Task B and C
+        (spy-on 'org-gtd-task-management--select-multiple-task-ids
+                :and-return-value '("task-b-id" "task-c-id"))
+
+        ;; Mock the message display
+        (let ((message-output ""))
+          (spy-on 'message
+                  :and-call-fake
+                  (lambda (format-string &rest args)
+                    (setq message-output (apply #'format format-string args))))
+
+          ;; Call the new command
+          (org-gtd-task-add-dependents)
+
+          ;; Verify Task A has BLOCKS property with both Task B and C
+          (expect (org-entry-get-multivalued-property (point) "BLOCKS")
+                  :to-equal '("task-b-id" "task-c-id"))
+
+          ;; Verify Task B has DEPENDS_ON property with Task A
+          (goto-char (point-min))
+          (re-search-forward "Task B")
+          (org-back-to-heading t)
+          (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON")
+                  :to-equal '("task-a-id"))
+
+          ;; Verify Task C has DEPENDS_ON property with Task A
+          (goto-char (point-min))
+          (re-search-forward "Task C")
+          (org-back-to-heading t)
+          (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON")
+                  :to-equal '("task-a-id"))
+
+          ;; Verify confirmation message is shown
+          (expect message-output :to-match "Added dependent relationships:.*Task A.*blocks.*Task B.*Task C")))))
 
  (describe
   "direct task dependency management from regular org files (Story 6)"

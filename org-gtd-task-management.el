@@ -92,7 +92,7 @@ Prompts user to select from current blockers, then removes bidirectional BLOCKS/
                    (mapconcat (lambda (id) (org-gtd-task-management--get-heading-for-id id)) selected-ids ", ")
                    current-heading))))))
 
-;;;###autoload  
+;;;###autoload
 (defun org-gtd-task-add-dependent ()
   "Add a task that depends on the current task.
 Prompts user to select a task, then creates bidirectional BLOCKS/DEPENDS_ON relationship."
@@ -112,6 +112,34 @@ Prompts user to select a task, then creates bidirectional BLOCKS/DEPENDS_ON rela
       (message "Added dependency relationship: %s depends on %s"
                (org-gtd-task-management--get-heading-for-id selected-id)
                current-heading))))
+
+;;;###autoload
+(defun org-gtd-task-add-dependents ()
+  "Add tasks that depend on the current task.
+Prompts user to select multiple tasks, then creates bidirectional BLOCKS/DEPENDS_ON relationships.
+Prevents circular dependencies with clear error messages."
+  (interactive)
+  (unless (org-at-heading-p)
+    (user-error "Point must be on an org heading"))
+  
+  (let* ((current-heading (nth 4 (org-heading-components)))
+         (current-id (or (org-entry-get (point) "ID")
+                        (org-gtd-id-get-create)))
+         (selected-ids (org-gtd-task-management--select-multiple-task-ids 
+                        (format "Select tasks that depend on '%s' (complete with empty selection): " current-heading))))
+    (when selected-ids
+      ;; Check for circular dependencies before creating any relationships
+      (dolist (selected-id selected-ids)
+        (org-gtd-task-management--check-circular-dependency selected-id current-id))
+      
+      ;; Add bidirectional relationships for each selected task
+      (dolist (selected-id selected-ids)
+        ;; Current task BLOCKS selected task, selected task DEPENDS_ON current task
+        (org-gtd-task-management--add-to-multivalued-property "BLOCKS" selected-id)
+        (org-gtd-task-management--add-to-other-task-multivalued-property selected-id "DEPENDS_ON" current-id))
+      (message "Added dependent relationships: %s blocks %s" 
+               current-heading
+               (mapconcat (lambda (id) (org-gtd-task-management--get-heading-for-id id)) selected-ids ", ")))))
 
 ;;;; Circular Dependency Detection (Story 13)
 
