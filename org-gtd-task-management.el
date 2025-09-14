@@ -141,6 +141,52 @@ Prevents circular dependencies with clear error messages."
                current-heading
                (mapconcat (lambda (id) (org-gtd-task-management--get-heading-for-id id)) selected-ids ", ")))))
 
+;;;###autoload
+(defun org-gtd-task-clear-relationships ()
+  "Clear all blocking and dependency relationships for the current task.
+Removes all BLOCKS and DEPENDS_ON properties from the current task and updates
+related tasks to maintain bidirectional consistency."
+  (interactive)
+  (unless (org-at-heading-p)
+    (user-error "Point must be on an org heading"))
+  
+  (let* ((current-heading (nth 4 (org-heading-components)))
+         (current-id (org-entry-get (point) "ID"))
+         (blocks-list (org-entry-get-multivalued-property (point) "BLOCKS"))
+         (depends-on-list (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+    
+    (if (or blocks-list depends-on-list)
+        (progn
+          ;; Only proceed if we have an ID (required for cross-task updates)
+          (unless current-id
+            (user-error "Task must have an ID to clear relationships"))
+          
+          ;; Remove current task's dependencies - update tasks that this task depends on
+          (dolist (blocker-id depends-on-list)
+            (org-gtd-task-management--remove-from-other-task-multivalued-property 
+             blocker-id "BLOCKS" current-id))
+          
+          ;; Remove current task's blockings - update tasks that depend on this task
+          (dolist (blocked-id blocks-list)
+            (org-gtd-task-management--remove-from-other-task-multivalued-property 
+             blocked-id "DEPENDS_ON" current-id))
+          
+          ;; Clear properties from current task
+          (when blocks-list
+            (org-entry-delete (point) "BLOCKS"))
+          (when depends-on-list
+            (org-entry-delete (point) "DEPENDS_ON"))
+          
+          ;; Show confirmation message with proper pluralization
+          (message "Cleared relationships for %s: removed %d %s and %d %s"
+                   current-heading
+                   (length depends-on-list)
+                   (org-gtd-task-management--pluralize (length depends-on-list) "blocker" "blockers")
+                   (length blocks-list)
+                   (org-gtd-task-management--pluralize (length blocks-list) "dependent" "dependents")))
+      
+      (message "Task %s has no relationships to clear" current-heading))))
+
 ;;;; Circular Dependency Detection (Story 13)
 
 (defun org-gtd-task-management--check-circular-dependency (dependent-id blocker-id)
@@ -241,6 +287,10 @@ Returns the path as a list of IDs, or nil if no path exists."
           nil))))) ; No path found
 
 ;;;; Private Helper Functions
+
+(defun org-gtd-task-management--pluralize (count singular plural)
+  "Return SINGULAR if COUNT is 1, otherwise PLURAL."
+  (if (= 1 count) singular plural))
 
 (defun org-gtd-task-management--select-task-id (prompt)
   "Prompt user to select a task ID using PROMPT.

@@ -606,6 +606,100 @@
           (org-back-to-heading t)
           (expect (org-entry-get-multivalued-property (point) "BLOCKS") :to-contain "task-b-id")))))
 
+ (describe
+  "clear all task relationships (Story 12)"
+
+  (it "removes all BLOCKS and DEPENDS_ON properties from task and updates related tasks"
+      (with-temp-buffer
+        (org-mode)
+        
+        ;; Create multiple tasks with complex relationships
+        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:BLOCKS: task-b-id task-c-id\n:END:\n\n")
+        (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:DEPENDS_ON: task-a-id\n:BLOCKS: task-d-id\n:END:\n\n")
+        (insert "* Task C\n:PROPERTIES:\n:ID: task-c-id\n:DEPENDS_ON: task-a-id\n:END:\n\n")
+        (insert "* Task D\n:PROPERTIES:\n:ID: task-d-id\n:DEPENDS_ON: task-b-id\n:END:\n\n")
+
+        ;; Move to Task B (which has both BLOCKS and DEPENDS_ON)
+        (goto-char (point-min))
+        (re-search-forward "Task B")
+        (org-back-to-heading t)
+
+        ;; Call the clear relationships command
+        (org-gtd-task-clear-relationships)
+
+        ;; Verify Task B has no BLOCKS or DEPENDS_ON properties
+        (expect (org-entry-get-multivalued-property (point) "BLOCKS") :to-equal nil)
+        (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON") :to-equal nil)
+
+        ;; Verify Task A no longer blocks Task B (but still blocks Task C)
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+        (let ((blocks-list (org-entry-get-multivalued-property (point) "BLOCKS")))
+          (expect blocks-list :not :to-contain "task-b-id")
+          (expect blocks-list :to-contain "task-c-id"))
+
+        ;; Verify Task D no longer depends on Task B
+        (goto-char (point-min))
+        (re-search-forward "Task D")
+        (org-back-to-heading t)
+        (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON") :to-equal nil)
+
+        ;; Verify Task C is unchanged (still depends on Task A)
+        (goto-char (point-min))
+        (re-search-forward "Task C")
+        (org-back-to-heading t)
+        (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON") :to-equal '("task-a-id")))))
+
+  (it "shows confirmation message about cleared relationships"
+      (with-temp-buffer
+        (org-mode)
+        
+        ;; Create task with relationships
+        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:BLOCKS: task-b-id\n:END:\n\n")
+        (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:DEPENDS_ON: task-a-id\n:END:\n\n")
+
+        ;; Move to Task A
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+
+        ;; Capture message output
+        (let ((message-captured ""))
+          (cl-letf (((symbol-function 'message)
+                     (lambda (format-string &rest args)
+                       (setq message-captured (apply 'format format-string args)))))
+            
+            ;; Call the clear relationships command
+            (org-gtd-task-clear-relationships)
+            
+            ;; Verify confirmation message (Task A blocks 1, depends on 0)
+            (expect message-captured :to-match "Cleared relationships for.*Task A.*removed 0 blockers and 1 dependent")))))
+
+  (it "handles task with no relationships gracefully"
+      (with-temp-buffer
+        (org-mode)
+        
+        ;; Create task without relationships
+        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
+
+        ;; Move to Task A
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+
+        ;; Capture message output
+        (let ((message-captured ""))
+          (cl-letf (((symbol-function 'message)
+                     (lambda (format-string &rest args)
+                       (setq message-captured (apply 'format format-string args)))))
+            
+            ;; Call the clear relationships command
+            (org-gtd-task-clear-relationships)
+            
+            ;; Verify appropriate message
+            (expect message-captured :to-match "Task.*Task A.*has no relationships to clear")))))
+
  ) ; Close the main "task dependency commands" describe block
 
 (describe
