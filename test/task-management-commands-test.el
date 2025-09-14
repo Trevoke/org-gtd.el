@@ -788,4 +788,55 @@
            ;; Should show clear message for no relationships
            (expect relationship-display :to-match "Isolated Task.*no dependency relationships")))))
 
+(describe "dependency helper window (Story 11)"
+  (it "displays live dependency view in WIP buffer when org-gtd-clarify-display-helper-buffer is enabled"
+    (with-temp-buffer
+      ;; Create a WIP buffer with multiple tasks
+      (org-mode)
+      (org-gtd-wip-mode)
+      
+      ;; Insert project structure with dependencies (disable ID overlays during insert)
+      (let ((org-gtd-id-overlay-mode nil))
+        (insert "* Build Deck\n")
+        (insert "** Get permits\n")
+        (insert ":PROPERTIES:\n")
+        (insert ":BLOCKS: get-materials\n") 
+        (insert ":ID: get-permits\n")
+        (insert ":END:\n")
+        (insert "** Get materials\n")
+        (insert ":PROPERTIES:\n")
+        (insert ":DEPENDS_ON: get-permits\n")
+        (insert ":BLOCKS: install-decking\n")
+        (insert ":ID: get-materials\n") 
+        (insert ":END:\n")
+        (insert "** Install decking\n")
+        (insert ":PROPERTIES:\n")
+        (insert ":DEPENDS_ON: get-materials\n")
+        (insert ":ID: install-decking\n")
+        (insert ":END:\n")
+        (insert "** Paint deck (orphaned task)\n")
+        (insert ":PROPERTIES:\n")
+        (insert ":ID: paint-deck\n")
+        (insert ":END:\n"))
+      
+      ;; Enable the helper buffer feature
+      (let ((org-gtd-clarify-display-helper-buffer t))
+        ;; Trigger the helper window display  
+        (org-gtd-clarify-display-dependency-helper)
+        
+        ;; Check that helper window was created
+        (let ((helper-buffer (get-buffer "*Org GTD Project Dependencies*")))
+          (expect helper-buffer :not :to-be nil)
+          (with-current-buffer helper-buffer
+            (let ((helper-content (buffer-string)))
+              ;; Should show project name
+              (expect helper-content :to-match "Project name: Build Deck")
+              ;; Should show task relationships in format: (depends_on, ...) -> task -> (blocks, ...)
+              (expect helper-content :to-match "() -> Get permits -> (Get materials)")
+              (expect helper-content :to-match "(Get permits) -> Get materials -> (Install decking)")
+              (expect helper-content :to-match "(Get materials) -> Install decking -> ()")
+              ;; Should show orphaned tasks section
+              (expect helper-content :to-match "Orphaned tasks:")
+              (expect helper-content :to-match "Paint deck (orphaned task)"))))))))
+
 ;;; task-management-commands-test.el ends here

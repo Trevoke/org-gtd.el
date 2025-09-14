@@ -26,6 +26,7 @@
 
 ;;;; Requirements
 
+(require 'cl-lib)
 (require 'org-agenda)
 
 (require 'org-gtd-core)
@@ -57,6 +58,14 @@ The file shown can be configured in `org-gtd-horizons-file'."
   :options '('right 'top 'left 'bottom 'nil)
   :package-version '(org-gtd . "3.0")
   :type 'symbol)
+
+(defcustom org-gtd-clarify-display-helper-buffer nil
+  "If non-nil, display project dependencies helper window in WIP buffers.
+When enabled, shows a live view of task relationships in a side window when
+there are multiple tasks in the WIP buffer."
+  :group 'org-gtd-clarify
+  :package-version '(org-gtd . "4.0")
+  :type 'boolean)
 
 
 ;;;; Variables
@@ -195,6 +204,22 @@ WINDOW-CONFIG is the window config to set after clarification finishes."
     (if org-gtd-clarify-show-horizons
         (org-gtd-clarify--display-horizons-window))))
 
+(defun org-gtd-clarify-display-dependency-helper ()
+  "Display project dependencies in a helper window for current WIP buffer.
+Shows task relationships in format: (depends_on, ...) -> task -> (blocks, ...)
+Only displays when `org-gtd-clarify-display-helper-buffer' is non-nil and
+the buffer contains more than one task heading."
+  (interactive)
+  (when (and org-gtd-clarify-display-helper-buffer
+             (derived-mode-p 'org-gtd-wip-mode))
+    (let ((project-name (org-gtd-clarify--extract-project-name))
+          (task-info (org-gtd-clarify--collect-task-information)))
+      
+      ;; Show helper if we have tasks to display
+      (when task-info
+        (org-gtd-clarify--create-dependency-helper-window 
+         project-name task-info)))))
+
 ;;;;; Private
 
 (defun org-gtd-clarify--display-horizons-window ()
@@ -202,6 +227,93 @@ WINDOW-CONFIG is the window config to set after clarification finishes."
   (let ((horizons-side (or org-gtd-clarify-show-horizons 'right)))
     (display-buffer (org-gtd--horizons-file)
                     `(display-buffer-in-side-window . ((side . ,horizons-side))))))
+
+(defun org-gtd-clarify--extract-project-name ()
+  "Extract project name from the first level heading in current buffer."
+  (save-excursion
+    (goto-char (point-min))
+    (when (re-search-forward "^\\*[[:space:]]+" nil t)
+      (org-get-heading t t t t))))
+
+(defun org-gtd-clarify--collect-task-information ()
+  "Collect task information from all level-2 headings in current buffer.
+Returns a list of (heading id depends-on blocks) for each task."
+  (let ((task-info '()))
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward "^\\*\\*[[:space:]]" nil t)
+        (when (= (org-outline-level) 2)
+          (let* ((heading (org-get-heading t t t t))
+                 (id (org-entry-get nil "ID"))
+                 (depends-on (org-entry-get-multivalued-property nil "DEPENDS_ON"))
+                 (blocks (org-entry-get-multivalued-property nil "BLOCKS")))
+            (push (list heading id depends-on blocks) task-info)))))
+    (nreverse task-info)))
+
+(defun org-gtd-clarify--create-dependency-helper-window (project-name task-info)
+  "Create and display dependency helper window.
+PROJECT-NAME is the name of the project.
+TASK-INFO is a list of (heading id depends-on blocks) for each task."
+  (let ((helper-buffer (get-buffer-create "*Org GTD Project Dependencies*")))
+    (with-current-buffer helper-buffer
+      (setq buffer-read-only nil)
+      (erase-buffer)
+      
+      ;; Build and insert content
+      (insert (org-gtd-clarify--format-helper-content project-name task-info))
+      
+      (setq buffer-read-only t)
+      (goto-char (point-min)))
+    
+    ;; Display the helper buffer in a side window
+    (display-buffer helper-buffer
+                    '(display-buffer-in-side-window . ((side . right))))))
+
+(defun org-gtd-clarify--format-helper-content (project-name task-info)
+  "Format the helper window content with project name and task relationships.
+PROJECT-NAME is the name of the project.
+TASK-INFO is a list of (heading id depends-on blocks) for each task."
+  (let ((content (format "Project name: %s\n\n" (or project-name "Unknown Project")))
+        (orphaned '()))
+    
+    ;; Process each task and build relationship strings
+    (dolist (task-data task-info)
+      (let* ((heading (nth 0 task-data))
+             (id (nth 1 task-data))
+             (depends-on (nth 2 task-data))
+             (blocks (nth 3 task-data)))
+        (if (or depends-on blocks)
+            ;; Task with relationships - format as: (deps) -> task -> (blocks)
+            (setq content
+                  (concat content
+                          (format "(%s) -> %s -> (%s)\n"
+                                 (org-gtd-clarify--format-task-list depends-on task-info)
+                                 heading
+                                 (org-gtd-clarify--format-task-list blocks task-info))))
+          ;; Task without relationships (orphaned)
+          (push heading orphaned))))
+    
+    ;; Add orphaned tasks section if any exist
+    (when orphaned
+      (setq content (concat content "\nOrphaned tasks:\n"))
+      (dolist (task orphaned)
+        (setq content (concat content (format "%s\n" task)))))
+    
+    content))
+
+(defun org-gtd-clarify--format-task-list (task-ids task-info)
+  "Format a list of TASK-IDS as comma-separated task names using TASK-INFO."
+  (if task-ids
+      (mapconcat (lambda (id) (org-gtd-clarify--resolve-task-name id task-info))
+                 task-ids ", ")
+    ""))
+
+(defun org-gtd-clarify--resolve-task-name (task-id task-info)
+  "Resolve TASK-ID to task name using TASK-INFO."
+  (let ((task-data (cl-find-if (lambda (task) (string= (nth 1 task) task-id)) task-info)))
+    (if task-data
+        (nth 0 task-data)
+      task-id)))
 
 ;;;; Footer
 
