@@ -612,7 +612,7 @@
   (it "removes all BLOCKS and DEPENDS_ON properties from task and updates related tasks"
       (with-temp-buffer
         (org-mode)
-        
+
         ;; Create multiple tasks with complex relationships
         (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:BLOCKS: task-b-id task-c-id\n:END:\n\n")
         (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:DEPENDS_ON: task-a-id\n:BLOCKS: task-d-id\n:END:\n\n")
@@ -654,7 +654,7 @@
   (it "shows confirmation message about cleared relationships"
       (with-temp-buffer
         (org-mode)
-        
+
         ;; Create task with relationships
         (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:BLOCKS: task-b-id\n:END:\n\n")
         (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:DEPENDS_ON: task-a-id\n:END:\n\n")
@@ -669,17 +669,17 @@
           (cl-letf (((symbol-function 'message)
                      (lambda (format-string &rest args)
                        (setq message-captured (apply 'format format-string args)))))
-            
+
             ;; Call the clear relationships command
             (org-gtd-task-clear-relationships)
-            
+
             ;; Verify confirmation message (Task A blocks 1, depends on 0)
             (expect message-captured :to-match "Cleared relationships for.*Task A.*removed 0 blockers and 1 dependent")))))
 
   (it "handles task with no relationships gracefully"
       (with-temp-buffer
         (org-mode)
-        
+
         ;; Create task without relationships
         (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
 
@@ -693,10 +693,10 @@
           (cl-letf (((symbol-function 'message)
                      (lambda (format-string &rest args)
                        (setq message-captured (apply 'format format-string args)))))
-            
+
             ;; Call the clear relationships command
             (org-gtd-task-clear-relationships)
-            
+
             ;; Verify appropriate message
             (expect message-captured :to-match "Task.*Task A.*has no relationships to clear")))))
 
@@ -847,7 +847,7 @@
          (re-search-forward "Task B")
          (org-back-to-heading t)
 
-         ;; Mock task name resolution function  
+         ;; Mock task name resolution function
          (cl-letf (((symbol-function 'org-gtd-task-management--get-heading-for-id)
                     (lambda (id)
                       (cond
@@ -877,7 +877,7 @@
          (re-search-forward "Isolated Task")
          (org-back-to-heading t)
 
-         ;; Call the relationship visualization command  
+         ;; Call the relationship visualization command
          (let ((relationship-display (org-gtd-task-show-relationships)))
            ;; Should show clear message for no relationships
            (expect relationship-display :to-match "Isolated Task.*no dependency relationships")))))
@@ -888,20 +888,20 @@
       ;; Create a WIP buffer with multiple tasks
       (org-mode)
       (org-gtd-wip-mode)
-      
+
       ;; Insert project structure with dependencies (disable ID overlays during insert)
       (let ((org-gtd-id-overlay-mode nil))
         (insert "* Build Deck\n")
         (insert "** Get permits\n")
         (insert ":PROPERTIES:\n")
-        (insert ":BLOCKS: get-materials\n") 
+        (insert ":BLOCKS: get-materials\n")
         (insert ":ID: get-permits\n")
         (insert ":END:\n")
         (insert "** Get materials\n")
         (insert ":PROPERTIES:\n")
         (insert ":DEPENDS_ON: get-permits\n")
         (insert ":BLOCKS: install-decking\n")
-        (insert ":ID: get-materials\n") 
+        (insert ":ID: get-materials\n")
         (insert ":END:\n")
         (insert "** Install decking\n")
         (insert ":PROPERTIES:\n")
@@ -912,12 +912,12 @@
         (insert ":PROPERTIES:\n")
         (insert ":ID: paint-deck\n")
         (insert ":END:\n"))
-      
+
       ;; Enable the helper buffer feature
       (let ((org-gtd-clarify-display-helper-buffer t))
-        ;; Trigger the helper window display  
+        ;; Trigger the helper window display
         (org-gtd-clarify-display-dependency-helper)
-        
+
         ;; Check that helper window was created
         (let ((helper-buffer (get-buffer "*Org GTD Project Dependencies*")))
           (expect helper-buffer :not :to-be nil)
@@ -932,5 +932,100 @@
               ;; Should show orphaned tasks section
               (expect helper-content :to-match "Orphaned tasks:")
               (expect helper-content :to-match "Paint deck (orphaned task)"))))))))
+
+(describe "broken project detection (Story 14)"
+  (before-each (setq inhibit-message t) (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
+  (it "identifies projects with non-existent task references and provides guidance"
+    (with-temp-buffer
+      (org-mode)
+      ;; Create a project with broken dependency reference
+      (insert "* Build Deck Project\n")
+      (insert "** Get permits\n")
+      (insert ":PROPERTIES:\n")
+      (insert ":ID: get-permits-id\n")
+      (insert ":BLOCKS: non-existent-task-id\n")  ; Broken reference
+      (insert ":END:\n")
+      (insert "** Install decking\n")
+      (insert ":PROPERTIES:\n")
+      (insert ":ID: install-decking-id\n")
+      (insert ":DEPENDS_ON: another-missing-task-id\n")  ; Another broken reference
+      (insert ":END:\n")
+
+      ;; Mock org-gtd-agenda-files to include current buffer
+      (cl-letf (((symbol-function 'org-gtd-agenda-files)
+                 (lambda () (list (buffer-name)))))
+
+        ;; Run the project health check
+        (let* ((health-results (org-gtd-validate-project-dependencies)))
+
+          ;; Should identify broken references
+          (expect health-results :not :to-be nil)
+          (expect (plist-get health-results :broken-references) :not :to-be nil)
+
+          ;; Should identify the specific broken references
+          (let ((broken-refs (plist-get health-results :broken-references)))
+            (expect (length broken-refs) :to-be 2)
+
+            ;; Should contain information about the broken references
+            (expect (cl-some (lambda (ref)
+                               (and (string= (plist-get ref :referencing-task) "get-permits-id")
+                                    (string= (plist-get ref :missing-task) "non-existent-task-id")
+                                    (string= (plist-get ref :property) "BLOCKS")))
+                             broken-refs) :to-be-truthy)
+
+            (expect (cl-some (lambda (ref)
+                               (and (string= (plist-get ref :referencing-task) "install-decking-id")
+                                    (string= (plist-get ref :missing-task) "another-missing-task-id")
+                                    (string= (plist-get ref :property) "DEPENDS_ON")))
+                             broken-refs) :to-be-truthy))
+
+          ;; Should provide guidance for fixing broken references
+          (expect (plist-get health-results :guidance) :not :to-be nil)
+          (let ((guidance (plist-get health-results :guidance)))
+            (expect guidance :to-match "broken.*reference")
+            (expect guidance :to-match "remove.*invalid.*property"))))))
+
+
+  (it "identifies orphaned tasks with dependencies that aren't in proper projects"
+    (with-temp-buffer
+      (org-mode)
+      ;; Create orphaned tasks with dependencies outside of projects
+      (insert "* Random Task with Dependencies\n")
+      (insert ":PROPERTIES:\n")
+      (insert ":ID: orphaned-task-id\n")
+      (insert ":DEPENDS_ON: some-other-task-id\n")  ; This task has dependencies but isn't in a project structure
+      (insert ":END:\n")
+      (insert "* Another Task\n")
+      (insert ":PROPERTIES:\n")
+      (insert ":ID: some-other-task-id\n")
+      (insert ":END:\n")
+
+      ;; Mock org-gtd-agenda-files
+      (cl-letf (((symbol-function 'org-gtd-agenda-files)
+                 (lambda () (list (buffer-name)))))
+
+        ;; Run the health check
+        (let* ((health-results (org-gtd-validate-project-dependencies)))
+
+          ;; Should identify orphaned tasks
+          (expect health-results :not :to-be nil)
+          (expect (plist-get health-results :orphaned-tasks) :not :to-be nil)
+
+          (let ((orphaned-tasks (plist-get health-results :orphaned-tasks)))
+            (expect (length orphaned-tasks) :to-be-greater-than 0)
+
+            ;; Should identify the orphaned task with dependencies
+            (expect (cl-some (lambda (task)
+                               (string= (plist-get task :id) "orphaned-task-id"))
+                             orphaned-tasks) :to-be-truthy))
+
+          ;; Should provide guidance for fixing orphaned tasks
+          (expect (plist-get health-results :guidance) :not :to-be nil)
+          (let ((guidance (plist-get health-results :guidance)))
+            (expect guidance :to-match "orphaned.*task")
+            (expect guidance :to-match "organize.*into.*project")))))))
+
 
 ;;; task-management-commands-test.el ends here

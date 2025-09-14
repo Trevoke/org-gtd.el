@@ -654,6 +654,140 @@ Returns formatted string showing what blocks this task and what this task blocks
       
       (string-join (reverse output) "\n"))))
 
+;;;###autoload
+(defun org-gtd-validate-project-dependencies ()
+  "Validate project dependencies and identify issues.
+For Story 14: Detect broken dependency references, orphaned tasks, and provide guidance."
+  (interactive)
+  (let* ((all-existing-ids (org-gtd-validate-project-dependencies--collect-all-ids))
+         (validation-results (org-gtd-validate-project-dependencies--check-all-files all-existing-ids))
+         (broken-references (car validation-results))
+         (orphaned-tasks (cdr validation-results))
+         (guidance (org-gtd-validate-project-dependencies--generate-guidance 
+                   broken-references orphaned-tasks)))
+    
+    (list :broken-references broken-references
+          :orphaned-tasks orphaned-tasks
+          :guidance guidance)))
+
+(defun org-gtd-validate-project-dependencies--collect-all-ids ()
+  "Collect all existing task IDs from agenda files and buffers.
+Returns a list of all task IDs found."
+  (let ((all-existing-ids '()))
+    ;; Collect from file-based agenda files
+    (dolist (file-name (org-gtd-agenda-files))
+      (when (and file-name (file-exists-p file-name))
+        (with-temp-buffer
+          (insert-file-contents file-name)
+          (org-mode)
+          (setq all-existing-ids 
+                (append all-existing-ids 
+                        (org-gtd-validate-project-dependencies--collect-ids-from-buffer))))))
+    
+    ;; Collect from buffer-based agenda files (for testing)
+    (dolist (buffer-name (org-gtd-agenda-files))
+      (when (and (not (file-exists-p buffer-name))
+                 (get-buffer buffer-name))
+        (with-current-buffer buffer-name
+          (setq all-existing-ids
+                (append all-existing-ids
+                        (org-gtd-validate-project-dependencies--collect-ids-from-buffer))))))
+    
+    all-existing-ids))
+
+(defun org-gtd-validate-project-dependencies--collect-ids-from-buffer ()
+  "Collect all task IDs from the current buffer.
+Returns a list of task IDs."
+  (let ((buffer-ids '()))
+    (org-map-entries
+     (lambda ()
+       (let ((id (org-entry-get (point) "ID")))
+         (when id
+           (push id buffer-ids)))))
+    buffer-ids))
+
+(defun org-gtd-validate-project-dependencies--check-all-files (all-existing-ids)
+  "Check all agenda files for broken references and orphaned tasks.
+Returns a cons cell (BROKEN-REFERENCES . ORPHANED-TASKS)."
+  (let ((broken-references '())
+        (orphaned-tasks '()))
+    
+    ;; Check file-based agenda files
+    (dolist (file-name (org-gtd-agenda-files))
+      (when (and file-name (file-exists-p file-name))
+        (with-temp-buffer
+          (insert-file-contents file-name)
+          (org-mode)
+          (let ((result (org-gtd-validate-project-dependencies--check-buffer all-existing-ids)))
+            (setq broken-references (append broken-references (car result)))
+            (setq orphaned-tasks (append orphaned-tasks (cdr result)))))))
+    
+    ;; Check buffer-based agenda files (for testing)
+    (dolist (buffer-name (org-gtd-agenda-files))
+      (when (and (not (file-exists-p buffer-name))
+                 (get-buffer buffer-name))
+        (with-current-buffer buffer-name
+          (let ((result (org-gtd-validate-project-dependencies--check-buffer all-existing-ids)))
+            (setq broken-references (append broken-references (car result)))
+            (setq orphaned-tasks (append orphaned-tasks (cdr result)))))))
+    
+    (cons broken-references orphaned-tasks)))
+
+(defun org-gtd-validate-project-dependencies--check-buffer (all-existing-ids)
+  "Check current buffer for broken references and orphaned tasks.
+Returns a cons cell (BROKEN-REFERENCES . ORPHANED-TASKS)."
+  (let ((broken-references '())
+        (orphaned-tasks '()))
+    (org-map-entries
+     (lambda ()
+       (let* ((id (org-entry-get (point) "ID"))
+              (blocks (org-entry-get-multivalued-property (point) "BLOCKS"))
+              (depends-on (org-entry-get-multivalued-property (point) "DEPENDS_ON"))
+              (heading (nth 4 (org-heading-components)))
+              (level (org-current-level)))
+         
+         (when id
+           ;; Check for broken BLOCKS references
+           (dolist (blocked-id blocks)
+             (unless (member blocked-id all-existing-ids)
+               (push (list :referencing-task id
+                           :missing-task blocked-id
+                           :property "BLOCKS"
+                           :heading heading)
+                     broken-references)))
+           
+           ;; Check for broken DEPENDS_ON references  
+           (dolist (dependency-id depends-on)
+             (unless (member dependency-id all-existing-ids)
+               (push (list :referencing-task id
+                           :missing-task dependency-id
+                           :property "DEPENDS_ON"
+                           :heading heading)
+                     broken-references)))
+           
+           ;; Check for orphaned tasks (level-1 tasks with dependencies)
+           (when (and (= level 1)
+                      (or blocks depends-on))
+             (push (list :id id
+                         :heading heading
+                         :level level)
+                   orphaned-tasks))))))
+    (cons broken-references orphaned-tasks)))
+
+(defun org-gtd-validate-project-dependencies--generate-guidance (broken-references orphaned-tasks)
+  "Generate guidance text based on BROKEN-REFERENCES and ORPHANED-TASKS."
+  (let ((guidance-parts '()))
+    
+    (when broken-references
+      (push "Found broken dependency references. Remove invalid property values or create missing tasks." guidance-parts))
+    
+    (when orphaned-tasks  
+      (push "Found orphaned tasks with dependencies. Organize these tasks into proper projects." guidance-parts))
+    
+    (if guidance-parts
+        (string-join guidance-parts " ")
+      "No dependency issues found.")))
+
 ;;;; Footer
 
 (provide 'org-gtd-task-management)
