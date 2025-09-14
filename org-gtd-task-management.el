@@ -328,12 +328,16 @@ Returns a list of plists with :id, :heading, :project, :file properties."
 
 (defun org-gtd-task-management--extract-task-info-at-point (file-name)
   "Extract task information at current point, returning plist or nil.
-FILE-NAME is used for the :file property."
+FILE-NAME is used for the :file property.
+Creates ID automatically if task doesn't have one (lazy ID creation)."
   (let ((todo-state (org-get-todo-state))
         (id (org-entry-get (point) "ID")))
-    (when (and id
-               (or (and todo-state (not (org-entry-is-done-p)))
-                   (not todo-state)))
+    ;; Include tasks that are undone or have no TODO state (regular headings)
+    (when (or (and todo-state (not (org-entry-is-done-p)))
+              (not todo-state))
+      ;; Create ID if it doesn't exist (lazy ID creation for Story 9)
+      (unless id
+        (setq id (org-gtd-id-get-create)))
       (list :id id 
             :heading (nth 4 (org-heading-components))
             :project (org-gtd-task-management--find-project-heading)
