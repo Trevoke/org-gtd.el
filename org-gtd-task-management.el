@@ -129,8 +129,8 @@ Throws an error with a descriptive path if a cycle is detected."
 
 (defun org-gtd-task-management--would-create-cycle-p (dependent-id blocker-id)
   "Check if making BLOCKER-ID block DEPENDENT-ID would create a cycle.
-This happens if there's already a dependency path from BLOCKER-ID to DEPENDENT-ID."
-  (org-gtd-task-management--has-dependency-path-p blocker-id dependent-id))
+This happens if there's already a dependency path from DEPENDENT-ID to BLOCKER-ID."
+  (org-gtd-task-management--has-dependency-path-p dependent-id blocker-id))
 
 (defun org-gtd-task-management--has-dependency-path-p (from-id to-id)
   "Check if there's a dependency path from FROM-ID to TO-ID.
