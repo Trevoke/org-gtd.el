@@ -738,4 +738,54 @@
 
      )) ; Close lazy ID creation describe block
 
+ (describe "relationship visualization (Story 10)"
+   (it "shows task dependency relationships in a formatted display"
+       (with-temp-buffer
+         (org-mode)
+         ;; Set up test scenario with complex relationships
+         (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:BLOCKS: task-b-id task-c-id\n:END:\n\n")
+         (insert "* Task B  \n:PROPERTIES:\n:ID: task-b-id\n:DEPENDS_ON: task-a-id\n:BLOCKS: task-d-id\n:END:\n\n")
+         (insert "* Task C\n:PROPERTIES:\n:ID: task-c-id\n:DEPENDS_ON: task-a-id\n:END:\n\n")
+         (insert "* Task D\n:PROPERTIES:\n:ID: task-d-id\n:DEPENDS_ON: task-b-id\n:END:\n\n")
+
+         ;; Position on Task B (has both blocking and blocked relationships)
+         (goto-char (point-min))
+         (re-search-forward "Task B")
+         (org-back-to-heading t)
+
+         ;; Mock task name resolution function  
+         (cl-letf (((symbol-function 'org-gtd-task-management--get-heading-for-id)
+                    (lambda (id)
+                      (cond
+                       ((string= id "task-a-id") "Task A")
+                       ((string= id "task-b-id") "Task B")
+                       ((string= id "task-c-id") "Task C")
+                       ((string= id "task-d-id") "Task D")
+                       (t "Unknown Task")))))
+
+           ;; Call the relationship visualization command
+           (let ((relationship-display (org-gtd-task-show-relationships)))
+             ;; Expect formatted display showing:
+             ;; - What this task depends on (blockers)
+             ;; - What this task blocks (dependents)
+             (expect relationship-display :to-match "Task B Dependencies:")
+             (expect relationship-display :to-match "Blocked by:.*Task A")
+             (expect relationship-display :to-match "Blocks:.*Task D")
+             (expect relationship-display :not :to-match "Task C"))))) ; Task C is not directly related to Task B
+
+   (it "shows clear message when task has no relationships"
+       (with-temp-buffer
+         (org-mode)
+         (insert "* Isolated Task\n:PROPERTIES:\n:ID: isolated-task-id\n:END:\n\n")
+
+         ;; Position on the isolated task
+         (goto-char (point-min))
+         (re-search-forward "Isolated Task")
+         (org-back-to-heading t)
+
+         ;; Call the relationship visualization command  
+         (let ((relationship-display (org-gtd-task-show-relationships)))
+           ;; Should show clear message for no relationships
+           (expect relationship-display :to-match "Isolated Task.*no dependency relationships")))))
+
 ;;; task-management-commands-test.el ends here

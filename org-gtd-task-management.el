@@ -559,6 +559,51 @@ For Story 15: Automatically update dependent tasks when a task becomes DONE."
 ;; Install the hook for automatic updates
 (add-hook 'org-after-todo-state-change-hook #'org-gtd-task-management--after-todo-state-change)
 
+;;;###autoload
+(defun org-gtd-task-show-relationships ()
+  "Show dependency relationships for the task at point.
+When called interactively, displays relationships in minibuffer.
+Returns formatted string showing what blocks this task and what this task blocks."
+  (interactive)
+  (unless (org-at-heading-p)
+    (user-error "Point must be on an org heading"))
+  
+  (let* ((current-heading (nth 4 (org-heading-components)))
+         (current-id (org-entry-get (point) "ID"))
+         (depends-on (org-entry-get-multivalued-property (point) "DEPENDS_ON"))
+         (blocks (org-entry-get-multivalued-property (point) "BLOCKS"))
+         (result (org-gtd-task-show-relationships--format-display 
+                  current-heading depends-on blocks)))
+    
+    ;; Show in minibuffer when called interactively 
+    (when (called-interactively-p 'interactive)
+      (message "%s" result))
+    
+    result))
+
+(defun org-gtd-task-show-relationships--format-display (heading depends-on blocks)
+  "Format relationship display for HEADING with DEPENDS-ON and BLOCKS lists."
+  ;; If task has no relationships
+  (if (and (null depends-on) (null blocks))
+      (format "%s has no dependency relationships." heading)
+    
+    ;; Format relationship display
+    (let ((output (list (format "%s Dependencies:" heading))))
+      
+      ;; Show what blocks this task (dependencies)
+      (if depends-on
+          (let ((blocker-names (mapcar 'org-gtd-task-management--get-heading-for-id depends-on)))
+            (push (format "Blocked by: %s" (string-join blocker-names ", ")) output))
+        (push "Blocked by: none" output))
+      
+      ;; Show what this task blocks (dependents)
+      (if blocks
+          (let ((dependent-names (mapcar 'org-gtd-task-management--get-heading-for-id blocks)))
+            (push (format "Blocks: %s" (string-join dependent-names ", ")) output))
+        (push "Blocks: none" output))
+      
+      (string-join (reverse output) "\n"))))
+
 ;;;; Footer
 
 (provide 'org-gtd-task-management)
