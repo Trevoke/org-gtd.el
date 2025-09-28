@@ -70,6 +70,7 @@
 (require 'org-gtd-mode)
 (require 'org-gtd-review)
 (require 'org-gtd-oops)
+(require 'org-gtd-view-language)
 (require 'org-gtd-upgrades)
 (require 'org-gtd-id-overlay)
 

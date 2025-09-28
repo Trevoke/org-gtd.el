@@ -27,11 +27,15 @@
 ;;
 ;;; Code:
 (require 'org-ql)
+(require 'ts)
 
 (org-ql-defpred property-ts< (property greater-ts)
   "Checks whether a timestamp is earlier than a given date."
   :body (when-let ((ts-value (org-entry-get nil property)))
-          (ts< (ts-parse-org ts-value) (ts-parse greater-ts))))
+          (let ((target-ts (if (string-equal greater-ts "today")
+                               (ts-now)
+                             (ts-parse greater-ts))))
+            (ts< (ts-parse-org ts-value) target-ts))))
 
 (org-ql-defpred property-ts= (property other-ts)
   "Checks whether a timestamp is earlier than a given date."
@@ -54,18 +58,6 @@
                           view)))
     `(org-ql-block '(and ,@filters))))
 
-(defun org-gtd-generate-org-ql-block (section config)
-  "Generate an org-ql block based on VIEW-TYPE and ALIST."
-  (let* ((conses (alist-get section config))
-         (filters (mapcan
-                   (lambda (prop)
-                     (pcase-let ((`(,key . ,value) prop))
-                       (cond
-                        ((eq key 'todo) (list `(todo ,value)))
-                        ((eq value :today) (list `(property-ts= ,(symbol-name key) ,(format-time-string "%Y-%m-%d"))))
-                        (t (list `(property ,(symbol-name key) ,value))))))
-                   conses)))
-    `(org-ql-block '(and ,@filters))))
 
 (provide 'org-gtd-ql)
 ;;; org-gtd.el ends here
