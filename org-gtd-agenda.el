@@ -31,6 +31,7 @@
 
 (require 'org-gtd-core)
 (require 'org-gtd-backward-compatibility)
+(require 'org-gtd-view-language)
 
 (defgroup org-gtd-engage nil
   "Customize the engage views in the org-gtd package."
@@ -45,6 +46,32 @@ This is where the project name is displayed, on the left side."
   :package-version '(org-gtd . "3.1")
   :type 'integer)
 
+;;;; GTD View Specifications
+
+(defun org-gtd-engage-view-spec ()
+  "Return GTD view specification for the engage view."
+  (let ((project-format-prefix
+         (format " %%i %%-%d:(org-gtd-agenda--prefix-format) "
+                 org-gtd-engage-prefix-width)))
+    `((name . "GTD Engage View")
+      (view-type . agenda)
+      (agenda-span . 1)
+      (additional-blocks . ((todo . ,(org-gtd-keywords--next))))
+      (prefix-format . ,project-format-prefix))))
+
+(defun org-gtd-engage-grouped-by-context-view-spec ()
+  "Return GTD view specification for the grouped by context engage view."
+  `((name . "Actions by Context")
+    (view-type . tags-grouped)
+    (group-by . context)
+    (filters . ((tags-match . "{^@}")
+                (todo . (,(org-gtd-keywords--next)))))))
+
+(defun org-gtd-show-all-next-view-spec ()
+  "Return GTD view specification for showing all next actions."
+  `((name . "All Next Actions")
+    (filters . ((todo . (,(org-gtd-keywords--next)))))))
+
 ;;;; Commands
 
 ;;;###autoload
@@ -53,19 +80,11 @@ This is where the project name is displayed, on the left side."
   (interactive)
   (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
-      (let* ((project-format-prefix
-              (format " %%i %%-%d:(org-gtd-agenda--prefix-format) "
-                      org-gtd-engage-prefix-width))
-             (org-agenda-custom-commands
-             `(("g" "Scheduled today and all NEXT items"
-                ((agenda ""
-                         ((org-agenda-span 1)
-                          (org-agenda-start-day nil)
-                          (org-agenda-skip-additional-timestamps-same-entry t)))
-                 (todo ,(org-gtd-keywords--next)
-                       ((org-agenda-overriding-header "All actions ready to be executed.")
-                        (org-agenda-prefix-format
-                         '((todo . ,project-format-prefix))))))))))
+      (let ((org-agenda-custom-commands
+             (org-gtd-view-lang--create-custom-commands
+              (list (org-gtd-engage-view-spec))
+              "g"
+              "Scheduled today and all NEXT items")))
         (org-agenda nil "g")
         (goto-char (point-min)))))
 
@@ -75,19 +94,11 @@ This is where the project name is displayed, on the left side."
   (interactive)
   (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
-      (let* ((contexts (seq-map
-                        (lambda (x) (substring-no-properties x))
-                        (seq-uniq
-                         (flatten-list
-                          (org-map-entries
-                           (lambda () org-scanner-tags)
-                           (format "{^@}+TODO=\"%s\"" (org-gtd-keywords--next))
-                           'agenda)))))
-             (blocks (seq-map
-                      (lambda (x) `(tags ,(format "+%s+TODO=\"%s\"" x (org-gtd-keywords--next))
-                                         ((org-agenda-overriding-header ,x))))
-                      contexts))
-             (org-agenda-custom-commands `(("g" "actions by context" ,blocks))))
+      (let ((org-agenda-custom-commands
+             (org-gtd-view-lang--create-custom-commands
+              (list (org-gtd-engage-grouped-by-context-view-spec))
+              "g"
+              "actions by context")))
         (org-agenda nil "g"))))
 
 ;;;###autoload
@@ -97,7 +108,12 @@ This assumes all GTD files are also agenda files."
   (interactive)
   (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
-      (org-todo-list (org-gtd-keywords--next))))
+      (let ((org-agenda-custom-commands
+             (org-gtd-view-lang--create-custom-commands
+              (list (org-gtd-show-all-next-view-spec))
+              "n"
+              "All Next Actions")))
+        (org-agenda nil "n"))))
 
 ;;;; Functions
 

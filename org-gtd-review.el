@@ -33,6 +33,7 @@
 (require 'org-gtd-skip)
 (require 'org-gtd-agenda)
 (require 'org-gtd-projects)
+(require 'org-gtd-view-language)
 
 ;;;; Commands
 

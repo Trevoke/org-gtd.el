@@ -64,7 +64,10 @@
   (interactive)
   (with-org-gtd-context
       (let ((org-agenda-custom-commands
-             (org-gtd-view-lang--create-custom-commands org-gtd-oops-view-specs)))
+             (org-gtd-view-lang--create-custom-commands
+              org-gtd-oops-view-specs
+              "o"
+              "GTD Oops Views")))
         (org-agenda nil "o")
         (goto-char (point-min)))))
 

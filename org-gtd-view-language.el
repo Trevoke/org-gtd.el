@@ -53,6 +53,16 @@
 ;;   (area-of-focus . "Work") - Specific area of focus (CATEGORY property)
 ;;   (not-habit . t)          - Exclude habits (STYLE != "habit")
 ;;
+;; Tag Filters:
+;;   (tags . ("@work" "@computer")) - Match specific tags
+;;   (tags-match . "{^@}")    - Match tags using org-mode tag expressions
+;;
+;; View Configuration:
+;;   (view-type . agenda)     - Create native agenda view (default: org-ql)
+;;   (agenda-span . N)        - Number of days in agenda view (default: 1)
+;;   (show-habits . t/nil)    - Control habit visibility in agenda
+;;   (additional-blocks . ((todo . "NEXT"))) - Additional blocks to include
+;;
 ;; Example GTD View:
 ;;
 ;; '((name . "Overdue Work Projects")
@@ -73,16 +83,64 @@
 (require 'org-gtd-ql)
 
 (defun org-gtd-view-lang--create-agenda-block (gtd-view-spec)
-  "Create an org-ql agenda block from GTD-VIEW-SPEC."
+  "Create an agenda block from GTD-VIEW-SPEC.
+If view-type is 'agenda, creates a native agenda block.
+If view-type is 'tags-grouped, creates grouped views.
+Otherwise creates an org-ql agenda block."
   (let* ((name (alist-get 'name gtd-view-spec))
-         (query (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)))
-    `(org-ql-block ',query
-                   ((org-ql-block-header ,name)))))
+         (view-type (alist-get 'view-type gtd-view-spec)))
+    (cond
+     ((eq view-type 'agenda)
+      (org-gtd-view-lang--create-native-agenda-block gtd-view-spec))
+     ((eq view-type 'tags-grouped)
+      (org-gtd-view-lang--create-grouped-views gtd-view-spec))
+     (t
+      (let ((query (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)))
+        `(org-ql-block ',query
+                       ((org-ql-block-header ,name))))))))
 
-(defun org-gtd-view-lang--create-custom-commands (view-specs)
-  "Create org-agenda-custom-commands from VIEW-SPECS list."
-  (let ((blocks (mapcar #'org-gtd-view-lang--create-agenda-block view-specs)))
-    `(("o" "GTD Oops Views" ,blocks))))
+(defun org-gtd-view-lang--create-native-agenda-block (gtd-view-spec)
+  "Create a native agenda block from GTD-VIEW-SPEC."
+  (let* ((agenda-span (alist-get 'agenda-span gtd-view-spec 1))
+         (show-habits (alist-get 'show-habits gtd-view-spec))
+         (settings '((org-agenda-start-day nil)
+                    (org-agenda-skip-additional-timestamps-same-entry t))))
+    (when agenda-span
+      (push `(org-agenda-span ,agenda-span) settings))
+    (when (and (assoc 'show-habits gtd-view-spec) (not show-habits))
+      (push '(org-agenda-include-all-todo nil) settings))
+    `(agenda "" ,settings)))
+
+(defun org-gtd-view-lang--create-additional-blocks (gtd-view-spec)
+  "Create additional agenda blocks from GTD-VIEW-SPEC.
+Returns a list of additional blocks like TODO lists."
+  (let ((additional-blocks (alist-get 'additional-blocks gtd-view-spec))
+        (prefix-format (alist-get 'prefix-format gtd-view-spec)))
+    (mapcar (lambda (block-spec)
+              (let ((block-type (car block-spec))
+                    (block-value (cdr block-spec)))
+                (cond
+                 ((eq block-type 'todo)
+                  (let ((settings '((org-agenda-overriding-header "All actions ready to be executed."))))
+                    (when prefix-format
+                      (push `(org-agenda-prefix-format '((todo . ,prefix-format))) settings))
+                    `(todo ,block-value ,settings)))
+                 (t (error "Unknown additional block type: %s" block-type)))))
+            additional-blocks)))
+
+(defun org-gtd-view-lang--create-custom-commands (view-specs &optional key title)
+  "Create org-agenda-custom-commands from VIEW-SPECS list.
+KEY defaults to \"o\", TITLE defaults to \"GTD Views\"."
+  (let* ((command-key (or key "o"))
+         (command-title (or title "GTD Views"))
+         (blocks (mapcan (lambda (view-spec)
+                          (let ((main-block (org-gtd-view-lang--create-agenda-block view-spec))
+                                (additional-blocks (org-gtd-view-lang--create-additional-blocks view-spec)))
+                            (if additional-blocks
+                                (cons main-block additional-blocks)
+                              (list main-block))))
+                        view-specs)))
+    `((,command-key ,command-title ,blocks))))
 
 (defun org-gtd-view-lang--translate-to-org-ql (gtd-view-spec)
   "Translate GTD-VIEW-SPEC to an org-ql query expression.
@@ -120,6 +178,10 @@ GTD-VIEW-SPEC should be an alist with 'name and 'filters keys."
       (org-gtd-view-lang--translate-area-of-focus-filter filter-value))
      ((eq filter-type 'todo)
       (org-gtd-view-lang--translate-todo-filter filter-value))
+     ((eq filter-type 'tags)
+      (org-gtd-view-lang--translate-tags-filter filter-value))
+     ((eq filter-type 'tags-match)
+      (org-gtd-view-lang--translate-tags-match-filter filter-value))
      (t (error "Unknown GTD filter: %s" filter-type)))))
 
 (defun org-gtd-view-lang--translate-category-filter (category)
@@ -172,6 +234,77 @@ GTD-VIEW-SPEC should be an alist with 'name and 'filters keys."
 (defun org-gtd-view-lang--translate-todo-filter (keywords)
   "Translate todo KEYWORDS to org-ql todo filter."
   (list `(todo ,@keywords)))
+
+(defun org-gtd-view-lang--translate-tags-filter (tags)
+  "Translate tags TAGS to org-ql tags filter."
+  (list `(tags ,@tags)))
+
+(defun org-gtd-view-lang--translate-tags-match-filter (pattern)
+  "Translate tags-match PATTERN to org-ql tags filter."
+  (list `(tags ,pattern)))
+
+(defun org-gtd-view-lang--create-grouped-views (gtd-view-spec)
+  "Create grouped views from GTD-VIEW-SPEC.
+Handle both simple grouped views with 'group-contexts and
+dynamic grouped views with 'group-by."
+  (let ((group-contexts (alist-get 'group-contexts gtd-view-spec))
+        (group-by (alist-get 'group-by gtd-view-spec))
+        (filters (alist-get 'filters gtd-view-spec)))
+    (cond
+     ;; Simple grouped views with pre-defined contexts
+     (group-contexts
+      (org-gtd-view-lang--create-simple-grouped-views group-contexts filters))
+     ;; Dynamic grouped views by context
+     ((eq group-by 'context)
+      (org-gtd-view-lang--create-context-grouped-views filters))
+     (t (error "Unknown grouping specification in view spec")))))
+
+(defun org-gtd-view-lang--create-simple-grouped-views (contexts filters)
+  "Create simple grouped views for each context in CONTEXTS with FILTERS."
+  (mapcar (lambda (context)
+            (let ((search-string (org-gtd-view-lang--build-tags-search-string context filters)))
+              `(tags ,search-string
+                     ((org-agenda-overriding-header ,context)))))
+          contexts))
+
+(defun org-gtd-view-lang--extract-contexts-from-agenda (filters)
+  "Extract all context tags (prefixed with @) from agenda files based on FILTERS."
+  (let ((todo-filter (seq-find (lambda (f) (eq (car f) 'todo)) filters)))
+    (when todo-filter
+      (let ((todo-keyword (let ((value (cdr todo-filter)))
+                            (if (listp value) (car value) value))))
+        (seq-map
+         (lambda (x) (substring-no-properties x))
+         (seq-uniq
+          (flatten-list
+           (org-map-entries
+            (lambda () org-scanner-tags)
+            (format "{^@}+TODO=\"%s\"" todo-keyword)
+            'agenda))))))))
+
+(defun org-gtd-view-lang--create-context-grouped-views (filters)
+  "Create context-grouped views with dynamic context detection from FILTERS."
+  (let ((contexts (org-gtd-view-lang--extract-contexts-from-agenda filters)))
+    (mapcar (lambda (context)
+              (let ((search-string (org-gtd-view-lang--build-tags-search-string context filters)))
+                `(,context . ((tags ,search-string
+                                    ((org-agenda-overriding-header ,context)))))))
+            contexts)))
+
+(defun org-gtd-view-lang--build-tags-search-string (context filters)
+  "Build agenda tags search string for CONTEXT with FILTERS."
+  (let ((search-parts (list (concat "+" context))))
+    (dolist (filter filters)
+      (let ((filter-type (car filter))
+            (filter-value (cdr filter)))
+        (cond
+         ((eq filter-type 'todo)
+          ;; Handle multiple TODO keywords - for now just take first
+          (let ((todo-keyword (if (listp filter-value) (car filter-value) filter-value)))
+            (push (concat "+TODO=\"" todo-keyword "\"") search-parts)))
+         ;; Add other filter types as needed
+         )))
+    (string-join (reverse search-parts) "")))
 
 ;;;; Footer
 

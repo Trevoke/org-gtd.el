@@ -52,7 +52,10 @@
         (expect (cadr (caadr (cdr block))) :to-equal "Missed check-ins on delegated items")))
 
     (it "can create custom commands structure"
-      (let ((commands (org-gtd-view-lang--create-custom-commands org-gtd-oops-view-specs)))
+      (let ((commands (org-gtd-view-lang--create-custom-commands
+                       org-gtd-oops-view-specs
+                       "o"
+                       "GTD Oops Views")))
         (expect (car (car commands)) :to-equal "o")
         (expect (cadr (car commands)) :to-equal "GTD Oops Views")
         (expect (length (caddr (car commands))) :to-equal 4))))
