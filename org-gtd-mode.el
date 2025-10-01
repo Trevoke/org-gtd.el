@@ -82,7 +82,7 @@ configuration."
    org-gtd--agenda-functions)
   (setq org-gtd-edna-inheritance org-edna-use-inheritance
         org-gtd-edna org-edna-mode)
-  (setq org-edna-use-inheritance 1)
+  (setq org-edna-use-inheritance 0)
   (org-edna-mode 1))
 
 (defun org-gtd--wrap (fun &rest r)

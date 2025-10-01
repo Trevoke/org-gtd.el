@@ -130,6 +130,44 @@ planning keyword in `org-mode'."
   (and (not (org-is-habit-p))
        (org-get-scheduled-time (point))))
 
+(defun org-gtd-upgrade--migrate-level-to-property-based ()
+  "Migrate existing level-based projects to property-based system.
+This migration:
+1. Adds ORG_GTD=Projects property to level 2 items under Projects categories
+2. Adds ORG_GTD=Actions property to level 3+ items under project headings
+This supports the new property-based task identification system."
+  (interactive)
+  (with-org-gtd-context
+      ;; Step 1: Find Projects category headings and process their level 2 children as project headings
+      (org-map-entries
+       (lambda ()
+         (let ((category-level (org-current-level)))
+           (outline-next-heading)
+           (while (and (not (eobp))
+                       (> (org-current-level) category-level))
+             (when (= (org-current-level) (1+ category-level))
+               ;; This is a level 2 item under Projects category - it's a project heading
+               (unless (org-entry-get (point) "ORG_GTD")
+                 (org-entry-put (point) "ORG_GTD" "Projects")))
+             (outline-next-heading))))
+       "+ORG_GTD=\"Projects\"+LEVEL=1"
+       'agenda)
+
+      ;; Step 2: Find all project headings and process their children as project tasks
+      (org-map-entries
+       (lambda ()
+         (let ((project-level (org-current-level)))
+           (outline-next-heading)
+           (while (and (not (eobp))
+                       (> (org-current-level) project-level))
+             (when (> (org-current-level) project-level)
+               ;; This is any descendant (level 3+) under project heading - it's a project task
+               (unless (org-entry-get (point) "ORG_GTD")
+                 (org-entry-put (point) "ORG_GTD" "Actions")))
+             (outline-next-heading))))
+       "+ORG_GTD=\"Projects\"+LEVEL=2"
+       'agenda)))
+
 ;;;; Footer
 
 (provide 'org-gtd-upgrades)

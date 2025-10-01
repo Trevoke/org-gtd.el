@@ -36,8 +36,8 @@
         (with-current-buffer org-agenda-buffer
           (let ((active-projects "Active projects[[:space:]].*?Fix the roof")
                 (next-actions "Next actions[[:space:]].*?Clean gutters")
-                (reminders "Reminders[[:space:]].*?20 November 2021[[:space:]].*?Meet plumber")
-                (routines "Routines[[:space:]].*?20 November 2021[[:space:]].*?Sweep the")
+                (reminders "Reminders[[:space:]].*?Meet plumber")
+                (routines "Routines[[:space:]].*?Sweep the")
                 (incubated-items "Incubated items[[:space:]].*?For later"))
             (expect (buffer-name) :to-equal "*Org Agenda: Home*")
             (expect (ogt--current-buffer-raw-text) :to-match active-projects)

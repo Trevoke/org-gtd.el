@@ -168,4 +168,114 @@ Do that thing.
         (goto-char (point-min))
         (search-forward "record meaningful")
         (expect (org-entry-get nil "ORG_GTD" t)
-                :to-equal org-gtd-calendar)))))
+                :to-equal org-gtd-calendar))))
+
+ (describe
+  "Property-based project system migration"
+
+  (it "migrates level-based projects to property-based system where project headings can exist at any level"
+      (with-current-buffer (org-gtd--default-file)
+        (insert """
+* Projects
+:PROPERTIES:
+:ORG_GTD: Projects
+:END:
+** Build a webapp
+*** Set up development environment
+*** Design the user interface
+*** Implement backend API
+**** Create user authentication
+**** Set up database
+** Write documentation
+*** Create user manual
+*** Document API endpoints
+""")
+        (basic-save-buffer))
+
+      ;; Run the migration function
+      (org-gtd-upgrade--migrate-level-to-property-based)
+
+      (with-current-buffer (org-gtd--default-file)
+        ;; Verify project headings have correct ORG_GTD property
+        (goto-char (point-min))
+        (search-forward "Build a webapp")
+        (expect (org-entry-get (point) "ORG_GTD")
+                :to-equal "Projects")
+
+        (goto-char (point-min))
+        (search-forward "Write documentation")
+        (expect (org-entry-get (point) "ORG_GTD")
+                :to-equal "Projects")
+
+        ;; Verify project tasks have ORG_GTD=Actions property
+        (goto-char (point-min))
+        (search-forward "Set up development environment")
+        (expect (org-entry-get (point) "ORG_GTD")
+                :to-equal "Actions")
+
+        (goto-char (point-min))
+        (search-forward "Create user authentication")
+        (expect (org-entry-get (point) "ORG_GTD")
+                :to-equal "Actions")
+
+        (goto-char (point-min))
+        (search-forward "Set up database")
+        (expect (org-entry-get (point) "ORG_GTD")
+                :to-equal "Actions")))
+
+  (it "allows project tasks to be collected via property queries regardless of their level in hierarchy"
+      (with-current-buffer (org-gtd--default-file)
+        (insert """
+* Projects
+:PROPERTIES:
+:ORG_GTD: Projects
+:END:
+** Build a webapp
+:PROPERTIES:
+:ORG_GTD: Projects
+:ID: proj-webapp
+:END:
+*** Set up development environment
+:PROPERTIES:
+:ORG_GTD: Actions
+:ID: task-setup
+:END:
+*** Design the user interface
+:PROPERTIES:
+:ORG_GTD: Actions
+:ID: task-design
+:END:
+**** Create wireframes
+:PROPERTIES:
+:ORG_GTD: Actions
+:ID: task-wireframes
+:END:
+**** Choose color scheme
+:PROPERTIES:
+:ORG_GTD: Actions
+:ID: task-colors
+:END:
+""")
+        (basic-save-buffer))
+
+      ;; Test that we can find all project tasks via property query
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Build a webapp")
+        (let ((tasks (org-gtd-projects--collect-tasks-by-graph)))
+          ;; Should find all 4 tasks regardless of their level
+          (expect (length tasks) :to-equal 4)
+          ;; Verify we can access all tasks by their properties
+          (let ((task-ids '()))
+            (dolist (task tasks)
+              (save-excursion
+                (goto-char task)
+                (let ((id (org-entry-get (point) "ID"))
+                      (org-gtd (org-entry-get (point) "ORG_GTD")))
+                  (expect org-gtd :to-equal "Actions")
+                  (push id task-ids))))
+            ;; All task IDs should be present
+            (expect (member "task-setup" task-ids) :to-be-truthy)
+            (expect (member "task-design" task-ids) :to-be-truthy)
+            (expect (member "task-wireframes" task-ids) :to-be-truthy)
+            (expect (member "task-colors" task-ids) :to-be-truthy)))))))

@@ -73,12 +73,6 @@
   "Skip-function: only keep if it's not one of the DONE keywords"
   (org-agenda-skip-entry-if 'todo org-done-keywords))
 
-(defun org-gtd-skip-if-habit ()
-  "Skip-function: only keep this if it's a habit."
-  (let ((subtree-end (save-excursion (org-end-of-subtree t))))
-    (if (string-equal "habit" (org-entry-get (point) "STYLE"))
-        subtree-end
-      nil)))
 
 (defun org-gtd-skip-unless-action-invalid ()
   "Return non-nil if the action wouldn't show up in the agenda."
@@ -152,14 +146,6 @@
         subtree-end
       nil)))
 
-(defun org-gtd-skip-unless-project-heading ()
-  "Skip-function: only keep this if it's an org-gtd project heading entry."
-  (let ((subtree-end (save-excursion (org-end-of-subtree t))))
-    (if (and (equal 2 (org-element-property :level (org-element-at-point)))
-             (string-equal (org-entry-get (point) "ORG_GTD" t)
-                           org-gtd-projects))
-        nil
-      subtree-end)))
 
 (defun org-gtd-skip-unless-scheduled-start-in-the-past ()
   "Skip entry unless scheduled time is before now."

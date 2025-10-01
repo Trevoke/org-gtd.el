@@ -77,13 +77,13 @@ into a datetree."
 
     ;; Archive actions, calendar items, and incubated items
     (org-map-entries #'org-gtd--archive-completed-actions
-                     "+LEVEL=2&+ORG_GTD=\"Actions\""
+                     "+ORG_GTD=\"Actions\""
                      'agenda)
     (org-map-entries #'org-gtd--archive-completed-actions
-                     "+LEVEL=2&+ORG_GTD=\"Calendar\""
+                     "+ORG_GTD=\"Calendar\""
                      'agenda)
     (org-map-entries #'org-gtd--archive-completed-actions
-                     "+LEVEL=2&+ORG_GTD=\"Incubated\""
+                     "+ORG_GTD=\"Incubated\""
                      'agenda)))
 
 (defun org-gtd-archive-item-at-point ()
@@ -136,7 +136,7 @@ or `org-gtd-canceled'."
        (setq org-map-continue-from
              (org-element-property :begin (org-element-at-point)))
        (org-archive-subtree-default)))
-   "+LEVEL=2&+ORG_GTD=\"Projects\""
+   "+ORG_GTD=\"Projects\""
    'agenda))
 
 (defun org-gtd--archive-completed-actions ()

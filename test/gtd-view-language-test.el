@@ -23,8 +23,9 @@
                            (timestamp . past))))))
         (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
                 :to-equal
-                '(and (property "DELEGATED_TO" ".+")
-                      (property-ts< "ORG_GTD_TIMESTAMP" "today")))))
+                '(and (property "DELEGATED_TO")
+                      (property-ts< "ORG_GTD_TIMESTAMP" "today")
+                      (not (done))))))
 
   (it "can define a GTD view for calendar items with past timestamps"
       (let ((gtd-view-spec
@@ -36,7 +37,8 @@
                 :to-equal
                 '(and (property "ORG_GTD" "Calendar")
                       (level 2)
-                      (property-ts< "ORG_GTD_TIMESTAMP" "today")))))
+                      (property-ts< "ORG_GTD_TIMESTAMP" "today")
+                      (not (done))))))
 
   (it "can define a GTD view for overdue deadlines"
       (let ((gtd-view-spec
@@ -109,8 +111,9 @@
         ;; tags "+DELEGATED_TO={.+}" with skip function for past timestamps
         (expect (org-gtd-view-lang--translate-to-org-ql delegated-oops-spec)
                 :to-equal
-                '(and (property "DELEGATED_TO" ".+")
-                      (property-ts< "ORG_GTD_TIMESTAMP" "today"))))))
+                '(and (property "DELEGATED_TO")
+                      (property-ts< "ORG_GTD_TIMESTAMP" "today")
+                      (not (done)))))))
 
  (describe
   "Agenda-Specific View Features"

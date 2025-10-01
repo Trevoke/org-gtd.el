@@ -69,7 +69,7 @@
         (widen)
         (goto-char pos)
         (if (string-equal (org-entry-get nil "ORG_GTD" t)
-                          org-gtd-projects)
+                          "Actions")
             (org-up-heading-safe))
         (org-gtd-area-of-focus-set-on-item-at-point)))))
 

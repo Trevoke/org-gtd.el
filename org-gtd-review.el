@@ -37,6 +37,29 @@
 
 ;;;; Commands
 
+(defun org-gtd-review--area-of-focus-view-specs (area)
+  "Create GTD view specifications for reviewing AREA of focus."
+  `(((name . "Active projects")
+     (filters . ((category . projects)
+                 (area-of-focus . ,area))))
+
+    ((name . "Next actions")
+     (filters . ((todo . (,(org-gtd-keywords--next)))
+                 (area-of-focus . ,area))))
+
+    ((name . "Reminders")
+     (filters . ((category . calendar)
+                 (area-of-focus . ,area))))
+
+    ((name . "Routines")
+     (filters . ((category . habit)
+                 (area-of-focus . ,area))))
+
+    ((name . "Incubated items")
+     (filters . ((category . incubate)
+                 (timestamp . future)
+                 (area-of-focus . ,area))))))
+
 ;;;###autoload
 (defun org-gtd-review-area-of-focus (&optional area start-date)
   "Generate an overview agenda for a given area of focus.
@@ -56,41 +79,27 @@ mostly of value for testing purposes."
     (org-gtd-core-prepare-agenda-buffers)
     (with-org-gtd-context
         (let ((org-agenda-custom-commands
-               `(("a" ,(format "Area of Focus: %s" area)
-                  ((tags ,org-gtd-project-headings
-                         ((org-agenda-overriding-header "Active projects")))
-                   (todo ,(org-gtd-keywords--next)
-                         ((org-agenda-overriding-header "Next actions")))
-                   (agenda ""
-                           ((org-agenda-overriding-header "Reminders")
-                            (org-agenda-start-day ,start-date)
-                            (org-agenda-show-all-dates nil)
-                            (org-agenda-show-future-repeats nil)
-                            (org-agenda-span 90)
-                            (org-agenda-include-diary nil)
-                            (org-agenda-skip-additional-timestamps-same-entry t)
-                            (org-agenda-skip-function
-                             '(org-gtd-skip-AND '(org-gtd-skip-unless-calendar
-                                                  ,(org-gtd-skip-unless-area-of-focus-func area))))))
-                   (agenda ""
-                           ((org-agenda-overriding-header "Routines")
-                            (org-agenda-time-grid '((require-timed) () "" ""))
-                            (org-agenda-entry-types '(:scheduled))
-                            (org-agenda-start-day ,start-date)
-                            (org-agenda-span 'day)
-                            (org-habit-show-habits-only-for-today nil)
-                            (org-agenda-skip-function
-                             '(org-gtd-skip-AND '(org-gtd-skip-unless-habit
-                                                  ,(org-gtd-skip-unless-area-of-focus-func area))))))
-                   (tags ,(format "+ORG_GTD=\"%s\"+%s>\"<%s>\""
-                                  org-gtd-incubate
-                                  org-gtd-timestamp
-                                  start-date)
-                         ((org-agenda-overriding-header "Incubated items"))))
-                  ((org-agenda-skip-function '(org-gtd-skip-unless-area-of-focus ,area))
-                   (org-agenda-buffer-name ,(format "*Org Agenda: %s*" area)))))))
+               (org-gtd-view-lang--create-custom-commands
+                (org-gtd-review--area-of-focus-view-specs area)
+                "a"
+                (format "Area of Focus: %s" area)))
+              (org-agenda-buffer-name (format "*Org Agenda: %s*" area)))
           (org-agenda nil "a")
           (goto-char (point-min))))))
+
+(defconst org-gtd-review-missed-items-view-specs
+  '(((name . "Missed calendar events")
+     (filters . ((category . calendar)
+                 (timestamp . past))))
+
+    ((name . "Incubated events to review")
+     (filters . ((category . incubate)
+                 (timestamp . past))))
+
+    ((name . "Missed delegated events")
+     (filters . ((category . delegated)
+                 (timestamp . past)))))
+  "GTD view specifications for reviewing missed items.")
 
 (defun org-gtd-review-missed-items (&optional start-date)
   "Agenda view with all incubated, delegated, or calendar items whose dates
@@ -102,32 +111,11 @@ day for the agenda.  It is mostly of value for testing purposes."
   (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
       (let* ((start-date (or start-date (format-time-string "%Y-%m-%d")))
-             ;; Create specialized skip functions for this date
-             (skip-unless-timestamp-in-past-fn 
-              (lambda () (org-gtd-skip-unless-timestamp-in-the-past-relative-to start-date)))
-             (combined-skip-fn
-              (lambda () (org-gtd-skip-AND
-                          (list skip-unless-timestamp-in-past-fn
-                                'org-gtd-skip-unless-in-progress))))
-            (org-agenda-custom-commands
-             `(("g" "foobar"
-                ((tags ,(format "+ORG_GTD=\"%s\"+LEVEL=2" org-gtd-calendar)
-                       ((org-agenda-overriding-header "Missed calendar events")
-                        (org-agenda-skip-function ,combined-skip-fn)))
-                 (tags ,(format "+ORG_GTD=\"%s\"+LEVEL=2" org-gtd-incubate)
-                       ((org-agenda-overriding-header "Incubated events to review")
-                        (org-agenda-start-day ,start-date)
-                        (org-agenda-skip-function ,combined-skip-fn)
-                        (org-agenda-skip-additional-timestamp-same-entry t)
-                        (org-agenda-show-all-dates nil)
-                        (org-agenda-show-future-repeats nil)))
-                 (tags ,(format "+TODO=\"%s\"" (org-gtd-keywords--wait))
-                       ((org-agenda-overriding-header "Missed delegated events")
-                        (org-agenda-start-day ,start-date)
-                        (org-agenda-skip-function ,skip-unless-timestamp-in-past-fn)
-                        (org-agenda-skip-additional-timestamps-same-entry t)
-                        (org-agenda-show-all-dates nil)
-                        (org-agenda-show-future-repeats nil))))))))
+             (org-agenda-custom-commands
+              (org-gtd-view-lang--create-custom-commands
+               org-gtd-review-missed-items-view-specs
+               "g"
+               "Missed Items")))
         (org-agenda nil "g"))))
 
 (defun org-gtd-review-stuck-calendar-items ()
@@ -136,7 +124,7 @@ day for the agenda.  It is mostly of value for testing purposes."
   (with-org-gtd-context
       (let ((org-agenda-custom-commands
              '(("g" "foobar"
-                ((tags "+ORG_GTD=\"Calendar\"+LEVEL=2"
+                ((tags "+ORG_GTD=\"Calendar\""
                        ((org-agenda-include-diary nil)
                         (org-agenda-skip-function
                          'org-gtd-skip-unless-timestamp-empty-or-invalid)

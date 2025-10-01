@@ -401,6 +401,12 @@ If BUFFER is nil, use current buffer."
 (defun org-gtd-core--uniq (list)
   (seq-uniq list))
 
+;;;;; Note: Using native org-mode multivalued property functions
+;; org-entry-get-multivalued-property
+;; org-entry-add-to-multivalued-property
+;; org-entry-remove-from-multivalued-property
+;; These are part of org-mode's Property API
+
 ;;;; Footer
 
 (provide 'org-gtd-core)

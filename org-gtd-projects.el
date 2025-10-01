@@ -47,7 +47,7 @@
   "Function called when organizing item at point as a project.")
 
 (defconst org-gtd-project-headings
-  "+LEVEL=2&+ORG_GTD=\"Projects\""
+  "+ORG_GTD=\"Projects\""
   "How to tell `org-mode' to find project headings.")
 
 (defconst org-gtd-projects "Projects")
@@ -206,8 +206,9 @@ Refile to `org-gtd-actionable-file-basename'."
   "Configure all sub-tasks in the project as project-task items."
   (org-map-entries
    (lambda ()
-     (org-gtd-configure-item (point) :project-task))
-   "LEVEL=2"
+     (unless (string= (org-entry-get (point) "ORG_GTD") "Projects")
+       (org-gtd-configure-item (point) :project-task)))
+   nil
    'tree))
 
 (defun org-gtd-projects--add-default-sequential-dependencies ()
@@ -233,16 +234,106 @@ For Story 8: Only apply to tasks that don't have DEPENDS_ON relationships."
                     (org-gtd-projects--create-dependency-relationship previous-task current-task))))))
 
 (defun org-gtd-projects--collect-all-tasks ()
-  "Collect all level 2 tasks in document order.
-Returns list of markers pointing to task headings."
+  "Collect all project tasks in document order.
+Returns list of markers pointing to task headings with ORG_GTD=Actions."
   (let ((tasks '()))
     (org-map-entries
      (lambda ()
-       (push (point-marker) tasks))
-     "LEVEL=2"
+       (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
+         (push (point-marker) tasks)))
+     nil
      'tree)
     ;; Return tasks in document order (reverse since we pushed)
     (nreverse tasks)))
+
+(defun org-gtd-projects--collect-tasks-by-graph ()
+  "Collect all project tasks within the current project scope.
+Starting from the current project heading, find all tasks with ORG_GTD=Actions
+connected via dependency relationships (BLOCKS/DEPENDS_ON)."
+  (let ((all-tasks '())
+        (result-tasks '())
+        (processed-ids (make-hash-table :test 'equal)))
+
+    ;; First collect all tasks with ORG_GTD=Actions within the current project tree
+    (org-map-entries
+     (lambda ()
+       (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
+         (let ((task-marker (point-marker))
+               (task-id (org-entry-get (point) "ID")))
+           (when task-id
+             (push task-marker all-tasks)))))
+     nil
+     'tree)
+
+    ;; Now traverse the graph from each task to find all connected components
+    (dolist (task-marker all-tasks)
+      (let ((task-id (save-excursion
+                       (goto-char task-marker)
+                       (org-entry-get (point) "ID"))))
+        (when (and task-id (not (gethash task-id processed-ids)))
+          ;; Use fresh visited-ids for each connected component
+          (let* ((visited-ids (make-hash-table :test 'equal))
+                 (connected-tasks (org-gtd-projects--traverse-graph task-marker visited-ids)))
+            (dolist (task connected-tasks)
+              (let ((connected-id (save-excursion
+                                    (goto-char task)
+                                    (org-entry-get (point) "ID"))))
+                (when connected-id
+                  (puthash connected-id t processed-ids)))
+              (when (not (member task result-tasks))
+                (push task result-tasks)))))))
+
+    ;; Return tasks in document order (reverse since we pushed)
+    (nreverse result-tasks)))
+
+(defun org-gtd-projects--traverse-graph (start-marker visited-ids)
+  "Traverse the dependency graph starting from START-MARKER.
+VISITED-IDS is a hash table to track visited nodes to prevent cycles.
+Returns list of all connected task markers."
+  (let ((current-id (save-excursion
+                      (goto-char start-marker)
+                      (org-entry-get (point) "ID"))))
+
+    ;; If we've already visited this node, return empty list to prevent cycles
+    (if (and current-id (gethash current-id visited-ids))
+        nil
+      (let ((connected-tasks '()))
+        ;; Mark current node as visited and add to result
+        (when current-id
+          (puthash current-id t visited-ids))
+        (push start-marker connected-tasks)
+
+        ;; Get connected IDs via BLOCKS and DEPENDS_ON properties
+        (let ((blocks-ids (save-excursion
+                            (goto-char start-marker)
+                            (org-entry-get-multivalued-property (point) "BLOCKS")))
+              (depends-ids (save-excursion
+                             (goto-char start-marker)
+                             (org-entry-get-multivalued-property (point) "DEPENDS_ON"))))
+
+          ;; Visit all connected tasks
+          (dolist (connected-id (append blocks-ids depends-ids))
+            (let ((connected-marker (org-gtd-projects--find-task-by-id connected-id)))
+              (when connected-marker
+                (let ((sub-tasks (org-gtd-projects--traverse-graph connected-marker visited-ids)))
+                  (dolist (task sub-tasks)
+                    (when (not (member task connected-tasks))
+                      (push task connected-tasks))))))))
+
+        ;; Return tasks in order found
+        (nreverse connected-tasks)))))
+
+(defun org-gtd-projects--find-task-by-id (task-id)
+  "Find task with given TASK-ID and return its marker if it has ORG_GTD=Actions."
+  (let ((found-marker nil))
+    (org-map-entries
+     (lambda ()
+       (when (and (string= (org-entry-get (point) "ID") task-id)
+                  (string= (org-entry-get (point) "ORG_GTD") "Actions"))
+         (setq found-marker (point-marker))))
+     nil
+     nil)
+    found-marker))
 
 (defun org-gtd-projects--create-dependency-relationship (blocker-marker dependent-marker)
   "Create bidirectional dependency: BLOCKER-MARKER blocks DEPENDENT-MARKER."
@@ -286,10 +377,11 @@ Returns list of markers pointing to task headings."
   "Decorate tasks for project at point."
   (org-map-entries
    (lambda ()
-     (org-narrow-to-element)
-     (org-gtd-organize-apply-hooks)
-     (widen))
-   "LEVEL=2"
+     (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
+       (org-narrow-to-element)
+       (org-gtd-organize-apply-hooks)
+       (widen)))
+   nil
    'tree))
 
 (defun org-gtd-projects--edna-next-project-action ()

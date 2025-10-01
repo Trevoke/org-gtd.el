@@ -53,6 +53,7 @@
 
 ** probably overdue by now
 :PROPERTIES:
+:ORG_GTD: Calendar
 :ORG_GTD_TIMESTAMP: <2021-11-18 Thu>
 :END:
 
@@ -99,16 +100,19 @@ SCHEDULED: <2021-12-04 Sat .+1d>
 :END:
 ** Time to review this one
 :PROPERTIES:
+:ORG_GTD: Incubated
 :ORG_GTD_TIMESTAMP: <2021-11-19 Thu>
 :CATEGORY: Home
 :END:
 ** For later
 :PROPERTIES:
+:ORG_GTD: Incubated
 :ORG_GTD_TIMESTAMP: <2037-02-19 Thu>
 :CATEGORY: Home
 :END:
 
 ** CNCL not worth thinking about
 :PROPERTIES:
+:ORG_GTD: Incubated
 :ORG_GTD_TIMESTAMP: <2021-11-21 Sun>
 :END:

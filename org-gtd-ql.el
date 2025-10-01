@@ -37,6 +37,14 @@
                              (ts-parse greater-ts))))
             (ts< (ts-parse-org ts-value) target-ts))))
 
+(org-ql-defpred property-ts> (property lesser-ts)
+  "Checks whether a timestamp is later than a given date."
+  :body (when-let ((ts-value (org-entry-get nil property)))
+          (let ((target-ts (if (string-equal lesser-ts "today")
+                               (ts-now)
+                             (ts-parse lesser-ts))))
+            (ts> (ts-parse-org ts-value) target-ts))))
+
 (org-ql-defpred property-ts= (property other-ts)
   "Checks whether a timestamp is earlier than a given date."
   :body (when-let ((ts-value (org-entry-get nil property))

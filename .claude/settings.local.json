@@ -65,7 +65,15 @@
       "WebFetch(domain:orgmode.org)",
       "WebFetch(domain:orgmode.org)",
       "WebFetch(domain:www.gnu.org)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(~/bin/eldev test -B --file=\"test/gtd-view-language-test.el\")",
+      "Bash(~/bin/eldev test -B \"can define a simple GTD view for delegated items with past timestamps\")",
+      "Bash(~/bin/eldev test -B \"can define a GTD view for calendar items with past timestamps\")",
+      "Bash(~/bin/eldev test -B \"can define a GTD view for overdue deadlines\")",
+      "Bash(~/bin/eldev test -B --file=\"test/org-gtd-view-language-test.el\")",
+      "Bash(~/bin/eldev:*)",
+      "Bash(/home/stag/bin/eldev test:*)",
+      "WebSearch"
     ],
     "deny": []
   },

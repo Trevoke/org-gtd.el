@@ -38,12 +38,16 @@
 ;;   (category . delegated)   - Items with DELEGATED_TO property
 ;;   (category . calendar)    - Calendar items (ORG_GTD="Calendar")
 ;;   (category . projects)    - Project items (ORG_GTD="Projects")
+;;   (category . incubate)    - Incubated items (ORG_GTD="Incubated")
+;;   (category . habit)       - Habit items (STYLE="habit")
 ;;
 ;; Time-based Filters:
 ;;   (timestamp . past)       - ORG_GTD_TIMESTAMP in the past
+;;   (timestamp . future)     - ORG_GTD_TIMESTAMP in the future
 ;;   (deadline . past)        - Deadline in the past (auto-adds "not done")
 ;;   (scheduled . past)       - Scheduled in the past (auto-adds "not done")
 ;;   (scheduled . future)     - Scheduled in the future
+;;   (scheduled . today)      - Scheduled for today (for habits)
 ;;
 ;; Structural Filters:
 ;;   (level . N)              - Heading level N
@@ -166,8 +170,6 @@ GTD-VIEW-SPEC should be an alist with 'name and 'filters keys."
       (org-gtd-view-lang--translate-category-filter filter-value))
      ((eq filter-type 'timestamp)
       (org-gtd-view-lang--translate-timestamp-filter filter-value))
-     ((eq filter-type 'level)
-      (org-gtd-view-lang--translate-level-filter filter-value))
      ((eq filter-type 'deadline)
       (org-gtd-view-lang--translate-deadline-filter filter-value))
      ((eq filter-type 'scheduled)
@@ -182,29 +184,36 @@ GTD-VIEW-SPEC should be an alist with 'name and 'filters keys."
       (org-gtd-view-lang--translate-tags-filter filter-value))
      ((eq filter-type 'tags-match)
       (org-gtd-view-lang--translate-tags-match-filter filter-value))
+     ((eq filter-type 'property)
+      (org-gtd-view-lang--translate-property-filter filter-value))
+     ((eq filter-type 'level)
+      (org-gtd-view-lang--translate-level-filter filter-value))
      (t (error "Unknown GTD filter: %s" filter-type)))))
 
 (defun org-gtd-view-lang--translate-category-filter (category)
   "Translate category CATEGORY to org-ql property filter."
   (cond
    ((eq category 'delegated)
-    (list '(property "DELEGATED_TO" ".+")))
+    (list '(property "DELEGATED_TO")))
    ((eq category 'calendar)
     (list '(property "ORG_GTD" "Calendar")))
    ((eq category 'projects)
     (list '(property "ORG_GTD" "Projects")))
+   ((eq category 'incubate)
+    (list '(property "ORG_GTD" "Incubated")))
+   ((eq category 'habit)
+    (list '(property "STYLE" "habit")))
    (t (error "Unknown category: %s" category))))
 
 (defun org-gtd-view-lang--translate-timestamp-filter (time-spec)
   "Translate timestamp TIME-SPEC to org-ql time filter."
   (cond
    ((eq time-spec 'past)
-    (list '(property-ts< "ORG_GTD_TIMESTAMP" "today")))
+    (list '(property-ts< "ORG_GTD_TIMESTAMP" "today") '(not (done))))
+   ((eq time-spec 'future)
+    (list '(property-ts> "ORG_GTD_TIMESTAMP" "today")))
    (t (error "Unknown timestamp spec: %s" time-spec))))
 
-(defun org-gtd-view-lang--translate-level-filter (level-value)
-  "Translate level LEVEL-VALUE to org-ql level filter."
-  (list `(level ,level-value)))
 
 (defun org-gtd-view-lang--translate-deadline-filter (time-spec)
   "Translate deadline TIME-SPEC to org-ql deadline filter."
@@ -220,6 +229,8 @@ GTD-VIEW-SPEC should be an alist with 'name and 'filters keys."
     (list '(scheduled :to "today") '(not (done))))
    ((eq time-spec 'future)
     (list '(scheduled :from "today")))
+   ((eq time-spec 'today)
+    (list '(scheduled :on "today")))
    (t (error "Unknown scheduled spec: %s" time-spec))))
 
 (defun org-gtd-view-lang--translate-not-habit-filter (value)
@@ -242,6 +253,18 @@ GTD-VIEW-SPEC should be an alist with 'name and 'filters keys."
 (defun org-gtd-view-lang--translate-tags-match-filter (pattern)
   "Translate tags-match PATTERN to org-ql tags filter."
   (list `(tags ,pattern)))
+
+(defun org-gtd-view-lang--translate-property-filter (property-spec)
+  "Translate property PROPERTY-SPEC to org-ql property filter.
+PROPERTY-SPEC should be an alist with property name and value pairs,
+e.g., '((\"ORG_GTD\" . \"Actions\"))."
+  (mapcar (lambda (prop-pair)
+            `(property ,(car prop-pair) ,(cdr prop-pair)))
+          property-spec))
+
+(defun org-gtd-view-lang--translate-level-filter (level-num)
+  "Translate level LEVEL-NUM to org-ql level filter."
+  (list `(level ,level-num)))
 
 (defun org-gtd-view-lang--create-grouped-views (gtd-view-spec)
   "Create grouped views from GTD-VIEW-SPEC.

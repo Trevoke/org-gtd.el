@@ -15,15 +15,17 @@
     (it "can translate delegated view specification to org-ql"
       (let* ((delegated-spec (car org-gtd-oops-view-specs))
              (query (org-gtd-view-lang--translate-to-org-ql delegated-spec)))
-        (expect query :to-equal '(and (property "DELEGATED_TO" ".+")
-                                      (property-ts< "ORG_GTD_TIMESTAMP" "today")))))
+        (expect query :to-equal '(and (property "DELEGATED_TO")
+                                      (property-ts< "ORG_GTD_TIMESTAMP" "today")
+                                      (not (done))))))
 
     (it "can translate calendar view specification to org-ql"
       (let* ((calendar-spec (cadr org-gtd-oops-view-specs))
              (query (org-gtd-view-lang--translate-to-org-ql calendar-spec)))
         (expect query :to-equal '(and (property "ORG_GTD" "Calendar")
                                       (level 2)
-                                      (property-ts< "ORG_GTD_TIMESTAMP" "today")))))
+                                      (property-ts< "ORG_GTD_TIMESTAMP" "today")
+                                      (not (done))))))
 
     (it "can translate project deadline view specification to org-ql"
       (let* ((deadline-spec (caddr org-gtd-oops-view-specs))
