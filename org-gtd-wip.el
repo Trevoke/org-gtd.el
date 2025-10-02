@@ -97,7 +97,8 @@ If BUFFER is empty, then copy org heading at MARKER and paste inside
         (org-paste-subtree)
         (org-entry-delete (point) org-gtd-timestamp)
         (org-entry-delete (point) org-gtd-delegate-property)
-        (org-entry-delete (point) "STYLE")))))
+        (org-entry-delete (point) "STYLE")
+        (org-entry-delete (point) "ORG_GTD_PROJECT")))))
 
 ;;;; Footer
 

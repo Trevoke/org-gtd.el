@@ -10,8 +10,14 @@
 
 
  (before-each (setq inhibit-message t)
-              (ogt--configure-emacs))
+              (ogt--configure-emacs)
+              ;; Clear org-id locations to prevent pollution from previous tests
+              (setq org-id-locations nil)
+              (setq org-id-files nil))
  (after-each (ogt--close-and-delete-files)
+             ;; Clear org-id locations after tests
+             (setq org-id-locations nil)
+             (setq org-id-files nil)
              ;; TODO figure out if this can / should be removed
              (remove-hook 'post-command-hook 'org-add-log-note))
 

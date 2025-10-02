@@ -73,7 +73,8 @@
       "Bash(~/bin/eldev test -B --file=\"test/org-gtd-view-language-test.el\")",
       "Bash(~/bin/eldev:*)",
       "Bash(/home/stag/bin/eldev test:*)",
-      "WebSearch"
+      "WebSearch",
+      "mcp__emacs-30__eval_elisp"
     ],
     "deny": []
   },

@@ -199,17 +199,35 @@ Refile to `org-gtd-actionable-file-basename'."
   (org-gtd-projects-fix-todo-keywords-for-project-at-point)
   (org-gtd-projects--add-default-sequential-dependencies)
   (org-gtd-projects--add-progress-cookie)
+  (org-gtd-projects--set-first-tasks)
 
   (org-gtd-refile--do org-gtd-projects org-gtd-projects-template))
 
+(defun org-gtd-projects--set-project-name-on-task ()
+  "Set ORG_GTD_PROJECT property on current task to its project heading name."
+  (let ((original-point (point)))
+    (save-excursion
+      ;; Navigate up to find the project heading (has ORG_GTD="Projects")
+      (while (and (org-up-heading-safe)
+                  (not (string= (org-entry-get (point) "ORG_GTD") "Projects"))))
+      (when (string= (org-entry-get (point) "ORG_GTD") "Projects")
+        (let ((project-name (org-get-heading t t t t)))
+          ;; Go back to original task and set the property
+          (goto-char original-point)
+          (org-entry-put (point) "ORG_GTD_PROJECT" project-name))))))
+
 (defun org-gtd-projects--configure-all-tasks ()
   "Configure all sub-tasks in the project as project-task items."
-  (org-map-entries
-   (lambda ()
-     (unless (string= (org-entry-get (point) "ORG_GTD") "Projects")
-       (org-gtd-configure-item (point) :project-task)))
-   nil
-   'tree))
+  (let ((project-name (save-excursion
+                        (org-back-to-heading)
+                        (org-get-heading t t t t))))
+    (org-map-entries
+     (lambda ()
+       (unless (string= (org-entry-get (point) "ORG_GTD") "Projects")
+         (org-gtd-configure-item (point) :project-task)
+         (org-entry-put (point) "ORG_GTD_PROJECT" project-name)))
+     nil
+     'tree)))
 
 (defun org-gtd-projects--add-default-sequential-dependencies ()
   "Create default sequential dependencies for tasks without DEPENDS_ON.
@@ -233,6 +251,26 @@ For Story 8: Only apply to tasks that don't have DEPENDS_ON relationships."
                         (previous-task (nth (1- i) unconnected-tasks)))
                     (org-gtd-projects--create-dependency-relationship previous-task current-task))))))
 
+(defun org-gtd-projects--set-first-tasks ()
+  "Set FIRST_TASKS property on project heading with IDs of root tasks.
+Root tasks are tasks that have no DEPENDS_ON property."
+  (let ((root-task-ids '()))
+    ;; Find all tasks without DEPENDS_ON (root tasks)
+    (org-map-entries
+     (lambda ()
+       (when (and (string= (org-entry-get (point) "ORG_GTD") "Actions")
+                  (not (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+         (let ((task-id (org-entry-get (point) "ID")))
+           (when task-id
+             (push task-id root-task-ids)))))
+     nil
+     'tree)
+
+    ;; Set FIRST_TASKS property on project heading with space-separated IDs
+    (when root-task-ids
+      (org-back-to-heading t)
+      (org-entry-put (point) "FIRST_TASKS" (string-join (nreverse root-task-ids) " ")))))
+
 (defun org-gtd-projects--collect-all-tasks ()
   "Collect all project tasks in document order.
 Returns list of markers pointing to task headings with ORG_GTD=Actions."
@@ -246,94 +284,50 @@ Returns list of markers pointing to task headings with ORG_GTD=Actions."
     ;; Return tasks in document order (reverse since we pushed)
     (nreverse tasks)))
 
-(defun org-gtd-projects--collect-tasks-by-graph ()
-  "Collect all project tasks within the current project scope.
-Starting from the current project heading, find all tasks with ORG_GTD=Actions
-connected via dependency relationships (BLOCKS/DEPENDS_ON)."
-  (let ((all-tasks '())
-        (result-tasks '())
-        (processed-ids (make-hash-table :test 'equal)))
+(defun org-gtd-projects--collect-tasks-by-graph (project-marker)
+  "Collect all project tasks by traversing the dependency graph.
 
-    ;; First collect all tasks with ORG_GTD=Actions within the current project tree
-    (org-map-entries
-     (lambda ()
-       (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
-         (let ((task-marker (point-marker))
-               (task-id (org-entry-get (point) "ID")))
-           (when task-id
-             (push task-marker all-tasks)))))
-     nil
-     'tree)
+Starting from the project heading at PROJECT-MARKER, reads the FIRST_TASKS
+property to find root task IDs, then traverses the graph by following
+BLOCKS/DEPENDS_ON relationships using org-id-find.
 
-    ;; Now traverse the graph from each task to find all connected components
-    (dolist (task-marker all-tasks)
-      (let ((task-id (save-excursion
-                       (goto-char task-marker)
-                       (org-entry-get (point) "ID"))))
-        (when (and task-id (not (gethash task-id processed-ids)))
-          ;; Use fresh visited-ids for each connected component
-          (let* ((visited-ids (make-hash-table :test 'equal))
-                 (connected-tasks (org-gtd-projects--traverse-graph task-marker visited-ids)))
-            (dolist (task connected-tasks)
-              (let ((connected-id (save-excursion
-                                    (goto-char task)
-                                    (org-entry-get (point) "ID"))))
-                (when connected-id
-                  (puthash connected-id t processed-ids)))
-              (when (not (member task result-tasks))
-                (push task result-tasks)))))))
+Returns list of task markers in breadth-first order."
+  (org-with-point-at project-marker
+    (let* ((first-tasks-str (org-entry-get (point) "FIRST_TASKS"))
+           (first-task-ids (when first-tasks-str (split-string first-tasks-str)))
+           (queue '())
+           (visited-ids (make-hash-table :test 'equal))
+           (result-tasks '()))
 
-    ;; Return tasks in document order (reverse since we pushed)
-    (nreverse result-tasks)))
+      ;; Initialize queue with first tasks
+      (dolist (task-id first-task-ids)
+        (push task-id queue))
+      (setq queue (nreverse queue))
 
-(defun org-gtd-projects--traverse-graph (start-marker visited-ids)
-  "Traverse the dependency graph starting from START-MARKER.
-VISITED-IDS is a hash table to track visited nodes to prevent cycles.
-Returns list of all connected task markers."
-  (let ((current-id (save-excursion
-                      (goto-char start-marker)
-                      (org-entry-get (point) "ID"))))
+      ;; Breadth-first traversal
+      (while queue
+        (let* ((current-id (pop queue))
+               ;; Try org-id-find first, fall back to searching current buffer
+               (task-location (or (org-id-find current-id t)
+                                  (save-excursion
+                                    (goto-char (point-min))
+                                    (when-let ((pos (org-find-entry-with-id current-id)))
+                                      (goto-char pos)
+                                      (point-marker))))))
 
-    ;; If we've already visited this node, return empty list to prevent cycles
-    (if (and current-id (gethash current-id visited-ids))
-        nil
-      (let ((connected-tasks '()))
-        ;; Mark current node as visited and add to result
-        (when current-id
-          (puthash current-id t visited-ids))
-        (push start-marker connected-tasks)
+          (when (and task-location (not (gethash current-id visited-ids)))
+            (puthash current-id t visited-ids)
+            (push task-location result-tasks)
 
-        ;; Get connected IDs via BLOCKS and DEPENDS_ON properties
-        (let ((blocks-ids (save-excursion
-                            (goto-char start-marker)
-                            (org-entry-get-multivalued-property (point) "BLOCKS")))
-              (depends-ids (save-excursion
-                             (goto-char start-marker)
-                             (org-entry-get-multivalued-property (point) "DEPENDS_ON"))))
+            ;; Find tasks this one blocks (children in the graph)
+            (org-with-point-at task-location
+              (let ((blocks-list (org-entry-get-multivalued-property (point) "BLOCKS")))
+                (dolist (blocked-id blocks-list)
+                  (unless (gethash blocked-id visited-ids)
+                    (setq queue (append queue (list blocked-id))))))))))
 
-          ;; Visit all connected tasks
-          (dolist (connected-id (append blocks-ids depends-ids))
-            (let ((connected-marker (org-gtd-projects--find-task-by-id connected-id)))
-              (when connected-marker
-                (let ((sub-tasks (org-gtd-projects--traverse-graph connected-marker visited-ids)))
-                  (dolist (task sub-tasks)
-                    (when (not (member task connected-tasks))
-                      (push task connected-tasks))))))))
-
-        ;; Return tasks in order found
-        (nreverse connected-tasks)))))
-
-(defun org-gtd-projects--find-task-by-id (task-id)
-  "Find task with given TASK-ID and return its marker if it has ORG_GTD=Actions."
-  (let ((found-marker nil))
-    (org-map-entries
-     (lambda ()
-       (when (and (string= (org-entry-get (point) "ID") task-id)
-                  (string= (org-entry-get (point) "ORG_GTD") "Actions"))
-         (setq found-marker (point-marker))))
-     nil
-     nil)
-    found-marker))
+      ;; Return in breadth-first order
+      (nreverse result-tasks))))
 
 (defun org-gtd-projects--create-dependency-relationship (blocker-marker dependent-marker)
   "Create bidirectional dependency: BLOCKER-MARKER blocks DEPENDENT-MARKER."
@@ -371,6 +365,10 @@ Returns list of all connected task markers."
                   (org-refile-goto-last-stored)
                   (org-up-heading-safe)
                   (point-marker))))
+    ;; Set project name after refiling
+    (save-excursion
+      (org-refile-goto-last-stored)
+      (org-gtd-projects--set-project-name-on-task))
     (org-gtd-projects-fix-todo-keywords marker)))
 
 (defun org-gtd-projects--apply-organize-hooks-to-tasks ()

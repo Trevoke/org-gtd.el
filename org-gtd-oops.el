@@ -41,17 +41,14 @@
 
     ((name . "Missed appointments")
      (filters . ((category . calendar)
-                 (level . 2)
                  (timestamp . past))))
 
     ((name . "Projects that should have finished")
      (filters . ((category . projects)
-                 (level . 2)
                  (deadline . past))))
 
     ((name . "Projects that should have started")
      (filters . ((category . projects)
-                 (level . 2)
                  (scheduled . past)
                  (not-habit . t)))))
   "GTD view specifications for oops views using the declarative language.")

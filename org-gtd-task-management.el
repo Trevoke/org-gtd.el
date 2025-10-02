@@ -176,7 +176,10 @@ related tasks to maintain bidirectional consistency."
             (org-entry-delete (point) "BLOCKS"))
           (when depends-on-list
             (org-entry-delete (point) "DEPENDS_ON"))
-          
+
+          ;; Remove project name since task is no longer connected to project
+          (org-entry-delete (point) "ORG_GTD_PROJECT")
+
           ;; Show confirmation message with proper pluralization
           (message "Cleared relationships for %s: removed %d %s and %d %s"
                    current-heading

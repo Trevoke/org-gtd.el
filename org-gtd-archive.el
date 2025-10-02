@@ -72,12 +72,18 @@ into a datetree."
       ;; Prepare all agenda buffers first
       (org-gtd-core-prepare-agenda-buffers)
 
+      ;; Update org-id locations to ensure graph traversal can find all tasks
+      ;; Filter out directories, only pass actual files
+      (org-id-update-id-locations
+       (seq-filter #'file-regular-p (org-gtd-core--agenda-files)))
+
       ;; Archive projects
       (org-gtd--archive-complete-projects)
 
     ;; Archive actions, calendar items, and incubated items
+    ;; Exclude project tasks (those with ORG_GTD_PROJECT property)
     (org-map-entries #'org-gtd--archive-completed-actions
-                     "+ORG_GTD=\"Actions\""
+                     "+ORG_GTD=\"Actions\"-ORG_GTD_PROJECT={.+}"
                      'agenda)
     (org-map-entries #'org-gtd--archive-completed-actions
                      "+ORG_GTD=\"Calendar\""
@@ -117,25 +123,107 @@ into a datetree."
 
 ;;;;; Private
 
-(defun org-gtd--all-subheadings-in-done-type-p ()
-  "Return t if every sub-heading is `org-gtd-done' or `org-gtd-canceled'."
-  (seq-every-p (lambda (x) (eq x 'done))
-               (org-map-entries (lambda ()
-                                  (org-element-property :todo-type (org-element-at-point)))
-                                "+LEVEL=3"
-                                'tree)))
+(defun org-gtd--all-project-tasks-done-p ()
+  "Return t if all tasks connected to current project are done.
+Uses graph traversal to find all project tasks via BLOCKS/DEPENDS_ON relationships.
+Falls back to checking immediate children if no dependency-tracked tasks exist."
+  (require 'org-gtd-projects)
+  (let* ((project-marker (point-marker))
+         (tasks (org-gtd-projects--collect-tasks-by-graph project-marker)))
+    (if tasks
+        ;; Has dependency-tracked tasks - check if all done
+        (seq-every-p
+         (lambda (task-marker)
+           (org-with-point-at task-marker
+             (eq (org-element-property :todo-type (org-element-at-point)) 'done)))
+         tasks)
+      ;; No dependency tracking - check immediate children
+      (let ((all-done t))
+        (save-excursion
+          (org-back-to-heading t)
+          (let ((level (org-current-level)))
+            (outline-next-heading)
+            (while (and (not (eobp)) (> (org-current-level) level))
+              (when (= (org-current-level) (1+ level))
+                (unless (eq (org-element-property :todo-type (org-element-at-point)) 'done)
+                  (setq all-done nil)))
+              (outline-next-heading))))
+        all-done))))
+
+(defun org-gtd--archive-project-with-tasks ()
+  "Archive current project heading and all its tasks in breadth-first order.
+
+First archives the project heading, then archives all connected tasks as children
+of the archived project heading, ordered breadth-first by their dependencies."
+  (require 'org-gtd-projects)
+  (let* ((project-marker (point-marker))
+         (project-id (org-entry-get (point) "ID"))
+         (tasks (org-gtd-projects--collect-tasks-by-graph project-marker)))
+
+    ;; Step 1: Archive the project heading first
+    ;; This creates the archived project that tasks will be refiled under
+    (org-archive-subtree-default)
+
+    ;; Step 2: Archive and refile each task under the archived project
+    ;; Tasks are already in breadth-first order from collect-tasks-by-graph
+    (when (and project-id tasks)
+      ;; Find the archived project using its ID
+      (let ((archived-project-marker (org-id-find project-id t)))
+        (when archived-project-marker
+          (dolist (task-marker tasks)
+            ;; Check if task still exists (wasn't already archived as part of project subtree)
+            (when (and (marker-buffer task-marker)
+                       (marker-position task-marker)
+                       (with-current-buffer (marker-buffer task-marker)
+                         (save-excursion
+                           (goto-char (marker-position task-marker))
+                           ;; Verify we're at a valid heading
+                           (org-at-heading-p))))
+              (org-with-point-at task-marker
+                ;; Archive the task to the same archive location
+                (org-archive-subtree-default)
+
+                ;; Find the archived task using its ID to refile it
+                (let ((task-id (org-entry-get task-marker "ID")))
+                  (when task-id
+                    (let ((archived-task-marker (org-id-find task-id t)))
+                      (when (and archived-task-marker
+                                 (marker-buffer archived-project-marker)
+                                 (buffer-live-p (marker-buffer archived-project-marker)))
+                        ;; Refile the archived task under the archived project
+                        (org-with-point-at archived-task-marker
+                          (org-refile nil nil
+                                    (list nil
+                                          (marker-buffer archived-project-marker)
+                                          nil
+                                          (marker-position archived-project-marker))))))))))))))))
 
 (defun org-gtd--archive-complete-projects ()
   "Archive all projects for which all actions/tasks are marked as done.
 
 Done here is any done `org-todo-keyword'.  For org-gtd this means `org-gtd-done'
-or `org-gtd-canceled'."
+or `org-gtd-canceled'.
+
+Archives project heading first, then tasks in breadth-first order as children
+of the archived project."
   (org-map-entries
    (lambda ()
-     (when (org-gtd--all-subheadings-in-done-type-p)
-       (setq org-map-continue-from
-             (org-element-property :begin (org-element-at-point)))
-       (org-archive-subtree-default)))
+     ;; Skip category headings that contain other projects
+     (let ((has-project-children nil))
+       (save-excursion
+         (org-back-to-heading t)
+         (let ((level (org-current-level)))
+           (outline-next-heading)
+           (while (and (not (eobp)) (not has-project-children) (> (org-current-level) level))
+             (when (string= (org-entry-get (point) "ORG_GTD") "Projects")
+               (setq has-project-children t))
+             (outline-next-heading))))
+
+       (when (and (not has-project-children)
+                  (org-gtd--all-project-tasks-done-p))
+         (setq org-map-continue-from
+               (org-element-property :begin (org-element-at-point)))
+         (org-gtd--archive-project-with-tasks))))
    "+ORG_GTD=\"Projects\""
    'agenda))
 

@@ -50,54 +50,67 @@
           (expect task-count :to-equal 2))))
 
   (it "collects tasks through graph traversal via ID relationships"
-      ;; This test will verify that task collection follows BLOCKS/DEPENDS_ON chains
-      ;; rather than structural hierarchy
-      (with-temp-buffer
-        (org-mode)
-        ;; Create project heading
-        (insert "* Complex Project\n")
-        (insert ":PROPERTIES:\n")
-        (insert ":ORG_GTD: Projects\n")
-        (insert ":ID: project-id\n")
-        (insert ":END:\n")
+      ;; This test verifies that task collection follows BLOCKS/DEPENDS_ON chains
+      ;; Uses real project creation API to ensure FIRST_TASKS is set correctly
 
-        ;; Create tasks connected via dependency graph, not structural hierarchy
-        (insert "** Task A\n")
-        (insert ":PROPERTIES:\n")
-        (insert ":ORG_GTD: Actions\n")
-        (insert ":ID: task-a-id\n")
-        (insert ":BLOCKS: task-b-id\n")
-        (insert ":TODO: TODO\n")
-        (insert ":END:\n")
+      ;; Create project using real API
+      (ogt-capture-and-process-project "Graph Project")
 
-        (insert "*** Nested Task B\n")  ;; Different level but connected via ID
-        (insert ":PROPERTIES:\n")
-        (insert ":ORG_GTD: Actions\n")
-        (insert ":ID: task-b-id\n")
-        (insert ":DEPENDS_ON: task-a-id\n")
-        (insert ":BLOCKS: task-c-id\n")
-        (insert ":TODO: TODO\n")
-        (insert ":END:\n")
+      ;; Now modify the created tasks to add dependency relationships
+      (let* ((gtd-file (org-gtd--default-file))
+             (project-marker nil)
+             (task-ids '()))
 
-        ;; Task C is in a completely different part of the buffer
-        (insert "\n* Unrelated Section\n")
-        (insert "** Task C\n")
-        (insert ":PROPERTIES:\n")
-        (insert ":ORG_GTD: Actions\n")
-        (insert ":ID: task-c-id\n")
-        (insert ":DEPENDS_ON: task-b-id\n")
-        (insert ":TODO: TODO\n")
-        (insert ":END:\n")
+        (with-current-buffer gtd-file
+          ;; Find the project and its tasks
+          (goto-char (point-min))
+          (search-forward "Graph Project")
+          (org-back-to-heading t)
+          (setq project-marker (point-marker))
 
-        ;; Test graph traversal - this would fail with level-based collection
-        ;; but should work with ID-based traversal
-        (goto-char (point-min))
-        (search-forward "Complex Project")
+          ;; Collect task IDs
+          (org-map-entries
+           (lambda ()
+             (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
+               (let ((id (org-entry-get (point) "ID")))
+                 (when id (push id task-ids)))))
+           nil
+           'tree)
 
-        ;; When we implement the graph traversal function, this should find all 3 tasks
-        ;; even though they're at different levels and in different structural locations
-        (let ((project-tasks (org-gtd-projects--collect-tasks-by-graph)))
-          (expect (length project-tasks) :to-equal 3)))))
+          (setq task-ids (nreverse task-ids))
+
+          ;; Add dependency relationships: Task 1 -> Task 2 -> Task 3
+          ;; Task 1 blocks Task 2
+          (goto-char (point-min))
+          (org-find-entry-with-id (nth 0 task-ids))
+          (org-entry-put (point) "BLOCKS" (nth 1 task-ids))
+
+          ;; Task 2 depends on Task 1 and blocks Task 3
+          (goto-char (point-min))
+          (org-find-entry-with-id (nth 1 task-ids))
+          (org-entry-put (point) "DEPENDS_ON" (nth 0 task-ids))
+          (org-entry-put (point) "BLOCKS" (nth 2 task-ids))
+
+          ;; Task 3 depends on Task 2
+          (goto-char (point-min))
+          (org-find-entry-with-id (nth 2 task-ids))
+          (org-entry-put (point) "DEPENDS_ON" (nth 1 task-ids))
+
+          ;; Update FIRST_TASKS to reflect new dependency structure
+          ;; Only Task 1 should be in FIRST_TASKS now
+          (goto-char project-marker)
+          (org-entry-put (point) "FIRST_TASKS" (nth 0 task-ids))
+
+          (basic-save-buffer))
+
+        ;; Update org-id locations so org-id-find works
+        (org-id-update-id-locations (list (buffer-file-name gtd-file)))
+
+        ;; Test graph traversal
+        (with-current-buffer gtd-file
+          (goto-char project-marker)
+          (let ((project-tasks (org-gtd-projects--collect-tasks-by-graph (point-marker))))
+            (expect (length project-tasks) :to-equal 3))))))
 
  (describe
   "Migration from level-based to property-based"

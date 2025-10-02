@@ -23,7 +23,6 @@
       (let* ((calendar-spec (cadr org-gtd-oops-view-specs))
              (query (org-gtd-view-lang--translate-to-org-ql calendar-spec)))
         (expect query :to-equal '(and (property "ORG_GTD" "Calendar")
-                                      (level 2)
                                       (property-ts< "ORG_GTD_TIMESTAMP" "today")
                                       (not (done))))))
 
@@ -31,7 +30,6 @@
       (let* ((deadline-spec (caddr org-gtd-oops-view-specs))
              (query (org-gtd-view-lang--translate-to-org-ql deadline-spec)))
         (expect query :to-equal '(and (property "ORG_GTD" "Projects")
-                                      (level 2)
                                       (deadline :to "today")
                                       (not (done))))))
 
@@ -39,7 +37,6 @@
       (let* ((scheduled-spec (cadddr org-gtd-oops-view-specs))
              (query (org-gtd-view-lang--translate-to-org-ql scheduled-spec)))
         (expect query :to-equal '(and (property "ORG_GTD" "Projects")
-                                      (level 2)
                                       (scheduled :to "today")
                                       (not (property "STYLE" "habit"))
                                       (not (done)))))))

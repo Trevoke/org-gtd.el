@@ -134,20 +134,16 @@ This assumes all GTD files are also agenda files."
 
 (defun org-gtd-agenda--prefix-format ()
   "Format prefix for items in agenda buffer."
-  (let* ((elt (org-element-at-point))
-         (level (org-element-property :level elt))
+  (let* ((project-name (org-entry-get (point) "ORG_GTD_PROJECT"))
          (category (org-entry-get (point) "CATEGORY" t))
-         (parent-title (org-element-property
-                        :raw-value
-                        (org-element-property :parent elt)))
          (tally-cookie-regexp "\[[[:digit:]]+/[[:digit:]]+\][[:space:]]*"))
     (org-gtd--truncate-project-to-width
-     ;; if level 3, use the parent
+     ;; if has ORG_GTD_PROJECT, use it
      ;; otherwise if it has category, use category
      ;; else "no project" so we avoid failing
      (org-gtd--replace-link-with-description
       (cond
-       ((eq level 3) (replace-regexp-in-string tally-cookie-regexp "" parent-title))
+       (project-name (replace-regexp-in-string tally-cookie-regexp "" project-name))
        (category     category)
        (t  "no project")
        )))))

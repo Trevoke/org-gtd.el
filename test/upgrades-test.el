@@ -234,6 +234,7 @@ Do that thing.
 :PROPERTIES:
 :ORG_GTD: Projects
 :ID: proj-webapp
+:FIRST_TASKS: task-setup task-design
 :END:
 *** Set up development environment
 :PROPERTIES:
@@ -244,25 +245,35 @@ Do that thing.
 :PROPERTIES:
 :ORG_GTD: Actions
 :ID: task-design
+:BLOCKS: task-wireframes task-colors
 :END:
 **** Create wireframes
 :PROPERTIES:
 :ORG_GTD: Actions
 :ID: task-wireframes
+:DEPENDS_ON: task-design
 :END:
 **** Choose color scheme
 :PROPERTIES:
 :ORG_GTD: Actions
 :ID: task-colors
+:DEPENDS_ON: task-design
 :END:
 """)
         (basic-save-buffer))
 
       ;; Test that we can find all project tasks via property query
       (with-current-buffer (org-gtd--default-file)
+        ;; Add FIRST_TASKS property to the project (would be done during creation normally)
         (goto-char (point-min))
         (search-forward "Build a webapp")
-        (let ((tasks (org-gtd-projects--collect-tasks-by-graph)))
+        (org-back-to-heading t)
+        (org-entry-put (point) "FIRST_TASKS" "task-setup task-design")
+
+        (goto-char (point-min))
+        (search-forward "Build a webapp")
+        (org-back-to-heading t)
+        (let ((tasks (org-gtd-projects--collect-tasks-by-graph (point-marker))))
           ;; Should find all 4 tasks regardless of their level
           (expect (length tasks) :to-equal 4)
           ;; Verify we can access all tasks by their properties
