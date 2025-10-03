@@ -1,38 +1,54 @@
-#+begin_src emacs-lisp
-  (defun org-gtd-engage ()
-  "Display `org-agenda' customized by org-gtd."
-  (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-  (with-org-gtd-context
-      (let* ((project-format-prefix
-              (format " %%i %%-%d:(org-gtd-agenda--prefix-format) "
-                      org-gtd-engage-prefix-width))
-             (org-agenda-custom-commands
-             `(("g" "Engage with GTD"
-                ((agenda
-                  ""
-                  ((org-agenda-include-deadlines t)
-                   (org-agenda-include-inactive-timestamps nil)
-                                        ; org-agenda-todo-ignore-deadlines
-                                        ; org-agenda-todo-ignore-scheduled
-                   (org-agenda-skip-function
-                    '(org-gtd-keep-ANY
-                      '(org-gtd-skip-unless-calendar
-                        org-gtd-skip-unless-habit
-                        )))
-                   (org-agenda-skip-deadline-if-done t)
-                   (org-agenda-skip-scheduled-if-done t)
-                   (org-agenda-skip-deadline-prewarning-if-scheduled nil)
-                   (org-agenda-skip-scheduled-delay-if-deadline t)
-                   (org-agenda-skip-scheduled-if-deadline-is-shown t)
-                   (org-agenda-skip-timestamp-if-deadline-is-shown t)
-                   (org-agenda-skip-timestamp-if-done t)
-                   (org-agenda-span 1)
-                   (org-agenda-skip-additional-timestamps-same-entry t)))
-                 (todo org-gtd-next
-                       ((org-agenda-overriding-header "All actions ready to be executed")
-                        (org-agenda-prefix-format
-                         '((todo . ,project-format-prefix))))))))))
-        (org-agenda nil "g")
-        (goto-char (point-min)))))
-#+end_src
+* GTD test matrix
+| item             | flow step      | shape                        | tested? |
+|------------------+----------------+------------------------------+---------|
+| quick action     | organize       | heading                      |         |
+|------------------+----------------+------------------------------+---------|
+| trash            | organize       | heading                      |         |
+|------------------+----------------+------------------------------+---------|
+| single action    | organize       | heading                      |         |
+| single action    | engage         | heading                      |         |
+| single action    | review         | heading                      |         |
+| single action    | cancel         | heading                      |         |
+| single action    | archive (done) | heading                      |         |
+| single action    | archive (cncl) | heading                      |         |
+|------------------+----------------+------------------------------+---------|
+| delegated action | organize       | heading                      |         |
+| delegated action | engage         | heading                      |         |
+| delegated action | review         | heading                      |         |
+| delegated action | cancel         | heading                      |         |
+| delegated action | archive (done) | heading                      |         |
+| delegated action | archive (cncl) | heading                      |         |
+|------------------+----------------+------------------------------+---------|
+| calendar item    | organize       | heading                      |         |
+| calendar item    | engage         | heading                      |         |
+| calendar item    | review         | heading                      |         |
+| calendar item    | cancel         | heading                      |         |
+| calendar item    | archive (done) | heading                      |         |
+| calendar item    | archive (cncl) | heading                      |         |
+|------------------+----------------+------------------------------+---------|
+| incubate         | organize       | heading                      |         |
+| incubate         | review         | heading                      |         |
+| incubate         | archive        | heading                      |         |
+|------------------+----------------+------------------------------+---------|
+| knowledge        | organize       | heading                      |         |
+|------------------+----------------+------------------------------+---------|
+| habit            | organize       | heading                      |         |
+| habit            | engage         | heading                      |         |
+| habit            | review         | heading                      |         |
+|------------------+----------------+------------------------------+---------|
+| project          | organize       | DAG same file                |         |
+| project          | organize       | DAG multiple files           |         |
+| project          | engage         | DAG same file                |         |
+| project          | engage         | DAG multiple files           |         |
+| project          | review         | DAG same file                |         |
+| project          | review         | DAG multiple files           |         |
+| project          | cancel         | DAG same file                |         |
+| project          | cancel         | DAG multiple files           |         |
+| project          | archive (done) | DAG same file                |         |
+| project          | archive (done) | DAG multiple files           |         |
+| project          | archive (cncl) | DAG same file                |         |
+| project          | archive (cncl) | DAG multiple files           |         |
+| project tasks    | organize       | heading (within project DAG) |         |
+| project tasks    | engage         | heading (within project DAG) |         |
+| project tasks    | complete       | heading (within project DAG) |         |
+|------------------+----------------+------------------------------+---------|
