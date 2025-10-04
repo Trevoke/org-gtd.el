@@ -81,9 +81,9 @@ into a datetree."
       (org-gtd--archive-complete-projects)
 
     ;; Archive actions, calendar items, and incubated items
-    ;; Exclude project tasks (those with ORG_GTD_PROJECT property)
+    ;; Exclude project tasks (those with ORG_GTD_PROJECT or ORG_GTD_PROJECT_IDS properties)
     (org-map-entries #'org-gtd--archive-completed-actions
-                     "+ORG_GTD=\"Actions\"-ORG_GTD_PROJECT={.+}"
+                     "+ORG_GTD=\"Actions\"-ORG_GTD_PROJECT={.+}-ORG_GTD_PROJECT_IDS={.+}"
                      'agenda)
     (org-map-entries #'org-gtd--archive-completed-actions
                      "+ORG_GTD=\"Calendar\""
@@ -123,6 +123,36 @@ into a datetree."
 
 ;;;;; Private
 
+(defun org-gtd--remove-project-id-from-task (pom project-id)
+  "Remove PROJECT-ID from ORG_GTD_PROJECT_IDS property at position POM."
+  (org-entry-remove-from-multivalued-property pom "ORG_GTD_PROJECT_IDS" project-id))
+
+(defun org-gtd--archive-task-if-no-projects (pom project-id)
+  "Remove PROJECT-ID from task at POM, and archive task if no projects remain.
+If ORG_GTD_PROJECT_IDS becomes empty after removing PROJECT-ID, archive the task.
+POM can be a marker or an integer position."
+  ;; Check if marker/position is valid before proceeding
+  (when (or (numberp pom)  ; position in current buffer
+            (and (markerp pom)  ; or valid marker
+                 (marker-buffer pom)
+                 (marker-position pom)
+                 (buffer-live-p (marker-buffer pom))))
+    ;; First, remove the project ID
+    (org-gtd--remove-project-id-from-task pom project-id)
+
+    ;; Then check if any projects remain
+    (let ((should-archive nil))
+      (org-with-point-at pom
+        (let ((remaining-projects (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+          (when (null remaining-projects)
+            (setq should-archive t))))
+
+      ;; Only archive if no projects remain
+      (when should-archive
+        (with-org-gtd-context
+            (org-with-point-at pom
+              (org-archive-subtree-default)))))))
+
 (defun org-gtd--all-project-tasks-done-p ()
   "Return t if all tasks connected to current project are done.
 Uses graph traversal to find all project tasks via BLOCKS/DEPENDS_ON relationships.
@@ -151,52 +181,66 @@ Falls back to checking immediate children if no dependency-tracked tasks exist."
         all-done))))
 
 (defun org-gtd--archive-project-with-tasks ()
-  "Archive current project heading and all its tasks in breadth-first order.
+  "Archive current project heading and handle multi-project tasks.
 
-First archives the project heading, then archives all connected tasks as children
-of the archived project heading, ordered breadth-first by their dependencies."
+For each task in the project graph:
+1. Remove the current project's ID from ORG_GTD_PROJECT_IDS
+2. Archive the task only if ORG_GTD_PROJECT_IDS becomes empty
+
+Then archive the project heading itself (without child tasks, since they're
+handled separately via graph traversal)."
   (require 'org-gtd-projects)
   (let* ((project-marker (point-marker))
          (project-id (org-entry-get (point) "ID"))
          (tasks (org-gtd-projects--collect-tasks-by-graph project-marker)))
 
-    ;; Step 1: Archive the project heading first
-    ;; This creates the archived project that tasks will be refiled under
-    (org-archive-subtree-default)
-
-    ;; Step 2: Archive and refile each task under the archived project
-    ;; Tasks are already in breadth-first order from collect-tasks-by-graph
+    ;; Step 1: Process each task - remove project ID and archive if no projects remain
     (when (and project-id tasks)
-      ;; Find the archived project using its ID
-      (let ((archived-project-marker (org-id-find project-id t)))
-        (when archived-project-marker
-          (dolist (task-marker tasks)
-            ;; Check if task still exists (wasn't already archived as part of project subtree)
-            (when (and (marker-buffer task-marker)
-                       (marker-position task-marker)
-                       (with-current-buffer (marker-buffer task-marker)
-                         (save-excursion
-                           (goto-char (marker-position task-marker))
-                           ;; Verify we're at a valid heading
-                           (org-at-heading-p))))
-              (org-with-point-at task-marker
-                ;; Archive the task to the same archive location
-                (org-archive-subtree-default)
+      (dolist (task-marker tasks)
+        ;; Check if task still exists and is valid
+        (when (and (marker-buffer task-marker)
+                   (marker-position task-marker)
+                   (with-current-buffer (marker-buffer task-marker)
+                     (save-excursion
+                       (goto-char (marker-position task-marker))
+                       (org-at-heading-p))))
+          ;; Remove project ID and archive if no projects remain
+          (org-gtd--archive-task-if-no-projects task-marker project-id))))
 
-                ;; Find the archived task using its ID to refile it
-                (let ((task-id (org-entry-get task-marker "ID")))
-                  (when task-id
-                    (let ((archived-task-marker (org-id-find task-id t)))
-                      (when (and archived-task-marker
-                                 (marker-buffer archived-project-marker)
-                                 (buffer-live-p (marker-buffer archived-project-marker)))
-                        ;; Refile the archived task under the archived project
-                        (org-with-point-at archived-task-marker
-                          (org-refile nil nil
-                                    (list nil
-                                          (marker-buffer archived-project-marker)
-                                          nil
-                                          (marker-position archived-project-marker))))))))))))))))
+    ;; Step 2: Move shared tasks (those with remaining project IDs) out of project subtree
+    ;; This prevents them from being archived with the project
+    (org-with-point-at project-marker
+      (save-excursion
+        (org-back-to-heading t)
+        (let ((level (org-current-level))
+              (tasks-to-refile '()))
+          (outline-next-heading)
+          ;; Collect child tasks that still have project IDs (i.e., shared tasks)
+          (while (and (not (eobp)) (> (org-current-level) level))
+            (when (and (= (org-current-level) (1+ level))
+                       (org-entry-get (point) "ORG_GTD_PROJECT_IDS"))
+              (push (point-marker) tasks-to-refile))
+            (outline-next-heading))
+          ;; Refile shared tasks to Actions category at top level
+          (dolist (task-marker (nreverse tasks-to-refile))
+            (org-with-point-at task-marker
+              (org-cut-subtree)
+              ;; Find Actions heading and paste there
+              (with-current-buffer (org-gtd--default-file)
+                (goto-char (point-min))
+                (if (re-search-forward "^\\* Actions" nil t)
+                    (progn
+                      (org-end-of-subtree)
+                      (newline)
+                      (org-paste-subtree 2))
+                  ;; If no Actions heading exists, create one
+                  (goto-char (point-max))
+                  (insert "\n* Actions\n")
+                  (org-paste-subtree 2))))))))
+
+    ;; Step 3: Archive the project heading (now without shared tasks)
+    (org-with-point-at project-marker
+      (org-archive-subtree-default))))
 
 (defun org-gtd--archive-complete-projects ()
   "Archive all projects for which all actions/tasks are marked as done.
@@ -204,8 +248,8 @@ of the archived project heading, ordered breadth-first by their dependencies."
 Done here is any done `org-todo-keyword'.  For org-gtd this means `org-gtd-done'
 or `org-gtd-canceled'.
 
-Archives project heading first, then tasks in breadth-first order as children
-of the archived project."
+For multi-project tasks, removes project ID from ORG_GTD_PROJECT_IDS and only
+archives the task when no project IDs remain."
   (org-map-entries
    (lambda ()
      ;; Skip category headings that contain other projects

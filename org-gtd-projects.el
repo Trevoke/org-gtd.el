@@ -211,36 +211,49 @@ Refile to `org-gtd-actionable-file-basename'."
       (while (and (org-up-heading-safe)
                   (not (string= (org-entry-get (point) "ORG_GTD") "Projects"))))
       (when (string= (org-entry-get (point) "ORG_GTD") "Projects")
-        (let ((project-name (org-get-heading t t t t)))
-          ;; Go back to original task and set the property
+        (let ((project-name (org-get-heading t t t t))
+              (project-id (or (org-entry-get (point) "ID")
+                              (org-gtd-id-get-create))))
+          ;; Go back to original task and set the properties
           (goto-char original-point)
-          (org-entry-put (point) "ORG_GTD_PROJECT" project-name))))))
+          ;; Set the multi-valued project IDs property
+          (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)
+          ;; Only set ORG_GTD_PROJECT if not already set (preserves first project for multi-project tasks)
+          (unless (org-entry-get (point) "ORG_GTD_PROJECT")
+            (org-entry-put (point) "ORG_GTD_PROJECT" project-name)))))))
 
 (defun org-gtd-projects--configure-all-tasks ()
   "Configure all sub-tasks in the project as project-task items."
-  (let ((project-name (save-excursion
-                        (org-back-to-heading)
-                        (org-get-heading t t t t))))
+  (let* ((project-id (save-excursion
+                       (org-back-to-heading)
+                       (or (org-entry-get (point) "ID")
+                           (org-gtd-id-get-create))))
+         (project-name (save-excursion
+                         (org-back-to-heading)
+                         (org-get-heading t t t t))))
     (org-map-entries
      (lambda ()
        (unless (string= (org-entry-get (point) "ORG_GTD") "Projects")
          (org-gtd-configure-item (point) :project-task)
-         (org-entry-put (point) "ORG_GTD_PROJECT" project-name)))
+         (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)
+         ;; Only set ORG_GTD_PROJECT if not already set (preserves first project for multi-project tasks)
+         (unless (org-entry-get (point) "ORG_GTD_PROJECT")
+           (org-entry-put (point) "ORG_GTD_PROJECT" project-name))))
      nil
      'tree)))
 
 (defun org-gtd-projects--add-default-sequential-dependencies ()
-  "Create default sequential dependencies for tasks without DEPENDS_ON.
+  "Create default sequential dependencies for tasks without ORG_GTD_DEPENDS_ON.
 For Story 7: Create chain where Task 1 → Task 2 → Task 3, etc.
-For Story 8: Only apply to tasks that don't have DEPENDS_ON relationships."
+For Story 8: Only apply to tasks that don't have ORG_GTD_DEPENDS_ON relationships."
   (require 'org-gtd-task-management) ; Ensure task management functions are available
   (let ((all-tasks (org-gtd-projects--collect-all-tasks))
         (unconnected-tasks '()))
-    ;; Collect tasks that don't have DEPENDS_ON relationships (they can have BLOCKS)
+    ;; Collect tasks that don't have ORG_GTD_DEPENDS_ON relationships (they can have ORG_GTD_BLOCKS)
     (dolist (task all-tasks)
       (save-excursion
         (goto-char task)
-        (unless (org-entry-get-multivalued-property (point) "DEPENDS_ON")
+        (unless (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")
           (push task unconnected-tasks))))
     ;; Reverse to maintain document order
     (setq unconnected-tasks (nreverse unconnected-tasks))
@@ -252,24 +265,24 @@ For Story 8: Only apply to tasks that don't have DEPENDS_ON relationships."
                     (org-gtd-projects--create-dependency-relationship previous-task current-task))))))
 
 (defun org-gtd-projects--set-first-tasks ()
-  "Set FIRST_TASKS property on project heading with IDs of root tasks.
-Root tasks are tasks that have no DEPENDS_ON property."
+  "Set ORG_GTD_FIRST_TASKS property on project heading with IDs of root tasks.
+Root tasks are tasks that have no ORG_GTD_DEPENDS_ON property."
   (let ((root-task-ids '()))
-    ;; Find all tasks without DEPENDS_ON (root tasks)
+    ;; Find all tasks without ORG_GTD_DEPENDS_ON (root tasks)
     (org-map-entries
      (lambda ()
        (when (and (string= (org-entry-get (point) "ORG_GTD") "Actions")
-                  (not (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+                  (not (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
          (let ((task-id (org-entry-get (point) "ID")))
            (when task-id
              (push task-id root-task-ids)))))
      nil
      'tree)
 
-    ;; Set FIRST_TASKS property on project heading with space-separated IDs
+    ;; Set ORG_GTD_FIRST_TASKS property on project heading with space-separated IDs
     (when root-task-ids
       (org-back-to-heading t)
-      (org-entry-put (point) "FIRST_TASKS" (string-join (nreverse root-task-ids) " ")))))
+      (org-entry-put (point) "ORG_GTD_FIRST_TASKS" (string-join (nreverse root-task-ids) " ")))))
 
 (defun org-gtd-projects--collect-all-tasks ()
   "Collect all project tasks in document order.
@@ -287,13 +300,17 @@ Returns list of markers pointing to task headings with ORG_GTD=Actions."
 (defun org-gtd-projects--collect-tasks-by-graph (project-marker)
   "Collect all project tasks by traversing the dependency graph.
 
-Starting from the project heading at PROJECT-MARKER, reads the FIRST_TASKS
+Starting from the project heading at PROJECT-MARKER, reads the ORG_GTD_FIRST_TASKS
 property to find root task IDs, then traverses the graph by following
-BLOCKS/DEPENDS_ON relationships using org-id-find.
+ORG_GTD_BLOCKS/ORG_GTD_DEPENDS_ON relationships using org-id-find.
+
+Only includes tasks that have the current project's ID in their ORG_GTD_PROJECT_IDS
+property, respecting project boundaries for shared tasks.
 
 Returns list of task markers in breadth-first order."
   (org-with-point-at project-marker
-    (let* ((first-tasks-str (org-entry-get (point) "FIRST_TASKS"))
+    (let* ((project-id (org-entry-get (point) "ID"))
+           (first-tasks-str (org-entry-get (point) "ORG_GTD_FIRST_TASKS"))
            (first-task-ids (when first-tasks-str (split-string first-tasks-str)))
            (queue '())
            (visited-ids (make-hash-table :test 'equal))
@@ -317,14 +334,18 @@ Returns list of task markers in breadth-first order."
 
           (when (and task-location (not (gethash current-id visited-ids)))
             (puthash current-id t visited-ids)
-            (push task-location result-tasks)
 
-            ;; Find tasks this one blocks (children in the graph)
+            ;; Only include task if it has current project ID in ORG_GTD_PROJECT_IDS
             (org-with-point-at task-location
-              (let ((blocks-list (org-entry-get-multivalued-property (point) "BLOCKS")))
-                (dolist (blocked-id blocks-list)
-                  (unless (gethash blocked-id visited-ids)
-                    (setq queue (append queue (list blocked-id))))))))))
+              (let ((task-project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+                (when (member project-id task-project-ids)
+                  (push task-location result-tasks)
+
+                  ;; Find tasks this one blocks (children in the graph)
+                  (let ((blocks-list (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
+                    (dolist (blocked-id blocks-list)
+                      (unless (gethash blocked-id visited-ids)
+                        (setq queue (append queue (list blocked-id))))))))))))
 
       ;; Return in breadth-first order
       (nreverse result-tasks))))
@@ -339,14 +360,14 @@ Returns list of task markers in breadth-first order."
                         (goto-char dependent-marker)
                         (or (org-entry-get (point) "ID")
                             (org-gtd-id-get-create)))))
-    ;; Add BLOCKS property to blocker task
+    ;; Add ORG_GTD_BLOCKS property to blocker task
     (save-excursion
       (goto-char blocker-marker)
-      (org-entry-add-to-multivalued-property (point) "BLOCKS" dependent-id))
-    ;; Add DEPENDS_ON property to dependent task
+      (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" dependent-id))
+    ;; Add ORG_GTD_DEPENDS_ON property to dependent task
     (save-excursion
       (goto-char dependent-marker)
-      (org-entry-add-to-multivalued-property (point) "DEPENDS_ON" blocker-id))))
+      (org-entry-add-to-multivalued-property (point) "ORG_GTD_DEPENDS_ON" blocker-id))))
 
 (defun org-gtd-projects--add-progress-cookie ()
   "Add progress tracking cookie to the project heading."
@@ -369,6 +390,9 @@ Returns list of task markers in breadth-first order."
     (save-excursion
       (org-refile-goto-last-stored)
       (org-gtd-projects--set-project-name-on-task))
+    ;; Update first tasks list to include new root task
+    (org-with-point-at marker
+      (org-gtd-projects--set-first-tasks))
     (org-gtd-projects-fix-todo-keywords marker)))
 
 (defun org-gtd-projects--apply-organize-hooks-to-tasks ()

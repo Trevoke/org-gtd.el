@@ -791,6 +791,66 @@ Returns a cons cell (BROKEN-REFERENCES . ORPHANED-TASKS)."
         (string-join guidance-parts " ")
       "No dependency issues found.")))
 
+;;;###autoload
+(defun org-gtd-remove-task-from-project ()
+  "Remove the task at point from a project.
+Removes the project ID from the task's ORG_GTD_PROJECT_IDS property.
+If the task has multiple projects, prompts user to select which project to remove from.
+Handles reconnection of dependent tasks based on user choice."
+  (interactive)
+  (unless (org-at-heading-p)
+    (user-error "Point must be on an org heading"))
+
+  (let* ((task-id (or (org-entry-get (point) "ID")
+                     (user-error "Task must have an ID to remove from project")))
+         (project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+
+    (unless project-ids
+      (user-error "Task does not belong to any projects"))
+
+    ;; For now, just remove from the first (or only) project
+    ;; TODO: If multiple projects, prompt user to select
+    (let ((project-id (car project-ids))
+          (children-ids (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS"))
+          (parent-ids (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
+
+      ;; If task has children, ask about reconnection
+      (when (and children-ids
+                 (y-or-n-p "Reconnect children to parents? "))
+        ;; Handle reconnection based on number of parents
+        (cond
+         ;; One parent: auto-connect
+         ((= (length parent-ids) 1)
+          (let ((parent-id (car parent-ids)))
+            (dolist (child-id children-ids)
+              ;; Create parent → child relationship
+              (org-gtd-task-management--add-to-other-task-multivalued-property parent-id "ORG_GTD_BLOCKS" child-id)
+              (org-gtd-task-management--add-to-other-task-multivalued-property child-id "ORG_GTD_DEPENDS_ON" parent-id))))
+         ;; Multiple parents: let user choose
+         ;; TODO: Implement multi-parent selection
+         ;; No parents: children become new first tasks
+         ;; TODO: Implement first task promotion
+         ))
+
+      ;; Remove bidirectional relationships between this task and its parents/children
+      (dolist (parent-id parent-ids)
+        (org-gtd-task-management--remove-from-other-task-multivalued-property parent-id "ORG_GTD_BLOCKS" task-id))
+      (dolist (child-id children-ids)
+        (org-gtd-task-management--remove-from-other-task-multivalued-property child-id "ORG_GTD_DEPENDS_ON" task-id))
+
+      ;; Clear this task's relationships
+      (when parent-ids
+        (org-entry-delete (point) "ORG_GTD_DEPENDS_ON"))
+      (when children-ids
+        (org-entry-delete (point) "ORG_GTD_BLOCKS"))
+
+      ;; Remove project ID from task
+      (org-entry-remove-from-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)
+
+      ;; TODO: Remove from project's ORG_GTD_FIRST_TASKS if present
+
+      (message "Removed task from project %s" project-id))))
+
 ;;;; Footer
 
 (provide 'org-gtd-task-management)

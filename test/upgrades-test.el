@@ -234,41 +234,44 @@ Do that thing.
 :PROPERTIES:
 :ORG_GTD: Projects
 :ID: proj-webapp
-:FIRST_TASKS: task-setup task-design
+:ORG_GTD_FIRST_TASKS: task-setup task-design
 :END:
 *** Set up development environment
 :PROPERTIES:
 :ORG_GTD: Actions
 :ID: task-setup
+:ORG_GTD_PROJECT_IDS: proj-webapp
 :END:
 *** Design the user interface
 :PROPERTIES:
 :ORG_GTD: Actions
 :ID: task-design
-:BLOCKS: task-wireframes task-colors
+:ORG_GTD_BLOCKS: task-wireframes task-colors
+:ORG_GTD_PROJECT_IDS: proj-webapp
 :END:
 **** Create wireframes
 :PROPERTIES:
 :ORG_GTD: Actions
 :ID: task-wireframes
-:DEPENDS_ON: task-design
+:ORG_GTD_DEPENDS_ON: task-design
+:ORG_GTD_PROJECT_IDS: proj-webapp
 :END:
 **** Choose color scheme
 :PROPERTIES:
 :ORG_GTD: Actions
 :ID: task-colors
-:DEPENDS_ON: task-design
+:ORG_GTD_DEPENDS_ON: task-design
+:ORG_GTD_PROJECT_IDS: proj-webapp
 :END:
 """)
         (basic-save-buffer))
 
       ;; Test that we can find all project tasks via property query
       (with-current-buffer (org-gtd--default-file)
-        ;; Add FIRST_TASKS property to the project (would be done during creation normally)
+        ;; ORG_GTD_FIRST_TASKS property already set in the inserted content
         (goto-char (point-min))
         (search-forward "Build a webapp")
         (org-back-to-heading t)
-        (org-entry-put (point) "FIRST_TASKS" "task-setup task-design")
 
         (goto-char (point-min))
         (search-forward "Build a webapp")
