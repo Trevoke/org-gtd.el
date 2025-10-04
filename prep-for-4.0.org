@@ -1,3 +1,42 @@
+#+TITLE: prep for 4.0
+
+* Multi-Project Task Architecture
+
+** TODO Update properties for multi-project support
+- Projects: ~ID~, ~ORG_GTD_FIRST_TASKS~ (list of task IDs)
+- Tasks: ~ID~, ~ORG_GTD_BLOCKS~ (replaces ~BLOCKS~), ~ORG_GTD_DEPENDS_ON~ (replaces ~DEPENDS_ON~), ~ORG_GTD_PROJECT_IDS~ (list of project IDs)
+
+** TODO Implement graph traversal for multi-project tasks
+- Start at project's ~ORG_GTD_FIRST_TASKS~
+- Follow ~ORG_GTD_BLOCKS~ only to tasks that have current project ID in their ~ORG_GTD_PROJECT_IDS~
+- This maintains clean project boundaries while allowing task sharing
+
+** TODO Update archiving for multi-project tasks
+1. Check all tasks in project are DONE/CNCL
+2. Traverse graph breadth-first starting from ~ORG_GTD_FIRST_TASKS~
+3. For each task: remove project ID from ~ORG_GTD_PROJECT_IDS~
+4. If task has no project IDs left → archive it
+5. If task still has project IDs → leave it alone
+
+** TODO Update agenda display for multi-project tasks
+- Show first project ID from ~ORG_GTD_PROJECT_IDS~ (truncated to ~20 chars)
+
+** TODO Implement task removal from project
+- Remove project ID from task's ~ORG_GTD_PROJECT_IDS~
+- Remove task from project's ~ORG_GTD_FIRST_TASKS~ if applicable
+- If task blocks other tasks:
+  - Ask user whether to reconnect children to parents
+  - If yes and one parent: auto-connect
+  - If yes and multiple parents: completing-read for user to choose
+  - If no: drop into clarify flow with project and all tasks
+
+** TODO Support extending completed projects
+- Can only extend projects that are DONE but not yet archived
+- If tasks were archived, user must manually move them back to org-agenda-files first
+
+** TODO Update org-edna integration
+- Update org-edna to use ~ORG_GTD_BLOCKS~ and ~ORG_GTD_DEPENDS_ON~ instead of ~BLOCKS~ and ~DEPENDS_ON~
+
 * GTD test matrix
 | item             | flow step      | shape                        | tested? |
 |------------------+----------------+------------------------------+---------|
@@ -51,4 +90,35 @@
 | project tasks    | organize       | heading (within project DAG) |         |
 | project tasks    | engage         | heading (within project DAG) |         |
 | project tasks    | complete       | heading (within project DAG) |         |
+| project tasks    | cancel         | heading (within project DAG) |         |
+|------------------+----------------+------------------------------+---------|
+| project          | view stuck     | DAG same file                |         |
+| project          | view stuck     | DAG multiple files           |         |
+| project          | extend (done)  | DAG same file                |         |
+| project          | extend (done)  | DAG multiple files           |         |
+|------------------+----------------+------------------------------+---------|
+| project tasks    | add first task | heading (within project DAG) |         |
+| project tasks    | add mid-DAG    | heading (within project DAG) |         |
+| project tasks    | add leaf task  | heading (within project DAG) |         |
+| project tasks    | remove task    | heading (within project DAG) |         |
+| project tasks    | move task      | heading (within project DAG) |         |
+| project tasks    | add blocker    | heading (within project DAG) |         |
+| project tasks    | remove blocker | heading (within project DAG) |         |
+| project tasks    | extract task   | heading (within project DAG) |         |
+|------------------+----------------+------------------------------+---------|
+| project          | add parallel   | DAG same file                |         |
+| project          | add parallel   | DAG multiple files           |         |
+| project          | add sequential | DAG same file                |         |
+| project          | add sequential | DAG multiple files           |         |
+|------------------+----------------+------------------------------+---------|
+| project          | validate graph | DAG same file                |         |
+| project          | validate graph | DAG multiple files           |         |
+|------------------+----------------+------------------------------+---------|
+| project tasks    | share task     | heading (multi-project)      |         |
+| project tasks    | remove (keep)  | heading (multi-project)      |         |
+| project tasks    | complete       | heading (multi-project)      |         |
+| project tasks    | cancel         | heading (multi-project)      |         |
+|------------------+----------------+------------------------------+---------|
+| project          | archive (done) | DAG with shared tasks        |         |
+| project          | archive (cncl) | DAG with shared tasks        |         |
 |------------------+----------------+------------------------------+---------|
