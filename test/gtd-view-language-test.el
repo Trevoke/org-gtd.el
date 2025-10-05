@@ -128,7 +128,8 @@
                 '(agenda ""
                          ((org-agenda-span 1)
                           (org-agenda-start-day nil)
-                          (org-agenda-skip-additional-timestamps-same-entry t))))))
+                          (org-agenda-skip-additional-timestamps-same-entry t)
+                          (org-agenda-skip-function 'org-gtd-skip-unless-in-progress))))))
 
   (it "can define a daily agenda view with span and NEXT actions"
       ;; This tests the org-gtd-engage equivalent functionality
@@ -144,7 +145,8 @@
                          ((org-agenda-include-all-todo nil)
                           (org-agenda-span 1)
                           (org-agenda-start-day nil)
-                          (org-agenda-skip-additional-timestamps-same-entry t))))
+                          (org-agenda-skip-additional-timestamps-same-entry t)
+                          (org-agenda-skip-function 'org-gtd-skip-unless-in-progress))))
 
         ;; Should also generate the NEXT block
         (expect (org-gtd-view-lang--create-additional-blocks engage-view-spec)

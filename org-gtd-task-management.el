@@ -678,7 +678,7 @@ For Story 14: Detect broken dependency references, orphaned tasks, and provide g
 Returns a list of all task IDs found."
   (let ((all-existing-ids '()))
     ;; Collect from file-based agenda files
-    (dolist (file-name (org-gtd-agenda-files))
+    (dolist (file-name (org-agenda-files))
       (when (and file-name (file-exists-p file-name))
         (with-temp-buffer
           (insert-file-contents file-name)
@@ -716,7 +716,7 @@ Returns a cons cell (BROKEN-REFERENCES . ORPHANED-TASKS)."
         (orphaned-tasks '()))
     
     ;; Check file-based agenda files
-    (dolist (file-name (org-gtd-agenda-files))
+    (dolist (file-name (org-agenda-files))
       (when (and file-name (file-exists-p file-name))
         (with-temp-buffer
           (insert-file-contents file-name)
@@ -726,7 +726,7 @@ Returns a cons cell (BROKEN-REFERENCES . ORPHANED-TASKS)."
             (setq orphaned-tasks (append orphaned-tasks (cdr result)))))))
     
     ;; Check buffer-based agenda files (for testing)
-    (dolist (buffer-name (org-gtd-agenda-files))
+    (dolist (buffer-name (org-agenda-files))
       (when (and (not (file-exists-p buffer-name))
                  (get-buffer buffer-name))
         (with-current-buffer buffer-name

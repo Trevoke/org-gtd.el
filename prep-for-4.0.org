@@ -40,85 +40,86 @@
 * GTD test matrix
 | item             | flow step      | shape                        | tested? |
 |------------------+----------------+------------------------------+---------|
-| quick action     | organize       | heading                      |         |
+| quick action     | organize       | heading                      | ✓       |
 |------------------+----------------+------------------------------+---------|
-| trash            | organize       | heading                      |         |
+| trash            | organize       | heading                      | ✓       |
 |------------------+----------------+------------------------------+---------|
-| single action    | organize       | heading                      |         |
-| single action    | engage         | heading                      |         |
+| single action    | organize       | heading                      | ✓       |
+| single action    | engage         | heading                      | ✓       |
 | single action    | review         | heading                      |         |
 | single action    | cancel         | heading                      |         |
-| single action    | archive (done) | heading                      |         |
+| single action    | archive (done) | heading                      | ✓       |
 | single action    | archive (cncl) | heading                      |         |
 |------------------+----------------+------------------------------+---------|
-| delegated action | organize       | heading                      |         |
-| delegated action | engage         | heading                      |         |
+| delegated action | organize       | heading                      | ✓       |
+| delegated action | engage         | heading                      | ✓       |
 | delegated action | review         | heading                      |         |
 | delegated action | cancel         | heading                      |         |
-| delegated action | archive (done) | heading                      |         |
+| delegated action | archive (done) | heading                      | ✓       |
 | delegated action | archive (cncl) | heading                      |         |
 |------------------+----------------+------------------------------+---------|
-| calendar item    | organize       | heading                      |         |
-| calendar item    | engage         | heading                      |         |
+| calendar item    | organize       | heading                      | ✓       |
+| calendar item    | engage         | heading                      | ✓       |
 | calendar item    | review         | heading                      |         |
 | calendar item    | cancel         | heading                      |         |
-| calendar item    | archive (done) | heading                      |         |
+| calendar item    | archive (done) | heading                      | ✓       |
 | calendar item    | archive (cncl) | heading                      |         |
 |------------------+----------------+------------------------------+---------|
-| incubate         | organize       | heading                      |         |
+| incubate         | organize       | heading                      | ✓       |
 | incubate         | review         | heading                      |         |
 | incubate         | archive        | heading                      |         |
 |------------------+----------------+------------------------------+---------|
-| knowledge        | organize       | heading                      |         |
+| knowledge        | organize       | heading                      | ✓       |
 |------------------+----------------+------------------------------+---------|
 | habit            | organize       | heading                      |         |
 | habit            | engage         | heading                      |         |
 | habit            | review         | heading                      |         |
 |------------------+----------------+------------------------------+---------|
-| project          | organize       | DAG same file                |         |
-| project          | organize       | DAG multiple files           |         |
-| project          | engage         | DAG same file                |         |
-| project          | engage         | DAG multiple files           |         |
+| project          | organize       | DAG same file                | ✓       |
+| project          | organize       | DAG multiple files           | ✓       |
+| project          | engage         | DAG same file                | ✓       |
+| project          | engage         | DAG multiple files           | ✓       |
 | project          | review         | DAG same file                |         |
 | project          | review         | DAG multiple files           |         |
 | project          | cancel         | DAG same file                |         |
-| project          | cancel         | DAG multiple files           |         |
-| project          | archive (done) | DAG same file                |         |
-| project          | archive (done) | DAG multiple files           |         |
+| project          | cancel         | DAG multiple files           | ✓       |
+| project          | archive (done) | DAG same file                | ✓       |
+| project          | archive (done) | DAG multiple files           | ✓       |
 | project          | archive (cncl) | DAG same file                |         |
 | project          | archive (cncl) | DAG multiple files           |         |
-| project tasks    | organize       | heading (within project DAG) |         |
-| project tasks    | engage         | heading (within project DAG) |         |
-| project tasks    | complete       | heading (within project DAG) |         |
+| project tasks    | organize       | heading (within project DAG) | ✓       |
+| project tasks    | engage         | heading (within project DAG) | ✓       |
+| project tasks    | complete       | heading (within project DAG) | ✓       |
 | project tasks    | cancel         | heading (within project DAG) |         |
 |------------------+----------------+------------------------------+---------|
-| project          | view stuck     | DAG same file                |         |
+| project          | view stuck     | DAG same file                | ✓       |
 | project          | view stuck     | DAG multiple files           |         |
-| project          | extend (done)  | DAG same file                |         |
-| project          | extend (done)  | DAG multiple files           |         |
+| project tasks    | view orphaned  | heading (within project DAG) | ⏸       |
+| project          | extend (done)  | DAG same file                | ✓       |
+| project          | extend (done)  | DAG multiple files           | ✓       |
 |------------------+----------------+------------------------------+---------|
-| project tasks    | add first task | heading (within project DAG) |         |
+| project tasks    | add first task | heading (within project DAG) | ✓       |
 | project tasks    | add mid-DAG    | heading (within project DAG) |         |
 | project tasks    | add leaf task  | heading (within project DAG) |         |
-| project tasks    | remove task    | heading (within project DAG) |         |
-| project tasks    | move task      | heading (within project DAG) |         |
-| project tasks    | add blocker    | heading (within project DAG) |         |
-| project tasks    | remove blocker | heading (within project DAG) |         |
-| project tasks    | extract task   | heading (within project DAG) |         |
+| project tasks    | remove task    | heading (within project DAG) | ✓       |
+| project tasks    | move task      | heading (within project DAG) | ⏸       |
+| project tasks    | add blocker    | heading (within project DAG) | ✓       |
+| project tasks    | remove blocker | heading (within project DAG) | ✓       |
+| project tasks    | extract task   | heading (within project DAG) | ⏸       |
 |------------------+----------------+------------------------------+---------|
 | project          | add parallel   | DAG same file                |         |
 | project          | add parallel   | DAG multiple files           |         |
 | project          | add sequential | DAG same file                |         |
 | project          | add sequential | DAG multiple files           |         |
 |------------------+----------------+------------------------------+---------|
-| project          | validate graph | DAG same file                |         |
+| project          | validate graph | DAG same file                | ⏸       |
 | project          | validate graph | DAG multiple files           |         |
 |------------------+----------------+------------------------------+---------|
-| project tasks    | share task     | heading (multi-project)      |         |
-| project tasks    | remove (keep)  | heading (multi-project)      |         |
-| project tasks    | complete       | heading (multi-project)      |         |
+| project tasks    | share task     | heading (multi-project)      | ✓       |
+| project tasks    | remove (keep)  | heading (multi-project)      | ✓       |
+| project tasks    | complete       | heading (multi-project)      | ⏸       |
 | project tasks    | cancel         | heading (multi-project)      |         |
 |------------------+----------------+------------------------------+---------|
-| project          | archive (done) | DAG with shared tasks        |         |
+| project          | archive (done) | DAG with shared tasks        | ✓       |
 | project          | archive (cncl) | DAG with shared tasks        |         |
 |------------------+----------------+------------------------------+---------|

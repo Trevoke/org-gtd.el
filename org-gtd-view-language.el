@@ -85,6 +85,7 @@
 ;;; Code:
 (require 'org-gtd-core)
 (require 'org-gtd-ql)
+(require 'org-gtd-skip)
 
 (defun org-gtd-view-lang--create-agenda-block (gtd-view-spec)
   "Create an agenda block from GTD-VIEW-SPEC.
@@ -108,7 +109,8 @@ Otherwise creates an org-ql agenda block."
   (let* ((agenda-span (alist-get 'agenda-span gtd-view-spec 1))
          (show-habits (alist-get 'show-habits gtd-view-spec))
          (settings '((org-agenda-start-day nil)
-                    (org-agenda-skip-additional-timestamps-same-entry t))))
+                    (org-agenda-skip-additional-timestamps-same-entry t)
+                    (org-agenda-skip-function 'org-gtd-skip-unless-in-progress))))
     (when agenda-span
       (push `(org-agenda-span ,agenda-span) settings))
     (when (and (assoc 'show-habits gtd-view-spec) (not show-habits))

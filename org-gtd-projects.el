@@ -335,10 +335,13 @@ Returns list of task markers in breadth-first order."
           (when (and task-location (not (gethash current-id visited-ids)))
             (puthash current-id t visited-ids)
 
-            ;; Only include task if it has current project ID in ORG_GTD_PROJECT_IDS
+            ;; Include task if it either:
+            ;; 1. Has current project ID in ORG_GTD_PROJECT_IDS, OR
+            ;; 2. Has no ORG_GTD_PROJECT_IDS (simple task belonging only to this project)
             (org-with-point-at task-location
               (let ((task-project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
-                (when (member project-id task-project-ids)
+                (when (or (null task-project-ids)  ; No project IDs - belongs to this project
+                          (member project-id task-project-ids))  ; Has this project's ID
                   (push task-location result-tasks)
 
                   ;; Find tasks this one blocks (children in the graph)
