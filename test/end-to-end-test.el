@@ -673,7 +673,111 @@
         ;; 2. VERIFY appears in engage view
         (org-gtd-engage)
         (expect (ogt--buffer-string org-agenda-buffer)
-                :to-match "Daily meditation"))))
+                :to-match "Daily meditation")))
+
+  (describe "Review of multi-file projects"
+    (it "verifies multi-file project appears in stuck projects when all tasks are in other files"
+        ;; NOTE: This test documents current behavior with multi-file projects.
+        ;; org-mode's stuck projects detection looks for NEXT/WAIT tasks that are
+        ;; *children* of the project heading. Tasks linked via ORG_GTD_FIRST_TASKS
+        ;; in other files are NOT detected, so the project appears stuck even when
+        ;; it has NEXT tasks in other files.
+        ;;
+        ;; This is a known limitation of using org-mode's native stuck projects view
+        ;; with org-gtd's DAG-based multi-file project structure.
+
+        ;; 1. CAPTURE and ORGANIZE project in main file
+        (ogt-capture-single-item "Multi-file project review")
+        (org-gtd-process-inbox)
+
+        (let ((wip-buffers (seq-filter (lambda (buf)
+                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                       (buffer-list))))
+          (when wip-buffers
+            (with-current-buffer (car wip-buffers)
+              (goto-char (point-max))
+              (newline)
+              (insert "** Task in main file")
+              (ogt-clarify-as-project))))
+
+        ;; 2. Create second file with NEXT task
+        (let ((second-file (org-gtd--path "review-secondary")))
+          (with-temp-file second-file
+            (insert "* Task in second file\n:PROPERTIES:\n:ID: review-task-id\n:END:\n"))
+
+          (with-current-buffer (find-file-noselect second-file)
+            (org-mode)
+            (goto-char (point-min))
+            (search-forward "Task in second file")
+            (org-back-to-heading t)
+            (org-id-add-location "review-task-id" second-file)
+            (org-todo "NEXT"))
+
+          (let ((org-agenda-files (append (org-agenda-files) (list second-file))))
+
+            ;; 3. Link task from second file to project
+            (with-current-buffer (org-gtd--default-file)
+              (goto-char (point-min))
+              (search-forward "Multi-file project review")
+              (org-back-to-heading t)
+              (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" "review-task-id"))
+
+            ;; 4. Make main file task TODO (not NEXT) so project appears stuck
+            (with-current-buffer (org-gtd--default-file)
+              (goto-char (point-min))
+              (search-forward "Task in main file")
+              (org-todo "TODO"))
+
+            ;; 5. VERIFY project appears as stuck (even though it has NEXT task in other file)
+            (org-gtd-review-stuck-projects)
+            (expect (ogt--buffer-string org-agenda-buffer)
+                    :to-match "Multi-file project review")))))
+
+  (describe "Review of incubated items"
+    (it "verifies incubated item appears in area of focus review"
+        ;; Create future date (7 days ahead)
+        (let* ((future-date-time (time-add (current-time) (days-to-time 7)))
+               (future-date (decode-time future-date-time))
+               (future-calendar-date (list (nth 4 future-date)  ; month
+                                          (nth 3 future-date)  ; day
+                                          (nth 5 future-date)))  ; year
+               (org-gtd-areas-of-focus '("Personal" "Work" "Health")))
+
+          ;; 1. CAPTURE and ORGANIZE incubated item with future date
+          (ogt-capture-single-item "Learn Italian")
+          (org-gtd-process-inbox)
+          (ogt-clarify-as-incubated-item future-calendar-date)
+
+          ;; 2. Set area of focus (uses CATEGORY property, not AREA_OF_FOCUS)
+          (with-current-buffer (org-gtd--default-file)
+            (goto-char (point-min))
+            (re-search-forward "Learn Italian")
+            (org-set-property "CATEGORY" "Personal"))
+
+          ;; 3. VERIFY appears in area of focus review
+          (org-gtd-review-area-of-focus "Personal")
+          (expect (ogt--buffer-string org-agenda-buffer)
+                  :to-match "Learn Italian")))
+
+    (it "verifies incubated item can be archived after completion"
+        ;; 1. CAPTURE and ORGANIZE incubated item
+        (ogt-capture-single-item "Research vacation spots")
+        (org-gtd-process-inbox)
+        (ogt-clarify-as-incubated-item (calendar-current-date))
+
+        ;; 2. MARK DONE
+        (with-current-buffer (org-gtd--default-file)
+          (goto-char (point-min))
+          (re-search-forward "Research vacation spots")
+          (org-todo "DONE"))
+
+        ;; 3. ARCHIVE
+        (org-gtd-archive-completed-items)
+
+        ;; 4. VERIFY archived
+        (with-current-buffer (org-gtd--default-file)
+          (expect (ogt--current-buffer-raw-text)
+                  :not :to-match "Research vacation spots")))))
 
 (describe "Habit Flow Tests"
 
