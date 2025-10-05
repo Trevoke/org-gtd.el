@@ -338,10 +338,14 @@
         ;; 7. ARCHIVE
         (org-gtd-archive-completed-items)
 
-        ;; 8. Verify item is archived
+        ;; 8. Verify item is NOT in main file after archive
         (with-current-buffer (org-gtd--default-file)
           (expect (ogt--current-buffer-raw-text)
-                  :not :to-match "Buy concert tickets"))))
+                  :not :to-match "Buy concert tickets"))
+
+        ;; 9. Verify item IS in archive file
+        (let ((archived-content (ogt--archive-string)))
+          (expect archived-content :to-match "Buy concert tickets"))))
 
   (describe "Calendar item cancellation"
     (it "captures, organizes as calendar, marks CNCL, and archives"
@@ -376,10 +380,14 @@
         ;; 7. ARCHIVE - canceled items CAN be archived
         (org-gtd-archive-completed-items)
 
-        ;; 8. Verify item is archived
+        ;; 8. Verify item is NOT in main file after archive
         (with-current-buffer (org-gtd--default-file)
           (expect (ogt--current-buffer-raw-text)
-                  :not :to-match "Dentist appointment"))))
+                  :not :to-match "Dentist appointment"))
+
+        ;; 9. Verify item IS in archive file
+        (let ((archived-content (ogt--archive-string)))
+          (expect archived-content :to-match "Dentist appointment"))))
 
   (describe "Delegated item cancellation"
     (it "captures, organizes as delegated, marks CNCL, and archives"
@@ -414,10 +422,14 @@
         ;; 7. ARCHIVE - canceled items CAN be archived
         (org-gtd-archive-completed-items)
 
-        ;; 8. Verify item is archived
+        ;; 8. Verify item is NOT in main file after archive
         (with-current-buffer (org-gtd--default-file)
           (expect (ogt--current-buffer-raw-text)
-                  :not :to-match "Get feedback from Sarah"))))
+                  :not :to-match "Get feedback from Sarah"))
+
+        ;; 9. Verify item IS in archive file
+        (let ((archived-content (ogt--archive-string)))
+          (expect archived-content :to-match "Get feedback from Sarah"))))
 
   (describe "Project task cancellation"
     (it "creates project, cancels one task, verifies project still works, completes remaining tasks, then archives"
@@ -474,7 +486,73 @@
         ;; 9. Verify project is archived (including canceled task)
         (with-current-buffer (org-gtd--default-file)
           (expect (ogt--current-buffer-raw-text)
-                  :not :to-match "Organize workshop")))))
+                  :not :to-match "Organize workshop"))))
+
+  (describe "Project with all tasks canceled (same file)"
+    (it "creates project, cancels all tasks, verifies nothing shows in engage, then archives"
+        ;; This test verifies the critical requirement: Canceled items MUST NOT appear in engage.
+        ;; It also verifies that projects with all tasks canceled can be properly archived.
+
+        ;; 1. CAPTURE
+        (ogt-capture-single-item "Build garden shed")
+
+        ;; 2. PROCESS
+        (org-gtd-process-inbox)
+
+        ;; 3. ORGANIZE (project with multiple tasks in same file)
+        (let ((wip-buffers (seq-filter (lambda (buf)
+                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                       (buffer-list))))
+          (when wip-buffers
+            (with-current-buffer (car wip-buffers)
+              (goto-char (point-max))
+              (newline)
+              (insert "** Buy lumber\n** Purchase tools\n** Build foundation")
+              (ogt-clarify-as-project))))
+
+        ;; 4. VERIFY all tasks appear in engage before cancellation
+        (org-gtd-engage)
+        (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+          (expect agenda-content :to-match "Build garde")  ; Project heading (truncated)
+          (expect agenda-content :to-match "Buy lumber"))
+
+        ;; 5. CANCEL all tasks manually
+        (with-current-buffer (org-gtd--default-file)
+          (goto-char (point-min))
+          (re-search-forward "Buy lumber")
+          (org-todo "CNCL")
+          (goto-char (point-min))
+          (re-search-forward "Purchase tools")
+          (org-todo "CNCL")
+          (goto-char (point-min))
+          (re-search-forward "Build foundation")
+          (org-todo "CNCL"))
+
+        ;; 6. VERIFY NO tasks appear in engage after cancellation (CRITICAL REQUIREMENT)
+        (org-gtd-engage)
+        (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+          (expect agenda-content :not :to-match "Build garde")
+          (expect agenda-content :not :to-match "Buy lumber")
+          (expect agenda-content :not :to-match "Purchase tools")
+          (expect agenda-content :not :to-match "Build foundation"))
+
+        ;; 7. ARCHIVE - project with all canceled tasks should be archivable
+        (org-gtd-archive-completed-items)
+
+        ;; 8. VERIFY project and all tasks are NOT in main file after archive
+        (with-current-buffer (org-gtd--default-file)
+          (let ((content (ogt--current-buffer-raw-text)))
+            (expect content :not :to-match "Build garden shed")
+            (expect content :not :to-match "Buy lumber")
+            (expect content :not :to-match "Purchase tools")
+            (expect content :not :to-match "Build foundation")))
+
+        ;; 9. VERIFY project and tasks ARE in archive file
+        (let ((archived-content (ogt--archive-string)))
+          (expect archived-content :to-match "Build garden shed")
+          (expect archived-content :to-match "Buy lumber")
+          (expect archived-content :to-match "Purchase tools")
+          (expect archived-content :to-match "Build foundation")))))
 
 (describe "Review Flow Tests"
 

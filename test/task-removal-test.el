@@ -192,4 +192,117 @@
           (goto-char (point-min))
           (expect (search-forward "Shared Task" nil t) :to-be-truthy)))))
 
+ (describe
+  "extract task from project - Story 1: multi-project task"
+
+  (it "removes only the specified project ID and keeps task in place with ORG_GTD='Actions'"
+      ;; Given: A task belongs to multiple projects (has multiple IDs in ORG_GTD_PROJECT_IDS)
+      ;; When: I extract/remove from one project
+      ;; Then: Task should remove only that project ID, stay in place, keep ORG_GTD="Actions"
+      (ogt-capture-single-item "Project A")
+      (org-gtd-process-inbox)
+      (goto-char (point-max))
+      (newline)
+      (insert "** Multi-project Task")
+      (ogt-clarify-as-project)
+
+      (with-current-buffer (org-gtd--default-file)
+        ;; Get Project A's ID
+        (goto-char (point-min))
+        (search-forward "Project A")
+        (org-back-to-heading t)
+        (let ((project-a-id (org-entry-get (point) "ID"))
+              (project-b-id "fake-project-b-id"))
+
+          ;; Find the task and add a second project ID
+          (search-forward "Multi-project Task")
+          (org-back-to-heading t)
+          (let ((task-id (org-entry-get (point) "ID"))
+                (initial-position (point)))
+
+            ;; Manually add a second project ID to simulate multi-project scenario
+            (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-b-id)
+
+            ;; Verify task belongs to both projects
+            (let ((task-projects (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+              (expect (member project-a-id task-projects) :to-be-truthy)
+              (expect (member project-b-id task-projects) :to-be-truthy))
+
+            ;; Verify initial ORG_GTD property is "Actions" (project task)
+            (expect (org-entry-get (point) "ORG_GTD") :to-equal "Actions")
+
+            ;; Extract task from Project A (current project)
+            (org-gtd-remove-task-from-project)
+
+            ;; Verify task removed from Project A but still in Project B
+            (let ((task-projects (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+              (expect (member project-a-id task-projects) :not :to-be-truthy)
+              (expect (member project-b-id task-projects) :to-be-truthy))
+
+            ;; Verify ORG_GTD property is still "Actions" (remains a project task)
+            (expect (org-entry-get (point) "ORG_GTD") :to-equal "Actions")
+
+            ;; Verify task stayed in the same location (not moved/refiled)
+            (expect (point) :to-equal initial-position)
+
+            ;; Verify task still exists in the buffer
+            (goto-char (point-min))
+            (expect (search-forward "Multi-project Task" nil t) :to-be-truthy))))))
+
+ (describe
+  "extract task from project - Story 2: single-project task (last project)"
+
+  (it "converts task to single action when removing from last/only project"
+      ;; Given: A task belongs to only one project (has single ID in ORG_GTD_PROJECT_IDS)
+      ;; When: I extract/remove from that project
+      ;; Then: Task should keep ORG_GTD as "Actions", change TODO to NEXT, stay in place
+      (ogt-capture-single-item "Project A")
+      (org-gtd-process-inbox)
+      (goto-char (point-max))
+      (newline)
+      (insert "** Single-project Task")
+      (ogt-clarify-as-project)
+
+      (with-current-buffer (org-gtd--default-file)
+        ;; Get Project A's ID
+        (goto-char (point-min))
+        (search-forward "Project A")
+        (org-back-to-heading t)
+        (let ((project-a-id (org-entry-get (point) "ID")))
+
+          ;; Find the task
+          (search-forward "Single-project Task")
+          (org-back-to-heading t)
+          (let ((task-id (org-entry-get (point) "ID"))
+                (initial-position (point)))
+
+            ;; Verify task belongs to only one project
+            (let ((task-projects (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+              (expect (length task-projects) :to-equal 1)
+              (expect (member project-a-id task-projects) :to-be-truthy))
+
+            ;; Verify initial ORG_GTD property is "Actions" (project task)
+            (expect (org-entry-get (point) "ORG_GTD") :to-equal "Actions")
+
+            ;; Extract task from Project A (the only project)
+            (org-gtd-remove-task-from-project)
+
+            ;; Verify task no longer has any project IDs
+            (let ((task-projects (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+              (expect (or (null task-projects) (equal task-projects '(""))) :to-be-truthy))
+
+            ;; Verify ORG_GTD property stayed as "Actions" (both project tasks and single actions use "Actions")
+            (expect (org-entry-get (point) "ORG_GTD") :to-equal "Actions")
+
+            ;; Verify TODO state changed to NEXT (single action)
+            (expect (org-entry-get (point) "TODO") :to-equal (org-gtd-keywords--next))
+
+            ;; Verify task stayed in the same location (not moved/refiled)
+            (expect (point) :to-equal initial-position)
+
+            ;; Verify task still exists in the buffer at original location
+            (goto-char (point-min))
+            (search-forward "Project A")
+            (expect (search-forward "Single-project Task" nil t) :to-be-truthy))))))
+
 ;;; task-removal-test.el ends here

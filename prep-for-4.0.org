@@ -47,23 +47,23 @@
 | single action    | organize       | heading                      | ✓       |
 | single action    | engage         | heading                      | ✓       |
 | single action    | review         | heading                      |         |
-| single action    | cancel         | heading                      |         |
+| single action    | cancel         | heading                      | ✓       |
 | single action    | archive (done) | heading                      | ✓       |
-| single action    | archive (cncl) | heading                      |         |
+| single action    | archive (cncl) | heading                      | ✓       |
 |------------------+----------------+------------------------------+---------|
 | delegated action | organize       | heading                      | ✓       |
 | delegated action | engage         | heading                      | ✓       |
 | delegated action | review         | heading                      |         |
-| delegated action | cancel         | heading                      |         |
+| delegated action | cancel         | heading                      | ✓       |
 | delegated action | archive (done) | heading                      | ✓       |
-| delegated action | archive (cncl) | heading                      |         |
+| delegated action | archive (cncl) | heading                      | ✓       |
 |------------------+----------------+------------------------------+---------|
 | calendar item    | organize       | heading                      | ✓       |
 | calendar item    | engage         | heading                      | ✓       |
 | calendar item    | review         | heading                      |         |
-| calendar item    | cancel         | heading                      |         |
+| calendar item    | cancel         | heading                      | ✓       |
 | calendar item    | archive (done) | heading                      | ✓       |
-| calendar item    | archive (cncl) | heading                      |         |
+| calendar item    | archive (cncl) | heading                      | ✓       |
 |------------------+----------------+------------------------------+---------|
 | incubate         | organize       | heading                      | ✓       |
 | incubate         | review         | heading                      |         |
@@ -81,7 +81,7 @@
 | project          | engage         | DAG multiple files           | ✓       |
 | project          | review         | DAG same file                |         |
 | project          | review         | DAG multiple files           |         |
-| project          | cancel         | DAG same file                |         |
+| project          | cancel         | DAG same file                | ✓       |
 | project          | cancel         | DAG multiple files           | ✓       |
 | project          | archive (done) | DAG same file                | ✓       |
 | project          | archive (done) | DAG multiple files           | ✓       |
@@ -105,7 +105,7 @@
 | project tasks    | move task      | heading (within project DAG) | ⏸       |
 | project tasks    | add blocker    | heading (within project DAG) | ✓       |
 | project tasks    | remove blocker | heading (within project DAG) | ✓       |
-| project tasks    | extract task   | heading (within project DAG) | ⏸       |
+| project tasks    | extract task   | heading (within project DAG) | ✓       |
 |------------------+----------------+------------------------------+---------|
 | project          | add parallel   | DAG same file                |         |
 | project          | add parallel   | DAG multiple files           |         |

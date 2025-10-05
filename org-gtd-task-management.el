@@ -32,6 +32,9 @@
 (require 'org)
 (require 'org-gtd-core)
 (require 'org-gtd-id)
+(require 'org-gtd-configure)
+(require 'org-gtd-refile)
+(require 'org-gtd-single-action)
 
 ;;;; Interactive Commands
 
@@ -848,6 +851,12 @@ Handles reconnection of dependent tasks based on user choice."
       (org-entry-remove-from-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)
 
       ;; TODO: Remove from project's ORG_GTD_FIRST_TASKS if present
+
+      ;; Check if this was the last project - if so, convert to single action
+      (let ((remaining-projects (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+        (when (or (null remaining-projects) (equal remaining-projects '("")))
+          ;; This was the last project - convert task to single action (property only, stay in place)
+          (org-gtd-configure-item (point) :next)))
 
       (message "Removed task from project %s" project-id))))
 

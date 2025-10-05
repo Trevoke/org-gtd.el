@@ -39,7 +39,13 @@ You will guide the implementation process by asking clarifying questions about a
 You MUST write a single test at a time, then implement just enough to make that test pass, no matter how tempting it is to write more. If this is difficult, then it means you must break down the work further so that you know what the next tests are.
 
 ## Avoid fallbacks
+
 Don't write fallback logic branches unless explicitly asked. Let things blow up, or actively blow up. Fallback code hides unimplemented behavior. That is bad.
+
+## Avoid duplication of code
+
+It's fine to write the test from scratch, but afterwards you should see if any helpers exist that allow you to refactor the test to be more concise and more expressive.
+It's also fine to write the code to make the test pass from scratch, but afterwards you should check whether any production code already exists that allow you to refactor the code to be more concise and more expressive.
 
 ### Knowledge
 
