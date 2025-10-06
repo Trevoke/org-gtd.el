@@ -34,6 +34,7 @@
 (require 'org-gtd-core)
 (require 'org-gtd-refile)
 (require 'org-gtd-configure)
+(require 'org-gtd-dependencies)
 (require 'org-gtd-task-management)
 
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
@@ -170,7 +171,10 @@ other undone tasks are marked as `org-gtd-todo'."
                       (org-entry-put (point) "TODO" (org-gtd-keywords--todo)))))))))
 
         ;; Find tasks whose dependencies are satisfied and set them ALL to NEXT
-        (let* ((ready-task-ids (org-gtd-projects--find-ready-tasks))
+        (let* ((project-id (org-entry-get (point) "ID"))
+               (first-tasks-str (org-entry-get (point) "ORG_GTD_FIRST_TASKS"))
+               (first-tasks (when first-tasks-str (split-string first-tasks-str)))
+               (ready-task-ids (org-gtd-dependencies-find-ready-tasks project-id first-tasks))
                (first-wait (org-gtd-projects--first-wait-task))
                (ready-to-mark (if first-wait
                                   '() ; Don't mark anything NEXT if there's a WAIT
@@ -196,61 +200,6 @@ First tries current buffer, then falls back to org-id-find."
    ;; Fall back to org-id-find for production use
    (org-id-find id t)))
 
-(defun org-gtd-projects--find-ready-tasks ()
-  "Find first unblocked TODO tasks by walking the project graph.
-For each task in breadth-first order:
-- If DONE/CNCL: continue traversing to children
-- If TODO and all parents DONE/CNCL: mark ready and stop this branch
-- If TODO but blocked: leave as TODO and stop this branch
-Returns list of task IDs to mark as NEXT."
-  (let* ((project-id (org-entry-get (point) "ID"))
-         (first-tasks-str (org-entry-get (point) "ORG_GTD_FIRST_TASKS"))
-         (first-tasks (when first-tasks-str (split-string first-tasks-str)))
-         (ready-tasks '())
-         (visited (make-hash-table :test 'equal))
-         (queue first-tasks))
-
-    ;; Breadth-first traversal
-    (while queue
-      (let* ((task-id (pop queue))
-             (marker (org-gtd-projects--find-id-marker task-id)))
-        (when (and marker (not (gethash task-id visited)))
-          (puthash task-id t visited)
-          (with-current-buffer (marker-buffer marker)
-            (save-excursion
-              (goto-char marker)
-              (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
-                (let* ((todo-state (org-entry-get (point) "TODO"))
-                       (is-done (or (org-gtd-keywords--is-done-p todo-state)
-                                    (equal todo-state (org-gtd-keywords--canceled))))
-                       (depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON"))
-                       (all-deps-satisfied (or (null depends-on)
-                                               (cl-every (lambda (dep-id)
-                                                           (org-gtd-task-management--task-is-done-p dep-id))
-                                                         depends-on)))
-                       (blocks (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
-
-                  (cond
-                   ;; Case 1: Task is DONE/CNCL - continue traversing to children
-                   (is-done
-                    (when blocks
-                      (dolist (blocked-id blocks)
-                        (when-let ((blocked-marker (org-gtd-projects--find-id-marker blocked-id)))
-                          (with-current-buffer (marker-buffer blocked-marker)
-                            (save-excursion
-                              (goto-char blocked-marker)
-                              (let ((blocked-project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
-                                (when (member project-id blocked-project-ids)
-                                  (setq queue (append queue (list blocked-id)))))))))))
-                   
-                   ;; Case 2: Task is TODO and all deps satisfied - mark ready, stop branch
-                   (all-deps-satisfied
-                    (push task-id ready-tasks))
-                   
-                   ;; Case 3: Task is TODO but blocked - stop branch (do nothing)
-                   ))))))))
-
-    (nreverse ready-tasks)))
 
 ;;;;; Private
 

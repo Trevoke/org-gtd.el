@@ -63,6 +63,7 @@
 (require 'org-gtd-archive)
 (require 'org-gtd-capture)
 (require 'org-gtd-refile)
+(require 'org-gtd-dependencies)
 (require 'org-gtd-projects)
 (require 'org-gtd-agenda)
 (require 'org-gtd-organize)

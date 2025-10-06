@@ -35,6 +35,7 @@
 (require 'org-gtd-configure)
 (require 'org-gtd-refile)
 (require 'org-gtd-single-action)
+(require 'org-gtd-dependencies)
 
 ;;;; Interactive Commands
 
@@ -241,45 +242,8 @@ related tasks to maintain bidirectional consistency."
 (defun org-gtd-task-management--check-circular-dependency (dependent-id blocker-id)
   "Check if making BLOCKER-ID block DEPENDENT-ID would create a circular dependency.
 Throws an error with a descriptive path if a cycle is detected."
-  (when (org-gtd-task-management--would-create-cycle-p dependent-id blocker-id)
-    ;; Find the existing path from dependent-id to blocker-id
-    (let ((existing-path (org-gtd-task-management--find-dependency-path dependent-id blocker-id)))
-      (error "Circular dependency detected: %s" 
-             (mapconcat 'identity 
-                        (append (or existing-path (list dependent-id blocker-id)) 
-                                (list dependent-id)) 
-                        " -> ")))))
+  (org-gtd-dependencies-validate-acyclic blocker-id dependent-id))
 
-(defun org-gtd-task-management--would-create-cycle-p (dependent-id blocker-id)
-  "Check if making BLOCKER-ID block DEPENDENT-ID would create a cycle.
-This happens if there's already a dependency path from DEPENDENT-ID to BLOCKER-ID."
-  (org-gtd-task-management--has-dependency-path-p dependent-id blocker-id))
-
-(defun org-gtd-task-management--has-dependency-path-p (from-id to-id)
-  "Check if there's a dependency path from FROM-ID to TO-ID.
-Uses depth-first search to traverse the dependency graph."
-  (when (equal from-id to-id)
-    nil) ; Self-reference doesn't constitute a meaningful dependency path for cycle detection
-  (let ((visited (make-hash-table :test 'equal)))
-    (org-gtd-task-management--dfs-dependency-path from-id to-id visited)))
-
-(defun org-gtd-task-management--dfs-dependency-path (current-id target-id visited)
-  "Depth-first search for dependency path from CURRENT-ID to TARGET-ID.
-VISITED is a hash table to prevent infinite loops."
-  (if (gethash current-id visited)
-      nil ; Avoid infinite loops - already visited this node
-    (puthash current-id t visited)
-    
-    ;; Get tasks that current task blocks (for cycle detection)
-    (let ((dependencies (org-gtd-task-management--get-blocked-tasks-for-cycle-detection current-id)))
-      (catch 'found
-        (dolist (dep-id dependencies)
-          (when (equal dep-id target-id)
-            (throw 'found t)) ; Found target
-          ;; Recursively check dependencies
-          (when (org-gtd-task-management--dfs-dependency-path dep-id target-id visited)
-            (throw 'found t)))
-        nil)))) ; Not found
 
 (defun org-gtd-task-management--get-task-dependencies (task-id)
   "Get list of task IDs that TASK-ID depends on (its ORG_GTD_DEPENDS_ON property).
@@ -311,29 +275,6 @@ Returns empty list if task not found or blocks nothing."
                 (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
           '())))))
 
-(defun org-gtd-task-management--find-dependency-path (from-id to-id)
-  "Find and return the dependency path from FROM-ID to TO-ID as a list of IDs.
-Returns nil if no path exists."
-  (let ((visited (make-hash-table :test 'equal)))
-    (org-gtd-task-management--dfs-find-path from-id to-id visited)))
-
-(defun org-gtd-task-management--dfs-find-path (current-id target-id visited)
-  "Depth-first search to find path from CURRENT-ID to TARGET-ID.
-Returns the path as a list of IDs, or nil if no path exists."
-  (if (gethash current-id visited)
-      nil ; Avoid infinite loops - already visited this node
-    (puthash current-id t visited)
-    
-    (if (equal current-id target-id)
-        (list current-id) ; Found target, return path with just current
-      ;; Get tasks that current task blocks (for cycle detection)
-      (let ((dependencies (org-gtd-task-management--get-blocked-tasks-for-cycle-detection current-id)))
-        (catch 'found
-          (dolist (dep-id dependencies)
-            (let ((sub-path (org-gtd-task-management--dfs-find-path dep-id target-id visited)))
-              (when sub-path
-                (throw 'found (cons current-id sub-path)))))
-          nil))))) ; No path found
 
 ;;;; Private Helper Functions
 
