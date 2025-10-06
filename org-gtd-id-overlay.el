@@ -168,7 +168,7 @@ Removes TODO keywords and statistics cookies."
         (if (string-equal property-type "ID")
             ;; Single ID for :ID: property
             (org-gtd-id-overlay--create-overlay property-value value-start value-end)
-          ;; Multiple space-separated IDs for :BLOCKED_BY: and :BLOCKS: properties
+          ;; Multiple space-separated IDs for :ORG_GTD_DEPENDS_ON: and :ORG_GTD_BLOCKS: properties
           (org-gtd-id-overlay--create-overlays-for-multiple-ids 
            property-value value-start))))))
 
@@ -367,7 +367,7 @@ _LEN is the length of the deleted text (unused)."
         (if (string-equal property-type "ID")
             ;; Single ID for :ID: property
             (org-gtd-id-overlay--create-overlay property-value value-start value-end)
-          ;; Multiple space-separated IDs for :BLOCKED_BY: and :BLOCKS: properties
+          ;; Multiple space-separated IDs for :ORG_GTD_DEPENDS_ON: and :ORG_GTD_BLOCKS: properties
           (org-gtd-id-overlay--create-overlays-for-multiple-ids 
            property-value value-start))))))
 
@@ -375,8 +375,8 @@ _LEN is the length of the deleted text (unused)."
   "Handle property changes, refreshing overlays if ID-related property changed.
 PROPERTY is the property name, _VALUE is the new value (unused).
 BEGIN and END mark the affected region."
-  (when (and org-gtd-id-overlay-mode 
-             (member property '("ID" "BLOCKED_BY" "BLOCKS")))
+  (when (and org-gtd-id-overlay-mode
+             (member property '("ID" "ORG_GTD_DEPENDS_ON" "ORG_GTD_BLOCKS")))
     ;; Refresh the current heading area
     (save-excursion
       (let ((heading-start (or begin (progn (org-back-to-heading t) (point))))

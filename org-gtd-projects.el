@@ -34,6 +34,7 @@
 (require 'org-gtd-core)
 (require 'org-gtd-refile)
 (require 'org-gtd-configure)
+(require 'org-gtd-task-management)
 
 (declare-function 'org-gtd-organize--call 'org-gtd-organize)
 (declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
@@ -69,7 +70,6 @@ instead.")
 (defconst org-gtd-projects-template
   (format "* Projects
 :PROPERTIES:
-:TRIGGER: org-gtd-next-project-action org-gtd-update-project-task!
 :ORG_GTD: %s
 :END:
 " org-gtd-projects))
@@ -143,35 +143,114 @@ state in the list - all others are `org-gtd-todo'."
 (defun org-gtd-projects-fix-todo-keywords (heading-marker)
   "Ensure keywords for subheadings of project at HEADING-MARKER are sane.
 
+Uses breadth-first traversal starting from ORG_GTD_FIRST_TASKS to find
+all tasks whose dependencies (ORG_GTD_DEPENDS_ON) are satisfied (DONE/CNCL).
+These tasks are set to NEXT. All other undone tasks are set to TODO.
+
 This means at most one `org-gtd-next' or `org-gtd-wait' task and all
 other undone tasks are marked as `org-gtd-todo'."
   (let* ((buffer (marker-buffer heading-marker))
-         (position (marker-position heading-marker))
-         (heading-level (with-current-buffer buffer
-                          (goto-char position)
-                          (org-current-level))))
+         (position (marker-position heading-marker)))
     (save-excursion
       (with-current-buffer buffer
         (org-gtd-core-prepare-buffer)
         (goto-char position)
-        (org-map-entries
-         (lambda ()
-           (unless (or (equal heading-level (org-current-level))
-                       (let ((todo-state (org-entry-get (point) "TODO")))
-                         (or (equal todo-state (org-gtd-keywords--todo))
-                             (equal todo-state (org-gtd-keywords--wait))
-                             (equal todo-state (org-gtd-keywords--canceled))
-                             (org-gtd-keywords--is-done-p todo-state))))
-             (org-entry-put (point) "TODO" (org-gtd-keywords--todo))
-             (setq org-map-continue-from (end-of-line))))
-         t
-         'tree)
-        (let ((first-wait (org-gtd-projects--first-wait-task))
-              (first-todo (org-gtd-projects--first-todo-task)))
-          (unless first-wait
-            (org-entry-put (org-gtd-projects--org-element-pom first-todo)
-                           "TODO"
-                           (org-gtd-keywords--next))))))))
+
+        ;; First, set all undone tasks to TODO (cross-file support via graph traversal)
+        (let ((all-task-markers (org-gtd-projects--collect-tasks-by-graph heading-marker)))
+          (dolist (task-marker all-task-markers)
+            (with-current-buffer (marker-buffer task-marker)
+              (save-excursion
+                (goto-char task-marker)
+                (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
+                  (let ((todo-state (org-entry-get (point) "TODO")))
+                    (unless (or (equal todo-state (org-gtd-keywords--wait))
+                                (equal todo-state (org-gtd-keywords--canceled))
+                                (org-gtd-keywords--is-done-p todo-state))
+                      (org-entry-put (point) "TODO" (org-gtd-keywords--todo)))))))))
+
+        ;; Find tasks whose dependencies are satisfied and set them ALL to NEXT
+        (let* ((ready-task-ids (org-gtd-projects--find-ready-tasks))
+               (first-wait (org-gtd-projects--first-wait-task))
+               (ready-to-mark (if first-wait
+                                  '() ; Don't mark anything NEXT if there's a WAIT
+                                ready-task-ids)))
+          ;; Mark ALL ready tasks as NEXT (not just the first one)
+          (dolist (task-id ready-to-mark)
+            (when-let ((marker (org-gtd-projects--find-id-marker task-id)))
+              (with-current-buffer (marker-buffer marker)
+                (save-excursion
+                  (goto-char marker)
+                  (org-entry-put (point) "TODO" (org-gtd-keywords--next)))))))))))
+
+(defun org-gtd-projects--find-id-marker (id)
+  "Find marker for task with ID.
+First tries current buffer, then falls back to org-id-find."
+  (or
+   ;; Try current buffer first (for temp buffer tests)
+   (save-excursion
+     (goto-char (point-min))
+     (when-let ((pos (org-find-entry-with-id id)))
+       (goto-char pos)
+       (point-marker)))
+   ;; Fall back to org-id-find for production use
+   (org-id-find id t)))
+
+(defun org-gtd-projects--find-ready-tasks ()
+  "Find first unblocked TODO tasks by walking the project graph.
+For each task in breadth-first order:
+- If DONE/CNCL: continue traversing to children
+- If TODO and all parents DONE/CNCL: mark ready and stop this branch
+- If TODO but blocked: leave as TODO and stop this branch
+Returns list of task IDs to mark as NEXT."
+  (let* ((project-id (org-entry-get (point) "ID"))
+         (first-tasks-str (org-entry-get (point) "ORG_GTD_FIRST_TASKS"))
+         (first-tasks (when first-tasks-str (split-string first-tasks-str)))
+         (ready-tasks '())
+         (visited (make-hash-table :test 'equal))
+         (queue first-tasks))
+
+    ;; Breadth-first traversal
+    (while queue
+      (let* ((task-id (pop queue))
+             (marker (org-gtd-projects--find-id-marker task-id)))
+        (when (and marker (not (gethash task-id visited)))
+          (puthash task-id t visited)
+          (with-current-buffer (marker-buffer marker)
+            (save-excursion
+              (goto-char marker)
+              (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
+                (let* ((todo-state (org-entry-get (point) "TODO"))
+                       (is-done (or (org-gtd-keywords--is-done-p todo-state)
+                                    (equal todo-state (org-gtd-keywords--canceled))))
+                       (depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON"))
+                       (all-deps-satisfied (or (null depends-on)
+                                               (cl-every (lambda (dep-id)
+                                                           (org-gtd-task-management--task-is-done-p dep-id))
+                                                         depends-on)))
+                       (blocks (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
+
+                  (cond
+                   ;; Case 1: Task is DONE/CNCL - continue traversing to children
+                   (is-done
+                    (when blocks
+                      (dolist (blocked-id blocks)
+                        (when-let ((blocked-marker (org-gtd-projects--find-id-marker blocked-id)))
+                          (with-current-buffer (marker-buffer blocked-marker)
+                            (save-excursion
+                              (goto-char blocked-marker)
+                              (let ((blocked-project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+                                (when (member project-id blocked-project-ids)
+                                  (setq queue (append queue (list blocked-id)))))))))))
+                   
+                   ;; Case 2: Task is TODO and all deps satisfied - mark ready, stop branch
+                   (all-deps-satisfied
+                    (push task-id ready-tasks))
+                   
+                   ;; Case 3: Task is TODO but blocked - stop branch (do nothing)
+                   ))))))))
+
+    (nreverse ready-tasks)))
 
 ;;;;; Private
 
@@ -196,10 +275,10 @@ Refile to `org-gtd-actionable-file-basename'."
   (org-gtd-projects--apply-organize-hooks-to-tasks)
 
   ;; Project-specific business logic
-  (org-gtd-projects-fix-todo-keywords-for-project-at-point)
   (org-gtd-projects--add-default-sequential-dependencies)
-  (org-gtd-projects--add-progress-cookie)
   (org-gtd-projects--set-first-tasks)
+  (org-gtd-projects-fix-todo-keywords-for-project-at-point)
+  (org-gtd-projects--add-progress-cookie)
 
   (org-gtd-refile--do org-gtd-projects org-gtd-projects-template))
 
@@ -266,23 +345,75 @@ For Story 8: Only apply to tasks that don't have ORG_GTD_DEPENDS_ON relationship
 
 (defun org-gtd-projects--set-first-tasks ()
   "Set ORG_GTD_FIRST_TASKS property on project heading with IDs of root tasks.
-Root tasks are tasks that have no ORG_GTD_DEPENDS_ON property."
-  (let ((root-task-ids '()))
-    ;; Find all tasks without ORG_GTD_DEPENDS_ON (root tasks)
+Root tasks are tasks that have no ORG_GTD_DEPENDS_ON property.
+Works cross-file by combining graph traversal with tree search."
+  (let ((root-task-ids '())
+        (project-marker (point-marker))
+        (seen-task-ids (make-hash-table :test 'equal)))
+
+    ;; Collect tasks from BOTH graph traversal (cross-file) AND tree (current buffer)
+    ;; This handles both connected tasks in other files AND newly added unconnected tasks
+
+    ;; Part 1: Try graph traversal for cross-file tasks
+    (let ((graph-task-markers (condition-case nil
+                                   (org-gtd-projects--collect-tasks-by-graph project-marker)
+                                 (error nil))))
+      (dolist (task-marker graph-task-markers)
+        (org-with-point-at task-marker
+          (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
+            (let ((task-id (org-entry-get (point) "ID")))
+              (when task-id
+                (puthash task-id task-marker seen-task-ids)))))))
+
+    ;; Part 2: Also check current buffer tree (finds newly added unconnected tasks)
     (org-map-entries
      (lambda ()
-       (when (and (string= (org-entry-get (point) "ORG_GTD") "Actions")
-                  (not (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
+       (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
          (let ((task-id (org-entry-get (point) "ID")))
-           (when task-id
-             (push task-id root-task-ids)))))
+           (when (and task-id (not (gethash task-id seen-task-ids)))
+             (puthash task-id (point-marker) seen-task-ids)))))
      nil
      'tree)
 
+    ;; Now collect all task markers in document order and find root tasks
+    ;; Use current buffer tree order for deterministic ordering
+    (let ((ordered-task-markers '()))
+      ;; Collect all seen tasks in document order from current buffer
+      (org-map-entries
+       (lambda ()
+         (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
+           (let ((task-id (org-entry-get (point) "ID")))
+             (when (gethash task-id seen-task-ids)
+               (push (point-marker) ordered-task-markers)))))
+       nil
+       'tree)
+      (setq ordered-task-markers (nreverse ordered-task-markers))
+
+      ;; Add any cross-file tasks not found in tree (from graph traversal)
+      (maphash
+       (lambda (task-id task-marker)
+         (unless (seq-find (lambda (m)
+                            (and (equal (marker-buffer m) (marker-buffer task-marker))
+                                 (equal (marker-position m) (marker-position task-marker))))
+                          ordered-task-markers)
+           (setq ordered-task-markers (append ordered-task-markers (list task-marker)))))
+       seen-task-ids)
+
+      ;; Find root tasks from ordered list
+      (dolist (task-marker ordered-task-markers)
+        (org-with-point-at task-marker
+          (when (not (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON"))
+            (let ((task-id (org-entry-get (point) "ID")))
+              (when task-id
+                (push task-id root-task-ids)))))))
+
     ;; Set ORG_GTD_FIRST_TASKS property on project heading with space-separated IDs
-    (when root-task-ids
+    (org-with-point-at project-marker
       (org-back-to-heading t)
-      (org-entry-put (point) "ORG_GTD_FIRST_TASKS" (string-join (nreverse root-task-ids) " ")))))
+      (if root-task-ids
+          (org-entry-put (point) "ORG_GTD_FIRST_TASKS" (string-join (nreverse root-task-ids) " "))
+        ;; No root tasks found - clear the property
+        (org-entry-delete (point) "ORG_GTD_FIRST_TASKS")))))
 
 (defun org-gtd-projects--collect-all-tasks ()
   "Collect all project tasks in document order.
@@ -423,6 +554,24 @@ Returns list of task markers in breadth-first order."
 
 (defalias 'org-edna-action/org-gtd-update-project-task!
   'org-gtd-projects--edna-update-project-task)
+
+(defun org-gtd-projects--edna-update-project-after-task-done (_last-entry)
+  "`org-edna' action that updates blocked tasks when current task is DONE.
+For each task this one blocks, checks if all its dependencies are satisfied,
+and if so, marks it NEXT."
+  (let ((blocked-ids (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
+    (dolist (blocked-id blocked-ids)
+      (when-let ((blocked-marker (org-gtd-projects--find-id-marker blocked-id)))
+        (with-current-buffer (marker-buffer blocked-marker)
+          (save-excursion
+            (goto-char blocked-marker)
+            (let* ((depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON"))
+                   (all-deps-done (cl-every #'org-gtd-task-management--task-is-done-p depends-on)))
+              (when all-deps-done
+                (org-entry-put (point) "TODO" (org-gtd-keywords--next))))))))))
+
+(defalias 'org-edna-action/org-gtd-update-project-after-task-done!
+  'org-gtd-projects--edna-update-project-after-task-done)
 
 (defun org-gtd-projects--first-todo-task ()
   "Given an org tree at point, return the first subtask with `org-gtd-todo'.

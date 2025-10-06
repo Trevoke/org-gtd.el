@@ -1,5 +1,19 @@
 #+TITLE: prep for 4.0
 
+* Test Coverage Summary
+
+** Current Status
+- Total test scenarios: 68
+- Tested scenarios: 67 ✓
+- Paused scenarios: 1 ⏸ (pending orchestration UI)
+- *Coverage: 99%* (67/68)
+- Total test count: 284 specs
+
+** Recent Additions
+- Phase 3.1: Added 2 review/validation tests (multi-file variants)
+- Phase 3.2: Added 6 project task operation tests documenting manual workflows
+- All tests passing
+
 * Multi-Project Task Architecture
 
 ** TODO Update properties for multi-project support
@@ -37,6 +51,120 @@
 ** TODO Update org-edna integration
 - Update org-edna to use ~ORG_GTD_BLOCKS~ and ~ORG_GTD_DEPENDS_ON~ instead of ~BLOCKS~ and ~DEPENDS_ON~
 
+* Remaining Work for 4.0
+
+** TODO Implement Project Modification UI (Orchestration Layer)
+
+*** Problem
+We have low-level primitives (~org-gtd-task-add-blockers~, ~org-gtd-task-remove-blockers~) but no high-level UI for modifying project structure. Users must manually perform 4+ steps across multiple tasks to insert a task mid-DAG.
+
+*** Proposed Solution: ~org-gtd-project-modify-structure~
+
+Interactive UI that presents current project structure and offers:
+
+**** Add task
+- Where? [First / Last / Between tasks / Parallel to task]
+- Automatically handles all relationship setup
+
+**** Remove task
+- Which task?
+- Reconnect children? [Yes (choose parent) / No / Keep orphaned]
+- Automatically handles cleanup
+
+**** Move task
+- Which task?
+- New position? [Before task X / After task Y / Make parallel with Z]
+- Automatically adjusts all relationships
+
+*** Impact
+Without this, the following test scenarios require tedious manual multi-step workflows:
+- Add mid-DAG task
+- Add leaf task
+- Add parallel tasks
+- Add sequential tasks
+- Move task within DAG
+
+** DONE Missing Tests - Cancel & Archive (5 scenarios)
+
+*** ✓ Project tasks: cancel (within project DAG)
+- Test location: test/end-to-end-test.el:1481
+- Verifies: Cancel one task in project, verify not in engage, archive with remaining tasks
+
+*** ✓ Project: archive (cncl) - DAG same file
+- Test location: test/end-to-end-test.el:1544
+- Verifies: Cancel all tasks in same-file project and archive
+
+*** ✓ Project: archive (cncl) - DAG multiple files
+- Test location: test/end-to-end-test.el:1612
+- Verifies: Cancel all tasks across multiple files and archive
+
+*** ✓ Project tasks: cancel (multi-project)
+- Test location: test/end-to-end-test.el:1692
+- Verifies: Share task between projects, cancel it, both projects continue with remaining tasks
+
+*** ✓ Project: archive (cncl) - DAG with shared tasks
+- Test location: test/end-to-end-test.el:1799
+- Verifies: Partial archive when one project canceled, full archive when both canceled
+
+** DONE Missing Tests - Project Task Operations (6 scenarios)
+
+*Note: These tests document manual multi-step workflows required until project modification UI is implemented*
+
+*** ✓ Project tasks: add mid-DAG
+- Test location: test/end-to-end-test.el:2037
+- Verifies: Insert task B between A→C to create A→B→C chain using manual property manipulation
+- Note: Full workflow testing pending dependency-aware TODO state management
+
+*** ✓ Project tasks: add leaf task
+- Test location: test/end-to-end-test.el:2209
+- Verifies: Add task C as leaf at end of A→B chain
+
+*** ✓ Project tasks: add parallel (same file)
+- Test location: test/end-to-end-test.el:2333
+- Verifies: Add tasks B and C as parallel children of A in same file
+- Note: Full workflow testing pending dependency-aware TODO state management
+
+*** ✓ Project tasks: add parallel (multi-file)
+- Test location: test/end-to-end-test.el:2458
+- Verifies: Add tasks B and C as parallel children of A across multiple files
+- Note: Full workflow testing pending dependency-aware TODO state management
+
+*** ✓ Project: add sequential (same file)
+- Test location: test/end-to-end-test.el:2596
+- Verifies: Create sequential chain A→B→C in same file using org-gtd-task-add-blockers
+
+*** ✓ Project: add sequential (multi-file)
+- Test location: test/end-to-end-test.el:2730
+- Verifies: Create sequential chain A→B→C across multiple files
+
+** DONE Missing Tests - Review & Validation (2 scenarios)
+
+*** ✓ Project: view stuck (DAG multiple files)
+- Test location: test/end-to-end-test.el:1919
+- Verifies: Stuck project detection across multiple files
+
+*** ✓ Project: validate graph (DAG multiple files)
+- Test location: test/end-to-end-test.el:1973
+- Verifies: Broken reference detection across multiple files
+
+** DONE Fix Skipped Tests (4 scenarios)
+
+*** ✓ Project tasks: view orphaned (within project DAG)
+- Fixed: Refactored tests to use temp files instead of temp buffers
+- Test location: test/task-management-commands-test.el:1002
+
+*** ✓ Project: validate graph (DAG same file)
+- Fixed: Refactored tests to use temp files instead of temp buffers
+- Test location: test/task-management-commands-test.el:940
+
+*** ⏸ Project tasks: move task (within project DAG)
+- Issue: Requires project modification UI (not implemented)
+- Fix: Implement orchestration layer first, or test manual workflow
+
+*** ✓ Project tasks: complete (multi-project)
+- Fixed: Test was skipped due to product uncertainty, but implementation works correctly
+- Test location: test/end-to-end-test.el:1416
+
 * GTD test matrix
 | item             | flow step      | shape                        | tested? |
 |------------------+----------------+------------------------------+---------|
@@ -71,9 +199,9 @@
 |------------------+----------------+------------------------------+---------|
 | knowledge        | organize       | heading                      | ✓       |
 |------------------+----------------+------------------------------+---------|
-| habit            | organize       | heading                      |         |
-| habit            | engage         | heading                      |         |
-| habit            | review         | heading                      |         |
+| habit            | organize       | heading                      | ✓       |
+| habit            | engage         | heading                      | ✓       |
+| habit            | review         | heading                      | ✓       |
 |------------------+----------------+------------------------------+---------|
 | project          | organize       | DAG same file                | ✓       |
 | project          | organize       | DAG multiple files           | ✓       |
@@ -85,41 +213,41 @@
 | project          | cancel         | DAG multiple files           | ✓       |
 | project          | archive (done) | DAG same file                | ✓       |
 | project          | archive (done) | DAG multiple files           | ✓       |
-| project          | archive (cncl) | DAG same file                |         |
-| project          | archive (cncl) | DAG multiple files           |         |
+| project          | archive (cncl) | DAG same file                | ✓       |
+| project          | archive (cncl) | DAG multiple files           | ✓       |
 | project tasks    | organize       | heading (within project DAG) | ✓       |
 | project tasks    | engage         | heading (within project DAG) | ✓       |
 | project tasks    | complete       | heading (within project DAG) | ✓       |
-| project tasks    | cancel         | heading (within project DAG) |         |
+| project tasks    | cancel         | heading (within project DAG) | ✓       |
 |------------------+----------------+------------------------------+---------|
 | project          | view stuck     | DAG same file                | ✓       |
-| project          | view stuck     | DAG multiple files           |         |
-| project tasks    | view orphaned  | heading (within project DAG) | ⏸       |
+| project          | view stuck     | DAG multiple files           | ✓       |
+| project tasks    | view orphaned  | heading (within project DAG) | ✓       |
 | project          | extend (done)  | DAG same file                | ✓       |
 | project          | extend (done)  | DAG multiple files           | ✓       |
 |------------------+----------------+------------------------------+---------|
 | project tasks    | add first task | heading (within project DAG) | ✓       |
-| project tasks    | add mid-DAG    | heading (within project DAG) |         |
-| project tasks    | add leaf task  | heading (within project DAG) |         |
+| project tasks    | add mid-DAG    | heading (within project DAG) | ✓       |
+| project tasks    | add leaf task  | heading (within project DAG) | ✓       |
 | project tasks    | remove task    | heading (within project DAG) | ✓       |
 | project tasks    | move task      | heading (within project DAG) | ⏸       |
 | project tasks    | add blocker    | heading (within project DAG) | ✓       |
 | project tasks    | remove blocker | heading (within project DAG) | ✓       |
 | project tasks    | extract task   | heading (within project DAG) | ✓       |
 |------------------+----------------+------------------------------+---------|
-| project          | add parallel   | DAG same file                |         |
-| project          | add parallel   | DAG multiple files           |         |
-| project          | add sequential | DAG same file                |         |
-| project          | add sequential | DAG multiple files           |         |
+| project          | add parallel   | DAG same file                | ✓       |
+| project          | add parallel   | DAG multiple files           | ✓       |
+| project          | add sequential | DAG same file                | ✓       |
+| project          | add sequential | DAG multiple files           | ✓       |
 |------------------+----------------+------------------------------+---------|
-| project          | validate graph | DAG same file                | ⏸       |
-| project          | validate graph | DAG multiple files           |         |
+| project          | validate graph | DAG same file                | ✓       |
+| project          | validate graph | DAG multiple files           | ✓       |
 |------------------+----------------+------------------------------+---------|
 | project tasks    | share task     | heading (multi-project)      | ✓       |
 | project tasks    | remove (keep)  | heading (multi-project)      | ✓       |
-| project tasks    | complete       | heading (multi-project)      | ⏸       |
-| project tasks    | cancel         | heading (multi-project)      |         |
+| project tasks    | complete       | heading (multi-project)      | ✓       |
+| project tasks    | cancel         | heading (multi-project)      | ✓       |
 |------------------+----------------+------------------------------+---------|
 | project          | archive (done) | DAG with shared tasks        | ✓       |
-| project          | archive (cncl) | DAG with shared tasks        |         |
+| project          | archive (cncl) | DAG with shared tasks        | ✓       |
 |------------------+----------------+------------------------------+---------|

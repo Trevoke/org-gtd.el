@@ -83,18 +83,18 @@
           ;; Task 1 blocks Task 2
           (goto-char (point-min))
           (org-find-entry-with-id (nth 0 task-ids))
-          (org-entry-put (point) "BLOCKS" (nth 1 task-ids))
+          (org-entry-put (point) "ORG_GTD_BLOCKS" (nth 1 task-ids))
 
           ;; Task 2 depends on Task 1 and blocks Task 3
           (goto-char (point-min))
           (org-find-entry-with-id (nth 1 task-ids))
-          (org-entry-put (point) "DEPENDS_ON" (nth 0 task-ids))
-          (org-entry-put (point) "BLOCKS" (nth 2 task-ids))
+          (org-entry-put (point) "ORG_GTD_DEPENDS_ON" (nth 0 task-ids))
+          (org-entry-put (point) "ORG_GTD_BLOCKS" (nth 2 task-ids))
 
           ;; Task 3 depends on Task 2
           (goto-char (point-min))
           (org-find-entry-with-id (nth 2 task-ids))
-          (org-entry-put (point) "DEPENDS_ON" (nth 1 task-ids))
+          (org-entry-put (point) "ORG_GTD_DEPENDS_ON" (nth 1 task-ids))
 
           ;; Update FIRST_TASKS to reflect new dependency structure
           ;; Only Task 1 should be in FIRST_TASKS now
@@ -195,14 +195,14 @@
         (insert ":PROPERTIES:\n")
         (insert ":ORG_GTD: Actions\n")
         (insert ":ID: task1-id\n")
-        (insert ":BLOCKS: task2-id\n")
+        (insert ":ORG_GTD_BLOCKS: task2-id\n")
         (insert ":TODO: TODO\n")
         (insert ":END:\n")
         (insert "** Task 2\n")
         (insert ":PROPERTIES:\n")
         (insert ":ORG_GTD: Actions\n")
         (insert ":ID: task2-id\n")
-        (insert ":DEPENDS_ON: task1-id\n")
+        (insert ":ORG_GTD_DEPENDS_ON: task1-id\n")
         (insert ":TODO: TODO\n")
         (insert ":END:\n")
 
@@ -210,6 +210,6 @@
         (goto-char (point-min))
         (search-forward "Task 2")
         (org-back-to-heading t)
-        (let ((deps (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+        (let ((deps (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
           (expect (length deps) :to-equal 1)
           (expect (car deps) :to-equal "task1-id"))))))

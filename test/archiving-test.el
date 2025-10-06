@@ -95,7 +95,7 @@
          (insert ":PROPERTIES:\n")
          (insert ":ORG_GTD: Actions\n")
          (insert ":ID: task-a-id\n")
-         (insert ":BLOCKS: task-b-id task-d-id\n")
+         (insert ":ORG_GTD_BLOCKS: task-b-id task-d-id\n")
          (insert ":ORG_GTD_PROJECT: DAG Project\n")
          (insert ":END:\n")
 
@@ -104,8 +104,8 @@
          (insert ":PROPERTIES:\n")
          (insert ":ORG_GTD: Actions\n")
          (insert ":ID: task-b-id\n")
-         (insert ":DEPENDS_ON: task-a-id\n")
-         (insert ":BLOCKS: task-c-id\n")
+         (insert ":ORG_GTD_DEPENDS_ON: task-a-id\n")
+         (insert ":ORG_GTD_BLOCKS: task-c-id\n")
          (insert ":ORG_GTD_PROJECT: DAG Project\n")
          (insert ":END:\n")
 
@@ -114,7 +114,7 @@
          (insert ":PROPERTIES:\n")
          (insert ":ORG_GTD: Actions\n")
          (insert ":ID: task-c-id\n")
-         (insert ":DEPENDS_ON: task-b-id\n")
+         (insert ":ORG_GTD_DEPENDS_ON: task-b-id\n")
          (insert ":ORG_GTD_PROJECT: DAG Project\n")
          (insert ":END:\n")
 
@@ -123,7 +123,7 @@
          (insert ":PROPERTIES:\n")
          (insert ":ORG_GTD: Actions\n")
          (insert ":ID: task-d-id\n")
-         (insert ":DEPENDS_ON: task-a-id\n")
+         (insert ":ORG_GTD_DEPENDS_ON: task-a-id\n")
          (insert ":ORG_GTD_PROJECT: DAG Project\n")
          (insert ":END:\n")
 
@@ -193,7 +193,7 @@
          (insert ":PROPERTIES:\n")
          (insert ":ORG_GTD: Actions\n")
          (insert ":ID: task-x-id\n")
-         (insert ":BLOCKS: task-y-id\n")
+         (insert ":ORG_GTD_BLOCKS: task-y-id\n")
          (insert ":ORG_GTD_PROJECT: Partial Project\n")
          (insert ":END:\n")
 
@@ -202,7 +202,7 @@
          (insert ":PROPERTIES:\n")
          (insert ":ORG_GTD: Actions\n")
          (insert ":ID: task-y-id\n")
-         (insert ":DEPENDS_ON: task-x-id\n")
+         (insert ":ORG_GTD_DEPENDS_ON: task-x-id\n")
          (insert ":ORG_GTD_PROJECT: Partial Project\n")
          (insert ":END:\n")
 

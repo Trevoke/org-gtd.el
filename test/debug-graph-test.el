@@ -19,7 +19,7 @@
        (insert ":PROPERTIES:\n")
        (insert ":ORG_GTD: Actions\n")
        (insert ":ID: task-a-id\n")
-       (insert ":BLOCKS: task-b-id\n")
+       (insert ":ORG_GTD_BLOCKS: task-b-id\n")
        (insert ":END:\n")
 
        ;; Task B
@@ -27,7 +27,7 @@
        (insert ":PROPERTIES:\n")
        (insert ":ORG_GTD: Actions\n")
        (insert ":ID: task-b-id\n")
-       (insert ":DEPENDS_ON: task-a-id\n")
+       (insert ":ORG_GTD_DEPENDS_ON: task-a-id\n")
        (insert ":END:\n")
 
        ;; Debug: Print buffer contents
@@ -56,7 +56,7 @@
        (search-forward "Task A")
        (org-back-to-heading t)
        (let ((id (org-entry-get (point) "ID"))
-             (blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+             (blocks (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
          (expect id :to-equal "task-a-id")
          (expect blocks :to-equal '("task-b-id")))
 
@@ -65,6 +65,6 @@
        (search-forward "Task B")
        (org-back-to-heading t)
        (let ((id (org-entry-get (point) "ID"))
-             (depends (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+             (depends (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
          (expect id :to-equal "task-b-id")
          (expect depends :to-equal '("task-a-id"))))))

@@ -50,19 +50,30 @@ Prevents circular dependencies with clear error messages."
   (let* ((current-heading (nth 4 (org-heading-components)))
          (current-id (or (org-entry-get (point) "ID")
                         (org-gtd-id-get-create)))
-         (selected-ids (org-gtd-task-management--select-multiple-task-ids 
+         (project-id (org-gtd-task-management--get-current-project))
+         (selected-ids (org-gtd-task-management--select-multiple-task-ids
                         (format "Select tasks that block '%s' (complete with empty selection): " current-heading))))
     (when selected-ids
       ;; Check for circular dependencies before creating any relationships
       (dolist (selected-id selected-ids)
         (org-gtd-task-management--check-circular-dependency current-id selected-id))
-      
+
+      ;; Add selected tasks to the same project (if task belongs to a project)
+      (when project-id
+        (dolist (selected-id selected-ids)
+          (org-gtd-task-management--add-task-to-project selected-id project-id)))
+
       ;; Add bidirectional relationships for each selected task
       (dolist (selected-id selected-ids)
         ;; Selected task BLOCKS current task, current task DEPENDS_ON selected task
-        (org-gtd-task-management--add-to-multivalued-property "DEPENDS_ON" selected-id)
-        (org-gtd-task-management--add-to-other-task-multivalued-property selected-id "BLOCKS" current-id))
-      (message "Added blocker relationships: %s block %s" 
+        (org-gtd-task-management--add-to-multivalued-property "ORG_GTD_DEPENDS_ON" selected-id)
+        (org-gtd-task-management--add-to-other-task-multivalued-property selected-id "ORG_GTD_BLOCKS" current-id))
+
+      ;; Update project TODO states (if task belongs to a project)
+      (when project-id
+        (org-gtd-task-management--update-project-state project-id))
+
+      (message "Added blocker relationships: %s block %s"
                (mapconcat (lambda (id) (org-gtd-task-management--get-heading-for-id id)) selected-ids ", ")
                current-heading))))
 
@@ -77,8 +88,9 @@ Prompts user to select from current blockers, then removes bidirectional BLOCKS/
   (let* ((current-heading (nth 4 (org-heading-components)))
          (current-id (or (org-entry-get (point) "ID")
                         (org-gtd-id-get-create)))
-         (current-blockers (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
-    
+         (project-id (org-gtd-task-management--get-current-project))
+         (current-blockers (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
+
     (if (not current-blockers)
         (message "Task '%s' has no blockers to remove" current-heading)
       (let ((selected-ids (org-gtd-task-management--select-multiple-blocking-task-ids
@@ -88,9 +100,14 @@ Prompts user to select from current blockers, then removes bidirectional BLOCKS/
           ;; Remove bidirectional relationships for each selected task
           (dolist (selected-id selected-ids)
             ;; Remove selected task from current task's DEPENDS_ON property
-            (org-gtd-task-management--remove-from-multivalued-property "DEPENDS_ON" selected-id)
+            (org-gtd-task-management--remove-from-multivalued-property "ORG_GTD_DEPENDS_ON" selected-id)
             ;; Remove current task from selected task's BLOCKS property
-            (org-gtd-task-management--remove-from-other-task-multivalued-property selected-id "BLOCKS" current-id))
+            (org-gtd-task-management--remove-from-other-task-multivalued-property selected-id "ORG_GTD_BLOCKS" current-id))
+
+          ;; Update project TODO states if task belongs to a project
+          (when project-id
+            (org-gtd-task-management--update-project-state project-id))
+
           (message "Removed blocker relationships: %s no longer block %s"
                    (mapconcat (lambda (id) (org-gtd-task-management--get-heading-for-id id)) selected-ids ", ")
                    current-heading))))))
@@ -106,12 +123,22 @@ Prompts user to select a task, then creates bidirectional BLOCKS/DEPENDS_ON rela
   (let* ((current-heading (nth 4 (org-heading-components)))
          (current-id (or (org-entry-get (point) "ID")
                         (org-gtd-id-get-create)))
+         (project-id (org-gtd-task-management--get-current-project))
          (selected-id (org-gtd-task-management--select-task-id
                        (format "Select task that depends on '%s': " current-heading))))
     (when selected-id
+      (when project-id
+        ;; Add dependent task to the same project
+        (org-gtd-task-management--add-task-to-project selected-id project-id))
+
       ;; Add bidirectional relationship: current task BLOCKS selected task, selected task DEPENDS_ON current task
-      (org-gtd-task-management--add-to-multivalued-property "BLOCKS" selected-id)
-      (org-gtd-task-management--add-to-other-task-multivalued-property selected-id "DEPENDS_ON" current-id)
+      (org-gtd-task-management--add-to-multivalued-property "ORG_GTD_BLOCKS" selected-id)
+      (org-gtd-task-management--add-to-other-task-multivalued-property selected-id "ORG_GTD_DEPENDS_ON" current-id)
+
+      ;; Update project TODO states if task belongs to a project
+      (when project-id
+        (org-gtd-task-management--update-project-state project-id))
+
       (message "Added dependency relationship: %s depends on %s"
                (org-gtd-task-management--get-heading-for-id selected-id)
                current-heading))))
@@ -128,19 +155,30 @@ Prevents circular dependencies with clear error messages."
   (let* ((current-heading (nth 4 (org-heading-components)))
          (current-id (or (org-entry-get (point) "ID")
                         (org-gtd-id-get-create)))
-         (selected-ids (org-gtd-task-management--select-multiple-task-ids 
+         (project-id (org-gtd-task-management--get-current-project))
+         (selected-ids (org-gtd-task-management--select-multiple-task-ids
                         (format "Select tasks that depend on '%s' (complete with empty selection): " current-heading))))
     (when selected-ids
       ;; Check for circular dependencies before creating any relationships
       (dolist (selected-id selected-ids)
         (org-gtd-task-management--check-circular-dependency selected-id current-id))
-      
+
+      ;; Add selected tasks to the same project if applicable
+      (when project-id
+        (dolist (selected-id selected-ids)
+          (org-gtd-task-management--add-task-to-project selected-id project-id)))
+
       ;; Add bidirectional relationships for each selected task
       (dolist (selected-id selected-ids)
         ;; Current task BLOCKS selected task, selected task DEPENDS_ON current task
-        (org-gtd-task-management--add-to-multivalued-property "BLOCKS" selected-id)
-        (org-gtd-task-management--add-to-other-task-multivalued-property selected-id "DEPENDS_ON" current-id))
-      (message "Added dependent relationships: %s blocks %s" 
+        (org-gtd-task-management--add-to-multivalued-property "ORG_GTD_BLOCKS" selected-id)
+        (org-gtd-task-management--add-to-other-task-multivalued-property selected-id "ORG_GTD_DEPENDS_ON" current-id))
+
+      ;; Update project TODO states if task belongs to a project
+      (when project-id
+        (org-gtd-task-management--update-project-state project-id))
+
+      (message "Added dependent relationships: %s blocks %s"
                current-heading
                (mapconcat (lambda (id) (org-gtd-task-management--get-heading-for-id id)) selected-ids ", ")))))
 
@@ -155,33 +193,38 @@ related tasks to maintain bidirectional consistency."
   
   (let* ((current-heading (nth 4 (org-heading-components)))
          (current-id (org-entry-get (point) "ID"))
-         (blocks-list (org-entry-get-multivalued-property (point) "BLOCKS"))
-         (depends-on-list (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
-    
+         (project-id (org-gtd-task-management--get-current-project))
+         (blocks-list (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS"))
+         (depends-on-list (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
+
     (if (or blocks-list depends-on-list)
         (progn
           ;; Only proceed if we have an ID (required for cross-task updates)
           (unless current-id
             (user-error "Task must have an ID to clear relationships"))
-          
+
           ;; Remove current task's dependencies - update tasks that this task depends on
           (dolist (blocker-id depends-on-list)
-            (org-gtd-task-management--remove-from-other-task-multivalued-property 
-             blocker-id "BLOCKS" current-id))
-          
+            (org-gtd-task-management--remove-from-other-task-multivalued-property
+             blocker-id "ORG_GTD_BLOCKS" current-id))
+
           ;; Remove current task's blockings - update tasks that depend on this task
           (dolist (blocked-id blocks-list)
-            (org-gtd-task-management--remove-from-other-task-multivalued-property 
-             blocked-id "DEPENDS_ON" current-id))
-          
+            (org-gtd-task-management--remove-from-other-task-multivalued-property
+             blocked-id "ORG_GTD_DEPENDS_ON" current-id))
+
           ;; Clear properties from current task
           (when blocks-list
-            (org-entry-delete (point) "BLOCKS"))
+            (org-entry-delete (point) "ORG_GTD_BLOCKS"))
           (when depends-on-list
-            (org-entry-delete (point) "DEPENDS_ON"))
+            (org-entry-delete (point) "ORG_GTD_DEPENDS_ON"))
 
           ;; Remove project name since task is no longer connected to project
           (org-entry-delete (point) "ORG_GTD_PROJECT")
+
+          ;; Update project TODO states if task belongs to a project
+          (when project-id
+            (org-gtd-task-management--update-project-state project-id))
 
           ;; Show confirmation message with proper pluralization
           (message "Cleared relationships for %s: removed %d %s and %d %s"
@@ -190,7 +233,7 @@ related tasks to maintain bidirectional consistency."
                    (org-gtd-task-management--pluralize (length depends-on-list) "blocker" "blockers")
                    (length blocks-list)
                    (org-gtd-task-management--pluralize (length blocks-list) "dependent" "dependents")))
-      
+
       (message "Task %s has no relationships to clear" current-heading))))
 
 ;;;; Circular Dependency Detection (Story 13)
@@ -239,33 +282,33 @@ VISITED is a hash table to prevent infinite loops."
         nil)))) ; Not found
 
 (defun org-gtd-task-management--get-task-dependencies (task-id)
-  "Get list of task IDs that TASK-ID depends on (its DEPENDS_ON property).
+  "Get list of task IDs that TASK-ID depends on (its ORG_GTD_DEPENDS_ON property).
 Returns empty list if task not found or has no dependencies."
   (let ((marker (org-id-find task-id t)))
     (if marker
         (with-current-buffer (marker-buffer marker)
           (save-excursion
             (goto-char marker)
-            (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+            (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
       '())))
 
 (defun org-gtd-task-management--get-blocked-tasks-for-cycle-detection (task-id)
-  "Get list of task IDs that TASK-ID blocks (its BLOCKS property).
-For circular dependency detection, we follow the BLOCKS relationship to find chains.
+  "Get list of task IDs that TASK-ID blocks (its ORG_GTD_BLOCKS property).
+For circular dependency detection, we follow the ORG_GTD_BLOCKS relationship to find chains.
 Returns empty list if task not found or blocks nothing."
-  ;; First try current buffer  
+  ;; First try current buffer
   (let ((pos (org-gtd-task-management--find-id-in-current-buffer task-id)))
     (if pos
         (save-excursion
           (goto-char pos)
-          (org-entry-get-multivalued-property (point) "BLOCKS"))
+          (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS"))
       ;; Fall back to org-id system
       (let ((marker (org-id-find task-id t)))
         (if marker
             (with-current-buffer (marker-buffer marker)
               (save-excursion
                 (goto-char marker)
-                (org-entry-get-multivalued-property (point) "BLOCKS")))
+                (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
           '())))))
 
 (defun org-gtd-task-management--find-dependency-path (from-id to-id)
@@ -293,6 +336,35 @@ Returns the path as a list of IDs, or nil if no path exists."
           nil))))) ; No path found
 
 ;;;; Private Helper Functions
+
+(defun org-gtd-task-management--get-current-project ()
+  "Get the project ID for the task at point.
+If task belongs to multiple projects, prompts user to select one.
+Returns nil if task doesn't belong to any project."
+  (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+    (cond
+     ((null project-ids) nil)
+     ((= 1 (length project-ids)) (car project-ids))
+     (t
+      ;; Multiple projects - ask user
+      (let* ((choices (mapcar (lambda (id)
+                               (cons (org-gtd-task-management--get-heading-for-id id) id))
+                             project-ids))
+             (selected (completing-read "Which project are you working in? " choices nil t)))
+        (cdr (assoc selected choices)))))))
+
+(defun org-gtd-task-management--add-task-to-project (task-id project-id)
+  "Add TASK-ID to PROJECT-ID by updating ORG_GTD_PROJECT_IDS property."
+  (when-let ((marker (org-id-find task-id t)))
+    (org-with-point-at marker
+      (let ((current-projects (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+        (unless (member project-id current-projects)
+          (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id))))))
+
+(defun org-gtd-task-management--update-project-state (project-id)
+  "Update TODO states for PROJECT-ID after dependency changes."
+  (when-let ((marker (org-id-find project-id t)))
+    (org-gtd-projects-fix-todo-keywords marker)))
 
 (defun org-gtd-task-management--pluralize (count singular plural)
   "Return SINGULAR if COUNT is 1, otherwise PLURAL."
@@ -555,24 +627,24 @@ if all their dependencies are satisfied."
 
 (defun org-gtd-task-management--get-blocked-tasks (blocker-id)
   "Get list of task IDs that are blocked by BLOCKER-ID.
-Returns the BLOCKS property value as a list."
+Returns the ORG_GTD_BLOCKS property value as a list."
   (let ((marker (org-id-find blocker-id t)))
     (if marker
         (with-current-buffer (marker-buffer marker)
           (save-excursion
             (goto-char marker)
-            (org-entry-get-multivalued-property (point) "BLOCKS")))
+            (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
       '())))
 
 (defun org-gtd-task-management--all-dependencies-satisfied-p (task-id)
   "Check if all dependencies for TASK-ID are satisfied (DONE).
-A task's dependencies are satisfied when all tasks in its DEPENDS_ON property are DONE."
+A task's dependencies are satisfied when all tasks in its ORG_GTD_DEPENDS_ON property are DONE."
   (let ((marker (org-id-find task-id t)))
     (if marker
         (with-current-buffer (marker-buffer marker)
           (save-excursion
             (goto-char marker)
-            (let ((dependencies (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+            (let ((dependencies (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
               (if dependencies
                   ;; All dependencies must be DONE
                   (cl-every 'org-gtd-task-management--task-is-done-p dependencies)
@@ -581,8 +653,17 @@ A task's dependencies are satisfied when all tasks in its DEPENDS_ON property ar
       nil))) ; If we can't find the task, assume not ready
 
 (defun org-gtd-task-management--task-is-done-p (task-id)
-  "Check if TASK-ID is marked as DONE."
-  (let ((marker (org-id-find task-id t)))
+  "Check if TASK-ID is marked as DONE.
+First tries current buffer, then falls back to org-id-find."
+  (let ((marker (or
+                 ;; Try current buffer first (for temp buffer tests)
+                 (save-excursion
+                   (goto-char (point-min))
+                   (when-let ((pos (org-find-entry-with-id task-id)))
+                     (goto-char pos)
+                     (point-marker)))
+                 ;; Fall back to org-id-find
+                 (org-id-find task-id t))))
     (if marker
         (with-current-buffer (marker-buffer marker)
           (save-excursion
@@ -626,9 +707,9 @@ Returns formatted string showing what blocks this task and what this task blocks
   
   (let* ((current-heading (nth 4 (org-heading-components)))
          (current-id (org-entry-get (point) "ID"))
-         (depends-on (org-entry-get-multivalued-property (point) "DEPENDS_ON"))
-         (blocks (org-entry-get-multivalued-property (point) "BLOCKS"))
-         (result (org-gtd-task-show-relationships--format-display 
+         (depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON"))
+         (blocks (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS"))
+         (result (org-gtd-task-show-relationships--format-display
                   current-heading depends-on blocks)))
     
     ;; Show in minibuffer when called interactively 
@@ -689,16 +770,16 @@ Returns a list of all task IDs found."
           (setq all-existing-ids 
                 (append all-existing-ids 
                         (org-gtd-validate-project-dependencies--collect-ids-from-buffer))))))
-    
+
     ;; Collect from buffer-based agenda files (for testing)
-    (dolist (buffer-name (org-gtd-agenda-files))
+    (dolist (buffer-name (org-agenda-files))
       (when (and (not (file-exists-p buffer-name))
                  (get-buffer buffer-name))
         (with-current-buffer buffer-name
           (setq all-existing-ids
                 (append all-existing-ids
                         (org-gtd-validate-project-dependencies--collect-ids-from-buffer))))))
-    
+
     all-existing-ids))
 
 (defun org-gtd-validate-project-dependencies--collect-ids-from-buffer ()
@@ -747,27 +828,27 @@ Returns a cons cell (BROKEN-REFERENCES . ORPHANED-TASKS)."
     (org-map-entries
      (lambda ()
        (let* ((id (org-entry-get (point) "ID"))
-              (blocks (org-entry-get-multivalued-property (point) "BLOCKS"))
-              (depends-on (org-entry-get-multivalued-property (point) "DEPENDS_ON"))
+              (blocks (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS"))
+              (depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON"))
               (heading (nth 4 (org-heading-components)))
               (level (org-current-level)))
-         
+
          (when id
-           ;; Check for broken BLOCKS references
+           ;; Check for broken ORG_GTD_BLOCKS references
            (dolist (blocked-id blocks)
              (unless (member blocked-id all-existing-ids)
                (push (list :referencing-task id
                            :missing-task blocked-id
-                           :property "BLOCKS"
+                           :property "ORG_GTD_BLOCKS"
                            :heading heading)
                      broken-references)))
-           
-           ;; Check for broken DEPENDS_ON references  
+
+           ;; Check for broken ORG_GTD_DEPENDS_ON references
            (dolist (dependency-id depends-on)
              (unless (member dependency-id all-existing-ids)
                (push (list :referencing-task id
                            :missing-task dependency-id
-                           :property "DEPENDS_ON"
+                           :property "ORG_GTD_DEPENDS_ON"
                            :heading heading)
                      broken-references)))
            

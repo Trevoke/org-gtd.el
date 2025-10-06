@@ -94,6 +94,10 @@
         org-agenda-markers nil
         org-agenda-contributing-files nil
         org-agenda-last-search-view-search-was-boolean nil
+        ;; Clear org-id cache - CRITICAL for test isolation
+        org-id-locations nil
+        org-id-files nil
+        org-id-extra-files nil
         ;; Clear file-name to buffer mapping to prevent find-file-noselect from
         ;; returning stale buffers from previous test directories
         file-name-history nil)

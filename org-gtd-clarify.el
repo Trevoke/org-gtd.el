@@ -245,8 +245,8 @@ Returns a list of (heading id depends-on blocks) for each task."
         (when (= (org-outline-level) 2)
           (let* ((heading (org-get-heading t t t t))
                  (id (org-entry-get nil "ID"))
-                 (depends-on (org-entry-get-multivalued-property nil "DEPENDS_ON"))
-                 (blocks (org-entry-get-multivalued-property nil "BLOCKS")))
+                 (depends-on (org-entry-get-multivalued-property nil "ORG_GTD_DEPENDS_ON"))
+                 (blocks (org-entry-get-multivalued-property nil "ORG_GTD_BLOCKS")))
             (push (list heading id depends-on blocks) task-info)))))
     (nreverse task-info)))
 

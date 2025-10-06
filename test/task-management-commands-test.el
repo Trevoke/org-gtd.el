@@ -53,14 +53,14 @@
           (org-gtd-task-add-blockers))
 
         ;; Verify Task B has DEPENDS_ON property
-        (let ((depends-on (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+        (let ((depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
           (expect depends-on :to-equal '("task-a-id")))
 
         ;; Verify Task A has BLOCKS property
         (goto-char (point-min))
         (re-search-forward "Task A")
         (org-back-to-heading t)
-        (let ((blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+        (let ((blocks (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
           (expect blocks :to-equal '("task-b-id")))))
 
   (it "creates bidirectional BLOCKS/DEPENDS_ON relationship with multiple blockers (Story 2)"
@@ -82,21 +82,21 @@
           (org-gtd-task-add-blockers))
 
         ;; Verify Task C has DEPENDS_ON property with both IDs
-        (let ((depends-on (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+        (let ((depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
           (expect (sort depends-on 'string<) :to-equal '("task-a-id" "task-b-id")))
 
         ;; Verify Task A has BLOCKS property
         (goto-char (point-min))
         (re-search-forward "Task A")
         (org-back-to-heading t)
-        (let ((blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+        (let ((blocks (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
           (expect blocks :to-equal '("task-c-id")))
 
         ;; Verify Task B has BLOCKS property
         (goto-char (point-min))
         (re-search-forward "Task B")
         (org-back-to-heading t)
-        (let ((blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+        (let ((blocks (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
           (expect blocks :to-equal '("task-c-id"))))))
 
 
@@ -198,7 +198,7 @@
               (org-gtd-task-add-blockers))
 
             ;; Verify Task A1 has DEPENDS_ON pointing to Task B1
-            (let ((depends-on (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+            (let ((depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
               (expect depends-on :to-equal '("task-b1-id"))))
 
           ;; Verify Task B1 in the other file has BLOCKS pointing to Task A1
@@ -211,7 +211,7 @@
                                 (search-forward "Task A1")
                                 (org-back-to-heading t)
                                 (org-entry-get (point) "ID")))
-                  (blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+                  (blocks (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
               (expect blocks :to-equal (list task-a1-id))))))))
 
 
@@ -228,14 +228,15 @@
         (require 'org-gtd-task-management)
 
         (insert "* TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
-        (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:DEPENDS_ON: task-a-id\n:END:\n\n")
-        (insert "* TODO Task C\n:PROPERTIES:\n:ID: task-c-id\n:DEPENDS_ON: task-a-id\n:END:\n\n")
+        (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:ORG_GTD_DEPENDS_ON: task-a-id\n:END:\n\n")
+        (insert "* TODO Task C\n:PROPERTIES:\n:ID: task-c-id\n:ORG_GTD_DEPENDS_ON: task-a-id\n:END:\n\n")
 
-        ;; Add BLOCKS properties to Task A (bidirectional relationship)
+        ;; Add ORG_GTD_BLOCKS properties to Task A (bidirectional relationship)
         (goto-char (point-min))
         (re-search-forward "Task A")
         (org-back-to-heading t)
-        (org-entry-put (point) "BLOCKS" "task-b-id task-c-id")
+        (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" "task-b-id")
+        (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" "task-c-id")
 
         ;; Set up buffer with file association and register IDs
         (let ((temp-file (make-temp-file "org-gtd-test" nil ".org")))
@@ -284,9 +285,9 @@
         ;; Ensure our task management module is loaded
         (require 'org-gtd-task-management)
 
-        (insert "* TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:BLOCKS: task-c-id\n:END:\n\n")
-        (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:BLOCKS: task-c-id\n:END:\n\n")
-        (insert "* TODO Task C\n:PROPERTIES:\n:ID: task-c-id\n:DEPENDS_ON: task-a-id task-b-id\n:END:\n\n")
+        (insert "* TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:ORG_GTD_BLOCKS: task-c-id\n:END:\n\n")
+        (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:ORG_GTD_BLOCKS: task-c-id\n:END:\n\n")
+        (insert "* TODO Task C\n:PROPERTIES:\n:ID: task-c-id\n:ORG_GTD_DEPENDS_ON: task-a-id task-b-id\n:END:\n\n")
 
         ;; Set up buffer with file association and register IDs
         (let ((temp-file (make-temp-file "org-gtd-test-multi" nil ".org")))
@@ -331,8 +332,8 @@
         ;; Ensure our task management module is loaded
         (require 'org-gtd-task-management)
 
-        (insert "* TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:BLOCKS: task-b-id\n:END:\n\n")
-        (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:DEPENDS_ON: task-a-id\n:END:\n\n")
+        (insert "* TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:ORG_GTD_BLOCKS: task-b-id\n:END:\n\n")
+        (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:ORG_GTD_DEPENDS_ON: task-a-id\n:END:\n\n")
 
         ;; Set up buffer with file association and register IDs
         (let ((temp-file (make-temp-file "org-gtd-test-agenda" nil ".org")))
@@ -383,12 +384,12 @@
         (goto-char (point-min))
         (re-search-forward "Task A")
         (org-back-to-heading t)
-        (expect (org-entry-get-multivalued-property (point) "BLOCKS") :to-equal '("task-b-id"))
+        (expect (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS") :to-equal '("task-b-id"))
 
         (goto-char (point-min))
         (re-search-forward "Task B")
         (org-back-to-heading t)
-        (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON") :to-equal '("task-a-id"))
+        (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON") :to-equal '("task-a-id"))
 
         ;; Now try to create reverse relationship: B blocks A (should fail)
         (goto-char (point-min))
@@ -405,12 +406,12 @@
         (goto-char (point-min))
         (re-search-forward "Task A")
         (org-back-to-heading t)
-        (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON") :to-be nil)
+        (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON") :to-be nil)
 
         (goto-char (point-min))
         (re-search-forward "Task B")
         (org-back-to-heading t)
-        (expect (org-entry-get-multivalued-property (point) "BLOCKS") :to-be nil)))
+        (expect (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS") :to-be nil)))
 
   (it "prevents indirect circular dependency (A -> B -> C -> A)"
       ;; Test more complex circular dependency: A blocks B, B blocks C, trying to make C block A
@@ -449,12 +450,12 @@
         (goto-char (point-min))
         (re-search-forward "Task A")
         (org-back-to-heading t)
-        (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON") :to-be nil)
+        (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON") :to-be nil)
 
         (goto-char (point-min))
         (re-search-forward "Task C")
         (org-back-to-heading t)
-        (let ((blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+        (let ((blocks (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
           ;; C should not block A (circular dependency prevented)
           (expect (member "task-a-id" blocks) :to-be nil)))))
 
@@ -465,9 +466,9 @@
       ;; Test Story 3 acceptance criteria: remove specific blockers from task
       (with-temp-buffer
         (org-mode)
-        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:BLOCKS: task-c-id\n:END:\n\n")
-        (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:BLOCKS: task-c-id\n:END:\n\n")
-        (insert "* Task C\n:PROPERTIES:\n:ID: task-c-id\n:DEPENDS_ON: task-a-id task-b-id\n:END:\n\n")
+        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:ORG_GTD_BLOCKS: task-c-id\n:END:\n\n")
+        (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:ORG_GTD_BLOCKS: task-c-id\n:END:\n\n")
+        (insert "* Task C\n:PROPERTIES:\n:ID: task-c-id\n:ORG_GTD_DEPENDS_ON: task-a-id task-b-id\n:END:\n\n")
 
         ;; Go to Task C (which has blockers A and B)
         (goto-char (point-min))
@@ -480,21 +481,21 @@
           (org-gtd-task-remove-blockers))
 
         ;; Verify Task C no longer depends on Task A, but still depends on Task B
-        (let ((depends-on (org-entry-get-multivalued-property (point) "DEPENDS_ON")))
+        (let ((depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
           (expect depends-on :to-equal '("task-b-id")))
 
         ;; Verify Task A no longer blocks Task C
         (goto-char (point-min))
         (re-search-forward "Task A")
         (org-back-to-heading t)
-        (let ((blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+        (let ((blocks (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
           (expect blocks :to-be nil))
 
         ;; Verify Task B still blocks Task C
         (goto-char (point-min))
         (re-search-forward "Task B")
         (org-back-to-heading t)
-        (let ((blocks (org-entry-get-multivalued-property (point) "BLOCKS")))
+        (let ((blocks (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
           (expect blocks :to-equal '("task-c-id")))))
 
   (it "handles task with no blockers gracefully"
@@ -547,21 +548,21 @@
           (org-gtd-task-add-dependents)
 
           ;; Verify Task A has BLOCKS property with both Task B and C
-          (expect (org-entry-get-multivalued-property (point) "BLOCKS")
+          (expect (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")
                   :to-equal '("task-b-id" "task-c-id"))
 
           ;; Verify Task B has DEPENDS_ON property with Task A
           (goto-char (point-min))
           (re-search-forward "Task B")
           (org-back-to-heading t)
-          (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON")
+          (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")
                   :to-equal '("task-a-id"))
 
           ;; Verify Task C has DEPENDS_ON property with Task A
           (goto-char (point-min))
           (re-search-forward "Task C")
           (org-back-to-heading t)
-          (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON")
+          (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")
                   :to-equal '("task-a-id"))
 
           ;; Verify confirmation message is shown
@@ -598,13 +599,13 @@
 
           ;; Verify the relationships were created in this regular org file
           ;; Task B should have DEPENDS_ON
-          (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON") :to-contain "task-a-id")
+          (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON") :to-contain "task-a-id")
 
           ;; Task A should have BLOCKS
           (goto-char (point-min))
           (re-search-forward "Task A")
           (org-back-to-heading t)
-          (expect (org-entry-get-multivalued-property (point) "BLOCKS") :to-contain "task-b-id")))))
+          (expect (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS") :to-contain "task-b-id")))))
 
  (describe
   "clear all task relationships (Story 12)"
@@ -614,10 +615,10 @@
         (org-mode)
 
         ;; Create multiple tasks with complex relationships
-        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:BLOCKS: task-b-id task-c-id\n:END:\n\n")
-        (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:DEPENDS_ON: task-a-id\n:BLOCKS: task-d-id\n:END:\n\n")
-        (insert "* Task C\n:PROPERTIES:\n:ID: task-c-id\n:DEPENDS_ON: task-a-id\n:END:\n\n")
-        (insert "* Task D\n:PROPERTIES:\n:ID: task-d-id\n:DEPENDS_ON: task-b-id\n:END:\n\n")
+        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:ORG_GTD_BLOCKS: task-b-id task-c-id\n:END:\n\n")
+        (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:ORG_GTD_DEPENDS_ON: task-a-id\n:ORG_GTD_BLOCKS: task-d-id\n:END:\n\n")
+        (insert "* Task C\n:PROPERTIES:\n:ID: task-c-id\n:ORG_GTD_DEPENDS_ON: task-a-id\n:END:\n\n")
+        (insert "* Task D\n:PROPERTIES:\n:ID: task-d-id\n:ORG_GTD_DEPENDS_ON: task-b-id\n:END:\n\n")
 
         ;; Move to Task B (which has both BLOCKS and DEPENDS_ON)
         (goto-char (point-min))
@@ -628,14 +629,14 @@
         (org-gtd-task-clear-relationships)
 
         ;; Verify Task B has no BLOCKS or DEPENDS_ON properties
-        (expect (org-entry-get-multivalued-property (point) "BLOCKS") :to-equal nil)
-        (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON") :to-equal nil)
+        (expect (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS") :to-equal nil)
+        (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON") :to-equal nil)
 
         ;; Verify Task A no longer blocks Task B (but still blocks Task C)
         (goto-char (point-min))
         (re-search-forward "Task A")
         (org-back-to-heading t)
-        (let ((blocks-list (org-entry-get-multivalued-property (point) "BLOCKS")))
+        (let ((blocks-list (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
           (expect blocks-list :not :to-contain "task-b-id")
           (expect blocks-list :to-contain "task-c-id"))
 
@@ -643,21 +644,21 @@
         (goto-char (point-min))
         (re-search-forward "Task D")
         (org-back-to-heading t)
-        (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON") :to-equal nil)
+        (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON") :to-equal nil)
 
         ;; Verify Task C is unchanged (still depends on Task A)
         (goto-char (point-min))
         (re-search-forward "Task C")
         (org-back-to-heading t)
-        (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON") :to-equal '("task-a-id")))))
+        (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON") :to-equal '("task-a-id")))))
 
   (it "shows confirmation message about cleared relationships"
       (with-temp-buffer
         (org-mode)
 
         ;; Create task with relationships
-        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:BLOCKS: task-b-id\n:END:\n\n")
-        (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:DEPENDS_ON: task-a-id\n:END:\n\n")
+        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:ORG_GTD_BLOCKS: task-b-id\n:END:\n\n")
+        (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:ORG_GTD_DEPENDS_ON: task-a-id\n:END:\n\n")
 
         ;; Move to Task A
         (goto-char (point-min))
@@ -764,12 +765,12 @@
            (expect (string-match "^[a-z0-9-]+$" task-a-id) :to-be 0) ; org-gtd ID format
 
            ;; Verify the blocking relationships were created correctly
-           (expect (org-entry-get-multivalued-property (point) "BLOCKS") :to-contain task-b-id)
+           (expect (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS") :to-contain task-b-id)
 
            (goto-char (point-min))
            (re-search-forward "Task B")
            (org-back-to-heading t)
-           (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON") :to-contain task-a-id)))))
+           (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON") :to-contain task-a-id)))))
 
  (it "works with mix of tasks with and without pre-existing IDs"
      ;; Test mixed scenario: some tasks have IDs, some don't
@@ -824,11 +825,11 @@
            (expect (org-entry-get (point) "ID") :to-equal "existing-task-b-id")
 
            ;; Verify relationships were created
-           (expect (org-entry-get-multivalued-property (point) "DEPENDS_ON") :to-contain task-a-id)
+           (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON") :to-contain task-a-id)
            (goto-char (point-min))
            (re-search-forward "Task A")
            (org-back-to-heading t)
-           (expect (org-entry-get-multivalued-property (point) "BLOCKS") :to-contain "existing-task-b-id"))))
+           (expect (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS") :to-contain "existing-task-b-id"))))
 
      )) ; Close lazy ID creation describe block
 
@@ -837,10 +838,10 @@
        (with-temp-buffer
          (org-mode)
          ;; Set up test scenario with complex relationships
-         (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:BLOCKS: task-b-id task-c-id\n:END:\n\n")
-         (insert "* Task B  \n:PROPERTIES:\n:ID: task-b-id\n:DEPENDS_ON: task-a-id\n:BLOCKS: task-d-id\n:END:\n\n")
-         (insert "* Task C\n:PROPERTIES:\n:ID: task-c-id\n:DEPENDS_ON: task-a-id\n:END:\n\n")
-         (insert "* Task D\n:PROPERTIES:\n:ID: task-d-id\n:DEPENDS_ON: task-b-id\n:END:\n\n")
+         (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:ORG_GTD_BLOCKS: task-b-id task-c-id\n:END:\n\n")
+         (insert "* Task B  \n:PROPERTIES:\n:ID: task-b-id\n:ORG_GTD_DEPENDS_ON: task-a-id\n:ORG_GTD_BLOCKS: task-d-id\n:END:\n\n")
+         (insert "* Task C\n:PROPERTIES:\n:ID: task-c-id\n:ORG_GTD_DEPENDS_ON: task-a-id\n:END:\n\n")
+         (insert "* Task D\n:PROPERTIES:\n:ID: task-d-id\n:ORG_GTD_DEPENDS_ON: task-b-id\n:END:\n\n")
 
          ;; Position on Task B (has both blocking and blocked relationships)
          (goto-char (point-min))
@@ -894,18 +895,18 @@
         (insert "* Build Deck\n")
         (insert "** Get permits\n")
         (insert ":PROPERTIES:\n")
-        (insert ":BLOCKS: get-materials\n")
+        (insert ":ORG_GTD_BLOCKS: get-materials\n")
         (insert ":ID: get-permits\n")
         (insert ":END:\n")
         (insert "** Get materials\n")
         (insert ":PROPERTIES:\n")
-        (insert ":DEPENDS_ON: get-permits\n")
-        (insert ":BLOCKS: install-decking\n")
+        (insert ":ORG_GTD_DEPENDS_ON: get-permits\n")
+        (insert ":ORG_GTD_BLOCKS: install-decking\n")
         (insert ":ID: get-materials\n")
         (insert ":END:\n")
         (insert "** Install decking\n")
         (insert ":PROPERTIES:\n")
-        (insert ":DEPENDS_ON: get-materials\n")
+        (insert ":ORG_GTD_DEPENDS_ON: get-materials\n")
         (insert ":ID: install-decking\n")
         (insert ":END:\n")
         (insert "** Paint deck (orphaned task)\n")
@@ -937,97 +938,117 @@
   (before-each (setq inhibit-message t) (ogt--configure-emacs))
   (after-each (ogt--close-and-delete-files))
 
-  (xit "identifies projects with non-existent task references and provides guidance"
-       "Test needs refactoring to use named buffers instead of temp buffers"
-    (with-temp-buffer
-      (org-mode)
-      ;; Create a project with broken dependency reference
-      (insert "* Build Deck Project\n")
-      (insert "** Get permits\n")
-      (insert ":PROPERTIES:\n")
-      (insert ":ID: get-permits-id\n")
-      (insert ":BLOCKS: non-existent-task-id\n")  ; Broken reference
-      (insert ":END:\n")
-      (insert "** Install decking\n")
-      (insert ":PROPERTIES:\n")
-      (insert ":ID: install-decking-id\n")
-      (insert ":DEPENDS_ON: another-missing-task-id\n")  ; Another broken reference
-      (insert ":END:\n")
+  (it "identifies projects with non-existent task references and provides guidance"
+    (let* ((temp-file (make-temp-file "org-gtd-test-" nil ".org"))
+           (temp-buffer (find-file-noselect temp-file)))
+      (unwind-protect
+          (progn
+            ;; Create a project with broken dependency reference
+            (with-current-buffer temp-buffer
+              (insert "* Build Deck Project\n")
+              (insert "** Get permits\n")
+              (insert ":PROPERTIES:\n")
+              (insert ":ID: get-permits-id\n")
+              (insert ":ORG_GTD_BLOCKS: non-existent-task-id\n")  ; Broken reference
+              (insert ":END:\n")
+              (insert "** Install decking\n")
+              (insert ":PROPERTIES:\n")
+              (insert ":ID: install-decking-id\n")
+              (insert ":ORG_GTD_DEPENDS_ON: another-missing-task-id\n")  ; Another broken reference
+              (insert ":END:\n")
+              (save-buffer))
 
-      ;; Mock org-agenda-files to include current buffer
-      (cl-letf (((symbol-function 'org-agenda-files)
-                 (lambda () (list (buffer-name)))))
+            ;; Mock org-agenda-files to include temp file
+            (cl-letf (((symbol-function 'org-agenda-files)
+                       (lambda () (list temp-file))))
 
-        ;; Run the project health check
-        (let* ((health-results (org-gtd-validate-project-dependencies)))
+              ;; Run the project health check
+              (let* ((health-results (org-gtd-validate-project-dependencies)))
 
-          ;; Should identify broken references
-          (expect health-results :not :to-be nil)
-          (expect (plist-get health-results :broken-references) :not :to-be nil)
+                ;; Should identify broken references
+                (expect health-results :not :to-be nil)
+                (expect (plist-get health-results :broken-references) :not :to-be nil)
 
-          ;; Should identify the specific broken references
-          (let ((broken-refs (plist-get health-results :broken-references)))
-            (expect (length broken-refs) :to-be 2)
+                ;; Should identify the specific broken references
+                (let ((broken-refs (plist-get health-results :broken-references)))
+                  (expect (length broken-refs) :to-be 2)
 
-            ;; Should contain information about the broken references
-            (expect (cl-some (lambda (ref)
-                               (and (string= (plist-get ref :referencing-task) "get-permits-id")
-                                    (string= (plist-get ref :missing-task) "non-existent-task-id")
-                                    (string= (plist-get ref :property) "BLOCKS")))
-                             broken-refs) :to-be-truthy)
+                  ;; Should contain information about the broken references
+                  (expect (cl-some (lambda (ref)
+                                     (and (string= (plist-get ref :referencing-task) "get-permits-id")
+                                          (string= (plist-get ref :missing-task) "non-existent-task-id")
+                                          (string= (plist-get ref :property) "ORG_GTD_BLOCKS")))
+                                   broken-refs) :to-be-truthy)
 
-            (expect (cl-some (lambda (ref)
-                               (and (string= (plist-get ref :referencing-task) "install-decking-id")
-                                    (string= (plist-get ref :missing-task) "another-missing-task-id")
-                                    (string= (plist-get ref :property) "DEPENDS_ON")))
-                             broken-refs) :to-be-truthy))
+                  (expect (cl-some (lambda (ref)
+                                     (and (string= (plist-get ref :referencing-task) "install-decking-id")
+                                          (string= (plist-get ref :missing-task) "another-missing-task-id")
+                                          (string= (plist-get ref :property) "ORG_GTD_DEPENDS_ON")))
+                                   broken-refs) :to-be-truthy))
 
-          ;; Should provide guidance for fixing broken references
-          (expect (plist-get health-results :guidance) :not :to-be nil)
-          (let ((guidance (plist-get health-results :guidance)))
-            (expect guidance :to-match "broken.*reference")
-            (expect guidance :to-match "remove.*invalid.*property"))))))
+                ;; Should provide guidance for fixing broken references
+                (expect (plist-get health-results :guidance) :not :to-be nil)
+                (let ((guidance (plist-get health-results :guidance)))
+                  (expect guidance :to-match "broken.*reference")
+                  (expect guidance :to-match "remove.*invalid.*property")))))
+        ;; Cleanup
+        (when (buffer-live-p temp-buffer)
+          (with-current-buffer temp-buffer
+            (set-buffer-modified-p nil))
+          (kill-buffer temp-buffer))
+        (when (file-exists-p temp-file)
+          (delete-file temp-file)))))
 
 
-  (xit "identifies orphaned tasks with dependencies that aren't in proper projects"
-       "Test needs refactoring to use named buffers instead of temp buffers"
-    (with-temp-buffer
-      (org-mode)
-      ;; Create orphaned tasks with dependencies outside of projects
-      (insert "* Random Task with Dependencies\n")
-      (insert ":PROPERTIES:\n")
-      (insert ":ID: orphaned-task-id\n")
-      (insert ":DEPENDS_ON: some-other-task-id\n")  ; This task has dependencies but isn't in a project structure
-      (insert ":END:\n")
-      (insert "* Another Task\n")
-      (insert ":PROPERTIES:\n")
-      (insert ":ID: some-other-task-id\n")
-      (insert ":END:\n")
+  (it "identifies orphaned tasks with dependencies that aren't in proper projects"
+    (let* ((temp-file (make-temp-file "org-gtd-test-" nil ".org"))
+           (temp-buffer (find-file-noselect temp-file)))
+      (unwind-protect
+          (progn
+            ;; Create orphaned tasks with dependencies outside of projects
+            (with-current-buffer temp-buffer
+              (insert "* Random Task with Dependencies\n")
+              (insert ":PROPERTIES:\n")
+              (insert ":ID: orphaned-task-id\n")
+              (insert ":ORG_GTD_DEPENDS_ON: some-other-task-id\n")  ; This task has dependencies but isn't in a project structure
+              (insert ":END:\n")
+              (insert "* Another Task\n")
+              (insert ":PROPERTIES:\n")
+              (insert ":ID: some-other-task-id\n")
+              (insert ":END:\n")
+              (save-buffer))
 
-      ;; Mock org-agenda-files
-      (cl-letf (((symbol-function 'org-agenda-files)
-                 (lambda () (list (buffer-name)))))
+            ;; Mock org-agenda-files to include temp file
+            (cl-letf (((symbol-function 'org-agenda-files)
+                       (lambda () (list temp-file))))
 
-        ;; Run the health check
-        (let* ((health-results (org-gtd-validate-project-dependencies)))
+              ;; Run the health check
+              (let* ((health-results (org-gtd-validate-project-dependencies)))
 
-          ;; Should identify orphaned tasks
-          (expect health-results :not :to-be nil)
-          (expect (plist-get health-results :orphaned-tasks) :not :to-be nil)
+                ;; Should identify orphaned tasks
+                (expect health-results :not :to-be nil)
+                (expect (plist-get health-results :orphaned-tasks) :not :to-be nil)
 
-          (let ((orphaned-tasks (plist-get health-results :orphaned-tasks)))
-            (expect (length orphaned-tasks) :to-be-greater-than 0)
+                (let ((orphaned-tasks (plist-get health-results :orphaned-tasks)))
+                  (expect (length orphaned-tasks) :to-be-greater-than 0)
 
-            ;; Should identify the orphaned task with dependencies
-            (expect (cl-some (lambda (task)
-                               (string= (plist-get task :id) "orphaned-task-id"))
-                             orphaned-tasks) :to-be-truthy))
+                  ;; Should identify the orphaned task with dependencies
+                  (expect (cl-some (lambda (task)
+                                     (string= (plist-get task :id) "orphaned-task-id"))
+                                   orphaned-tasks) :to-be-truthy))
 
-          ;; Should provide guidance for fixing orphaned tasks
-          (expect (plist-get health-results :guidance) :not :to-be nil)
-          (let ((guidance (plist-get health-results :guidance)))
-            (expect guidance :to-match "orphaned.*task")
-            (expect guidance :to-match "organize.*into.*project")))))))
+                ;; Should provide guidance for fixing orphaned tasks
+                (expect (plist-get health-results :guidance) :not :to-be nil)
+                (let ((guidance (plist-get health-results :guidance)))
+                  (expect guidance :to-match "orphaned.*task")
+                  (expect guidance :to-match "organize.*into.*project")))))
+        ;; Cleanup
+        (when (buffer-live-p temp-buffer)
+          (with-current-buffer temp-buffer
+            (set-buffer-modified-p nil))
+          (kill-buffer temp-buffer))
+        (when (file-exists-p temp-file)
+          (delete-file temp-file))))))
 
 
 ;;; task-management-commands-test.el ends here
