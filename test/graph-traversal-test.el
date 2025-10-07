@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'org-gtd-test-helper-builders (file-name-concat default-directory "test/helpers/builders.el"))
 (require 'org-gtd)
 (require 'buttercup)
 
@@ -32,39 +33,31 @@
             (with-current-buffer buf
               (org-mode)
               ;; Project heading with FIRST_TASKS
-              (insert "* Test Project\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Projects\n")
-              (insert ":ID: project-id\n")
-              (insert ":ORG_GTD_FIRST_TASKS: task-a-id\n")
-              (insert ":END:\n")
+              (make-project "Test Project"
+                           :id "project-id"
+                           :first-tasks '("task-a-id"))
 
               ;; Task A - root task (no ORG_GTD_DEPENDS_ON)
-              (insert "** Task A\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: task-a-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: project-id\n")
-              (insert ":ORG_GTD_BLOCKS: task-b-id\n")
-              (insert ":END:\n")
+              (make-task "Task A"
+                        :id "task-a-id"
+                        :level 2
+                        :project-ids '("project-id")
+                        :blocks '("task-b-id"))
 
               ;; Task B - depends on A
-              (insert "*** Task B\n")  ;; Different level
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: task-b-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: project-id\n")
-              (insert ":ORG_GTD_DEPENDS_ON: task-a-id\n")
-              (insert ":END:\n")
+              (make-task "Task B"
+                        :id "task-b-id"
+                        :level 3  ;; Different level
+                        :project-ids '("project-id")
+                        :depends-on '("task-a-id"))
 
               ;; Task C - not connected to graph (no DEPENDS_ON or BLOCKS to/from project tasks)
-              (insert "** Task C\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: task-c-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: project-id\n")
-              (insert ":END:\n")
+              (make-task "Task C"
+                        :id "task-c-id"
+                        :level 2
+                        :project-ids '("project-id"))
 
+              (org-mode-restart)
               (basic-save-buffer)
               ;; Update org-id locations
               (org-id-update-id-locations (list temp-file))
@@ -90,43 +83,35 @@
             (with-current-buffer buf
               (org-mode)
               ;; Project heading
-              (insert "* Circular Project\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Projects\n")
-              (insert ":ID: circular-proj-id\n")
-              (insert ":ORG_GTD_FIRST_TASKS: task-a-id\n")
-              (insert ":END:\n")
+              (make-project "Circular Project"
+                           :id "circular-proj-id"
+                           :first-tasks '("task-a-id"))
 
               ;; Task A blocks B, depends on C (circular)
-              (insert "** Task A\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: task-a-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: circular-proj-id\n")
-              (insert ":ORG_GTD_BLOCKS: task-b-id\n")
-              (insert ":ORG_GTD_DEPENDS_ON: task-c-id\n")  ;; Circular: A depends on C
-              (insert ":END:\n")
+              (make-task "Task A"
+                        :id "task-a-id"
+                        :level 2
+                        :project-ids '("circular-proj-id")
+                        :blocks '("task-b-id")
+                        :depends-on '("task-c-id"))  ;; Circular: A depends on C
 
               ;; Task B blocks C, depends on A
-              (insert "** Task B\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: task-b-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: circular-proj-id\n")
-              (insert ":ORG_GTD_DEPENDS_ON: task-a-id\n")
-              (insert ":ORG_GTD_BLOCKS: task-c-id\n")
-              (insert ":END:\n")
+              (make-task "Task B"
+                        :id "task-b-id"
+                        :level 2
+                        :project-ids '("circular-proj-id")
+                        :depends-on '("task-a-id")
+                        :blocks '("task-c-id"))
 
               ;; Task C completes the cycle
-              (insert "** Task C\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: task-c-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: circular-proj-id\n")
-              (insert ":ORG_GTD_DEPENDS_ON: task-b-id\n")
-              (insert ":ORG_GTD_BLOCKS: task-a-id\n")  ;; Circular: C blocks A
-              (insert ":END:\n")
+              (make-task "Task C"
+                        :id "task-c-id"
+                        :level 2
+                        :project-ids '("circular-proj-id")
+                        :depends-on '("task-b-id")
+                        :blocks '("task-a-id"))  ;; Circular: C blocks A
 
+              (org-mode-restart)
               (basic-save-buffer)
               ;; Update org-id locations
               (org-id-update-id-locations (list temp-file))
@@ -147,11 +132,8 @@
       ;; Test behavior when project has no FIRST_TASKS
       (with-temp-buffer
         (org-mode)
-        (insert "* Empty Project\n")
-        (insert ":PROPERTIES:\n")
-        (insert ":ORG_GTD: Projects\n")
-        (insert ":ID: empty-proj-id\n")
-        (insert ":END:\n")
+        (make-project "Empty Project"
+                     :id "empty-proj-id")
 
         (goto-char (point-min))
         (org-back-to-heading t)
@@ -166,31 +148,25 @@
             (with-current-buffer buf
               (org-mode)
               ;; Project heading with ORG_GTD_FIRST_TASKS
-              (insert "* New Property Project\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Projects\n")
-              (insert ":ID: new-proj-id\n")
-              (insert ":ORG_GTD_FIRST_TASKS: task-1-id\n")
-              (insert ":END:\n")
+              (make-project "New Property Project"
+                           :id "new-proj-id"
+                           :first-tasks '("task-1-id"))
 
               ;; Task 1 - root task
-              (insert "** Task 1\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: task-1-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: new-proj-id\n")
-              (insert ":ORG_GTD_BLOCKS: task-2-id\n")
-              (insert ":END:\n")
+              (make-task "Task 1"
+                        :id "task-1-id"
+                        :level 2
+                        :project-ids '("new-proj-id")
+                        :blocks '("task-2-id"))
 
               ;; Task 2
-              (insert "** Task 2\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: task-2-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: new-proj-id\n")
-              (insert ":ORG_GTD_DEPENDS_ON: task-1-id\n")
-              (insert ":END:\n")
+              (make-task "Task 2"
+                        :id "task-2-id"
+                        :level 2
+                        :project-ids '("new-proj-id")
+                        :depends-on '("task-1-id"))
 
+              (org-mode-restart)
               (basic-save-buffer)
               ;; Update org-id locations
               (org-id-update-id-locations (list temp-file))
@@ -220,85 +196,66 @@
               (org-mode)
 
               ;; Project A with tasks T1, T2, T3, T4
-              (insert "* Project A\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Projects\n")
-              (insert ":ID: proj-a\n")
-              (insert ":ORG_GTD_FIRST_TASKS: t1-id t2-id\n")
-              (insert ":END:\n")
+              (make-project "Project A"
+                           :id "proj-a"
+                           :first-tasks '("t1-id" "t2-id"))
 
               ;; T1: Only in Project A, blocks T3
-              (insert "** T1\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: t1-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: proj-a\n")
-              (insert ":ORG_GTD_BLOCKS: t3-id\n")
-              (insert ":END:\n")
+              (make-task "T1"
+                        :id "t1-id"
+                        :level 2
+                        :project-ids '("proj-a")
+                        :blocks '("t3-id"))
 
               ;; T2: Only in Project A, blocks T4
-              (insert "** T2\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: t2-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: proj-a\n")
-              (insert ":ORG_GTD_BLOCKS: t4-id\n")
-              (insert ":END:\n")
+              (make-task "T2"
+                        :id "t2-id"
+                        :level 2
+                        :project-ids '("proj-a")
+                        :blocks '("t4-id"))
 
               ;; T3: SHARED with Project B (has both proj-a and proj-b), blocks T6
-              (insert "** T3\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: t3-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: proj-a proj-b\n")
-              (insert ":ORG_GTD_DEPENDS_ON: t1-id\n")
-              (insert ":ORG_GTD_BLOCKS: t6-id\n")
-              (insert ":END:\n")
+              (make-task "T3"
+                        :id "t3-id"
+                        :level 2
+                        :project-ids '("proj-a" "proj-b")
+                        :depends-on '("t1-id")
+                        :blocks '("t6-id"))
 
               ;; T4: Only in Project A
-              (insert "** T4\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: t4-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: proj-a\n")
-              (insert ":ORG_GTD_DEPENDS_ON: t2-id\n")
-              (insert ":END:\n")
+              (make-task "T4"
+                        :id "t4-id"
+                        :level 2
+                        :project-ids '("proj-a")
+                        :depends-on '("t2-id"))
 
               ;; Project B with tasks T3, T5, T6, T7
-              (insert "* Project B\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Projects\n")
-              (insert ":ID: proj-b\n")
-              (insert ":ORG_GTD_FIRST_TASKS: t3-id t5-id\n")
-              (insert ":END:\n")
+              (make-project "Project B"
+                           :id "proj-b"
+                           :first-tasks '("t3-id" "t5-id"))
 
               ;; T5: Only in Project B, blocks T7
-              (insert "** T5\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: t5-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: proj-b\n")
-              (insert ":ORG_GTD_BLOCKS: t7-id\n")
-              (insert ":END:\n")
+              (make-task "T5"
+                        :id "t5-id"
+                        :level 2
+                        :project-ids '("proj-b")
+                        :blocks '("t7-id"))
 
               ;; T6: Only in Project B (T3 blocks T6, but T6 is not in proj-a)
-              (insert "** T6\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: t6-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: proj-b\n")
-              (insert ":ORG_GTD_DEPENDS_ON: t3-id\n")
-              (insert ":END:\n")
+              (make-task "T6"
+                        :id "t6-id"
+                        :level 2
+                        :project-ids '("proj-b")
+                        :depends-on '("t3-id"))
 
               ;; T7: Only in Project B
-              (insert "** T7\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: t7-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: proj-b\n")
-              (insert ":ORG_GTD_DEPENDS_ON: t5-id\n")
-              (insert ":END:\n")
+              (make-task "T7"
+                        :id "t7-id"
+                        :level 2
+                        :project-ids '("proj-b")
+                        :depends-on '("t5-id"))
 
+              (org-mode-restart)
               (basic-save-buffer)
               ;; Update org-id locations
               (org-id-update-id-locations (list temp-file))
@@ -357,31 +314,25 @@
               (org-mode)
 
               ;; Project A
-              (insert "* Project A\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Projects\n")
-              (insert ":ID: proj-a\n")
-              (insert ":ORG_GTD_FIRST_TASKS: task-1-id\n")
-              (insert ":END:\n")
+              (make-project "Project A"
+                           :id "proj-a"
+                           :first-tasks '("task-1-id"))
 
               ;; Task 1: In Project A, blocks Task 2
-              (insert "** Task 1\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: task-1-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: proj-a\n")
-              (insert ":ORG_GTD_BLOCKS: task-2-id\n")
-              (insert ":END:\n")
+              (make-task "Task 1"
+                        :id "task-1-id"
+                        :level 2
+                        :project-ids '("proj-a")
+                        :blocks '("task-2-id"))
 
               ;; Task 2: NOT in Project A (only in proj-b)
-              (insert "** Task 2\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: task-2-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: proj-b\n")
-              (insert ":ORG_GTD_DEPENDS_ON: task-1-id\n")
-              (insert ":END:\n")
+              (make-task "Task 2"
+                        :id "task-2-id"
+                        :level 2
+                        :project-ids '("proj-b")
+                        :depends-on '("task-1-id"))
 
+              (org-mode-restart)
               (basic-save-buffer)
               (org-id-update-id-locations (list temp-file))
 
@@ -414,31 +365,25 @@
               (org-mode)
 
               ;; Project A
-              (insert "* Project A\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Projects\n")
-              (insert ":ID: proj-a\n")
-              (insert ":ORG_GTD_FIRST_TASKS: task-1-id\n")
-              (insert ":END:\n")
+              (make-project "Project A"
+                           :id "proj-a"
+                           :first-tasks '("task-1-id"))
 
               ;; Task 1: In Project A, blocks Shared Task
-              (insert "** Task 1\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: task-1-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: proj-a\n")
-              (insert ":ORG_GTD_BLOCKS: shared-task-id\n")
-              (insert ":END:\n")
+              (make-task "Task 1"
+                        :id "task-1-id"
+                        :level 2
+                        :project-ids '("proj-a")
+                        :blocks '("shared-task-id"))
 
               ;; Shared Task: In BOTH Project A and Project B
-              (insert "** Shared Task\n")
-              (insert ":PROPERTIES:\n")
-              (insert ":ORG_GTD: Actions\n")
-              (insert ":ID: shared-task-id\n")
-              (insert ":ORG_GTD_PROJECT_IDS: proj-a proj-b\n")
-              (insert ":ORG_GTD_DEPENDS_ON: task-1-id\n")
-              (insert ":END:\n")
+              (make-task "Shared Task"
+                        :id "shared-task-id"
+                        :level 2
+                        :project-ids '("proj-a" "proj-b")
+                        :depends-on '("task-1-id"))
 
+              (org-mode-restart)
               (basic-save-buffer)
               (org-id-update-id-locations (list temp-file))
 

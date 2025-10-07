@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'org-gtd-test-helper-builders (file-name-concat default-directory "test/helpers/builders.el"))
 (require 'org-gtd)
 (require 'buttercup)
 
@@ -14,21 +15,15 @@
  (it "debugs what is happening in graph traversal"
      (with-temp-buffer
        (org-mode)
-       ;; Task A
-       (insert "* Task A\n")
-       (insert ":PROPERTIES:\n")
-       (insert ":ORG_GTD: Actions\n")
-       (insert ":ID: task-a-id\n")
-       (insert ":ORG_GTD_BLOCKS: task-b-id\n")
-       (insert ":END:\n")
-
-       ;; Task B
-       (insert "** Task B\n")
-       (insert ":PROPERTIES:\n")
-       (insert ":ORG_GTD: Actions\n")
-       (insert ":ID: task-b-id\n")
-       (insert ":ORG_GTD_DEPENDS_ON: task-a-id\n")
-       (insert ":END:\n")
+       ;; Create tasks using builders
+       (make-task "Task A"
+                 :id "task-a-id"
+                 :level 1
+                 :blocks '("task-b-id"))
+       (make-task "Task B"
+                 :id "task-b-id"
+                 :level 2
+                 :depends-on '("task-a-id"))
 
        ;; Debug: Print buffer contents
        (message "Buffer contents: %s" (buffer-string))

@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'org-gtd-test-helper-builders (file-name-concat default-directory "test/helpers/builders.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -33,7 +34,10 @@
       (search-forward "projectify")
       (org-gtd-clarify-agenda-item)
       (execute-kbd-macro (kbd "M-> RET"))
-      (insert ogt--project-text)
+      ;; Create three simple tasks using builder
+      (make-task "Task 1" :level 2)
+      (make-task "Task 2" :level 2)
+      (make-task "Task 3" :level 2)
       (organize-as-project)
       (kill-buffer org-agenda-buffer)
       (org-gtd-engage)

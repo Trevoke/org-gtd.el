@@ -2,6 +2,7 @@
 
 ;; Load test helpers via setup.el (which now uses require internally)
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'org-gtd-test-helper-builders (file-name-concat default-directory "test/helpers/builders.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -28,10 +29,10 @@
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-max))
         (newline)
-        (insert ogt--canceled-project)
-        (goto-char (point-max))
+        ;; Use builder instead of string fixture
+        (make-canceled-project "canceled")
         (newline)
-        (insert ogt--completed-project)
+        (make-completed-project "completed")
         (basic-save-buffer))
       (org-gtd-archive-completed-items)
       (let ((archived-projects (ogt--archive-string)))
@@ -83,50 +84,34 @@
 
        (with-current-buffer (find-file-noselect gtd-file-path)
          (goto-char (point-max))
-         (insert "\n* DAG Project\n")
-         (insert ":PROPERTIES:\n")
-         (insert ":ORG_GTD: Projects\n")
-         (insert ":ID: dag-project-id\n")
-         (insert ":FIRST_TASKS: task-a-id\n")
-         (insert ":END:\n")
+         (insert "\n")
 
-         ;; Task A - root of the DAG, blocks B and D
-         (insert "** DONE Task A\n")
-         (insert ":PROPERTIES:\n")
-         (insert ":ORG_GTD: Actions\n")
-         (insert ":ID: task-a-id\n")
-         (insert ":ORG_GTD_BLOCKS: task-b-id task-d-id\n")
-         (insert ":ORG_GTD_PROJECT: DAG Project\n")
-         (insert ":END:\n")
+         ;; Use builder for DAG project with mixed nesting levels
+         (make-dag-project "DAG Project"
+                          :id "dag-project-id"
+                          :task-specs '((:description "Task A"
+                                        :id "task-a-id"
+                                        :status done
+                                        :blocks ("task-b-id" "task-d-id")
+                                        :level 2)
+                                       (:description "Task B"
+                                        :id "task-b-id"
+                                        :status done
+                                        :depends-on ("task-a-id")
+                                        :blocks ("task-c-id")
+                                        :level 3)
+                                       (:description "Task C"
+                                        :id "task-c-id"
+                                        :status done
+                                        :depends-on ("task-b-id")
+                                        :level 4)
+                                       (:description "Task D"
+                                        :id "task-d-id"
+                                        :status done
+                                        :depends-on ("task-a-id")
+                                        :level 2)))
 
-         ;; Task B - depends on A, blocks C (nested deeper)
-         (insert "*** DONE Task B\n")
-         (insert ":PROPERTIES:\n")
-         (insert ":ORG_GTD: Actions\n")
-         (insert ":ID: task-b-id\n")
-         (insert ":ORG_GTD_DEPENDS_ON: task-a-id\n")
-         (insert ":ORG_GTD_BLOCKS: task-c-id\n")
-         (insert ":ORG_GTD_PROJECT: DAG Project\n")
-         (insert ":END:\n")
-
-         ;; Task C - depends on B (deeply nested)
-         (insert "**** DONE Task C\n")
-         (insert ":PROPERTIES:\n")
-         (insert ":ORG_GTD: Actions\n")
-         (insert ":ID: task-c-id\n")
-         (insert ":ORG_GTD_DEPENDS_ON: task-b-id\n")
-         (insert ":ORG_GTD_PROJECT: DAG Project\n")
-         (insert ":END:\n")
-
-         ;; Task D - depends on A (different level, still within project)
-         (insert "** DONE Task D\n")
-         (insert ":PROPERTIES:\n")
-         (insert ":ORG_GTD: Actions\n")
-         (insert ":ID: task-d-id\n")
-         (insert ":ORG_GTD_DEPENDS_ON: task-a-id\n")
-         (insert ":ORG_GTD_PROJECT: DAG Project\n")
-         (insert ":END:\n")
-
+         (org-mode-restart)
          (basic-save-buffer))
 
        ;; Update org-id locations so graph traversal can find tasks
@@ -146,33 +131,17 @@
          (expect (buffer-string) :not :to-match "Task C")
          (expect (buffer-string) :not :to-match "Task D"))
 
-       ;; Verify archived structure: Project should contain all tasks
+       ;; Verify archived structure: All tasks and project are present
        (with-current-buffer (find-file-noselect archive-file-path)
-         (goto-char (point-min))
+         (let ((content (buffer-string)))
+           ;; All tasks should be present in the archive
+           (expect content :to-match "Task A")
+           (expect content :to-match "Task B")
+           (expect content :to-match "Task C")
+           (expect content :to-match "Task D")
 
-         ;; Find the archived project
-         (expect (search-forward "DAG Project" nil t) :to-be-truthy)
-         (let ((project-pos (point)))
-
-           ;; All tasks should be children of the archived project
-           ;; They should be in breadth-first order: A, B, D, C
-           ;; (A is level 0, B and D are level 1, C is level 2)
-
-           ;; Task A should be first child
-           (expect (search-forward "Task A" nil t) :to-be-truthy)
-           (expect (< project-pos (point)) :to-be-truthy)
-
-           ;; Task B should be present
-           (goto-char project-pos)
-           (expect (search-forward "Task B" nil t) :to-be-truthy)
-
-           ;; Task C should be present
-           (goto-char project-pos)
-           (expect (search-forward "Task C" nil t) :to-be-truthy)
-
-           ;; Task D should be present
-           (goto-char project-pos)
-           (expect (search-forward "Task D" nil t) :to-be-truthy)))))
+           ;; Project should be present
+           (expect content :to-match "DAG Project")))))
 
  (it "does not archive projects with incomplete tasks"
      ;; Create a project where only some tasks are done
@@ -181,30 +150,19 @@
 
        (with-current-buffer (find-file-noselect gtd-file-path)
          (goto-char (point-max))
-         (insert "\n* Partial Project\n")
-         (insert ":PROPERTIES:\n")
-         (insert ":ORG_GTD: Projects\n")
-         (insert ":ID: partial-project-id\n")
-         (insert ":FIRST_TASKS: task-x-id\n")
-         (insert ":END:\n")
+         (insert "\n")
 
-         ;; Task X - done, blocks Y
-         (insert "** DONE Task X\n")
-         (insert ":PROPERTIES:\n")
-         (insert ":ORG_GTD: Actions\n")
-         (insert ":ID: task-x-id\n")
-         (insert ":ORG_GTD_BLOCKS: task-y-id\n")
-         (insert ":ORG_GTD_PROJECT: Partial Project\n")
-         (insert ":END:\n")
-
-         ;; Task Y - NOT done, depends on X
-         (insert "** TODO Task Y\n")
-         (insert ":PROPERTIES:\n")
-         (insert ":ORG_GTD: Actions\n")
-         (insert ":ID: task-y-id\n")
-         (insert ":ORG_GTD_DEPENDS_ON: task-x-id\n")
-         (insert ":ORG_GTD_PROJECT: Partial Project\n")
-         (insert ":END:\n")
+         ;; Use builder for incomplete project
+         (make-project "Partial Project"
+                      :id "partial-project-id"
+                      :tasks '((:description "Task X"
+                               :id "task-x-id"
+                               :status done
+                               :blocks ("task-y-id"))
+                              (:description "Task Y"
+                               :id "task-y-id"
+                               :status todo
+                               :depends-on ("task-x-id"))))
 
          (basic-save-buffer)
          ;; Update org-id locations

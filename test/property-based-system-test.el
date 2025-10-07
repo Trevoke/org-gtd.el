@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'org-gtd-test-helper-builders (file-name-concat default-directory "test/helpers/builders.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -20,23 +21,19 @@
       ;; Create a project structure where tasks have ORG_GTD property but are not at level 2
       (with-temp-buffer
         (org-mode)
-        (insert "* Project Root\n")
-        (insert ":PROPERTIES:\n")
-        (insert ":ORG_GTD: Projects\n")
-        (insert ":ID: root-id\n")
-        (insert ":END:\n")
-        (insert "*** Deep Task 1\n")  ;; Level 3, not 2
-        (insert ":PROPERTIES:\n")
-        (insert ":ORG_GTD: Actions\n")
-        (insert ":ID: task1-id\n")
-        (insert ":TODO: TODO\n")
-        (insert ":END:\n")
-        (insert "**** Even Deeper Task 2\n")  ;; Level 4, not 2
-        (insert ":PROPERTIES:\n")
-        (insert ":ORG_GTD: Actions\n")
-        (insert ":ID: task2-id\n")
-        (insert ":TODO: TODO\n")
-        (insert ":END:\n")
+        ;; Create project root using builder
+        (make-project "Project Root"
+                     :id "root-id"
+                     :level 1)
+        ;; Create tasks at non-standard levels using builder
+        (make-task "Deep Task 1"
+                  :id "task1-id"
+                  :level 3
+                  :properties '(("TODO" . "TODO")))
+        (make-task "Even Deeper Task 2"
+                  :id "task2-id"
+                  :level 4
+                  :properties '(("TODO" . "TODO")))
 
         ;; Test that tasks are identified by property, not level
         (goto-char (point-min))
@@ -117,19 +114,22 @@
 
   (it "migrates existing level 2 project tasks to have ORG_GTD property"
       ;; Create old-style project with level 2 tasks but no ORG_GTD properties
+      ;; Note: This test deliberately creates tasks WITHOUT ORG_GTD property to test migration
       (with-temp-buffer
         (org-mode)
+        ;; Create project heading
         (insert "* Legacy Project\n")
         (insert ":PROPERTIES:\n")
         (insert ":ORG_GTD: Projects\n")
         (insert ":ID: legacy-project-id\n")
         (insert ":END:\n")
-        (insert "** Legacy Task 1\n")  ;; Level 2 but no ORG_GTD property
+        ;; Create tasks WITHOUT ORG_GTD property (simulating old format)
+        (insert "** Legacy Task 1\n")
         (insert ":PROPERTIES:\n")
         (insert ":ID: legacy-task1-id\n")
         (insert ":TODO: TODO\n")
         (insert ":END:\n")
-        (insert "** Legacy Task 2\n")  ;; Level 2 but no ORG_GTD property
+        (insert "** Legacy Task 2\n")
         (insert ":PROPERTIES:\n")
         (insert ":ID: legacy-task2-id\n")
         (insert ":TODO: TODO\n")
@@ -186,25 +186,20 @@
       ;; Test that dependency relationships work without inheritance
       (with-temp-buffer
         (org-mode)
-        (insert "* Project\n")
-        (insert ":PROPERTIES:\n")
-        (insert ":ORG_GTD: Projects\n")
-        (insert ":ID: proj-id\n")
-        (insert ":END:\n")
-        (insert "** Task 1\n")
-        (insert ":PROPERTIES:\n")
-        (insert ":ORG_GTD: Actions\n")
-        (insert ":ID: task1-id\n")
-        (insert ":ORG_GTD_BLOCKS: task2-id\n")
-        (insert ":TODO: TODO\n")
-        (insert ":END:\n")
-        (insert "** Task 2\n")
-        (insert ":PROPERTIES:\n")
-        (insert ":ORG_GTD: Actions\n")
-        (insert ":ID: task2-id\n")
-        (insert ":ORG_GTD_DEPENDS_ON: task1-id\n")
-        (insert ":TODO: TODO\n")
-        (insert ":END:\n")
+        ;; Create project with dependent tasks using builders
+        (make-project "Project"
+                     :id "proj-id"
+                     :level 1)
+        (make-task "Task 1"
+                  :id "task1-id"
+                  :level 2
+                  :blocks '("task2-id")
+                  :properties '(("TODO" . "TODO")))
+        (make-task "Task 2"
+                  :id "task2-id"
+                  :level 2
+                  :depends-on '("task1-id")
+                  :properties '(("TODO" . "TODO")))
 
         ;; Task relationships should work without inheritance
         (goto-char (point-min))

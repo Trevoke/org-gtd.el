@@ -3,6 +3,7 @@
 
 ;; Load dependencies
 (require 'org-gtd-test-helper-clarifying (file-name-concat default-directory "test/helpers/clarifying.el"))
+(require 'org-gtd-test-helper-builders (file-name-concat default-directory "test/helpers/builders.el"))
 
 (defun capture-inbox-item (&optional description)
   "Capture an item to the GTD inbox.
@@ -35,7 +36,10 @@ worked on next."
     (org-gtd-process-inbox)
     (goto-char (point-max))
     (newline)
-    (insert ogt--project-text)
+    ;; Create three simple tasks using builder
+    (make-task "Task 1" :level 2)
+    (make-task "Task 2" :level 2)
+    (make-task "Task 3" :level 2)
     (organize-as-project)))
 
 (defun create-calendar-item (description &optional date)

@@ -23,6 +23,10 @@
                         (if load-file-name
                             (file-name-directory load-file-name)
                           default-directory)))
+(load (expand-file-name "helpers/builders.el"
+                        (if load-file-name
+                            (file-name-directory load-file-name)
+                          default-directory)))
 
 ;;;; Test Setup
 
@@ -39,8 +43,11 @@
       ;; Test the new org-gtd-task-add-blockers command with bidirectional properties
       (with-temp-buffer
         (org-mode)
-        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
-        (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:END:\n\n")
+        ;; Use builders instead of manual insertion
+        (make-task "Task A" :id "task-a-id" :level 1)
+        (insert "\n")
+        (make-task "Task B" :id "task-b-id" :level 1)
+        (insert "\n")
 
         ;; Go to Task B and add Task A as blocker (Task A blocks Task B)
         (goto-char (point-min))
@@ -67,9 +74,13 @@
       ;; Test multi-select functionality
       (with-temp-buffer
         (org-mode)
-        (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
-        (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:END:\n\n")
-        (insert "* Task C\n:PROPERTIES:\n:ID: task-c-id\n:END:\n\n")
+        ;; Use builders instead of manual insertion
+        (make-task "Task A" :id "task-a-id" :level 1)
+        (insert "\n")
+        (make-task "Task B" :id "task-b-id" :level 1)
+        (insert "\n")
+        (make-task "Task C" :id "task-c-id" :level 1)
+        (insert "\n")
 
         ;; Go to Task C and add both Task A and B as blockers
         (goto-char (point-min))

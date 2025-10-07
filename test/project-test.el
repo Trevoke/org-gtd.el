@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'org-gtd-test-helper-builders (file-name-concat default-directory "test/helpers/builders.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -164,7 +165,10 @@
      (org-gtd-process-inbox)
      (goto-char (point-max))
      (newline)
-     (insert ogt--project-text)
+     ;; Use builder instead of string fixture
+     (make-task "Task 1" :level 2)
+     (make-task "Task 2" :level 2)
+     (make-task "Task 3" :level 2)
      
      ;; Add custom dependency: Task 3 depends on Task 1 (skipping Task 2)
      (goto-char (point-min))

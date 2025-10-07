@@ -73,9 +73,9 @@ into a datetree."
       (org-gtd-core-prepare-agenda-buffers)
 
       ;; Update org-id locations to ensure graph traversal can find all tasks
-      ;; Filter out directories, only pass actual files
+      ;; Expand directories and filter to get only .org files
       (org-id-update-id-locations
-       (seq-filter #'file-regular-p (org-gtd-core--agenda-files)))
+       (org-gtd--expand-agenda-files-to-org-files (org-gtd-core--agenda-files)))
 
       ;; Archive projects
       (org-gtd--archive-complete-projects)
@@ -122,6 +122,21 @@ into a datetree."
     (string-join `(,filepath "::" "datetree/"))))
 
 ;;;;; Private
+
+(defun org-gtd--expand-agenda-files-to-org-files (paths)
+  "Expand PATHS (files and directories) to a list of .org files.
+Directories are expanded to their contained .org files recursively."
+  (seq-mapcat
+   (lambda (path)
+     (cond
+      ;; If it's a regular file, keep it
+      ((file-regular-p path) (list path))
+      ;; If it's a directory, expand to .org files
+      ((file-directory-p path)
+       (directory-files path t "\\.org$" t))
+      ;; Otherwise ignore
+      (t nil)))
+   paths))
 
 (defun org-gtd--remove-project-id-from-task (pom project-id)
   "Remove PROJECT-ID from ORG_GTD_PROJECT_IDS property at position POM."

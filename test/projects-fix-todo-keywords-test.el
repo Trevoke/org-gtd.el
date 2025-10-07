@@ -12,6 +12,7 @@
 ;;; Code:
 
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'org-gtd-test-helper-builders (file-name-concat default-directory "test/helpers/builders.el"))
 (require 'org-gtd)
 (require 'buttercup)
 
@@ -27,26 +28,21 @@
           (unwind-protect
               (progn
                 (with-temp-buffer
-                  (insert "* Project Test\n")
-                  (insert ":PROPERTIES:\n")
-                  (insert ":ID: project-id\n")
-                  (insert ":ORG_GTD: Projects\n")
-                  (insert ":ORG_GTD_FIRST_TASKS: task-a\n")
-                  (insert ":END:\n")
-                  (insert "** TODO Task A\n")
-                  (insert ":PROPERTIES:\n")
-                  (insert ":ID: task-a\n")
-                  (insert ":ORG_GTD: Actions\n")
-                  (insert ":ORG_GTD_BLOCKS: task-b\n")
-                  (insert ":ORG_GTD_PROJECT_IDS: project-id\n")
-                  (insert ":END:\n")
-                  (insert "** TODO Task B\n")
-                  (insert ":PROPERTIES:\n")
-                  (insert ":ID: task-b\n")
-                  (insert ":ORG_GTD: Actions\n")
-                  (insert ":ORG_GTD_DEPENDS_ON: task-a\n")
-                  (insert ":ORG_GTD_PROJECT_IDS: project-id\n")
-                  (insert ":END:\n")
+                  (make-project "Project Test"
+                               :id "project-id"
+                               :first-tasks '("task-a"))
+                  (make-task "Task A"
+                            :id "task-a"
+                            :level 2
+                            :status 'todo
+                            :project-ids '("project-id")
+                            :blocks '("task-b"))
+                  (make-task "Task B"
+                            :id "task-b"
+                            :level 2
+                            :status 'todo
+                            :project-ids '("project-id")
+                            :depends-on '("task-a"))
                   (write-file test-file))
 
                 (with-current-buffer (find-file-noselect test-file)
@@ -69,26 +65,21 @@
     (it "marks next task NEXT after completing first task"
         (with-temp-buffer
           (org-mode)
-          (insert "* Project Test\n")
-          (insert ":PROPERTIES:\n")
-          (insert ":ID: project-id\n")
-          (insert ":ORG_GTD: Projects\n")
-          (insert ":ORG_GTD_FIRST_TASKS: task-a\n")
-          (insert ":END:\n")
-          (insert "** DONE Task A\n")  ;; Task A is done
-          (insert ":PROPERTIES:\n")
-          (insert ":ID: task-a\n")
-          (insert ":ORG_GTD: Actions\n")
-          (insert ":ORG_GTD_BLOCKS: task-b\n")
-          (insert ":ORG_GTD_PROJECT_IDS: project-id\n")
-          (insert ":END:\n")
-          (insert "** TODO Task B\n")
-          (insert ":PROPERTIES:\n")
-          (insert ":ID: task-b\n")
-          (insert ":ORG_GTD: Actions\n")
-          (insert ":ORG_GTD_DEPENDS_ON: task-a\n")
-          (insert ":ORG_GTD_PROJECT_IDS: project-id\n")
-          (insert ":END:\n")
+          (make-project "Project Test"
+                       :id "project-id"
+                       :first-tasks '("task-a"))
+          (make-task "Task A"
+                    :id "task-a"
+                    :level 2
+                    :status 'done  ;; Task A is done
+                    :project-ids '("project-id")
+                    :blocks '("task-b"))
+          (make-task "Task B"
+                    :id "task-b"
+                    :level 2
+                    :status 'todo
+                    :project-ids '("project-id")
+                    :depends-on '("task-a"))
 
           (goto-char (point-min))
           (org-gtd-projects-fix-todo-keywords (point-marker))
@@ -102,33 +93,27 @@
     (it "marks both parallel tasks NEXT after parent completes"
         (with-temp-buffer
           (org-mode)
-          (insert "* Project Test\n")
-          (insert ":PROPERTIES:\n")
-          (insert ":ID: project-id\n")
-          (insert ":ORG_GTD: Projects\n")
-          (insert ":ORG_GTD_FIRST_TASKS: task-a\n")
-          (insert ":END:\n")
-          (insert "** DONE Task A\n")  ;; Task A is done
-          (insert ":PROPERTIES:\n")
-          (insert ":ID: task-a\n")
-          (insert ":ORG_GTD: Actions\n")
-          (insert ":ORG_GTD_BLOCKS: task-b task-c\n")
-          (insert ":ORG_GTD_PROJECT_IDS: project-id\n")
-          (insert ":END:\n")
-          (insert "** TODO Task B\n")
-          (insert ":PROPERTIES:\n")
-          (insert ":ID: task-b\n")
-          (insert ":ORG_GTD: Actions\n")
-          (insert ":ORG_GTD_DEPENDS_ON: task-a\n")
-          (insert ":ORG_GTD_PROJECT_IDS: project-id\n")
-          (insert ":END:\n")
-          (insert "** TODO Task C\n")
-          (insert ":PROPERTIES:\n")
-          (insert ":ID: task-c\n")
-          (insert ":ORG_GTD: Actions\n")
-          (insert ":ORG_GTD_DEPENDS_ON: task-a\n")
-          (insert ":ORG_GTD_PROJECT_IDS: project-id\n")
-          (insert ":END:\n")
+          (make-project "Project Test"
+                       :id "project-id"
+                       :first-tasks '("task-a"))
+          (make-task "Task A"
+                    :id "task-a"
+                    :level 2
+                    :status 'done  ;; Task A is done
+                    :project-ids '("project-id")
+                    :blocks '("task-b" "task-c"))
+          (make-task "Task B"
+                    :id "task-b"
+                    :level 2
+                    :status 'todo
+                    :project-ids '("project-id")
+                    :depends-on '("task-a"))
+          (make-task "Task C"
+                    :id "task-c"
+                    :level 2
+                    :status 'todo
+                    :project-ids '("project-id")
+                    :depends-on '("task-a"))
 
           (goto-char (point-min))
           (org-gtd-projects-fix-todo-keywords (point-marker))
@@ -147,34 +132,28 @@
     (it "marks B NEXT after A completes, C stays TODO"
         (with-temp-buffer
           (org-mode)
-          (insert "* Project Test\n")
-          (insert ":PROPERTIES:\n")
-          (insert ":ID: project-id\n")
-          (insert ":ORG_GTD: Projects\n")
-          (insert ":ORG_GTD_FIRST_TASKS: task-a\n")
-          (insert ":END:\n")
-          (insert "** DONE Task A\n")  ;; Task A is done
-          (insert ":PROPERTIES:\n")
-          (insert ":ID: task-a\n")
-          (insert ":ORG_GTD: Actions\n")
-          (insert ":ORG_GTD_BLOCKS: task-b\n")
-          (insert ":ORG_GTD_PROJECT_IDS: project-id\n")
-          (insert ":END:\n")
-          (insert "** TODO Task B\n")
-          (insert ":PROPERTIES:\n")
-          (insert ":ID: task-b\n")
-          (insert ":ORG_GTD: Actions\n")
-          (insert ":ORG_GTD_DEPENDS_ON: task-a\n")
-          (insert ":ORG_GTD_BLOCKS: task-c\n")
-          (insert ":ORG_GTD_PROJECT_IDS: project-id\n")
-          (insert ":END:\n")
-          (insert "** TODO Task C\n")
-          (insert ":PROPERTIES:\n")
-          (insert ":ID: task-c\n")
-          (insert ":ORG_GTD: Actions\n")
-          (insert ":ORG_GTD_DEPENDS_ON: task-b\n")
-          (insert ":ORG_GTD_PROJECT_IDS: project-id\n")
-          (insert ":END:\n")
+          (make-project "Project Test"
+                       :id "project-id"
+                       :first-tasks '("task-a"))
+          (make-task "Task A"
+                    :id "task-a"
+                    :level 2
+                    :status 'done  ;; Task A is done
+                    :project-ids '("project-id")
+                    :blocks '("task-b"))
+          (make-task "Task B"
+                    :id "task-b"
+                    :level 2
+                    :status 'todo
+                    :project-ids '("project-id")
+                    :depends-on '("task-a")
+                    :blocks '("task-c"))
+          (make-task "Task C"
+                    :id "task-c"
+                    :level 2
+                    :status 'todo
+                    :project-ids '("project-id")
+                    :depends-on '("task-b"))
 
           (goto-char (point-min))
           (org-gtd-projects-fix-todo-keywords (point-marker))
@@ -192,34 +171,28 @@
     (it "marks C NEXT after both A and B complete"
         (with-temp-buffer
           (org-mode)
-          (insert "* Project Test\n")
-          (insert ":PROPERTIES:\n")
-          (insert ":ID: project-id\n")
-          (insert ":ORG_GTD: Projects\n")
-          (insert ":ORG_GTD_FIRST_TASKS: task-a\n")
-          (insert ":END:\n")
-          (insert "** DONE Task A\n")  ;; Both tasks done
-          (insert ":PROPERTIES:\n")
-          (insert ":ID: task-a\n")
-          (insert ":ORG_GTD: Actions\n")
-          (insert ":ORG_GTD_BLOCKS: task-b\n")
-          (insert ":ORG_GTD_PROJECT_IDS: project-id\n")
-          (insert ":END:\n")
-          (insert "** DONE Task B\n")
-          (insert ":PROPERTIES:\n")
-          (insert ":ID: task-b\n")
-          (insert ":ORG_GTD: Actions\n")
-          (insert ":ORG_GTD_DEPENDS_ON: task-a\n")
-          (insert ":ORG_GTD_BLOCKS: task-c\n")
-          (insert ":ORG_GTD_PROJECT_IDS: project-id\n")
-          (insert ":END:\n")
-          (insert "** TODO Task C\n")
-          (insert ":PROPERTIES:\n")
-          (insert ":ID: task-c\n")
-          (insert ":ORG_GTD: Actions\n")
-          (insert ":ORG_GTD_DEPENDS_ON: task-b\n")
-          (insert ":ORG_GTD_PROJECT_IDS: project-id\n")
-          (insert ":END:\n")
+          (make-project "Project Test"
+                       :id "project-id"
+                       :first-tasks '("task-a"))
+          (make-task "Task A"
+                    :id "task-a"
+                    :level 2
+                    :status 'done  ;; Both tasks done
+                    :project-ids '("project-id")
+                    :blocks '("task-b"))
+          (make-task "Task B"
+                    :id "task-b"
+                    :level 2
+                    :status 'done
+                    :project-ids '("project-id")
+                    :depends-on '("task-a")
+                    :blocks '("task-c"))
+          (make-task "Task C"
+                    :id "task-c"
+                    :level 2
+                    :status 'todo
+                    :project-ids '("project-id")
+                    :depends-on '("task-b"))
 
           (goto-char (point-min))
           (org-gtd-projects-fix-todo-keywords (point-marker))

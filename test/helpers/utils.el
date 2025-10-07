@@ -2,7 +2,9 @@
 (unless (featurep 'org-gtd-test-helper-utils)
 
 (defun create-additional-project-target (filename)
-  (ogt--create-org-file-in-org-gtd-dir filename ogt--base-project-heading))
+  "Create an additional file for project organization with a project heading."
+  (let ((base-heading "* AdditionalHeading\n:PROPERTIES:\n:ORG_GTD:  Projects\n:END:\n"))
+    (ogt--create-org-file-in-org-gtd-dir filename base-heading)))
 
 (defun ogt-inbox-buffer ()
   (find-file-noselect (org-gtd-inbox-path)))
