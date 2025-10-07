@@ -61,7 +61,7 @@
              (org-gtd-organize-hooks '(hook1 hook2)))
         (set-buffer source-buffer)
         (org-gtd-clarify-item)
-        (ogt-clarify-as-single-action)
+        (organize-as-single-action)
         (with-current-buffer (org-gtd--default-file)
           (expect (ogt--current-buffer-raw-text)
                   :to-match "HOOK2"))

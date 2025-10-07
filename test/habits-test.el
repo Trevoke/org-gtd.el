@@ -24,7 +24,7 @@
 
  (it "is formatted like org-mode wants"
      (let* ((repeater "++1m"))
-       (ogt-capture-and-process-habit "Yowza" repeater)
+       (create-habit "Yowza" repeater)
        (with-current-buffer (org-gtd--default-file)
          (goto-char (point-min))
          (search-forward "Yowza")

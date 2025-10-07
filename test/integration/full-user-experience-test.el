@@ -57,7 +57,7 @@
            (expect (lookup-key org-gtd-clarify-map (kbd "C-c c"))
                    :to-equal #'org-gtd-organize)
            (expect org-gtd-clarify-mode :to-be-truthy)
-           (ogt-clarify-as-single-action))))
+           (organize-as-single-action))))
      
      ;; Verify both sessions worked
      (with-current-buffer (org-gtd--default-file)

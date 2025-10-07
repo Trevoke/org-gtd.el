@@ -27,26 +27,26 @@
   (describe
    "when there isn't a refile target"
    (it "for a project"
-       (ogt-capture-and-process-project "project headline")
+       (create-project "project headline")
        (ogt--save-all-buffers)
        (expect (ogt--org-dir-buffer-string) :to-match "org-gtd-tasks\\.org"))
 
    (it "for a calendar item"
-       (ogt-capture-and-process-calendar-item "calendar headline")
+       (create-calendar-item "calendar headline")
        (ogt--save-all-buffers)
        (expect (ogt--org-dir-buffer-string) :to-match "org-gtd-tasks\\.org"))
 
    (it "for a delegated item"
-       (ogt-capture-and-process-delegated-item "delegated-headline")
+       (create-delegated-item "delegated-headline")
        (ogt--save-all-buffers)
        (expect (ogt--org-dir-buffer-string) :to-match "org-gtd-tasks\\.org"))
 
    (it "for a incubated item"
-       (ogt-capture-and-process-incubated-item "incubated headline")
+       (create-deferred-item "incubated headline")
        (ogt--save-all-buffers)
        (expect (ogt--org-dir-buffer-string) :to-match "org-gtd-tasks\\.org"))
 
    (it "for a single action"
-       (ogt-capture-and-process-single-action "single action")
+       (create-single-action "single action")
        (ogt--save-all-buffers)
        (expect (ogt--org-dir-buffer-string) :to-match "org-gtd-tasks\\.org")))))

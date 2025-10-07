@@ -25,20 +25,20 @@
 
   (it "sets ORG_GTD_PROJECT to the first project when task belongs to multiple projects"
       ;; Create Project A with tasks
-      (ogt-capture-single-item "Project A")
+      (capture-inbox-item "Project A")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Task A1\n** Shared Task\n** Task A2")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       ;; Create Project B with tasks
-      (ogt-capture-single-item "Project B")
+      (capture-inbox-item "Project B")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Task B1\n** Task B2")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       ;; Set up multi-project relationship for Shared Task
       (let (shared-task-id project-a-id project-b-id project-a-name project-b-name)

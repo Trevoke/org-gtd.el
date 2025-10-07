@@ -25,9 +25,9 @@
 
   (it "removes project ID from ORG_GTD_PROJECT_IDS when archiving"
       ;; Create a single task with multiple project IDs
-      (ogt-capture-single-item "Test Task")
+      (capture-inbox-item "Test Task")
       (org-gtd-process-inbox)
-      (ogt-clarify-as-single-action)
+      (organize-as-single-action)
 
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-min))
@@ -56,9 +56,9 @@
 
   (it "archives task when ORG_GTD_PROJECT_IDS becomes empty"
       ;; Create a single task with one project ID
-      (ogt-capture-single-item "Test Task")
+      (capture-inbox-item "Test Task")
       (org-gtd-process-inbox)
-      (ogt-clarify-as-single-action)
+      (organize-as-single-action)
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-min))
         (search-forward "Test Task")
@@ -84,9 +84,9 @@
 
   (it "does not archive task when ORG_GTD_PROJECT_IDS still has values"
       ;; Create a single task with multiple project IDs
-      (ogt-capture-single-item "Test Task")
+      (capture-inbox-item "Test Task")
       (org-gtd-process-inbox)
-      (ogt-clarify-as-single-action)
+      (organize-as-single-action)
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-min))
         (search-forward "Test Task")
@@ -112,20 +112,20 @@
 
   (it "archives shared tasks only when all projects are complete"
       ;; Step 1: Create Project A with Task A1, Shared Task, Task A2
-      (ogt-capture-single-item "Project A")
+      (capture-inbox-item "Project A")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Task A1\n** Shared Task\n** Task A2")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       ;; Step 2: Create Project B with Task B1, Task B2
-      (ogt-capture-single-item "Project B")
+      (capture-inbox-item "Project B")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Task B1\n** Task B2")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       ;; Step 3: Set up multi-project relationship for Shared Task
       (let (shared-task-id project-a-id project-b-id)

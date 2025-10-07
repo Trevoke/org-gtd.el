@@ -15,13 +15,13 @@
  (describe "Single Action workflow"
    (it "captures, processes, organizes, shows in agenda, and archives"
        ;; 1. CAPTURE
-       (ogt-capture-single-item "Buy groceries")
+       (capture-inbox-item "Buy groceries")
 
        ;; 2. PROCESS
        (org-gtd-process-inbox)
 
        ;; 3. ORGANIZE (single action)
-       (ogt-clarify-as-single-action)
+       (organize-as-single-action)
 
        ;; 4. VERIFY in agenda
        (org-gtd-engage)
@@ -45,7 +45,7 @@
  (describe "Project workflow"
    (it "captures, processes, organizes, shows in agenda, and archives"
        ;; 1. CAPTURE
-       (ogt-capture-single-item "Plan vacation")
+       (capture-inbox-item "Plan vacation")
 
        ;; 2. PROCESS
        (org-gtd-process-inbox)
@@ -59,7 +59,7 @@
              (goto-char (point-max))
              (newline)
              (insert "** Research destinations\n** Book flights\n** Reserve hotel")
-             (ogt-clarify-as-project))))
+             (organize-as-project))))
 
        ;; 4. VERIFY in agenda
        (org-gtd-engage)
@@ -88,13 +88,13 @@
  (describe "Calendar workflow"
    (it "captures, processes, organizes, shows in agenda, and archives"
        ;; 1. CAPTURE
-       (ogt-capture-single-item "Doctor appointment")
+       (capture-inbox-item "Doctor appointment")
 
        ;; 2. PROCESS
        (org-gtd-process-inbox)
 
        ;; 3. ORGANIZE (calendar item)
-       (ogt-clarify-as-calendar-item (calendar-current-date))
+       (schedule-item (calendar-current-date))
 
        ;; 4. VERIFY in agenda
        (org-gtd-engage)
@@ -117,13 +117,13 @@
  (describe "Delegated workflow"
    (it "captures, processes, organizes, shows in agenda, and archives"
        ;; 1. CAPTURE
-       (ogt-capture-single-item "Get report from John")
+       (capture-inbox-item "Get report from John")
 
        ;; 2. PROCESS
        (org-gtd-process-inbox)
 
        ;; 3. ORGANIZE (delegate)
-       (ogt-clarify-as-delegated-item "John" (calendar-current-date))
+       (delegate-item "John" (calendar-current-date))
 
        ;; 4. VERIFY in agenda
        (org-gtd-engage)
@@ -146,13 +146,13 @@
  (describe "Incubated workflow"
    (it "captures, processes, organizes, and handles someday/maybe items"
        ;; 1. CAPTURE
-       (ogt-capture-single-item "Learn Spanish")
+       (capture-inbox-item "Learn Spanish")
 
        ;; 2. PROCESS
        (org-gtd-process-inbox)
 
        ;; 3. ORGANIZE (incubate)
-       (ogt-clarify-as-incubated-item (calendar-current-date))
+       (defer-item (calendar-current-date))
 
        ;; 4. VERIFY stored in main GTD file under Incubated
        (with-current-buffer (org-gtd--default-file)
@@ -167,7 +167,7 @@
  (describe "Knowledge workflow"
    (it "captures, processes, organizes, and stores reference material"
        ;; 1. CAPTURE
-       (ogt-capture-single-item "Git commands reference")
+       (capture-inbox-item "Git commands reference")
 
        ;; 2. PROCESS
        (org-gtd-process-inbox)
@@ -178,9 +178,9 @@
                                       (buffer-list))))
          (when wip-buffers
            (with-current-buffer (car wip-buffers)
-             (ogt-clarify-as-knowledge-item)))
+             (archive-as-reference)))
          (unless wip-buffers
-           (ogt-clarify-as-knowledge-item)))  ; Fallback
+           (archive-as-reference)))  ; Fallback
 
        ;; 4. VERIFY that knowledge items are archived immediately
        ;; (they don't stay in the main GTD file)
@@ -196,17 +196,17 @@
  (describe "Multiple item processing"
    (it "processes multiple different item types in sequence"
        ;; Capture multiple items
-       (ogt-capture-single-item "Call mom")           ; single action
-       (ogt-capture-single-item "Team meeting")       ; calendar
-       (ogt-capture-single-item "Organize garage")    ; project
-       (ogt-capture-single-item "Wine recipe")        ; knowledge
+       (capture-inbox-item "Call mom")           ; single action
+       (capture-inbox-item "Team meeting")       ; calendar
+       (capture-inbox-item "Organize garage")    ; project
+       (capture-inbox-item "Wine recipe")        ; knowledge
 
        ;; Process them all
        (org-gtd-process-inbox)
 
        ;; Organize each appropriately
-       (ogt-clarify-as-single-action)                 ; Call mom
-       (ogt-clarify-as-calendar-item (calendar-current-date)) ; Team meeting
+       (organize-as-single-action)                 ; Call mom
+       (schedule-item (calendar-current-date)) ; Team meeting
 
        ;; Project with subtasks
        (let ((wip-buffers (seq-filter (lambda (buf)
@@ -217,9 +217,9 @@
              (goto-char (point-max))
              (newline)
              (insert "** Sort items\n** Donate old items\n** Clean floor")
-             (ogt-clarify-as-project))))
+             (organize-as-project))))
 
-       (ogt-clarify-as-knowledge-item)               ; Wine recipe
+       (archive-as-reference)               ; Wine recipe
 
        ;; Verify all items are properly organized
        (org-gtd-engage)
@@ -244,15 +244,15 @@
                :not :to-match "Review budget\\|Birthday party\\|Emacs manual")
 
        ;; Capture multiple items throughout "day"
-       (ogt-capture-single-item "Review budget")
-       (ogt-capture-single-item "Birthday party planning")
-       (ogt-capture-single-item "Read Emacs manual chapter")
+       (capture-inbox-item "Review budget")
+       (capture-inbox-item "Birthday party planning")
+       (capture-inbox-item "Read Emacs manual chapter")
 
        ;; Process inbox
        (org-gtd-process-inbox)
 
        ;; Organize items
-       (ogt-clarify-as-single-action)  ; Review budget
+       (organize-as-single-action)  ; Review budget
 
        ;; Project with multiple tasks
        (let ((wip-buffers (seq-filter (lambda (buf)
@@ -263,9 +263,9 @@
              (goto-char (point-max))
              (newline)
              (insert "** Choose venue\n** Send invitations\n** Order cake")
-             (ogt-clarify-as-project))))
+             (organize-as-project))))
 
-       (ogt-clarify-as-knowledge-item)  ; Emacs manual
+       (archive-as-reference)  ; Emacs manual
 
        ;; Engage with agenda
        (org-gtd-engage)
@@ -311,13 +311,13 @@
   (describe "Single action cancellation"
     (it "captures, organizes as single action, marks CNCL, verifies doesn't show in engage, then archives"
         ;; 1. CAPTURE
-        (ogt-capture-single-item "Buy concert tickets")
+        (capture-inbox-item "Buy concert tickets")
 
         ;; 2. PROCESS
         (org-gtd-process-inbox)
 
         ;; 3. ORGANIZE (single action)
-        (ogt-clarify-as-single-action)
+        (organize-as-single-action)
 
         ;; 4. VERIFY in agenda before cancellation
         (org-gtd-engage)
@@ -353,13 +353,13 @@
         ;; This test verifies the product requirement: "Canceled items don't show in engage views".
 
         ;; 1. CAPTURE
-        (ogt-capture-single-item "Dentist appointment")
+        (capture-inbox-item "Dentist appointment")
 
         ;; 2. PROCESS
         (org-gtd-process-inbox)
 
         ;; 3. ORGANIZE (calendar item)
-        (ogt-clarify-as-calendar-item (calendar-current-date))
+        (schedule-item (calendar-current-date))
 
         ;; 4. VERIFY in agenda before cancellation
         (org-gtd-engage)
@@ -395,13 +395,13 @@
         ;; This test verifies the product requirement: "Canceled items don't show in engage views".
 
         ;; 1. CAPTURE
-        (ogt-capture-single-item "Get feedback from Sarah")
+        (capture-inbox-item "Get feedback from Sarah")
 
         ;; 2. PROCESS
         (org-gtd-process-inbox)
 
         ;; 3. ORGANIZE (delegate)
-        (ogt-clarify-as-delegated-item "Sarah" (calendar-current-date))
+        (delegate-item "Sarah" (calendar-current-date))
 
         ;; 4. VERIFY in agenda before cancellation
         (org-gtd-engage)
@@ -434,7 +434,7 @@
   (describe "Project task cancellation"
     (it "creates project, cancels one task, verifies project still works, completes remaining tasks, then archives"
         ;; 1. CAPTURE
-        (ogt-capture-single-item "Organize workshop")
+        (capture-inbox-item "Organize workshop")
 
         ;; 2. PROCESS
         (org-gtd-process-inbox)
@@ -448,7 +448,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Book venue\n** Prepare materials\n** Send invitations")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 4. VERIFY all tasks in agenda
         (org-gtd-engage)
@@ -494,7 +494,7 @@
         ;; It also verifies that projects with all tasks canceled can be properly archived.
 
         ;; 1. CAPTURE
-        (ogt-capture-single-item "Build garden shed")
+        (capture-inbox-item "Build garden shed")
 
         ;; 2. PROCESS
         (org-gtd-process-inbox)
@@ -508,7 +508,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Buy lumber\n** Purchase tools\n** Build foundation")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 4. VERIFY all tasks appear in engage before cancellation
         (org-gtd-engage)
@@ -562,9 +562,9 @@
   (describe "Review of active items"
     (it "verifies single action appears in all next actions view"
         ;; 1. CAPTURE and ORGANIZE single action
-        (ogt-capture-single-item "Review quarterly goals")
+        (capture-inbox-item "Review quarterly goals")
         (org-gtd-process-inbox)
-        (ogt-clarify-as-single-action)
+        (organize-as-single-action)
 
         ;; 2. VERIFY appears in all next actions view
         (org-gtd-show-all-next)
@@ -581,9 +581,9 @@
                                         (nth 5 past-date))))  ; year
 
           ;; 1. CAPTURE and ORGANIZE delegated item with past date
-          (ogt-capture-single-item "Get contract from legal")
+          (capture-inbox-item "Get contract from legal")
           (org-gtd-process-inbox)
-          (ogt-clarify-as-delegated-item "Legal" past-calendar-date)
+          (delegate-item "Legal" past-calendar-date)
 
           ;; 2. VERIFY appears in missed items review
           (org-gtd-review-missed-items)
@@ -599,9 +599,9 @@
                                         (nth 5 past-date))))  ; year
 
           ;; 1. CAPTURE and ORGANIZE calendar item with past date
-          (ogt-capture-single-item "Client presentation")
+          (capture-inbox-item "Client presentation")
           (org-gtd-process-inbox)
-          (ogt-clarify-as-calendar-item past-calendar-date)
+          (schedule-item past-calendar-date)
 
           ;; 2. VERIFY appears in missed items review
           (org-gtd-review-missed-items)
@@ -617,9 +617,9 @@
                                         (nth 5 past-date))))  ; year
 
           ;; 1. CAPTURE and ORGANIZE incubated item with past date
-          (ogt-capture-single-item "Review investment portfolio")
+          (capture-inbox-item "Review investment portfolio")
           (org-gtd-process-inbox)
-          (ogt-clarify-as-incubated-item past-calendar-date)
+          (defer-item past-calendar-date)
 
           ;; 2. VERIFY appears in missed items review
           (org-gtd-review-missed-items)
@@ -634,7 +634,7 @@
         ;; we need to transition tasks to TODO (without NEXT) to make the project stuck.
 
         ;; 1. CAPTURE and ORGANIZE project
-        (ogt-capture-single-item "Launch new website")
+        (capture-inbox-item "Launch new website")
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
@@ -645,7 +645,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Design mockups\n** Write content\n** Deploy site")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 2. Make project stuck by transitioning NEXT tasks back to TODO
         ;; This creates a project with tasks but no next actions available
@@ -666,9 +666,9 @@
   (describe "Engage view for habits"
     (it "verifies habit appears in engage view"
         ;; 1. CAPTURE and ORGANIZE habit with daily repeater
-        (ogt-capture-single-item "Daily meditation")
+        (capture-inbox-item "Daily meditation")
         (org-gtd-process-inbox)
-        (ogt-clarify-as-habit "+1d")
+        (organize-as-habit "+1d")
 
         ;; 2. VERIFY appears in engage view
         (org-gtd-engage)
@@ -681,9 +681,9 @@
         (let ((org-gtd-areas-of-focus '("Personal" "Work" "Health")))
 
           ;; 1. CAPTURE and ORGANIZE habit with daily repeater
-          (ogt-capture-single-item "Morning workout")
+          (capture-inbox-item "Morning workout")
           (org-gtd-process-inbox)
-          (ogt-clarify-as-habit "+1d")
+          (organize-as-habit "+1d")
 
           ;; 2. Set area of focus (uses CATEGORY property)
           (with-current-buffer (org-gtd--default-file)
@@ -708,7 +708,7 @@
         ;; with org-gtd's DAG-based multi-file project structure.
 
         ;; 1. CAPTURE and ORGANIZE project in main file
-        (ogt-capture-single-item "Multi-file project review")
+        (capture-inbox-item "Multi-file project review")
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
@@ -719,7 +719,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Task in main file")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 2. Create second file with NEXT task
         (let ((second-file (org-gtd--path "review-secondary")))
@@ -765,9 +765,9 @@
                (org-gtd-areas-of-focus '("Personal" "Work" "Health")))
 
           ;; 1. CAPTURE and ORGANIZE incubated item with future date
-          (ogt-capture-single-item "Learn Italian")
+          (capture-inbox-item "Learn Italian")
           (org-gtd-process-inbox)
-          (ogt-clarify-as-incubated-item future-calendar-date)
+          (defer-item future-calendar-date)
 
           ;; 2. Set area of focus (uses CATEGORY property, not AREA_OF_FOCUS)
           (with-current-buffer (org-gtd--default-file)
@@ -782,9 +782,9 @@
 
     (it "verifies incubated item can be archived after completion"
         ;; 1. CAPTURE and ORGANIZE incubated item
-        (ogt-capture-single-item "Research vacation spots")
+        (capture-inbox-item "Research vacation spots")
         (org-gtd-process-inbox)
-        (ogt-clarify-as-incubated-item (calendar-current-date))
+        (defer-item (calendar-current-date))
 
         ;; 2. MARK DONE
         (with-current-buffer (org-gtd--default-file)
@@ -808,13 +808,13 @@
   (describe "Habit workflow"
     (it "captures, organizes as habit, shows in engage, completes without archiving"
         ;; 1. CAPTURE
-        (ogt-capture-single-item "Exercise daily")
+        (capture-inbox-item "Exercise daily")
 
         ;; 2. PROCESS
         (org-gtd-process-inbox)
 
         ;; 3. ORGANIZE as habit with daily repeater
-        (ogt-clarify-as-habit "+1d")
+        (organize-as-habit "+1d")
 
         ;; 4. VERIFY shows in engage
         (org-gtd-engage)
@@ -855,9 +855,9 @@
         ;; This is org-mode behavior, not specific to org-gtd.
 
         ;; 1. CAPTURE and ORGANIZE habit
-        (ogt-capture-single-item "Read before bed")
+        (capture-inbox-item "Read before bed")
         (org-gtd-process-inbox)
-        (ogt-clarify-as-habit "+1d")
+        (organize-as-habit "+1d")
 
         ;; 2. VERIFY shows in engage before cancellation
         (org-gtd-engage)
@@ -901,7 +901,7 @@
         ;; This is a known limitation that should be fixed in the future.
 
         ;; 1. CAPTURE and ORGANIZE project in main file
-        (ogt-capture-single-item "Multi-file project")
+        (capture-inbox-item "Multi-file project")
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
@@ -912,7 +912,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Task in main file")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 2. Create second file with related task
         (let ((second-file (org-gtd--path "secondary-tasks")))
@@ -978,7 +978,7 @@
 
   (it "cancels tasks in different files and verifies archiving works"
       ;; 1. CAPTURE and ORGANIZE project
-      (ogt-capture-single-item "Distributed project")
+      (capture-inbox-item "Distributed project")
       (org-gtd-process-inbox)
 
       (let ((wip-buffers (seq-filter (lambda (buf)
@@ -989,7 +989,7 @@
             (goto-char (point-max))
             (newline)
             (insert "** Local task one\n** Local task two")
-            (ogt-clarify-as-project))))
+            (organize-as-project))))
 
       ;; 2. Create second file with task
       (let ((second-file (org-gtd--path "other-tasks")))
@@ -1052,7 +1052,7 @@
       ;; we can create a NEW project and link tasks from multiple files to it.
 
       ;; 1. CAPTURE and ORGANIZE initial project
-      (ogt-capture-single-item "Expandable project")
+      (capture-inbox-item "Expandable project")
       (org-gtd-process-inbox)
 
       (let ((wip-buffers (seq-filter (lambda (buf)
@@ -1063,7 +1063,7 @@
             (goto-char (point-max))
             (newline)
             (insert "** Initial task")
-            (ogt-clarify-as-project))))
+            (organize-as-project))))
 
       ;; 2. Create second file with another task
       (let ((second-file (org-gtd--path "additional-tasks")))
@@ -1123,7 +1123,7 @@
             (let ((org-agenda-files (append org-agenda-files (list third-file))))
 
               ;; 7. Create new project with task in main file
-              (ogt-capture-single-item "New multi-file project")
+              (capture-inbox-item "New multi-file project")
               (org-gtd-process-inbox)
 
               (let ((wip-buffers (seq-filter (lambda (buf)
@@ -1134,7 +1134,7 @@
                     (goto-char (point-max))
                     (newline)
                     (insert "** Another new task")
-                    (ogt-clarify-as-project))))
+                    (organize-as-project))))
 
               ;; 8. Link the extension task from third file
               (with-current-buffer (org-gtd--default-file)
@@ -1179,7 +1179,7 @@
 
   (describe "Add blocker relationship"
     (it "creates dependency between existing tasks"
-        (ogt-capture-single-item "Website redesign")
+        (capture-inbox-item "Website redesign")
         (org-gtd-process-inbox)
         (let ((wip-buffers (seq-filter (lambda (buf)
                                          (string-match-p org-gtd-wip--prefix (buffer-name buf)))
@@ -1189,7 +1189,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Design wireframes\n** Get client approval\n** Build prototype")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
         (with-current-buffer (org-gtd--default-file)
           (goto-char (point-min))
           (search-forward "Build prototype")
@@ -1227,7 +1227,7 @@
 
   (describe "Remove blocker relationship"
     (it "removes existing dependency between tasks"
-        (ogt-capture-single-item "Product launch")
+        (capture-inbox-item "Product launch")
         (org-gtd-process-inbox)
         (let ((wip-buffers (seq-filter (lambda (buf)
                                          (string-match-p org-gtd-wip--prefix (buffer-name buf)))
@@ -1237,7 +1237,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Write documentation\n** Record demo video")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
         (with-current-buffer (org-gtd--default-file)
           (goto-char (point-min))
           (search-forward "Record demo video")
@@ -1280,7 +1280,7 @@
 
   (describe "Add first task to existing project"
     (it "adds new task to ORG_GTD_FIRST_TASKS of existing project"
-        (ogt-capture-single-item "Marketing campaign")
+        (capture-inbox-item "Marketing campaign")
         (org-gtd-process-inbox)
         (let ((wip-buffers (seq-filter (lambda (buf)
                                          (string-match-p org-gtd-wip--prefix (buffer-name buf)))
@@ -1290,7 +1290,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Create content calendar")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
         (with-current-buffer (org-gtd--default-file)
           (goto-char (point-min))
           (search-forward "Marketing campaign")
@@ -1365,7 +1365,7 @@
 
   (describe "Share task between projects"
     (it "creates two projects with same task ID in both ORG_GTD_FIRST_TASKS"
-        (ogt-capture-single-item "Project Alpha")
+        (capture-inbox-item "Project Alpha")
         (org-gtd-process-inbox)
         (let ((wip-buffers (seq-filter (lambda (buf)
                                          (string-match-p org-gtd-wip--prefix (buffer-name buf)))
@@ -1375,8 +1375,8 @@
               (goto-char (point-max))
               (newline)
               (insert "** Design database schema")
-              (ogt-clarify-as-project))))
-        (ogt-capture-single-item "Project Beta")
+              (organize-as-project))))
+        (capture-inbox-item "Project Beta")
         (org-gtd-process-inbox)
         (let ((wip-buffers (seq-filter (lambda (buf)
                                          (string-match-p org-gtd-wip--prefix (buffer-name buf)))
@@ -1386,7 +1386,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Implement API")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
         (with-current-buffer (org-gtd--default-file)
           (goto-char (point-min))
           (search-forward "Design database schema")
@@ -1415,7 +1415,7 @@
   (describe "Complete shared task"
     (it "marks task complete and verifies both projects recognize it as done"
         ;; Create two projects and share a task between them via ORG_GTD_FIRST_TASKS
-        (ogt-capture-single-item "Project Alpha")
+        (capture-inbox-item "Project Alpha")
         (org-gtd-process-inbox)
         (let ((wip-buffers (seq-filter (lambda (buf)
                                          (string-match-p org-gtd-wip--prefix (buffer-name buf)))
@@ -1425,9 +1425,9 @@
               (goto-char (point-max))
               (newline)
               (insert "** Shared Task")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
-        (ogt-capture-single-item "Project Beta")
+        (capture-inbox-item "Project Beta")
         (org-gtd-process-inbox)
         (let ((wip-buffers (seq-filter (lambda (buf)
                                          (string-match-p org-gtd-wip--prefix (buffer-name buf)))
@@ -1437,7 +1437,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Another Task")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; Share "Shared Task" with Project Beta
         (with-current-buffer (org-gtd--default-file)
@@ -1486,7 +1486,7 @@
         ;; 3. After completing remaining tasks, the entire project can be archived
 
         ;; 1. CAPTURE
-        (ogt-capture-single-item "Organize conference")
+        (capture-inbox-item "Organize conference")
 
         ;; 2. PROCESS
         (org-gtd-process-inbox)
@@ -1500,7 +1500,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Book conference room\n** Send speaker invites\n** Order catering")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 4. VERIFY all tasks appear in engage before cancellation
         (org-gtd-engage)
@@ -1549,7 +1549,7 @@
         ;; 3. All tasks are in the same file (simple DAG case)
 
         ;; 1. CAPTURE
-        (ogt-capture-single-item "Abandoned initiative")
+        (capture-inbox-item "Abandoned initiative")
 
         ;; 2. PROCESS
         (org-gtd-process-inbox)
@@ -1563,7 +1563,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Research market\n** Build prototype\n** Pitch to investors")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 4. VERIFY all tasks appear in engage before cancellation
         (org-gtd-engage)
@@ -1617,7 +1617,7 @@
         ;; 3. The entire multi-file project can be archived
 
         ;; 1. CAPTURE and ORGANIZE project in main file
-        (ogt-capture-single-item "Cross-file abandoned project")
+        (capture-inbox-item "Cross-file abandoned project")
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
@@ -1628,7 +1628,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Main file task")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 2. Create second file with related task
         (let ((second-file (org-gtd--path "abandoned-secondary")))
@@ -1697,7 +1697,7 @@
         ;; 3. Both projects continue to function with their remaining tasks
 
         ;; 1. CAPTURE and ORGANIZE first project
-        (ogt-capture-single-item "Project Alpha")
+        (capture-inbox-item "Project Alpha")
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
@@ -1708,10 +1708,10 @@
               (goto-char (point-max))
               (newline)
               (insert "** Alpha task 1\n** Shared task")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 2. CAPTURE and ORGANIZE second project
-        (ogt-capture-single-item "Project Beta")
+        (capture-inbox-item "Project Beta")
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
@@ -1722,7 +1722,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Beta task 1")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 3. Share "Shared task" with Project Beta
         (with-current-buffer (org-gtd--default-file)
@@ -1805,7 +1805,7 @@
         ;; 4. When both projects have all tasks canceled, both can be archived
 
         ;; 1. CAPTURE and ORGANIZE first project
-        (ogt-capture-single-item "Project Gamma")
+        (capture-inbox-item "Project Gamma")
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
@@ -1816,10 +1816,10 @@
               (goto-char (point-max))
               (newline)
               (insert "** Gamma unique task\n** Shared infrastructure task")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 2. CAPTURE and ORGANIZE second project
-        (ogt-capture-single-item "Project Delta")
+        (capture-inbox-item "Project Delta")
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
@@ -1830,7 +1830,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Delta unique task")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 3. Share "Shared infrastructure task" with Project Delta
         (with-current-buffer (org-gtd--default-file)
@@ -1924,7 +1924,7 @@
         ;; 3. All tasks are in TODO state (none in NEXT), making project stuck
 
         ;; 1. CAPTURE and ORGANIZE project in main file
-        (ogt-capture-single-item "Multi-file stuck project")
+        (capture-inbox-item "Multi-file stuck project")
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
@@ -1935,7 +1935,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Task in main file")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 2. Create second file with task
         (let ((second-file (org-gtd--path "stuck-secondary")))
@@ -1978,7 +1978,7 @@
         ;; 3. Validation correctly identifies the broken reference
 
         ;; 1. CAPTURE and ORGANIZE project in main file
-        (ogt-capture-single-item "Multi-file validation test")
+        (capture-inbox-item "Multi-file validation test")
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
@@ -1989,7 +1989,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Main file task")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 2. Create second file with task that has broken reference
         (let ((second-file (org-gtd--path "validation-secondary")))
@@ -2050,7 +2050,7 @@
         ;; Test verification: Only A is NEXT, B and C are TODO, completing A makes B NEXT
 
         ;; 1. CAPTURE and ORGANIZE initial project with tasks A and C
-        (ogt-capture-single-item "Project Alpha")
+        (capture-inbox-item "Project Alpha")
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
@@ -2061,7 +2061,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Task A\n** Task C")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 2. Manually create A→C dependency in initial setup
         (with-current-buffer (org-gtd--default-file)
@@ -2092,7 +2092,7 @@
           (expect agenda-content :not :to-match "Task C"))
 
         ;; 4. SIMULATE MANUAL WORKFLOW: Add task B using org-gtd-project-extend
-        (ogt-capture-single-item "Task B")
+        (capture-inbox-item "Task B")
         (org-gtd-process-inbox)
 
         ;; Mock the project selection in org-gtd-project-extend
@@ -2234,7 +2234,7 @@
         ;; Test verification: A→B→C chain, only A is NEXT
 
         ;; 1. CAPTURE and ORGANIZE initial project with A→B
-        (ogt-capture-single-item "Project Beta")
+        (capture-inbox-item "Project Beta")
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
@@ -2245,7 +2245,7 @@
               (goto-char (point-max))
               (newline)
               (insert "** Task A\n** Task B")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 2. Create A→B dependency
         (with-current-buffer (org-gtd--default-file)
@@ -2264,7 +2264,7 @@
               (org-entry-put (point) "ORG_GTD_BLOCKS" task-b-id))))
 
         ;; 3. Add Task C using project-extend
-        (ogt-capture-single-item "Task C")
+        (capture-inbox-item "Task C")
         (org-gtd-process-inbox)
 
         (with-current-buffer (org-gtd--default-file)
@@ -2343,7 +2343,7 @@
         ;; Test verification: All three tasks NEXT simultaneously in engage view
 
         ;; 1. CAPTURE and ORGANIZE initial project with A
-        (ogt-capture-single-item "Project Gamma")
+        (capture-inbox-item "Project Gamma")
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
@@ -2354,10 +2354,10 @@
               (goto-char (point-max))
               (newline)
               (insert "** Task A")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 2. Add Task B using project-extend
-        (ogt-capture-single-item "Task B")
+        (capture-inbox-item "Task B")
         (org-gtd-process-inbox)
 
         (with-current-buffer (org-gtd--default-file)
@@ -2383,7 +2383,7 @@
                     (org-gtd-project-extend)))))))
 
         ;; 3. Add Task C using project-extend
-        (ogt-capture-single-item "Task C")
+        (capture-inbox-item "Task C")
         (org-gtd-process-inbox)
 
         (with-current-buffer (org-gtd--default-file)
@@ -2501,7 +2501,7 @@
         ;; Test verification: All three NEXT, across files
 
         ;; 1. CAPTURE and ORGANIZE initial project with A
-        (ogt-capture-single-item "Project Delta")
+        (capture-inbox-item "Project Delta")
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
@@ -2512,10 +2512,10 @@
               (goto-char (point-max))
               (newline)
               (insert "** Task A")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 2. Add Task B using project-extend (same file)
-        (ogt-capture-single-item "Task B")
+        (capture-inbox-item "Task B")
         (org-gtd-process-inbox)
 
         (with-current-buffer (org-gtd--default-file)
@@ -2654,7 +2654,7 @@
         ;; Test verification: Only A is NEXT, others TODO
 
         ;; 1. CAPTURE and ORGANIZE initial project with A
-        (ogt-capture-single-item "Project Epsilon")
+        (capture-inbox-item "Project Epsilon")
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
@@ -2665,10 +2665,10 @@
               (goto-char (point-max))
               (newline)
               (insert "** Task A")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 2. Add Task B using project-extend
-        (ogt-capture-single-item "Task B")
+        (capture-inbox-item "Task B")
         (org-gtd-process-inbox)
 
         (with-current-buffer (org-gtd--default-file)
@@ -2694,7 +2694,7 @@
                     (org-gtd-project-extend)))))))
 
         ;; 3. Add Task C using project-extend
-        (ogt-capture-single-item "Task C")
+        (capture-inbox-item "Task C")
         (org-gtd-process-inbox)
 
         (with-current-buffer (org-gtd--default-file)
@@ -2810,7 +2810,7 @@
         ;; Test verification: Only A is NEXT, others TODO across files
 
         ;; 1. CAPTURE and ORGANIZE initial project with A
-        (ogt-capture-single-item "Project Zeta")
+        (capture-inbox-item "Project Zeta")
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
@@ -2821,10 +2821,10 @@
               (goto-char (point-max))
               (newline)
               (insert "** Task A")
-              (ogt-clarify-as-project))))
+              (organize-as-project))))
 
         ;; 2. Add Task B using project-extend (same file)
-        (ogt-capture-single-item "Task B")
+        (capture-inbox-item "Task B")
         (org-gtd-process-inbox)
 
         (with-current-buffer (org-gtd--default-file)

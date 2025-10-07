@@ -23,7 +23,7 @@
                "Talk to university")))
 
  (it "can be done through the agenda and show on the agenda"
-     (ogt-capture-and-process-single-action "delegateme")
+     (create-single-action "delegateme")
      (ogt--save-all-buffers)
      (org-gtd-engage)
      (with-current-buffer org-agenda-buffer
@@ -49,7 +49,7 @@
             (year (nth 2 date))
             (month (nth 0 date))
             (day (nth 1 date)))
-       (ogt-capture-and-process-delegated-item "TASK DESC" "Someone" date)
+       (create-delegated-item "TASK DESC" "Someone" date)
        (with-current-buffer (org-gtd--default-file)
          (goto-char (point-min))
          (search-forward "TASK DESC")
@@ -63,7 +63,7 @@
              (year (nth 2 date))
              (month (nth 0 date))
              (day (nth 1 date)))
-        (ogt-capture-and-process-delegated-item "TASK DESC" "Someone" date)
+        (create-delegated-item "TASK DESC" "Someone" date)
         (with-current-buffer (org-gtd--default-file)
           (goto-char (point-min))
           (search-forward "TASK DESC")

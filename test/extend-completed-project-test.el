@@ -25,12 +25,12 @@
 
   (it "sets both ORG_GTD_PROJECT and ORG_GTD_PROJECT_IDS when extending project"
       ;; Create a simple project
-      (ogt-capture-single-item "Test Project")
+      (capture-inbox-item "Test Project")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Task 1")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       ;; Get the project ID
       (let (project-id)
@@ -69,12 +69,12 @@
 
   (it "allows adding a new task to a completed project"
       ;; Step 1: Create a simple project with 2 tasks
-      (ogt-capture-single-item "Completed Project")
+      (capture-inbox-item "Completed Project")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Task 1\n** Task 2")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       ;; Step 2: Mark all tasks as DONE (complete the project)
       (with-current-buffer (org-gtd--default-file)
@@ -97,7 +97,7 @@
 
       ;; Step 4: Extend the completed project with a new task
       ;; Using the refile path format: "Projects/Completed Project"
-      (ogt-capture-and-process-addition-to-project
+      (add-task-to-existing-project
        "New Task"
        "Projects/Completed SPC Project TAB RET")
 
@@ -125,12 +125,12 @@
 
   (it "does not archive extended project when only new task is incomplete"
       ;; Step 1: Create and complete a project
-      (ogt-capture-single-item "Project To Extend")
+      (capture-inbox-item "Project To Extend")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Original Task")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-min))
@@ -139,7 +139,7 @@
         (org-todo "DONE"))
 
       ;; Step 2: Extend with new task
-      (ogt-capture-and-process-addition-to-project
+      (add-task-to-existing-project
        "Extension Task"
        "Projects/Project SPC To SPC Extend TAB RET")
 
@@ -160,12 +160,12 @@
 
   (it "archives project after completing the extension task"
       ;; Step 1: Create and complete a project
-      (ogt-capture-single-item "Full Cycle Project")
+      (capture-inbox-item "Full Cycle Project")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Initial Task")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-min))
@@ -174,7 +174,7 @@
         (org-todo "DONE"))
 
       ;; Step 2: Extend with new task
-      (ogt-capture-and-process-addition-to-project
+      (add-task-to-existing-project
        "Final Task"
        "Projects/Full SPC Cycle SPC Project TAB RET")
 

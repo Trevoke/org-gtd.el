@@ -13,33 +13,33 @@
 
 ;;  (before-each
 ;;   (ogt--configure-emacs)
-;;   (ogt-capture-single-item))
+;;   (capture-inbox-item))
 ;;  (after-each (ogt--close-and-delete-files))
 
 ;;  (it "processes all the elements"
 ;;      ;; Capture some additional items (note: before-each already captures one)
-;;      (ogt-capture-single-item "test project")
-;;      (ogt-capture-single-item "test calendar item")
-;;      (ogt-capture-single-item "test delegated item")
-;;      (ogt-capture-single-item "test incubated item")
-;;      (ogt-capture-single-item "test single action")
-;;      (ogt-capture-single-item "test knowledge item")
+;;      (capture-inbox-item "test project")
+;;      (capture-inbox-item "test calendar item")
+;;      (capture-inbox-item "test delegated item")
+;;      (capture-inbox-item "test incubated item")
+;;      (capture-inbox-item "test single action")
+;;      (capture-inbox-item "test knowledge item")
 
 ;;      ;; Process them all using helper functions (7 items total)
 ;;      (org-gtd-process-inbox)
 ;;      ;; First item from before-each (single action)
-;;      (ogt-clarify-as-single-action)
+;;      (organize-as-single-action)
 
 ;;      ;; Items we captured in this test
 ;;      (execute-kbd-macro (kbd "M-> RET"))
 ;;      (insert ogt--project-text)
-;;      (ogt-clarify-as-project)
+;;      (organize-as-project)
 
-;;      (ogt-clarify-as-calendar-item (calendar-current-date))
-;;      (ogt-clarify-as-delegated-item "Someone" (calendar-current-date))
-;;      (ogt-clarify-as-incubated-item (calendar-current-date))
-;;      (ogt-clarify-as-single-action)
-;;      (ogt-clarify-as-knowledge-item)
+;;      (schedule-item (calendar-current-date))
+;;      (delegate-item "Someone" (calendar-current-date))
+;;      (defer-item (calendar-current-date))
+;;      (organize-as-single-action)
+;;      (archive-as-reference)
 
 ;;      ;; Check inbox is empty
 ;;      (with-current-buffer (ogt-inbox-buffer)
@@ -55,7 +55,7 @@
 
 ;;      (let ((org-gtd-organize-hooks '(test-hook-add-priority)))
 ;;        (org-gtd-process-inbox)
-;;        (ogt-clarify-as-single-action))
+;;        (organize-as-single-action))
 
 ;;      (org-gtd-engage)
 ;;      (let ((ogt-agenda-string (ogt--buffer-string org-agenda-buffer)))
@@ -64,7 +64,7 @@
 
 ;;  (it "shows item in agenda when done"
 ;;      (org-gtd-process-inbox)
-;;      (ogt-clarify-as-single-action)
+;;      (organize-as-single-action)
 ;;      (expect (buffer-modified-p (org-gtd--default-file)) :to-equal t)
 
 ;;      (org-gtd-engage)
@@ -78,7 +78,7 @@
 ;;    "when project has incorrect shape"
 ;;    (it "tells the user and returns to editing"
 ;;        (org-gtd-process-inbox)
-;;        (ogt-clarify-as-project)
+;;        (organize-as-project)
 
 ;;        (expect (buffer-name) :to-match org-gtd-wip--prefix)
 ;;        (expect (ogt--buffer-string "*Message*") :to-match "** First task")))))

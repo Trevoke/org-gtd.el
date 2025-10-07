@@ -13,6 +13,6 @@
  (after-each (ogt--close-and-delete-files))
 
  (it "through the inbox, moves the task to the archive file"
-     (ogt-capture-and-process-knowledge-item "Yowza")
+     (create-reference-item "Yowza")
      (with-current-buffer (ogt--archive)
        (expect (buffer-string) :to-match "Yowza"))))

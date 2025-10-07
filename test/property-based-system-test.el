@@ -54,7 +54,7 @@
       ;; Uses real project creation API to ensure FIRST_TASKS is set correctly
 
       ;; Create project using real API
-      (ogt-capture-and-process-project "Graph Project")
+      (create-project "Graph Project")
 
       ;; Now modify the created tasks to add dependency relationships
       (let* ((gtd-file (org-gtd--default-file))

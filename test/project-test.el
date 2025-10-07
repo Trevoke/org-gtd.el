@@ -24,7 +24,7 @@
  (describe
   "marks all undone tasks of a canceled project as canceled"
   (it "on a task in the agenda"
-      (ogt-capture-and-process-project "project headline")
+      (create-project "project headline")
       (org-gtd-engage)
       (with-current-buffer org-agenda-buffer
         (goto-char (point-min))
@@ -36,7 +36,7 @@
         (expect archived-projects :to-match "project headline")))
 
   (it "when on the heading"
-      (ogt-capture-and-process-project "project tailline")
+      (create-project "project tailline")
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-min))
         (search-forward "project tailline")
@@ -70,12 +70,12 @@
              )
 
  (it "allows insertion of a project template"
-     (ogt-capture-single-item "New project")
+     (capture-inbox-item "New project")
      (org-gtd-process-inbox)
      (with-simulated-input "prepare SPC a SPC video RET"
                            (org-gtd-clarify-project-insert-template))
      (org-gtd-organize)
-     (ogt-clarify-as-project)
+     (organize-as-project)
      (org-gtd-engage)
      (with-current-buffer org-agenda-buffer
        (expect (ogt--current-buffer-raw-text)
@@ -87,7 +87,7 @@
 
 ;; (it "safely adds the stats cookie"
 ;;     (setq org-gtd-organize-hooks '(org-set-tags-command org-priority))
-;;     (ogt-capture-single-item "project headline")
+;;     (capture-inbox-item "project headline")
 ;;     (org-gtd-process-inbox)
 ;;     (execute-kbd-macro (kbd "M-> RET"))
 ;;     (insert ogt--project-text)
@@ -126,7 +126,7 @@
 
  (it "creates sequential dependencies for tasks without existing relationships"
      ;; Create a project with 3 tasks and verify sequential dependencies are created
-     (ogt-capture-and-process-project "sequential project")
+     (create-project "sequential project")
      
      ;; Verify the project was created and check the sequential dependencies
      (with-current-buffer (org-gtd--default-file)
@@ -160,7 +160,7 @@
  (it "preserves existing dependencies when organizing project"
      ;; This tests Story 8: Custom Dependencies Override Defaults
      ;; Create a project, add custom dependencies, then organize - custom dependencies should be preserved
-     (ogt-capture-single-item "custom dependencies project")
+     (capture-inbox-item "custom dependencies project")
      (org-gtd-process-inbox)
      (goto-char (point-max))
      (newline)
@@ -186,7 +186,7 @@
          (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" task3-id)))
 
      ;; Now organize as project
-     (ogt-clarify-as-project)
+     (organize-as-project)
 
      ;; Verify custom dependencies are preserved
      (with-current-buffer (org-gtd--default-file)

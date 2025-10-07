@@ -44,7 +44,7 @@ This uses the critical org-gtd-process-inbox command while checking keyboard acc
   "Full end-to-end: capture ITEM-TEXT, process, verify keyboard, organize as single action."
   (ogt-capture-and-process-with-keyboard-verification item-text)
   ;; Use the proven organization pattern (no keyboard simulation!)
-  (ogt-clarify-as-single-action))
+  (organize-as-single-action))
 
 (defun ogt-verify-keyboard-and-organize-as-project (item-text project-tasks)
   "Full end-to-end: capture ITEM-TEXT, process, verify keyboard, organize as project.
@@ -65,25 +65,25 @@ PROJECT-TASKS should be a string with the project structure to add."
           (org-next-visible-heading 1)))))
 
   ;; Use the proven organization pattern
-  (ogt-clarify-as-project))
+  (organize-as-project))
 
 (defun ogt-verify-keyboard-and-organize-as-calendar (item-text &optional date)
   "Full end-to-end: capture ITEM-TEXT, process, verify keyboard, organize as calendar."
   (ogt-capture-and-process-with-keyboard-verification item-text)
   ;; Use the proven organization pattern
-  (ogt-clarify-as-calendar-item (or date (calendar-current-date))))
+  (schedule-item (or date (calendar-current-date))))
 
 (defun ogt-verify-keyboard-and-organize-as-delegate (item-text &optional person date)
   "Full end-to-end: capture ITEM-TEXT, process, verify keyboard, organize as delegate."
   (ogt-capture-and-process-with-keyboard-verification item-text)
   ;; Use the proven organization pattern
-  (ogt-clarify-as-delegated-item person date))
+  (delegate-item person date))
 
 (defun ogt-verify-keyboard-and-organize-as-incubate (item-text &optional date)
   "Full end-to-end: capture ITEM-TEXT, process, verify keyboard, organize as incubate."
   (ogt-capture-and-process-with-keyboard-verification item-text)
   ;; Use the proven organization pattern
-  (ogt-clarify-as-incubated-item date))
+  (defer-item date))
 
 (defun ogt-verify-keyboard-and-organize-as-knowledge (item-text)
   "Full end-to-end: capture ITEM-TEXT, process, verify keyboard, organize as knowledge."
@@ -134,7 +134,7 @@ ITEMS-AND-TYPES should be a list of (text . type) pairs where type is a symbol."
 
               ;; Organize based on type using proven patterns
               (cond
-               ((eq type 'single-action) (ogt-clarify-as-single-action))
+               ((eq type 'single-action) (organize-as-single-action))
                ((eq type 'project)
                 ;; Add project structure for projects
                 (goto-char (point-max))
@@ -143,10 +143,10 @@ ITEMS-AND-TYPES should be a list of (text . type) pairs where type is a symbol."
                 (goto-char (point-min))
                 (when (org-before-first-heading-p)
                   (org-next-visible-heading 1))
-                (ogt-clarify-as-project))
-               ((eq type 'calendar) (ogt-clarify-as-calendar-item (calendar-current-date)))
-               ((eq type 'delegate) (ogt-clarify-as-delegated-item "Someone" (calendar-current-date)))
-               ((eq type 'incubate) (ogt-clarify-as-incubated-item (calendar-current-date)))
+                (organize-as-project))
+               ((eq type 'calendar) (schedule-item (calendar-current-date)))
+               ((eq type 'delegate) (delegate-item "Someone" (calendar-current-date)))
+               ((eq type 'incubate) (defer-item (calendar-current-date)))
                ((eq type 'knowledge) (org-gtd-knowledge))
                (t (error "Unknown organization type: %s" type))))))))))
 

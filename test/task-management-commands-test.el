@@ -107,12 +107,12 @@
   (it "shows tasks from different projects with project labels when selecting blockers"
       ;; This test verifies the acceptance criteria: "tasks from all existing agenda files clearly labeled by project"
       ;; Set up Project A in main GTD tasks file
-      (ogt-capture-single-item "Project A")
+      (capture-inbox-item "Project A")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Task A1")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       ;; Create a second GTD file with Project B
       (let ((second-file (org-gtd--path "secondary-project")))
@@ -161,12 +161,12 @@
   (it "creates dependencies between tasks in different projects"
       ;; Test cross-project blocking relationships
       ;; Set up Project A in main GTD tasks file
-      (ogt-capture-single-item "Project A")
+      (capture-inbox-item "Project A")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Task A1")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       ;; Create a second GTD file manually
       (let ((second-file (org-gtd--path "secondary-project")))

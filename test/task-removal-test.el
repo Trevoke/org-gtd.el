@@ -38,12 +38,12 @@
   (it "removes task from project without reconnection when task has no children"
       ;; Scenario 1: Project A with T1 → T2 → T3 (leaf)
       ;; Remove T3: Just remove from project, no reconnection needed
-      (ogt-capture-single-item "Project A")
+      (capture-inbox-item "Project A")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Task 1\n** Task 2\n** Task 3")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       ;; Get the project and task IDs
       (with-current-buffer (org-gtd--default-file)
@@ -85,12 +85,12 @@
   (it "reconnects child to parent when removing middle task with user confirmation"
       ;; Scenario 2: Project A with T1 → T2 → T3
       ;; Remove T2 with reconnection: Should connect T1 → T3
-      (ogt-capture-single-item "Project A")
+      (capture-inbox-item "Project A")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Task 1\n** Task 2\n** Task 3")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-min))
@@ -154,12 +154,12 @@
   (it "removes project ID while preserving task in other projects"
       ;; Scenario 5: Task T1 belongs to both Project A and Project B
       ;; Remove T1 from Project A: T1 should still exist in Project B
-      (ogt-capture-single-item "Project A")
+      (capture-inbox-item "Project A")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Shared Task")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       (with-current-buffer (org-gtd--default-file)
         ;; Get Project A's ID and Shared Task's ID
@@ -199,12 +199,12 @@
       ;; Given: A task belongs to multiple projects (has multiple IDs in ORG_GTD_PROJECT_IDS)
       ;; When: I extract/remove from one project
       ;; Then: Task should remove only that project ID, stay in place, keep ORG_GTD="Actions"
-      (ogt-capture-single-item "Project A")
+      (capture-inbox-item "Project A")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Multi-project Task")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       (with-current-buffer (org-gtd--default-file)
         ;; Get Project A's ID
@@ -256,12 +256,12 @@
       ;; Given: A task belongs to only one project (has single ID in ORG_GTD_PROJECT_IDS)
       ;; When: I extract/remove from that project
       ;; Then: Task should keep ORG_GTD as "Actions", change TODO to NEXT, stay in place
-      (ogt-capture-single-item "Project A")
+      (capture-inbox-item "Project A")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Single-project Task")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       (with-current-buffer (org-gtd--default-file)
         ;; Get Project A's ID

@@ -16,7 +16,7 @@
   "A project"
 
   (before-each
-   (ogt-capture-and-process-project "project headline")
+   (create-project "project headline")
    (with-current-buffer (org-gtd--default-file)
      (basic-save-buffer)))
 

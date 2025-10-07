@@ -21,12 +21,12 @@
 
   (it "sets ORG_GTD_FIRST_TASKS instead of FIRST_TASKS on new projects"
       ;; Create a project with 3 tasks
-      (ogt-capture-single-item "Test Project")
+      (capture-inbox-item "Test Project")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Task 1\n** Task 2\n** Task 3")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       ;; Verify ORG_GTD_FIRST_TASKS is set, not FIRST_TASKS
       (with-current-buffer (org-gtd--default-file)
@@ -45,12 +45,12 @@
 
   (it "sets ORG_GTD_BLOCKS instead of BLOCKS when creating dependencies"
       ;; Create a project with 3 tasks
-      (ogt-capture-single-item "Dependency Test Project")
+      (capture-inbox-item "Dependency Test Project")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Task 1\n** Task 2\n** Task 3")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       ;; Check that tasks have sequential dependencies with new properties
       (with-current-buffer (org-gtd--default-file)
@@ -64,12 +64,12 @@
 
   (it "sets ORG_GTD_DEPENDS_ON instead of DEPENDS_ON when creating dependencies"
       ;; Create a project with 3 tasks
-      (ogt-capture-single-item "Dependency Test Project 2")
+      (capture-inbox-item "Dependency Test Project 2")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Task 1\n** Task 2\n** Task 3")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       ;; Check that tasks have sequential dependencies with new properties
       (with-current-buffer (org-gtd--default-file)
@@ -86,12 +86,12 @@
 
   (it "sets ORG_GTD_PROJECT_IDS instead of ORG_GTD_PROJECT when organizing tasks into projects"
       ;; Create a project
-      (ogt-capture-single-item "Project with IDs")
+      (capture-inbox-item "Project with IDs")
       (org-gtd-process-inbox)
       (goto-char (point-max))
       (newline)
       (insert "** Task 1\n** Task 2")
-      (ogt-clarify-as-project)
+      (organize-as-project)
 
       ;; Check that tasks have ORG_GTD_PROJECT_IDS
       (with-current-buffer (org-gtd--default-file)

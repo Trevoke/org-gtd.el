@@ -24,7 +24,7 @@
   (remove-hook 'org-gtd-organize-hooks #'org-gtd-set-area-of-focus))
 
   (it "is set on clarified item from a customizable list"
-      (ogt-capture-single-item "Medical Appointment")
+      (capture-inbox-item "Medical Appointment")
       (org-gtd-process-inbox)
       (execute-kbd-macro (kbd "C-c c s H e a l t h RET"))
       (org-gtd-engage)
@@ -46,7 +46,7 @@
  (describe
   "through the agenda"
   (it "works on simple tasks"
-      (ogt-capture-and-process-single-action "foobar")
+      (create-single-action "foobar")
       (org-gtd-engage)
       (with-current-buffer org-agenda-buffer
         (goto-char (point-min))
@@ -62,7 +62,7 @@
                 "Home")))
 
   (it "sets category on project heading if on project task"
-      (ogt-capture-and-process-project "my project")
+      (create-project "my project")
       (org-gtd-engage)
       (with-current-buffer org-agenda-buffer
         (goto-char (point-min))

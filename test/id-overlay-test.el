@@ -216,7 +216,7 @@ HEADING-TEXT is the heading content, ID is optional custom ID."
     (it "handles newly created IDs in WIP buffer"
       ;; Test overlay functionality with IDs created during workflow
       (message "DEBUG: Starting second integration test")
-      (ogt-capture-single-item "Set up office equipment") 
+      (capture-inbox-item "Set up office equipment") 
       (message "DEBUG: Capture completed")
       (org-gtd-process-inbox)
       (message "DEBUG: Process inbox completed")

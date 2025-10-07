@@ -26,7 +26,7 @@
   "through the agenda view"
 
   (it "handles the target heading"
-      (ogt-capture-and-process-incubated-item "projectify-me" (calendar-current-date))
+      (create-deferred-item "projectify-me" (calendar-current-date))
       (org-gtd-engage)
       (set-buffer org-agenda-buffer)
       (goto-char (point-min))
@@ -34,7 +34,7 @@
       (org-gtd-clarify-agenda-item)
       (execute-kbd-macro (kbd "M-> RET"))
       (insert ogt--project-text)
-      (ogt-clarify-as-project)
+      (organize-as-project)
       (kill-buffer org-agenda-buffer)
       (org-gtd-engage)
       (with-current-buffer org-agenda-buffer
