@@ -90,21 +90,9 @@ If you call this interactively, the function will prompt for the person's name."
         (config-override (when (or delegated-to checkin-date)
                            `(,@(when delegated-to `(('text . ,(lambda (x) delegated-to))))
                              ,@(when checkin-date `(('active-timestamp . ,(lambda (x) (format "<%s>" checkin-date)))))))))
-    ;; Use configure-item with optional config override (uses default text prompting)
-    (org-gtd-configure-item (point) :delegated nil config-override)
-    ;; Insert timestamp in content (get it from the property that was just set)
-    (let ((timestamp (org-entry-get (point) "ORG_GTD_TIMESTAMP"))
-          (person (org-entry-get (point) "DELEGATED_TO")))
-      (when timestamp
-        (save-excursion
-          (org-end-of-meta-data t)
-          (open-line 1)
-          (insert timestamp)))
-      ;; Add delegation note
-      (when person
-        (save-excursion
-          (goto-char (org-log-beginning t))
-          (insert (format "programmatically delegated to %s\n" person)))))))
+    (org-gtd-delegate--configure config-override)
+    (org-gtd-delegate--insert-timestamp)
+    (org-gtd-delegate--add-delegation-note)))
 
 ;;;; Functions
 
@@ -130,28 +118,49 @@ you."
 
 ;;;;; Private
 
-(defun org-gtd-delegate--apply (&optional config-override)
-  "Organize and refile this as a delegated item in the `org-gtd' system.
+(defun org-gtd-delegate--configure (&optional config-override)
+  "Configure item at point as a delegated item.
 
 CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
-  ;; Use configure-item with optional config override
-  (org-gtd-configure-item (point) :delegated nil config-override)
-  ;; Insert timestamp in content (get it from the property that was just set)
-  (let ((timestamp (org-entry-get (point) "ORG_GTD_TIMESTAMP"))
-        (person (org-entry-get (point) "DELEGATED_TO")))
+  (org-gtd-configure-item (point) :delegated nil config-override))
+
+(defun org-gtd-delegate--insert-timestamp ()
+  "Insert timestamp from ORG_GTD_TIMESTAMP property into item content."
+  (let ((timestamp (org-entry-get (point) "ORG_GTD_TIMESTAMP")))
     (when timestamp
       (save-excursion
         (org-end-of-meta-data t)
         (open-line 1)
-        (insert timestamp)))
-    ;; Add delegation note
+        (insert timestamp)))))
+
+(defun org-gtd-delegate--add-delegation-note ()
+  "Add delegation note with person's name from DELEGATED_TO property."
+  (let ((person (org-entry-get (point) "DELEGATED_TO")))
     (when person
       (save-excursion
         (goto-char (org-log-beginning t))
-        (insert (format "programmatically delegated to %s\n" person)))))
+        (insert (format "programmatically delegated to %s\n" person))))))
+
+(defun org-gtd-delegate--finalize ()
+  "Finalize delegated item organization and refile."
   (setq-local org-gtd--organize-type 'delegated)
   (org-gtd-organize-apply-hooks)
   (org-gtd-refile--do org-gtd-action org-gtd-action-template))
+
+(defun org-gtd-delegate--apply (&optional config-override)
+  "Process GTD inbox item by transforming it into a delegated item.
+
+Orchestrates the delegation workflow:
+1. Configure with delegation settings
+2. Insert timestamp in content
+3. Add delegation note
+4. Finalize and refile to actions file
+
+CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
+  (org-gtd-delegate--configure config-override)
+  (org-gtd-delegate--insert-timestamp)
+  (org-gtd-delegate--add-delegation-note)
+  (org-gtd-delegate--finalize))
 
 ;;;; Footer
 

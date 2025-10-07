@@ -74,12 +74,24 @@ TOPIC is what you want to see in the agenda view."
 
 ;;;;; Private
 
-(defun org-gtd-single-action--apply ()
-  "Item at point is a one-off action, ready to be executed."
-  (org-gtd-configure-item (point) :next)
+(defun org-gtd-single-action--configure ()
+  "Configure item at point as a single action."
+  (org-gtd-configure-item (point) :next))
+
+(defun org-gtd-single-action--finalize ()
+  "Finalize single action organization and refile."
   (setq-local org-gtd--organize-type 'single-action)
   (org-gtd-organize-apply-hooks)
   (org-gtd-refile--do org-gtd-action org-gtd-action-template))
+
+(defun org-gtd-single-action--apply ()
+  "Process GTD inbox item by transforming it into a single action.
+
+Orchestrates the single action organization workflow:
+1. Configure as next action
+2. Finalize and refile to actions file"
+  (org-gtd-single-action--configure)
+  (org-gtd-single-action--finalize))
 
 ;;;; Footer
 
