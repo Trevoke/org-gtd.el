@@ -35,6 +35,7 @@
 (require 'org-gtd-configure)
 (require 'org-gtd-refile)
 (require 'org-gtd-single-action)
+(require 'org-gtd-accessors)
 (require 'org-gtd-dependencies)
 
 ;;;; Interactive Commands
@@ -248,32 +249,13 @@ Throws an error with a descriptive path if a cycle is detected."
 (defun org-gtd-task-management--get-task-dependencies (task-id)
   "Get list of task IDs that TASK-ID depends on (its ORG_GTD_DEPENDS_ON property).
 Returns empty list if task not found or has no dependencies."
-  (let ((marker (org-id-find task-id t)))
-    (if marker
-        (with-current-buffer (marker-buffer marker)
-          (save-excursion
-            (goto-char marker)
-            (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
-      '())))
+  (or (org-gtd-get-task-dependencies task-id) '()))
 
 (defun org-gtd-task-management--get-blocked-tasks-for-cycle-detection (task-id)
   "Get list of task IDs that TASK-ID blocks (its ORG_GTD_BLOCKS property).
 For circular dependency detection, we follow the ORG_GTD_BLOCKS relationship to find chains.
 Returns empty list if task not found or blocks nothing."
-  ;; First try current buffer
-  (let ((pos (org-gtd-task-management--find-id-in-current-buffer task-id)))
-    (if pos
-        (save-excursion
-          (goto-char pos)
-          (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS"))
-      ;; Fall back to org-id system
-      (let ((marker (org-id-find task-id t)))
-        (if marker
-            (with-current-buffer (marker-buffer marker)
-              (save-excursion
-                (goto-char marker)
-                (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
-          '())))))
+  (or (org-gtd-get-task-blockers task-id) '()))
 
 
 ;;;; Private Helper Functions
@@ -461,20 +443,7 @@ This function is kept for backward compatibility."
 
 (defun org-gtd-task-management--add-to-other-task-multivalued-property (task-id property value)
   "Find heading with TASK-ID and add VALUE to its multivalued PROPERTY."
-  ;; First try current buffer
-  (let ((pos (org-gtd-task-management--find-id-in-current-buffer task-id)))
-    (if pos
-        (progn
-          (save-excursion
-            (goto-char pos)
-            (org-gtd-task-management--add-to-multivalued-property property value)))
-      ;; Fall back to org-id system
-      (let ((marker (org-id-find task-id t)))
-        (if marker
-            (with-current-buffer (marker-buffer marker)
-              (goto-char marker)
-              (org-gtd-task-management--add-to-multivalued-property property value))
-          (user-error "Could not find task with ID: %s" task-id))))))
+  (org-gtd-add-to-multivalued-property task-id property value))
 
 (defun org-gtd-task-management--remove-from-multivalued-property (property value)
   "Remove VALUE from the multivalued PROPERTY of the current heading."
@@ -482,33 +451,7 @@ This function is kept for backward compatibility."
 
 (defun org-gtd-task-management--remove-from-other-task-multivalued-property (task-id property value)
   "Find heading with TASK-ID and remove VALUE from its multivalued PROPERTY."
-  ;; First try current buffer
-  (let ((pos (org-gtd-task-management--find-id-in-current-buffer task-id)))
-    (if pos
-        (progn
-          (save-excursion
-            (goto-char pos)
-            (org-gtd-task-management--remove-from-multivalued-property property value)))
-      ;; Fall back to org-id system
-      (let ((marker (org-id-find task-id t)))
-        (if marker
-            (with-current-buffer (marker-buffer marker)
-              (goto-char marker)
-              (org-gtd-task-management--remove-from-multivalued-property property value))
-          (user-error "Could not find task with ID: %s" task-id))))))
-
-(defun org-gtd-task-management--find-id-in-current-buffer (id)
-  "Find position of heading with ID in current buffer.
-Returns position of the heading or nil if not found."
-  (save-excursion
-    (goto-char (point-min))
-    (when (re-search-forward (format "^[ \t]*:ID:[ \t]+%s" (regexp-quote id)) nil t)
-      ;; Go to the beginning of the property block, then find the heading
-      (beginning-of-line)
-      (while (and (not (org-at-heading-p)) (not (bobp)))
-        (forward-line -1))
-      (when (org-at-heading-p)
-        (point)))))
+  (org-gtd-remove-from-multivalued-property task-id property value))
 
 (defun org-gtd-task-management--get-heading-for-id (id)
   "Get heading text for ID, searching current buffer and GTD files."

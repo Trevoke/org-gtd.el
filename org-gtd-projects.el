@@ -34,6 +34,7 @@
 (require 'org-gtd-core)
 (require 'org-gtd-refile)
 (require 'org-gtd-configure)
+(require 'org-gtd-accessors)
 (require 'org-gtd-dependencies)
 (require 'org-gtd-task-management)
 
@@ -172,34 +173,14 @@ other undone tasks are marked as `org-gtd-todo'."
 
         ;; Find tasks whose dependencies are satisfied and set them ALL to NEXT
         (let* ((project-id (org-entry-get (point) "ID"))
-               (first-tasks-str (org-entry-get (point) "ORG_GTD_FIRST_TASKS"))
-               (first-tasks (when first-tasks-str (split-string first-tasks-str)))
+               (first-tasks (org-gtd-get-project-first-tasks heading-marker))
                (ready-task-ids (org-gtd-dependencies-find-ready-tasks project-id first-tasks))
                (first-wait (org-gtd-projects--first-wait-task))
                (ready-to-mark (if first-wait
-                                  '() ; Don't mark anything NEXT if there's a WAIT
+                                  '()
                                 ready-task-ids)))
-          ;; Mark ALL ready tasks as NEXT (not just the first one)
           (dolist (task-id ready-to-mark)
-            (when-let ((marker (org-gtd-projects--find-id-marker task-id)))
-              (with-current-buffer (marker-buffer marker)
-                (save-excursion
-                  (goto-char marker)
-                  (org-entry-put (point) "TODO" (org-gtd-keywords--next)))))))))))
-
-(defun org-gtd-projects--find-id-marker (id)
-  "Find marker for task with ID.
-First tries current buffer, then falls back to org-id-find."
-  (or
-   ;; Try current buffer first (for temp buffer tests)
-   (save-excursion
-     (goto-char (point-min))
-     (when-let ((pos (org-find-entry-with-id id)))
-       (goto-char pos)
-       (point-marker)))
-   ;; Fall back to org-id-find for production use
-   (org-id-find id t)))
-
+            (org-gtd-set-task-state task-id (org-gtd-keywords--next))))))))
 
 ;;;;; Private
 

@@ -38,6 +38,7 @@
 
 (require 'org)
 (require 'org-gtd-core)
+(require 'org-gtd-accessors)
 
 (declare-function 'org-gtd-keywords--is-done-p 'org-gtd-keywords)
 (declare-function 'org-gtd-keywords--canceled 'org-gtd-keywords)
@@ -61,37 +62,26 @@ Returns list of task IDs whose dependencies are all satisfied."
         (queue (copy-sequence first-task-ids)))
 
     (while queue
-      (let* ((task-id (pop queue))
-             (marker (org-gtd-dependencies--find-id-marker task-id)))
-        (when (and marker (not (gethash task-id visited)))
+      (let ((task-id (pop queue)))
+        (when (not (gethash task-id visited))
           (puthash task-id t visited)
-          (with-current-buffer (marker-buffer marker)
-            (save-excursion
-              (goto-char marker)
-              (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
-                (let* ((todo-state (org-entry-get (point) "TODO"))
-                       (is-done (or (org-gtd-keywords--is-done-p todo-state)
-                                    (equal todo-state (org-gtd-keywords--canceled))))
-                       (depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON"))
-                       (all-deps-satisfied (or (null depends-on)
-                                               (cl-every #'org-gtd-dependencies--task-is-done-p
-                                                         depends-on)))
-                       (blocks (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
+          (when (string= (org-gtd-get-task-category task-id) "Actions")
+            (let* ((is-done (org-gtd-task-is-done-p task-id))
+                   (depends-on (org-gtd-get-task-dependencies task-id))
+                   (all-deps-satisfied (or (null depends-on)
+                                           (cl-every #'org-gtd-task-is-done-p depends-on)))
+                   (blocks (org-gtd-get-task-blockers task-id)))
 
-                  (cond
-                   (is-done
-                    (when blocks
-                      (dolist (blocked-id blocks)
-                        (when-let ((blocked-marker (org-gtd-dependencies--find-id-marker blocked-id)))
-                          (with-current-buffer (marker-buffer blocked-marker)
-                            (save-excursion
-                              (goto-char blocked-marker)
-                              (let ((blocked-project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
-                                (when (member project-id blocked-project-ids)
-                                  (setq queue (append queue (list blocked-id)))))))))))
+              (cond
+               (is-done
+                (when blocks
+                  (dolist (blocked-id blocks)
+                    (let ((blocked-project-ids (org-gtd-get-task-projects blocked-id)))
+                      (when (member project-id blocked-project-ids)
+                        (setq queue (append queue (list blocked-id))))))))
 
-                   (all-deps-satisfied
-                    (push task-id ready-tasks))))))))))
+               (all-deps-satisfied
+                (push task-id ready-tasks))))))))
 
     (nreverse ready-tasks)))
 
@@ -134,33 +124,10 @@ Creates bidirectional properties:
 
 Validates no cycles before creating relationship."
   (org-gtd-dependencies-validate-acyclic blocker-id dependent-id)
-  (org-gtd-dependencies--add-to-task-property blocker-id "ORG_GTD_BLOCKS" dependent-id)
-  (org-gtd-dependencies--add-to-task-property dependent-id "ORG_GTD_DEPENDS_ON" blocker-id))
+  (org-gtd-add-to-multivalued-property blocker-id org-gtd-prop-blocks dependent-id)
+  (org-gtd-add-to-multivalued-property dependent-id org-gtd-prop-depends-on blocker-id))
 
 ;;;; Private Helpers
-
-(defun org-gtd-dependencies--find-id-marker (id)
-  "Find marker for task with ID.
-First tries current buffer, then falls back to org-id-find."
-  (or
-   (save-excursion
-     (goto-char (point-min))
-     (when-let ((pos (org-find-entry-with-id id)))
-       (goto-char pos)
-       (point-marker)))
-   (org-id-find id t)))
-
-(defun org-gtd-dependencies--task-is-done-p (task-id)
-  "Check if TASK-ID is marked as DONE or CNCL.
-Returns t if task is done/canceled, nil otherwise."
-  (let ((marker (org-gtd-dependencies--find-id-marker task-id)))
-    (if marker
-        (with-current-buffer (marker-buffer marker)
-          (save-excursion
-            (goto-char marker)
-            (let ((todo-state (org-entry-get (point) "TODO")))
-              (and todo-state (org-gtd-keywords--is-done-p todo-state)))))
-      nil)))
 
 (defun org-gtd-dependencies--dfs-path (current-id target-id visited)
   "Depth-first search for path from CURRENT-ID to TARGET-ID.
@@ -170,7 +137,7 @@ Returns t if path exists, nil otherwise."
       nil
     (puthash current-id t visited)
 
-    (let ((blocks (org-gtd-dependencies--get-blocks current-id)))
+    (let ((blocks (org-gtd-get-task-blockers current-id)))
       (catch 'found
         (dolist (blocked-id blocks)
           (when (equal blocked-id target-id)
@@ -194,7 +161,7 @@ Returns path as list of IDs, or nil if no path exists."
 
     (if (equal current-id target-id)
         (list current-id)
-      (let ((blocks (org-gtd-dependencies--get-blocks current-id)))
+      (let ((blocks (org-gtd-get-task-blockers current-id)))
         (catch 'found
           (dolist (blocked-id blocks)
             (let ((sub-path (org-gtd-dependencies--dfs-find-path blocked-id target-id visited)))
@@ -202,47 +169,6 @@ Returns path as list of IDs, or nil if no path exists."
                 (throw 'found (cons current-id sub-path)))))
           nil)))))
 
-(defun org-gtd-dependencies--get-blocks (task-id)
-  "Get list of task IDs that TASK-ID blocks.
-Returns ORG_GTD_BLOCKS property value as list."
-  (let ((pos (org-gtd-dependencies--find-id-in-current-buffer task-id)))
-    (if pos
-        (save-excursion
-          (goto-char pos)
-          (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS"))
-      (let ((marker (org-id-find task-id t)))
-        (if marker
-            (with-current-buffer (marker-buffer marker)
-              (save-excursion
-                (goto-char marker)
-                (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
-          '())))))
-
-(defun org-gtd-dependencies--find-id-in-current-buffer (id)
-  "Find position of heading with ID in current buffer.
-Returns position or nil if not found."
-  (save-excursion
-    (goto-char (point-min))
-    (when (re-search-forward (format "^[ \t]*:ID:[ \t]+%s" (regexp-quote id)) nil t)
-      (beginning-of-line)
-      (while (and (not (org-at-heading-p)) (not (bobp)))
-        (forward-line -1))
-      (when (org-at-heading-p)
-        (point)))))
-
-(defun org-gtd-dependencies--add-to-task-property (task-id property value)
-  "Add VALUE to multivalued PROPERTY on task with TASK-ID."
-  (let ((pos (org-gtd-dependencies--find-id-in-current-buffer task-id)))
-    (if pos
-        (save-excursion
-          (goto-char pos)
-          (org-entry-add-to-multivalued-property (point) property value))
-      (let ((marker (org-id-find task-id t)))
-        (if marker
-            (with-current-buffer (marker-buffer marker)
-              (goto-char marker)
-              (org-entry-add-to-multivalued-property (point) property value))
-          (user-error "Could not find task with ID: %s" task-id))))))
 
 ;;;; Footer
 
