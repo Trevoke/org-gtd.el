@@ -49,12 +49,24 @@
 
 ;;;;; Private
 
-(defun org-gtd-quick-action--apply ()
-  "Process GTD inbox item by doing it now."
-  (org-gtd-configure-item (point) :quick-action)
+(defun org-gtd-quick-action--configure ()
+  "Configure item at point as a quick action."
+  (org-gtd-configure-item (point) :quick-action))
+
+(defun org-gtd-quick-action--finalize ()
+  "Finalize quick action organization and archive."
   (setq-local org-gtd--organize-type 'quick-action)
   (org-gtd-organize-apply-hooks)
   (org-gtd-archive-item-at-point))
+
+(defun org-gtd-quick-action--apply ()
+  "Process GTD inbox item by doing it now.
+
+Orchestrates the quick action organization workflow:
+1. Configure as quick action
+2. Finalize and archive"
+  (org-gtd-quick-action--configure)
+  (org-gtd-quick-action--finalize))
 
 ;;;; Footer
 

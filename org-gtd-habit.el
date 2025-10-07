@@ -84,15 +84,28 @@ determine how often you'll be reminded of this habit."
 
 ;;;;; Private
 
-(defun org-gtd-habit--apply (&optional config-override)
-  "Add a repeater to this item and store in org gtd.
+(defun org-gtd-habit--configure (&optional config-override)
+  "Configure item at point as a habit.
 
 CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
-  ;; Use configure-item with optional config override
-  (org-gtd-configure-item (point) :habit nil config-override)
+  (org-gtd-configure-item (point) :habit nil config-override))
+
+(defun org-gtd-habit--finalize ()
+  "Finalize habit organization and refile."
   (setq-local org-gtd--organize-type 'habit)
   (org-gtd-organize-apply-hooks)
   (org-gtd-refile--do org-gtd-habit org-gtd-habit-template))
+
+(defun org-gtd-habit--apply (&optional config-override)
+  "Process GTD inbox item by transforming it into a habit.
+
+Orchestrates the habit organization workflow:
+1. Configure with habit settings
+2. Finalize and refile to habits file
+
+CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
+  (org-gtd-habit--configure config-override)
+  (org-gtd-habit--finalize))
 
 ;;;; Footer
 

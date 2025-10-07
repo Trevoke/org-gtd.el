@@ -83,22 +83,39 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
 
 ;;;;; Private
 
-(defun org-gtd-incubate--apply (&optional config-override)
-  "Incubate this item through org-gtd.
+(defun org-gtd-incubate--configure (&optional config-override)
+  "Configure item at point as incubated.
 
 CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
-  ;; Use configure-item with optional config override
-  (org-gtd-configure-item (point) :incubate nil config-override)
-  ;; Insert timestamp in content (get it from the property that was just set)
+  (org-gtd-configure-item (point) :incubate nil config-override))
+
+(defun org-gtd-incubate--insert-timestamp ()
+  "Insert timestamp from ORG_GTD_TIMESTAMP property into item content."
   (let ((timestamp (org-entry-get (point) "ORG_GTD_TIMESTAMP")))
     (when timestamp
       (save-excursion
         (org-end-of-meta-data t)
         (open-line 1)
-        (insert timestamp))))
+        (insert timestamp)))))
+
+(defun org-gtd-incubate--finalize ()
+  "Finalize incubated item organization and refile."
   (setq-local org-gtd--organize-type 'incubated)
   (org-gtd-organize-apply-hooks)
   (org-gtd-refile--do org-gtd-incubate org-gtd-incubate-template))
+
+(defun org-gtd-incubate--apply (&optional config-override)
+  "Process GTD inbox item by transforming it into an incubated item.
+
+Orchestrates the incubate organization workflow:
+1. Configure with incubate settings
+2. Insert timestamp in content
+3. Finalize and refile to incubate file
+
+CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
+  (org-gtd-incubate--configure config-override)
+  (org-gtd-incubate--insert-timestamp)
+  (org-gtd-incubate--finalize))
 
 ;;;; Footer
 

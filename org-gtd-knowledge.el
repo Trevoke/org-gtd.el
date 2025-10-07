@@ -55,12 +55,24 @@ clarify step, before you call `org-gtd-organize').")
 
 ;;;;; Private
 
-(defun org-gtd-knowledge--apply ()
-  "Once the user has filed this knowledge, we can execute this logic."
-  (org-gtd-configure-item (point) :knowledge)
+(defun org-gtd-knowledge--configure ()
+  "Configure item at point as knowledge."
+  (org-gtd-configure-item (point) :knowledge))
+
+(defun org-gtd-knowledge--finalize ()
+  "Finalize knowledge organization and archive."
   (setq-local org-gtd--organize-type 'knowledge)
   (org-gtd-organize-apply-hooks)
   (org-gtd-archive-item-at-point))
+
+(defun org-gtd-knowledge--apply ()
+  "Process GTD inbox item by transforming it into knowledge.
+
+Orchestrates the knowledge organization workflow:
+1. Configure as knowledge
+2. Finalize and archive"
+  (org-gtd-knowledge--configure)
+  (org-gtd-knowledge--finalize))
 
 ;;;; Footer
 
