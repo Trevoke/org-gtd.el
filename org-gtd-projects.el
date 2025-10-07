@@ -35,6 +35,7 @@
 (require 'org-gtd-refile)
 (require 'org-gtd-configure)
 (require 'org-gtd-accessors)
+(require 'org-gtd-value-objects)
 (require 'org-gtd-dependencies)
 (require 'org-gtd-task-management)
 
@@ -142,6 +143,42 @@ state in the list - all others are `org-gtd-todo'."
 
 ;;;;; Public
 
+;;;;; Command: Reset All Task States
+
+(defun org-gtd-project--reset-all-task-states (project-marker)
+  "Set all undone tasks in project at PROJECT-MARKER to TODO state.
+Only resets states that should be recalculated (preserves WAIT, DONE, CNCL)."
+  (let ((all-task-markers (org-gtd-projects--collect-tasks-by-graph project-marker)))
+    (dolist (task-marker all-task-markers)
+      (org-with-point-at task-marker
+        (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
+          (let ((todo-state (org-entry-get (point) "TODO")))
+            (when (org-gtd-todo-state-should-reset-p todo-state)
+              (org-entry-put (point) "TODO" (org-gtd-keywords--todo)))))))))
+
+;;;;; Command: Mark Ready Tasks
+
+(defun org-gtd-project--mark-ready-tasks (project-marker ready-task-ids)
+  "Mark tasks in READY-TASK-IDS as NEXT for project at PROJECT-MARKER.
+Respects WAIT tasks - if project has any WAIT task, don't mark any as NEXT."
+  (let ((first-wait (org-with-point-at project-marker
+                      (org-gtd-projects--first-wait-task))))
+    (unless first-wait
+      (dolist (task-id ready-task-ids)
+        (org-gtd-set-task-state task-id (org-gtd-keywords--next))))))
+
+;;;;; Command: Find Ready Tasks
+
+(defun org-gtd-project--find-ready-tasks (project-marker)
+  "Find all tasks ready to work on for project at PROJECT-MARKER.
+Returns list of task IDs whose dependencies are satisfied."
+  (org-with-point-at project-marker
+    (let* ((project-id (org-entry-get (point) "ID"))
+           (first-tasks (org-gtd-get-project-first-tasks project-marker)))
+      (org-gtd-dependencies-find-ready-tasks project-id first-tasks))))
+
+;;;;; Main Command: Fix TODO Keywords
+
 (defun org-gtd-projects-fix-todo-keywords (heading-marker)
   "Ensure keywords for subheadings of project at HEADING-MARKER are sane.
 
@@ -150,7 +187,12 @@ all tasks whose dependencies (ORG_GTD_DEPENDS_ON) are satisfied (DONE/CNCL).
 These tasks are set to NEXT. All other undone tasks are set to TODO.
 
 This means at most one `org-gtd-next' or `org-gtd-wait' task and all
-other undone tasks are marked as `org-gtd-todo'."
+other undone tasks are marked as `org-gtd-todo'.
+
+Orchestrates state updates:
+1. Reset all resettable task states to TODO
+2. Find tasks whose dependencies are satisfied
+3. Mark ready tasks as NEXT (unless project has WAIT tasks)"
   (let* ((buffer (marker-buffer heading-marker))
          (position (marker-position heading-marker)))
     (save-excursion
@@ -158,59 +200,91 @@ other undone tasks are marked as `org-gtd-todo'."
         (org-gtd-core-prepare-buffer)
         (goto-char position)
 
-        ;; First, set all undone tasks to TODO (cross-file support via graph traversal)
-        (let ((all-task-markers (org-gtd-projects--collect-tasks-by-graph heading-marker)))
-          (dolist (task-marker all-task-markers)
-            (with-current-buffer (marker-buffer task-marker)
-              (save-excursion
-                (goto-char task-marker)
-                (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
-                  (let ((todo-state (org-entry-get (point) "TODO")))
-                    (unless (or (equal todo-state (org-gtd-keywords--wait))
-                                (equal todo-state (org-gtd-keywords--canceled))
-                                (org-gtd-keywords--is-done-p todo-state))
-                      (org-entry-put (point) "TODO" (org-gtd-keywords--todo)))))))))
+        (org-gtd-project--reset-all-task-states heading-marker)
 
-        ;; Find tasks whose dependencies are satisfied and set them ALL to NEXT
-        (let* ((project-id (org-entry-get (point) "ID"))
-               (first-tasks (org-gtd-get-project-first-tasks heading-marker))
-               (ready-task-ids (org-gtd-dependencies-find-ready-tasks project-id first-tasks))
-               (first-wait (org-gtd-projects--first-wait-task))
-               (ready-to-mark (if first-wait
-                                  '()
-                                ready-task-ids)))
-          (dolist (task-id ready-to-mark)
-            (org-gtd-set-task-state task-id (org-gtd-keywords--next))))))))
+        (let ((ready-task-ids (org-gtd-project--find-ready-tasks heading-marker)))
+          (org-gtd-project--mark-ready-tasks heading-marker ready-task-ids))))))
 
 ;;;;; Private
+
+;;;;; Command: Project Validation
+
+(defun org-gtd-project--validate-format ()
+  "Validate inbox item has correct format for project.
+Throws user-error with helpful message if invalid."
+  (when (org-gtd-projects--poorly-formatted-p)
+    (org-gtd-projects--show-error)
+    (throw 'org-gtd-error "Malformed project")))
+
+;;;;; Command: Project Heading Transformation
+
+(defun org-gtd-project--transform-heading ()
+  "Transform current heading into project structure.
+Returns marker to project heading."
+  (org-gtd-configure-item (point) :project-heading)
+  (setq-local org-gtd--organize-type 'project-heading)
+  (org-gtd-organize-apply-hooks)
+  (point-marker))
+
+;;;;; Command: Task Configuration
+
+(defun org-gtd-project--configure-tasks (project-marker)
+  "Configure all tasks under project at PROJECT-MARKER.
+Applies org-gtd properties and hooks to each task."
+  (org-with-point-at project-marker
+    (org-gtd-projects--configure-all-tasks)
+    (setq-local org-gtd--organize-type 'project-task)
+    (org-gtd-projects--apply-organize-hooks-to-tasks)))
+
+;;;;; Command: Dependency Setup
+
+(defun org-gtd-project--setup-dependencies (project-marker)
+  "Setup default sequential dependencies for project at PROJECT-MARKER.
+Creates dependencies between unconnected tasks and identifies root tasks."
+  (org-with-point-at project-marker
+    (org-gtd-projects--add-default-sequential-dependencies)
+    (org-gtd-projects--set-first-tasks)))
+
+;;;;; Command: Task State Calculation
+
+(defun org-gtd-project--calculate-task-states (project-marker)
+  "Calculate and set initial task states for project at PROJECT-MARKER.
+Uses dependency service to determine which tasks are ready to work on."
+  (org-gtd-projects-fix-todo-keywords project-marker))
+
+;;;;; Command: Project Decoration
+
+(defun org-gtd-project--decorate (project-marker)
+  "Add project decorations like progress cookies at PROJECT-MARKER."
+  (org-with-point-at project-marker
+    (org-gtd-projects--add-progress-cookie)))
+
+;;;;; Main Command: Create Project
 
 (defun org-gtd-project-new--apply ()
   "Process GTD inbox item by transforming it into a project.
 
+Orchestrates the project creation workflow:
+1. Validate format
+2. Transform heading to project
+3. Configure tasks
+4. Setup dependencies
+5. Calculate initial states
+6. Add decorations
+7. Refile to projects file
+
 Allow the user apply user-defined tags from `org-tag-persistent-alist',
 `org-tag-alist' or file-local tags in the inbox.
 Refile to `org-gtd-actionable-file-basename'."
-  (when (org-gtd-projects--poorly-formatted-p)
-    (org-gtd-projects--show-error)
-    (throw 'org-gtd-error "Malformed project"))
+  (org-gtd-project--validate-format)
 
-  ;; Configure the main project heading using the new pattern
-  (org-gtd-configure-item (point) :project-heading)
-  (setq-local org-gtd--organize-type 'project-heading)
-  (org-gtd-organize-apply-hooks)
+  (let ((project-marker (org-gtd-project--transform-heading)))
+    (org-gtd-project--configure-tasks project-marker)
+    (org-gtd-project--setup-dependencies project-marker)
+    (org-gtd-project--calculate-task-states project-marker)
+    (org-gtd-project--decorate project-marker)
 
-  ;; Configure all sub-tasks as project tasks
-  (org-gtd-projects--configure-all-tasks)
-  (setq-local org-gtd--organize-type 'project-task)
-  (org-gtd-projects--apply-organize-hooks-to-tasks)
-
-  ;; Project-specific business logic
-  (org-gtd-projects--add-default-sequential-dependencies)
-  (org-gtd-projects--set-first-tasks)
-  (org-gtd-projects-fix-todo-keywords-for-project-at-point)
-  (org-gtd-projects--add-progress-cookie)
-
-  (org-gtd-refile--do org-gtd-projects org-gtd-projects-template))
+    (org-gtd-refile--do org-gtd-projects org-gtd-projects-template)))
 
 (defun org-gtd-projects--set-project-name-on-task ()
   "Set ORG_GTD_PROJECT property on current task to its project heading name."
@@ -440,24 +514,48 @@ Returns list of task markers in breadth-first order."
   (insert " [/]")
   (org-update-statistics-cookies t))
 
-(defun org-gtd-project-extend--apply ()
-  "Refile the org heading at point under a chosen heading in the agenda files."
+;;;;; Command: Configure Single Task
+
+(defun org-gtd-project--configure-single-task ()
+  "Configure current task for addition to a project.
+Returns marker to configured task."
   (org-gtd-configure-item (point) :project-task)
   (setq-local org-gtd--organize-type 'project-task)
   (org-gtd-organize-apply-hooks)
+  (point-marker))
+
+;;;;; Command: Update Project After Task Addition
+
+(defun org-gtd-project--update-after-task-addition (project-marker)
+  "Update project at PROJECT-MARKER after new task has been added.
+Sets project name on task, recalculates root tasks, and updates states."
+  (save-excursion
+    (org-refile-goto-last-stored)
+    (org-gtd-projects--set-project-name-on-task))
+
+  (org-with-point-at project-marker
+    (org-gtd-projects--set-first-tasks))
+
+  (org-gtd-projects-fix-todo-keywords project-marker))
+
+;;;;; Main Command: Extend Project
+
+(defun org-gtd-project-extend--apply ()
+  "Refile the org heading at point under a chosen heading in the agenda files.
+
+Orchestrates adding a new task to an existing project:
+1. Configure task for project
+2. Refile to chosen project
+3. Update project metadata
+4. Recalculate task states"
+  (org-gtd-project--configure-single-task)
   (org-gtd-refile--do-project-task)
-  (let ((marker (save-excursion
-                  (org-refile-goto-last-stored)
-                  (org-up-heading-safe)
-                  (point-marker))))
-    ;; Set project name after refiling
-    (save-excursion
-      (org-refile-goto-last-stored)
-      (org-gtd-projects--set-project-name-on-task))
-    ;; Update first tasks list to include new root task
-    (org-with-point-at marker
-      (org-gtd-projects--set-first-tasks))
-    (org-gtd-projects-fix-todo-keywords marker)))
+
+  (let ((project-marker (save-excursion
+                          (org-refile-goto-last-stored)
+                          (org-up-heading-safe)
+                          (point-marker))))
+    (org-gtd-project--update-after-task-addition project-marker)))
 
 (defun org-gtd-projects--apply-organize-hooks-to-tasks ()
   "Decorate tasks for project at point."

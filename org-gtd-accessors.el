@@ -44,6 +44,7 @@
 (require 'org)
 (require 'org-gtd-core)
 
+(declare-function 'org-gtd-todo-state-is-active-p 'org-gtd-value-objects)
 (declare-function 'org-gtd-keywords--is-done-p 'org-gtd-core)
 (declare-function 'org-gtd-keywords--canceled 'org-gtd-core)
 
@@ -172,9 +173,7 @@ Returns t if task is done/canceled, nil otherwise or if task not found."
   "Check if TASK-ID is in an active state (not DONE, CNCL, or WAIT).
 Returns t if task is active, nil otherwise or if task not found."
   (when-let ((state (org-gtd-get-task-state task-id)))
-    (not (or (org-gtd-keywords--is-done-p state)
-             (equal state (org-gtd-keywords--canceled))
-             (equal state (org-gtd-keywords--wait))))))
+    (org-gtd-todo-state-is-active-p state)))
 
 ;;;; Footer
 

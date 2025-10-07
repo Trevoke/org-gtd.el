@@ -39,9 +39,7 @@
 (require 'org)
 (require 'org-gtd-core)
 (require 'org-gtd-accessors)
-
-(declare-function 'org-gtd-keywords--is-done-p 'org-gtd-keywords)
-(declare-function 'org-gtd-keywords--canceled 'org-gtd-keywords)
+(require 'org-gtd-value-objects)
 
 ;;;; Public Services
 
@@ -66,21 +64,18 @@ Returns list of task IDs whose dependencies are all satisfied."
         (when (not (gethash task-id visited))
           (puthash task-id t visited)
           (when (string= (org-gtd-get-task-category task-id) "Actions")
-            (let* ((is-done (org-gtd-task-is-done-p task-id))
-                   (depends-on (org-gtd-get-task-dependencies task-id))
-                   (all-deps-satisfied (or (null depends-on)
-                                           (cl-every #'org-gtd-task-is-done-p depends-on)))
-                   (blocks (org-gtd-get-task-blockers task-id)))
+            (let* ((state (org-gtd-get-task-state task-id))
+                   (deps (org-gtd-task-deps-from-task task-id)))
 
               (cond
-               (is-done
-                (when blocks
+               ((not (org-gtd-todo-state-blocks-others-p state))
+                (when-let ((blocks (org-gtd-task-deps-blocks deps)))
                   (dolist (blocked-id blocks)
                     (let ((blocked-project-ids (org-gtd-get-task-projects blocked-id)))
                       (when (member project-id blocked-project-ids)
                         (setq queue (append queue (list blocked-id))))))))
 
-               (all-deps-satisfied
+               ((org-gtd-task-deps-is-ready-p deps)
                 (push task-id ready-tasks))))))))
 
     (nreverse ready-tasks)))
