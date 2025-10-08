@@ -58,7 +58,9 @@
            (with-current-buffer (car wip-buffers)
              (goto-char (point-max))
              (newline)
-             (insert "** Research destinations\n** Book flights\n** Reserve hotel")
+             (make-task "Research destinations" :level 2)
+             (make-task "Book flights" :level 2)
+             (make-task "Reserve hotel" :level 2)
              (organize-as-project))))
 
        ;; 4. VERIFY in agenda
@@ -216,7 +218,9 @@
            (with-current-buffer (car wip-buffers)
              (goto-char (point-max))
              (newline)
-             (insert "** Sort items\n** Donate old items\n** Clean floor")
+             (make-task "Sort items" :level 2)
+             (make-task "Donate old items" :level 2)
+             (make-task "Clean floor" :level 2)
              (organize-as-project))))
 
        (archive-as-reference)               ; Wine recipe
@@ -262,7 +266,9 @@
            (with-current-buffer (car wip-buffers)
              (goto-char (point-max))
              (newline)
-             (insert "** Choose venue\n** Send invitations\n** Order cake")
+             (make-task "Choose venue" :level 2)
+             (make-task "Send invitations" :level 2)
+             (make-task "Order cake" :level 2)
              (organize-as-project))))
 
        (archive-as-reference)  ; Emacs manual
@@ -447,7 +453,9 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Book venue\n** Prepare materials\n** Send invitations")
+              (make-task "Book venue" :level 2)
+              (make-task "Prepare materials" :level 2)
+              (make-task "Send invitations" :level 2)
               (organize-as-project))))
 
         ;; 4. VERIFY all tasks in agenda
@@ -507,7 +515,9 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Buy lumber\n** Purchase tools\n** Build foundation")
+              (make-task "Buy lumber" :level 2)
+              (make-task "Purchase tools" :level 2)
+              (make-task "Build foundation" :level 2)
               (organize-as-project))))
 
         ;; 4. VERIFY all tasks appear in engage before cancellation
@@ -644,7 +654,9 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Design mockups\n** Write content\n** Deploy site")
+              (make-task "Design mockups" :level 2)
+              (make-task "Write content" :level 2)
+              (make-task "Deploy site" :level 2)
               (organize-as-project))))
 
         ;; 2. Make project stuck by transitioning NEXT tasks back to TODO
@@ -718,13 +730,13 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Task in main file")
+              (make-task "Task in main file" :level 2)
               (organize-as-project))))
 
         ;; 2. Create second file with NEXT task
         (let ((second-file (org-gtd--path "review-secondary")))
           (with-temp-file second-file
-            (insert "* Task in second file\n:PROPERTIES:\n:ID: review-task-id\n:END:\n"))
+            (make-task "Task in second file" :id "review-task-id" :level 1))
 
           (with-current-buffer (find-file-noselect second-file)
             (org-mode)
@@ -911,13 +923,13 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Task in main file")
+              (make-task "Task in main file" :level 2)
               (organize-as-project))))
 
         ;; 2. Create second file with related task
         (let ((second-file (org-gtd--path "secondary-tasks")))
           (with-temp-file second-file
-            (insert "* Task in second file\n:PROPERTIES:\n:ID: task-second-id\n:END:\n"))
+            (make-task "Task in second file" :id "task-second-id" :level 1))
 
           ;; Ensure ID is registered
           (with-current-buffer (find-file-noselect second-file)
@@ -988,13 +1000,14 @@
           (with-current-buffer (car wip-buffers)
             (goto-char (point-max))
             (newline)
-            (insert "** Local task one\n** Local task two")
+            (make-task "Local task one" :level 2)
+            (make-task "Local task two" :level 2)
             (organize-as-project))))
 
       ;; 2. Create second file with task
       (let ((second-file (org-gtd--path "other-tasks")))
         (with-temp-file second-file
-          (insert "* Remote task\n:PROPERTIES:\n:ID: remote-task-id\n:END:\n"))
+          (make-task "Remote task" :id "remote-task-id" :level 1))
 
         (with-current-buffer (find-file-noselect second-file)
           (org-mode)
@@ -1062,13 +1075,13 @@
           (with-current-buffer (car wip-buffers)
             (goto-char (point-max))
             (newline)
-            (insert "** Initial task")
+            (make-task "Initial task" :level 2)
             (organize-as-project))))
 
       ;; 2. Create second file with another task
       (let ((second-file (org-gtd--path "additional-tasks")))
         (with-temp-file second-file
-          (insert "* External task\n:PROPERTIES:\n:ID: external-task-id\n:END:\n"))
+          (make-task "External task" :id "external-task-id" :level 1))
 
         (with-current-buffer (find-file-noselect second-file)
           (org-mode)
@@ -1109,7 +1122,7 @@
           ;; First, create a new task in a third file
           (let ((third-file (org-gtd--path "new-extension-tasks")))
             (with-temp-file third-file
-              (insert "* New extension task\n:PROPERTIES:\n:ID: extension-task-id\n:END:\n"))
+              (make-task "New extension task" :id "extension-task-id" :level 1))
 
             (with-current-buffer (find-file-noselect third-file)
               (org-mode)
@@ -1133,7 +1146,7 @@
                   (with-current-buffer (car wip-buffers)
                     (goto-char (point-max))
                     (newline)
-                    (insert "** Another new task")
+                    (make-task "Another new task" :level 2)
                     (organize-as-project))))
 
               ;; 8. Link the extension task from third file
@@ -1188,7 +1201,9 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Design wireframes\n** Get client approval\n** Build prototype")
+              (make-task "Design wireframes" :level 2)
+              (make-task "Get client approval" :level 2)
+              (make-task "Build prototype" :level 2)
               (organize-as-project))))
         (with-current-buffer (org-gtd--default-file)
           (goto-char (point-min))
@@ -1236,7 +1251,8 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Write documentation\n** Record demo video")
+              (make-task "Write documentation" :level 2)
+              (make-task "Record demo video" :level 2)
               (organize-as-project))))
         (with-current-buffer (org-gtd--default-file)
           (goto-char (point-min))
@@ -1289,7 +1305,7 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Create content calendar")
+              (make-task "Create content calendar" :level 2)
               (organize-as-project))))
         (with-current-buffer (org-gtd--default-file)
           (goto-char (point-min))
@@ -1374,7 +1390,7 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Design database schema")
+              (make-task "Design database schema" :level 2)
               (organize-as-project))))
         (capture-inbox-item "Project Beta")
         (org-gtd-process-inbox)
@@ -1385,7 +1401,7 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Implement API")
+              (make-task "Implement API" :level 2)
               (organize-as-project))))
         (with-current-buffer (org-gtd--default-file)
           (goto-char (point-min))
@@ -1424,7 +1440,7 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Shared Task")
+              (make-task "Shared Task" :level 2)
               (organize-as-project))))
 
         (capture-inbox-item "Project Beta")
@@ -1436,7 +1452,7 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Another Task")
+              (make-task "Another Task" :level 2)
               (organize-as-project))))
 
         ;; Share "Shared Task" with Project Beta
@@ -1499,7 +1515,9 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Book conference room\n** Send speaker invites\n** Order catering")
+              (make-task "Book conference room" :level 2)
+              (make-task "Send speaker invites" :level 2)
+              (make-task "Order catering" :level 2)
               (organize-as-project))))
 
         ;; 4. VERIFY all tasks appear in engage before cancellation
@@ -1562,7 +1580,9 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Research market\n** Build prototype\n** Pitch to investors")
+              (make-task "Research market" :level 2)
+              (make-task "Build prototype" :level 2)
+              (make-task "Pitch to investors" :level 2)
               (organize-as-project))))
 
         ;; 4. VERIFY all tasks appear in engage before cancellation
@@ -1627,13 +1647,13 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Main file task")
+              (make-task "Main file task" :level 2)
               (organize-as-project))))
 
         ;; 2. Create second file with related task
         (let ((second-file (org-gtd--path "abandoned-secondary")))
           (with-temp-file second-file
-            (insert "* Secondary file task\n:PROPERTIES:\n:ID: abandoned-task-id\n:END:\n"))
+            (make-task "Secondary file task" :id "abandoned-task-id" :level 1))
 
           (with-current-buffer (find-file-noselect second-file)
             (org-mode)
@@ -1707,7 +1727,8 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Alpha task 1\n** Shared task")
+              (make-task "Alpha task 1" :level 2)
+              (make-task "Shared task" :level 2)
               (organize-as-project))))
 
         ;; 2. CAPTURE and ORGANIZE second project
@@ -1721,7 +1742,7 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Beta task 1")
+              (make-task "Beta task 1" :level 2)
               (organize-as-project))))
 
         ;; 3. Share "Shared task" with Project Beta
@@ -1815,7 +1836,8 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Gamma unique task\n** Shared infrastructure task")
+              (make-task "Gamma unique task" :level 2)
+              (make-task "Shared infrastructure task" :level 2)
               (organize-as-project))))
 
         ;; 2. CAPTURE and ORGANIZE second project
@@ -1829,7 +1851,7 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Delta unique task")
+              (make-task "Delta unique task" :level 2)
               (organize-as-project))))
 
         ;; 3. Share "Shared infrastructure task" with Project Delta
@@ -1934,13 +1956,13 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Task in main file")
+              (make-task "Task in main file" :level 2)
               (organize-as-project))))
 
         ;; 2. Create second file with task
         (let ((second-file (org-gtd--path "stuck-secondary")))
           (with-temp-file second-file
-            (insert "* Task in second file\n:PROPERTIES:\n:ID: stuck-task-id\n:END:\n"))
+            (make-task "Task in second file" :id "stuck-task-id" :level 1))
 
           (with-current-buffer (find-file-noselect second-file)
             (org-mode)
@@ -1988,17 +2010,13 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Main file task")
+              (make-task "Main file task" :level 2)
               (organize-as-project))))
 
         ;; 2. Create second file with task that has broken reference
         (let ((second-file (org-gtd--path "validation-secondary")))
           (with-temp-file second-file
-            (insert "* Task with broken ref\n")
-            (insert ":PROPERTIES:\n")
-            (insert ":ID: valid-task-id\n")
-            (insert ":ORG_GTD_BLOCKS: non-existent-id\n")  ; Broken reference
-            (insert ":END:\n"))
+            (make-task "Task with broken ref" :id "valid-task-id" :blocks "non-existent-id" :level 1))
 
           (with-current-buffer (find-file-noselect second-file)
             (org-mode)
@@ -2060,7 +2078,8 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Task A\n** Task C")
+              (make-task "Task A" :level 2)
+              (make-task "Task C" :level 2)
               (organize-as-project))))
 
         ;; 2. Manually create A→C dependency in initial setup
@@ -2244,7 +2263,8 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Task A\n** Task B")
+              (make-task "Task A" :level 2)
+              (make-task "Task B" :level 2)
               (organize-as-project))))
 
         ;; 2. Create A→B dependency
@@ -2353,7 +2373,7 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Task A")
+              (make-task "Task A" :level 2)
               (organize-as-project))))
 
         ;; 2. Add Task B using project-extend
@@ -2511,7 +2531,7 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Task A")
+              (make-task "Task A" :level 2)
               (organize-as-project))))
 
         ;; 2. Add Task B using project-extend (same file)
@@ -2543,7 +2563,7 @@
         ;; 3. Create Task C in secondary file
         (let ((second-file (org-gtd--path "delta-secondary")))
           (with-temp-file second-file
-            (insert "* Task C\n:PROPERTIES:\n:ID: task-c-delta-id\n:ORG_GTD: Actions\n:END:\n"))
+            (make-task "Task C" :id "task-c-delta-id" :level 1))
 
           (with-current-buffer (find-file-noselect second-file)
             (org-mode)
@@ -2664,7 +2684,7 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Task A")
+              (make-task "Task A" :level 2)
               (organize-as-project))))
 
         ;; 2. Add Task B using project-extend
@@ -2820,7 +2840,7 @@
             (with-current-buffer (car wip-buffers)
               (goto-char (point-max))
               (newline)
-              (insert "** Task A")
+              (make-task "Task A" :level 2)
               (organize-as-project))))
 
         ;; 2. Add Task B using project-extend (same file)
@@ -2852,7 +2872,7 @@
         ;; 3. Create Task C in secondary file
         (let ((second-file (org-gtd--path "zeta-secondary")))
           (with-temp-file second-file
-            (insert "* Task C\n:PROPERTIES:\n:ID: task-c-zeta-id\n:END:\n"))
+            (make-task "Task C" :id "task-c-zeta-id" :level 1))
 
           (with-current-buffer (find-file-noselect second-file)
             (org-mode)
