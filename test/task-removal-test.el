@@ -120,11 +120,10 @@
               (let ((task3-id (car task2-children)))
 
                 ;; Mock user interaction: answer yes to reconnection
-                (cl-letf (((symbol-function 'y-or-n-p)
-                           (lambda (_prompt) t)))
+                (spy-on 'y-or-n-p :and-return-value t)
 
-                  ;; Remove Task 2 from Project A
-                  (org-gtd-remove-task-from-project))
+                ;; Remove Task 2 from Project A
+                (org-gtd-remove-task-from-project)
 
                 ;; Verify Task 2 no longer belongs to Project A
                 (let ((task2-projects (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))

@@ -18,7 +18,7 @@
   (capture-inbox-item))
  (after-each (ogt--close-and-delete-files))
 
- (it "processes all the elements"
+ (it "processes and organizes all inbox items leaving inbox empty"
      ;; Capture some additional items (note: before-each already captures one)
      (capture-inbox-item "test project")
      (capture-inbox-item "test calendar item")
@@ -72,7 +72,7 @@
        (expect (string-match "NEXT \\[#A\\] single action" ogt-agenda-string)
                :to-be-truthy)))
 
- (it "shows item in agenda when done"
+ (it "displays organized item in daily agenda after processing"
      (org-gtd-process-inbox)
      (organize-as-single-action)
      (expect (buffer-modified-p (org-gtd--default-file)) :to-equal t)

@@ -46,7 +46,7 @@
 
  (describe
   "through the agenda"
-  (it "works on simple tasks"
+  (it "sets area of focus on single action task from agenda view"
       (create-single-action "foobar")
       (org-gtd-engage)
       (with-current-buffer org-agenda-buffer

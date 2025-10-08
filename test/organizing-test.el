@@ -28,7 +28,7 @@
   (after-each (fmakunbound 'hook1)
               (fmakunbound 'hook2))
 
-  (it "restores the window configuration"
+  (it "returns to previous window layout after organizing item"
       (let ((source-buffer (ogt--temp-org-file-buffer "taskfile" "* This is the heading to clarify"))
             (window-config nil)
             (org-gtd-refile-to-any-target t))
@@ -40,7 +40,7 @@
         (expect (compare-window-configurations (current-window-configuration) window-config)
                 :to-be t)))
 
-  (it "kills the temp buffer"
+  (it "cleans up temporary WIP buffer after organizing item"
       (let ((source-buffer (ogt--temp-org-file-buffer "taskfile" "* This is the heading to clarify"))
             (org-gtd-refile-to-any-target t))
         (set-buffer source-buffer)

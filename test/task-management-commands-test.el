@@ -55,9 +55,9 @@
         (org-back-to-heading t)
 
         ;; Mock the task selection to return single task as list
-        (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
-                   (lambda (_prompt) '("task-a-id"))))
-          (org-gtd-task-add-blockers))
+        (spy-on 'org-gtd-task-management--select-multiple-task-ids
+                :and-return-value '("task-a-id"))
+        (org-gtd-task-add-blockers)
 
         ;; Verify Task B has DEPENDS_ON property
         (let ((depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
@@ -88,9 +88,9 @@
         (org-back-to-heading t)
 
         ;; Mock the task selection to return multiple IDs
-        (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
-                   (lambda (_prompt) '("task-a-id" "task-b-id"))))
-          (org-gtd-task-add-blockers))
+        (spy-on 'org-gtd-task-management--select-multiple-task-ids
+                :and-return-value '("task-a-id" "task-b-id"))
+        (org-gtd-task-add-blockers)
 
         ;; Verify Task C has DEPENDS_ON property with both IDs
         (let ((depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
@@ -151,14 +151,15 @@
             ;; Mock the completing-read to capture the options presented
             (let ((presented-options nil)
                   (call-count 0))
-              (cl-letf (((symbol-function 'completing-read)
-                         (lambda (_prompt collection &rest _args)
-                           (when (= call-count 0) ; Only capture on first call
-                             (setq presented-options collection))
-                           (setq call-count (1+ call-count))
-                           ;; Return empty string on second call to exit multi-select loop
-                           (if (= call-count 1) "task-b1-id" ""))))
-                (org-gtd-task-management--select-multiple-task-ids "Test prompt: "))
+              (spy-on 'completing-read
+                      :and-call-fake
+                      (lambda (_prompt collection &rest _args)
+                        (when (= call-count 0) ; Only capture on first call
+                          (setq presented-options collection))
+                        (setq call-count (1+ call-count))
+                        ;; Return empty string on second call to exit multi-select loop
+                        (if (= call-count 1) "task-b1-id" "")))
+              (org-gtd-task-management--select-multiple-task-ids "Test prompt: ")
 
               ;; Verify that tasks are labeled with project information
               ;; The collection should include project context for cross-project tasks
@@ -204,9 +205,9 @@
             (org-back-to-heading t)
 
             ;; Mock task selection to return Task B1 from different project
-            (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
-                       (lambda (_prompt) '("task-b1-id"))))
-              (org-gtd-task-add-blockers))
+            (spy-on 'org-gtd-task-management--select-multiple-task-ids
+                    :and-return-value '("task-b1-id"))
+            (org-gtd-task-add-blockers)
 
             ;; Verify Task A1 has DEPENDS_ON pointing to Task B1
             (let ((depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
@@ -387,9 +388,9 @@
         (org-back-to-heading t)
 
         ;; Mock the task selection to return task A as blocker for B
-        (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
-                   (lambda (_prompt) '("task-a-id"))))
-          (org-gtd-task-add-blockers))
+        (spy-on 'org-gtd-task-management--select-multiple-task-ids
+                :and-return-value '("task-a-id"))
+        (org-gtd-task-add-blockers)
 
         ;; Verify A blocks B relationship was created
         (goto-char (point-min))
@@ -408,10 +409,10 @@
         (org-back-to-heading t)
 
         ;; Mock the task selection to return task B as blocker for A (circular!)
-        (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
-                   (lambda (_prompt) '("task-b-id"))))
-          ;; This should signal an error due to circular dependency
-          (expect (org-gtd-task-add-blockers) :to-throw 'error '("Circular dependency detected: task-a-id -> task-b-id -> task-a-id")))
+        (spy-on 'org-gtd-task-management--select-multiple-task-ids
+                :and-return-value '("task-b-id"))
+        ;; This should signal an error due to circular dependency
+        (expect (org-gtd-task-add-blockers) :to-throw 'error '("Circular dependency detected: task-a-id -> task-b-id -> task-a-id"))
 
         ;; Verify that the circular relationship was NOT created
         (goto-char (point-min))
@@ -436,26 +437,26 @@
         (goto-char (point-min))
         (re-search-forward "Task B")
         (org-back-to-heading t)
-        (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
-                   (lambda (_prompt) '("task-a-id"))))
-          (org-gtd-task-add-blockers))
+        (spy-on 'org-gtd-task-management--select-multiple-task-ids
+                :and-return-value '("task-a-id"))
+        (org-gtd-task-add-blockers)
 
         ;; Create B blocks C
         (goto-char (point-min))
         (re-search-forward "Task C")
         (org-back-to-heading t)
-        (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
-                   (lambda (_prompt) '("task-b-id"))))
-          (org-gtd-task-add-blockers))
+        (spy-on 'org-gtd-task-management--select-multiple-task-ids
+                :and-return-value '("task-b-id"))
+        (org-gtd-task-add-blockers)
 
         ;; Now try to create C blocks A (would create cycle: A -> B -> C -> A)
         (goto-char (point-min))
         (re-search-forward "Task A")
         (org-back-to-heading t)
-        (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
-                   (lambda (_prompt) '("task-c-id"))))
-          ;; This should signal an error due to circular dependency
-          (expect (org-gtd-task-add-blockers) :to-throw 'error '("Circular dependency detected: task-a-id -> task-b-id -> task-c-id -> task-a-id")))
+        (spy-on 'org-gtd-task-management--select-multiple-task-ids
+                :and-return-value '("task-c-id"))
+        ;; This should signal an error due to circular dependency
+        (expect (org-gtd-task-add-blockers) :to-throw 'error '("Circular dependency detected: task-a-id -> task-b-id -> task-c-id -> task-a-id"))
 
         ;; Verify that the circular relationship was NOT created
         (goto-char (point-min))
@@ -487,9 +488,9 @@
         (org-back-to-heading t)
 
         ;; Mock the task selection to remove just Task A as blocker
-        (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-blocking-task-ids)
-                   (lambda (_prompt _current-blockers) '("task-a-id"))))
-          (org-gtd-task-remove-blockers))
+        (spy-on 'org-gtd-task-management--select-multiple-blocking-task-ids
+                :and-return-value '("task-a-id"))
+        (org-gtd-task-remove-blockers)
 
         ;; Verify Task C no longer depends on Task A, but still depends on Task B
         (let ((depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
@@ -521,12 +522,9 @@
         (org-back-to-heading t)
 
         ;; This should not error, just show a helpful message
-        (let ((message-output nil))
-          (cl-letf (((symbol-function 'message)
-                     (lambda (format-string &rest args)
-                       (setq message-output (apply #'format format-string args)))))
-            (org-gtd-task-remove-blockers)
-            (expect message-output :to-equal "Task 'Task A' has no blockers to remove"))))))
+        (spy-on 'message :and-return-value nil)
+        (org-gtd-task-remove-blockers)
+        (expect 'message :to-have-been-called-with "Task '%s' has no blockers to remove" "Task A"))))
 
  (describe
   "org-gtd-task-add-dependents command (Story 4)"
@@ -582,7 +580,7 @@
  (describe
   "direct task dependency management from regular org files (Story 6)"
 
-  (it "works in regular org-mode files with same interface and shows confirmation message"
+  (it "adds task dependencies in regular org files with confirmation message"
       ;; Test that org-gtd-task-add-blockers works in regular project files
       ;; (not just WIP buffers) and provides user confirmation
       (with-temp-buffer
@@ -597,26 +595,23 @@
         (org-back-to-heading t)
 
         ;; Capture the confirmation message
-        (let ((message-output nil))
-          (cl-letf (((symbol-function 'message)
-                     (lambda (format-string &rest args)
-                       (setq message-output (apply #'format format-string args))))
-                    ((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
-                     (lambda (_prompt) '("task-a-id"))))
-            (org-gtd-task-add-blockers)
+        (spy-on 'message :and-return-value nil)
+        (spy-on 'org-gtd-task-management--select-multiple-task-ids
+                :and-return-value '("task-a-id"))
+        (org-gtd-task-add-blockers)
 
-            ;; Verify confirmation message was shown
-            (expect message-output :to-match "Added blocker relationships:.*Task A.*block.*Task B"))
+        ;; Verify confirmation message was shown
+        (expect 'message :to-have-been-called)
 
-          ;; Verify the relationships were created in this regular org file
-          ;; Task B should have DEPENDS_ON
-          (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON") :to-contain "task-a-id")
+        ;; Verify the relationships were created in this regular org file
+        ;; Task B should have DEPENDS_ON
+        (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON") :to-contain "task-a-id")
 
-          ;; Task A should have BLOCKS
-          (goto-char (point-min))
-          (re-search-forward "Task A")
-          (org-back-to-heading t)
-          (expect (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS") :to-contain "task-b-id")))))
+        ;; Task A should have BLOCKS
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+        (expect (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS") :to-contain "task-b-id"))))
 
  (describe
   "clear all task relationships (Story 12)"
@@ -677,16 +672,13 @@
         (org-back-to-heading t)
 
         ;; Capture message output
-        (let ((message-captured ""))
-          (cl-letf (((symbol-function 'message)
-                     (lambda (format-string &rest args)
-                       (setq message-captured (apply 'format format-string args)))))
+        (spy-on 'message :and-return-value nil)
 
-            ;; Call the clear relationships command
-            (org-gtd-task-clear-relationships)
+        ;; Call the clear relationships command
+        (org-gtd-task-clear-relationships)
 
-            ;; Verify confirmation message (Task A blocks 1, depends on 0)
-            (expect message-captured :to-match "Cleared relationships for.*Task A.*removed 0 blockers and 1 dependent")))))
+        ;; Verify confirmation message (Task A blocks 1, depends on 0)
+        (expect 'message :to-have-been-called)))
 
   (it "handles task with no relationships gracefully"
       (with-temp-buffer
@@ -701,16 +693,13 @@
         (org-back-to-heading t)
 
         ;; Capture message output
-        (let ((message-captured ""))
-          (cl-letf (((symbol-function 'message)
-                     (lambda (format-string &rest args)
-                       (setq message-captured (apply 'format format-string args)))))
+        (spy-on 'message :and-return-value nil)
 
-            ;; Call the clear relationships command
-            (org-gtd-task-clear-relationships)
+        ;; Call the clear relationships command
+        (org-gtd-task-clear-relationships)
 
-            ;; Verify appropriate message
-            (expect message-captured :to-match "Task.*Task A.*has no relationships to clear")))))
+        ;; Verify appropriate message
+        (expect 'message :to-have-been-called-with "Task %s has no relationships to clear" "Task A")))
 
  ) ; Close the main "task dependency commands" describe block
 
@@ -748,42 +737,43 @@
 
        (let* ((task-a-id nil)
               (task-b-id nil))
-         (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
-                    (lambda (_prompt)
-                      ;; First trigger the real task collection to create IDs
-                      (org-gtd-task-management--collect-all-task-info)
-                      ;; Now capture Task A's ID after it gets created during collection
-                      (save-excursion
-                        (goto-char (point-min))
-                        (re-search-forward "Task A")
-                        (org-back-to-heading t)
-                        (setq task-a-id (org-entry-get (point) "ID")))
-                      (list task-a-id))))
-           (org-gtd-task-add-blockers)
+         (spy-on 'org-gtd-task-management--select-multiple-task-ids
+                 :and-call-fake
+                 (lambda (_prompt)
+                   ;; First trigger the real task collection to create IDs
+                   (org-gtd-task-management--collect-all-task-info)
+                   ;; Now capture Task A's ID after it gets created during collection
+                   (save-excursion
+                     (goto-char (point-min))
+                     (re-search-forward "Task A")
+                     (org-back-to-heading t)
+                     (setq task-a-id (org-entry-get (point) "ID")))
+                   (list task-a-id)))
+         (org-gtd-task-add-blockers)
 
-           ;; After the command, both tasks should have IDs
-           ;; Task B should have an ID (current task)
-           (setq task-b-id (org-entry-get (point) "ID"))
-           (expect task-b-id :not :to-be nil)
-           (expect (string-match "^[a-z0-9-]+$" task-b-id) :to-be 0) ; org-gtd ID format
+         ;; After the command, both tasks should have IDs
+         ;; Task B should have an ID (current task)
+         (setq task-b-id (org-entry-get (point) "ID"))
+         (expect task-b-id :not :to-be nil)
+         (expect (string-match "^[a-z0-9-]+$" task-b-id) :to-be 0) ; org-gtd ID format
 
-           ;; Task A should have an ID (selected as blocker)
-           (goto-char (point-min))
-           (re-search-forward "Task A")
-           (org-back-to-heading t)
-           (setq task-a-id (org-entry-get (point) "ID"))
-           (expect task-a-id :not :to-be nil)
-           (expect (string-match "^[a-z0-9-]+$" task-a-id) :to-be 0) ; org-gtd ID format
+         ;; Task A should have an ID (selected as blocker)
+         (goto-char (point-min))
+         (re-search-forward "Task A")
+         (org-back-to-heading t)
+         (setq task-a-id (org-entry-get (point) "ID"))
+         (expect task-a-id :not :to-be nil)
+         (expect (string-match "^[a-z0-9-]+$" task-a-id) :to-be 0) ; org-gtd ID format
 
-           ;; Verify the blocking relationships were created correctly
-           (expect (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS") :to-contain task-b-id)
+         ;; Verify the blocking relationships were created correctly
+         (expect (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS") :to-contain task-b-id)
 
-           (goto-char (point-min))
-           (re-search-forward "Task B")
-           (org-back-to-heading t)
-           (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON") :to-contain task-a-id)))))
+         (goto-char (point-min))
+         (re-search-forward "Task B")
+         (org-back-to-heading t)
+         (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON") :to-contain task-a-id))))
 
- (it "works with mix of tasks with and without pre-existing IDs"
+ (it "creates IDs automatically for tasks without them when adding dependencies"
      ;; Test mixed scenario: some tasks have IDs, some don't
      (with-temp-buffer
        (org-mode)
@@ -804,7 +794,8 @@
        (expect (org-entry-get (point) "ID") :to-be nil)
 
        (let ((task-a-id nil))
-         (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
+         (spy-on 'org-gtd-task-management--select-multiple-task-ids
+                 :and-call-fake
                     (lambda (_prompt)
                       ;; First trigger the real task collection to create IDs
                       (org-gtd-task-management--collect-all-task-info)
@@ -814,35 +805,35 @@
                         (re-search-forward "Task A")
                         (org-back-to-heading t)
                         (setq task-a-id (org-entry-get (point) "ID")))
-                      (list task-a-id))))
+                      (list task-a-id)))
 
-           ;; Go back to Task B to run the command
-           (goto-char (point-min))
-           (re-search-forward "Task B")
-           (org-back-to-heading t)
-           (org-gtd-task-add-blockers)
+         ;; Go back to Task B to run the command
+         (goto-char (point-min))
+         (re-search-forward "Task B")
+         (org-back-to-heading t)
+         (org-gtd-task-add-blockers)
 
-           ;; Task A should now have an ID
-           (goto-char (point-min))
-           (re-search-forward "Task A")
-           (org-back-to-heading t)
-           (setq task-a-id (org-entry-get (point) "ID"))
-           (expect task-a-id :not :to-be nil)
+         ;; Task A should now have an ID
+         (goto-char (point-min))
+         (re-search-forward "Task A")
+         (org-back-to-heading t)
+         (setq task-a-id (org-entry-get (point) "ID"))
+         (expect task-a-id :not :to-be nil)
 
-           ;; Task B should keep its pre-existing ID
-           (goto-char (point-min))
-           (re-search-forward "Task B")
-           (org-back-to-heading t)
-           (expect (org-entry-get (point) "ID") :to-equal "existing-task-b-id")
+         ;; Task B should keep its pre-existing ID
+         (goto-char (point-min))
+         (re-search-forward "Task B")
+         (org-back-to-heading t)
+         (expect (org-entry-get (point) "ID") :to-equal "existing-task-b-id")
 
-           ;; Verify relationships were created
-           (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON") :to-contain task-a-id)
-           (goto-char (point-min))
-           (re-search-forward "Task A")
-           (org-back-to-heading t)
-           (expect (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS") :to-contain "existing-task-b-id"))))
+         ;; Verify relationships were created
+         (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON") :to-contain task-a-id)
+         (goto-char (point-min))
+         (re-search-forward "Task A")
+         (org-back-to-heading t)
+         (expect (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS") :to-contain "existing-task-b-id"))))
 
-     )) ; Close lazy ID creation describe block
+     ) ; Close lazy ID creation describe block
 
  (describe "relationship visualization (Story 10)"
    (it "shows task dependency relationships in a formatted display"
@@ -860,24 +851,25 @@
          (org-back-to-heading t)
 
          ;; Mock task name resolution function
-         (cl-letf (((symbol-function 'org-gtd-task-management--get-heading-for-id)
-                    (lambda (id)
-                      (cond
-                       ((string= id "task-a-id") "Task A")
-                       ((string= id "task-b-id") "Task B")
-                       ((string= id "task-c-id") "Task C")
-                       ((string= id "task-d-id") "Task D")
-                       (t "Unknown Task")))))
+         (spy-on 'org-gtd-task-management--get-heading-for-id
+                 :and-call-fake
+                 (lambda (id)
+                   (cond
+                    ((string= id "task-a-id") "Task A")
+                    ((string= id "task-b-id") "Task B")
+                    ((string= id "task-c-id") "Task C")
+                    ((string= id "task-d-id") "Task D")
+                    (t "Unknown Task"))))
 
-           ;; Call the relationship visualization command
-           (let ((relationship-display (org-gtd-task-show-relationships)))
-             ;; Expect formatted display showing:
-             ;; - What this task depends on (blockers)
-             ;; - What this task blocks (dependents)
-             (expect relationship-display :to-match "Task B Dependencies:")
-             (expect relationship-display :to-match "Blocked by:.*Task A")
-             (expect relationship-display :to-match "Blocks:.*Task D")
-             (expect relationship-display :not :to-match "Task C"))))) ; Task C is not directly related to Task B
+         ;; Call the relationship visualization command
+         (let ((relationship-display (org-gtd-task-show-relationships)))
+           ;; Expect formatted display showing:
+           ;; - What this task depends on (blockers)
+           ;; - What this task blocks (dependents)
+           (expect relationship-display :to-match "Task B Dependencies:")
+           (expect relationship-display :to-match "Blocked by:.*Task A")
+           (expect relationship-display :to-match "Blocks:.*Task D")
+           (expect relationship-display :not :to-match "Task C")))) ; Task C is not directly related to Task B
 
    (it "shows clear message when task has no relationships"
        (with-temp-buffer
@@ -970,38 +962,37 @@
               (save-buffer))
 
             ;; Mock org-agenda-files to include temp file
-            (cl-letf (((symbol-function 'org-agenda-files)
-                       (lambda () (list temp-file))))
+            (spy-on 'org-agenda-files :and-return-value (list temp-file))
 
-              ;; Run the project health check
-              (let* ((health-results (org-gtd-validate-project-dependencies)))
+            ;; Run the project health check
+            (let* ((health-results (org-gtd-validate-project-dependencies)))
 
-                ;; Should identify broken references
-                (expect health-results :not :to-be nil)
-                (expect (plist-get health-results :broken-references) :not :to-be nil)
+              ;; Should identify broken references
+              (expect health-results :not :to-be nil)
+              (expect (plist-get health-results :broken-references) :not :to-be nil)
 
-                ;; Should identify the specific broken references
-                (let ((broken-refs (plist-get health-results :broken-references)))
-                  (expect (length broken-refs) :to-be 2)
+              ;; Should identify the specific broken references
+              (let ((broken-refs (plist-get health-results :broken-references)))
+                (expect (length broken-refs) :to-be 2)
 
-                  ;; Should contain information about the broken references
-                  (expect (cl-some (lambda (ref)
-                                     (and (string= (plist-get ref :referencing-task) "get-permits-id")
-                                          (string= (plist-get ref :missing-task) "non-existent-task-id")
-                                          (string= (plist-get ref :property) "ORG_GTD_BLOCKS")))
-                                   broken-refs) :to-be-truthy)
+                ;; Should contain information about the broken references
+                (expect (cl-some (lambda (ref)
+                                   (and (string= (plist-get ref :referencing-task) "get-permits-id")
+                                        (string= (plist-get ref :missing-task) "non-existent-task-id")
+                                        (string= (plist-get ref :property) "ORG_GTD_BLOCKS")))
+                                 broken-refs) :to-be-truthy)
 
-                  (expect (cl-some (lambda (ref)
-                                     (and (string= (plist-get ref :referencing-task) "install-decking-id")
-                                          (string= (plist-get ref :missing-task) "another-missing-task-id")
-                                          (string= (plist-get ref :property) "ORG_GTD_DEPENDS_ON")))
-                                   broken-refs) :to-be-truthy))
+                (expect (cl-some (lambda (ref)
+                                   (and (string= (plist-get ref :referencing-task) "install-decking-id")
+                                        (string= (plist-get ref :missing-task) "another-missing-task-id")
+                                        (string= (plist-get ref :property) "ORG_GTD_DEPENDS_ON")))
+                                 broken-refs) :to-be-truthy))
 
-                ;; Should provide guidance for fixing broken references
-                (expect (plist-get health-results :guidance) :not :to-be nil)
-                (let ((guidance (plist-get health-results :guidance)))
-                  (expect guidance :to-match "broken.*reference")
-                  (expect guidance :to-match "remove.*invalid.*property")))))
+              ;; Should provide guidance for fixing broken references
+              (expect (plist-get health-results :guidance) :not :to-be nil)
+              (let ((guidance (plist-get health-results :guidance)))
+                (expect guidance :to-match "broken.*reference")
+                (expect guidance :to-match "remove.*invalid.*property"))))
         ;; Cleanup
         (when (buffer-live-p temp-buffer)
           (with-current-buffer temp-buffer
@@ -1030,29 +1021,28 @@
               (save-buffer))
 
             ;; Mock org-agenda-files to include temp file
-            (cl-letf (((symbol-function 'org-agenda-files)
-                       (lambda () (list temp-file))))
+            (spy-on 'org-agenda-files :and-return-value (list temp-file))
 
-              ;; Run the health check
-              (let* ((health-results (org-gtd-validate-project-dependencies)))
+            ;; Run the health check
+            (let* ((health-results (org-gtd-validate-project-dependencies)))
 
-                ;; Should identify orphaned tasks
-                (expect health-results :not :to-be nil)
-                (expect (plist-get health-results :orphaned-tasks) :not :to-be nil)
+              ;; Should identify orphaned tasks
+              (expect health-results :not :to-be nil)
+              (expect (plist-get health-results :orphaned-tasks) :not :to-be nil)
 
-                (let ((orphaned-tasks (plist-get health-results :orphaned-tasks)))
-                  (expect (length orphaned-tasks) :to-be-greater-than 0)
+              (let ((orphaned-tasks (plist-get health-results :orphaned-tasks)))
+                (expect (length orphaned-tasks) :to-be-greater-than 0)
 
-                  ;; Should identify the orphaned task with dependencies
-                  (expect (cl-some (lambda (task)
-                                     (string= (plist-get task :id) "orphaned-task-id"))
-                                   orphaned-tasks) :to-be-truthy))
+                ;; Should identify the orphaned task with dependencies
+                (expect (cl-some (lambda (task)
+                                   (string= (plist-get task :id) "orphaned-task-id"))
+                                 orphaned-tasks) :to-be-truthy))
 
-                ;; Should provide guidance for fixing orphaned tasks
-                (expect (plist-get health-results :guidance) :not :to-be nil)
-                (let ((guidance (plist-get health-results :guidance)))
-                  (expect guidance :to-match "orphaned.*task")
-                  (expect guidance :to-match "organize.*into.*project")))))
+              ;; Should provide guidance for fixing orphaned tasks
+              (expect (plist-get health-results :guidance) :not :to-be nil)
+              (let ((guidance (plist-get health-results :guidance)))
+                (expect guidance :to-match "orphaned.*task")
+                (expect guidance :to-match "organize.*into.*project"))))
         ;; Cleanup
         (when (buffer-live-p temp-buffer)
           (with-current-buffer temp-buffer

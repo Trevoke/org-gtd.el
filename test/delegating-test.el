@@ -13,7 +13,7 @@
  (before-each (setq inhibit-message t) (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
- (it "can be done programmatically"
+ (it "appears in daily agenda with WAIT state after delegation"
      (org-gtd-delegate-create "Talk to university"
                               "Favorite student"
                               (format-time-string "%Y-%m-%d"))
@@ -41,7 +41,7 @@
  (before-each (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
- (it "has a specific property with the active timestamp"
+ (it "stores check-in date in ORG_GTD_TIMESTAMP property to enable follow-up"
      (let* ((date (calendar-current-date))
             (year (nth 2 date))
             (month (nth 0 date))

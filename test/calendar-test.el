@@ -13,13 +13,13 @@
  (before-each (setq inhibit-message t) (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
- (it "can be added programmatically"
+ (it "appears in daily agenda after creation"
      (org-gtd-calendar-create "Dentist appointment"
                               (format-time-string "%Y-%m-%d"))
      (org-gtd-engage)
      (expect (agenda-contains? "Dentist appointment") :to-be-truthy))
 
- (it "has a specific property with the active timestamp"
+ (it "stores scheduled date in ORG_GTD_TIMESTAMP property for calendar items"
      (let* ((date (calendar-current-date))
             (year (nth 2 date))
             (month (nth 0 date))

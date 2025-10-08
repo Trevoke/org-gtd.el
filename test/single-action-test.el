@@ -13,7 +13,7 @@
  (before-each (setq inhibit-message t) (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
-  (it "can be added programmatically"
+  (it "appears in daily agenda after creation"
      (org-gtd-single-action-create "Write this test")
      (org-gtd-engage)
      (expect (agenda-contains? "Write this test") :to-be-truthy)))

@@ -2132,13 +2132,12 @@
                   (goto-char (point-min))
                   (search-forward "Task B")
                   (org-back-to-heading t)
-                  (cl-letf (((symbol-function 'org-refile-get-location)
-                             (lambda (&rest _)
-                               (list "Project Alpha"
-                                     (buffer-file-name (marker-buffer project-point))
-                                     nil
-                                     (marker-position project-point)))))
-                    (org-gtd-project-extend)))))))
+                  (spy-on 'org-refile-get-location
+                          :and-return-value (list "Project Alpha"
+                                                  (buffer-file-name (marker-buffer project-point))
+                                                  nil
+                                                  (marker-position project-point)))
+                  (org-gtd-project-extend))))))
 
         ;; 5. Get IDs for all tasks
         (let ((task-a-id nil)
@@ -2303,13 +2302,12 @@
                   (goto-char (point-min))
                   (search-forward "Task C")
                   (org-back-to-heading t)
-                  (cl-letf (((symbol-function 'org-refile-get-location)
-                             (lambda (&rest _)
-                               (list "Project Beta"
-                                     (buffer-file-name (marker-buffer project-point))
-                                     nil
-                                     (marker-position project-point)))))
-                    (org-gtd-project-extend)))))))
+                  (spy-on 'org-refile-get-location
+                          :and-return-value (list "Project Beta"
+                                                  (buffer-file-name (marker-buffer project-point))
+                                                  nil
+                                                  (marker-position project-point)))
+                  (org-gtd-project-extend))))))
 
         ;; 4. SIMULATE MANUAL WORKFLOW: Add B as blocker of C
         (let ((task-b-id nil)
@@ -2326,9 +2324,9 @@
             (setq task-c-id (org-id-get-create))
 
             ;; Add B as blocker of C
-            (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
-                       (lambda (_prompt) (list task-b-id))))
-              (org-gtd-task-add-blockers)))
+            (spy-on 'org-gtd-task-management--select-multiple-task-ids
+                    :and-return-value (list task-b-id))
+            (org-gtd-task-add-blockers))
 
           ;; 5. VERIFY A→B→C chain
           (with-current-buffer (org-gtd--default-file)
@@ -2395,13 +2393,12 @@
                   (goto-char (point-min))
                   (search-forward "Task B")
                   (org-back-to-heading t)
-                  (cl-letf (((symbol-function 'org-refile-get-location)
-                             (lambda (&rest _)
-                               (list "Project Gamma"
-                                     (buffer-file-name (marker-buffer project-point))
-                                     nil
-                                     (marker-position project-point)))))
-                    (org-gtd-project-extend)))))))
+                  (spy-on 'org-refile-get-location
+                          :and-return-value (list "Project Gamma"
+                                                  (buffer-file-name (marker-buffer project-point))
+                                                  nil
+                                                  (marker-position project-point)))
+                  (org-gtd-project-extend))))))
 
         ;; 3. Add Task C using project-extend
         (capture-inbox-item "Task C")
@@ -2421,13 +2418,12 @@
                   (goto-char (point-min))
                   (search-forward "Task C")
                   (org-back-to-heading t)
-                  (cl-letf (((symbol-function 'org-refile-get-location)
-                             (lambda (&rest _)
-                               (list "Project Gamma"
-                                     (buffer-file-name (marker-buffer project-point))
-                                     nil
-                                     (marker-position project-point)))))
-                    (org-gtd-project-extend)))))))
+                  (spy-on 'org-refile-get-location
+                          :and-return-value (list "Project Gamma"
+                                                  (buffer-file-name (marker-buffer project-point))
+                                                  nil
+                                                  (marker-position project-point)))
+                  (org-gtd-project-extend))))))
 
         ;; 4. SIMULATE MANUAL WORKFLOW: Make A parent of both B and C (using ORG_GTD_ properties)
         (let ((task-a-id nil)
@@ -2553,13 +2549,12 @@
                   (goto-char (point-min))
                   (search-forward "Task B")
                   (org-back-to-heading t)
-                  (cl-letf (((symbol-function 'org-refile-get-location)
-                             (lambda (&rest _)
-                               (list "Project Delta"
-                                     (buffer-file-name (marker-buffer project-point))
-                                     nil
-                                     (marker-position project-point)))))
-                    (org-gtd-project-extend)))))))
+                  (spy-on 'org-refile-get-location
+                          :and-return-value (list "Project Delta"
+                                                  (buffer-file-name (marker-buffer project-point))
+                                                  nil
+                                                  (marker-position project-point)))
+                  (org-gtd-project-extend))))))
 
         ;; 3. Create Task C in secondary file
         (let ((second-file (org-gtd--path "delta-secondary")))
@@ -2706,13 +2701,12 @@
                   (goto-char (point-min))
                   (search-forward "Task B")
                   (org-back-to-heading t)
-                  (cl-letf (((symbol-function 'org-refile-get-location)
-                             (lambda (&rest _)
-                               (list "Project Epsilon"
-                                     (buffer-file-name (marker-buffer project-point))
-                                     nil
-                                     (marker-position project-point)))))
-                    (org-gtd-project-extend)))))))
+                  (spy-on 'org-refile-get-location
+                          :and-return-value (list "Project Epsilon"
+                                                  (buffer-file-name (marker-buffer project-point))
+                                                  nil
+                                                  (marker-position project-point)))
+                  (org-gtd-project-extend))))))
 
         ;; 3. Add Task C using project-extend
         (capture-inbox-item "Task C")
@@ -2732,13 +2726,12 @@
                   (goto-char (point-min))
                   (search-forward "Task C")
                   (org-back-to-heading t)
-                  (cl-letf (((symbol-function 'org-refile-get-location)
-                             (lambda (&rest _)
-                               (list "Project Epsilon"
-                                     (buffer-file-name (marker-buffer project-point))
-                                     nil
-                                     (marker-position project-point)))))
-                    (org-gtd-project-extend)))))))
+                  (spy-on 'org-refile-get-location
+                          :and-return-value (list "Project Epsilon"
+                                                  (buffer-file-name (marker-buffer project-point))
+                                                  nil
+                                                  (marker-position project-point)))
+                  (org-gtd-project-extend))))))
 
         ;; 4. SIMULATE MANUAL WORKFLOW: Create A→B→C chain
         (let ((task-a-id nil)
@@ -2755,17 +2748,17 @@
             (setq task-b-id (org-id-get-create))
 
             ;; Add A as blocker of B
-            (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
-                       (lambda (_prompt) (list task-a-id))))
-              (org-gtd-task-add-blockers))
+            (spy-on 'org-gtd-task-management--select-multiple-task-ids
+                    :and-return-value (list task-a-id))
+            (org-gtd-task-add-blockers)
 
             ;; Add B as blocker of C
             (goto-char (point-min))
             (search-forward "Task C")
             (org-back-to-heading t)
-            (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
-                       (lambda (_prompt) (list task-b-id))))
-              (org-gtd-task-add-blockers)))
+            (spy-on 'org-gtd-task-management--select-multiple-task-ids
+                    :and-return-value (list task-b-id))
+            (org-gtd-task-add-blockers))
 
           ;; 5. VERIFY sequential chain
           (with-current-buffer (org-gtd--default-file)
@@ -2862,13 +2855,12 @@
                   (goto-char (point-min))
                   (search-forward "Task B")
                   (org-back-to-heading t)
-                  (cl-letf (((symbol-function 'org-refile-get-location)
-                             (lambda (&rest _)
-                               (list "Project Zeta"
-                                     (buffer-file-name (marker-buffer project-point))
-                                     nil
-                                     (marker-position project-point)))))
-                    (org-gtd-project-extend)))))))
+                  (spy-on 'org-refile-get-location
+                          :and-return-value (list "Project Zeta"
+                                                  (buffer-file-name (marker-buffer project-point))
+                                                  nil
+                                                  (marker-position project-point)))
+                  (org-gtd-project-extend))))))
 
         ;; 3. Create Task C in secondary file
         (let ((second-file (org-gtd--path "zeta-secondary")))
@@ -2915,18 +2907,18 @@
                 (setq task-b-id (org-id-get-create))
 
                 ;; Add A as blocker of B
-                (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
-                           (lambda (_prompt) (list task-a-id))))
-                  (org-gtd-task-add-blockers))
+                (spy-on 'org-gtd-task-management--select-multiple-task-ids
+                        :and-return-value (list task-a-id))
+                (org-gtd-task-add-blockers)
 
                 ;; Add B as blocker of C (in other file)
                 (with-current-buffer (find-file-noselect second-file)
                   (goto-char (point-min))
                   (search-forward "Task C")
                   (org-back-to-heading t)
-                  (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
-                             (lambda (_prompt) (list task-b-id))))
-                    (org-gtd-task-add-blockers))))
+                  (spy-on 'org-gtd-task-management--select-multiple-task-ids
+                          :and-return-value (list task-b-id))
+                  (org-gtd-task-add-blockers)))
 
               ;; 6. VERIFY sequential chain across files
               (with-current-buffer (org-gtd--default-file)

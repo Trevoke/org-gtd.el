@@ -13,7 +13,7 @@
  (before-each (setq inhibit-message t) (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
- (it "has a specific property with the active timestamp"
+ (it "stores review date in ORG_GTD_TIMESTAMP property for future consideration"
      (let* ((date (calendar-current-date))
             (year (nth 2 date))
             (month (nth 0 date))
@@ -26,7 +26,7 @@
          (let ((timestamp (task-timestamp (current-task))))
            (expect timestamp :to-match (format "%s-%#02d-%#02d" year month day))))))
 
-  (it "can be added programmatically"
+  (it "appears in daily agenda when review date arrives"
      (org-gtd-incubate-create "Dentist appointment"
                               (format-time-string "%Y-%m-%d"))
      (org-gtd-engage)

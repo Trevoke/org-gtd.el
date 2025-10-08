@@ -27,7 +27,7 @@
  (describe
   "through the agenda view"
 
-  (it "handles the target heading"
+  (it "converts incubated item to project with tasks via clarify-agenda-item"
       (create-deferred-item "projectify-me" (calendar-current-date))
       (org-gtd-engage)
       (set-buffer org-agenda-buffer)

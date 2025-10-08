@@ -13,7 +13,7 @@
  (before-each (setq inhibit-message t) (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
- (it "can be added programmatically"
+ (it "appears in daily agenda after creation with recurring schedule"
      (org-gtd-habit-create "Dentist appointment"
                               ".+3m")
      (org-gtd-engage)

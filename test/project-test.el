@@ -51,7 +51,7 @@
 
  (describe
   "displaying the guide when the project is poorly shaped"
-  (it "does it"
+  (it "shows validation guidance when project structure is invalid"
       (with-simulated-input "SPC"
                             (org-gtd-projects--show-error))
       (expect (ogt--buffer-string "*Message*")

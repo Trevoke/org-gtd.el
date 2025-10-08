@@ -10,7 +10,7 @@
  (before-each (setq inhibit-message t) (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
- (it "shows cool things"
+ (it "displays comprehensive daily engagement view with scheduled items, habits, next actions, and delegated tasks"
      ;; TODAY'S THINGS
      ;; (regular agenda?)
      ;;; hourly

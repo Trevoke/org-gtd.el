@@ -40,7 +40,7 @@
         (expect archived-projects :to-match "completed")
         (expect archived-projects :to-match "canceled"))))
 
- (it "on a single action"
+ (it "archives completed single action while preserving active ones"
      (create-single-action "one")
      (ogt--save-all-buffers)
      (create-single-action "two")
