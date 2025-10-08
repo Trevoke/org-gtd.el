@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'ogt-assertions (file-name-concat default-directory "test/helpers/assertions.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -16,10 +17,7 @@
      (org-gtd-habit-create "Dentist appointment"
                               ".+3m")
      (org-gtd-engage)
-     (with-current-buffer org-agenda-buffer
-       (expect (ogt--current-buffer-raw-text)
-               :to-match
-               "Dentist appointment")))
+     (expect (agenda-contains? "Dentist appointment") :to-be-truthy))
 
 
  (it "is formatted like org-mode wants"
@@ -28,7 +26,5 @@
        (with-current-buffer (org-gtd--default-file)
          (goto-char (point-min))
          (search-forward "Yowza")
-         (expect (org-entry-get (point) "STYLE")
-                 :to-equal "habit")
-         (expect (org-entry-get (point) "SCHEDULED")
-                 :to-match (format "%s" repeater))))))
+         (expect (task-property (current-task) "STYLE") :to-equal "habit")
+         (expect (task-property (current-task) "SCHEDULED") :to-match (format "%s" repeater))))))

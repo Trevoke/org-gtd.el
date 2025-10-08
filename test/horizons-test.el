@@ -2,6 +2,7 @@
 
 ;; Load test helpers via setup.el (which now uses require internally)
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'ogt-assertions (file-name-concat default-directory "test/helpers/assertions.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -44,7 +45,7 @@
        (expect (get-buffer-window (car (org-gtd-wip--get-buffers)))
                :not :to-be
                nil)
-       (expect (ogt--buffer-string "horizons.org")
+       (expect (file-raw-text "horizons.org")
                :to-match
                "We are the champions"))
 

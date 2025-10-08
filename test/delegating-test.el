@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'ogt-assertions (file-name-concat default-directory "test/helpers/assertions.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -17,10 +18,7 @@
                               "Favorite student"
                               (format-time-string "%Y-%m-%d"))
      (org-gtd-engage)
-     (with-current-buffer org-agenda-buffer
-       (expect (ogt--current-buffer-raw-text)
-               :to-match
-               "Talk to university")))
+     (expect (agenda-contains? "Talk to university") :to-be-truthy))
 
  (it "can be done through the agenda and show on the agenda"
      (create-single-action "delegateme")
@@ -34,9 +32,8 @@
 
      (ogt--save-all-buffers)
      (org-gtd-engage)
-     (with-current-buffer org-agenda-buffer
-       (expect (ogt--current-buffer-raw-text) :to-match "WAIT ")
-       (expect (ogt--current-buffer-raw-text) :to-match "That Guy"))))
+     (expect (agenda-contains? "WAIT ") :to-be-truthy)
+     (expect (agenda-contains? "That Guy") :to-be-truthy)))
 
 (describe
  "A delegated item"
@@ -53,8 +50,8 @@
        (with-current-buffer (org-gtd--default-file)
          (goto-char (point-min))
          (search-forward "TASK DESC")
-         (expect (org-entry-get (point) org-gtd-timestamp)
-                 :to-match (format "%s-%#02d-%#02d" year month day)))))
+         (let ((timestamp (task-timestamp (current-task))))
+           (expect timestamp :to-match (format "%s-%#02d-%#02d" year month day))))))
 
  (describe
   "compatibility with orgzly"
@@ -64,13 +61,9 @@
              (month (nth 0 date))
              (day (nth 1 date)))
         (create-delegated-item "TASK DESC" "Someone" date)
-        (with-current-buffer (org-gtd--default-file)
-          (goto-char (point-min))
-          (search-forward "TASK DESC")
-          (org-end-of-meta-data t)
-          (expect (buffer-substring (point) (point-max))
-                  :to-match
-                  (format "<%s-%#02d-%#02d>" year month day)))))))
+        (expect (file-contains? (org-gtd--default-file)
+                               (format "<%s-%#02d-%#02d>" year month day))
+                :to-be-truthy)))))
 
 (describe
  "Customizing delegation input"
@@ -93,7 +86,7 @@
          (org-gtd-delegate-item-at-point "Custom Person" checkin-date)
 
          ;; Verify the delegation was set up correctly
-         (expect (org-entry-get (point) "DELEGATED_TO") :to-equal "Custom Person")
-         (expect (org-entry-get (point) "ORG_GTD_TIMESTAMP") :to-equal (format "<%s>" checkin-date)))
+         (expect (task-delegated-to (current-task)) :to-equal "Custom Person")
+         (expect (task-timestamp (current-task)) :to-equal (format "<%s>" checkin-date)))
 
        (kill-buffer buffer))))

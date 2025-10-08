@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'ogt-assertions (file-name-concat default-directory "test/helpers/assertions.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -37,14 +38,14 @@
        
        ;; 4. VERIFY in agenda
        (org-gtd-engage)
-       (expect (ogt--buffer-string org-agenda-buffer)
+       (expect (agenda-raw-text)
                :to-match "Buy groceries")
        
        ;; 5. VERIFY item is properly organized
        (with-current-buffer (org-gtd--default-file)
-         (expect (ogt--current-buffer-raw-text)
+         (expect (current-buffer-raw-text)
                  :to-match "Buy groceries")
-         (expect (ogt--current-buffer-raw-text)
+         (expect (current-buffer-raw-text)
                  :to-match "NEXT"))))
 
  (describe "Project workflow with keyboard simulation"
@@ -77,7 +78,7 @@
        
        ;; 4. VERIFY project structure
        (with-current-buffer (org-gtd--default-file)
-         (let ((content (ogt--current-buffer-raw-text)))
+         (let ((content (current-buffer-raw-text)))
            (expect content :to-match "Plan vacation")
            (expect content :to-match "Research destinations")
            (expect content :to-match "Book flights")
@@ -86,7 +87,7 @@
        
        ;; 5. VERIFY in agenda
        (org-gtd-engage)
-       (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+       (let ((agenda-content (agenda-raw-text)))
          (expect agenda-content :to-match "Plan")
          (expect agenda-content :to-match "Research destinations"))))
 
@@ -125,7 +126,7 @@
        
        ;; 5. VERIFY delegation was successful (delegated items may not show in default agenda)
        (with-current-buffer (org-gtd--default-file)
-         (expect (ogt--current-buffer-raw-text)
+         (expect (current-buffer-raw-text)
                  :to-match "Get report from John"))))
 
  (describe "Calendar workflow with keyboard simulation" 
@@ -154,14 +155,14 @@
        
        ;; 4. VERIFY calendar properties
        (with-current-buffer (org-gtd--default-file)
-         (expect (ogt--current-buffer-raw-text)
+         (expect (current-buffer-raw-text)
                  :to-match "Doctor appointment")
-         (expect (ogt--current-buffer-raw-text)
+         (expect (current-buffer-raw-text)
                  :to-match "2025-06-20"))
        
        ;; 5. VERIFY calendar item was processed (may not show in daily agenda)
        (with-current-buffer (org-gtd--default-file)
-         (expect (ogt--current-buffer-raw-text)
+         (expect (current-buffer-raw-text)
                  :to-match "Doctor appointment"))))
 
  (describe "Knowledge workflow with keyboard simulation"
@@ -188,12 +189,12 @@
        
        ;; 4. VERIFY knowledge is archived immediately
        (with-current-buffer (org-gtd--default-file)
-         (expect (ogt--current-buffer-raw-text)
+         (expect (current-buffer-raw-text)
                  :not :to-match "Git commands cheatsheet"))
        
        ;; Knowledge items don't appear in agenda (archived)
        (org-gtd-engage)
-       (expect (ogt--buffer-string org-agenda-buffer)
+       (expect (agenda-raw-text)
                :not :to-match "Git commands cheatsheet")))
 
  (describe "Inbox processing with keyboard navigation"
@@ -254,7 +255,7 @@
        
        ;; Verify all items processed correctly
        (org-gtd-engage)
-       (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+       (let ((agenda-content (agenda-raw-text)))
          (expect agenda-content :to-match "Call dentist")
          (expect agenda-content :to-match "Plan weeken")
          (expect agenda-content :to-match "Research destinations")
@@ -263,5 +264,5 @@
        
        ;; Verify inbox is empty
        (with-current-buffer (ogt-inbox-buffer)
-         (expect (ogt--current-buffer-raw-text)
+         (expect (current-buffer-raw-text)
                  :not :to-match "Call dentist\\|Plan weekend\\|Read Emacs")))))

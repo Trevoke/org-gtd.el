@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'ogt-assertions (file-name-concat default-directory "test/helpers/assertions.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -40,11 +41,11 @@
                 (routines "Routines[[:space:]].*?Sweep the")
                 (incubated-items "Incubated items[[:space:]].*?For later"))
             (expect (buffer-name) :to-equal "*Org Agenda: Home*")
-            (expect (ogt--current-buffer-raw-text) :to-match active-projects)
-            (expect (ogt--current-buffer-raw-text) :to-match next-actions)
-            (expect (ogt--current-buffer-raw-text) :to-match reminders)
-            (expect (ogt--current-buffer-raw-text) :to-match routines)
-            (expect (ogt--current-buffer-raw-text) :to-match incubated-items))))))
+            (expect (current-buffer-raw-text) :to-match active-projects)
+            (expect (current-buffer-raw-text) :to-match next-actions)
+            (expect (current-buffer-raw-text) :to-match reminders)
+            (expect (current-buffer-raw-text) :to-match routines)
+            (expect (current-buffer-raw-text) :to-match incubated-items))))))
  (describe
   "Missed events"
 
@@ -54,7 +55,7 @@
                           (org-file-contents
                            "test/fixtures/gtd-file.org"))))
         (org-gtd-review-missed-items "2021-11-20")
-        (let ((agenda-contents (ogt--buffer-string org-agenda-buffer)))
+        (let ((agenda-contents (agenda-raw-text)))
           ;; these are *DONE OR CANCELED*
           (expect agenda-contents :not :to-match "not worth thinking about")
           (expect agenda-contents :not :to-match "write a nice test")

@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'ogt-assertions (file-name-concat default-directory "test/helpers/assertions.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -30,7 +31,7 @@
           (org-gtd-refile--do org-gtd-projects org-gtd-projects-template))
 
         (with-current-buffer (org-gtd--default-file)
-          (expect (ogt--current-buffer-raw-text) :to-match "foobar"))
+          (expect (current-buffer-raw-text) :to-match "foobar"))
 
         (kill-buffer temp-buffer)))
 
@@ -77,7 +78,7 @@
             "AdditionalHeading RET"
             (org-gtd-refile--do org-gtd-projects org-gtd-projects-template)))
 
-         (expect (with-current-buffer new-buffer (ogt--current-buffer-raw-text))
+         (expect (with-current-buffer new-buffer (current-buffer-raw-text))
                  :to-match
                  "choose-refile-target")
 

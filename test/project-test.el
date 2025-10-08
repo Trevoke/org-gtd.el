@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'ogt-assertions (file-name-concat default-directory "test/helpers/assertions.el"))
 (require 'org-gtd-test-helper-builders (file-name-concat default-directory "test/helpers/builders.el"))
 (require 'org-gtd)
 (require 'buttercup)
@@ -79,7 +80,7 @@
      (organize-as-project)
      (org-gtd-engage)
      (with-current-buffer org-agenda-buffer
-       (expect (ogt--current-buffer-raw-text)
+       (expect (current-buffer-raw-text)
                :to-match
                "think of topic"))))
 
@@ -96,7 +97,7 @@
 ;;     (ogt--save-all-buffers)
 ;;     (with-current-buffer (org-gtd--default-file)
 ;;       (goto-char (point-min))
-;;       (expect (ogt--current-buffer-raw-text)
+;;       (expect (current-buffer-raw-text)
 ;;               :to-match "[0/3]")
 ;;       (search-forward "project headline")
 ;;       (expect (member "headline_tag" (org-get-tags)))

@@ -2,6 +2,7 @@
 
 ;; Load test helpers via setup.el (which now uses require internally)
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'ogt-assertions (file-name-concat default-directory "test/helpers/assertions.el"))
 (require 'org-gtd)
 (require 'buttercup)
 
@@ -25,7 +26,7 @@
 
        ;; 4. VERIFY in agenda
        (org-gtd-engage)
-       (expect (ogt--buffer-string org-agenda-buffer)
+       (expect (agenda-raw-text)
                :to-match "Buy groceries")
 
        ;; 5. COMPLETE and verify archival
@@ -39,7 +40,7 @@
 
        ;; Verify item is archived
        (with-current-buffer (org-gtd--default-file)
-         (expect (ogt--current-buffer-raw-text)
+         (expect (current-buffer-raw-text)
                  :not :to-match "Buy groceries"))))
 
  (describe "Project workflow"
@@ -65,7 +66,7 @@
 
        ;; 4. VERIFY in agenda
        (org-gtd-engage)
-       (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+       (let ((agenda-content (agenda-raw-text)))
          (expect agenda-content :to-match "Plan vacati")  ; Truncated in agenda display
          (expect agenda-content :to-match "Research destinations"))
 
@@ -84,7 +85,7 @@
 
        ;; Verify project is archived
        (with-current-buffer (org-gtd--default-file)
-         (expect (ogt--current-buffer-raw-text)
+         (expect (current-buffer-raw-text)
                  :not :to-match "Plan vacation"))))
 
  (describe "Calendar workflow"
@@ -100,7 +101,7 @@
 
        ;; 4. VERIFY in agenda
        (org-gtd-engage)
-       (expect (ogt--buffer-string org-agenda-buffer)
+       (expect (agenda-raw-text)
                :to-match "Doctor appointment")
 
        ;; 5. COMPLETE and archive
@@ -113,7 +114,7 @@
 
        ;; Verify archived
        (with-current-buffer (org-gtd--default-file)
-         (expect (ogt--current-buffer-raw-text)
+         (expect (current-buffer-raw-text)
                  :not :to-match "Doctor appointment"))))
 
  (describe "Delegated workflow"
@@ -129,7 +130,7 @@
 
        ;; 4. VERIFY in agenda
        (org-gtd-engage)
-       (expect (ogt--buffer-string org-agenda-buffer)
+       (expect (agenda-raw-text)
                :to-match "Get report from John")
 
        ;; 5. COMPLETE and archive
@@ -142,7 +143,7 @@
 
        ;; Verify archived
        (with-current-buffer (org-gtd--default-file)
-         (expect (ogt--current-buffer-raw-text)
+         (expect (current-buffer-raw-text)
                  :not :to-match "Get report from John"))))
 
  (describe "Incubated workflow"
@@ -158,12 +159,12 @@
 
        ;; 4. VERIFY stored in main GTD file under Incubated
        (with-current-buffer (org-gtd--default-file)
-         (expect (ogt--current-buffer-raw-text)
+         (expect (current-buffer-raw-text)
                  :to-match "Learn Spanish"))
 
        ;; Incubated items DO show in agenda with their scheduled date
        (org-gtd-engage)
-       (expect (ogt--buffer-string org-agenda-buffer)
+       (expect (agenda-raw-text)
                :to-match "Learn Spanish")))
 
  (describe "Knowledge workflow"
@@ -187,12 +188,12 @@
        ;; 4. VERIFY that knowledge items are archived immediately
        ;; (they don't stay in the main GTD file)
        (with-current-buffer (org-gtd--default-file)
-         (expect (ogt--current-buffer-raw-text)
+         (expect (current-buffer-raw-text)
                  :not :to-match "Git commands reference"))
 
        ;; Knowledge items don't show in daily agenda (they're archived)
        (org-gtd-engage)
-       (expect (ogt--buffer-string org-agenda-buffer)
+       (expect (agenda-raw-text)
                :not :to-match "Git commands reference")))
 
  (describe "Multiple item processing"
@@ -227,7 +228,7 @@
 
        ;; Verify all items are properly organized
        (org-gtd-engage)
-       (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+       (let ((agenda-content (agenda-raw-text)))
          (expect agenda-content :to-match "Call mom")
          (expect agenda-content :to-match "Team meeting")
          (expect agenda-content :to-match "Organize ga")  ; Truncated in agenda display
@@ -237,14 +238,14 @@
 
        ;; Verify inbox is empty after processing
        (with-current-buffer (ogt-inbox-buffer)
-         (expect (ogt--current-buffer-raw-text)
+         (expect (current-buffer-raw-text)
                  :not :to-match "Call mom\\|Team meeting\\|Organize garage\\|Wine recipe"))))
 
  (describe "Complete GTD workflow integration"
    (it "tests capture -> process -> organize -> engage -> archive cycle"
        ;; Start with empty system (inbox has default comment)
        (expect (with-current-buffer (ogt-inbox-buffer)
-                 (ogt--current-buffer-raw-text))
+                 (current-buffer-raw-text))
                :not :to-match "Review budget\\|Birthday party\\|Emacs manual")
 
        ;; Capture multiple items throughout "day"
@@ -275,7 +276,7 @@
 
        ;; Engage with agenda
        (org-gtd-engage)
-       (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+       (let ((agenda-content (agenda-raw-text)))
          (expect agenda-content :to-match "Review budget")
          (expect agenda-content :to-match "Birthday pa")  ; Truncated in agenda display
          (expect agenda-content :to-match "Choose venue"))
@@ -293,7 +294,7 @@
 
        ;; Verify system state
        (with-current-buffer (org-gtd--default-file)
-         (let ((content (ogt--current-buffer-raw-text)))
+         (let ((content (current-buffer-raw-text)))
            ;; Completed single actions should be archived
            (expect content :not :to-match "Review budget")
            ;; Choose venue is part of an incomplete project, so it remains visible
@@ -306,7 +307,7 @@
 
        ;; Inbox should be empty (except for default comment)
        (with-current-buffer (ogt-inbox-buffer)
-         (expect (ogt--current-buffer-raw-text)
+         (expect (current-buffer-raw-text)
                  :not :to-match "Review budget\\|Birthday party\\|Emacs manual")))))
 
 (describe "Cancel and Archive Tests"
@@ -327,7 +328,7 @@
 
         ;; 4. VERIFY in agenda before cancellation
         (org-gtd-engage)
-        (expect (ogt--buffer-string org-agenda-buffer)
+        (expect (agenda-raw-text)
                 :to-match "Buy concert tickets")
 
         ;; 5. CANCEL the action
@@ -338,7 +339,7 @@
 
         ;; 6. VERIFY doesn't show in engage after cancellation
         (org-gtd-engage)
-        (expect (ogt--buffer-string org-agenda-buffer)
+        (expect (agenda-raw-text)
                 :not :to-match "Buy concert tickets")
 
         ;; 7. ARCHIVE
@@ -346,7 +347,7 @@
 
         ;; 8. Verify item is NOT in main file after archive
         (with-current-buffer (org-gtd--default-file)
-          (expect (ogt--current-buffer-raw-text)
+          (expect (current-buffer-raw-text)
                   :not :to-match "Buy concert tickets"))
 
         ;; 9. Verify item IS in archive file
@@ -369,7 +370,7 @@
 
         ;; 4. VERIFY in agenda before cancellation
         (org-gtd-engage)
-        (expect (ogt--buffer-string org-agenda-buffer)
+        (expect (agenda-raw-text)
                 :to-match "Dentist appointment")
 
         ;; 5. CANCEL the appointment
@@ -380,7 +381,7 @@
 
         ;; 6. VERIFY does NOT show in engage after cancellation
         (org-gtd-engage)
-        (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+        (let ((agenda-content (agenda-raw-text)))
           (expect agenda-content :not :to-match "Dentist appointment"))
 
         ;; 7. ARCHIVE - canceled items CAN be archived
@@ -388,7 +389,7 @@
 
         ;; 8. Verify item is NOT in main file after archive
         (with-current-buffer (org-gtd--default-file)
-          (expect (ogt--current-buffer-raw-text)
+          (expect (current-buffer-raw-text)
                   :not :to-match "Dentist appointment"))
 
         ;; 9. Verify item IS in archive file
@@ -411,7 +412,7 @@
 
         ;; 4. VERIFY in agenda before cancellation
         (org-gtd-engage)
-        (expect (ogt--buffer-string org-agenda-buffer)
+        (expect (agenda-raw-text)
                 :to-match "Get feedback from Sarah")
 
         ;; 5. CANCEL the delegation
@@ -422,7 +423,7 @@
 
         ;; 6. VERIFY does NOT show in engage after cancellation
         (org-gtd-engage)
-        (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+        (let ((agenda-content (agenda-raw-text)))
           (expect agenda-content :not :to-match "Get feedback from Sarah"))
 
         ;; 7. ARCHIVE - canceled items CAN be archived
@@ -430,7 +431,7 @@
 
         ;; 8. Verify item is NOT in main file after archive
         (with-current-buffer (org-gtd--default-file)
-          (expect (ogt--current-buffer-raw-text)
+          (expect (current-buffer-raw-text)
                   :not :to-match "Get feedback from Sarah"))
 
         ;; 9. Verify item IS in archive file
@@ -460,7 +461,7 @@
 
         ;; 4. VERIFY all tasks in agenda
         (org-gtd-engage)
-        (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+        (let ((agenda-content (agenda-raw-text)))
           (expect agenda-content :to-match "Organize wo")  ; Truncated
           (expect agenda-content :to-match "Book venue"))
 
@@ -472,7 +473,7 @@
 
         ;; 6. VERIFY project still works - canceled task doesn't show, but project continues
         (org-gtd-engage)
-        (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+        (let ((agenda-content (agenda-raw-text)))
           ;; Project heading should still show (has incomplete tasks)
           (expect agenda-content :to-match "Organize wo")
           ;; Canceled task should not show
@@ -493,7 +494,7 @@
 
         ;; 9. Verify project is archived (including canceled task)
         (with-current-buffer (org-gtd--default-file)
-          (expect (ogt--current-buffer-raw-text)
+          (expect (current-buffer-raw-text)
                   :not :to-match "Organize workshop"))))
 
   (describe "Project with all tasks canceled (same file)"
@@ -522,7 +523,7 @@
 
         ;; 4. VERIFY all tasks appear in engage before cancellation
         (org-gtd-engage)
-        (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+        (let ((agenda-content (agenda-raw-text)))
           (expect agenda-content :to-match "Build garde")  ; Project heading (truncated)
           (expect agenda-content :to-match "Buy lumber"))
 
@@ -540,7 +541,7 @@
 
         ;; 6. VERIFY NO tasks appear in engage after cancellation (CRITICAL REQUIREMENT)
         (org-gtd-engage)
-        (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+        (let ((agenda-content (agenda-raw-text)))
           (expect agenda-content :not :to-match "Build garde")
           (expect agenda-content :not :to-match "Buy lumber")
           (expect agenda-content :not :to-match "Purchase tools")
@@ -551,7 +552,7 @@
 
         ;; 8. VERIFY project and all tasks are NOT in main file after archive
         (with-current-buffer (org-gtd--default-file)
-          (let ((content (ogt--current-buffer-raw-text)))
+          (let ((content (current-buffer-raw-text)))
             (expect content :not :to-match "Build garden shed")
             (expect content :not :to-match "Buy lumber")
             (expect content :not :to-match "Purchase tools")
@@ -578,7 +579,7 @@
 
         ;; 2. VERIFY appears in all next actions view
         (org-gtd-show-all-next)
-        (expect (ogt--buffer-string org-agenda-buffer)
+        (expect (agenda-raw-text)
                 :to-match "Review quarterly goals")))
 
   (describe "Review of missed items"
@@ -597,7 +598,7 @@
 
           ;; 2. VERIFY appears in missed items review
           (org-gtd-review-missed-items)
-          (expect (ogt--buffer-string org-agenda-buffer)
+          (expect (agenda-raw-text)
                   :to-match "Get contract from legal")))
 
     (it "verifies calendar item with past date shows in missed review"
@@ -615,7 +616,7 @@
 
           ;; 2. VERIFY appears in missed items review
           (org-gtd-review-missed-items)
-          (expect (ogt--buffer-string org-agenda-buffer)
+          (expect (agenda-raw-text)
                   :to-match "Client presentation")))
 
     (it "verifies incubated item with past date shows in missed review"
@@ -633,7 +634,7 @@
 
           ;; 2. VERIFY appears in missed items review
           (org-gtd-review-missed-items)
-          (expect (ogt--buffer-string org-agenda-buffer)
+          (expect (agenda-raw-text)
                   :to-match "Review investment portfolio"))))
 
   (describe "Review of projects"
@@ -672,7 +673,7 @@
 
         ;; 3. VERIFY project appears in stuck projects review
         (org-gtd-review-stuck-projects)
-        (expect (ogt--buffer-string org-agenda-buffer)
+        (expect (agenda-raw-text)
                 :to-match "Launch new website")))
 
   (describe "Engage view for habits"
@@ -684,7 +685,7 @@
 
         ;; 2. VERIFY appears in engage view
         (org-gtd-engage)
-        (expect (ogt--buffer-string org-agenda-buffer)
+        (expect (agenda-raw-text)
                 :to-match "Daily meditation")))
 
   (describe "Review of habits"
@@ -705,7 +706,7 @@
 
           ;; 3. VERIFY appears in area of focus review
           (org-gtd-review-area-of-focus "Health")
-          (expect (ogt--buffer-string org-agenda-buffer)
+          (expect (agenda-raw-text)
                   :to-match "Morning workout"))))
 
   (describe "Review of multi-file projects"
@@ -763,7 +764,7 @@
 
             ;; 5. VERIFY project appears as stuck (even though it has NEXT task in other file)
             (org-gtd-review-stuck-projects)
-            (expect (ogt--buffer-string org-agenda-buffer)
+            (expect (agenda-raw-text)
                     :to-match "Multi-file project review")))))
 
   (describe "Review of incubated items"
@@ -789,7 +790,7 @@
 
           ;; 3. VERIFY appears in area of focus review
           (org-gtd-review-area-of-focus "Personal")
-          (expect (ogt--buffer-string org-agenda-buffer)
+          (expect (agenda-raw-text)
                   :to-match "Learn Italian")))
 
     (it "verifies incubated item can be archived after completion"
@@ -809,7 +810,7 @@
 
         ;; 4. VERIFY archived
         (with-current-buffer (org-gtd--default-file)
-          (expect (ogt--current-buffer-raw-text)
+          (expect (current-buffer-raw-text)
                   :not :to-match "Research vacation spots")))))
 
 (describe "Habit Flow Tests"
@@ -830,7 +831,7 @@
 
         ;; 4. VERIFY shows in engage
         (org-gtd-engage)
-        (expect (ogt--buffer-string org-agenda-buffer)
+        (expect (agenda-raw-text)
                 :to-match "Exercise daily")
 
         ;; 5. Mark habit DONE
@@ -843,7 +844,7 @@
         (org-gtd-archive-completed-items)
         (with-current-buffer (org-gtd--default-file)
           ;; Habit should still be in the file (not archived)
-          (expect (ogt--current-buffer-raw-text)
+          (expect (current-buffer-raw-text)
                   :to-match "Exercise daily"))
 
         ;; 7. VERIFY habit still shows in engage at new date
@@ -873,7 +874,7 @@
 
         ;; 2. VERIFY shows in engage before cancellation
         (org-gtd-engage)
-        (expect (ogt--buffer-string org-agenda-buffer)
+        (expect (agenda-raw-text)
                 :to-match "Read before bed")
 
         ;; 3. CANCEL the habit
@@ -885,7 +886,7 @@
         ;; 4. VERIFY canceled habit does NOT show in engage
         ;; (Good! Habits behave correctly - canceled ones don't show)
         (org-gtd-engage)
-        (expect (ogt--buffer-string org-agenda-buffer)
+        (expect (agenda-raw-text)
                 :not :to-match "Read before bed")
 
         ;; 5. VERIFY habit state is nil (org-mode limitation)
@@ -898,7 +899,7 @@
         (org-gtd-archive-completed-items)
         (with-current-buffer (org-gtd--default-file)
           ;; Habit remains in file (not archived due to org-mode behavior)
-          (expect (ogt--current-buffer-raw-text)
+          (expect (current-buffer-raw-text)
                   :to-match "Read before bed")))))
 (describe "Multi-file DAG Tests"
 
@@ -954,7 +955,7 @@
 
             ;; 4. VERIFY both tasks show in engage
             (org-gtd-engage)
-            (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+            (let ((agenda-content (agenda-raw-text)))
               ;; Multi-file projects may not show project heading, just task names
               (expect agenda-content :to-match "Task in main file")
               (expect agenda-content :to-match "Task in second file"))
@@ -975,13 +976,13 @@
 
             ;; 7. VERIFY project is archived from main file
             (with-current-buffer (org-gtd--default-file)
-              (expect (ogt--current-buffer-raw-text)
+              (expect (current-buffer-raw-text)
                       :not :to-match "Multi-file project"))
 
             ;; 8. VERIFY task in second file - LIMITATION: NOT archived
             ;; Due to current product limitation, tasks in secondary files are NOT archived
             (with-current-buffer (find-file-noselect second-file)
-              (expect (ogt--current-buffer-raw-text)
+              (expect (current-buffer-raw-text)
                       :not :to-match "Task in second file")))))))
 (describe "Project cancellation with multi-file DAG"
 
@@ -1048,12 +1049,12 @@
 
           ;; 7. VERIFY project is archived
           (with-current-buffer (org-gtd--default-file)
-            (expect (ogt--current-buffer-raw-text)
+            (expect (current-buffer-raw-text)
                     :not :to-match "Distributed project"))
 
           ;; 8. VERIFY remote canceled task is archived
           (with-current-buffer (find-file-noselect second-file)
-            (expect (ogt--current-buffer-raw-text)
+            (expect (current-buffer-raw-text)
                     :not :to-match "Remote task"))))))
 (describe "Multi-file project extension"
 
@@ -1115,7 +1116,7 @@
           (org-gtd-archive-completed-items)
 
           (with-current-buffer (org-gtd--default-file)
-            (expect (ogt--current-buffer-raw-text)
+            (expect (current-buffer-raw-text)
                     :not :to-match "Expandable project"))
 
           ;; 6. Now create a NEW project that links tasks from multiple files
@@ -1158,7 +1159,7 @@
 
               ;; 9. VERIFY new project shows in engage with tasks from two files
               (org-gtd-engage)
-              (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+              (let ((agenda-content (agenda-raw-text)))
                 ;; Multi-file projects may not show project heading, just task names
                 (expect agenda-content :to-match "Another new task")
                 (expect agenda-content :to-match "New extension task"))
@@ -1178,11 +1179,11 @@
               (org-gtd-archive-completed-items)
 
               (with-current-buffer (org-gtd--default-file)
-                (expect (ogt--current-buffer-raw-text)
+                (expect (current-buffer-raw-text)
                         :not :to-match "New multi-file project"))
 
               (with-current-buffer (find-file-noselect third-file)
-                (expect (ogt--current-buffer-raw-text)
+                (expect (current-buffer-raw-text)
                         :not :to-match "New extension task"))))))))
 
 (describe "Advanced Project Task Operations"
@@ -1321,7 +1322,7 @@
             (let ((first-tasks (org-entry-get-multivalued-property (point) "ORG_GTD_FIRST_TASKS")))
               (expect first-tasks :to-contain new-task-id))
             (org-gtd-engage)
-            (expect (ogt--buffer-string org-agenda-buffer)
+            (expect (agenda-raw-text)
                     :to-match "Design landing page")))))
 
   (describe "Move task within project"
@@ -1413,7 +1414,7 @@
             (org-back-to-heading t)
             (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" shared-task-id)
             (org-gtd-engage)
-            (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+            (let ((agenda-content (agenda-raw-text)))
               (expect agenda-content :to-match "Design database schema")
               (expect agenda-content :to-match "Implement API"))
             (with-current-buffer (org-gtd--default-file)
@@ -1483,7 +1484,7 @@
 
             ;; Verify both projects have no pending next actions
             (org-gtd-engage)
-            (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+            (let ((agenda-content (agenda-raw-text)))
               ;; Shared task should not appear (it's DONE)
               (expect agenda-content :not :to-match "Shared Task")
               ;; "Another Task" from Project Beta should still appear
@@ -1522,7 +1523,7 @@
 
         ;; 4. VERIFY all tasks appear in engage before cancellation
         (org-gtd-engage)
-        (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+        (let ((agenda-content (agenda-raw-text)))
           (expect agenda-content :to-match "Organize co")  ; Project heading (truncated)
           (expect agenda-content :to-match "Book conference room"))
 
@@ -1534,7 +1535,7 @@
 
         ;; 6. VERIFY canceled task doesn't show in engage (CRITICAL GTD REQUIREMENT)
         (org-gtd-engage)
-        (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+        (let ((agenda-content (agenda-raw-text)))
           ;; Project heading should still show (has incomplete tasks)
           (expect agenda-content :to-match "Organize co")
           ;; Canceled task should NOT show
@@ -1556,7 +1557,7 @@
 
         ;; 9. VERIFY project and all tasks are archived
         (with-current-buffer (org-gtd--default-file)
-          (expect (ogt--current-buffer-raw-text)
+          (expect (current-buffer-raw-text)
                   :not :to-match "Organize conference"))))
 
   (describe "Project: archive (cncl) - DAG same file"
@@ -1587,7 +1588,7 @@
 
         ;; 4. VERIFY all tasks appear in engage before cancellation
         (org-gtd-engage)
-        (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+        (let ((agenda-content (agenda-raw-text)))
           (expect agenda-content :to-match "Abandoned i")  ; Project heading (truncated)
           (expect agenda-content :to-match "Research market"))
 
@@ -1605,7 +1606,7 @@
 
         ;; 6. VERIFY nothing shows in engage after canceling all tasks
         (org-gtd-engage)
-        (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+        (let ((agenda-content (agenda-raw-text)))
           (expect agenda-content :not :to-match "Abandoned i")
           (expect agenda-content :not :to-match "Research market")
           (expect agenda-content :not :to-match "Build prototype")
@@ -1616,7 +1617,7 @@
 
         ;; 8. VERIFY project and all tasks are archived
         (with-current-buffer (org-gtd--default-file)
-          (let ((content (ogt--current-buffer-raw-text)))
+          (let ((content (current-buffer-raw-text)))
             (expect content :not :to-match "Abandoned initiative")
             (expect content :not :to-match "Research market")
             (expect content :not :to-match "Build prototype")
@@ -1674,7 +1675,7 @@
 
             ;; 4. VERIFY both tasks show in engage before cancellation
             (org-gtd-engage)
-            (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+            (let ((agenda-content (agenda-raw-text)))
               (expect agenda-content :to-match "Main file task")
               (expect agenda-content :to-match "Secondary file task"))
 
@@ -1691,7 +1692,7 @@
 
             ;; 6. VERIFY nothing shows in engage after canceling all tasks
             (org-gtd-engage)
-            (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+            (let ((agenda-content (agenda-raw-text)))
               (expect agenda-content :not :to-match "Cross-file abandoned")
               (expect agenda-content :not :to-match "Main file task")
               (expect agenda-content :not :to-match "Secondary file task"))
@@ -1701,12 +1702,12 @@
 
             ;; 8. VERIFY project is archived from main file
             (with-current-buffer (org-gtd--default-file)
-              (expect (ogt--current-buffer-raw-text)
+              (expect (current-buffer-raw-text)
                       :not :to-match "Cross-file abandoned project"))
 
             ;; 9. VERIFY task in second file is archived
             (with-current-buffer (find-file-noselect second-file)
-              (expect (ogt--current-buffer-raw-text)
+              (expect (current-buffer-raw-text)
                       :not :to-match "Secondary file task"))))))
 
   (describe "Project tasks: cancel (multi-project)"
@@ -1780,7 +1781,7 @@
 
             ;; 4. VERIFY shared task appears in engage
             (org-gtd-engage)
-            (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+            (let ((agenda-content (agenda-raw-text)))
               (expect agenda-content :to-match "Shared task")
               (expect agenda-content :to-match "Alpha task 1")
               (expect agenda-content :to-match "Beta task 1"))
@@ -1793,7 +1794,7 @@
 
             ;; 6. VERIFY shared task doesn't appear in engage, but other tasks do
             (org-gtd-engage)
-            (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+            (let ((agenda-content (agenda-raw-text)))
               (expect agenda-content :not :to-match "Shared task")
               (expect agenda-content :to-match "Alpha task 1")
               (expect agenda-content :to-match "Beta task 1"))
@@ -1812,9 +1813,9 @@
 
             ;; 9. VERIFY both projects are archived
             (with-current-buffer (org-gtd--default-file)
-              (expect (ogt--current-buffer-raw-text)
+              (expect (current-buffer-raw-text)
                       :not :to-match "Project Alpha")
-              (expect (ogt--current-buffer-raw-text)
+              (expect (current-buffer-raw-text)
                       :not :to-match "Project Beta")))))
 
   (describe "Project: archive (cncl) - DAG with shared tasks"
@@ -1895,7 +1896,7 @@
 
             ;; 5. VERIFY shared task doesn't appear in engage (both instances canceled)
             (org-gtd-engage)
-            (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+            (let ((agenda-content (agenda-raw-text)))
               (expect agenda-content :not :to-match "Gamma unique task")
               (expect agenda-content :not :to-match "Shared infrastructure task")
               ;; Delta's task should still appear
@@ -1905,7 +1906,7 @@
             (org-gtd-archive-completed-items)
 
             (with-current-buffer (org-gtd--default-file)
-              (let ((content (ogt--current-buffer-raw-text)))
+              (let ((content (current-buffer-raw-text)))
                 ;; Project Gamma project heading should be archived
                 (expect content :not :to-match "\\* Project Gamma")
                 ;; Shared task should REMAIN (Project Delta still needs it)
@@ -1925,7 +1926,7 @@
 
             ;; 9. VERIFY everything is archived
             (with-current-buffer (org-gtd--default-file)
-              (let ((content (ogt--current-buffer-raw-text)))
+              (let ((content (current-buffer-raw-text)))
                 (expect content :not :to-match "Project Gamma")
                 (expect content :not :to-match "Project Delta")
                 (expect content :not :to-match "Gamma unique task")
@@ -1989,7 +1990,7 @@
 
             ;; 5. VERIFY project appears in stuck projects review
             (org-gtd-review-stuck-projects)
-            (expect (ogt--buffer-string org-agenda-buffer)
+            (expect (agenda-raw-text)
                     :to-match "Multi-file stuck project")))))
 
   (describe "Project: validate graph (DAG multiple files)"
@@ -2106,7 +2107,7 @@
 
         ;; 3. Verify initial state: A is NEXT, C is TODO
         (org-gtd-engage)
-        (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+        (let ((agenda-content (agenda-raw-text)))
           (expect agenda-content :to-match "Task A")
           (expect agenda-content :not :to-match "Task C"))
 
@@ -2219,7 +2220,7 @@
 
           ;; 10. VERIFY agenda: Only A is NEXT
           (org-gtd-engage)
-          (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+          (let ((agenda-content (agenda-raw-text)))
             (expect agenda-content :to-match "Task A")
             (expect agenda-content :not :to-match "Task B")
             (expect agenda-content :not :to-match "Task C"))
@@ -2235,7 +2236,7 @@
           ;; org-edna should automatically mark Task B as NEXT here
 
           (org-gtd-engage)
-          (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+          (let ((agenda-content (agenda-raw-text)))
             (expect agenda-content :not :to-match "Task A")
             (expect agenda-content :to-match "Task B")
             (expect agenda-content :not :to-match "Task C"))))
@@ -2343,7 +2344,7 @@
 
           ;; 6. VERIFY only A is NEXT
           (org-gtd-engage)
-          (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+          (let ((agenda-content (agenda-raw-text)))
             (expect agenda-content :to-match "Task A")
             (expect agenda-content :not :to-match "Task B")
             (expect agenda-content :not :to-match "Task C"))))
@@ -2484,7 +2485,7 @@
 
           ;; 6. VERIFY agenda: Only A is NEXT (blocks B and C)
           (org-gtd-engage)
-          (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+          (let ((agenda-content (agenda-raw-text)))
             (expect agenda-content :to-match "Task A")
             (expect agenda-content :not :to-match "Task B")
             (expect agenda-content :not :to-match "Task C"))
@@ -2501,7 +2502,7 @@
           ;; org-edna should automatically mark BOTH Task B and Task C as NEXT here (parallel tasks)
 
           (org-gtd-engage)
-          (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+          (let ((agenda-content (agenda-raw-text)))
             (expect agenda-content :not :to-match "Task A")
             (expect agenda-content :to-match "Task B")
             (expect agenda-content :to-match "Task C"))))
@@ -2638,7 +2639,7 @@
 
               ;; 7. VERIFY agenda: Only A is NEXT (blocks B and C)
               (org-gtd-engage)
-              (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+              (let ((agenda-content (agenda-raw-text)))
                 (expect agenda-content :to-match "Task A")
                 (expect agenda-content :not :to-match "Task B")
                 (expect agenda-content :not :to-match "Task C"))
@@ -2654,7 +2655,7 @@
               ;; org-edna should automatically mark BOTH Task B and Task C as NEXT here (parallel tasks across files)
 
               (org-gtd-engage)
-              (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+              (let ((agenda-content (agenda-raw-text)))
                 (expect agenda-content :not :to-match "Task A")
                 (expect agenda-content :to-match "Task B")
                 (expect agenda-content :to-match "Task C"))))))
@@ -2780,7 +2781,7 @@
 
           ;; 6. VERIFY only A is NEXT
           (org-gtd-engage)
-          (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+          (let ((agenda-content (agenda-raw-text)))
             (expect agenda-content :to-match "Task A")
             (expect agenda-content :not :to-match "Task B")
             (expect agenda-content :not :to-match "Task C"))
@@ -2796,7 +2797,7 @@
           ;; org-edna should automatically mark Task B as NEXT here
 
           (org-gtd-engage)
-          (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+          (let ((agenda-content (agenda-raw-text)))
             (expect agenda-content :not :to-match "Task A")
             (expect agenda-content :to-match "Task B")
             (expect agenda-content :not :to-match "Task C"))
@@ -2810,7 +2811,7 @@
           ;; org-edna should automatically mark Task C as NEXT here
 
           (org-gtd-engage)
-          (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+          (let ((agenda-content (agenda-raw-text)))
             (expect agenda-content :not :to-match "Task A")
             (expect agenda-content :not :to-match "Task B")
             (expect agenda-content :to-match "Task C"))))
@@ -2947,7 +2948,7 @@
 
               ;; 7. VERIFY only A is NEXT across files
               (org-gtd-engage)
-              (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+              (let ((agenda-content (agenda-raw-text)))
                 (expect agenda-content :to-match "Task A")
                 (expect agenda-content :not :to-match "Task B")
                 (expect agenda-content :not :to-match "Task C"))
@@ -2963,7 +2964,7 @@
               ;; org-edna should automatically mark Task B as NEXT here
 
               (org-gtd-engage)
-              (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+              (let ((agenda-content (agenda-raw-text)))
                 (expect agenda-content :not :to-match "Task A")
                 (expect agenda-content :to-match "Task B")
                 (expect agenda-content :not :to-match "Task C"))
@@ -2977,7 +2978,7 @@
               ;; org-edna should automatically mark Task C as NEXT here
 
               (org-gtd-engage)
-              (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+              (let ((agenda-content (agenda-raw-text)))
                 (expect agenda-content :not :to-match "Task A")
                 (expect agenda-content :not :to-match "Task B")
                 (expect agenda-content :to-match "Task C"))))))))

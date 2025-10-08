@@ -2,6 +2,7 @@
 
 ;; Load test helpers via setup.el (which now uses require internally)
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'ogt-assertions (file-name-concat default-directory "test/helpers/assertions.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -17,10 +18,10 @@
   "with default content"
   (it "for the inbox"
       (with-current-buffer (ogt-inbox-buffer)
-        (expect (ogt--current-buffer-raw-text)
+        (expect (current-buffer-raw-text)
                 :to-match
                 "This is the inbox")
-        (expect (ogt--current-buffer-raw-text)
+        (expect (current-buffer-raw-text)
                 :to-match
                 "This is the inbox.")))
 

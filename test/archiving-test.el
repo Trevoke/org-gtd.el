@@ -3,6 +3,7 @@
 ;; Load test helpers via setup.el (which now uses require internally)
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 (require 'org-gtd-test-helper-builders (file-name-concat default-directory "test/helpers/builders.el"))
+(require 'ogt-assertions (file-name-concat default-directory "test/helpers/assertions.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -50,29 +51,22 @@
        (org-todo "DONE"))
      (org-gtd-archive-completed-items)
      (ogt--save-all-buffers)
-     (with-current-buffer (org-gtd--default-file)
-       (expect (buffer-string)
-               :to-match
-               "two")
-       (expect (buffer-string)
-               :not :to-match
-               " DONE one")))
+     (expect (file-contains? (org-gtd--default-file) "two") :to-be-truthy)
+     (expect (file-contains? (org-gtd--default-file) " DONE one") :to-be nil))
 
  (it "does not archive repeating scheduled items"
      (let* ((temporary-file-directory org-gtd-directory)
             (gtd-file (make-temp-file "foo" nil ".org" (org-file-contents "test/fixtures/gtd-file.org"))))
        (org-gtd-archive-completed-items)
-       (with-current-buffer (find-file-noselect gtd-file)
-         (expect (ogt--current-buffer-raw-text) :to-match "repeating item")
-         (expect (ogt--current-buffer-raw-text) :not :to-match "write a nice test"))))
+       (expect (file-contains? gtd-file "repeating item") :to-be-truthy)
+       (expect (file-contains? gtd-file "write a nice test") :to-be nil)))
 
  (it "does not archive undone incubated items"
      (let* ((temporary-file-directory org-gtd-directory)
             (gtd-file (make-temp-file "foo" nil ".org" (org-file-contents "test/fixtures/gtd-file.org"))))
        (org-gtd-archive-completed-items)
-       (with-current-buffer (find-file-noselect gtd-file)
-         (expect (ogt--current-buffer-raw-text) :to-match "For later")
-         (expect (ogt--current-buffer-raw-text) :not :to-match "not worth thinking about"))))
+       (expect (file-contains? gtd-file "For later") :to-be-truthy)
+       (expect (file-contains? gtd-file "not worth thinking about") :to-be nil)))
 
  (it "archives DAG-structured project with tasks in breadth-first order"
      ;; Create a property-based project with tasks connected via BLOCKS/DEPENDS_ON
@@ -125,15 +119,15 @@
 
        ;; Verify project and tasks are archived
        (with-current-buffer (find-file-noselect gtd-file-path)
-         (expect (buffer-string) :not :to-match "DAG Project")
-         (expect (buffer-string) :not :to-match "Task A")
-         (expect (buffer-string) :not :to-match "Task B")
-         (expect (buffer-string) :not :to-match "Task C")
-         (expect (buffer-string) :not :to-match "Task D"))
+         (expect (current-buffer-raw-text) :not :to-match "DAG Project")
+         (expect (current-buffer-raw-text) :not :to-match "Task A")
+         (expect (current-buffer-raw-text) :not :to-match "Task B")
+         (expect (current-buffer-raw-text) :not :to-match "Task C")
+         (expect (current-buffer-raw-text) :not :to-match "Task D"))
 
        ;; Verify archived structure: All tasks and project are present
        (with-current-buffer (find-file-noselect archive-file-path)
-         (let ((content (buffer-string)))
+         (let ((content (current-buffer-raw-text)))
            ;; All tasks should be present in the archive
            (expect content :to-match "Task A")
            (expect content :to-match "Task B")
@@ -173,12 +167,12 @@
 
        ;; Verify project and tasks are NOT archived
        (with-current-buffer (find-file-noselect gtd-file-path)
-         (let ((content (buffer-string)))
+         (let ((content (current-buffer-raw-text)))
            (expect content :to-match "Partial Project")
            (expect content :to-match "Task X")
            (expect content :to-match "Task Y")))
 
        ;; Verify nothing was archived for this project
        (with-current-buffer (find-file-noselect archive-file-path)
-         (let ((content (buffer-string)))
+         (let ((content (current-buffer-raw-text)))
            (expect content :not :to-match "Partial Project"))))))

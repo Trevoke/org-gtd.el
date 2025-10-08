@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'ogt-assertions (file-name-concat default-directory "test/helpers/assertions.el"))
 (require 'org-gtd)
 (require 'buttercup)
 (require 'with-simulated-input)
@@ -53,7 +54,7 @@
         (set-buffer source-buffer)
         (org-gtd-clarify-item)
         (org-gtd-single-action)
-        (expect (buffer-size) :to-equal 0)))
+        (expect (current-buffer-empty?) :to-be t)))
 
   (it "triggers only the relevant hooks"
       (let* ((source-buffer (ogt--temp-org-file-buffer "taskfile" "* This is the heading to clarify"))
@@ -62,10 +63,7 @@
         (set-buffer source-buffer)
         (org-gtd-clarify-item)
         (organize-as-single-action)
-        (with-current-buffer (org-gtd--default-file)
-          (expect (ogt--current-buffer-raw-text)
-                  :to-match "HOOK2"))
-        )))
+        (expect (file-contains? (org-gtd--default-file) "HOOK2") :to-be-truthy))))
 
  (describe
   "hook filter helper"

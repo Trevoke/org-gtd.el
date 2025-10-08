@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'ogt-assertions (file-name-concat default-directory "test/helpers/assertions.el"))
 (require 'org-gtd-test-helper-builders (file-name-concat default-directory "test/helpers/builders.el"))
 (require 'org-gtd-test-helper-utils (file-name-concat default-directory "test/helpers/utils.el"))
 (require 'org-gtd)
@@ -52,7 +53,7 @@
 
      ;; Check inbox is empty
      (with-current-buffer (ogt-inbox-buffer)
-       (expect (ogt--current-buffer-raw-text)
+       (expect (current-buffer-raw-text)
                :not :to-match
                "test")))
 
@@ -67,7 +68,7 @@
        (organize-as-single-action))
 
      (org-gtd-engage)
-     (let ((ogt-agenda-string (ogt--buffer-string org-agenda-buffer)))
+     (let ((ogt-agenda-string (agenda-raw-text)))
        (expect (string-match "NEXT \\[#A\\] single action" ogt-agenda-string)
                :to-be-truthy)))
 
@@ -77,7 +78,7 @@
      (expect (buffer-modified-p (org-gtd--default-file)) :to-equal t)
 
      (org-gtd-engage)
-     (let ((ogt-agenda-string (ogt--buffer-string org-agenda-buffer)))
+     (let ((ogt-agenda-string (agenda-raw-text)))
        (expect (string-match "single action" ogt-agenda-string)
                :to-be-truthy)))
 

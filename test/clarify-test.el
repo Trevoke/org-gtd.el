@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'ogt-assertions (file-name-concat default-directory "test/helpers/assertions.el"))
 (require 'org-gtd-test-helper-builders (file-name-concat default-directory "test/helpers/builders.el"))
 (require 'org-gtd)
 (require 'buttercup)
@@ -42,20 +43,20 @@
       (kill-buffer org-agenda-buffer)
       (org-gtd-engage)
       (with-current-buffer org-agenda-buffer
-        (expect (ogt--current-buffer-raw-text)
+        (expect (current-buffer-raw-text)
                 :to-match
                 "Task 1"))
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-min))
         (search-forward ":ORG_GTD: Incubated")
         (org-narrow-to-subtree)
-        (expect (ogt--current-buffer-raw-text)
+        (expect (current-buffer-raw-text)
                 :not :to-match
                 "projectify")
         (widen)
         (search-forward ":ORG_GTD: Projects")
         (org-narrow-to-subtree)
-        (expect (ogt--current-buffer-raw-text)
+        (expect (current-buffer-raw-text)
                 :to-match
                 "projectify")
         (widen)))))

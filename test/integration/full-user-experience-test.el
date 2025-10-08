@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
+(require 'ogt-assertions (file-name-concat default-directory "test/helpers/assertions.el"))
 (require 'keyboard-integration (file-name-concat default-directory "test/helpers/keyboard-integration.el"))
 (require 'org-gtd)
 (require 'buttercup)
@@ -22,7 +23,7 @@
        
        ;; Verify all items were processed correctly
        (with-current-buffer (org-gtd--default-file)
-         (let ((content (ogt--current-buffer-raw-text)))
+         (let ((content (current-buffer-raw-text)))
            (expect content :to-match "Review quarterly budget")
            (expect content :to-match "Plan team meeting") 
            (expect content :to-match "Doctor appointment")
@@ -31,7 +32,7 @@
      
      ;; Verify agenda integration
      (org-gtd-engage)
-     (let ((agenda-content (ogt--buffer-string org-agenda-buffer)))
+     (let ((agenda-content (agenda-raw-text)))
        (expect agenda-content :to-match "Review quarterly budget")
        (expect agenda-content :to-match "Plan team m")     ; Truncated project name
        (expect agenda-content :to-match "First task")))    ; Project component
@@ -61,7 +62,7 @@
      
      ;; Verify both sessions worked
      (with-current-buffer (org-gtd--default-file)
-       (let ((content (ogt--current-buffer-raw-text)))
+       (let ((content (current-buffer-raw-text)))
          (expect content :to-match "Important client call")
          (expect content :to-match "Prepare presentation"))))
 
@@ -85,7 +86,7 @@
      
      ;; Verify archiving worked
      (with-current-buffer (org-gtd--default-file)
-       (let ((content (ogt--current-buffer-raw-text)))
+       (let ((content (current-buffer-raw-text)))
          (expect content :not :to-match "Complete this task")
          (expect content :to-match "Team project")  ; Project remains
          (expect content :to-match "Task 2")))))    ; Incomplete task remains
