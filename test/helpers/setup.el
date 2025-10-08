@@ -1,3 +1,8 @@
+;; -*- lexical-binding: t; coding: utf-8 -*-
+
+(require 'compat)
+
+
 ;; Load guard to prevent redundant loading
 (unless (featurep 'org-gtd-test-setup)
 

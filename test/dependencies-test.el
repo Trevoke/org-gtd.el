@@ -1,3 +1,8 @@
+;; -*- lexical-binding: t; coding: utf-8 -*-
+
+(require 'compat)
+
+
 ;;; dependencies-test.el --- Unit tests for dependency service -*- lexical-binding: t; -*-
 
 ;; Copyright © 2025 Aldric Giacomoni

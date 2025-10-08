@@ -1,5 +1,9 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
+(require 'compat)
+
+
+
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 (require 'ogt-assertions (file-name-concat default-directory "test/helpers/assertions.el"))
 (require 'keyboard-integration (file-name-concat default-directory "test/helpers/keyboard-integration.el"))

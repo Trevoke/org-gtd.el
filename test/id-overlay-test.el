@@ -1,3 +1,8 @@
+;; -*- lexical-binding: t; coding: utf-8 -*-
+
+(require 'compat)
+
+
 ;;; id-overlay-test.el --- Tests for org-gtd-id-overlay -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2023, 2025 Aldric Giacomoni

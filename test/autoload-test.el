@@ -1,5 +1,9 @@
 ;;; -*- lexical-binding: t; -*-
 
+(require 'compat)
+
+
+
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 (require 'buttercup)
 (describe

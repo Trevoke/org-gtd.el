@@ -117,9 +117,23 @@
     ('text . (lambda (x) (read-string (format "%s: " x))))))
 
 (defun org-gtd--build-prompt-form (value user-entry-config)
+  "Build a function that will prompt for input based on VALUE config and USER-ENTRY-CONFIG overrides.
+
+This function avoids using `eval' to ensure compatibility with Emacs 27.2,
+where evaluating closures in quoted forms causes `void-function closure' errors.
+Instead of returning a quoted form with a closure embedded (which fails on 27.2),
+we return an actual function that will do the lookup and call at runtime."
   (let-alist value
-    (let ((form `(pcase ,.type ,@(org-gtd--pcase-inputs user-entry-config))))
-      `(funcall ,(eval form) ,.prompt))))
+    (let ((prompt .prompt)
+          (type .type))
+      ;; Return a lambda that will look up and call the input function
+      ;; This works on all Emacs versions because the closure is called directly,
+      ;; not embedded in a form to be evaluated later
+      (lambda ()
+        (let* ((input-funcs (org-gtd--merge-inputs user-entry-config))
+               (input-func (or (cdr (assoc type input-funcs))
+                              (cdr (assoc '_ input-funcs)))))
+          (funcall input-func prompt))))))
 
 (provide 'org-gtd-configure)
 ;;; org-gtd-configure.el ends here

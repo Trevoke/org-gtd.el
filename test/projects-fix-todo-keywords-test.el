@@ -1,3 +1,8 @@
+;; -*- lexical-binding: t; coding: utf-8 -*-
+
+(require 'compat)
+
+
 ;;; projects-fix-todo-keywords-test.el --- Tests for org-gtd-projects-fix-todo-keywords -*- lexical-binding: t; coding: utf-8 -*-
 
 ;; Copyright © 2025 Aldric Giacomoni

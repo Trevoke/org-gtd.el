@@ -1,5 +1,9 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
+(require 'compat)
+
+
+
 ;; Load test helpers via setup.el (which now uses require internally)
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 (require 'org-gtd)

@@ -1,3 +1,8 @@
+;; -*- lexical-binding: t; coding: utf-8 -*-
+
+(require 'compat)
+
+
 ;;; assertions.el --- Domain-focused assertion helpers for org-gtd tests -*- lexical-binding: t; -*-
 
 ;;; Commentary:
