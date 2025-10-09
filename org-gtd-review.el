@@ -121,71 +121,132 @@ day for the agenda.  It is mostly of value for testing purposes."
 (defun org-gtd-review-stuck-calendar-items ()
   "Agenda view with all invalid Calendar actions."
   (interactive)
+  (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
       (let ((org-agenda-custom-commands
-             '(("g" "foobar"
-                ((tags "+ORG_GTD=\"Calendar\""
-                       ((org-agenda-include-diary nil)
-                        (org-agenda-skip-function
-                         'org-gtd-skip-unless-timestamp-empty-or-invalid)
-                        (org-agenda-skip-additional-timestamps-same-entry t))))))))
+             (org-gtd-view-lang--create-custom-commands
+              '(((name . "Stuck Calendar Items")
+                 (filters . ((category . calendar)
+                             (invalid-timestamp . t)))))
+              "g"
+              "Stuck Calendar Items")))
         (org-agenda nil "g"))))
 
 (defun org-gtd-review-stuck-delegated-items ()
   "Agenda view with all invalid delegated actions."
   (interactive)
+  (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
       (let ((org-agenda-custom-commands
-             `(("g" "foobar"
-                ((tags (format "+TODO=\"%s\"" (org-gtd-keywords--wait))
-                       ((org-agenda-skip-function
-                         '(org-gtd-skip-AND
-                           '(org-gtd-skip-unless-timestamp-empty-or-invalid
-                             org-gtd-skip-unless-delegated-to-empty)))
-                        (org-agenda-skip-additional-timestamps-same-entry t))))))))
+             (org-gtd-view-lang--create-custom-commands
+              `(((name . "Stuck Delegated Items")
+                 (filters . ((todo . (,(org-gtd-keywords--wait)))
+                             (category . delegated)
+                             (invalid-timestamp . t)))))
+              "g"
+              "Stuck Delegated Items")))
         (org-agenda nil "g"))))
 
 (defun org-gtd-review-stuck-habit-items ()
   "Agenda view with all invalid habit actions."
   (interactive)
+  (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
       (let ((org-agenda-custom-commands
-             '(("g" "foobar"
-                ((tags "ORG_GTD=\"Habits\""
-                       ((org-agenda-skip-function
-                         'org-gtd-skip-unless-timestamp-empty-or-invalid)
-                        (org-agenda-skip-additional-timestamps-same-entry t))))))))
+             (org-gtd-view-lang--create-custom-commands
+              '(((name . "Stuck Habit Items")
+                 (filters . ((category . habit)
+                             (invalid-timestamp . t)))))
+              "g"
+              "Stuck Habit Items")))
         (org-agenda nil "g"))))
 
 (defun org-gtd-review-stuck-incubated-items ()
   "Agenda view with all invalid incubated actions."
   (interactive)
+  (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
       (let ((org-agenda-custom-commands
-             '(("g" "foobar"
-                ((tags "ORG_GTD=\"Incubated\""
-                       ((org-agenda-skip-function
-                         'org-gtd-skip-unless-timestamp-empty-or-invalid)
-                        (org-agenda-skip-additional-timestamps-same-entry t))))))))
+             (org-gtd-view-lang--create-custom-commands
+              '(((name . "Stuck Incubated Items")
+                 (filters . ((category . incubate)
+                             (invalid-timestamp . t)))))
+              "g"
+              "Stuck Incubated Items")))
         (org-agenda nil "g"))))
 
 ;;;###autoload
 (defun org-gtd-review-stuck-projects ()
-  "Show all projects that do not have a next action."
-  (interactive)
-  (with-org-gtd-context
-      (org-agenda-list-stuck-projects)))
+  "Show all projects that do not have a next action.
 
-(defun org-gtd-review-stuck-single-action-items ()
-  "Agenda view with all invalid Calendar actions."
+Stuck projects have TODO tasks (work remaining) but no NEXT or WAIT tasks,
+indicating they need attention to identify the next actionable step."
   (interactive)
+  (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
       (let ((org-agenda-custom-commands
-             `(("g" "foobar"
-                ((tags (format "+ORG_GTD=\"%s\"" org-gtd-action)
-                       ((org-agenda-skip-function
-                         'org-gtd-skip-unless-timestamp-empty-or-invalid)
-                        (org-agenda-skip-additional-timestamps-same-entry t))))))))
+             (org-gtd-view-lang--create-custom-commands
+              '(((name . "Stuck Projects")
+                 (filters . ((category . stuck-projects)))))
+              "g"
+              "Stuck Projects")))
+        (org-agenda nil "g"))))
+
+(defun org-gtd-review-stuck-single-action-items ()
+  "Agenda view with all invalid single action items."
+  (interactive)
+  (org-gtd-core-prepare-agenda-buffers)
+  (with-org-gtd-context
+      (let ((org-agenda-custom-commands
+             (org-gtd-view-lang--create-custom-commands
+              `(((name . "Stuck Single Action Items")
+                 (filters . ((property . (("ORG_GTD" . ,org-gtd-action)))
+                             (invalid-timestamp . t)))))
+              "g"
+              "Stuck Single Action Items")))
+        (org-agenda nil "g"))))
+
+;;;###autoload
+(defun org-gtd-review-completed-items (&optional days-back)
+  "Show items completed in the last DAYS-BACK days (default 7).
+
+This view shows all items with done TODO states that were closed within
+the specified time period. Useful for weekly reviews to see what was
+accomplished."
+  (interactive "p")
+  (let ((days (or days-back 7))
+        (time-spec (cond
+                    ((= days 1) 'past-day)
+                    ((= days 7) 'past-week)
+                    ((= days 30) 'past-month)
+                    ((= days 365) 'past-year)
+                    (t 'recent))))
+    (org-gtd-core-prepare-agenda-buffers)
+    (with-org-gtd-context
+        (let ((org-agenda-custom-commands
+               (org-gtd-view-lang--create-custom-commands
+                `(((name . ,(format "Completed in Last %d Days" days))
+                   (filters . ((done . t)
+                               (closed . ,time-spec)))))
+                "g"
+                "Recently Completed Items")))
+          (org-agenda nil "g")))))
+
+;;;###autoload
+(defun org-gtd-review-completed-projects ()
+  "Show all completed projects.
+
+Projects are considered completed when all their tasks are done.
+This view helps identify projects ready for archiving."
+  (interactive)
+  (org-gtd-core-prepare-agenda-buffers)
+  (with-org-gtd-context
+      (let ((org-agenda-custom-commands
+             (org-gtd-view-lang--create-custom-commands
+              '(((name . "Completed Projects")
+                 (filters . ((category . completed-projects)))))
+              "g"
+              "Completed Projects")))
         (org-agenda nil "g"))))
 
 ;;;; Functions

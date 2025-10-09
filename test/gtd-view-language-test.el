@@ -221,4 +221,220 @@
 
          ;; Clean up
          (delete-file test-file)
-         (setq org-agenda-files nil))))))
+         (setq org-agenda-files nil)))))
+
+ (describe
+  "Active Projects View"
+
+  (it "can define a GTD view for active projects only"
+      ;; Unit test for active-projects filter translation
+      (let ((active-projects-spec
+             '((name . "Active Projects")
+               (filters . ((category . active-projects))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql active-projects-spec)
+                :to-equal
+                '(and (and (property "ORG_GTD" "Projects")
+                           (project-has-active-tasks))))))
+
+  (it "detects projects with at least one active task"
+      ;; Test org-gtd-projects--has-active-tasks-p returns true for active projects
+      (with-current-buffer (org-gtd--default-file)
+        (insert """
+* Projects
+:PROPERTIES:
+:ORG_GTD: Projects
+:END:
+** Active Project
+:PROPERTIES:
+:ORG_GTD: Projects
+:ID: proj-1
+:ORG_GTD_FIRST_TASKS: task-1
+:END:
+*** TODO First task
+:PROPERTIES:
+:ORG_GTD: Actions
+:ID: task-1
+:END:
+*** DONE Second task
+:PROPERTIES:
+:ORG_GTD: Actions
+:ID: task-2
+:END:
+""")
+        (basic-save-buffer)
+        ;; Register IDs with org-id system
+        (org-id-update-id-locations (list (buffer-file-name))))
+
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Active Project")
+        (org-back-to-heading t)
+        (expect (org-gtd-projects--has-active-tasks-p (point-marker))
+                :to-be-truthy)))
+
+  (it "detects projects with all tasks completed as inactive"
+      ;; Test org-gtd-projects--has-active-tasks-p returns false for completed projects
+      (with-current-buffer (org-gtd--default-file)
+        (insert """
+* Projects
+:PROPERTIES:
+:ORG_GTD: Projects
+:END:
+** Completed Project
+:PROPERTIES:
+:ORG_GTD: Projects
+:ID: proj-2
+:ORG_GTD_FIRST_TASKS: task-3
+:END:
+*** DONE First task
+:PROPERTIES:
+:ORG_GTD: Actions
+:ID: task-3
+:ORG_GTD_BLOCKS: task-4
+:END:
+*** DONE Second task
+:PROPERTIES:
+:ORG_GTD: Actions
+:ID: task-4
+:ORG_GTD_DEPENDS_ON: task-3
+:END:
+""")
+        (basic-save-buffer)
+        ;; Register IDs with org-id system
+        (org-id-update-id-locations (list (buffer-file-name))))
+
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Completed Project")
+        (org-back-to-heading t)
+        (expect (org-gtd-projects--has-active-tasks-p (point-marker))
+                :to-be nil)))
+
+  (it "handles projects with no tasks"
+      ;; Edge case: project heading with no tasks defined yet
+      (with-current-buffer (org-gtd--default-file)
+        (insert """
+* Projects
+:PROPERTIES:
+:ORG_GTD: Projects
+:END:
+** Empty Project
+:PROPERTIES:
+:ORG_GTD: Projects
+:ID: proj-3
+:END:
+""")
+        (basic-save-buffer)
+        ;; Register IDs with org-id system
+        (org-id-update-id-locations (list (buffer-file-name))))
+
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Empty Project")
+        (org-back-to-heading t)
+        (expect (org-gtd-projects--has-active-tasks-p (point-marker))
+                :to-be nil))))
+
+ (describe
+  "Completion and Closed Item Views"
+
+  (it "can define a view for done items"
+      (let ((done-spec
+             '((name . "Completed Items")
+               (filters . ((done . t))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql done-spec)
+                :to-equal
+                '(and (done)))))
+
+  (it "can define a view for recently closed items"
+      (let ((closed-spec
+             '((name . "Recently Completed")
+               (filters . ((closed . recent))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql closed-spec)
+                :to-equal
+                '(and (closed :from "-7d")))))
+
+  (it "can define a view for items closed today"
+      (let ((closed-today-spec
+             '((name . "Completed Today")
+               (filters . ((closed . today))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql closed-today-spec)
+                :to-equal
+                '(and (closed :on "today")))))
+
+  (it "can define a view for completed projects"
+      (let ((completed-projects-spec
+             '((name . "Completed Projects")
+               (filters . ((category . completed-projects))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql completed-projects-spec)
+                :to-equal
+                '(and (and (property "ORG_GTD" "Projects")
+                           (level 2)
+                           (not (project-has-active-tasks)))))))
+
+  (it "can combine done and closed filters"
+      (let ((recent-completed-spec
+             '((name . "Recently Completed Items")
+               (filters . ((done . t)
+                           (closed . past-week))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql recent-completed-spec)
+                :to-equal
+                '(and (done)
+                      (closed :from "-1w"))))))
+
+ (describe
+  "Invalid Timestamp and Stuck Item Detection"
+
+  (it "can define a view for items with invalid timestamps"
+      (let ((invalid-ts-spec
+             '((name . "Items with Invalid Timestamps")
+               (filters . ((invalid-timestamp . t))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql invalid-ts-spec)
+                :to-equal
+                '(and (property-invalid-timestamp "ORG_GTD_TIMESTAMP")))))
+
+  (it "can define a view for stuck calendar items"
+      (let ((stuck-calendar-spec
+             '((name . "Stuck Calendar Items")
+               (filters . ((category . calendar)
+                           (invalid-timestamp . t))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql stuck-calendar-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Calendar")
+                      (property-invalid-timestamp "ORG_GTD_TIMESTAMP")))))
+
+  (it "detects items with missing ORG_GTD_TIMESTAMP"
+      (with-current-buffer (org-gtd--default-file)
+        (insert """
+* TODO Task without timestamp
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+""")
+        (basic-save-buffer))
+
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Task without timestamp")
+        (org-back-to-heading t)
+        (let ((has-invalid-ts (not (org-entry-get (point) "ORG_GTD_TIMESTAMP"))))
+          (expect has-invalid-ts :to-be-truthy))))
+
+  (it "detects items with invalid ORG_GTD_TIMESTAMP format"
+      (with-current-buffer (org-gtd--default-file)
+        (insert """
+* TODO Task with invalid timestamp
+:PROPERTIES:
+:ORG_GTD: Actions
+:ORG_GTD_TIMESTAMP: not a valid date
+:END:
+""")
+        (basic-save-buffer))
+
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Task with invalid timestamp")
+        (org-back-to-heading t)
+        (let ((ts-value (org-entry-get (point) "ORG_GTD_TIMESTAMP")))
+          (expect (org-string-match-p org-ts-regexp-both ts-value)
+                  :to-be nil))))))

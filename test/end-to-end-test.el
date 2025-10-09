@@ -714,15 +714,13 @@
                   :to-match "Morning workout"))))
 
   (describe "Review of multi-file projects"
-    (it "verifies multi-file project appears in stuck projects when all tasks are in other files"
-        ;; NOTE: This test documents current behavior with multi-file projects.
-        ;; org-mode's stuck projects detection looks for NEXT/WAIT tasks that are
-        ;; *children* of the project heading. Tasks linked via ORG_GTD_FIRST_TASKS
-        ;; in other files are NOT detected, so the project appears stuck even when
-        ;; it has NEXT tasks in other files.
-        ;;
-        ;; This is a known limitation of using org-mode's native stuck projects view
-        ;; with org-gtd's DAG-based multi-file project structure.
+    (it "verifies multi-file project does NOT appear stuck when it has NEXT task in other file"
+        ;; NOTE: This test verifies the IMPROVED behavior with DSL-based stuck detection.
+        ;; The new implementation uses org-gtd-projects--is-stuck-p which traverses
+        ;; the dependency graph across files via ORG_GTD_FIRST_TASKS relationships.
+        ;; Projects with NEXT/WAIT tasks in other files are correctly identified as
+        ;; NOT stuck, which is an improvement over org-mode's native stuck projects
+        ;; view that only looks at children of the project heading.
 
         ;; 1. CAPTURE and ORGANIZE project in main file
         (capture-inbox-item "Multi-file project review")
@@ -760,16 +758,16 @@
               (org-back-to-heading t)
               (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" "review-task-id"))
 
-            ;; 4. Make main file task TODO (not NEXT) so project appears stuck
+            ;; 4. Make main file task TODO (project has work, but also has NEXT in other file)
             (with-current-buffer (org-gtd--default-file)
               (goto-char (point-min))
               (search-forward "Task in main file")
               (org-todo "TODO"))
 
-            ;; 5. VERIFY project appears as stuck (even though it has NEXT task in other file)
+            ;; 5. VERIFY project does NOT appear as stuck (it has a NEXT task in other file)
             (org-gtd-review-stuck-projects)
             (expect (agenda-raw-text)
-                    :to-match "Multi-file project review")))))
+                    :not :to-match "Multi-file project review")))))
 
   (describe "Review of incubated items"
     (it "verifies incubated item appears in area of focus review"

@@ -35,11 +35,14 @@
 ;; Available Filter Types:
 ;;
 ;; Category Filters:
-;;   (category . delegated)   - Items with DELEGATED_TO property
-;;   (category . calendar)    - Calendar items (ORG_GTD="Calendar")
-;;   (category . projects)    - Project items (ORG_GTD="Projects")
-;;   (category . incubate)    - Incubated items (ORG_GTD="Incubated")
-;;   (category . habit)       - Habit items (STYLE="habit")
+;;   (category . delegated)           - Items with DELEGATED_TO property
+;;   (category . calendar)            - Calendar items (ORG_GTD="Calendar")
+;;   (category . projects)            - Project items (ORG_GTD="Projects")
+;;   (category . active-projects)     - Projects with at least one active task
+;;   (category . completed-projects)  - Projects with all tasks done
+;;   (category . stuck-projects)      - Projects with no NEXT/WAIT tasks
+;;   (category . incubate)            - Incubated items (ORG_GTD="Incubated")
+;;   (category . habit)               - Habit items (STYLE="habit")
 ;;
 ;; Time-based Filters:
 ;;   (timestamp . past)       - ORG_GTD_TIMESTAMP in the past
@@ -48,14 +51,24 @@
 ;;   (scheduled . past)       - Scheduled in the past (auto-adds "not done")
 ;;   (scheduled . future)     - Scheduled in the future
 ;;   (scheduled . today)      - Scheduled for today (for habits)
+;;   (closed . recent)        - Closed in last 7 days
+;;   (closed . past-day)      - Closed in last day
+;;   (closed . past-week)     - Closed in last week
+;;   (closed . past-month)    - Closed in last month
+;;   (closed . past-year)     - Closed in last year
+;;   (closed . today)         - Closed today
 ;;
 ;; Structural Filters:
 ;;   (level . N)              - Heading level N
 ;;   (todo . ("TODO" "NEXT")) - Specific TODO keywords
+;;   (done . t)               - Items with done TODO states
 ;;
 ;; Metadata Filters:
 ;;   (area-of-focus . "Work") - Specific area of focus (CATEGORY property)
 ;;   (not-habit . t)          - Exclude habits (STYLE != "habit")
+;;
+;; Data Validation Filters:
+;;   (invalid-timestamp . t)  - Items with missing or invalid ORG_GTD_TIMESTAMP
 ;;
 ;; Tag Filters:
 ;;   (tags . ("@work" "@computer")) - Match specific tags
@@ -176,12 +189,18 @@ GTD-VIEW-SPEC should be an alist with 'name and 'filters keys."
       (org-gtd-view-lang--translate-deadline-filter filter-value))
      ((eq filter-type 'scheduled)
       (org-gtd-view-lang--translate-scheduled-filter filter-value))
+     ((eq filter-type 'closed)
+      (org-gtd-view-lang--translate-closed-filter filter-value))
      ((eq filter-type 'not-habit)
       (org-gtd-view-lang--translate-not-habit-filter filter-value))
      ((eq filter-type 'area-of-focus)
       (org-gtd-view-lang--translate-area-of-focus-filter filter-value))
      ((eq filter-type 'todo)
       (org-gtd-view-lang--translate-todo-filter filter-value))
+     ((eq filter-type 'done)
+      (org-gtd-view-lang--translate-done-filter filter-value))
+     ((eq filter-type 'invalid-timestamp)
+      (org-gtd-view-lang--translate-invalid-timestamp-filter filter-value))
      ((eq filter-type 'tags)
       (org-gtd-view-lang--translate-tags-filter filter-value))
      ((eq filter-type 'tags-match)
@@ -201,6 +220,17 @@ GTD-VIEW-SPEC should be an alist with 'name and 'filters keys."
     (list '(property "ORG_GTD" "Calendar")))
    ((eq category 'projects)
     (list '(property "ORG_GTD" "Projects")))
+   ((eq category 'active-projects)
+    (list '(and (property "ORG_GTD" "Projects")
+                (project-has-active-tasks))))
+   ((eq category 'completed-projects)
+    (list '(and (property "ORG_GTD" "Projects")
+                (level 2)
+                (not (project-has-active-tasks)))))
+   ((eq category 'stuck-projects)
+    (list '(and (property "ORG_GTD" "Projects")
+                (level 2)
+                (project-is-stuck))))
    ((eq category 'incubate)
     (list '(property "ORG_GTD" "Incubated")))
    ((eq category 'habit)
@@ -234,6 +264,35 @@ GTD-VIEW-SPEC should be an alist with 'name and 'filters keys."
    ((eq time-spec 'today)
     (list '(scheduled :on "today")))
    (t (error "Unknown scheduled spec: %s" time-spec))))
+
+(defun org-gtd-view-lang--translate-closed-filter (time-spec)
+  "Translate closed TIME-SPEC to org-ql closed filter."
+  (cond
+   ((eq time-spec 'recent)
+    (list '(closed :from "-7d")))
+   ((eq time-spec 'past-day)
+    (list '(closed :from "-1d")))
+   ((eq time-spec 'past-week)
+    (list '(closed :from "-1w")))
+   ((eq time-spec 'past-month)
+    (list '(closed :from "-1m")))
+   ((eq time-spec 'past-year)
+    (list '(closed :from "-1y")))
+   ((eq time-spec 'today)
+    (list '(closed :on "today")))
+   (t (error "Unknown closed spec: %s" time-spec))))
+
+(defun org-gtd-view-lang--translate-done-filter (value)
+  "Translate done VALUE to org-ql done filter."
+  (when value
+    (list '(done))))
+
+(defun org-gtd-view-lang--translate-invalid-timestamp-filter (value)
+  "Translate invalid-timestamp VALUE to org-ql filter.
+Uses property-invalid-timestamp predicate to find items with missing or
+malformed ORG_GTD_TIMESTAMP properties."
+  (when value
+    (list '(property-invalid-timestamp "ORG_GTD_TIMESTAMP"))))
 
 (defun org-gtd-view-lang--translate-not-habit-filter (value)
   "Translate not-habit VALUE to org-ql filter."

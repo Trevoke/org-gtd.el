@@ -488,6 +488,54 @@ Returns list of task markers in breadth-first order."
       ;; Return in breadth-first order
       (nreverse result-tasks))))
 
+(defun org-gtd-projects--has-active-tasks-p (project-marker)
+  "Return t if project at PROJECT-MARKER has at least one active task.
+
+Active tasks are those with TODO states that are not in `org-done-keywords'.
+Uses early exit optimization - stops checking as soon as an active task is found.
+
+This function is intended for use in agenda views and filters to identify
+projects that have work remaining to be done."
+  (let ((tasks (org-gtd-projects--collect-tasks-by-graph project-marker))
+        (has-active nil))
+    ;; Check each task until we find an active one
+    (while (and tasks (not has-active))
+      (let ((task-marker (pop tasks)))
+        (org-with-point-at task-marker
+          (let ((todo-state (org-entry-get (point) "TODO")))
+            ;; Task is active if it has a TODO state and it's not done
+            (when (and todo-state
+                       (not (member todo-state org-done-keywords)))
+              (setq has-active t))))))
+    has-active))
+
+(defun org-gtd-projects--is-stuck-p (project-marker)
+  "Return t if project at PROJECT-MARKER is stuck.
+
+A stuck project is one that has active tasks (work remaining) but no tasks
+that are immediately actionable (NEXT) or waiting (WAIT). This typically
+means all tasks are in TODO state, indicating planning is incomplete or
+dependencies aren't set up properly."
+  (let ((tasks (org-gtd-projects--collect-tasks-by-graph project-marker))
+        (has-todo-tasks nil)
+        (has-actionable-task nil))
+    ;; Check each task to see if we have any TODO tasks and any actionable tasks
+    (dolist (task-marker tasks)
+      (org-with-point-at task-marker
+        (let ((todo-state (org-entry-get (point) "TODO")))
+          (when todo-state
+            (cond
+             ;; Done or canceled tasks don't count
+             ((member todo-state org-done-keywords) nil)
+             ;; NEXT or WAIT tasks mean project is not stuck
+             ((or (string= todo-state (org-gtd-keywords--next))
+                  (string= todo-state (org-gtd-keywords--wait)))
+              (setq has-actionable-task t))
+             ;; Any other active state (like TODO) means work remains
+             (t (setq has-todo-tasks t)))))))
+    ;; Project is stuck if it has work remaining but nothing actionable
+    (and has-todo-tasks (not has-actionable-task))))
+
 (defun org-gtd-projects--create-dependency-relationship (blocker-marker dependent-marker)
   "Create bidirectional dependency: BLOCKER-MARKER blocks DEPENDENT-MARKER."
   (let ((blocker-id (save-excursion
