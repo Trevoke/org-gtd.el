@@ -47,13 +47,34 @@ is enabled.")
 
 ;;;###autoload
 (define-minor-mode org-gtd-mode
-  "Global minor mode to bound `org-agenda' to the org-gtd settings."
+  "OBSOLETE: This mode is no longer necessary.
+
+Instead, configure org-gtd manually in your init file:
+  (setq org-agenda-files (list org-gtd-directory))
+  (setq org-edna-use-inheritance t)
+  (org-edna-mode 1)
+
+This mode previously wrapped all org-agenda commands with org-gtd context,
+but this is no longer needed since:
+1. All org-gtd commands (org-gtd-engage, etc.) already have the right context
+2. Users should add org-gtd-directory to org-agenda-files themselves
+3. Users should configure org-edna themselves (this mode had it wrong anyway)
+
+This mode will be removed in a future version."
   :lighter " GTD"
   :global t
   :group 'org-gtd
   (if org-gtd-mode
-      (org-gtd--enable-org-gtd-mode)
+      (progn
+        (display-warning 'org-gtd
+                        "org-gtd-mode is obsolete and will be removed. See docstring for migration."
+                        :warning)
+        (org-gtd--enable-org-gtd-mode))
     (org-gtd--disable-org-gtd-mode)))
+
+(make-obsolete 'org-gtd-mode
+               "Configure org-agenda-files and org-edna directly instead."
+               "4.0")
 
 ;;;; Functions
 

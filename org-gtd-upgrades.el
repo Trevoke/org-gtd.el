@@ -130,15 +130,43 @@ planning keyword in `org-mode'."
   (and (not (org-is-habit-p))
        (org-get-scheduled-time (point))))
 
-(defun org-gtd-upgrade--migrate-level-to-property-based ()
-  "Migrate existing level-based projects to property-based system.
-This migration:
-1. Adds ORG_GTD=Projects property to level 2 items under Projects categories
-2. Adds ORG_GTD=Actions property to level 3+ items under project headings
-This supports the new property-based task identification system."
+;;;###autoload
+(defun org-gtd-upgrade-v3-to-v4 ()
+  "Migrate from org-gtd v3 to v4 property-based and dependency system.
+
+This migration performs TWO required steps:
+
+STEP 1: Add ORG_GTD properties
+  - Adds ORG_GTD=\"Projects\" property to project headings
+  - Adds ORG_GTD=\"Actions\" property to project tasks
+
+STEP 2: Add dependency properties to projects
+  - Adds ORG_GTD_DEPENDS_ON and ORG_GTD_BLOCKS for sequential dependencies
+  - Adds ORG_GTD_FIRST_TASKS to project headings
+  - Sets correct NEXT/TODO states based on dependencies
+
+This is REQUIRED for org-gtd v4 to work correctly. The old TRIGGER-based
+project system no longer works - v4 uses dependency properties instead.
+
+Make a backup before running! Safe to run multiple times."
   (interactive)
+  (when (yes-or-no-p "This will modify your GTD files. Have you made a backup? ")
+    (message "Migrating to org-gtd v4...")
+
+    ;; Step 1: Add ORG_GTD properties
+    (message "Step 1/2: Adding ORG_GTD properties...")
+    (org-gtd-upgrade--add-org-gtd-properties)
+
+    ;; Step 2: Add dependency properties
+    (message "Step 2/2: Adding project dependencies...")
+    (org-gtd-upgrade--add-project-dependencies)
+
+    (message "Migration complete! Your projects now use the dependency system.")))
+
+(defun org-gtd-upgrade--add-org-gtd-properties ()
+  "Add ORG_GTD properties to existing items (Step 1 of migration)."
   (with-org-gtd-context
-      ;; Step 1: Find Projects category headings and process their level 2 children as project headings
+      ;; Find Projects category headings and process their level 2 children as project headings
       (org-map-entries
        (lambda ()
          (let ((category-level (org-current-level)))
@@ -153,7 +181,7 @@ This supports the new property-based task identification system."
        "+ORG_GTD=\"Projects\"+LEVEL=1"
        'agenda)
 
-      ;; Step 2: Find all project headings and process their children as project tasks
+      ;; Find all project headings and process their children as project tasks
       (org-map-entries
        (lambda ()
          (let ((project-level (org-current-level)))
@@ -166,6 +194,22 @@ This supports the new property-based task identification system."
                  (org-entry-put (point) "ORG_GTD" "Actions")))
              (outline-next-heading))))
        "+ORG_GTD=\"Projects\"+LEVEL=2"
+       'agenda)))
+
+(defun org-gtd-upgrade--add-project-dependencies ()
+  "Add dependency properties to existing projects (Step 2 of migration)."
+  (require 'org-gtd-projects)
+  (with-org-gtd-context
+      ;; Find all project headings and add dependencies
+      (org-map-entries
+       (lambda ()
+         (let ((project-marker (point-marker)))
+           (message "Processing project: %s" (org-get-heading t t t t))
+           ;; Setup sequential dependencies for this project
+           (org-gtd-project--setup-dependencies project-marker)
+           ;; Recalculate task states based on new dependencies
+           (org-gtd-projects-fix-todo-keywords project-marker)))
+       "+ORG_GTD=\"Projects\""
        'agenda)))
 
 ;;;; Footer

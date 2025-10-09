@@ -1,9 +1,13 @@
 * NOTICE
-This is org-gtd 3.0.0.
+This is org-gtd 4.0.0.
 
 Check documentation in [[doc/]] (and the info manual within emacs itself) if you're upgrading. Please report all defects as Github issues.
 
-Use existing tags if you'd rather stick to a pre-3.0 version.
+* What's new in 4.0:
+** Flexible project dependencies!
+Projects can now have parallel tasks and custom dependency relationships, not just sequential execution. Plus simplified keyword configuration and many other improvements. See [[doc/org-gtd.org][the documentation]] for details.
+
+Use existing tags if you'd rather stick to previous versions.
 
 * Sponsorship
 I've put many hours of reading, research, and coding, to put this together. If it delivers value to you, helps you manage your life, please consider sponsoring ([[https://github.com/sponsors/Trevoke/][Github sponsors]] or [[https://www.patreon.com/LokiConsulting][Patreon]]) and allowing me to continue putting work into this package and other projects.
@@ -12,7 +16,7 @@ I've put many hours of reading, research, and coding, to put this together. If i
 This package tries to replicate as closely as possible the GTD workflow.
 This package assumes familiarity with GTD.
 
-This package provides a system that allows you to capture incoming things into an inbox, then process the inbox and categorize each item based on the GTD categories.  It leverages org-agenda to show today's items as well as the NEXT items.  It also has a simple project management system, which currently assumes all tasks in a project are sequential.
+This package provides a system that allows you to capture incoming things into an inbox, then process the inbox and categorize each item based on the GTD categories.  It leverages org-agenda to show today's items as well as the NEXT items.  It also has a flexible project management system that supports both sequential task execution and complex dependency relationships for parallel work.
 
 For a comprehensive instruction manual, see the documentation:
 - Either the info file (within emacs, ~C-h i m org gtd RET~)
@@ -28,23 +32,25 @@ Before using org-gtd, you need to configure your org-mode TODO keywords and map 
 
 #+begin_src emacs-lisp
 ;; Configure org-mode TODO keywords
-(setq org-todo-keywords 
+(setq org-todo-keywords
       '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
 
-;; Map GTD semantics to your keywords  
+;; Map GTD semantics to your keywords
 (setopt org-gtd-keyword-mapping
         '((todo . "TODO")      ; not ready to act
           (next . "NEXT")      ; ready to act
-          (wait . "WAIT")      ; blocked/delegated  
+          (wait . "WAIT")      ; blocked/delegated
           (canceled . "CNCL"))) ; terminated
 
-;; Optional: Enable org-gtd-mode for automatic agenda integration
-(org-gtd-mode 1)
+;; Add org-gtd files to your agenda
+(setq org-agenda-files (list org-gtd-directory))
+
+;; Configure org-edna (REQUIRED for projects to work)
+(setq org-edna-use-inheritance t)
+(org-edna-mode 1)
 #+end_src
 
 *** GTD Meta
-Modes:
-- ~org-gtd-mode~ :: If you want to be able to refresh the org-agenda views and have all the ~org-gtd~ files included in your ~org-agenda-files~, you'll need this to be enabled.
 
 Customizable variables:
 - ~org-gtd-directory~ :: Directory where org-gtd will look for its files

@@ -126,8 +126,8 @@
                  (org-back-to-heading t)
                  (expect (org-entry-get (point) "ORG_GTD") :to-be nil))
 
-               ;; Apply corrected migration function
-               (org-gtd-upgrade--migrate-level-to-property-based)
+               ;; Apply corrected migration function (Step 1 only - property addition)
+               (org-gtd-upgrade--add-org-gtd-properties)
 
                ;; After migration: verify correct ORG_GTD properties in the buffer
                ;; The migration function modifies buffers but doesn't save them

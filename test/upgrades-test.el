@@ -196,8 +196,8 @@ Do that thing.
 """)
         (basic-save-buffer))
 
-      ;; Run the migration function
-      (org-gtd-upgrade--migrate-level-to-property-based)
+      ;; Run the migration function (Step 1 only - property addition)
+      (org-gtd-upgrade--add-org-gtd-properties)
 
       (with-current-buffer (org-gtd--default-file)
         ;; Verify project headings have correct ORG_GTD property
@@ -297,3 +297,107 @@ Do that thing.
             (expect (member "task-design" task-ids) :to-be-truthy)
             (expect (member "task-wireframes" task-ids) :to-be-truthy)
             (expect (member "task-colors" task-ids) :to-be-truthy)))))))
+
+ (describe
+  "Complete v3 to v4 user upgrade path"
+
+  (it "full migration: converts v3 sequential projects to v4 dependency-based with correct task states"
+      (with-current-buffer (org-gtd--default-file)
+        (insert """
+* Projects
+:PROPERTIES:
+:ORG_GTD: Projects
+:END:
+** Build a webapp
+*** TODO Design database
+:PROPERTIES:
+:ID: task-1
+:END:
+*** TODO Implement API
+:PROPERTIES:
+:ID: task-2
+:END:
+""")
+        (basic-save-buffer))
+
+      ;; Verify v3 state
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Design database")
+        (org-back-to-heading t)
+        (expect (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")
+                :to-be nil))
+
+      ;; Run full migration
+      (cl-letf (((symbol-function 'yes-or-no-p) (lambda (_) t)))
+        (org-gtd-upgrade-v3-to-v4))
+
+      ;; Verify v4 state
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Design database")
+        (org-back-to-heading t)
+        (let ((blocks (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
+          (expect blocks :to-be-truthy)
+          (expect (member "task-2" blocks) :to-be-truthy))
+        (expect (org-entry-get (point) "TODO")
+                :to-equal (org-gtd-keywords--next))))
+
+  (it "preserves user data during migration"
+      (with-current-buffer (org-gtd--default-file)
+        (insert """
+* Projects
+:PROPERTIES:
+:ORG_GTD: Projects
+:END:
+** Project
+*** TODO Task                                             :urgent:
+:PROPERTIES:
+:ID: t1
+:CUSTOM: value
+:END:
+Content here.
+""")
+        (basic-save-buffer))
+
+      (let (orig-tags orig-custom)
+        (with-current-buffer (org-gtd--default-file)
+          (goto-char (point-min))
+          (search-forward "Task")
+          (org-back-to-heading t)
+          (setq orig-tags (org-get-tags)
+                orig-custom (org-entry-get (point) "CUSTOM")))
+
+        (cl-letf (((symbol-function 'yes-or-no-p) (lambda (_) t)))
+          (org-gtd-upgrade-v3-to-v4))
+
+        (with-current-buffer (org-gtd--default-file)
+          (goto-char (point-min))
+          (search-forward "Task")
+          (org-back-to-heading t)
+          (expect (org-get-tags) :to-equal orig-tags)
+          (expect (org-entry-get (point) "CUSTOM") :to-equal orig-custom))))
+
+  (it "respects backup confirmation"
+      (with-current-buffer (org-gtd--default-file)
+        (insert """
+* Projects
+:PROPERTIES:
+:ORG_GTD: Projects
+:END:
+** Proj
+*** TODO Task
+:PROPERTIES:
+:ID: t1
+:END:
+""")
+        (basic-save-buffer))
+
+      (cl-letf (((symbol-function 'yes-or-no-p) (lambda (_) nil)))
+        (org-gtd-upgrade-v3-to-v4))
+
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (re-search-forward "^\\*\\* Proj$")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "ORG_GTD") :to-be nil))))

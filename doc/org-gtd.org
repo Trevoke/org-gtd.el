@@ -5,13 +5,11 @@
 #+DATE: 2015-{{{year}}}
 #+LANGUAGE: en
 
-# TODO: Update for org-gtd 4.0 - Document new org-gtd-keyword-mapping structure and required org-todo-keywords setup
-
 #+TEXINFO_DIR_CATEGORY: Emacs
 #+TEXINFO_DIR_TITLE: Org GTD: (org-gtd)
 #+TEXINFO_DIR_DESC: An opinionated GTD flow implemented in org-mode
 #+TEXINFO_FILENAME: ../org-gtd.info
-#+SUBTITLE: for version 3.0
+#+SUBTITLE: for version 4.0
 #+TEXINFO_DEFFN: t
 #+OPTIONS: H:3 num:3 toc:2
 #+PROPERTY: header-args :eval never
@@ -21,7 +19,7 @@ Org GTD is an attempt to implement the GTD flow described in the GTD
 book as faithfully as possible.
 
 #+TEXINFO: @noindent
-This manual is for Org GTD version 3.0
+This manual is for Org GTD version 4.0
 
 :END:
 * Copying
@@ -91,50 +89,71 @@ This package provides a system that allows you to capture incoming things into a
                +-----------+      +-----------+                   +-----------+
                 Waiting For        Next Actions                      Calendar
 #+end_example
-* What's new in 3.0
+* What's new in 4.0
 :PROPERTIES:
-:CUSTOM_ID: new-in-3.0
+:CUSTOM_ID: new-in-4.0
 :END:
-** Minimum emacs version now 27.2
-It became too difficult for me to support 27.1.
-** Organize menu has changed
-- Habits have their place now (h)
-- What used to be called "archive" is now called "knowledge" (k)
-- Modify project is now "Add to project" (a)
-** Easier to clarify more items
-There's now two more powerful commands you can use to clarify almost anything:
-- ~org-gtd-clarify-item~
-- ~org-gtd-clarify-agenda-item~
 
-These both allow you to enter a one-off clarify/organize flow.
-** Functions exist to create your own hooks
-Make GTD truly a part of your emacs experience!
-These functions take various arguments (check the documentation in emacs) and automatically add something to your org-gtd. This would be useful after sending an email, for instance.
-Please share your own hooks as issues in Github or in the discord so we can create a community library!
-- ~org-gtd-habit-create~
-- ~org-gtd-calendar-create~
-- ~org-gtd-delegate-create~
-- ~org-gtd-incubate-create~
-- ~org-gtd-single-action-create~
-** Support habits
-Org mode's habits now have a specific place here.
-** Todo keywords can be customized
-[[#all-the-levers][See all the configuration options]]
-** Massive API changes
-The package domain now is a better match for the domain language of GTD.
+Version 4.0 is a major release that transforms how Org GTD handles projects and configuration, while maintaining compatibility with your existing GTD data.
 
-Functions use the words =capture=, =process=, =clarify=, =organize=, =review=.
-** Massive Data structure changes
-- SCHEDULED and DEADLINE are intended to be used for things that have to start and things that have to end, respectively. V2 abused them, v3 is more respectful of how org-mode wants to work.
-- We use our own timestamp property. For compatibility with orgzly, we currently duplicate the timestamp into the body.
-** Include horizons
-- They can be displayed while clarifying
-- There's an optional organize-hook for areas of focus
-- There's an agenda view for areas of focus
+** Flexible project dependencies (the big one!)
+Projects are no longer limited to sequential tasks! You can now create complex project structures with parallel tasks and custom dependencies.
 
-[[#working-with-horizons][Working with the GTD Horizons]].
-** You can create your own project templates and insert them while clarifying
-[[#options-and-behaviors-related-to-clarification-step][Options and commands related to clarification]]
+- *Define any dependency relationship* - Tasks can block other tasks, creating a directed acyclic graph (DAG) of dependencies
+- *Parallel work streams* - Multiple tasks can be NEXT at the same time if they don't depend on each other
+- *Automatic dependency detection* - Org GTD finds all tasks that are ready to work on based on the dependency graph
+- *Cycle prevention* - The system prevents circular dependencies that would create deadlocks
+- *Visual dependency helper* (optional) - See task relationships in a side window while clarifying projects
+
+Tasks without explicit dependencies still work sequentially (as before), so your existing projects continue to work unchanged.
+
+** Simplified keyword configuration
+The new keyword configuration system is clearer and more maintainable:
+
+- *One mapping instead of many variables* - Replace individual keyword variables (~org-gtd-next~, ~org-gtd-todo~, etc.) with a single ~org-gtd-keyword-mapping~ structure
+- *Global TODO keywords* - No more file-level ~#+TODO:~ lines that can conflict. Use Emacs' global ~org-todo-keywords~ configuration instead
+- *Automatic validation* - Org GTD validates your keyword configuration and provides helpful error messages if something is wrong
+- *Better Emacs 29+ support* - Use ~setopt~ for automatic validation when setting variables
+
+See [[#all-the-levers][Configuration options]] for details.
+
+** Data-driven configuration
+New configuration system allows you to customize item properties declaratively:
+
+- *Configure by item type* - Define what properties each GTD item type should have
+- *Prompt for user input* - Automatically prompt for dates, text, or custom data when organizing
+- *Extensible* - Easy to add your own custom configuration for new item types
+
+** Declarative view language
+Creating custom agenda views is now much easier with a declarative syntax:
+
+- *Specify what you want, not how to get it* - Define views using simple filters instead of complex skip functions
+- *Built on org-ql* - Leverages the powerful org-ql query language for performance
+- *More maintainable* - View definitions are data structures, not code
+
+** Better project modification
+- *Add tasks to projects anywhere* - You can now add tasks to projects even if the project file is outside ~org-gtd-directory~
+- *Modify project structure* - Commands to create task dependencies and manage complex projects
+
+** Enhanced review capabilities
+- *Find missed items* - New ~org-gtd-review-missed-items~ command to catch things that slipped through
+- *Better stuck project detection* - Improved identification of projects that need attention
+
+** Simplified configuration
+- *org-gtd-mode is obsolete* - No need for a special mode anymore. Just configure ~org-agenda-files~ and ~org-edna~ directly in your init file. The old mode was wrapping all agenda commands unnecessarily and had org-edna configured incorrectly.
+
+** What you need to do
+If you're upgrading from 3.x, see the [[#upgrading][Upgrading section]] for complete step-by-step instructions. The required changes are:
+
+1. Update your keyword configuration to use ~org-gtd-keyword-mapping~
+2. Remove any ~#+TODO:~ lines from your GTD files
+3. *Run the migration: ~M-x org-gtd-upgrade-v3-to-v4~* (required for projects to work!)
+
+For new installations, just configure ~org-todo-keywords~ and ~org-gtd-keyword-mapping~ and you're ready to go.
+
+** Previous versions
+For changes in earlier versions, see:
+- [[file:whats-new-3.0.org][What's new in 3.0]]
 
 * Setting up Org GTD
 ** Upgrading
@@ -143,13 +162,103 @@ Functions use the words =capture=, =process=, =clarify=, =organize=, =review=.
 :END:
 If you are installing and not upgrading, you can skip this section entirely and just go to the next section, [[#Installing][Installing]].
 *** 4.0.0 <- 3.x.x
-**** Content TK
-Migration instructions for the new ~org-gtd-keyword-mapping~ structure and handling of #+TODO: lines need to be written here.
+Version 4.0 introduces major improvements to keyword configuration and project management. Your existing GTD data will continue to work, but you'll need to update your configuration and optionally migrate to take full advantage of new features.
 
-Key changes:
-- Replace individual keyword variables with single ~org-gtd-keyword-mapping~ structure
-- Remove any #+TODO: lines from GTD files - use global ~org-todo-keywords~ configuration instead
-- All GTD keywords must be in the same sequence within ~org-todo-keywords~
+**** Required: Configuration changes
+
+**1. Update keyword configuration**
+
+**OLD way (version 3.x):**
+#+begin_src emacs-lisp
+;; Individual keyword variables (no longer used)
+(setq org-gtd-next "NEXT")
+(setq org-gtd-todo "TODO")
+(setq org-gtd-wait "WAIT")
+(setq org-gtd-canceled "CNCL")
+#+end_src
+
+**NEW way (version 4.0):**
+#+begin_src emacs-lisp
+;; First, configure org-mode's global TODO keywords
+;; All your GTD keywords must be in the same sequence
+(setq org-todo-keywords
+      '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+
+;; Then map GTD semantic states to your keywords
+;; Use setopt (Emacs 29+) for automatic validation, or setq for older versions
+(setopt org-gtd-keyword-mapping
+        '((todo . "TODO")      ;; tasks not ready to be acted upon
+          (next . "NEXT")      ;; tasks ready to act on immediately
+          (wait . "WAIT")      ;; tasks blocked or delegated
+          (canceled . "CNCL"))) ;; tasks that won't be completed
+#+end_src
+
+Steps:
+1. Remove old keyword variables (~org-gtd-next~, ~org-gtd-todo~, ~org-gtd-wait~, ~org-gtd-canceled~ and their ~-suffix~ variants) from your configuration
+2. Remove any ~#+TODO:~ lines from your GTD org files (inbox.org, org-gtd-tasks.org, etc.)
+3. Add the global keyword configuration to your Emacs init file
+4. Ensure all GTD keywords appear in the *same sequence* in ~org-todo-keywords~
+
+**** Required: Data migration
+
+Version 4.0 changes how projects work internally. *The old TRIGGER-based system no longer functions* - v4 uses dependency properties instead. You MUST run the migration for your existing projects to continue working.
+
+**Run the migration command:**
+
+#+begin_src emacs-lisp
+M-x org-gtd-upgrade-v3-to-v4
+#+end_src
+
+*Make a backup first!* The migration modifies your GTD files.
+
+**What the migration does:**
+
+The migration performs two steps automatically:
+
+1. *Adds ORG_GTD properties* to identify items:
+   - Adds ~ORG_GTD="Projects"~ to project headings
+   - Adds ~ORG_GTD="Actions"~ to project tasks
+
+2. *Converts projects to dependency-based system*:
+   - Adds ~ORG_GTD_DEPENDS_ON~ and ~ORG_GTD_BLOCKS~ properties to create sequential task chains
+   - Adds ~ORG_GTD_FIRST_TASKS~ property to project headings
+   - Updates task states (NEXT/TODO) based on the new dependency graph
+
+**After migration:**
+
+- Your projects continue to work sequentially (task 1 → task 2 → task 3)
+- The sequential behavior is now implemented via dependency properties instead of TRIGGER
+- You can now customize dependencies for individual projects if you want parallel tasks
+- Safe to run multiple times if needed
+
+**** Why these changes?
+
+**Keyword configuration:**
+- Simpler: One mapping structure instead of multiple variables
+- More reliable: Global configuration avoids file-level conflicts
+- Better validation: Org GTD checks your configuration and provides helpful errors
+- Future-proof: Easier to extend with new keyword types
+
+**Property-based system:**
+- More robust: Properties work reliably across different org-mode features
+- More flexible: Enables features like multi-project tasks
+- Better performance: Faster queries using org-ql
+
+**** org-gtd-mode is obsolete
+
+The ~org-gtd-mode~ minor mode is obsolete in version 4.0. It previously wrapped all org-agenda commands with org-gtd context, but this is no longer necessary because:
+
+1. All org-gtd commands (like ~org-gtd-engage~) already have the right context
+2. Users should configure ~org-agenda-files~ directly
+3. Users should configure org-edna directly (the old mode had it configured incorrectly)
+
+If you were using ~org-gtd-mode~, simply remove it and add these lines to your config:
+
+#+begin_src emacs-lisp
+(setq org-agenda-files (list org-gtd-directory))
+(setq org-edna-use-inheritance t)
+(org-edna-mode 1)
+#+end_src
 
 ** Installing
 :PROPERTIES:
@@ -177,12 +286,16 @@ Finally, add this to your config:
 :DESCRIPTION: Required and optional system configuration
 :CUSTOM_ID: configuring
 :END:
-*** The easy way
-Just turn on ~org-gtd-mode~ (~M-x org-gtd-mode~). This will set up emacs, Org mode, and Org GTD's dependencies. It will wrap a number of ~org-agenda~ functions to work smoothly. If you are just testing out Org GTD, this is a good way to start.
+*** Basic setup
+You need to configure three things for org-gtd to work:
 
-Turn off ~org-gtd-mode~ to restore emacs to pre-org-gtd settings.
+1. *TODO keywords*: Configure ~org-todo-keywords~ with your GTD workflow states
+2. *Keyword mapping*: Map GTD semantic states to your keywords with ~org-gtd-keyword-mapping~
+3. *org-edna*: Enable org-edna with inheritance for project dependencies to work
 
-Note, you should still head over to the [[#recommended-key-bindings][Recommended key bindings]] section.
+See the configuration sections below for details.
+
+Note: ~org-gtd-mode~ is obsolete as of version 4.0. Just configure org-agenda-files and org-edna directly.
 *** Required configuration of sub-packages
 :PROPERTIES:
 :CUSTOM_ID: configuring-sub-packages
@@ -193,12 +306,23 @@ Note, you should still head over to the [[#recommended-key-bindings][Recommended
 :END:
 package: https://www.nongnu.org/org-edna-el/
 
-This is one of the dependencies. This setting change is REQUIRED. It automatically changes the next TODO heading to NEXT in a project when you've finished the current task.
+This configuration is *REQUIRED* for project dependencies to work correctly. It enables org-edna to automatically update task states when you complete tasks in a project.
 
-You do not need to make this change if you choose to toggle ~org-gtd-mode~.
 #+begin_src emacs-lisp
 (setq org-edna-use-inheritance t)
 (org-edna-mode 1)
+#+end_src
+
+**** Adding org-gtd files to your agenda
+
+To see org-gtd items in your agenda views, add the org-gtd directory to your ~org-agenda-files~:
+
+#+begin_src emacs-lisp
+;; If you only want GTD files in your agenda:
+(setq org-agenda-files (list org-gtd-directory))
+
+;; Or if you have other agenda files, add GTD to the list:
+(add-to-list 'org-agenda-files org-gtd-directory)
 #+end_src
 *** configuration options for org-gtd
 **** I don't care, just let me start using it
@@ -215,17 +339,43 @@ The configuration options will also be mentioned in the relevant subsections of 
 
 Make sure you also read about sub-package configuration: [[#configuring-sub-packages][Required configuration of sub-packages]].
 
+***** Required keyword configuration
+
+These settings are *required* for Org GTD to work properly:
+
+- ~org-todo-keywords~ :: (=org-mode= variable) Define your TODO keyword sequences here. All GTD keywords (TODO, NEXT, WAIT, DONE, CNCL or your custom versions) *must* be in the same sequence. Example:
+  #+begin_src emacs-lisp
+  (setq org-todo-keywords
+        '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+  #+end_src
+
+- ~org-gtd-keyword-mapping~ :: Map GTD semantic states to your chosen keywords. This tells Org GTD which keyword means what. The four required mappings are:
+  - ~todo~ :: Tasks not ready to be acted upon
+  - ~next~ :: Tasks ready to act on immediately
+  - ~wait~ :: Tasks blocked or delegated to someone else
+  - ~canceled~ :: Tasks that won't be completed
+
+  Example configuration (use ~setopt~ for Emacs 29+ to get automatic validation):
+  #+begin_src emacs-lisp
+  (setopt org-gtd-keyword-mapping
+          '((todo . "TODO")
+            (next . "NEXT")
+            (wait . "WAIT")
+            (canceled . "CNCL")))
+  #+end_src
+
+  Or for older Emacs versions:
+  #+begin_src emacs-lisp
+  (setq org-gtd-keyword-mapping
+        '((todo . "TODO")
+          (next . "NEXT")
+          (wait . "WAIT")
+          (canceled . "CNCL")))
+  #+end_src
+
+***** Optional configuration
+
 - ~org-gtd-directory~ :: set this to a directory. =org-gtd= will look for all its files in this directory.
-- ~org-gtd-next~ :: Keyword to use for actions ready to be taken
-- ~org-gtd-next-suffix~ :: org-mode keyword suffix (e.g. !, @)
-- ~org-gtd-todo~ :: Keyword to use for actions not yet ready
-- ~org-gtd-todo-suffix~ :: org-mode keyword suffix (e.g. !, @)
-- ~org-gtd-wait~ :: Keyword to use for blocked actions (e.g. delegated)
-- ~org-gtd-wait-suffix~ :: org-mode keyword suffix (e.g. !, @)
-- ~org-gtd-done~ :: Keyword to use for completed actions
-- ~org-gtd-done-suffix~ :: org-mode keyword suffix (e.g. !, @)
-- ~org-gtd-canceled~ :: Keyword to use for actions that won't be done
-- ~org-gtd-canceled-suffix~ :: org-mode keyword suffix (e.g. !, @)
 - ~org-gtd-capture-templates~ :: (!note: take care when changing this) This defines the pre-filled text that will show up when capturing an item to the inbox. The only requirements are that the template string must define an org-mode top-level heading, and that the entry point to the inbox.  That is to say, the first two characters must be a single asterisk followed by a space: ~"* "~, and the entry type must be like this: =entry  (file ,#'org-gtd-inbox-path)=. [[#adding-things-to-the-inbox][Adding things to the inbox]].
 - ~org-reverse-note-order~ :: (=org-mode= variable) set this to ~t~ to add new items to the top of project tasks and to ~nil~ to add new items to the bottom of project tasks when organizing an item as such.
 - ~org-gtd-organize-hooks~ :: this is a list of functions that you can use to decorate each item when you clarify it. For instance, you could add a function to set the effort, or the priority, or some category, etc. By default it has only one function, which lets you add tags, but of course you can change this entirely. [[#organizing-an-item][Organizing an item]].
@@ -260,8 +410,16 @@ If you are a Doom Emacs user, then your configuration may look something like th
 #+BEGIN_SRC elisp
   (use-package! org-gtd
     :after org
+    :custom
+    (org-gtd-directory "~/gtd/")
+    (org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+    (org-gtd-keyword-mapping '((todo . "TODO")
+                               (next . "NEXT")
+                               (wait . "WAIT")
+                               (canceled . "CNCL")))
+    (org-agenda-files (list org-gtd-directory))
+    (org-edna-use-inheritance t)
     :config
-    (setq org-edna-use-inheritance t)
     (org-edna-mode)
     (map! :leader
           (:prefix ("d" . "org-gtd")
@@ -283,7 +441,7 @@ This section introduces how Org GTD leverages org-mode.
 
 Org Gtd uses ~org-edna~ to automatically trigger state changes in projects, such that when you mark a NEXT item from a project as DONE, the next TODO in that project automatically becomes NEXT, such that the agenda is always up-to-date (you may need to refresh the agenda).
 
-Org GTD uses org keywords to figure out the relevant state of each task. By default, ~NEXT~, ~TODO~, ~WAIT~, ~CNCL~, and ~DONE~, though you can configure them.
+Org GTD uses org keywords to figure out the relevant state of each task. By default, these are ~TODO~, ~NEXT~, ~WAIT~, ~DONE~, and ~CNCL~. You can configure these using ~org-todo-keywords~ and map them to GTD semantic states using ~org-gtd-keyword-mapping~ (see [[#all-the-levers][Tell me all the levers I can pull]]).
 
 Org GTD uses the following properties:
 - ~ORG_GTD~ :: top-level property, used for simple filtering when it comes to agenda views
@@ -376,7 +534,7 @@ Organizing is broken up into three steps:
 **** Choosing a task type
 Here are the following task types you can choose.
 
-- *[P]rojects :: This is a multi-step action. In Org GTD, this is defined as a top-level org heading with a set of second-level org headings. Those second-level headings represent the sequentially-ordered set of tasks to be executed before the project can be called complete.
+- *[P]rojects :: This is a multi-step action. In Org GTD, this is defined as a top-level org heading with a set of second-level org headings representing the tasks. By default, tasks execute sequentially (first task must complete before second becomes NEXT, etc.). You can also create custom dependencies between tasks for parallel work or complex project structures. See [[#working-with-projects][Working with projects]] for details on managing task dependencies.
 - *[A]dd to existing project :: Add current task to pre-existing project. See ~org-reverse-note-order~ to choose a default position (first or last) for this new task. You can always adjust this yourself later, then put your point on the project heading and call ~org-gtd-projects-fix-todo-keywords-for-project-at-point~ to have Org GTD clean it up for you.
 - *[C]alendar* :: Single action to be done at a given date or time. Org GTD will ask you for a date/time for this appointment.
 - *[D]elegate :: Let someone else do this. Org GTD will ask you for a name to whom to delegate to and a date/time when to check up on the task with that person. You can customize ~org-gtd-delegate-read-func~ to specify a custom name input function (e.g. for completion purposes).
@@ -467,6 +625,47 @@ They are, however, useful to display.
 A variable, ~org-gtd-clarify-show-horizons~, determines whether/where to display the side buffer while clarifying.
 
 Regardless of the value of this variable, you can use the function ~org-gtd-clarify-toggle-horizons-window~ to display or hide the side window. If the above variable is nil, then the horizons window will be toggled on the right side of the screen.
+
+*** Working with projects
+:PROPERTIES:
+:CUSTOM_ID: working-with-projects
+:END:
+
+Projects in Org GTD are multi-step actions represented as a top-level heading with task sub-headings underneath. Version 4.0 introduces flexible task dependencies, allowing you to create complex project structures.
+
+**** Default sequential behavior
+By default, tasks in a project work sequentially - when you complete the first task, the second task automatically becomes NEXT. This happens automatically without any configuration needed.
+
+**** Creating custom dependencies
+You can create more complex dependency relationships between tasks:
+
+- *Parallel tasks* - Multiple tasks can be NEXT at the same time if they don't depend on each other
+- *Custom blocking relationships* - Define which tasks must complete before others can start
+- *Directed acyclic graph (DAG)* - Tasks form a dependency graph where work flows from blockers to blocked tasks
+
+The system automatically prevents circular dependencies that would create deadlocks.
+
+**** Dependency properties
+Task dependencies are managed through two org properties:
+
+- ~ORG_GTD_DEPENDS_ON~ - Contains IDs of tasks that must complete before this task can start (this task is blocked by those tasks)
+- ~ORG_GTD_BLOCKS~ - Contains IDs of tasks that this task blocks (those tasks depend on this one)
+
+These properties are managed automatically when you use the dependency commands.
+
+**** Visualizing dependencies (optional)
+You can enable a visual dependency helper while clarifying projects:
+
+#+begin_src emacs-lisp
+(setq org-gtd-clarify-display-helper-buffer t)
+#+end_src
+
+When enabled, a side window shows task relationships as you work on a project in the WIP buffer.
+
+**** Fixing project keywords
+If tasks in a project get out of sync, you can fix them with:
+
+- ~org-gtd-projects-fix-todo-keywords-for-project-at-point~ - When point is on a project heading, this recalculates which tasks should be NEXT based on the dependency graph
 
 *** Cleaning up / archiving completed work
 :PROPERTIES:

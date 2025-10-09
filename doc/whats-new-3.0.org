@@ -1,0 +1,45 @@
+#+TITLE: What's New in Org GTD 3.0
+#+AUTHOR: Aldric Giacomoni
+#+DATE: 2023
+
+This document archives the changes introduced in Org GTD version 3.0.
+
+* What's new in 3.0
+** Minimum emacs version now 27.2
+It became too difficult for me to support 27.1.
+** Organize menu has changed
+- Habits have their place now (h)
+- What used to be called "archive" is now called "knowledge" (k)
+- Modify project is now "Add to project" (a)
+** Easier to clarify more items
+There's now two more powerful commands you can use to clarify almost anything:
+- ~org-gtd-clarify-item~
+- ~org-gtd-clarify-agenda-item~
+
+These both allow you to enter a one-off clarify/organize flow.
+** Functions exist to create your own hooks
+Make GTD truly a part of your emacs experience!
+These functions take various arguments (check the documentation in emacs) and automatically add something to your org-gtd. This would be useful after sending an email, for instance.
+Please share your own hooks as issues in Github or in the discord so we can create a community library!
+- ~org-gtd-habit-create~
+- ~org-gtd-calendar-create~
+- ~org-gtd-delegate-create~
+- ~org-gtd-incubate-create~
+- ~org-gtd-single-action-create~
+** Support habits
+Org mode's habits now have a specific place here.
+** Todo keywords can be customized
+See all the configuration options in the main manual.
+** Massive API changes
+The package domain now is a better match for the domain language of GTD.
+
+Functions use the words =capture=, =process=, =clarify=, =organize=, =review=.
+** Massive Data structure changes
+- SCHEDULED and DEADLINE are intended to be used for things that have to start and things that have to end, respectively. V2 abused them, v3 is more respectful of how org-mode wants to work.
+- We use our own timestamp property. For compatibility with orgzly, we currently duplicate the timestamp into the body.
+** Include horizons
+- They can be displayed while clarifying
+- There's an optional organize-hook for areas of focus
+- There's an agenda view for areas of focus
+** You can create your own project templates and insert them while clarifying
+See the options and commands related to clarification in the main manual.
