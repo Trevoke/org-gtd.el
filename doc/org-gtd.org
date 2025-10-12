@@ -734,23 +734,414 @@ If you are a Doom Emacs user, then your configuration may look something like th
     (map! :map org-gtd-clarify-map
           :desc "Organize this item" "C-c c" #'org-gtd-organize))
 #+END_SRC
+* Getting Started with Org GTD
+:PROPERTIES:
+:DESCRIPTION: Tutorials to get you productive quickly
+:CUSTOM_ID: getting-started
+:END:
+
+You've configured org-gtd. Now let's see it in action with real examples that demonstrate why org-gtd is powerful.
+
+** Quick Start Reference
+
+If you haven't done the 5-minute Quick Start in the README yet, do that first. It walks you through:
+1. Capturing a single action
+2. Processing your inbox
+3. Organizing the item
+4. Seeing it in your engage view
+
+That Quick Start proves the basic cycle works. Now let's see what makes org-gtd special: automatic project management and custom views.
+
+** Tutorial: Your First Project
+
+You've captured and organized a single action. That's great for simple tasks, but GTD's real power is managing multi-step projects. Let's create one and watch org-gtd handle the complexity automatically.
+
+*** What You'll Learn
+
+- How to capture and structure a project
+- How org-gtd automatically manages task dependencies
+- How tasks advance from TODO → NEXT when dependencies are satisfied
+- How the engage view shows you what's immediately actionable
+
+*** The Project
+
+We'll plan a small house renovation with three sequential steps:
+1. Review blueprints
+2. Order windows
+3. Schedule carpenter
+
+This demonstrates sequential project execution - the default behavior where each task must complete before the next begins.
+
+*** Step 1: Capture the Project
+
+Press ~C-c d c~ (or ~M-x org-gtd-capture~).
+
+Type (or paste) this structure:
+
+#+begin_example
+* House Renovation
+** Review blueprints
+** Order windows of the right size
+** Schedule carpenter
+#+end_example
+
+*Important*: Projects in org-gtd have a specific structure:
+- Top-level heading (~*~) is the project name
+- Second-level headings (~**~) are the tasks
+
+Press ~C-c C-c~ to save.
+
+*** Step 2: Process the Inbox
+
+Press ~C-c d p~ (or ~M-x org-gtd-process-inbox~).
+
+You'll see your project in a clarify buffer. This is your chance to refine it:
+- Add details to tasks (we already added "of the right size" to clarify what we need)
+- Fix typos
+- Make everything crystal clear
+
+When you're satisfied, press ~C-c c~ to organize.
+
+*** Step 3: Organize as a Project
+
+The transient menu appears with organization options. Press *[p]* for "Project".
+
+Watch what org-gtd does automatically:
+1. Marks the first task ("Review blueprints") as *NEXT*
+2. Marks other tasks as *TODO*
+3. Sets up dependency relationships (task 1 blocks task 2, task 2 blocks task 3)
+4. Refiles the entire project to your projects file
+
+You'll see a prompt for tags (optional). Press ~RET~ to skip or add tags if you want.
+
+The project is now in your GTD system!
+
+*** Step 4: View in Engage
+
+Press ~C-c d e~ (or ~M-x org-gtd-engage~).
+
+You'll see an agenda view showing:
+- *NEXT: Review blueprints* - This is immediately actionable
+- The project "House Renovation" appears in the list
+- Other tasks ("Order windows", "Schedule carpenter") don't show as NEXT - they're waiting for the first task
+
+This is your daily engagement view - it shows *only* what you can act on right now, not everything in your system.
+
+*** Step 5: Complete the First Task
+
+In the agenda view, move your cursor to "Review blueprints".
+
+Press *t* to cycle the TODO state.
+
+Select *DONE*.
+
+*Magic happens*: Watch "Order windows of the right size" automatically become NEXT!
+
+This is org-edna in action - the automatic dependency system org-gtd uses.
+
+*** Step 6: Refresh and See the Change
+
+Press *g* to refresh the agenda view.
+
+You'll now see:
+- ✓ "Review blueprints" is DONE (depending on your agenda settings, it may be hidden)
+- *NEXT: Order windows of the right size* - Now actionable!
+- "Schedule carpenter" is still TODO - waiting for "Order windows" to complete
+
+*** What Just Happened?
+
+Let's understand the automatic workflow:
+
+1. *When you organized as a project*, org-gtd:
+   - Created a dependency chain: Task 1 → Task 2 → Task 3
+   - Set properties (~ORG_GTD_BLOCKS~, ~ORG_GTD_DEPENDS_ON~) to track relationships
+   - Marked only the first task as NEXT
+
+2. *When you marked "Review blueprints" DONE*, org-gtd:
+   - Checked which tasks were blocked by this one
+   - Found "Order windows" had no remaining blockers
+   - Automatically changed it from TODO to NEXT
+
+3. *"Schedule carpenter" stays TODO* because:
+   - It depends on "Order windows" completing
+   - org-gtd won't mark it NEXT until its dependencies are satisfied
+
+You didn't manually manage any of this. You just *did the work* and marked tasks complete. org-gtd handled the workflow automatically.
+
+*** Continue the Project
+
+Complete "Order windows" the same way:
+1. Go to the engage view (~C-c d e~)
+2. Find "Order windows of the right size"
+3. When done, press *t* and select *DONE*
+4. Watch "Schedule carpenter" automatically become NEXT
+
+When all tasks are done, the project is complete. You can archive it with ~M-x org-gtd-archive-completed-items~ during your weekly review.
+
+*** Key Takeaways
+
+- *Projects are multi-step actions* with automatic dependency management
+- *Sequential execution is the default* - tasks progress one after another
+- *The engage view shows only actionable items* - not everything in your system
+- *You focus on doing work, not managing workflows* - org-gtd handles task progression
+- *Completing tasks automatically advances projects* - no manual state management needed
+
+*** What's Next?
+
+This was a sequential project (A → B → C). Later, you'll learn how to:
+- Create *parallel tasks* (A and B can both be NEXT simultaneously)
+- Set *custom dependencies* (A blocks C, B blocks C, but A and B are parallel)
+- Manage *complex project structures* with the dependency graph
+
+For now, practice with a few simple sequential projects. The pattern is always:
+1. *Capture* with project structure
+2. *Clarify* to make it clear
+3. *Organize* as a project
+4. *Engage* to see what's actionable
+5. *Complete* tasks and watch progression happen automatically
+
+** Tutorial: Creating Your First Custom View
+
+The built-in ~org-gtd-engage~ view is powerful, but you'll want custom views for different contexts. org-gtd 4.0 has a declarative View DSL that makes this easy. Let's create a view that shows all your active projects.
+
+*** What You'll Learn
+
+- How the View DSL works (declarative syntax)
+- How to create a simple custom view
+- How to call your view and see results
+- How to modify views for different needs
+
+*** Why This View?
+
+The engage view shows *today's actionable items* - what you should work on right now.
+
+But sometimes you want the *big picture*:
+- What projects am I working on?
+- Which ones have active tasks?
+- What's the status of each project?
+
+This view answers those questions by showing all active projects at a glance.
+
+*** Understanding the View DSL
+
+Views in org-gtd are *declarative* - you describe *what* you want to see, not *how* to find it.
+
+Here's the view we'll create:
+
+#+begin_src emacs-lisp
+'((name . "My Active Projects")
+  (filters . ((category . projects)
+              (has-active-tasks . t))))
+#+end_src
+
+Let's break this down:
+
+- ~name~ :: What displays in the view header
+- ~filters~ :: What to include:
+  - ~category . projects~ :: Only show project headings (not single actions)
+  - ~has-active-tasks . t~ :: Only projects with work remaining
+
+That's it! The View DSL translates this into an org-ql query and shows results.
+
+*** Creating the View Function
+
+Add this to your init file (after your org-gtd configuration):
+
+#+begin_src emacs-lisp
+(with-eval-after-load 'org-gtd
+  (defun my-org-gtd-active-projects ()
+    "Show all active projects."
+    (interactive)
+    (org-gtd-view-show
+     '((name . "My Active Projects")
+       (filters . ((category . projects)
+                   (has-active-tasks . t)))))))
+#+end_src
+
+Save your init file and reload it (~M-x eval-buffer~ or restart Emacs).
+
+*** Using Your View
+
+Now you can call it:
+
+#+begin_example
+M-x my-org-gtd-active-projects
+#+end_example
+
+You'll see a list of all your active projects!
+
+*** Binding to a Key
+
+For quick access, bind it to a key. Add this to your configuration:
+
+#+begin_src emacs-lisp
+;; If using vanilla Emacs
+(global-set-key (kbd "C-c d P") 'my-org-gtd-active-projects)
+
+;; If using Doom Emacs, add to your org-gtd config:
+(map! :leader
+      (:prefix "d"
+       :desc "Active projects" "P" #'my-org-gtd-active-projects))
+
+;; If using Spacemacs, add to your config:
+(spacemacs/set-leader-keys "od P" 'my-org-gtd-active-projects)
+#+end_src
+
+Now press ~C-c d P~ (or your binding) to see active projects instantly!
+
+*** What You'll See
+
+The view shows:
+- All projects that have at least one active task
+- Each project's current state (what tasks are NEXT, TODO, etc.)
+- Project names and context
+
+Projects that are:
+- Completely DONE - Won't appear (no active tasks)
+- Canceled - Won't appear (no active tasks)
+- Have only TODO/NEXT/WAIT tasks - Will appear
+
+*** Experiment: Modify the View
+
+Try these variations to see how the View DSL works:
+
+*Show ALL projects (including completed):*
+
+#+begin_src emacs-lisp
+(defun my-org-gtd-all-projects ()
+  "Show all projects, including completed ones."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "All Projects")
+     (filters . ((category . projects))))))
+     ;; Note: removed has-active-tasks filter
+#+end_src
+
+*Show stuck projects:*
+
+#+begin_src emacs-lisp
+(defun my-org-gtd-stuck-projects ()
+  "Show projects that have work but no NEXT actions."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Stuck Projects")
+     (filters . ((category . projects)
+                 (is-stuck . t))))))
+#+end_src
+
+*Show projects in a specific area of focus* (if you use areas):
+
+#+begin_src emacs-lisp
+(defun my-org-gtd-work-projects ()
+  "Show only work projects."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Work Projects")
+     (filters . ((category . projects)
+                 (has-active-tasks . t)
+                 (area-of-focus . "Work"))))))
+#+end_src
+
+*** Available Filters
+
+Here are common filters you can use in your views:
+
+- ~category~ :: Filter by GTD category: ~projects~, ~actions~, ~calendar~, ~incubate~, ~habits~
+- ~todo~ :: Filter by keyword: ~"NEXT"~, ~"TODO"~, ~"WAIT"~, ~"DONE"~, ~"CNCL"~
+- ~has-active-tasks~ :: Only items with active (non-done) tasks
+- ~is-stuck~ :: Projects that have tasks but no NEXT actions
+- ~scheduled~ :: Items scheduled (you can specify ranges)
+- ~deadline~ :: Items with deadlines
+- ~area-of-focus~ :: Filter by area (if you use GTD horizons)
+- ~property~ :: Filter by any org property
+
+You can combine multiple filters - they all must match (AND logic).
+
+*** Key Takeaways
+
+- *Views are declarative* - you describe what you want, not how to get it
+- *The View DSL is readable* - it's data, not complex code
+- *Views are easy to create and modify* - just change the filter list
+- *You can create unlimited views* - for different contexts and needs
+- *Views leverage org-ql* - fast and powerful queries
+
+*** What's Next?
+
+Now that you understand views, you can create:
+- *Review views* - For your weekly/monthly reviews
+- *Context views* - Show work items, home items, errands, etc.
+- *Time-based views* - Overdue items, upcoming deadlines, this week's schedule
+- *Focus views* - Deep work items, quick wins, waiting-for items
+
+See [[#defining-your-own-agenda-views][Defining your own agenda views]] in the "Using Org GTD" section for more advanced examples and the full filter reference.
+
+*** Where to Go From Here
+
+You now know:
+1. How to create and manage projects (Tutorial 1)
+2. How to create custom views (Tutorial 2)
+
+This is enough to be productive with org-gtd! The next section, "Using Org GTD", goes deep into:
+- All GTD item types (calendar, delegate, incubate, etc.)
+- Advanced project features (parallel tasks, custom dependencies)
+- Hooks and customization
+- Integration with email and other tools
+- Review workflows
+
+Read those sections as you need them. For now, *start using what you've learned*:
+- Capture items as they come up
+- Process your inbox regularly (daily if possible)
+- Use the engage view to see what's actionable
+- Create a few simple projects
+- Experiment with custom views
+
+The best way to learn GTD is to practice the workflow. org-gtd handles the complexity - you just do the work.
+
 * Using Org GTD
 :PROPERTIES:
 :DESCRIPTION: How Org GTD maps to the GTD flow
 :CUSTOM_ID: using-org-gtd
 :END:
-** Org-mode building blocks for Org GTD
-This section introduces how Org GTD leverages org-mode.
 
-Org Gtd uses ~org-edna~ to automatically trigger state changes in projects, such that when you mark a NEXT item from a project as DONE, the next TODO in that project automatically becomes NEXT, such that the agenda is always up-to-date (you may need to refresh the agenda).
+You've completed the tutorials and understand the basics. This section covers everything else you'll need as you use org-gtd day-to-day and want to explore more advanced features.
 
-Org GTD uses org keywords to figure out the relevant state of each task. By default, these are ~TODO~, ~NEXT~, ~WAIT~, ~DONE~, and ~CNCL~. You can configure these using ~org-todo-keywords~ and map them to GTD semantic states using ~org-gtd-keyword-mapping~ (see [[#all-the-levers][Tell me all the levers I can pull]]).
+** Your Daily Workflow
+:PROPERTIES:
+:DESCRIPTION: The GTD cycle you'll practice every day
+:END:
 
-Org GTD uses the following properties:
-- ~ORG_GTD~ :: top-level property, used for simple filtering when it comes to agenda views
-- ~ORG_GTD_TIMESTAMP~ :: where the timestamp for appointments and other date-relevant actions is stored. It's separate from everything else org-mode related in order to allow you, the user, to use ~SCHEDULED~, ~DEADLINE~, or even plain timestamps as you see fit.
-- ~DELEGATED_TO~ :: used by a dependency, ~org-agenda-property~, to show the name of the person to whom the task is delegated in the agenda view.
-** The GTD flow
+The GTD workflow has six steps. You'll do the first four frequently (even daily), and the last two periodically:
+
+1. *Capture* - Get things out of your head into your inbox (~org-gtd-capture~)
+2. *Process* - Look at each inbox item one at a time (~org-gtd-process-inbox~)
+3. *Clarify* - Edit the item to make it clear and actionable
+4. *Organize* - Categorize the item (~org-gtd-organize~)
+5. *Engage* - Look at what you can do right now (~org-gtd-engage~)
+6. *Review* - Periodically review your system for health
+
+You already practiced this in the [[#getting-started][Getting Started tutorials]]. The sections below go deeper into each part.
+
+*** Quick command reference
+
+These are the commands you'll use most:
+
+| Command | What it does | When to use it |
+|-|-|-|
+| ~org-gtd-capture~ | Add item to inbox | Anytime something comes up |
+| ~org-gtd-process-inbox~ | Start processing inbox | Daily (or when inbox has items) |
+| ~org-gtd-organize~ | Organize current item | During processing (in clarify buffer) |
+| ~org-gtd-engage~ | See actionable items | Daily (your "work from" view) |
+| ~org-gtd-show-all-next~ | See only NEXT actions | When you want to focus on actions |
+| ~org-gtd-review-stuck-projects~ | Find stuck projects | Weekly review |
+| ~org-gtd-archive-completed-items~ | Archive finished items | Weekly/monthly cleanup |
+
+For details on each step, see the subsections below.
+
+** The GTD Flow in Depth
+:PROPERTIES:
+:DESCRIPTION: Detailed explanation of each GTD step
+:END:
+
 Here are the domain elements of GTD that we handle:
 *** Adding things to the inbox
 :PROPERTIES:
@@ -830,28 +1221,9 @@ If you are clarifying a project, you may be interested in project templates:
 When you are done clarifying, call ~M-x org-gtd-organize~ (or hit your keybinding for it, see [[#recommended-key-bindings][Recommended key bindings]]). This will open a transient menu to let you choose how Org GTD should categorize this item.
 
 Organizing is broken up into three steps:
-- Choosing a task type
-- Applying hooks to add additional relevant information
-- Refiling to the appropriate area
-
-**** Choosing a task type
-Here are the following task types you can choose.
-
-- *[P]rojects :: This is a multi-step action. In Org GTD, this is defined as a top-level org heading with a set of second-level org headings representing the tasks. By default, tasks execute sequentially (first task must complete before second becomes NEXT, etc.). You can also create custom dependencies between tasks for parallel work or complex project structures. See [[#working-with-projects][Working with projects]] for details on managing task dependencies.
-- *[A]dd to existing project :: Add current task to pre-existing project. See ~org-reverse-note-order~ to choose a default position (first or last) for this new task. You can always adjust this yourself later, then put your point on the project heading and call ~org-gtd-projects-fix-todo-keywords-for-project-at-point~ to have Org GTD clean it up for you.
-- *[C]alendar* :: Single action to be done at a given date or time. Org GTD will ask you for a date/time for this appointment.
-- *[D]elegate :: Let someone else do this. Org GTD will ask you for a name to whom to delegate to and a date/time when to check up on the task with that person. You can customize ~org-gtd-delegate-read-func~ to specify a custom name input function (e.g. for completion purposes).
-- *[S]ingle action* :: This is a one-off to be done when possible.
-- *[H]abit* :: org-mode-style habit. Org GTD will ask you for a valid org-mode repeating stamp and a date when to start the habit tracking. See the org-mode documentation for more information.
-- *[I]ncubate* :: no action now; review later. Org GTD will ask you for a date at which it should remind you about this.
-- *[Q]uick action :: Less than 2 minutes. Do it now, then choose this to mark the item as DONΕ and archive it.
-- *[K]nowledge* :: This is knowledge to be stored away. Choose this *after* you have properly saved this item as knowledge.
-- *[T]rash* :: Not actionable; not knowledge. Discard this item.
-
-**** Applying hooks
-The decorations (priority, tags, categories, etc.) are customizable as you desire and managed by ~org-gtd-organize-hooks~, a list of functions. You can add your own functions to this list, as long as the functions do not modify the text in any "custom" way, separate from what org-mode understands.
-
-See [[#hooks-framework][Adding your own hooks when organizing]] for more details on how you can add your own or customize this further.
+- Choosing a task type (see [[#understanding-gtd-item-types][Understanding GTD Item Types]])
+- Applying hooks to add additional relevant information (see [[#hooks-framework][Customization: Hooks]])
+- Refiling to the appropriate area (see [[#refiling-after-organizing][Refiling]] below)
 
 **** Refiling to the appropriate area
 :PROPERTIES:
@@ -887,6 +1259,199 @@ You can call ~org-gtd-show-all-next~ to only see NEXT actions, nothing scheduled
 You can use ~org-gtd-oops~ to see all the appointments you missed, and act on them accordingly.
 
 The weekly review is not yet implemented.
+
+** Understanding GTD Item Types
+:PROPERTIES:
+:DESCRIPTION: When to use each type in the organize menu
+:CUSTOM_ID: understanding-gtd-item-types
+:END:
+
+When you organize an item (~org-gtd-organize~), a transient menu appears with different item types. This section explains what each type means and when to use it.
+
+You already saw *Projects* and *Single actions* in the tutorials. Here's the complete reference for all item types:
+
+*** Single Action [S]
+
+*What it is*: A one-off task to do when you have time and energy.
+
+*When to use it*: For standalone tasks that aren't time-sensitive, don't depend on anyone else, and can be done whenever you're ready.
+
+*Examples*:
+- Buy birthday gift for Alex
+- Read article about GTD methodology
+- Update profile photo
+- Clean garage
+
+*What org-gtd does*:
+- Marks it as NEXT (immediately actionable)
+- Refiles to your actions file
+- Shows in ~org-gtd-engage~ view
+
+*** Project [P]
+
+*What it is*: A multi-step action requiring more than one task to complete.
+
+*When to use it*: When accomplishing your goal requires multiple sequential (or parallel) steps.
+
+*Examples*:
+- House renovation (review blueprints → order materials → schedule work)
+- Launch product (design → build → test → deploy → announce)
+- Plan vacation (research destinations → book flights → arrange accommodation)
+
+*What org-gtd does*:
+- Creates dependency relationships between tasks
+- Marks first task(s) as NEXT, others as TODO
+- Automatically advances tasks as you complete them
+- Refiles entire project to your projects file
+
+See [[#working-with-projects-advanced][Working with Projects]] for advanced features (parallel tasks, custom dependencies).
+
+*** Add to existing project [A]
+
+*What it is*: Add the current task to a project that already exists.
+
+*When to use it*: When you realize a project needs an additional task, or you're breaking down a project task into sub-tasks.
+
+*Examples*:
+- Adding "Get permits" to your house renovation project
+- Adding "Write announcement email" to your product launch project
+
+*What org-gtd does*:
+- Prompts you to choose which project
+- Inserts task into project (position depends on ~org-reverse-note-order~)
+- Task keywords may need adjustment - use ~org-gtd-projects-fix-todo-keywords-for-project-at-point~ on the project heading if needed
+
+*** Calendar [C]
+
+*What it is*: An action that must be done at a specific date or time.
+
+*When to use it*: For appointments, events, or time-sensitive tasks.
+
+*Examples*:
+- Doctor appointment on Tuesday at 2pm
+- Team meeting every Monday at 9am
+- Submit report by Friday 5pm (deadline)
+- Call contractor on Thursday
+
+*What org-gtd does*:
+- Prompts for date/time
+- Adds timestamp to ~ORG_GTD_TIMESTAMP~ property
+- Marks as NEXT
+- Shows in agenda views at the appropriate time
+
+*Note*: This is for calendar items, not scheduled work blocks. In GTD, scheduling means "do this at this time," not "start working on this someday."
+
+*** Delegate [D]
+
+*What it is*: A task someone else will do, but you need to follow up on.
+
+*When to use it*: When you're waiting for someone else to complete something and you need to check back.
+
+*Examples*:
+- Waiting for designer to finish mockups
+- Asked colleague to review document
+- IT to fix laptop issue
+- Contractor to provide estimate
+
+*What org-gtd does*:
+- Prompts for: person name, follow-up date
+- Sets ~DELEGATED_TO~ property
+- Marks as WAIT
+- Shows in waiting-for views
+- Appears in agenda on follow-up date
+
+*Customization*: Set ~org-gtd-delegate-read-func~ to use completion for names.
+
+*** Quick Action [Q]
+
+*What it is*: Tasks that take less than 2 minutes.
+
+*When to use it*: For trivial tasks you can do immediately.
+
+*Examples*:
+- Reply to quick email
+- File a document
+- Add item to shopping list
+- Send calendar invite
+
+*What org-gtd does*:
+- Marks as DONE
+- Archives immediately
+- Assumes you just did it
+
+*GTD principle*: If it takes less than 2 minutes, do it now. Don't organize it - just do it and mark it done.
+
+*** Incubate [I]
+
+*What it is*: Ideas or potential actions you're not ready to commit to yet (someday/maybe).
+
+*When to use it*: For things you want to think about later but don't want to act on now.
+
+*Examples*:
+- Learn Spanish (someday)
+- Write a book (maybe)
+- Remodel kitchen (not yet)
+- Take photography class (when I have time)
+
+*What org-gtd does*:
+- Prompts for review date
+- Refiles to incubate file
+- Will remind you on that date to reconsider
+
+*GTD principle*: Keep these out of your active system. Review periodically (weekly/monthly) to decide if they're ready to become real projects or actions.
+
+*** Habit [H]
+
+*What it is*: Recurring tasks you want to track consistently (org-mode habits).
+
+*When to use it*: For building routines and tracking streaks.
+
+*Examples*:
+- Exercise daily
+- Write in journal
+- Review finances weekly
+- Call parents monthly
+
+*What org-gtd does*:
+- Prompts for: repeat pattern (e.g., "daily", "+1w"), start date
+- Creates org-mode habit with consistency tracking
+- Shows habit graph in agenda views
+
+*Note*: See org-mode documentation for habit repeat patterns and tracking.
+
+*** Knowledge [K]
+
+*What it is*: Reference information to store for later.
+
+*When to use it*: When the item is information to keep, not an action to take.
+
+*Examples*:
+- Recipe you want to remember
+- Quote from article
+- Meeting notes for reference
+- Product specifications
+
+*Important*: Choose this AFTER you've properly stored the information somewhere (your notes system, wiki, etc.). This just marks the inbox item as "filed" and archives it.
+
+*GTD principle*: Separate "stuff to do" from "stuff to know." Knowledge goes in your reference system, not your action lists.
+
+*** Trash [T]
+
+*What it is*: Not actionable, not worth keeping.
+
+*When to use it*: When you captured something that turns out to be irrelevant, already done, or not worth pursuing.
+
+*Examples*:
+- Event that already passed
+- Duplicate of another item
+- Idea that's no longer relevant
+- Spam/noise
+
+*What org-gtd does*:
+- Deletes the item
+- Doesn't archive, just removes it
+
+*GTD principle*: Be ruthless. If it's not actionable and not valuable information, delete it. Clutter in your system creates noise.
 
 *** Working with the GTD Horizons
 :PROPERTIES:
