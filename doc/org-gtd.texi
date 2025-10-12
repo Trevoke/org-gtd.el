@@ -7,7 +7,7 @@
 @c %**end of header
 
 @copying
-Copyright (C) 2018-2023 Aldric Giacomoni <trevoke@@gmail.com>
+Copyright (C) 2018-2025 Aldric Giacomoni <trevoke@@gmail.com>
 
 You can redistribute this document and/or modify it under the terms
 of the GNU General Public License as published by the Free Software
@@ -28,7 +28,7 @@ General Public License for more details.
 @finalout
 @titlepage
 @title Org GTD User Manual
-@subtitle for version 3.0
+@subtitle for version 4.0
 @author Aldric Giacomoni
 @page
 @vskip 0pt plus 1filll
@@ -45,31 +45,32 @@ Org GTD is an attempt to implement the GTD flow described in the GTD
 book as faithfully as possible.
 
 @noindent
-This manual is for Org GTD version 3.0
+This manual is for Org GTD version 4.0
 @end ifnottex
 
 @menu
 * Summary::                      quick intro to GTD
-* What's new in 3.0: What's new in 30. 
+* What's new in 4.0: What's new in 40. 
 * Setting up Org GTD::
+* Getting Started with Org GTD:: Tutorials to get you productive quickly
 * Using Org GTD::                How Org GTD maps to the GTD flow
+* Reference::                    Complete reference for all org-gtd features
 * Troubleshooting::
 
 @detailmenu
 --- The Detailed Node Listing ---
 
-What's new in 3.0
+What's new in 4.0
 
-* Minimum emacs version now 27.2: Minimum emacs version now 272. 
-* Organize menu has changed::
-* Easier to clarify more items::
-* Functions exist to create your own hooks::
-* Support habits::
-* Todo keywords can be customized::
-* Massive API changes::
-* Massive Data structure changes::
-* Include horizons::
-* You can create your own project templates and insert them while clarifying::
+* Flexible project dependencies (the big one!)::
+* Simplified keyword configuration::
+* Data-driven configuration::
+* Declarative view language::
+* Better project modification::
+* Enhanced review capabilities::
+* Simplified configuration::
+* What you need to do::
+* Previous versions::
 
 Setting up Org GTD
 
@@ -79,10 +80,7 @@ Setting up Org GTD
 
 Upgrading
 
-* 3.0.0 <- 2.2.0: 300 <- 220. 
-* 2.2.0 <- 2.1.0: 220 <- 210. 
-* 2.1.0 <- 2.0.0: 210 <- 200. 
-* 2.0.0 <- 1.1.x: 200 <- 11x. 
+* 4.0.0 <- 3.x.x: 400 <- 3xx. 
 
 
 Installing
@@ -93,31 +91,186 @@ Installing
 
 Configuring
 
-* The easy way::
+* Basic setup::
+* Complete Configuration Examples::
+* Understanding Keybindings::
 * Required configuration of sub-packages::
 * configuration options for org-gtd::
 * Recommended key bindings::
 * Sample Doom Emacs Config::
 
 
+Getting Started with Org GTD
+
+* Quick Start Reference::
+* Tutorial Your First Project::
+* Tutorial Creating Your First Custom View::
+
+Tutorial: Your First Project
+
+* What You'll Learn::
+* The Project::
+* Step 1 Capture the Project::
+* Step 2 Process the Inbox::
+* Step 3 Organize as a Project::
+* Step 4 View in Engage::
+* Step 5 Complete the First Task::
+* Step 6 Refresh and See the Change::
+* What Just Happened?::
+* Continue the Project::
+* Key Takeaways::
+* What's Next?::
+
+
+Tutorial: Creating Your First Custom View
+
+* What You'll Learn: What You'll Learn (1). 
+* Why This View?::
+* Understanding the View DSL::
+* Creating the View Function::
+* Using Your View::
+* Binding to a Key::
+* What You'll See::
+* Experiment Modify the View::
+* Available Filters::
+* Key Takeaways: Key Takeaways (1). 
+* What's Next?: What's Next? (1). 
+* Where to Go From Here::
+
+
 Using Org GTD
 
-* Org-mode building blocks for Org GTD::
-* The GTD flow::
+* Your Daily Workflow::          The GTD cycle you'll practice every day
+* The GTD Flow in Depth::        Detailed explanation of each GTD step
+* Understanding GTD Item Types:: When to use each type in the organize menu
+* Working with Projects (Advanced)::
 * Automating through emacs::
 
-The GTD flow
+Your Daily Workflow
+
+* Quick command reference::
+
+
+The GTD Flow in Depth
 
 * Adding things to the inbox::
 * Processing the inbox::
 * Clarifying each item::
 * Organizing an item into the system::
 * Engaging with your GTD items::
+
+
+Understanding GTD Item Types
+
+* Single Action [S]::
+* Project [P]::
+* Add to existing project [A]::
+* Calendar [C]::
+* Delegate [D]::
+* Quick Action [Q]::
+* Incubate [I]::
+* Habit [H]::
+* Knowledge [K]::
+* Trash [T]::
 * Working with the GTD Horizons::
+
+
+Working with Projects (Advanced)
+
+* Understanding Project Dependencies::
+* Tutorial Project with Parallel Tasks::
+* Tutorial Complex Project Dependencies::
+* Common Dependency Patterns::
+* Practical Tips::
+* Reference Dependency Management Commands::
+* Optional Visualizing Dependencies::
+* Troubleshooting Projects::
 * Cleaning up / archiving completed work::
 * Commands you can call on org-agenda::
 * Defining your own agenda views::
 * Adding your own hooks when organizing::
+
+
+Reference
+
+* Configuration Variables Reference:: All customization variables explained
+* Commands Reference::           All interactive commands explained
+* Properties Reference::         All org properties used by org-gtd
+* View DSL Filter Reference::    Complete reference for the View DSL
+* Hooks Framework Reference::    Complete guide to customization hooks
+
+Configuration Variables Reference
+
+* Required Configuration::
+* Directory and File Configuration::
+* Capture Configuration::
+* Organize and Process Configuration::
+* Clarification Configuration::
+* Areas of Focus Configuration::
+* Engage View Configuration::
+* Archive Configuration::
+* Oops View Configuration::
+* ID Overlay Configuration::
+* Advanced Item Configuration::
+* Obsolete Variables (Do Not Use)::
+
+
+Commands Reference
+
+* Core GTD Workflow Commands::
+* Review Commands::
+* Stuck Item Review Commands::
+* Oops Commands (Missed/Overdue Items)::
+* Clarification Commands::
+* Archive Commands::
+* Agenda-Specific Commands::
+* Project Management Commands::
+* Task Dependency Commands::
+* Area of Focus Commands::
+* Programmatic Creation Commands::
+* Utility Commands::
+* ID Overlay Commands::
+* Migration and Upgrade Commands::
+* Obsolete Commands::
+
+
+Properties Reference
+
+* Core GTD Properties::
+* Project Properties::
+* Task Dependency Properties::
+* Calendar and Time Properties::
+* Delegation Properties::
+* Habit Properties::
+* Area of Focus Properties::
+* Standard Org Properties Used by org-gtd::
+
+
+View DSL Filter Reference
+
+* View Structure::
+* Category Filters::
+* Time-based Filters::
+* Keyword Filters::
+* Area of Focus Filters::
+* Tag Filters::
+* Property Filters::
+* Structural Filters::
+* Special Filters::
+* View Configuration Options::
+* Complete View Examples::
+* Creating Custom Views::
+
+
+Hooks Framework Reference
+
+* The org-gtd-organize-hooks Variable::
+* Built-in Hooks::
+* Writing Custom Hooks::
+* Example Custom Hooks::
+* Hook Execution Order::
+* Best Practices::
+* Complete Example Comprehensive Hook Setup::
 
 
 Troubleshooting
@@ -125,6 +278,14 @@ Troubleshooting
 * Finding lost tasks::
 * Projects without a NEXT item::
 * I can't create a project when clarifying an inbox item!::
+* Configuration problems::
+* Still stuck?::
+
+Configuration problems
+
+* Keywords not working::
+* Items not showing in engage view::
+
 
 @end detailmenu
 @end menu
@@ -136,7 +297,11 @@ This package tries to replicate as closely as possible the GTD workflow (see dia
 
 This package, and this documentation, assume familiarity with the flow of GTD as described in the book.
 
-This package provides a system that allows you to capture incoming things into an inbox, then process the inbox and categorize each item based on the GTD categories. It leverages org-agenda to show today's items as well as the NEXT items. It also has a simple project management system, which currently assumes all tasks in a project are sequential.
+This package provides a system that allows you to capture incoming things into an inbox, then process the inbox and categorize each item based on the GTD categories. It leverages org-agenda to show today's items as well as the NEXT items. It provides a flexible project management system with support for both sequential and parallel task execution.
+
+@strong{New to org-gtd?} Start with @ref{Getting Started with Org GTD} for a hands-on tutorial.
+
+@strong{Upgrading from 3.x?} See @ref{Upgrading} for required configuration changes and migration steps.
 @example
                                     +-------+
                                     |"STUFF"|
@@ -180,116 +345,141 @@ This package provides a system that allows you to capture incoming things into a
                 Waiting For        Next Actions                      Calendar
 @end example
 
-@node What's new in 30
-@chapter What's new in 3.0
+@node What's new in 40
+@chapter What's new in 4.0
+
+Version 4.0 is a major release that transforms how Org GTD handles projects and configuration, while maintaining compatibility with your existing GTD data.
 
 @menu
-* Minimum emacs version now 27.2: Minimum emacs version now 272. 
-* Organize menu has changed::
-* Easier to clarify more items::
-* Functions exist to create your own hooks::
-* Support habits::
-* Todo keywords can be customized::
-* Massive API changes::
-* Massive Data structure changes::
-* Include horizons::
-* You can create your own project templates and insert them while clarifying::
+* Flexible project dependencies (the big one!)::
+* Simplified keyword configuration::
+* Data-driven configuration::
+* Declarative view language::
+* Better project modification::
+* Enhanced review capabilities::
+* Simplified configuration::
+* What you need to do::
+* Previous versions::
 @end menu
 
-@node Minimum emacs version now 272
-@section Minimum emacs version now 27.2
+@node Flexible project dependencies (the big one!)
+@section Flexible project dependencies (the big one!)
 
-It became too difficult for me to support 27.1.
-
-@node Organize menu has changed
-@section Organize menu has changed
+Projects are no longer limited to sequential tasks! You can now create complex project structures with parallel tasks and custom dependencies.
 
 @itemize
 @item
-Habits have their place now (h)
+@strong{Define any dependency relationship} - Tasks can block other tasks, creating a directed acyclic graph (DAG) of dependencies
 @item
-What used to be called "archive" is now called "knowledge" (k)
+@strong{Parallel work streams} - Multiple tasks can be NEXT at the same time if they don't depend on each other
 @item
-Modify project is now "Add to project" (a)
+@strong{Automatic dependency detection} - Org GTD finds all tasks that are ready to work on based on the dependency graph
+@item
+@strong{Cycle prevention} - The system prevents circular dependencies that would create deadlocks
+@item
+@strong{Visual dependency helper} (optional) - See task relationships in a side window while clarifying projects
 @end itemize
 
-@node Easier to clarify more items
-@section Easier to clarify more items
+Tasks without explicit dependencies still work sequentially (as before), so your existing projects continue to work unchanged.
 
-There's now two more powerful commands you can use to clarify almost anything:
-@itemize
-@item
-@code{org-gtd-clarify-item}
-@item
-@code{org-gtd-clarify-agenda-item}
-@end itemize
+@node Simplified keyword configuration
+@section Simplified keyword configuration
 
-These both allow you to enter a one-off clarify/organize flow.
-
-@node Functions exist to create your own hooks
-@section Functions exist to create your own hooks
-
-Make GTD truly a part of your emacs experience!
-These functions take various arguments (check the documentation in emacs) and automatically add something to your org-gtd. This would be useful after sending an email, for instance.
-Please share your own hooks as issues in Github or in the discord so we can create a community library!
-@itemize
-@item
-@code{org-gtd-habit-create}
-@item
-@code{org-gtd-calendar-create}
-@item
-@code{org-gtd-delegate-create}
-@item
-@code{org-gtd-incubate-create}
-@item
-@code{org-gtd-single-action-create}
-@end itemize
-
-@node Support habits
-@section Support habits
-
-Org mode's habits now have a specific place here.
-
-@node Todo keywords can be customized
-@section Todo keywords can be customized
-
-@ref{Tell me all the levers I can pull, , See all the configuration options}
-
-@node Massive API changes
-@section Massive API changes
-
-The package domain now is a better match for the domain language of GTD@.
-
-Functions use the words @samp{capture}, @samp{process}, @samp{clarify}, @samp{organize}, @samp{review}.
-
-@node Massive Data structure changes
-@section Massive Data structure changes
+The new keyword configuration system is clearer and more maintainable:
 
 @itemize
 @item
-SCHEDULED and DEADLINE are intended to be used for things that have to start and things that have to end, respectively. V2 abused them, v3 is more respectful of how org-mode wants to work.
+@strong{One mapping instead of many variables} - Replace individual keyword variables (@code{org-gtd-next}, @code{org-gtd-todo}, etc.) with a single @code{org-gtd-keyword-mapping} structure
 @item
-We use our own timestamp property. For compatibility with orgzly, we currently duplicate the timestamp into the body.
+@strong{Global TODO keywords} - No more file-level @code{#+TODO:} lines that can conflict. Use Emacs' global @code{org-todo-keywords} configuration instead
+@item
+@strong{Automatic validation} - Org GTD validates your keyword configuration and provides helpful error messages if something is wrong
+@item
+@strong{Better Emacs 29+ support} - Use @code{setopt} for automatic validation when setting variables
 @end itemize
 
-@node Include horizons
-@section Include horizons
+See @ref{Tell me all the levers I can pull, , Configuration options} for details.
+
+@node Data-driven configuration
+@section Data-driven configuration
+
+New configuration system allows you to customize item properties declaratively:
 
 @itemize
 @item
-They can be displayed while clarifying
+@strong{Configure by item type} - Define what properties each GTD item type should have
 @item
-There's an optional organize-hook for areas of focus
+@strong{Prompt for user input} - Automatically prompt for dates, text, or custom data when organizing
 @item
-There's an agenda view for areas of focus
+@strong{Extensible} - Easy to add your own custom configuration for new item types
 @end itemize
 
-@ref{Working with the GTD Horizons}.
+@node Declarative view language
+@section Declarative view language
 
-@node You can create your own project templates and insert them while clarifying
-@section You can create your own project templates and insert them while clarifying
+Creating custom agenda views is now much easier with a declarative syntax:
 
-@ref{Options and commands related to clarification}
+@itemize
+@item
+@strong{Specify what you want, not how to get it} - Define views using simple filters instead of complex skip functions
+@item
+@strong{Built on org-ql} - Leverages the powerful org-ql query language for performance
+@item
+@strong{More maintainable} - View definitions are data structures, not code
+@end itemize
+
+@node Better project modification
+@section Better project modification
+
+@itemize
+@item
+@strong{Add tasks to projects anywhere} - You can now add tasks to projects even if the project file is outside @code{org-gtd-directory}
+@item
+@strong{Modify project structure} - Commands to create task dependencies and manage complex projects
+@end itemize
+
+@node Enhanced review capabilities
+@section Enhanced review capabilities
+
+@itemize
+@item
+@strong{Find missed items} - New @code{org-gtd-review-missed-items} command to catch things that slipped through
+@item
+@strong{Better stuck project detection} - Improved identification of projects that need attention
+@end itemize
+
+@node Simplified configuration
+@section Simplified configuration
+
+@itemize
+@item
+@strong{org-gtd-mode is obsolete} - No need for a special mode anymore. Just configure @code{org-agenda-files} and @code{org-edna} directly in your init file. The old mode was wrapping all agenda commands unnecessarily and had org-edna configured incorrectly.
+@end itemize
+
+@node What you need to do
+@section What you need to do
+
+If you're upgrading from 3.x, see the @ref{Upgrading, , Upgrading section} for complete step-by-step instructions. The required changes are:
+
+@enumerate
+@item
+Update your keyword configuration to use @code{org-gtd-keyword-mapping}
+@item
+Remove any @code{#+TODO:} lines from your GTD files
+@item
+@strong{Run the migration: @code{M-x org-gtd-upgrade-v3-to-v4}} (required for projects to work!)
+@end enumerate
+
+For new installations, just configure @code{org-todo-keywords} and @code{org-gtd-keyword-mapping} and you're ready to go.
+
+@node Previous versions
+@section Previous versions
+
+For changes in earlier versions, see:
+@itemize
+@item
+@uref{whats-new-3.0.org, What's new in 3.0}
+@end itemize
 
 @node Setting up Org GTD
 @chapter Setting up Org GTD
@@ -306,430 +496,157 @@ There's an agenda view for areas of focus
 If you are installing and not upgrading, you can skip this section entirely and just go to the next section, @ref{Installing}.
 
 @menu
-* 3.0.0 <- 2.2.0: 300 <- 220. 
-* 2.2.0 <- 2.1.0: 220 <- 210. 
-* 2.1.0 <- 2.0.0: 210 <- 200. 
-* 2.0.0 <- 1.1.x: 200 <- 11x. 
+* 4.0.0 <- 3.x.x: 400 <- 3xx. 
 @end menu
 
-@node 300 <- 220
-@subsection 3.0.0 <- 2.2.0
+@node 400 <- 3xx
+@subsection 4.0.0 <- 3.x.x
 
-There's a lot here, so you may want to make yourself some tea. We have to cover support for org habits, upgrading data, key changes in the configuration, a change in the menu, and the rest of the API changes. And once that's done, you should head back to the @ref{What's new in 30, , What's new in 3.0} section to see what else is available for you!
-
-@itemize
-@item
-@anchor{A note for doom emacs users}A note for doom emacs users
-
-
-Beta testers using doom emacs found they needed to do a fully clean install. The regular upgrades did not work. We could not find a clean fix. We suspect this is related to org-mode being a very complex beast, but we're not sure.
-
-@item
-@anchor{Support for org habits}Support for org habits
-
-
-For the sake of keeping the @samp{org-agenda-custom-commands} as simple as possible, habits are now stored under headings with the property @code{ORG_GTD: Habits}. The same rules for refiling apply to these headings.
-
-@item
-@anchor{Upgrading data}Upgrading data
-
-
-Some not-inconsequential data structure changes happened under the hood. To keep using @samp{org-gtd} you will need to upgrade your data, using @code{M-x org-gtd-upgrade-v2-to-v3}.
-@emph{Backups are always recommended, even though there are tests.}
-Note that if there are any habits managed by @samp{org-gtd v2} then they will be moved to a heading @code{* Habits}, in a file called @samp{org-gtd-tasks.org}, in @samp{org-gtd-directory}.
-
-@item
-@anchor{Key changes in configuration}Key changes in configuration
-
-
-Here's a table of the changes, with sample config change and explanations afterwards.
-@multitable {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
-@headitem 2.0
-@tab 3.0
-@item @code{org-gtd-process-mode}
-@tab @code{org-gtd-clarify-mode}
-@item @code{org-gtd-process-map}
-@tab @code{org-gtd-clarify-map}
-@item @code{org-gtd-choose}
-@tab @code{org-gtd-organize}
-@item @code{org-gtd-process-item-hooks}
-@tab @code{org-gtd-organize-hooks}
-@item @code{org-gtd-capture-templates}
-@tab Now looks like @code{org-capture-templates}
-@item Projects :TRIGGER:
-@tab changed again (see below)
-@item @code{org-gtd-agenda-custom-config}
-@tab gone (see below)
-@item org file headers
-@tab Drop 'em (see below)
-@end multitable
+Version 4.0 introduces major improvements to keyword configuration and project management. Your existing GTD data will continue to work, but you'll need to update your configuration and optionally migrate to take full advantage of new features.
 
 @itemize
 @item
-@anchor{Sample new config}Sample new config
+@anchor{Required Configuration changes}Required: Configuration changes
 
 
+@strong{@strong{1. Update keyword configuration}}
+
+@strong{@strong{OLD way (version 3.x):}}
 @lisp
-(use-package org-gtd
-  :after org
-  :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
-                   :commit "3.0.0" :upgrade t)
-  :demand t
-  :custom
-  (org-gtd-directory "~/org-gtd")
-  (org-edna-use-inheritance t)
-  (org-gtd-organize-hooks '(org-gtd-set-area-of-focus org-set-tags-command))
-  :config
-  (org-edna-mode)
-  :bind
-  (("C-c d c" . org-gtd-capture)
-   ("C-c d e" . org-gtd-engage)
-   ("C-c d p" . org-gtd-process-inbox)
-   :map org-gtd-clarify-map
-   ("C-c c" . org-gtd-organize)))
+;; Individual keyword variables (no longer used)
+(setq org-gtd-next "NEXT")
+(setq org-gtd-todo "TODO")
+(setq org-gtd-wait "WAIT")
+(setq org-gtd-canceled "CNCL")
 @end lisp
 
-@item
-@anchor{Projects trigger}Projects trigger
-
-
-The new trigger line looks like this:
-
-@code{:TRIGGER: org-gtd-next-project-action org-gtd-update-project-task!}
-
-This allows us to define these functions as flexibly as we want, in the future, and
-that will mean we can expand what it means to be a project in the future.
-
-@item
-@anchor{@code{org-gtd-capture-templates}}@code{org-gtd-capture-templates}
-
-
-Most of you users have not had to touch this, so you probably won't have a use for this section of the upgrade documentation.
-The new data structure is now a complete parallel for the @code{org-capture-templates} structure, so you can see how to structure it by looking at the help file for that.
-
-The key elements are still the same, however:
-@itemize
-@item
-the template has to start with a single asterisk
-@item
-the entry has to be @code{entry  (file ,#'org-gtd-inbox-path)}
-@end itemize
-
-@item
-@anchor{@code{org-gtd-agenda-custom-config}}@code{org-gtd-agenda-custom-config}
-
-
-This customization is no longer in use. It wasn't an easy decision to make, but I have to make way for bigger, future changes in org-gtd over the next major releases.
-
-If you have an existing @code{org-gtd-agenda-custom-commands} setup, then you can do something like this to keep using it. In short, for now, create your own function, and wrap the definition with the @code{with-org-gtd-context} macro. You can see the source code of @code{org-gtd-engage} for an example.
-
+@strong{@strong{NEW way (version 4.0):}}
 @lisp
-; only so I refer to it with a name in this snippet
-(setq my-commands org-gtd-agenda-custom commands)
+;; First, configure org-mode's global TODO keywords
+;; All your GTD keywords must be in the same sequence
+(setq org-todo-keywords
+      '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
 
-(defun my-org-gtd-engage ()
-  (interactive)
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands my-commands))
-        ; "g" is what the previous command used, replace with what you need
-        (org-agenda nil "g"))))
+;; Then map GTD semantic states to your keywords
+;; Use setopt (Emacs 29+) for automatic validation, or setq for older versions
+(setopt org-gtd-keyword-mapping
+        '((todo . "TODO")      ;; tasks not ready to be acted upon
+          (next . "NEXT")      ;; tasks ready to act on immediately
+          (wait . "WAIT")      ;; tasks blocked or delegated
+          (canceled . "CNCL"))) ;; tasks that won't be completed
 @end lisp
 
+Steps:
+@enumerate
 @item
-@anchor{Dropping the org file headers}Dropping the org file headers
-
-
-The TODO keywords are now customizable (see @code{M-x customize-group org-gtd RET}), while they were hard-coded in v2. Those hard-coded values are now the defaults, but you should remove the hard-coded values anyway, so remove the following line:
-
-@samp{#+TODO: NEXT(n) TODO(t) WAIT(w@@) | DONE(d) CNCL(c@@)}
-@end itemize
-
+Remove old keyword variables (@code{org-gtd-next}, @code{org-gtd-todo}, @code{org-gtd-wait}, @code{org-gtd-canceled} and their @code{-suffix} variants) from your configuration
 @item
-@anchor{A change in the menu}A change in the menu
-
-
-@itemize
+Remove any @code{#+TODO:} lines from your GTD org files (inbox.org, org-gtd-tasks.org, etc.)
 @item
-Habits have their place (@samp{h})
+Add the global keyword configuration to your Emacs init file
 @item
-What used to be called "archive" is now called "knowledge" (@samp{k})
-@item
-Modify project is now "Add to project" (@samp{a})
-@end itemize
-
-Do note that that "a" got completely reassigned! If you used to use it for items that went into your personal knowledge management system, you'll need to retrain yourself.
-
-I'm very sorry about this. In the future, you'll be able to customize this UI@.
+Ensure all GTD keywords appear in the @strong{same sequence} in @code{org-todo-keywords}
+@end enumerate
 
 @item
-@anchor{Rest of API changes}Rest of API changes
+@anchor{Required Data migration}Required: Data migration
 
 
-@itemize
-@item
-@anchor{@code{org-gtd-delegate} is now @code{org-gtd-delegate-item-at-point}}@code{org-gtd-delegate} is now @code{org-gtd-delegate-item-at-point}
+Version 4.0 changes how projects work internally. @strong{The old TRIGGER-based system no longer functions} - v4 uses dependency properties instead. You MUST run the migration for your existing projects to continue working.
 
+@strong{@strong{Run the migration command:}}
 
-This is the function to call if you want to delegate without refiling.
-
-@item
-@anchor{@code{org-gtd-agenda-projectify} is now @code{just org-gtd-clarify-agenda-item}}@code{org-gtd-agenda-projectify} is now @code{just org-gtd-clarify-agenda-item}
-
-
-V3 means you can freely clarify and organize anything in the agenda with the above function.
-
-@item
-@anchor{@code{org-gtd-agenda-delegate} is now @code{org-gtd-delegate-agenda-item}}@code{org-gtd-agenda-delegate} is now @code{org-gtd-delegate-agenda-item}
-
-
-The nomenclature changes here because of an effort to, over time, define a better language for GTD, slicing vertically through org-mode features.
-
-@item
-@anchor{@code{org-gtd-cancel-project} is now @code{org-gtd-project-cancel}}@code{org-gtd-cancel-project} is now @code{org-gtd-project-cancel}
-
-
-Same reason as above.
-
-@item
-@anchor{@code{org-gtd-agenda-cancel-project} is now @code{org-gtd-project-cancel-from-agenda}}@code{org-gtd-agenda-cancel-project} is now @code{org-gtd-project-cancel-from-agenda}
-
-
-Same reason as above.
-
-@item
-@anchor{@code{org-gtd-show-stuck-projects} is now @code{org-gtd-review-stuck-projects}}@code{org-gtd-show-stuck-projects} is now @code{org-gtd-review-stuck-projects}
-
-
-Same reason as above.
-@end itemize
-
-@item
-@anchor{That's it!}That's it!
-
-
-Go check out @ref{What's new in 30, , What's new in 3.0} as well as @ref{Configuring}.
-@end itemize
-
-@node 220 <- 210
-@subsection 2.2.0 <- 2.1.0
-
-@itemize
-@item
-@anchor{respect org-mode's org-reverse-note-order variable}respect org-mode's org-reverse-note-order variable
-
-
-The upgrade to @samp{2.0.1} allowed addition of a task as the first task of an existing project while organizing a clarified item.
-@samp{2.0.2} allows the user to choose what they prefer. Correspondingly, it lets the @samp{org-mode} variable @code{org-reverse-note-order} operate as it should. In your configuration, use:
 @lisp
-(setq org-reverse-note-order t)   ;; refile to the top of the list, or
-(setq org-reverse-note-order nil) ;; refile to the bottom of the list
+M-x org-gtd-upgrade-v3-to-v4
 @end lisp
 
-Note that if you're upgrading directly from 2.0.0 you still need to make the adjustment to the TRIGGER for your project headings.
-@end itemize
+@strong{Make a backup first!} The migration modifies your GTD files.
 
-@node 210 <- 200
-@subsection 2.1.0 <- 2.0.0
+@strong{@strong{What the migration does:}}
 
+The migration performs two steps automatically:
+
+@enumerate
+@item
+@strong{Adds ORG@math{_GTD} properties} to identify items:
 @itemize
 @item
-@anchor{Update org-edna trigger}Update org-edna trigger
-
-
-In order for project modification to work, you will need to go to every Project heading that you have. You will find the following:
-@example
-:PROPERTIES:
-:TRIGGER: next-sibling todo!(NEXT)
-:ORG_GTD: Projects
-:END:
-@end example
-
-And you will need to update the trigger so it looks like this:
-@example
-:PROPERTIES:
-:TRIGGER: relatives(forward-no-wrap todo-only 1 no-sort) todo!(NEXT)
-:ORG_GTD: Projects
-:END:
-@end example
-
-Now be sure to set the following variable in your config file, before org-gtd loads, to disable the loud warning:
-
-@lisp
-(setq org-gtd-update-ack "2.1.0")
-@end lisp
-
-That is it! You're ready to add tasks to existing projects while processing the inbox.
-@end itemize
-
-@node 200 <- 11x
-@subsection 2.0.0 <- 1.1.x
-
-@itemize
+Adds @code{ORG_GTD="Projects"} to project headings
 @item
-@anchor{Configuration}Configuration
-
-
-Org GTD now handles dependency loading more intelligently, so you no longer need the overly complicated setup of @code{org-gtd}, @code{org-agenda} and @code{org-capure} in your config for dependency loading. You now only need @code{org-gtd}. If you are using @code{use-package} then the following is the minimal config required.
-
-@lisp
-(use-package org-gtd :after 'org)
-@end lisp
-
-You no longer need to configure @code{org-agenda-property-list} yourself. Org GTD now manages the context with a macro, @code{with-org-gtd-context}. Any prior configuration of this subpackage can be handled as you did before.
-
-You no longer need to configure @code{org-agenda-files}. Same reason as above. This allows you to use org-gtd without destroying your previous setup, and makes it easier to try org-gtd and then get rid of it if you don't like it.
-
-You no longer need to configure @code{org-agenda-custom-commands}. Now there's @code{org-gtd-agenda-custom-commands} to take the relay - see the variable documentation for more information.
-
-The org-capture templates are now simplified and managed by @code{org-gtd-capture-templates}. If you did not change the default configuration, then you can just remove what you had. Read the variable documentaton for further information.
-
-@itemize
-@item
-@anchor{Example upgrade}Example upgrade
-
-
-My org-gtd config for 1.x was as follows:
-@lisp
-(use-package org-gtd
-  :after org
-  :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
-                   :commit "1.1.1" :upgrade t)
-  :demand t
-  :custom
-  (org-gtd-directory "~/org-gtd")
-  (org-agenda-property-list '("DELEGATED_TO"))
-  (org-edna-use-inheritance t)
-  :config
-  (org-edna-load)
-  :bind
-  (("C-c d c" . org-gtd-capture)
-   ("C-c d a" . org-agenda-list)
-   ("C-c d p" . org-gtd-process-inbox)
-   ("C-c d n" . org-gtd-show-all-next)
-   ("C-c d s" . org-gtd-show-stuck-projects)
-   :map org-gtd-process-map
-   ("C-c c" . org-gtd-choose)))
-
-
-(use-package org-agenda
-  :ensure nil
-  :no-require t
-  :after (org-gtd)
-  :custom
-  (org-agenda-skip-deadline-if-done t)
-  (org-agenda-skip-scheduled-if-done t)
-  (org-agenda-files `(,org-gtd-directory))
-  (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT"))))))
-
-(use-package org-capture
-  :ensure nil
-  :after org-gtd
-  :config
-  (setq org-capture-templates `(("i" "Inbox"
-                               entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
-                               "* %?\n%U\n\n  %i"
-                               :kill-buffer t)
-                              ("t" "Todo with link"
-                               entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
-                               "* %?\n%U\n\n  %i\n  %a"
-                               :kill-buffer t))))
-@end lisp
-
-And my config for 2.0 is:
-@lisp
-(use-package org-gtd
-  :after org
-  :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
-                   :commit "2.0.0" :upgrade t)
-  :demand t
-  :custom
-  (org-gtd-directory "~/org-gtd")
-  (org-edna-use-inheritance t)
-  :config
-  (org-edna-mode)
-  :bind
-  (("C-c d c" . org-gtd-capture)
-   ("C-c d e" . org-gtd-engage)
-   ("C-c d p" . org-gtd-process-inbox)
-   ("C-c d n" . org-gtd-show-all-next)
-   ("C-c d s" . org-gtd-show-stuck-projects)
-   :map org-gtd-process-map
-   ("C-c c" . org-gtd-choose)))
-@end lisp
+Adds @code{ORG_GTD="Actions"} to project tasks
 @end itemize
 
 @item
-@anchor{Relevant commands with new names}Relevant commands with new names
+@strong{Converts projects to dependency-based system}:
+@itemize
+@item
+Adds @code{ORG_GTD_DEPENDS_ON} and @code{ORG_GTD_BLOCKS} properties to create sequential task chains
+@item
+Adds @code{ORG_GTD_FIRST_TASKS} property to project headings
+@item
+Updates task states (NEXT/TODO) based on the new dependency graph
+@end itemize
+@end enumerate
 
+@strong{@strong{After migration:}}
 
 @itemize
 @item
-@code{org-agenda-list} -> @code{org-gtd-engage}
+Your projects continue to work sequentially (task 1 → task 2 → task 3)
 @item
-@code{org-gtd-clarify-finalize} -> @code{org-gtd-choose} (see the section on Key bindings below)
+The sequential behavior is now implemented via dependency properties instead of TRIGGER
+@item
+You can now customize dependencies for individual projects if you want parallel tasks
+@item
+Safe to run multiple times if needed
 @end itemize
 
 @item
-@anchor{heading states (TODO etc)}heading states (TODO, etc.)
+@anchor{Why these changes?}Why these changes?
 
 
-You need to rename CANCELED to CNCL@. a simple string replace in the @code{org-gtd-directory} will do the trick.
+@strong{@strong{Keyword configuration:}}
+@itemize
+@item
+Simpler: One mapping structure instead of multiple variables
+@item
+More reliable: Global configuration avoids file-level conflicts
+@item
+Better validation: Org GTD checks your configuration and provides helpful errors
+@item
+Future-proof: Easier to extend with new keyword types
+@end itemize
+
+@strong{@strong{Property-based system:}}
+@itemize
+@item
+More robust: Properties work reliably across different org-mode features
+@item
+More flexible: Enables features like multi-project tasks
+@item
+Better performance: Faster queries using org-ql
+@end itemize
 
 @item
-@anchor{Differentiating GTD types of items}Differentiating GTD types of items
+@anchor{org-gtd-mode is obsolete}org-gtd-mode is obsolete
 
 
-Org GTD no longer uses the name of the heading to figure out how to refile things, and which headings are useful. Instead it uses a custom Org property called ORG@math{_GTD}. This means you are free to rename the existing headings whatever you want, but you DO need to make some adjustments to your current files.
+The @code{org-gtd-mode} minor mode is obsolete in version 4.0. It previously wrapped all org-agenda commands with org-gtd context, but this is no longer necessary because:
 
-If you would like to add new refile targets, it's simple, follow these instructions.
-
-For projects, make sure the heading has the following two properties.
-@example
-:PROPERTIES:
-:TRIGGER: next-sibling todo!(NEXT)
-:ORG_GTD: Projects
-:END:
-@end example
-
-For other headings, make sure there is an ORG@math{_GTD} property, like for the project, above.
-
-The other ORG@math{_GTD} properties are set as follows. Note that Single and Delegated actions are together now, so you can merge those headings if you want.
-
-@table @asis
-@item Scheduled actions
-@samp{ORG_GTD: Calendar}
-@item Single & Delegated actions
-@samp{ORG_GTD: Actions}
-@item Incubated actions
-@samp{ORG_GTD: Incubated}
-@end table
-
-For incubated actions, version 1.x of Org GTD asked for second-level heading, such as @code{*To Read}. No more - these are now top-level headings, exactly as described above, with a heading property of @code{ORG_GTD: Incubated}.
-
+@enumerate
 @item
-@anchor{Multiple refile targets}Multiple refile targets
-
-
-There is a new variable, @code{org-gtd-refile-to-any-target}. By default this variable is set to @code{t}. This means that Org GTD will refile to whatever the first target it finds is. This is the default value because it most closely matches the behavior for version 1.x.
-@strong{THIS BEHAVIOR ALSO APPLIES TO INCUBATE REFILE TARGETS}. Therefore, if you have multiple incubated refile targets, you will need to set this variable to @code{nil}, or change to a single refile target. You can e.g. set a custom property to describe the kind of incubated item it is, if it is useful to you, something like:
-
-@example
-* Incubated
-** Buy a boat
-SCHEDULED: <2035-06-01 Fri>
-:PROPERTIES:
-:INCUBATE: big financial investment
-:END:
-@end example
-
+All org-gtd commands (like @code{org-gtd-engage}) already have the right context
 @item
-@anchor{Key bindings}Key bindings
+Users should configure @code{org-agenda-files} directly
+@item
+Users should configure org-edna directly (the old mode had it configured incorrectly)
+@end enumerate
 
-
-Version 1.x of Org GTD recommended a binding for @code{org-gtd-clarify-finalize}. This binding must now be set as follows (replace the keybinding with one of your choice):
+If you were using @code{org-gtd-mode}, simply remove it and add these lines to your config:
 
 @lisp
-(define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose)
+(setq org-agenda-files (list org-gtd-directory))
+(org-edna-mode 1)
 @end lisp
 @end itemize
 
@@ -768,21 +685,425 @@ Finally, add this to your config:
 @section Configuring
 
 @menu
-* The easy way::
+* Basic setup::
+* Complete Configuration Examples::
+* Understanding Keybindings::
 * Required configuration of sub-packages::
 * configuration options for org-gtd::
 * Recommended key bindings::
 * Sample Doom Emacs Config::
 @end menu
 
-@node The easy way
-@subsection The easy way
+@node Basic setup
+@subsection Basic setup
 
-Just turn on @code{org-gtd-mode} (@code{M-x org-gtd-mode}). This will set up emacs, Org mode, and Org GTD's dependencies. It will wrap a number of @code{org-agenda} functions to work smoothly. If you are just testing out Org GTD, this is a good way to start.
+You need to configure three things for org-gtd to work:
 
-Turn off @code{org-gtd-mode} to restore emacs to pre-org-gtd settings.
+@enumerate
+@item
+@strong{TODO keywords}: Configure @code{org-todo-keywords} with your GTD workflow states
+@item
+@strong{Keyword mapping}: Map GTD semantic states to your keywords with @code{org-gtd-keyword-mapping}
+@item
+@strong{org-edna}: Enable org-edna with inheritance for project dependencies to work
+@end enumerate
 
-Note, you should still head over to the @ref{Recommended key bindings} section.
+See the configuration sections below for details.
+
+Note: @code{org-gtd-mode} is obsolete as of version 4.0. Just configure org-agenda-files and org-edna directly.
+
+@node Complete Configuration Examples
+@subsection Complete Configuration Examples
+
+@strong{Configuration is the most critical part of setup.} The examples below are complete, working configurations you can copy-paste into your init file.
+
+@itemize
+@item
+@anchor{Example 1 Vanilla Emacs (Minimal Configuration)}Example 1: Vanilla Emacs (Minimal Configuration)
+
+
+This is the simplest possible configuration for org-gtd. Copy this entire block into your init file:
+
+@lisp
+;; Configure org-mode TODO keywords
+;; All GTD keywords MUST be in the same sequence
+(setq org-todo-keywords
+      '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+
+;; Map GTD semantic states to your keywords
+(setq org-gtd-keyword-mapping
+      '((todo . "TODO")      ; tasks not ready to act on
+        (next . "NEXT")      ; tasks ready to act on immediately
+        (wait . "WAIT")      ; tasks blocked or delegated
+        (canceled . "CNCL"))) ; tasks that won't be completed
+
+;; Optional: Set GTD directory (defaults to ~/gtd/)
+;; (setq org-gtd-directory "~/my-gtd/")
+
+;; Add org-gtd files to your agenda
+(setq org-agenda-files (list org-gtd-directory))
+
+;; REQUIRED: Enable org-edna for project dependencies
+(org-edna-mode 1)
+
+;; Global keybindings for GTD commands
+;; These work anywhere in Emacs
+(global-set-key (kbd "C-c d c") 'org-gtd-capture)
+(global-set-key (kbd "C-c d e") 'org-gtd-engage)
+(global-set-key (kbd "C-c d p") 'org-gtd-process-inbox)
+(global-set-key (kbd "C-c d n") 'org-gtd-show-all-next)
+(global-set-key (kbd "C-c d s") 'org-gtd-review-stuck-projects)
+
+;; Keybinding for clarify map
+;; This only works when you're in a clarify buffer
+(with-eval-after-load 'org-gtd
+  (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize))
+@end lisp
+
+@item
+@anchor{Example 2 Doom Emacs Configuration}Example 2: Doom Emacs Configuration
+
+
+If you use Doom Emacs, add this to your @code{packages.el}:
+
+@lisp
+(package! org-gtd)
+@end lisp
+
+Then add this to your @code{config.el}:
+
+@lisp
+(use-package! org-gtd
+  :after org
+  :custom
+  (org-gtd-directory "~/gtd/")
+  (org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+  (org-gtd-keyword-mapping '((todo . "TODO")
+                             (next . "NEXT")
+                             (wait . "WAIT")
+                             (canceled . "CNCL")))
+  (org-agenda-files (list org-gtd-directory))
+  :config
+  (org-edna-mode)
+  ;; Doom-style leader key bindings
+  (map! :leader
+        (:prefix ("d" . "org-gtd")
+         :desc "Capture"        "c"  #'org-gtd-capture
+         :desc "Engage"         "e"  #'org-gtd-engage
+         :desc "Process inbox"  "p"  #'org-gtd-process-inbox
+         :desc "Show all next"  "n"  #'org-gtd-show-all-next
+         :desc "Stuck projects" "s"  #'org-gtd-review-stuck-projects))
+  ;; Clarify map binding
+  (map! :map org-gtd-clarify-map
+        :desc "Organize this item" "C-c c" #'org-gtd-organize))
+@end lisp
+
+@item
+@anchor{Example 3 Spacemacs Configuration}Example 3: Spacemacs Configuration
+
+
+If you use Spacemacs, add this to your @code{dotspacemacs/user-config} function:
+
+@lisp
+;; Install org-gtd
+(use-package org-gtd
+  :ensure t
+  :after org
+  :init
+  ;; Configure org-mode TODO keywords
+  (setq org-todo-keywords
+        '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+  ;; Map GTD semantic states
+  (setq org-gtd-keyword-mapping
+        '((todo . "TODO")
+          (next . "NEXT")
+          (wait . "WAIT")
+          (canceled . "CNCL")))
+  ;; Optional: Set GTD directory
+  (setq org-gtd-directory "~/gtd/")
+  ;; Add to agenda files
+  (setq org-agenda-files (list org-gtd-directory))
+  :config
+  ;; REQUIRED: Enable org-edna for project dependencies
+  (org-edna-mode 1)
+  ;; Spacemacs leader key bindings
+  (spacemacs/set-leader-keys
+    "od c" 'org-gtd-capture
+    "od e" 'org-gtd-engage
+    "od p" 'org-gtd-process-inbox
+    "od n" 'org-gtd-show-all-next
+    "od s" 'org-gtd-review-stuck-projects)
+  ;; Clarify map binding
+  (with-eval-after-load 'org-gtd
+    (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize)))
+@end lisp
+
+@item
+@anchor{What These Configurations Do}What These Configurations Do
+
+
+All three examples configure the same essential pieces:
+
+@enumerate
+@item
+@strong{@code{org-todo-keywords}} - Defines the workflow states (TODO → NEXT → WAIT → DONE/CNCL)
+@itemize
+@item
+The @code{|} separator marks done states (right side) vs active states (left side)
+@item
+All GTD keywords must be in a single sequence
+@end itemize
+
+@item
+@strong{@code{org-gtd-keyword-mapping}} - Maps GTD concepts to your keyword choices
+@itemize
+@item
+@code{todo} - Tasks not yet actionable
+@item
+@code{next} - Tasks ready to work on right now
+@item
+@code{wait} - Tasks blocked or delegated
+@item
+@code{canceled} - Tasks that won't be done
+@end itemize
+
+@item
+@strong{@code{org-gtd-directory}} - Where org-gtd keeps its files (defaults to @samp{~/gtd/})
+
+@item
+@strong{@code{org-agenda-files}} - Makes org-gtd items appear in agenda views
+
+@item
+@strong{@code{org-edna-mode}} - REQUIRED for projects to work
+
+@item
+@strong{Keybindings} - Two types:
+@itemize
+@item
+@strong{Global bindings}: Work anywhere in Emacs (capture, engage, process, etc.)
+@item
+@strong{Clarify map binding}: Only works when organizing items in clarify buffers
+@end itemize
+@end enumerate
+
+@item
+@anchor{Testing Your Configuration}Testing Your Configuration
+
+
+After adding one of the configurations above and restarting Emacs, verify everything works:
+
+@strong{@strong{Test 1: Capture works}}
+
+@example
+M-x org-gtd-capture
+@end example
+
+Expected: Opens a capture buffer for the inbox.
+
+If it fails: Check that @code{org-gtd-directory} exists and you have write permissions.
+
+@strong{@strong{Test 2: Engage works}}
+
+@example
+M-x org-gtd-engage
+@end example
+
+Expected: Opens an agenda view (might be empty if you haven't organized anything yet).
+
+If it fails: Check that @code{org-agenda-files} includes your GTD directory.
+
+@strong{@strong{Test 3: Keywords are recognized}}
+
+@enumerate
+@item
+Open any org file: @code{M-x find-file ~/test.org}
+@item
+Type: @code{* Test heading}
+@item
+Put cursor on the heading
+@item
+Try cycling TODO states: @code{C-c C-t}
+@end enumerate
+
+Expected: Should cycle through TODO → NEXT → WAIT → DONE → CNCL@.
+
+If it fails: Check that @code{org-todo-keywords} is set correctly.
+
+@strong{@strong{Test 4: org-edna is enabled}}
+
+@example
+M-x describe-variable RET org-edna-mode
+@end example
+
+Expected: Should show "t" (enabled).
+
+If it fails: Make sure @code{(org-edna-mode 1)} is in your config and you've restarted Emacs.
+
+@item
+@anchor{Common Configuration Problems}Common Configuration Problems
+
+
+Before troubleshooting, identify which configuration style you're using:
+@itemize
+@item
+@strong{Vanilla Emacs}: See @ref{Example 1 Vanilla Emacs (Minimal Configuration), , Example 1 Vanilla Emacs}
+@item
+@strong{Doom Emacs}: See @ref{Example 2 Doom Emacs Configuration, , Example 2 Doom Emacs}
+@item
+@strong{Spacemacs}: See @ref{Example 3 Spacemacs Configuration, , Example 3 Spacemacs}
+@end itemize
+
+Each example shows the complete, correct configuration for that environment.
+
+@strong{@strong{Problem: "org-gtd-capture" is undefined}}
+
+@strong{Cause}: org-gtd package isn't installed or loaded.
+
+@strong{Solution}:
+@itemize
+@item
+@strong{Vanilla Emacs}: Install from MELPA with @code{M-x package-install RET org-gtd RET}
+@item
+@strong{Doom Emacs}: Add @code{(package! org-gtd)} to your @code{packages.el} and run @code{doom sync}
+@item
+@strong{Spacemacs}: The @code{use-package} form in the @ref{Example 3 Spacemacs Configuration, , Spacemacs example} automatically installs it with @code{:ensure t}
+@end itemize
+
+@strong{@strong{Problem: Keywords don't change when I press C-c C-t}}
+
+@strong{Cause}: @code{org-todo-keywords} not configured correctly.
+
+@strong{Solution}: Check your configuration has this setting:
+@lisp
+(setq org-todo-keywords
+      '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+@end lisp
+
+Common mistakes:
+@itemize
+@item
+Keywords not in quotes: Should be @code{"TODO"} not @code{TODO}
+@item
+Missing sequence wrapper: Need @code{'((sequence ...))} not just @code{'("TODO" ...)}
+@item
+No done separator: Need @code{|} before @code{"DONE"} and @code{"CNCL"}
+@end itemize
+
+See the complete configuration for your environment above.
+
+@strong{@strong{Problem: Projects don't advance when I mark tasks DONE}}
+
+@strong{Cause}: org-edna isn't enabled.
+
+@strong{Solution}: All three configuration examples include @code{(org-edna-mode 1)}. Make sure you have:
+@itemize
+@item
+@strong{Vanilla/Spacemacs}: @code{(org-edna-mode 1)} in the @code{:config} section
+@item
+@strong{Doom}: @code{(org-edna-mode)} in the @code{:config} section (Doom handles the argument)
+@end itemize
+
+@strong{@strong{Problem: Can't see GTD items in agenda}}
+
+@strong{Cause}: GTD directory not in @code{org-agenda-files}.
+
+@strong{Solution}: All three configuration examples include this. Check you have:
+@lisp
+(setq org-agenda-files (list org-gtd-directory))
+@end lisp
+
+Or if using @code{use-package} / @code{use-package!}:
+@lisp
+:custom
+(org-agenda-files (list org-gtd-directory))
+@end lisp
+
+@strong{@strong{Problem: Keybindings don't work}}
+
+@strong{Cause}: Keybindings not defined, or defined incorrectly for your environment.
+
+@strong{Solution}:
+@itemize
+@item
+@strong{Vanilla Emacs}: Use @code{global-set-key} for global commands, @code{define-key org-gtd-clarify-map} for clarify buffer commands
+@item
+@strong{Doom Emacs}: Use @code{map!} with @code{:leader} prefix for global, @code{:map org-gtd-clarify-map} for clarify buffer
+@item
+@strong{Spacemacs}: Use @code{spacemacs/set-leader-keys} for global, @code{define-key} for clarify buffer
+@end itemize
+
+The clarify binding (@code{C-c c}) @strong{only works in clarify buffers} - you must run @code{M-x org-gtd-process-inbox} first.
+
+See the complete configuration for your environment to copy the correct keybinding syntax.
+@end itemize
+
+@node Understanding Keybindings
+@subsection Understanding Keybindings
+
+org-gtd uses two types of keybindings, and understanding the difference is important:
+
+@itemize
+@item
+@anchor{Global Keybindings}Global Keybindings
+
+
+These work @strong{anywhere} in Emacs and let you access the main GTD commands:
+
+@lisp
+;; These commands are always available:
+(global-set-key (kbd "C-c d c") 'org-gtd-capture)       ; Capture to inbox
+(global-set-key (kbd "C-c d e") 'org-gtd-engage)        ; Daily view
+(global-set-key (kbd "C-c d p") 'org-gtd-process-inbox) ; Process inbox
+(global-set-key (kbd "C-c d n") 'org-gtd-show-all-next) ; Show NEXT actions
+@end lisp
+
+You can use any key combination you prefer. The @code{C-c d} prefix is just a convention.
+
+@item
+@anchor{Clarify Map Keybindings}Clarify Map Keybindings
+
+
+These only work when you're in a @strong{clarify buffer} (during inbox processing). The most important one is:
+
+@lisp
+;; This only works in clarify buffers:
+(define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize)
+@end lisp
+
+@strong{@strong{When you're in a clarify buffer:}}
+@enumerate
+@item
+You've called @code{org-gtd-process-inbox} and are looking at an item
+@item
+You've edited the item to make it clear and actionable
+@item
+Now you press @code{C-c c} to organize it (choose its type: project, single action, etc.)
+@end enumerate
+
+@strong{@strong{Why the distinction?}}
+
+The clarify map is a separate keymap because:
+@itemize
+@item
+It prevents conflicts with other org-mode bindings
+@item
+It only activates when you need it (during processing)
+@item
+You can bind different keys for organizing without affecting the rest of Emacs
+@end itemize
+
+@strong{@strong{Common patterns:}}
+
+Most users bind:
+@itemize
+@item
+@code{C-c d *} for global commands (capture, engage, process)
+@item
+@code{C-c c} for organizing (only in clarify buffers)
+@end itemize
+
+But you can use whatever works for your workflow!
+@end itemize
 
 @node Required configuration of sub-packages
 @subsection Required configuration of sub-packages
@@ -794,12 +1115,24 @@ Note, you should still head over to the @ref{Recommended key bindings} section.
 
 package: @uref{https://www.nongnu.org/org-edna-el/}
 
-This is one of the dependencies. This setting change is REQUIRED@. It automatically changes the next TODO heading to NEXT in a project when you've finished the current task.
+This configuration is @strong{REQUIRED} for project dependencies to work correctly. It enables org-edna to automatically update task states when you complete tasks in a project.
 
-You do not need to make this change if you choose to toggle @code{org-gtd-mode}.
 @lisp
-(setq org-edna-use-inheritance t)
 (org-edna-mode 1)
+@end lisp
+
+@item
+@anchor{Adding org-gtd files to your agenda}Adding org-gtd files to your agenda
+
+
+To see org-gtd items in your agenda views, add the org-gtd directory to your @code{org-agenda-files}:
+
+@lisp
+;; If you only want GTD files in your agenda:
+(setq org-agenda-files (list org-gtd-directory))
+
+;; Or if you have other agenda files, add GTD to the list:
+(add-to-list 'org-agenda-files org-gtd-directory)
 @end lisp
 @end itemize
 
@@ -824,29 +1157,60 @@ The configuration options will also be mentioned in the relevant subsections of 
 
 Make sure you also read about sub-package configuration: @ref{Required configuration of sub-packages}.
 
+@itemize
+@item
+@anchor{Required keyword configuration}Required keyword configuration
+
+
+These settings are @strong{required} for Org GTD to work properly:
+
+@table @asis
+@item @code{org-todo-keywords}
+(@samp{org-mode} variable) Define your TODO keyword sequences here. All GTD keywords (TODO, NEXT, WAIT, DONE, CNCL or your custom versions) @strong{must} be in the same sequence. Example.
+@lisp
+(setq org-todo-keywords
+      '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+@end lisp
+
+@item @code{org-gtd-keyword-mapping}
+Map GTD semantic states to your chosen keywords. This tells Org GTD which keyword means what. The four required mappings are.
+@table @asis
+@item @code{todo}
+Tasks not ready to be acted upon
+@item @code{next}
+Tasks ready to act on immediately
+@item @code{wait}
+Tasks blocked or delegated to someone else
+@item @code{canceled}
+Tasks that won't be completed
+@end table
+
+Example configuration (use @code{setopt} for Emacs 29+ to get automatic validation):
+@lisp
+(setopt org-gtd-keyword-mapping
+        '((todo . "TODO")
+          (next . "NEXT")
+          (wait . "WAIT")
+          (canceled . "CNCL")))
+@end lisp
+
+Or for older Emacs versions:
+@lisp
+(setq org-gtd-keyword-mapping
+      '((todo . "TODO")
+        (next . "NEXT")
+        (wait . "WAIT")
+        (canceled . "CNCL")))
+@end lisp
+@end table
+
+@item
+@anchor{Optional configuration}Optional configuration
+
+
 @table @asis
 @item @code{org-gtd-directory}
 set this to a directory. @samp{org-gtd} will look for all its files in this directory.
-@item @code{org-gtd-next}
-Keyword to use for actions ready to be taken
-@item @code{org-gtd-next-suffix}
-org-mode keyword suffix (e.g. !, @@)
-@item @code{org-gtd-todo}
-Keyword to use for actions not yet ready
-@item @code{org-gtd-todo-suffix}
-org-mode keyword suffix (e.g. !, @@)
-@item @code{org-gtd-wait}
-Keyword to use for blocked actions (e.g. delegated)
-@item @code{org-gtd-wait-suffix}
-org-mode keyword suffix (e.g. !, @@)
-@item @code{org-gtd-done}
-Keyword to use for completed actions
-@item @code{org-gtd-done-suffix}
-org-mode keyword suffix (e.g. !, @@)
-@item @code{org-gtd-canceled}
-Keyword to use for actions that won't be done
-@item @code{org-gtd-canceled-suffix}
-org-mode keyword suffix (e.g. !, @@)
 @item @code{org-gtd-capture-templates}
 (!note: take care when changing this) This defines the pre-filled text that will show up when capturing an item to the inbox. The only requirements are that the template string must define an org-mode top-level heading, and that the entry point to the inbox.  That is to say, the first two characters must be a single asterisk followed by a space: @code{"* "}, and the entry type must be like this: @samp{entry  (file ,#'org-gtd-inbox-path)}. @ref{Adding things to the inbox}.
 @item @code{org-reverse-note-order}
@@ -870,6 +1234,7 @@ Name of the file, in @code{org-gtd-directory}, that will be displayed when the h
 @item @code{org-gtd-engage-prefix-width}
 how many characters to dedicate to the prefix, on the left side of the TODO items, so the project name, if any, can show clearly.
 @end table
+@end itemize
 @end itemize
 
 @node Recommended key bindings
@@ -900,8 +1265,15 @@ If you are a Doom Emacs user, then your configuration may look something like th
 @lisp
 (use-package! org-gtd
   :after org
+  :custom
+  (org-gtd-directory "~/gtd/")
+  (org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+  (org-gtd-keyword-mapping '((todo . "TODO")
+                             (next . "NEXT")
+                             (wait . "WAIT")
+                             (canceled . "CNCL")))
+  (org-agenda-files (list org-gtd-directory))
   :config
-  (setq org-edna-use-inheritance t)
   (org-edna-mode)
   (map! :leader
         (:prefix ("d" . "org-gtd")
@@ -914,36 +1286,672 @@ If you are a Doom Emacs user, then your configuration may look something like th
         :desc "Organize this item" "C-c c" #'org-gtd-organize))
 @end lisp
 
+@node Getting Started with Org GTD
+@chapter Getting Started with Org GTD
+
+You've configured org-gtd. Now let's see it in action with real examples that demonstrate why org-gtd is powerful.
+
+@menu
+* Quick Start Reference::
+* Tutorial Your First Project::
+* Tutorial Creating Your First Custom View::
+@end menu
+
+@node Quick Start Reference
+@section Quick Start Reference
+
+If you haven't done the 5-minute Quick Start in the README yet, do that first. It walks you through:
+@enumerate
+@item
+Capturing a single action
+@item
+Processing your inbox
+@item
+Organizing the item
+@item
+Seeing it in your engage view
+@end enumerate
+
+That Quick Start proves the basic cycle works. Now let's see what makes org-gtd special: automatic project management and custom views.
+
+@node Tutorial Your First Project
+@section Tutorial: Your First Project
+
+You've captured and organized a single action. That's great for simple tasks, but GTD's real power is managing multi-step projects. Let's create one and watch org-gtd handle the complexity automatically.
+
+@menu
+* What You'll Learn::
+* The Project::
+* Step 1 Capture the Project::
+* Step 2 Process the Inbox::
+* Step 3 Organize as a Project::
+* Step 4 View in Engage::
+* Step 5 Complete the First Task::
+* Step 6 Refresh and See the Change::
+* What Just Happened?::
+* Continue the Project::
+* Key Takeaways::
+* What's Next?::
+@end menu
+
+@node What You'll Learn
+@subsection What You'll Learn
+
+@itemize
+@item
+How to capture and structure a project
+@item
+How org-gtd automatically manages task dependencies
+@item
+How tasks advance from TODO → NEXT when dependencies are satisfied
+@item
+How the engage view shows you what's immediately actionable
+@end itemize
+
+@node The Project
+@subsection The Project
+
+We'll plan a small house renovation with three sequential steps:
+@enumerate
+@item
+Review blueprints
+@item
+Order windows
+@item
+Schedule carpenter
+@end enumerate
+
+This demonstrates sequential project execution - the default behavior where each task must complete before the next begins.
+
+@node Step 1 Capture the Project
+@subsection Step 1: Capture the Project
+
+Press @code{C-c d c} (or @code{M-x org-gtd-capture}).
+
+Type (or paste) this structure:
+
+@example
+* House Renovation
+** Review blueprints
+** Order windows of the right size
+** Schedule carpenter
+@end example
+
+@strong{Important}: Projects in org-gtd have a specific structure:
+@itemize
+@item
+Top-level heading (@code{*}) is the project name
+@item
+Second-level headings (@code{**}) are the tasks
+@end itemize
+
+Press @code{C-c C-c} to save.
+
+@node Step 2 Process the Inbox
+@subsection Step 2: Process the Inbox
+
+Press @code{C-c d p} (or @code{M-x org-gtd-process-inbox}).
+
+You'll see your project in a clarify buffer. This is your chance to refine it:
+@itemize
+@item
+Add details to tasks (we already added "of the right size" to clarify what we need)
+@item
+Fix typos
+@item
+Make everything crystal clear
+@end itemize
+
+When you're satisfied, press @code{C-c c} to organize.
+
+@node Step 3 Organize as a Project
+@subsection Step 3: Organize as a Project
+
+The transient menu appears with organization options. Press @strong{[p]} for "Project".
+
+Watch what org-gtd does automatically:
+@enumerate
+@item
+Marks the first task ("Review blueprints") as @strong{NEXT}
+@item
+Marks other tasks as @strong{TODO}
+@item
+Sets up dependency relationships (task 1 blocks task 2, task 2 blocks task 3)
+@item
+Refiles the entire project to your projects file
+@end enumerate
+
+You'll see a prompt for tags (optional). Press @code{RET} to skip or add tags if you want.
+
+The project is now in your GTD system!
+
+@node Step 4 View in Engage
+@subsection Step 4: View in Engage
+
+Press @code{C-c d e} (or @code{M-x org-gtd-engage}).
+
+You'll see an agenda view showing:
+@itemize
+@item
+@strong{NEXT: Review blueprints} - This is immediately actionable
+@item
+The project "House Renovation" appears in the list
+@item
+Other tasks ("Order windows", "Schedule carpenter") don't show as NEXT - they're waiting for the first task
+@end itemize
+
+This is your daily engagement view - it shows @strong{only} what you can act on right now, not everything in your system.
+
+@node Step 5 Complete the First Task
+@subsection Step 5: Complete the First Task
+
+In the agenda view, move your cursor to "Review blueprints".
+
+Press @strong{t} to cycle the TODO state.
+
+Select @strong{DONE}.
+
+@strong{Magic happens}: Watch "Order windows of the right size" automatically become NEXT@!
+
+This is org-edna in action - the automatic dependency system org-gtd uses.
+
+@node Step 6 Refresh and See the Change
+@subsection Step 6: Refresh and See the Change
+
+Press @strong{g} to refresh the agenda view.
+
+You'll now see:
+@itemize
+@item
+✓ "Review blueprints" is DONE (depending on your agenda settings, it may be hidden)
+@item
+@strong{NEXT: Order windows of the right size} - Now actionable!
+@item
+"Schedule carpenter" is still TODO - waiting for "Order windows" to complete
+@end itemize
+
+@node What Just Happened?
+@subsection What Just Happened?
+
+Let's understand the automatic workflow:
+
+@enumerate
+@item
+@strong{When you organized as a project}, org-gtd:
+@itemize
+@item
+Created a dependency chain: Task 1 → Task 2 → Task 3
+@item
+Set properties (@code{ORG_GTD_BLOCKS}, @code{ORG_GTD_DEPENDS_ON}) to track relationships
+@item
+Marked only the first task as NEXT
+@end itemize
+
+@item
+@strong{When you marked "Review blueprints" DONE}, org-gtd:
+@itemize
+@item
+Checked which tasks were blocked by this one
+@item
+Found "Order windows" had no remaining blockers
+@item
+Automatically changed it from TODO to NEXT
+@end itemize
+
+@item
+@strong{"Schedule carpenter" stays TODO} because:
+@itemize
+@item
+It depends on "Order windows" completing
+@item
+org-gtd won't mark it NEXT until its dependencies are satisfied
+@end itemize
+@end enumerate
+
+You didn't manually manage any of this. You just @strong{did the work} and marked tasks complete. org-gtd handled the workflow automatically.
+
+@node Continue the Project
+@subsection Continue the Project
+
+Complete "Order windows" the same way:
+@enumerate
+@item
+Go to the engage view (@code{C-c d e})
+@item
+Find "Order windows of the right size"
+@item
+When done, press @strong{t} and select @strong{DONE}
+@item
+Watch "Schedule carpenter" automatically become NEXT
+@end enumerate
+
+When all tasks are done, the project is complete. You can archive it with @code{M-x org-gtd-archive-completed-items} during your weekly review.
+
+@node Key Takeaways
+@subsection Key Takeaways
+
+@itemize
+@item
+@strong{Projects are multi-step actions} with automatic dependency management
+@item
+@strong{Sequential execution is the default} - tasks progress one after another
+@item
+@strong{The engage view shows only actionable items} - not everything in your system
+@item
+@strong{You focus on doing work, not managing workflows} - org-gtd handles task progression
+@item
+@strong{Completing tasks automatically advances projects} - no manual state management needed
+@end itemize
+
+@node What's Next?
+@subsection What's Next?
+
+This was a sequential project (A → B → C). Later, you'll learn how to:
+@itemize
+@item
+Create @strong{parallel tasks} (A and B can both be NEXT simultaneously)
+@item
+Set @strong{custom dependencies} (A blocks C, B blocks C, but A and B are parallel)
+@item
+Manage @strong{complex project structures} with the dependency graph
+@end itemize
+
+For now, practice with a few simple sequential projects. The pattern is always:
+@enumerate
+@item
+@strong{Capture} with project structure
+@item
+@strong{Clarify} to make it clear
+@item
+@strong{Organize} as a project
+@item
+@strong{Engage} to see what's actionable
+@item
+@strong{Complete} tasks and watch progression happen automatically
+@end enumerate
+
+@node Tutorial Creating Your First Custom View
+@section Tutorial: Creating Your First Custom View
+
+The built-in @code{org-gtd-engage} view is powerful, but you'll want custom views for different contexts. org-gtd 4.0 has a declarative View DSL that makes this easy. Let's create a view that shows all your active projects.
+
+@menu
+* What You'll Learn: What You'll Learn (1). 
+* Why This View?::
+* Understanding the View DSL::
+* Creating the View Function::
+* Using Your View::
+* Binding to a Key::
+* What You'll See::
+* Experiment Modify the View::
+* Available Filters::
+* Key Takeaways: Key Takeaways (1). 
+* What's Next?: What's Next? (1). 
+* Where to Go From Here::
+@end menu
+
+@node What You'll Learn (1)
+@subsection What You'll Learn
+
+@itemize
+@item
+How the View DSL works (declarative syntax)
+@item
+How to create a simple custom view
+@item
+How to call your view and see results
+@item
+How to modify views for different needs
+@end itemize
+
+@node Why This View?
+@subsection Why This View?
+
+The engage view shows @strong{today's actionable items} - what you should work on right now.
+
+But sometimes you want the @strong{big picture}:
+@itemize
+@item
+What projects am I working on?
+@item
+Which ones have active tasks?
+@item
+What's the status of each project?
+@end itemize
+
+This view answers those questions by showing all active projects at a glance.
+
+@node Understanding the View DSL
+@subsection Understanding the View DSL
+
+Views in org-gtd are @strong{declarative} - you describe @strong{what} you want to see, not @strong{how} to find it.
+
+Here's the view we'll create:
+
+@lisp
+'((name . "My Active Projects")
+  (filters . ((category . projects)
+              (has-active-tasks . t))))
+@end lisp
+
+Let's break this down:
+
+@table @asis
+@item @code{name}
+What displays in the view header
+@item @code{filters}
+What to include.
+@table @asis
+@item @code{category . projects}
+Only show project headings (not single actions)
+@item @code{has-active-tasks . t}
+Only projects with work remaining
+@end table
+@end table
+
+That's it! The View DSL translates this into an org-ql query and shows results.
+
+@node Creating the View Function
+@subsection Creating the View Function
+
+Add this to your init file (after your org-gtd configuration):
+
+@lisp
+(with-eval-after-load 'org-gtd
+  (defun my-org-gtd-active-projects ()
+    "Show all active projects."
+    (interactive)
+    (org-gtd-view-show
+     '((name . "My Active Projects")
+       (filters . ((category . projects)
+                   (has-active-tasks . t)))))))
+@end lisp
+
+Save your init file and reload it (@code{M-x eval-buffer} or restart Emacs).
+
+@node Using Your View
+@subsection Using Your View
+
+Now you can call it:
+
+@example
+M-x my-org-gtd-active-projects
+@end example
+
+You'll see a list of all your active projects!
+
+@node Binding to a Key
+@subsection Binding to a Key
+
+For quick access, bind it to a key. Add this to your configuration:
+
+@lisp
+;; If using vanilla Emacs
+(global-set-key (kbd "C-c d P") 'my-org-gtd-active-projects)
+
+;; If using Doom Emacs, add to your org-gtd config:
+(map! :leader
+      (:prefix "d"
+       :desc "Active projects" "P" #'my-org-gtd-active-projects))
+
+;; If using Spacemacs, add to your config:
+(spacemacs/set-leader-keys "od P" 'my-org-gtd-active-projects)
+@end lisp
+
+Now press @code{C-c d P} (or your binding) to see active projects instantly!
+
+@node What You'll See
+@subsection What You'll See
+
+The view shows:
+@itemize
+@item
+All projects that have at least one active task
+@item
+Each project's current state (what tasks are NEXT, TODO, etc.)
+@item
+Project names and context
+@end itemize
+
+Projects that are:
+@itemize
+@item
+Completely DONE - Won't appear (no active tasks)
+@item
+Canceled - Won't appear (no active tasks)
+@item
+Have only TODO/NEXT/WAIT tasks - Will appear
+@end itemize
+
+@node Experiment Modify the View
+@subsection Experiment: Modify the View
+
+Try these variations to see how the View DSL works:
+
+@strong{Show ALL projects (including completed):}
+
+@lisp
+(defun my-org-gtd-all-projects ()
+  "Show all projects, including completed ones."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "All Projects")
+     (filters . ((category . projects))))))
+     ;; Note: removed has-active-tasks filter
+@end lisp
+
+@strong{Show stuck projects:}
+
+@lisp
+(defun my-org-gtd-stuck-projects ()
+  "Show projects that have work but no NEXT actions."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Stuck Projects")
+     (filters . ((category . projects)
+                 (is-stuck . t))))))
+@end lisp
+
+@strong{Show projects in a specific area of focus} (if you use areas):
+
+@lisp
+(defun my-org-gtd-work-projects ()
+  "Show only work projects."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Work Projects")
+     (filters . ((category . projects)
+                 (has-active-tasks . t)
+                 (area-of-focus . "Work"))))))
+@end lisp
+
+@node Available Filters
+@subsection Available Filters
+
+Here are common filters you can use in your views:
+
+@table @asis
+@item @code{category}
+Filter by GTD category: @code{projects}, @code{actions}, @code{calendar}, @code{incubate}, @code{habits}
+@item @code{todo}
+Filter by keyword: @code{"NEXT"}, @code{"TODO"}, @code{"WAIT"}, @code{"DONE"}, @code{"CNCL"}
+@item @code{has-active-tasks}
+Only items with active (non-done) tasks
+@item @code{is-stuck}
+Projects that have tasks but no NEXT actions
+@item @code{scheduled}
+Items scheduled (you can specify ranges)
+@item @code{deadline}
+Items with deadlines
+@item @code{area-of-focus}
+Filter by area (if you use GTD horizons)
+@item @code{property}
+Filter by any org property
+@end table
+
+You can combine multiple filters - they all must match (AND logic).
+
+@node Key Takeaways (1)
+@subsection Key Takeaways
+
+@itemize
+@item
+@strong{Views are declarative} - you describe what you want, not how to get it
+@item
+@strong{The View DSL is readable} - it's data, not complex code
+@item
+@strong{Views are easy to create and modify} - just change the filter list
+@item
+@strong{You can create unlimited views} - for different contexts and needs
+@item
+@strong{Views leverage org-ql} - fast and powerful queries
+@end itemize
+
+@node What's Next? (1)
+@subsection What's Next?
+
+Now that you understand views, you can create:
+@itemize
+@item
+@strong{Review views} - For your weekly/monthly reviews
+@item
+@strong{Context views} - Show work items, home items, errands, etc.
+@item
+@strong{Time-based views} - Overdue items, upcoming deadlines, this week's schedule
+@item
+@strong{Focus views} - Deep work items, quick wins, waiting-for items
+@end itemize
+
+See @ref{View DSL Filter Reference} for the complete filter documentation with all available options and many more examples.
+
+@node Where to Go From Here
+@subsection Where to Go From Here
+
+You now know:
+@enumerate
+@item
+How to create and manage projects (Tutorial 1)
+@item
+How to create custom views (Tutorial 2)
+@end enumerate
+
+This is enough to be productive with org-gtd! The next section, "Using Org GTD", goes deep into:
+@itemize
+@item
+All GTD item types (calendar, delegate, incubate, etc.)
+@item
+Advanced project features (parallel tasks, custom dependencies)
+@item
+Hooks and customization
+@item
+Integration with email and other tools
+@item
+Review workflows
+@end itemize
+
+Read those sections as you need them. For now, @strong{start using what you've learned}:
+@itemize
+@item
+Capture items as they come up
+@item
+Process your inbox regularly (daily if possible)
+@item
+Use the engage view to see what's actionable
+@item
+Create a few simple projects
+@item
+Experiment with custom views
+@end itemize
+
+The best way to learn GTD is to practice the workflow. org-gtd handles the complexity - you just do the work.
+
+@strong{Quick reference}:
+@itemize
+@item
+@ref{Using Org GTD} - Deep dive into daily workflow and all item types
+@item
+@ref{Reference} - Complete documentation for configuration, commands, properties, views, and hooks
+@item
+@ref{Troubleshooting} - Solutions to common problems
+@end itemize
+
 @node Using Org GTD
 @chapter Using Org GTD
 
+You've completed the tutorials and understand the basics. This section covers everything else you'll need as you use org-gtd day-to-day and want to explore more advanced features.
+
 @menu
-* Org-mode building blocks for Org GTD::
-* The GTD flow::
+* Your Daily Workflow::          The GTD cycle you'll practice every day
+* The GTD Flow in Depth::        Detailed explanation of each GTD step
+* Understanding GTD Item Types:: When to use each type in the organize menu
+* Working with Projects (Advanced)::
 * Automating through emacs::
 @end menu
 
-@node Org-mode building blocks for Org GTD
-@section Org-mode building blocks for Org GTD
+@node Your Daily Workflow
+@section Your Daily Workflow
 
-This section introduces how Org GTD leverages org-mode.
+The GTD workflow has six steps. You'll do the first four frequently (even daily), and the last two periodically:
 
-Org Gtd uses @code{org-edna} to automatically trigger state changes in projects, such that when you mark a NEXT item from a project as DONE, the next TODO in that project automatically becomes NEXT, such that the agenda is always up-to-date (you may need to refresh the agenda).
+@enumerate
+@item
+@strong{Capture} - Get things out of your head into your inbox (@code{org-gtd-capture})
+@item
+@strong{Process} - Look at each inbox item one at a time (@code{org-gtd-process-inbox})
+@item
+@strong{Clarify} - Edit the item to make it clear and actionable
+@item
+@strong{Organize} - Categorize the item (@code{org-gtd-organize})
+@item
+@strong{Engage} - Look at what you can do right now (@code{org-gtd-engage})
+@item
+@strong{Review} - Periodically review your system for health
+@end enumerate
 
-Org GTD uses org keywords to figure out the relevant state of each task. By default, @code{NEXT}, @code{TODO}, @code{WAIT}, @code{CNCL}, and @code{DONE}, though you can configure them.
+You already practiced this in the @ref{Getting Started with Org GTD, , Getting Started tutorials}. The sections below go deeper into each part.
 
-Org GTD uses the following properties:
-@table @asis
-@item @code{ORG_GTD}
-top-level property, used for simple filtering when it comes to agenda views
-@item @code{ORG_GTD_TIMESTAMP}
-where the timestamp for appointments and other date-relevant actions is stored. It's separate from everything else org-mode related in order to allow you, the user, to use @code{SCHEDULED}, @code{DEADLINE}, or even plain timestamps as you see fit.
-@item @code{DELEGATED_TO}
-used by a dependency, @code{org-agenda-property}, to show the name of the person to whom the task is delegated in the agenda view.
-@end table
+@menu
+* Quick command reference::
+@end menu
 
-@node The GTD flow
-@section The GTD flow
+@node Quick command reference
+@subsection Quick command reference
+
+These are the commands you'll use most:
+
+@multitable {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Command
+@tab What it does
+@tab When to use it
+@item @code{org-gtd-capture}
+@tab Add item to inbox
+@tab Anytime something comes up
+@item @code{org-gtd-process-inbox}
+@tab Start processing inbox
+@tab Daily (or when inbox has items)
+@item @code{org-gtd-organize}
+@tab Organize current item
+@tab During processing (in clarify buffer)
+@item @code{org-gtd-engage}
+@tab See actionable items
+@tab Daily (your "work from" view)
+@item @code{org-gtd-show-all-next}
+@tab See only NEXT actions
+@tab When you want to focus on actions
+@item @code{org-gtd-review-stuck-projects}
+@tab Find stuck projects
+@tab Weekly review
+@item @code{org-gtd-archive-completed-items}
+@tab Archive finished items
+@tab Weekly/monthly cleanup
+@end multitable
+
+For complete command reference with detailed explanations, see @ref{Commands Reference}.
+
+For details on each workflow step, see the subsections below.
+
+@node The GTD Flow in Depth
+@section The GTD Flow in Depth
 
 Here are the domain elements of GTD that we handle:
 
@@ -953,11 +1961,6 @@ Here are the domain elements of GTD that we handle:
 * Clarifying each item::
 * Organizing an item into the system::
 * Engaging with your GTD items::
-* Working with the GTD Horizons::
-* Cleaning up / archiving completed work::
-* Commands you can call on org-agenda::
-* Defining your own agenda views::
-* Adding your own hooks when organizing::
 @end menu
 
 @node Adding things to the inbox
@@ -981,6 +1984,8 @@ the first two characters of the template string must be a single asterisk follow
 @item
 the entry type must be like this: @samp{entry  (file ,#'org-gtd-inbox-path)}
 @end enumerate
+
+@strong{See also}: @ref{Configuration Variables Reference} for complete documentation of @code{org-gtd-capture-templates} and @code{org-gtd-directory}.
 
 @node Processing the inbox
 @subsection Processing the inbox
@@ -1047,6 +2052,8 @@ a function that will ask you to choose a template to insert.
 @item @code{org-gtd-clarify-project-templates}
 an alist of the form @samp{(name . template)} where both name and template are strings. @samp{name} will be used in the interactive menu, and @samp{template} will be inserted in the buffer.
 @end table
+
+@strong{See also}: @ref{Configuration Variables Reference} for complete documentation of clarification options, and @ref{Commands Reference} for all clarification commands.
 @end itemize
 
 @node Organizing an item into the system
@@ -1057,51 +2064,16 @@ When you are done clarifying, call @code{M-x org-gtd-organize} (or hit your keyb
 Organizing is broken up into three steps:
 @itemize
 @item
-Choosing a task type
+Choosing a task type (see @ref{Understanding GTD Item Types})
 @item
-Applying hooks to add additional relevant information
+Applying hooks to add additional relevant information (see @ref{Hooks Framework Reference})
 @item
-Refiling to the appropriate area
+Refiling to the appropriate area (see @ref{Refiling to the appropriate area, , Refiling} below)
 @end itemize
 
+@strong{See also}: @ref{Commands Reference} for the @code{org-gtd-organize} command and all organization-related commands.
+
 @itemize
-@item
-@anchor{Choosing a task type}Choosing a task type
-
-
-Here are the following task types you can choose.
-
-@table @asis
-@item *[P]rojects
-This is a multi-step action. In Org GTD, this is defined as a top-level org heading with a set of second-level org headings. Those second-level headings represent the sequentially-ordered set of tasks to be executed before the project can be called complete.
-@item *[A]dd to existing project
-Add current task to pre-existing project. See @code{org-reverse-note-order} to choose a default position (first or last) for this new task. You can always adjust this yourself later, then put your point on the project heading and call @code{org-gtd-projects-fix-todo-keywords-for-project-at-point} to have Org GTD clean it up for you.
-@item @strong{[C]alendar}
-Single action to be done at a given date or time. Org GTD will ask you for a date/time for this appointment.
-@item *[D]elegate
-Let someone else do this. Org GTD will ask you for a name to whom to delegate to and a date/time when to check up on the task with that person. You can customize @code{org-gtd-delegate-read-func} to specify a custom name input function (e.g. for completion purposes).
-@item @strong{[S]ingle action}
-This is a one-off to be done when possible.
-@item @strong{[H]abit}
-org-mode-style habit. Org GTD will ask you for a valid org-mode repeating stamp and a date when to start the habit tracking. See the org-mode documentation for more information.
-@item @strong{[I]ncubate}
-no action now; review later. Org GTD will ask you for a date at which it should remind you about this.
-@item *[Q]uick action
-Less than 2 minutes. Do it now, then choose this to mark the item as DONΕ and archive it.
-@item @strong{[K]nowledge}
-This is knowledge to be stored away. Choose this @strong{after} you have properly saved this item as knowledge.
-@item @strong{[T]rash}
-Not actionable; not knowledge. Discard this item.
-@end table
-
-@item
-@anchor{Applying hooks}Applying hooks
-
-
-The decorations (priority, tags, categories, etc.) are customizable as you desire and managed by @code{org-gtd-organize-hooks}, a list of functions. You can add your own functions to this list, as long as the functions do not modify the text in any "custom" way, separate from what org-mode understands.
-
-See @ref{Adding your own hooks when organizing} for more details on how you can add your own or customize this further.
-
 @item
 @anchor{Refiling to the appropriate area}Refiling to the appropriate area
 
@@ -1154,6 +2126,327 @@ You can call @code{org-gtd-show-all-next} to only see NEXT actions, nothing sche
 You can use @code{org-gtd-oops} to see all the appointments you missed, and act on them accordingly.
 
 The weekly review is not yet implemented.
+
+@node Understanding GTD Item Types
+@section Understanding GTD Item Types
+
+When you organize an item (@code{org-gtd-organize}), a transient menu appears with different item types. This section explains what each type means and when to use it.
+
+You already saw @strong{Projects} and @strong{Single actions} in the tutorials. Here's the complete reference for all item types:
+
+@menu
+* Single Action [S]::
+* Project [P]::
+* Add to existing project [A]::
+* Calendar [C]::
+* Delegate [D]::
+* Quick Action [Q]::
+* Incubate [I]::
+* Habit [H]::
+* Knowledge [K]::
+* Trash [T]::
+* Working with the GTD Horizons::
+@end menu
+
+@node Single Action [S]
+@subsection Single Action [S]
+
+@strong{What it is}: A one-off task to do when you have time and energy.
+
+@strong{When to use it}: For standalone tasks that aren't time-sensitive, don't depend on anyone else, and can be done whenever you're ready.
+
+@strong{Examples}:
+@itemize
+@item
+Buy birthday gift for Alex
+@item
+Read article about GTD methodology
+@item
+Update profile photo
+@item
+Clean garage
+@end itemize
+
+@strong{What org-gtd does}:
+@itemize
+@item
+Marks it as NEXT (immediately actionable)
+@item
+Refiles to your actions file
+@item
+Shows in @code{org-gtd-engage} view
+@end itemize
+
+@node Project [P]
+@subsection Project [P]
+
+@strong{What it is}: A multi-step action requiring more than one task to complete.
+
+@strong{When to use it}: When accomplishing your goal requires multiple sequential (or parallel) steps.
+
+@strong{Examples}:
+@itemize
+@item
+House renovation (review blueprints → order materials → schedule work)
+@item
+Launch product (design → build → test → deploy → announce)
+@item
+Plan vacation (research destinations → book flights → arrange accommodation)
+@end itemize
+
+@strong{What org-gtd does}:
+@itemize
+@item
+Creates dependency relationships between tasks
+@item
+Marks first task(s) as NEXT, others as TODO
+@item
+Automatically advances tasks as you complete them
+@item
+Refiles entire project to your projects file
+@end itemize
+
+See @ref{Working with Projects (Advanced), , Working with Projects} for advanced features (parallel tasks, custom dependencies).
+
+@node Add to existing project [A]
+@subsection Add to existing project [A]
+
+@strong{What it is}: Add the current task to a project that already exists.
+
+@strong{When to use it}: When you realize a project needs an additional task, or you're breaking down a project task into sub-tasks.
+
+@strong{Examples}:
+@itemize
+@item
+Adding "Get permits" to your house renovation project
+@item
+Adding "Write announcement email" to your product launch project
+@end itemize
+
+@strong{What org-gtd does}:
+@itemize
+@item
+Prompts you to choose which project
+@item
+Inserts task into project (position depends on @code{org-reverse-note-order})
+@item
+Task keywords may need adjustment - use @code{org-gtd-projects-fix-todo-keywords-for-project-at-point} on the project heading if needed
+@end itemize
+
+@node Calendar [C]
+@subsection Calendar [C]
+
+@strong{What it is}: An action that must be done at a specific date or time.
+
+@strong{When to use it}: For appointments, events, or time-sensitive tasks.
+
+@strong{Examples}:
+@itemize
+@item
+Doctor appointment on Tuesday at 2pm
+@item
+Team meeting every Monday at 9am
+@item
+Submit report by Friday 5pm (deadline)
+@item
+Call contractor on Thursday
+@end itemize
+
+@strong{What org-gtd does}:
+@itemize
+@item
+Prompts for date/time
+@item
+Adds timestamp to @code{ORG_GTD_TIMESTAMP} property
+@item
+Marks as NEXT
+@item
+Shows in agenda views at the appropriate time
+@end itemize
+
+@strong{Note}: This is for calendar items, not scheduled work blocks. In GTD, scheduling means "do this at this time," not "start working on this someday."
+
+@node Delegate [D]
+@subsection Delegate [D]
+
+@strong{What it is}: A task someone else will do, but you need to follow up on.
+
+@strong{When to use it}: When you're waiting for someone else to complete something and you need to check back.
+
+@strong{Examples}:
+@itemize
+@item
+Waiting for designer to finish mockups
+@item
+Asked colleague to review document
+@item
+IT to fix laptop issue
+@item
+Contractor to provide estimate
+@end itemize
+
+@strong{What org-gtd does}:
+@itemize
+@item
+Prompts for: person name, follow-up date
+@item
+Sets @code{DELEGATED_TO} property
+@item
+Marks as WAIT
+@item
+Shows in waiting-for views
+@item
+Appears in agenda on follow-up date
+@end itemize
+
+@strong{Customization}: Set @code{org-gtd-delegate-read-func} to use completion for names.
+
+@node Quick Action [Q]
+@subsection Quick Action [Q]
+
+@strong{What it is}: Tasks that take less than 2 minutes.
+
+@strong{When to use it}: For trivial tasks you can do immediately.
+
+@strong{Examples}:
+@itemize
+@item
+Reply to quick email
+@item
+File a document
+@item
+Add item to shopping list
+@item
+Send calendar invite
+@end itemize
+
+@strong{What org-gtd does}:
+@itemize
+@item
+Marks as DONE
+@item
+Archives immediately
+@item
+Assumes you just did it
+@end itemize
+
+@strong{GTD principle}: If it takes less than 2 minutes, do it now. Don't organize it - just do it and mark it done.
+
+@node Incubate [I]
+@subsection Incubate [I]
+
+@strong{What it is}: Ideas or potential actions you're not ready to commit to yet (someday/maybe).
+
+@strong{When to use it}: For things you want to think about later but don't want to act on now.
+
+@strong{Examples}:
+@itemize
+@item
+Learn Spanish (someday)
+@item
+Write a book (maybe)
+@item
+Remodel kitchen (not yet)
+@item
+Take photography class (when I have time)
+@end itemize
+
+@strong{What org-gtd does}:
+@itemize
+@item
+Prompts for review date
+@item
+Refiles to incubate file
+@item
+Will remind you on that date to reconsider
+@end itemize
+
+@strong{GTD principle}: Keep these out of your active system. Review periodically (weekly/monthly) to decide if they're ready to become real projects or actions.
+
+@node Habit [H]
+@subsection Habit [H]
+
+@strong{What it is}: Recurring tasks you want to track consistently (org-mode habits).
+
+@strong{When to use it}: For building routines and tracking streaks.
+
+@strong{Examples}:
+@itemize
+@item
+Exercise daily
+@item
+Write in journal
+@item
+Review finances weekly
+@item
+Call parents monthly
+@end itemize
+
+@strong{What org-gtd does}:
+@itemize
+@item
+Prompts for: repeat pattern (e.g., "daily", "+1w"), start date
+@item
+Creates org-mode habit with consistency tracking
+@item
+Shows habit graph in agenda views
+@end itemize
+
+@strong{Note}: See org-mode documentation for habit repeat patterns and tracking.
+
+@node Knowledge [K]
+@subsection Knowledge [K]
+
+@strong{What it is}: Reference information to store for later.
+
+@strong{When to use it}: When the item is information to keep, not an action to take.
+
+@strong{Examples}:
+@itemize
+@item
+Recipe you want to remember
+@item
+Quote from article
+@item
+Meeting notes for reference
+@item
+Product specifications
+@end itemize
+
+@strong{Important}: Choose this AFTER you've properly stored the information somewhere (your notes system, wiki, etc.). This just marks the inbox item as "filed" and archives it.
+
+@strong{GTD principle}: Separate "stuff to do" from "stuff to know." Knowledge goes in your reference system, not your action lists.
+
+@node Trash [T]
+@subsection Trash [T]
+
+@strong{What it is}: Not actionable, not worth keeping.
+
+@strong{When to use it}: When you captured something that turns out to be irrelevant, already done, or not worth pursuing.
+
+@strong{Examples}:
+@itemize
+@item
+Event that already passed
+@item
+Duplicate of another item
+@item
+Idea that's no longer relevant
+@item
+Spam/noise
+@end itemize
+
+@strong{What org-gtd does}:
+@itemize
+@item
+Deletes the item
+@item
+Doesn't archive, just removes it
+@end itemize
+
+@strong{GTD principle}: Be ruthless. If it's not actionable and not valuable information, delete it. Clutter in your system creates noise.
+
+@strong{See also}: For technical details on how each item type is stored, see @ref{Properties Reference}.
 
 @node Working with the GTD Horizons
 @subsection Working with the GTD Horizons
@@ -1217,6 +2510,578 @@ They are, however, useful to display.
 A variable, @code{org-gtd-clarify-show-horizons}, determines whether/where to display the side buffer while clarifying.
 
 Regardless of the value of this variable, you can use the function @code{org-gtd-clarify-toggle-horizons-window} to display or hide the side window. If the above variable is nil, then the horizons window will be toggled on the right side of the screen.
+
+@strong{See also}:
+@itemize
+@item
+@ref{Configuration Variables Reference} for @code{org-gtd-areas-of-focus}, @code{org-gtd-horizons-file}, and @code{org-gtd-clarify-show-horizons}
+@item
+@ref{Commands Reference} for all horizon-related commands
+@item
+@ref{Hooks Framework Reference} for @code{org-gtd-set-area-of-focus} hook
+@end itemize
+@end itemize
+
+@node Working with Projects (Advanced)
+@section Working with Projects (Advanced)
+
+You learned sequential projects in @ref{Tutorial Your First Project}. This section covers advanced project features: parallel tasks, custom dependencies, and complex project structures.
+
+@menu
+* Understanding Project Dependencies::
+* Tutorial Project with Parallel Tasks::
+* Tutorial Complex Project Dependencies::
+* Common Dependency Patterns::
+* Practical Tips::
+* Reference Dependency Management Commands::
+* Optional Visualizing Dependencies::
+* Troubleshooting Projects::
+* Cleaning up / archiving completed work::
+* Commands you can call on org-agenda::
+* Defining your own agenda views::
+* Adding your own hooks when organizing::
+@end menu
+
+@node Understanding Project Dependencies
+@subsection Understanding Project Dependencies
+
+Projects in org-gtd use a dependency graph to track task relationships. Version 4.0 introduced flexible dependencies - you're not limited to sequential execution anymore.
+
+@itemize
+@item
+@anchor{How dependencies work}How dependencies work
+
+
+Task dependencies are managed through two org properties:
+
+@table @asis
+@item @code{ORG_GTD_DEPENDS_ON}
+Contains IDs of tasks that must complete before this task can start (what blocks this task)
+@item @code{ORG_GTD_BLOCKS}
+Contains IDs of tasks that this task blocks (what depends on this task)
+@item @code{ORG_GTD_FIRST_TASKS}
+(On project heading) Contains IDs of tasks with no dependencies (the starting points)
+@end table
+
+@item
+@anchor{Sequential vs Parallel}Sequential vs Parallel
+
+
+@itemize
+@item
+@strong{Sequential} (default): Tasks execute one after another (A → B → C)
+@itemize
+@item
+Only one task is NEXT at a time
+@item
+Each task blocks the next
+@item
+Great for workflows where order matters
+@end itemize
+
+@item
+@strong{Parallel}: Multiple tasks can be NEXT simultaneously
+@itemize
+@item
+Multiple independent work streams
+@item
+Tasks with no dependencies start together
+@item
+Faster project completion
+@end itemize
+
+@item
+@strong{Mixed}: Some tasks parallel, others sequential
+@itemize
+@item
+Most real projects use this
+@item
+Example: Research and Planning happen in parallel, but both must finish before Building starts
+@end itemize
+@end itemize
+
+@item
+@anchor{The dependency graph (DAG)}The dependency graph (DAG)
+
+
+Tasks form a Directed Acyclic Graph (DAG):
+@itemize
+@item
+@strong{Directed}: Dependencies flow one way (A → B means B depends on A, not vice versa)
+@item
+@strong{Acyclic}: No circular dependencies (A → B → C → A is prevented)
+@item
+@strong{Graph}: Tasks can have multiple dependencies and block multiple tasks
+@end itemize
+
+org-gtd automatically prevents circular dependencies to avoid deadlocks.
+@end itemize
+
+@node Tutorial Project with Parallel Tasks
+@subsection Tutorial: Project with Parallel Tasks
+
+Let's create a project where some tasks can happen simultaneously.
+
+@itemize
+@item
+@anchor{The Scenario}The Scenario
+
+
+You need to "Fix Shoulder Pain":
+@enumerate
+@item
+Find MRI facility (research task)
+@item
+Make MRI appointment (depends on finding facility)
+@item
+Make orthopedist appointment (independent research - can happen in parallel with 1 & 2)
+@item
+Get diagnosis (depends on both appointments completing)
+@end enumerate
+
+Tasks 1 and 3 can happen in parallel - they don't depend on each other.
+
+@item
+@anchor{Step 1 Capture the Project (1)}Step 1: Capture the Project
+
+
+@code{C-c d c} to capture:
+
+@example
+* Fix Shoulder Pain
+** Find place to get MRI
+** Make MRI appointment
+** Make orthopedist appointment
+** Get diagnosis from orthopedist
+@end example
+
+@item
+@anchor{Step 2 Organize with Custom Dependencies}Step 2: Organize with Custom Dependencies
+
+
+After organizing as a project (@code{C-c c} → @code{[P]}), org-gtd creates sequential dependencies by default. We need to modify them for parallel execution.
+
+@strong{@strong{Open the project file:}}
+
+Find your project in the engage view (@code{C-c d e}), press @code{RET} on any task to jump to the project file.
+
+@strong{@strong{The project looks like this:}}
+
+@example
+* Fix Shoulder Pain
+:PROPERTIES:
+:ORG_GTD: Projects
+:ORG_GTD_FIRST_TASKS: <id-of-find-mri>
+:END:
+** NEXT Find place to get MRI
+:PROPERTIES:
+:ID: <id-of-find-mri>
+:ORG_GTD: Actions
+:ORG_GTD_BLOCKS: <id-of-make-mri-appt>
+:END:
+** TODO Make MRI appointment
+:PROPERTIES:
+:ID: <id-of-make-mri-appt>
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: <id-of-find-mri>
+:ORG_GTD_BLOCKS: <id-of-make-ortho-appt>
+:END:
+** TODO Make orthopedist appointment
+... (and so on, sequential)
+@end example
+
+@item
+@anchor{Step 3 Modify for Parallel Execution}Step 3: Modify for Parallel Execution
+
+
+We want "Find MRI place" and "Make orthopedist appointment" to be parallel starting tasks.
+
+@strong{@strong{On the project heading}}, add the orthopedist appointment ID to FIRST@math{_TASKS}:
+
+@example
+:ORG_GTD_FIRST_TASKS: <id-of-find-mri> <id-of-make-ortho-appt>
+@end example
+
+@strong{@strong{On "Make orthopedist appointment" task}}, remove the DEPENDS@math{_ON} property:
+
+Remove the line: @code{:ORG_GTD_DEPENDS_ON: <id-of-make-mri-appt>}
+
+@strong{@strong{On "Get diagnosis" task}}, make it depend on BOTH appointments:
+
+@example
+:ORG_GTD_DEPENDS_ON: <id-of-make-mri-appt> <id-of-make-ortho-appt>
+@end example
+
+@strong{@strong{Fix the BLOCKS properties:}}
+@itemize
+@item
+Remove orthopedist appointment from MRI appointment's BLOCKS
+@item
+Add diagnosis ID to both appointment tasks' BLOCKS
+@end itemize
+
+@item
+@anchor{Step 4 Fix Keywords}Step 4: Fix Keywords
+
+
+Put point on the project heading and run:
+
+@code{M-x org-gtd-projects-fix-todo-keywords-for-project-at-point}
+
+This recalculates which tasks should be NEXT based on the dependency graph.
+
+@item
+@anchor{Step 5 See the Results}Step 5: See the Results
+
+
+@code{C-c d e} to view the engage agenda.
+
+You'll now see:
+@itemize
+@item
+@strong{NEXT: Find place to get MRI}
+@item
+@strong{NEXT: Make orthopedist appointment}
+@end itemize
+
+Both are NEXT simultaneously! You can work on whichever you want.
+
+When you complete both appointments, "Get diagnosis" automatically becomes NEXT@.
+
+@item
+@anchor{The Dependency Pattern (Diamond)}The Dependency Pattern (Diamond)
+
+
+This is called a "diamond" pattern:
+
+@example
+    Find MRI ─────┐
+                  ├──→ Get Diagnosis
+Make Ortho Appt ──┘
+@end example
+
+Two parallel paths converge at a single task. This is common in real projects.
+@end itemize
+
+@node Tutorial Complex Project Dependencies
+@subsection Tutorial: Complex Project Dependencies
+
+Let's look at a more complex example: "Release Next Version of Software".
+
+@itemize
+@item
+@anchor{The Scenario (1)}The Scenario
+
+
+Steps:
+@enumerate
+@item
+List features (starting task)
+@item
+Implement features (depends on list)
+@item
+Write documentation (can start after list, parallel with implement)
+@item
+Get beta tester feedback (depends on both implement AND documentation)
+@item
+Update code based on feedback (depends on beta feedback)
+@item
+Update documentation based on feedback (depends on beta feedback, parallel with code updates)
+@item
+Release (depends on both updates completing)
+@end enumerate
+
+@item
+@anchor{The Dependency Graph}The Dependency Graph
+
+
+@example
+List Features
+    ├──→ Implement Features ───┐
+    └──→ Write Documentation ───┼──→ Get Beta Feedback
+                                │         ├──→ Update Code ─────┐
+                                │         └──→ Update Docs ──────┼──→ Release
+                                └───────────────────────────────┘
+@end example
+
+@item
+@anchor{Key Patterns}Key Patterns
+
+
+@enumerate
+@item
+@strong{Parallel branches} after List Features
+@item
+@strong{Converging paths} at Get Beta Feedback (both branches must complete)
+@item
+@strong{Parallel updates} after feedback
+@item
+@strong{Final convergence} at Release
+@end enumerate
+
+@item
+@anchor{Setting This Up}Setting This Up
+
+
+You would:
+@enumerate
+@item
+Capture the project structure
+@item
+Organize as project (creates sequential by default)
+@item
+Open the project file
+@item
+Modify FIRST@math{_TASKS} to include only "List Features"
+@item
+Set DEPENDS@math{_ON} for "Implement" to only List Features
+@item
+Set DEPENDS@math{_ON} for "Write Documentation" to only List Features
+@item
+Set DEPENDS@math{_ON} for "Get Beta Feedback" to both Implement AND Write Documentation
+@item
+Set DEPENDS@math{_ON} for both Update tasks to Get Beta Feedback
+@item
+Set DEPENDS@math{_ON} for "Release" to both Update tasks
+@item
+Run @code{org-gtd-projects-fix-todo-keywords-for-project-at-point}
+@end enumerate
+@end itemize
+
+@node Common Dependency Patterns
+@subsection Common Dependency Patterns
+
+@itemize
+@item
+@anchor{Sequential Chain (A → B → C)}Sequential Chain (A → B → C)
+
+
+The simplest pattern. Default for all projects.
+
+Use when: Order matters, each task depends on the previous.
+
+Example: Review blueprints → Order windows → Schedule carpenter
+
+@item
+@anchor{Parallel Independent (A B C all start together)}Parallel Independent (A, B, C all start together)
+
+
+All tasks are in FIRST@math{_TASKS}, no dependencies between them.
+
+Use when: Tasks are completely independent and can all start immediately.
+
+Example: Research destinations, Check budget, Ask for time off (for vacation planning)
+
+@item
+@anchor{Fan-out (A → B A → C A → D)}Fan-out (A → B, A → C, A → D)
+
+
+One task blocks multiple tasks that can then proceed in parallel.
+
+Use when: Initial work enables multiple independent paths.
+
+Example: Get project approval → (Design UI, Write backend API, Setup infrastructure)
+
+@item
+@anchor{Fan-in / Convergence (A → C B → C)}Fan-in / Convergence (A → C, B → C)
+
+
+Multiple tasks must complete before next task can start. Also called "join".
+
+Use when: Final task needs all previous work completed.
+
+Example: (Write code, Write tests) → Merge to main
+
+@item
+@anchor{Diamond (A → B → D A → C → D)}Diamond (A → B → D, A → C → D)
+
+
+Parallel paths that converge. Combination of fan-out and fan-in.
+
+Use when: Work splits, proceeds in parallel, then combines.
+
+Example: Research → (Write content, Design graphics) → Publish article
+@end itemize
+
+@node Practical Tips
+@subsection Practical Tips
+
+@itemize
+@item
+@anchor{When to use sequential}When to use sequential
+
+
+@itemize
+@item
+Order truly matters (can't install before purchasing)
+@item
+You're not sure what the next task will be until you complete the current one
+@item
+The project is simple and you don't want to think about dependencies
+@end itemize
+
+@item
+@anchor{When to use parallel}When to use parallel
+
+
+@itemize
+@item
+You have multiple people working on the project
+@item
+Tasks are independent and could be done in any order
+@item
+You want to optimize for speed
+@item
+Clear what all tasks are upfront
+@end itemize
+
+@item
+@anchor{Managing complexity}Managing complexity
+
+
+@itemize
+@item
+Start sequential, make parallel only when needed
+@item
+Use areas of focus or tags to group related tasks
+@item
+Keep task names clear and specific
+@item
+Review stuck projects weekly to catch dependency issues
+@end itemize
+
+@item
+@anchor{Modifying projects over time}Modifying projects over time
+
+
+@itemize
+@item
+Add tasks: Use "Add to existing project" when organizing new items
+@item
+Change dependencies: Edit properties directly, then run fix-keywords command
+@item
+Split tasks: Break down a task into sub-tasks, adjust dependencies
+@item
+Merge tasks: Mark unnecessary tasks DONE or CNCL
+@end itemize
+@end itemize
+
+@node Reference Dependency Management Commands
+@subsection Reference: Dependency Management Commands
+
+@itemize
+@item
+@anchor{During organizing}During organizing
+
+
+@table @asis
+@item @code{org-gtd-organize} → @code{[P]}
+Creates project with sequential dependencies (default)
+@item @code{org-gtd-organize} → @code{[A]}
+Adds task to existing project
+@end table
+
+@item
+@anchor{After organizing}After organizing
+
+
+@table @asis
+@item @code{org-gtd-projects-fix-todo-keywords-for-project-at-point}
+Recalculates NEXT tasks based on dependency graph. Use after manually editing dependencies.
+@end table
+
+@item
+@anchor{Properties to edit manually}Properties to edit manually
+
+
+@table @asis
+@item @code{ORG_GTD_FIRST_TASKS}
+(on project heading) Space-separated list of task IDs with no dependencies
+@item @code{ORG_GTD_DEPENDS_ON}
+(on task) Space-separated list of task IDs this task depends on
+@item @code{ORG_GTD_BLOCKS}
+(on task) Space-separated list of task IDs this task blocks
+@end table
+
+After editing these properties, always run @code{org-gtd-projects-fix-todo-keywords-for-project-at-point} to update task states.
+@end itemize
+
+@node Optional Visualizing Dependencies
+@subsection Optional: Visualizing Dependencies
+
+Enable visual dependency helper while clarifying projects:
+
+@lisp
+(setq org-gtd-clarify-display-helper-buffer t)
+@end lisp
+
+When enabled, a side window shows task relationships as you work on a project in the WIP buffer during clarification.
+
+This is useful for:
+@itemize
+@item
+Understanding complex dependency graphs
+@item
+Spotting cycles before they cause problems
+@item
+Planning parallel execution paths
+@end itemize
+
+@node Troubleshooting Projects
+@subsection Troubleshooting Projects
+
+@itemize
+@item
+@anchor{Project is stuck (has TODO tasks but no NEXT)}Project is stuck (has TODO tasks but no NEXT)
+
+
+Run @code{M-x org-gtd-review-stuck-projects} to find stuck projects.
+
+Common causes:
+@itemize
+@item
+Circular dependency (A depends on B, B depends on A)
+@item
+Missing FIRST@math{_TASKS} (project has no starting point)
+@item
+All first tasks are DONE but dependencies not set up correctly
+@end itemize
+
+Fix: Put point on project heading, run @code{org-gtd-projects-fix-todo-keywords-for-project-at-point}
+
+@item
+@anchor{Task should be NEXT but shows as TODO}Task should be NEXT but shows as TODO
+
+
+The dependency graph says it's blocked. Check:
+@enumerate
+@item
+What tasks are in its ORG@math{_GTD}@math{_DEPENDS}@math{_ON}?
+@item
+Are those tasks actually DONE@?
+@item
+Did you forget to remove a dependency?
+@end enumerate
+
+Fix: Edit ORG@math{_GTD}@math{_DEPENDS}@math{_ON} property, run fix-keywords command.
+
+@item
+@anchor{Too many tasks are NEXT}Too many tasks are NEXT
+
+
+You probably have tasks that should have dependencies but don't.
+
+Fix: Add appropriate ORG@math{_GTD}@math{_DEPENDS}@math{_ON} properties to tasks that shouldn't start yet, run fix-keywords command.
+
+@strong{See also}:
+@itemize
+@item
+@ref{Properties Reference} for complete documentation of @code{ORG_GTD_DEPENDS_ON}, @code{ORG_GTD_BLOCKS}, and @code{ORG_GTD_FIRST_TASKS} properties
+@item
+@ref{Commands Reference} for all project management and task dependency commands
+@item
+@ref{View DSL Filter Reference} for creating custom project views
+@end itemize
 @end itemize
 
 @node Cleaning up / archiving completed work
@@ -1256,6 +3121,8 @@ You can define your own agenda views by defining your own functions like shown b
         (org-agenda nil "x"))))
 @end lisp
 
+@strong{See also}: For a much easier way to create custom views, see @ref{View DSL Filter Reference}, which provides a declarative language for defining views without writing skip functions.
+
 @node Adding your own hooks when organizing
 @subsection Adding your own hooks when organizing
 
@@ -1267,6 +3134,8 @@ Org GTD therefore provides a helper function, @code{org-gtd-organize-type-member
 When called as part of a hook, this function will check a buffer-local variable called @code{org-gtd--organize-type}, managed by Org GTD, to determine truthiness.
 
 For an example, see the source code for @code{org-gtd-areas-of-focus--set}, which will not run if the task being organized is a project task, trash, knowledge, or a quick action.
+
+@strong{See also}: For complete documentation on the hooks framework, including many examples and best practices, see @ref{Hooks Framework Reference}.
 
 @node Automating through emacs
 @section Automating through emacs
@@ -1301,47 +3170,3133 @@ For instance, one way this could work:
 (add-hook 'message-send-hook 'org-gtd-email-reminder)
 @end lisp
 
+@strong{See also}: @ref{Commands Reference} for complete documentation of all programmatic creation commands.
+
+@node Reference
+@chapter Reference
+
+This section provides complete reference documentation for all org-gtd configuration variables, commands, properties, and advanced features. Use this section when you need to look up specific details about a configuration option, command, or property.
+
+@strong{Quick navigation}:
+@itemize
+@item
+@ref{Configuration Variables Reference} - All customization options
+@item
+@ref{Commands Reference} - All interactive commands organized by workflow step
+@item
+@ref{Properties Reference} - All org properties used by org-gtd
+@item
+@ref{View DSL Filter Reference} - Complete guide to creating custom views
+@item
+@ref{Hooks Framework Reference} - Complete guide to customization hooks
+@end itemize
+
+For learning how to use org-gtd, start with @ref{Getting Started with Org GTD} and @ref{Using Org GTD}.
+
+@menu
+* Configuration Variables Reference:: All customization variables explained
+* Commands Reference::           All interactive commands explained
+* Properties Reference::         All org properties used by org-gtd
+* View DSL Filter Reference::    Complete reference for the View DSL
+* Hooks Framework Reference::    Complete guide to customization hooks
+@end menu
+
+@node Configuration Variables Reference
+@section Configuration Variables Reference
+
+These variables control how org-gtd behaves. All can be customized via @code{M-x customize-group RET org-gtd}.
+
+@menu
+* Required Configuration::
+* Directory and File Configuration::
+* Capture Configuration::
+* Organize and Process Configuration::
+* Clarification Configuration::
+* Areas of Focus Configuration::
+* Engage View Configuration::
+* Archive Configuration::
+* Oops View Configuration::
+* ID Overlay Configuration::
+* Advanced Item Configuration::
+* Obsolete Variables (Do Not Use)::
+@end menu
+
+@node Required Configuration
+@subsection Required Configuration
+
+@itemize
+@item
+@anchor{@code{org-todo-keywords} (org-mode variable)}@code{org-todo-keywords} (org-mode variable)
+
+
+@strong{Type}: List of keyword sequences
+
+@strong{Default}: Varies by org-mode installation
+
+@strong{Description}: Defines TODO keyword sequences for org-mode. All GTD keywords must be in the @strong{same sequence}.
+
+@strong{Required format}:
+@lisp
+(setq org-todo-keywords
+      '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+@end lisp
+
+The @code{|} separator marks done states (right side) from active states (left side).
+
+@item
+@anchor{@code{org-gtd-keyword-mapping}}@code{org-gtd-keyword-mapping}
+
+
+@strong{Type}: Alist mapping GTD states to keyword strings
+
+@strong{Default}:
+@lisp
+'((todo . "TODO")
+  (next . "NEXT")
+  (wait . "WAIT")
+  (canceled . "CNCL"))
+@end lisp
+
+@strong{Description}: Maps GTD semantic states to your chosen TODO keywords.
+
+@strong{Required keys}:
+@table @asis
+@item @code{todo}
+Tasks not ready to be acted upon
+@item @code{next}
+Tasks ready to act on immediately
+@item @code{wait}
+Tasks blocked or delegated to someone else
+@item @code{canceled}
+Tasks that won't be completed
+@end table
+
+@strong{Example}: Using custom keywords:
+@lisp
+(setq org-todo-keywords
+      '((sequence "TASK" "DOING" "BLOCKED" "|" "COMPLETE" "CANCELLED")))
+
+(setq org-gtd-keyword-mapping
+      '((todo . "TASK")
+        (next . "DOING")
+        (wait . "BLOCKED")
+        (canceled . "CANCELLED")))
+@end lisp
+@end itemize
+
+@node Directory and File Configuration
+@subsection Directory and File Configuration
+
+@itemize
+@item
+@anchor{@code{org-gtd-directory}}@code{org-gtd-directory}
+
+
+@strong{Type}: String (directory path)
+
+@strong{Default}: @code{"~/gtd/"}
+
+@strong{Description}: Directory where org-gtd keeps all its files.
+
+org-gtd will look for all its files in this directory:
+@itemize
+@item
+@code{inbox.org} - Capture target
+@item
+@code{org-gtd-tasks.org} - Main GTD file
+@item
+@code{org-gtd-incubate.org} - Someday/maybe items
+@item
+@code{org-gtd-calendar.org} - Calendar items
+@end itemize
+
+@strong{Example}:
+@lisp
+(setq org-gtd-directory "~/my-gtd/")
+@end lisp
+
+@strong{Note}: Make sure to add this directory to @code{org-agenda-files}:
+@lisp
+(setq org-agenda-files (list org-gtd-directory))
+@end lisp
+
+@item
+@anchor{@code{org-gtd-horizons-file}}@code{org-gtd-horizons-file}
+
+
+@strong{Type}: String (filename)
+
+@strong{Default}: @code{"horizons.org"}
+
+@strong{Description}: Name of file (in @code{org-gtd-directory}) containing your GTD horizons (long-term goals, areas of focus, purpose).
+
+This file can be displayed during clarification for context.
+
+@strong{Example}:
+@lisp
+(setq org-gtd-horizons-file "my-horizons.org")
+@end lisp
+@end itemize
+
+@node Capture Configuration
+@subsection Capture Configuration
+
+@itemize
+@item
+@anchor{@code{org-gtd-capture-templates}}@code{org-gtd-capture-templates}
+
+
+@strong{Type}: List of org-capture template specifications
+
+@strong{Default}:
+@lisp
+'(("i" "Inbox"
+   entry  (file ,#'org-gtd-inbox-path)
+   "* %?\n%U\n\n  %i"
+   :kill-buffer t)
+  ("l" "Inbox with link"
+   entry  (file ,#'org-gtd-inbox-path)
+   "* %?\n%U\n\n  %i\n  %a"
+   :kill-buffer t))
+@end lisp
+
+@strong{Description}: Capture templates specific to org-gtd inbox.
+
+@strong{Constraints} (must be satisfied for org-gtd to work correctly):
+@enumerate
+@item
+Template string must start with @code{"* "} (asterisk + space for org heading)
+@item
+Entry type must be: @code{entry (file ,#'org-gtd-inbox-path)}
+@end enumerate
+
+@strong{Example}: Adding a custom template:
+@lisp
+(setq org-gtd-capture-templates
+      '(("i" "Inbox"
+         entry (file ,#'org-gtd-inbox-path)
+         "* %?\n%U\n\n  %i"
+         :kill-buffer t)
+        ("m" "Meeting note"
+         entry (file ,#'org-gtd-inbox-path)
+         "* Meeting: %?\n%U\n\nAttendees:\n\nNotes:\n"
+         :kill-buffer t)))
+@end lisp
+@end itemize
+
+@node Organize and Process Configuration
+@subsection Organize and Process Configuration
+
+@itemize
+@item
+@anchor{@code{org-gtd-organize-hooks}}@code{org-gtd-organize-hooks}
+
+
+@strong{Type}: List of functions
+
+@strong{Default}: @code{'(org-set-tags-command)}
+
+@strong{Description}: Functions run when organizing each item. Each function can add metadata (tags, properties, etc.) to the item being organized.
+
+The default value prompts for tags. Built-in options:
+@table @asis
+@item @code{org-set-tags-command}
+Prompt for tags (default)
+@item @code{org-gtd-set-area-of-focus}
+Prompt for area of focus
+@item Custom functions
+Functions you write yourself
+@end table
+
+@strong{Example}: Add effort estimation and area of focus:
+@lisp
+(defun my-add-effort ()
+  "Prompt for effort when organizing."
+  (when (org-gtd-organize-type-member-p '(action project))
+    (org-set-effort)))
+
+(setq org-gtd-organize-hooks
+      '(org-set-tags-command
+        org-gtd-set-area-of-focus
+        my-add-effort))
+@end lisp
+
+@strong{Helper function}: @code{org-gtd-organize-type-member-p}
+@itemize
+@item
+Takes a list of item types to check against
+@item
+Returns t if current item matches one of the types
+@item
+Available types: @code{action}, @code{project}, @code{project-task}, @code{calendar}, @code{delegate}, @code{incubate}, @code{habit}, @code{knowledge}, @code{quick}, @code{trash}
+@end itemize
+
+@item
+@anchor{@code{org-gtd-save-after-organize}}@code{org-gtd-save-after-organize}
+
+
+@strong{Type}: Boolean
+
+@strong{Default}: @code{nil}
+
+@strong{Description}: If non-nil, save all modified buffers after each organize step.
+
+Useful if you want automatic saves during inbox processing.
+
+@strong{Example}:
+@lisp
+(setq org-gtd-save-after-organize t)
+@end lisp
+
+@item
+@anchor{@code{org-gtd-refile-to-any-target}}@code{org-gtd-refile-to-any-target}
+
+
+@strong{Type}: Boolean
+
+@strong{Default}: @code{t}
+
+@strong{Description}: Control refile behavior when organizing items.
+
+@itemize
+@item
+When @code{t}: org-gtd will refile to the first target it finds, or create a target if necessary, without confirmation
+@item
+When @code{nil}: org-gtd will ask for confirmation regardless of number of options
+@end itemize
+
+@strong{Example}: Require manual refile target selection:
+@lisp
+(setq org-gtd-refile-to-any-target nil)
+@end lisp
+@end itemize
+
+@node Clarification Configuration
+@subsection Clarification Configuration
+
+@itemize
+@item
+@anchor{@code{org-gtd-clarify-show-horizons}}@code{org-gtd-clarify-show-horizons}
+
+
+@strong{Type}: Symbol or nil
+
+@strong{Default}: @code{nil}
+
+@strong{Description}: Whether to show horizons file during clarification.
+
+Values:
+@table @asis
+@item @code{nil}
+Don't show horizons by default
+@item @code{'top}
+Show horizons window at top
+@item @code{'bottom}
+Show horizons window at bottom
+@item @code{'left}
+Show horizons window on left
+@item @code{'right}
+Show horizons window on right
+@end table
+
+@strong{Example}:
+@lisp
+(setq org-gtd-clarify-show-horizons 'right)
+@end lisp
+
+@strong{Related command}: @code{org-gtd-clarify-toggle-horizons-window} to toggle visibility during clarification.
+
+@item
+@anchor{@code{org-gtd-clarify-display-helper-buffer}}@code{org-gtd-clarify-display-helper-buffer}
+
+
+@strong{Type}: Boolean
+
+@strong{Default}: @code{nil}
+
+@strong{Description}: If non-nil, display project dependencies helper window when clarifying projects.
+
+When enabled, shows a live view of task relationships in a side window when there are multiple tasks in the WIP buffer.
+
+Useful for:
+@itemize
+@item
+Understanding complex dependency graphs
+@item
+Spotting cycles before they cause problems
+@item
+Planning parallel execution paths
+@end itemize
+
+@strong{Example}:
+@lisp
+(setq org-gtd-clarify-display-helper-buffer t)
+@end lisp
+
+@item
+@anchor{@code{org-gtd-clarify-project-templates}}@code{org-gtd-clarify-project-templates}
+
+
+@strong{Type}: Alist of (name . template) strings
+
+@strong{Default}: @code{nil}
+
+@strong{Description}: Pre-defined project templates for common project types.
+
+Each entry is a pair of (template-name . template-tasks) where template-tasks is a string of org headings to insert.
+
+@strong{Example}:
+@lisp
+(setq org-gtd-clarify-project-templates
+      '(("Blog Post" . "** Research topic\n** Write draft\n** Edit\n** Add images\n** Publish")
+        ("Code Feature" . "** Design API\n** Write tests\n** Implement feature\n** Code review\n** Merge")))
+@end lisp
+
+Use @code{org-gtd-clarify-project-insert-template} during clarification to insert a template.
+@end itemize
+
+@node Areas of Focus Configuration
+@subsection Areas of Focus Configuration
+
+@itemize
+@item
+@anchor{@code{org-gtd-areas-of-focus}}@code{org-gtd-areas-of-focus}
+
+
+@strong{Type}: List of strings
+
+@strong{Default}: @code{'("Home" "Health" "Family" "Career")}
+
+@strong{Description}: Your areas of focus (GTD Horizon 2) - the major areas in your life where you don't want to drop balls.
+
+Used when:
+@itemize
+@item
+Adding area of focus to items (via @code{org-gtd-set-area-of-focus} hook)
+@item
+Reviewing specific areas with @code{org-gtd-review-area-of-focus}
+@end itemize
+
+@strong{Example}:
+@lisp
+(setq org-gtd-areas-of-focus
+      '("Work" "Home" "Health" "Learning" "Relationships" "Finance"))
+@end lisp
+@end itemize
+
+@node Engage View Configuration
+@subsection Engage View Configuration
+
+@itemize
+@item
+@anchor{@code{org-gtd-engage-prefix-width}}@code{org-gtd-engage-prefix-width}
+
+
+@strong{Type}: Integer
+
+@strong{Default}: @code{12}
+
+@strong{Description}: How many characters to dedicate to the prefix in the engage agenda view.
+
+The prefix shows the project name on the left side of each task.
+
+@strong{Example}: Increase space for longer project names:
+@lisp
+(setq org-gtd-engage-prefix-width 20)
+@end lisp
+@end itemize
+
+@node Archive Configuration
+@subsection Archive Configuration
+
+@itemize
+@item
+@anchor{@code{org-gtd-archive-location}}@code{org-gtd-archive-location}
+
+
+@strong{Type}: Function (zero arguments, returns string)
+
+@strong{Default}: @code{#'org-gtd-archive-location-func}
+
+@strong{Description}: Function that generates the archive location string for completed items.
+
+The returned string must match @code{org-archive-location} format.
+
+Default function generates: @samp{archive-YYYY.org::datetree/} (year-based archive files).
+
+@strong{Example}: Archive to a single file:
+@lisp
+(defun my-archive-location ()
+  "Archive to a single file."
+  "archive.org::")
+
+(setq org-gtd-archive-location #'my-archive-location)
+@end lisp
+
+@strong{Example}: Archive to month-based files:
+@lisp
+(defun my-monthly-archive ()
+  "Archive to month-based files."
+  (format "archive-%s.org::datetree/"
+          (format-time-string "%Y-%m")))
+
+(setq org-gtd-archive-location #'my-monthly-archive)
+@end lisp
+@end itemize
+
+@node Oops View Configuration
+@subsection Oops View Configuration
+
+@itemize
+@item
+@anchor{@code{org-gtd-oops-custom-views}}@code{org-gtd-oops-custom-views}
+
+
+@strong{Type}: List of GTD view specifications
+
+@strong{Default}: @code{nil}
+
+@strong{Description}: Additional custom "oops" views for finding missed/overdue items.
+
+Each view is a GTD view specification alist with @code{'name} and @code{'filters} keys.
+
+@strong{Example}:
+@lisp
+(setq org-gtd-oops-custom-views
+      '(((name . "Overdue Work Items")
+         (filters . ((area-of-focus . "Work")
+                     (deadline . past))))
+        ((name . "Missed Delegations")
+         (filters . ((category . delegated)
+                     (timestamp . past))))))
+@end lisp
+
+Use @code{org-gtd-oops-with-custom} to see all oops views including your custom ones.
+@end itemize
+
+@node ID Overlay Configuration
+@subsection ID Overlay Configuration
+
+@itemize
+@item
+@anchor{@code{org-gtd-id-overlay-truncate-length}}@code{org-gtd-id-overlay-truncate-length}
+
+
+@strong{Type}: Integer
+
+@strong{Default}: @code{20}
+
+@strong{Description}: Maximum length for displayed heading text in ID overlays.
+
+When @code{org-gtd-id-overlay-mode} is enabled, task IDs are replaced with truncated heading text for readability.
+
+@strong{Example}:
+@lisp
+(setq org-gtd-id-overlay-truncate-length 30)
+@end lisp
+
+@item
+@anchor{@code{org-gtd-id-overlay-ellipsis}}@code{org-gtd-id-overlay-ellipsis}
+
+
+@strong{Type}: String
+
+@strong{Default}: @code{"..."}
+
+@strong{Description}: String to append to truncated heading text in ID overlays.
+
+@strong{Example}:
+@lisp
+(setq org-gtd-id-overlay-ellipsis "…")
+@end lisp
+@end itemize
+
+@node Advanced Item Configuration
+@subsection Advanced Item Configuration
+
+@itemize
+@item
+@anchor{@code{org-gtd-user-item-config}}@code{org-gtd-user-item-config}
+
+
+@strong{Type}: Alist
+
+@strong{Default}: @code{'()}
+
+@strong{Description}: Override default behavior for GTD item types.
+
+This is an advanced feature for customizing how org-gtd handles different item types. If org-gtd finds an item type in this alist, it uses your configuration instead of the built-in one.
+
+See source code for examples of the expected structure.
+@end itemize
+
+@node Obsolete Variables (Do Not Use)
+@subsection Obsolete Variables (Do Not Use)
+
+These variables are obsolete as of version 4.0. They are listed here for reference only.
+
+@itemize
+@item
+@anchor{@code{org-gtd-todo-keyword} (obsolete)}@code{org-gtd-todo-keyword} (obsolete)
+
+
+@strong{Use instead}: @code{org-gtd-keyword-mapping} with key @code{'todo}
+
+@item
+@anchor{@code{org-gtd-next-keyword} (obsolete)}@code{org-gtd-next-keyword} (obsolete)
+
+
+@strong{Use instead}: @code{org-gtd-keyword-mapping} with key @code{'next}
+
+@item
+@anchor{@code{org-gtd-wait-keyword} (obsolete)}@code{org-gtd-wait-keyword} (obsolete)
+
+
+@strong{Use instead}: @code{org-gtd-keyword-mapping} with key @code{'wait}
+
+@item
+@anchor{@code{org-gtd-canceled-keyword} (obsolete)}@code{org-gtd-canceled-keyword} (obsolete)
+
+
+@strong{Use instead}: @code{org-gtd-keyword-mapping} with key @code{'canceled}
+@end itemize
+
+@node Commands Reference
+@section Commands Reference
+
+This section lists all interactive commands available in org-gtd, organized by workflow step.
+
+@menu
+* Core GTD Workflow Commands::
+* Review Commands::
+* Stuck Item Review Commands::
+* Oops Commands (Missed/Overdue Items)::
+* Clarification Commands::
+* Archive Commands::
+* Agenda-Specific Commands::
+* Project Management Commands::
+* Task Dependency Commands::
+* Area of Focus Commands::
+* Programmatic Creation Commands::
+* Utility Commands::
+* ID Overlay Commands::
+* Migration and Upgrade Commands::
+* Obsolete Commands::
+@end menu
+
+@node Core GTD Workflow Commands
+@subsection Core GTD Workflow Commands
+
+@itemize
+@item
+@anchor{@code{org-gtd-capture}}@code{org-gtd-capture}
+
+
+@strong{Binding}: Typically @code{C-c d c} (user-configurable)
+
+@strong{When to use}: Anytime something comes up that you need to capture
+
+@strong{What it does}:
+@itemize
+@item
+Opens org-capture for the inbox
+@item
+Uses templates from @code{org-gtd-capture-templates}
+@item
+Stores item in inbox.org for later processing
+@end itemize
+
+@strong{Arguments}: Optional @code{goto} and @code{keys} (same as @code{org-capture})
+
+@strong{Example usage}:
+@example
+M-x org-gtd-capture
+Type: "Call dentist to schedule checkup"
+C-c C-c to save
+@end example
+
+@item
+@anchor{@code{org-gtd-process-inbox}}@code{org-gtd-process-inbox}
+
+
+@strong{Binding}: Typically @code{C-c d p}
+
+@strong{When to use}: When your inbox has items (daily or multiple times daily)
+
+@strong{What it does}:
+@itemize
+@item
+Starts processing loop through inbox items
+@item
+Opens each item in a clarify buffer (WIP mode)
+@item
+Continues until inbox is empty or you quit
+@end itemize
+
+@strong{How to use}:
+@enumerate
+@item
+Run command
+@item
+Edit each item to clarify it
+@item
+Press your organize binding (@code{C-c c}) to organize it
+@item
+Repeat for next item
+@end enumerate
+
+@strong{Related}: @code{org-gtd-clarify-item} to clarify a single item without processing whole inbox
+
+@item
+@anchor{@code{org-gtd-organize}}@code{org-gtd-organize}
+
+
+@strong{Binding}: Typically @code{C-c c} (only works in clarify buffers)
+
+@strong{When to use}: After clarifying an item, to categorize it
+
+@strong{What it does}:
+@itemize
+@item
+Opens transient menu with organization options
+@item
+Prompts for item-specific information (dates, names, etc.)
+@item
+Runs organize hooks
+@item
+Refiles item to appropriate location
+@end itemize
+
+@strong{Important}: This only works in clarify buffers (org-gtd-wip-mode). It won't work in regular org files.
+
+@strong{Item types available}:
+@itemize
+@item
+[P] Project
+@item
+[A] Add to existing project
+@item
+[C] Calendar
+@item
+[D] Delegate
+@item
+[S] Single action
+@item
+[H] Habit
+@item
+[I] Incubate
+@item
+[K] Knowledge
+@item
+[Q] Quick action
+@item
+[T] Trash
+@end itemize
+
+@item
+@anchor{@code{org-gtd-engage}}@code{org-gtd-engage}
+
+
+@strong{Binding}: Typically @code{C-c d e}
+
+@strong{When to use}: Daily (or multiple times daily) to see what you can work on right now
+
+@strong{What it does}:
+@itemize
+@item
+Shows org-agenda view customized for GTD
+@item
+Displays the following.
+@itemize
+@item
+Agenda for today (appointments, deadlines, scheduled items)
+@item
+All NEXT actions (grouped by project)
+@end itemize
+@item
+Uses prefix width from @code{org-gtd-engage-prefix-width}
+@end itemize
+
+@strong{Agenda commands available in this view}:
+@table @asis
+@item @code{t}
+Change TODO state
+@item @code{RET}
+Visit item
+@item @code{r}
+Refile
+@item All other org-agenda commands
+Available as normal
+@end table
+
+@item
+@anchor{@code{org-gtd-show-all-next}}@code{org-gtd-show-all-next}
+
+
+@strong{Binding}: Typically @code{C-c d n}
+
+@strong{When to use}: When you want to focus only on NEXT actions, without calendar/scheduled items
+
+@strong{What it does}:
+@itemize
+@item
+Shows all items with NEXT keyword
+@item
+Simpler than engage view (no agenda section)
+@item
+Useful for "get things done" focus mode
+@end itemize
+@end itemize
+
+@node Review Commands
+@subsection Review Commands
+
+@itemize
+@item
+@anchor{@code{org-gtd-review-stuck-projects}}@code{org-gtd-review-stuck-projects}
+
+
+@strong{Binding}: Typically @code{C-c d s}
+
+@strong{When to use}: Weekly review, or when projects seem stalled
+
+@strong{What it does}:
+@itemize
+@item
+Finds projects that have active tasks but no NEXT actions
+@item
+Indicates dependency problems or missing FIRST@math{_TASKS}
+@end itemize
+
+@strong{How to fix stuck projects}:
+@enumerate
+@item
+Navigate to project heading
+@item
+Run @code{org-gtd-projects-fix-todo-keywords-for-project-at-point}
+@item
+If still stuck, check dependencies
+@end enumerate
+
+@item
+@anchor{@code{org-gtd-review-area-of-focus}}@code{org-gtd-review-area-of-focus}
+
+
+@strong{Arguments}: Optional AREA and START-DATE
+
+@strong{When to use}: During weekly/monthly reviews to focus on specific life area
+
+@strong{What it does}:
+@itemize
+@item
+Generates agenda view for items tagged with a specific area of focus
+@item
+Prompts for area if not provided
+@item
+Shows all items (projects, actions, calendar) for that area
+@end itemize
+
+@strong{Example}:
+@example
+M-x org-gtd-review-area-of-focus
+Area: Work
+Shows: All Work-related items
+@end example
+
+@item
+@anchor{@code{org-gtd-review-completed-items}}@code{org-gtd-review-completed-items}
+
+
+@strong{Arguments}: Optional DAYS-BACK (default 7)
+
+@strong{When to use}: Weekly review to see what you accomplished
+
+@strong{What it does}:
+@itemize
+@item
+Shows items completed in the last N days
+@item
+Good for weekly review reflection
+@end itemize
+
+@strong{Example}:
+@example
+M-x org-gtd-review-completed-items
+Shows: Items completed in last 7 days
+
+C-u 30 M-x org-gtd-review-completed-items
+Shows: Items completed in last 30 days
+@end example
+
+@item
+@anchor{@code{org-gtd-review-completed-projects}}@code{org-gtd-review-completed-projects}
+
+
+@strong{When to use}: Weekly/monthly review to see finished projects
+
+@strong{What it does}:
+@itemize
+@item
+Shows all projects where all tasks are DONE
+@item
+Ready to archive
+@end itemize
+
+@item
+@anchor{@code{org-gtd-review-missed-items}}@code{org-gtd-review-missed-items}
+
+
+@strong{When to use}: When you suspect items have fallen through the cracks
+
+@strong{What it does}:
+@itemize
+@item
+Finds items that should have been processed but weren't
+@item
+Looks for various data inconsistencies
+@end itemize
+@end itemize
+
+@node Stuck Item Review Commands
+@subsection Stuck Item Review Commands
+
+Each of these commands finds items with problems in a specific category:
+
+@itemize
+@item
+@anchor{@code{org-gtd-review-stuck-calendar-items}}@code{org-gtd-review-stuck-calendar-items}
+
+
+Finds calendar items with invalid or missing timestamps.
+
+@item
+@anchor{@code{org-gtd-review-stuck-incubated-items}}@code{org-gtd-review-stuck-incubated-items}
+
+
+Finds incubated items with invalid or missing review dates.
+
+@item
+@anchor{@code{org-gtd-review-stuck-habit-items}}@code{org-gtd-review-stuck-habit-items}
+
+
+Finds habit items with incorrect configuration.
+
+@item
+@anchor{@code{org-gtd-review-stuck-delegated-items}}@code{org-gtd-review-stuck-delegated-items}
+
+
+Finds delegated items with missing delegate or date information.
+
+@item
+@anchor{@code{org-gtd-review-stuck-single-action-items}}@code{org-gtd-review-stuck-single-action-items}
+
+
+Finds single actions that aren't marked as NEXT@.
+@end itemize
+
+@node Oops Commands (Missed/Overdue Items)
+@subsection Oops Commands (Missed/Overdue Items)
+
+@itemize
+@item
+@anchor{@code{org-gtd-oops}}@code{org-gtd-oops}
+
+
+@strong{When to use}: Daily or weekly to catch missed appointments and overdue tasks
+
+@strong{What it does}:
+@itemize
+@item
+Shows all missed calendar appointments
+@item
+Shows overdue projects
+@item
+Shows past-due delegations
+@end itemize
+
+@item
+@anchor{@code{org-gtd-oops-calendar}}@code{org-gtd-oops-calendar}
+
+
+Shows only missed calendar appointments.
+
+@item
+@anchor{@code{org-gtd-oops-delegated}}@code{org-gtd-oops-delegated}
+
+
+Shows only delegated items where the follow-up date has passed.
+
+@item
+@anchor{@code{org-gtd-oops-projects}}@code{org-gtd-oops-projects}
+
+
+Shows only projects with overdue deadlines.
+
+@item
+@anchor{@code{org-gtd-oops-with-custom}}@code{org-gtd-oops-with-custom}
+
+
+Shows all oops views plus any custom views defined in @code{org-gtd-oops-custom-views}.
+@end itemize
+
+@node Clarification Commands
+@subsection Clarification Commands
+
+@itemize
+@item
+@anchor{@code{org-gtd-clarify-item}}@code{org-gtd-clarify-item}
+
+
+@strong{Arguments}: Optional MARKER and WINDOW-CONFIG
+
+@strong{When to use}: To clarify a single org heading without processing the entire inbox
+
+@strong{What it does}:
+@itemize
+@item
+Opens item in clarify buffer (WIP mode)
+@item
+You can edit and organize it
+@item
+Returns to previous location when done
+@end itemize
+
+@strong{Example}: Clarifying an item in your tasks file that needs re-organization.
+
+@item
+@anchor{@code{org-gtd-clarify-agenda-item}}@code{org-gtd-clarify-agenda-item}
+
+
+@strong{When to use}: When viewing agenda and want to re-clarify an item
+
+@strong{What it does}:
+@itemize
+@item
+Opens agenda item in clarify buffer
+@item
+Same as @code{org-gtd-clarify-item} but works from agenda view
+@end itemize
+
+@item
+@anchor{@code{org-gtd-clarify-toggle-horizons-window}}@code{org-gtd-clarify-toggle-horizons-window}
+
+
+@strong{When to use}: During clarification, to show/hide your horizons file
+
+@strong{What it does}:
+@itemize
+@item
+Toggles display of horizons file in side window
+@item
+Position determined by @code{org-gtd-clarify-show-horizons} (or right side if variable is nil)
+@end itemize
+
+@item
+@anchor{@code{org-gtd-clarify-project-insert-template}}@code{org-gtd-clarify-project-insert-template}
+
+
+@strong{When to use}: During project clarification, to insert a predefined template
+
+@strong{What it does}:
+@itemize
+@item
+Prompts for template from @code{org-gtd-clarify-project-templates}
+@item
+Inserts template tasks into current project
+@end itemize
+@end itemize
+
+@node Archive Commands
+@subsection Archive Commands
+
+@itemize
+@item
+@anchor{@code{org-gtd-archive-completed-items}}@code{org-gtd-archive-completed-items}
+
+
+@strong{When to use}: Weekly or monthly cleanup
+
+@strong{What it does}:
+@itemize
+@item
+Finds all DONE/CNCL items in GTD files
+@item
+Archives them to location specified by @code{org-gtd-archive-location}
+@item
+Keeps your active files clean
+@end itemize
+
+@strong{Example}:
+@example
+M-x org-gtd-archive-completed-items
+Archives: All completed items
+Result: Clean active files, archived items in archive file(s)
+@end example
+@end itemize
+
+@node Agenda-Specific Commands
+@subsection Agenda-Specific Commands
+
+These commands only work when point is on an agenda item:
+
+@itemize
+@item
+@anchor{@code{org-gtd-delegate-agenda-item}}@code{org-gtd-delegate-agenda-item}
+
+
+@strong{When to use}: In agenda view, to delegate an existing action to someone else
+
+@strong{What it does}:
+@itemize
+@item
+Prompts for person to delegate to
+@item
+Prompts for follow-up date
+@item
+Updates item properties
+@item
+Refiles to delegated items location
+@end itemize
+
+@item
+@anchor{@code{org-gtd-project-cancel-from-agenda}}@code{org-gtd-project-cancel-from-agenda}
+
+
+@strong{When to use}: In agenda view, when you want to cancel an entire project
+
+@strong{What it does}:
+@itemize
+@item
+Finds the project containing the agenda item
+@item
+Marks all remaining tasks as CNCL
+@item
+Updates project status
+@end itemize
+@end itemize
+
+@node Project Management Commands
+@subsection Project Management Commands
+
+@itemize
+@item
+@anchor{@code{org-gtd-projects-fix-todo-keywords-for-project-at-point}}@code{org-gtd-projects-fix-todo-keywords-for-project-at-point}
+
+
+@strong{When to use}: After manually editing project dependencies
+
+@strong{What it does}:
+@itemize
+@item
+Recalculates which tasks should be NEXT based on dependency graph
+@item
+Updates all task keywords in the project
+@item
+Fixes stuck projects
+@end itemize
+
+@strong{Required}: Point must be on project heading
+
+@strong{Example workflow}:
+@enumerate
+@item
+Edit ORG@math{_GTD}@math{_DEPENDS}@math{_ON} properties manually
+@item
+Put point on project heading
+@item
+Run this command
+@item
+Keywords are updated to match dependencies
+@end enumerate
+@end itemize
+
+@node Task Dependency Commands
+@subsection Task Dependency Commands
+
+These commands help manage task relationships in projects:
+
+@itemize
+@item
+@anchor{@code{org-gtd-task-add-blockers}}@code{org-gtd-task-add-blockers}
+
+
+@strong{When to use}: To specify that the current task depends on other task(s) completing first
+
+@strong{What it does}:
+@itemize
+@item
+Prompts to select tasks that block the current task
+@item
+Creates bidirectional relationships.
+@itemize
+@item
+Adds selected task IDs to current task's ORG@math{_GTD}@math{_DEPENDS}@math{_ON}
+@item
+Adds current task ID to selected tasks' ORG@math{_GTD}@math{_BLOCKS}
+@end itemize
+@item
+Can select multiple blockers
+@end itemize
+
+@strong{Example}:
+@example
+On task: "Get diagnosis"
+M-x org-gtd-task-add-blockers
+Select: "Make MRI appointment" and "Make orthopedist appointment"
+Result: Both appointments must complete before diagnosis can start
+@end example
+
+@item
+@anchor{@code{org-gtd-task-remove-blockers}}@code{org-gtd-task-remove-blockers}
+
+
+@strong{When to use}: To remove blocking relationships from current task
+
+@strong{What it does}:
+@itemize
+@item
+Shows current blockers
+@item
+Prompts to select which to remove
+@item
+Removes bidirectional relationships
+@end itemize
+
+@item
+@anchor{@code{org-gtd-task-add-dependent}}@code{org-gtd-task-add-dependent}
+
+
+@strong{When to use}: To specify that another task depends on the current task completing
+
+@strong{What it does}:
+@itemize
+@item
+Prompts to select a task that depends on current task
+@item
+Creates bidirectional relationship.
+@itemize
+@item
+Adds selected task ID to current task's ORG@math{_GTD}@math{_BLOCKS}
+@item
+Adds current task ID to selected task's ORG@math{_GTD}@math{_DEPENDS}@math{_ON}
+@end itemize
+@end itemize
+
+@strong{Example}:
+@example
+On task: "Get project approval"
+M-x org-gtd-task-add-dependent
+Select: "Start implementation"
+Result: Implementation can't start until approval is done
+@end example
+
+@item
+@anchor{@code{org-gtd-task-add-dependents}}@code{org-gtd-task-add-dependents}
+
+
+@strong{When to use}: To specify multiple tasks that depend on the current task
+
+@strong{What it does}:
+@itemize
+@item
+Same as @code{org-gtd-task-add-dependent} but allows multiple selections
+@end itemize
+
+@item
+@anchor{@code{org-gtd-task-clear-relationships}}@code{org-gtd-task-clear-relationships}
+
+
+@strong{When to use}: To remove ALL dependency relationships from current task
+
+@strong{What it does}:
+@itemize
+@item
+Removes all ORG@math{_GTD}@math{_BLOCKS} and ORG@math{_GTD}@math{_DEPENDS}@math{_ON} properties
+@item
+Updates related tasks to remove references to this task
+@item
+Use with caution!
+@end itemize
+
+@item
+@anchor{@code{org-gtd-task-show-relationships}}@code{org-gtd-task-show-relationships}
+
+
+@strong{When to use}: To see what tasks are related to the current task
+
+@strong{What it does}:
+@itemize
+@item
+Displays in minibuffer.
+@itemize
+@item
+Tasks this task depends on (blockers)
+@item
+Tasks that depend on this task (dependents)
+@end itemize
+@item
+Useful for understanding dependency graph
+@end itemize
+
+@item
+@anchor{@code{org-gtd-validate-project-dependencies}}@code{org-gtd-validate-project-dependencies}
+
+
+@strong{When to use}: To check for dependency problems in a project
+
+@strong{What it does}:
+@itemize
+@item
+Detects broken dependency references (task IDs that don't exist)
+@item
+Finds orphaned tasks (not reachable from FIRST@math{_TASKS})
+@item
+Identifies circular dependencies
+@item
+Provides guidance on fixes
+@end itemize
+
+@strong{Required}: Point must be on project heading
+
+@item
+@anchor{@code{org-gtd-remove-task-from-project}}@code{org-gtd-remove-task-from-project}
+
+
+@strong{When to use}: To remove a task from a project structure
+
+@strong{What it does}:
+@itemize
+@item
+Removes the project ID from task's ORG@math{_GTD}@math{_PROJECT}@math{_IDS} property
+@item
+Doesn't delete the task, just removes project association
+@item
+Useful when reorganizing project structures
+@end itemize
+@end itemize
+
+@node Area of Focus Commands
+@subsection Area of Focus Commands
+
+@itemize
+@item
+@anchor{@code{org-gtd-area-of-focus-set-on-item-at-point}}@code{org-gtd-area-of-focus-set-on-item-at-point}
+
+
+@strong{When to use}: To add area of focus to an existing item (not during organize)
+
+@strong{What it does}:
+@itemize
+@item
+Prompts for area from @code{org-gtd-areas-of-focus}
+@item
+Sets CATEGORY property
+@item
+Use this on any org heading
+@end itemize
+
+@strong{Note}: Trusts you to use it correctly (no validation)
+
+@item
+@anchor{@code{org-gtd-area-of-focus-set-on-agenda-item}}@code{org-gtd-area-of-focus-set-on-agenda-item}
+
+
+@strong{When to use}: In agenda view, to set area of focus on an item
+
+@strong{What it does}:
+@itemize
+@item
+Same as @code{org-gtd-area-of-focus-set-on-item-at-point} but from agenda
+@item
+Smarter: detects if you're on a project task and sets area on the project instead
+@end itemize
+@end itemize
+
+@node Programmatic Creation Commands
+@subsection Programmatic Creation Commands
+
+These commands create GTD items programmatically (useful for automation and Emacs Lisp code):
+
+@itemize
+@item
+@anchor{@code{org-gtd-habit-create}}@code{org-gtd-habit-create}
+
+
+@strong{Arguments}: STRING and additional parameters
+
+@strong{Use case}: Creating habits from Emacs Lisp
+
+@strong{Example}:
+@lisp
+(org-gtd-habit-create "Exercise" "daily" (org-read-date nil nil "+0d"))
+@end lisp
+
+@item
+@anchor{@code{org-gtd-calendar-create}}@code{org-gtd-calendar-create}
+
+
+@strong{Arguments}: STRING and DATE-TIME
+
+@strong{Use case}: Creating calendar items from Emacs Lisp
+
+@strong{Example}:
+@lisp
+(org-gtd-calendar-create "Team meeting" (org-read-date nil nil "+7d 9:00"))
+@end lisp
+
+@item
+@anchor{@code{org-gtd-delegate-create}}@code{org-gtd-delegate-create}
+
+
+@strong{Arguments}: STRING, DELEGATED-TO, and REMINDER-DATE
+
+@strong{Use case}: Auto-delegating from email, code review systems, etc.
+
+@strong{Example}:
+@lisp
+(defun org-gtd-email-reminder ()
+  (let ((topic (message-fetch-field "subject"))
+        (delegated-to (message-fetch-field "to"))
+        (reminder-date (org-read-date nil nil "+3d")))
+    (org-gtd-delegate-create (format "Reminder: %s" topic)
+                             delegated-to
+                             reminder-date)))
+
+(add-hook 'message-send-hook 'org-gtd-email-reminder)
+@end lisp
+
+@item
+@anchor{@code{org-gtd-incubate-create}}@code{org-gtd-incubate-create}
+
+
+@strong{Arguments}: STRING and REVIEW-DATE
+
+@strong{Use case}: Programmatically adding someday/maybe items
+
+@strong{Example}:
+@lisp
+(org-gtd-incubate-create "Learn Rust" (org-read-date nil nil "+6m"))
+@end lisp
+
+@item
+@anchor{@code{org-gtd-single-action-create}}@code{org-gtd-single-action-create}
+
+
+@strong{Arguments}: STRING
+
+@strong{Use case}: Programmatically adding actions
+
+@strong{Example}:
+@lisp
+(org-gtd-single-action-create "Follow up on proposal")
+@end lisp
+@end itemize
+
+@node Utility Commands
+@subsection Utility Commands
+
+@itemize
+@item
+@anchor{@code{org-gtd-setup-keywords-wizard}}@code{org-gtd-setup-keywords-wizard}
+
+
+@strong{When to use}: Initial setup or when changing keyword configuration
+
+@strong{What it does}:
+@itemize
+@item
+Interactive wizard to configure GTD keyword mapping
+@item
+Guides you through setting up @code{org-gtd-keyword-mapping}
+@item
+Validates configuration
+@end itemize
+
+@item
+@anchor{@code{org-gtd-inbox-path}}@code{org-gtd-inbox-path}
+
+
+@strong{Not interactive, but useful in Emacs Lisp}
+
+@strong{Returns}: Full path to inbox.org file
+
+@strong{Use case}: When writing custom capture templates or automation
+
+@strong{Example}:
+@lisp
+(defun my-custom-capture ()
+  (let ((inbox (org-gtd-inbox-path)))
+    ;; do something with inbox file
+    ))
+@end lisp
+@end itemize
+
+@node ID Overlay Commands
+@subsection ID Overlay Commands
+
+@itemize
+@item
+@anchor{@code{org-gtd-id-overlay-mode}}@code{org-gtd-id-overlay-mode}
+
+
+@strong{Type}: Minor mode
+
+@strong{When to use}: When working with project dependencies and wanting readable task references
+
+@strong{What it does}:
+@itemize
+@item
+Replaces task IDs with truncated heading text
+@item
+Makes dependency properties more readable
+@item
+Automatically enabled in WIP buffers
+@end itemize
+
+@item
+@anchor{@code{org-gtd-id-overlay-refresh-buffer}}@code{org-gtd-id-overlay-refresh-buffer}
+
+
+@strong{When to use}: After modifying headings, to update overlays
+
+@strong{What it does}:
+@itemize
+@item
+Refreshes all ID overlays in current buffer
+@item
+Usually automatic, but available for manual refresh
+@end itemize
+
+@item
+@anchor{@code{org-gtd-id-overlay-clear-buffer}}@code{org-gtd-id-overlay-clear-buffer}
+
+
+@strong{When to use}: To remove all overlays (see raw IDs)
+
+@strong{What it does}:
+@itemize
+@item
+Removes all ID overlays from buffer
+@item
+Shows actual ID values
+@end itemize
+@end itemize
+
+@node Migration and Upgrade Commands
+@subsection Migration and Upgrade Commands
+
+@itemize
+@item
+@anchor{@code{org-gtd-upgrade-v3-to-v4}}@code{org-gtd-upgrade-v3-to-v4}
+
+
+@strong{When to use}: REQUIRED when upgrading from version 3.x to 4.0
+
+@strong{What it does}:
+@enumerate
+@item
+Adds ORG@math{_GTD} properties to identify items
+@item
+Converts TRIGGER-based projects to dependency-based system
+@item
+Updates task states based on new dependency graph
+@end enumerate
+
+@strong{Important}:
+@itemize
+@item
+Make a backup first!
+@item
+Required for existing projects to work in v4
+@item
+Safe to run multiple times
+@item
+See @ref{Upgrading, , Upgrading section} for complete details
+@end itemize
+@end itemize
+
+@node Obsolete Commands
+@subsection Obsolete Commands
+
+@itemize
+@item
+@anchor{@code{org-gtd-mode} (obsolete since 40)}@code{org-gtd-mode} (obsolete since 4.0)
+
+
+@strong{Use instead}:
+@lisp
+(setq org-agenda-files (list org-gtd-directory))
+(org-edna-mode 1)
+@end lisp
+
+This minor mode is no longer needed and will be removed in a future version.
+@end itemize
+
+@node Properties Reference
+@section Properties Reference
+
+org-gtd uses org-mode properties extensively to track state and relationships. This section documents all properties used by the system.
+
+@menu
+* Core GTD Properties::
+* Project Properties::
+* Task Dependency Properties::
+* Calendar and Time Properties::
+* Delegation Properties::
+* Habit Properties::
+* Area of Focus Properties::
+* Standard Org Properties Used by org-gtd::
+@end menu
+
+@node Core GTD Properties
+@subsection Core GTD Properties
+
+@itemize
+@item
+@anchor{ORG@math{_GTD}}ORG@math{_GTD}
+
+
+@strong{Used on}: All GTD items (projects, actions, calendar items, incubated items, etc.)
+
+@strong{Purpose}: Identifies the type of GTD item
+
+@strong{Values}:
+@table @asis
+@item @code{"Projects"}
+Project heading
+@item @code{"Actions"}
+Project tasks and single actions
+@item @code{"Calendar"}
+Calendar items (appointments, deadlines)
+@item @code{"Incubated"}
+Someday/maybe items
+@item @code{"Delegated"}
+Delegated tasks (set in combination with DELEGATED@math{_TO})
+@end table
+
+@strong{Example}:
+@example
+* My Project
+:PROPERTIES:
+:ORG_GTD: Projects
+:END:
+** NEXT Task 1
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+@end example
+
+@strong{Note}: This property is how org-gtd identifies items. Don't modify manually unless you understand the implications.
+@end itemize
+
+@node Project Properties
+@subsection Project Properties
+
+@itemize
+@item
+@anchor{ORG@math{_GTD}@math{_FIRST}@math{_TASKS}}ORG@math{_GTD}@math{_FIRST}@math{_TASKS}
+
+
+@strong{Used on}: Project headings
+
+@strong{Purpose}: Identifies which tasks can start immediately (have no dependencies)
+
+@strong{Format}: Space-separated list of task IDs
+
+@strong{Example}:
+@example
+* Software Release
+:PROPERTIES:
+:ORG_GTD: Projects
+:ORG_GTD_FIRST_TASKS: abc123 def456
+:END:
+@end example
+
+This means tasks with IDs "abc123" and "def456" can both start immediately (parallel execution).
+
+@strong{When to modify}:
+@itemize
+@item
+After organizing a project (org-gtd sets this automatically)
+@item
+When adding parallel starting points to a project
+@item
+Always run @code{org-gtd-projects-fix-todo-keywords-for-project-at-point} after manual edits
+@end itemize
+@end itemize
+
+@node Task Dependency Properties
+@subsection Task Dependency Properties
+
+@itemize
+@item
+@anchor{ORG@math{_GTD}@math{_DEPENDS}@math{_ON}}ORG@math{_GTD}@math{_DEPENDS}@math{_ON}
+
+
+@strong{Used on}: Project tasks
+
+@strong{Purpose}: Lists task IDs that must complete before this task can start
+
+@strong{Format}: Space-separated list of task IDs
+
+@strong{Example}:
+@example
+** NEXT Get project approval
+:PROPERTIES:
+:ID: task-001
+:ORG_GTD: Actions
+:ORG_GTD_BLOCKS: task-002 task-003
+:END:
+** TODO Design solution
+:PROPERTIES:
+:ID: task-002
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: task-001
+:ORG_GTD_BLOCKS: task-004
+:END:
+** TODO Setup infrastructure
+:PROPERTIES:
+:ID: task-003
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: task-001
+:ORG_GTD_BLOCKS: task-004
+:END:
+** TODO Implement feature
+:PROPERTIES:
+:ID: task-004
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: task-002 task-003
+:END:
+@end example
+
+In this example:
+@itemize
+@item
+Task 001 (approval) starts first
+@item
+Tasks 002 (design) and 003 (infrastructure) can run in parallel after approval
+@item
+Task 004 (implement) waits for both 002 and 003 to complete
+@end itemize
+
+@strong{When to modify}:
+@itemize
+@item
+When creating custom dependency structures
+@item
+When changing task relationships
+@item
+Always update ORG@math{_GTD}@math{_BLOCKS} on the blocking tasks too (bidirectional)
+@item
+Always run @code{org-gtd-projects-fix-todo-keywords-for-project-at-point} after edits
+@end itemize
+
+@item
+@anchor{ORG@math{_GTD}@math{_BLOCKS}}ORG@math{_GTD}@math{_BLOCKS}
+
+
+@strong{Used on}: Project tasks
+
+@strong{Purpose}: Lists task IDs that depend on this task completing (inverse of DEPENDS@math{_ON})
+
+@strong{Format}: Space-separated list of task IDs
+
+@strong{Relationship}: If task A has @code{ORG_GTD_BLOCKS: B C}, then:
+@itemize
+@item
+Task B should have @code{ORG_GTD_DEPENDS_ON: A}
+@item
+Task C should have @code{ORG_GTD_DEPENDS_ON: A}
+@end itemize
+
+@strong{When to modify}:
+@itemize
+@item
+Manually when setting up dependencies (maintain bidirectional relationship)
+@item
+Use @code{org-gtd-task-add-dependent} command instead of manual edits when possible
+@end itemize
+
+@item
+@anchor{ORG@math{_GTD}@math{_PROJECT}@math{_IDS}}ORG@math{_GTD}@math{_PROJECT}@math{_IDS}
+
+
+@strong{Used on}: Tasks
+
+@strong{Purpose}: Lists project IDs this task belongs to (supports multi-project tasks)
+
+@strong{Format}: Space-separated list of project IDs
+
+@strong{Note}: Currently org-gtd creates one project per task, but this property supports future multi-project features.
+@end itemize
+
+@node Calendar and Time Properties
+@subsection Calendar and Time Properties
+
+@itemize
+@item
+@anchor{ORG@math{_GTD}@math{_TIMESTAMP}}ORG@math{_GTD}@math{_TIMESTAMP}
+
+
+@strong{Used on}: Calendar items, delegated items
+
+@strong{Purpose}: Stores the appointment time or follow-up date
+
+@strong{Format}: Org timestamp (inactive timestamp)
+
+@strong{Example}:
+@example
+* Doctor appointment
+:PROPERTIES:
+:ORG_GTD: Calendar
+:ORG_GTD_TIMESTAMP: [2025-10-15 Wed 14:00]
+:END:
+@end example
+
+@strong{Why not use SCHEDULED}: org-gtd uses a custom property to distinguish between "do this at this time" (GTD calendar items) and "start working on this sometime after this date" (org-mode scheduling).
+
+@strong{When to modify}: Use @code{org-gtd-organize} to change calendar items rather than manual edits.
+@end itemize
+
+@node Delegation Properties
+@subsection Delegation Properties
+
+@itemize
+@item
+@anchor{DELEGATED@math{_TO}}DELEGATED@math{_TO}
+
+
+@strong{Used on}: Delegated items
+
+@strong{Purpose}: Stores the name of person/team the task is delegated to
+
+@strong{Format}: String (person's name)
+
+@strong{Example}:
+@example
+* Review document
+:PROPERTIES:
+:ORG_GTD: Delegated
+:DELEGATED_TO: Alice Smith
+:ORG_GTD_TIMESTAMP: [2025-10-18 Fri]
+:END:
+@end example
+
+@strong{When to modify}: Use @code{org-gtd-delegate-agenda-item} or organize flow rather than manual edits.
+
+@strong{Customization}: Set @code{org-gtd-delegate-read-func} to customize how names are entered (e.g., for completion).
+@end itemize
+
+@node Habit Properties
+@subsection Habit Properties
+
+@itemize
+@item
+@anchor{STYLE}STYLE
+
+
+@strong{Used on}: Habits
+
+@strong{Purpose}: Identifies item as an org-mode habit
+
+@strong{Value}: @code{"habit"}
+
+@strong{Example}:
+@example
+* TODO Exercise
+SCHEDULED: <2025-10-11 Fri .+1d>
+:PROPERTIES:
+:STYLE: habit
+:END:
+@end example
+
+@strong{Note}: This is a standard org-mode habit property. See org-mode documentation for habit repeat patterns and configuration.
+@end itemize
+
+@node Area of Focus Properties
+@subsection Area of Focus Properties
+
+@itemize
+@item
+@anchor{CATEGORY}CATEGORY
+
+
+@strong{Used on}: All items (when using areas of focus)
+
+@strong{Purpose}: Identifies which area of focus (GTD Horizon 2) an item belongs to
+
+@strong{Format}: String matching value from @code{org-gtd-areas-of-focus}
+
+@strong{Example}:
+@example
+* Finish quarterly report
+:PROPERTIES:
+:ORG_GTD: Actions
+:CATEGORY: Work
+:END:
+@end example
+
+@strong{When to set}:
+@itemize
+@item
+During organize, if @code{org-gtd-set-area-of-focus} is in @code{org-gtd-organize-hooks}
+@item
+Manually with @code{org-gtd-area-of-focus-set-on-item-at-point}
+@item
+From agenda with @code{org-gtd-area-of-focus-set-on-agenda-item}
+@end itemize
+
+@strong{Use}: Filter views by area with @code{org-gtd-review-area-of-focus} or custom views.
+@end itemize
+
+@node Standard Org Properties Used by org-gtd
+@subsection Standard Org Properties Used by org-gtd
+
+@itemize
+@item
+@anchor{ID}ID
+
+
+@strong{Used on}: All GTD items
+
+@strong{Purpose}: Unique identifier for the item (org-mode standard)
+
+@strong{Format}: Auto-generated UUID
+
+@strong{Note}: org-gtd relies heavily on IDs for task relationships. Don't delete ID properties.
+
+@item
+@anchor{keyword}@strong{TODO} keyword
+
+
+@strong{Not a property, but a heading keyword}
+
+@strong{Values used by org-gtd}:
+@itemize
+@item
+Value from @code{org-gtd-keyword-mapping}'s @code{todo} key (default "TODO")
+@item
+Value from @code{org-gtd-keyword-mapping}'s @code{next} key (default "NEXT")
+@item
+Value from @code{org-gtd-keyword-mapping}'s @code{wait} key (default "WAIT")
+@item
+Value from @code{org-gtd-keyword-mapping}'s @code{canceled} key (default "CNCL")
+@item
+@code{"DONE"} (standard org-mode)
+@end itemize
+
+@item
+@anchor{SCHEDULED (org-mode standard)}SCHEDULED (org-mode standard)
+
+
+@strong{Used on}: Habits primarily
+
+@strong{Purpose}: For org-mode habits, defines repeat pattern
+
+@strong{Note}: org-gtd uses ORG@math{_GTD}@math{_TIMESTAMP} for calendar items instead of SCHEDULED to maintain GTD semantics.
+
+@item
+@anchor{DEADLINE (org-mode standard)}DEADLINE (org-mode standard)
+
+
+@strong{Used on}: Items with hard deadlines
+
+@strong{Purpose}: Mark items that must be done by a specific date
+
+@strong{Note}: org-gtd respects org-mode deadlines in all views and oops checks.
+@end itemize
+
+@node View DSL Filter Reference
+@section View DSL Filter Reference
+
+The View DSL (Domain-Specific Language) lets you create custom agenda views using simple, declarative syntax. This section documents all available filters.
+
+@menu
+* View Structure::
+* Category Filters::
+* Time-based Filters::
+* Keyword Filters::
+* Area of Focus Filters::
+* Tag Filters::
+* Property Filters::
+* Structural Filters::
+* Special Filters::
+* View Configuration Options::
+* Complete View Examples::
+* Creating Custom Views::
+@end menu
+
+@node View Structure
+@subsection View Structure
+
+A GTD view is defined as an alist:
+
+@lisp
+'((name . "View Name")
+  (filters . ((filter-type . filter-value) ...)))
+@end lisp
+
+Multiple filters create AND logic (all must match).
+
+@node Category Filters
+@subsection Category Filters
+
+Filter by GTD item category:
+
+@itemize
+@item
+@anchor{@code{(category delegated)}}@code{(category . delegated)}
+
+
+@strong{Matches}: Items with DELEGATED@math{_TO} property
+
+@strong{Use case}: See all delegated tasks
+
+@strong{Example}:
+@lisp
+'((name . "All Delegations")
+  (filters . ((category . delegated))))
+@end lisp
+
+@item
+@anchor{@code{(category calendar)}}@code{(category . calendar)}
+
+
+@strong{Matches}: Items with @code{ORG_GTD="Calendar"}
+
+@strong{Use case}: See all calendar items/appointments
+
+@strong{Example}:
+@lisp
+'((name . "Calendar Items")
+  (filters . ((category . calendar))))
+@end lisp
+
+@item
+@anchor{@code{(category projects)}}@code{(category . projects)}
+
+
+@strong{Matches}: Project headings (@code{ORG_GTD="Projects"})
+
+@strong{Use case}: List all projects
+
+@strong{Example}:
+@lisp
+'((name . "All Projects")
+  (filters . ((category . projects))))
+@end lisp
+
+@item
+@anchor{@code{(category active-projects)}}@code{(category . active-projects)}
+
+
+@strong{Matches}: Projects with at least one active (non-done) task
+
+@strong{Use case}: See projects with work remaining
+
+@strong{Example}:
+@lisp
+'((name . "Active Projects")
+  (filters . ((category . active-projects))))
+@end lisp
+
+@item
+@anchor{@code{(category completed-projects)}}@code{(category . completed-projects)}
+
+
+@strong{Matches}: Projects where all tasks are DONE
+
+@strong{Use case}: Weekly review to see completed projects ready to archive
+
+@strong{Example}:
+@lisp
+'((name . "Completed Projects")
+  (filters . ((category . completed-projects))))
+@end lisp
+
+@item
+@anchor{@code{(category stuck-projects)}}@code{(category . stuck-projects)}
+
+
+@strong{Matches}: Projects with active tasks but no NEXT or WAIT tasks
+
+@strong{Use case}: Find projects needing attention (dependency problems)
+
+@strong{Example}:
+@lisp
+'((name . "Stuck Projects")
+  (filters . ((category . stuck-projects))))
+@end lisp
+
+@item
+@anchor{@code{(category incubate)}}@code{(category . incubate)}
+
+
+@strong{Matches}: Items with @code{ORG_GTD="Incubated"} (someday/maybe)
+
+@strong{Use case}: Review someday/maybe list
+
+@strong{Example}:
+@lisp
+'((name . "Someday/Maybe")
+  (filters . ((category . incubate))))
+@end lisp
+
+@item
+@anchor{@code{(category habit)}}@code{(category . habit)}
+
+
+@strong{Matches}: Items with @code{STYLE="habit"}
+
+@strong{Use case}: See all habits
+
+@strong{Example}:
+@lisp
+'((name . "All Habits")
+  (filters . ((category . habit))))
+@end lisp
+@end itemize
+
+@node Time-based Filters
+@subsection Time-based Filters
+
+Filter by timestamps, deadlines, and scheduled dates:
+
+@itemize
+@item
+@anchor{@code{(timestamp past)}}@code{(timestamp . past)}
+
+
+@strong{Matches}: Items with @code{ORG_GTD_TIMESTAMP} in the past that aren't done
+
+@strong{Use case}: Missed appointments and follow-ups
+
+@strong{Example}:
+@lisp
+'((name . "Missed Appointments")
+  (filters . ((category . calendar)
+              (timestamp . past))))
+@end lisp
+
+@item
+@anchor{@code{(timestamp future)}}@code{(timestamp . future)}
+
+
+@strong{Matches}: Items with @code{ORG_GTD_TIMESTAMP} in the future
+
+@strong{Use case}: Upcoming appointments
+
+@strong{Example}:
+@lisp
+'((name . "Upcoming Appointments")
+  (filters . ((category . calendar)
+              (timestamp . future))))
+@end lisp
+
+@item
+@anchor{@code{(deadline past)}}@code{(deadline . past)}
+
+
+@strong{Matches}: Items with deadline in the past that aren't done
+
+@strong{Use case}: Overdue items
+
+@strong{Example}:
+@lisp
+'((name . "Overdue Items")
+  (filters . ((deadline . past))))
+@end lisp
+
+@item
+@anchor{@code{(scheduled past)}}@code{(scheduled . past)}
+
+
+@strong{Matches}: Items scheduled in the past that aren't done
+
+@strong{Use case}: Find items that should have started
+
+@strong{Example}:
+@lisp
+'((name . "Overdue Start Dates")
+  (filters . ((scheduled . past))))
+@end lisp
+
+@item
+@anchor{@code{(scheduled future)}}@code{(scheduled . future)}
+
+
+@strong{Matches}: Items scheduled in the future
+
+@strong{Use case}: See what's coming up
+
+@strong{Example}:
+@lisp
+'((name . "Future Scheduled")
+  (filters . ((scheduled . future))))
+@end lisp
+
+@item
+@anchor{@code{(scheduled today)}}@code{(scheduled . today)}
+
+
+@strong{Matches}: Items scheduled for today
+
+@strong{Use case}: Today's habits and scheduled actions
+
+@strong{Example}:
+@lisp
+'((name . "Today's Scheduled Items")
+  (filters . ((scheduled . today))))
+@end lisp
+
+@item
+@anchor{@code{(closed recent)}}@code{(closed . recent)}
+
+
+@strong{Matches}: Items closed in last 7 days
+
+@strong{Use case}: Weekly review accomplishments
+
+@strong{Example}:
+@lisp
+'((name . "Recent Completions")
+  (filters . ((closed . recent))))
+@end lisp
+
+@item
+@anchor{@code{(closed past-day)}}@code{(closed . past-day)}
+
+
+@strong{Matches}: Items closed in last day
+
+@item
+@anchor{@code{(closed past-week)}}@code{(closed . past-week)}
+
+
+@strong{Matches}: Items closed in last week
+
+@item
+@anchor{@code{(closed past-month)}}@code{(closed . past-month)}
+
+
+@strong{Matches}: Items closed in last month
+
+@item
+@anchor{@code{(closed past-year)}}@code{(closed . past-year)}
+
+
+@strong{Matches}: Items closed in last year
+
+@item
+@anchor{@code{(closed today)}}@code{(closed . today)}
+
+
+@strong{Matches}: Items closed today
+
+@strong{Use case}: End-of-day review
+
+@strong{Example}:
+@lisp
+'((name . "Completed Today")
+  (filters . ((closed . today))))
+@end lisp
+@end itemize
+
+@node Keyword Filters
+@subsection @strong{TODO} Keyword Filters
+
+Filter by TODO state:
+
+@itemize
+@item
+@anchor{@code{(todo ("KEYWORD1" "KEYWORD2"))}}@code{(todo . ("KEYWORD1" "KEYWORD2"))}
+
+
+@strong{Matches}: Items with any of the specified TODO keywords
+
+@strong{Use case}: Show specific states
+
+@strong{Example}: Show only NEXT actions:
+@lisp
+'((name . "NEXT Actions Only")
+  (filters . ((todo . ("NEXT")))))
+@end lisp
+
+@strong{Example}: Show NEXT and WAIT:
+@lisp
+'((name . "Active and Waiting")
+  (filters . ((todo . ("NEXT" "WAIT")))))
+@end lisp
+
+@item
+@anchor{@code{(done t)}}@code{(done . t)}
+
+
+@strong{Matches}: Items with done TODO states (right side of @code{|} in keyword sequence)
+
+@strong{Use case}: Show completed items
+
+@strong{Example}:
+@lisp
+'((name . "Completed Items")
+  (filters . ((done . t))))
+@end lisp
+@end itemize
+
+@node Area of Focus Filters
+@subsection Area of Focus Filters
+
+Filter by life area:
+
+@itemize
+@item
+@anchor{@code{(area-of-focus "AREA")}}@code{(area-of-focus . "AREA")}
+
+
+@strong{Matches}: Items with @code{CATEGORY="AREA"}
+
+@strong{Use case}: Focus on specific life area
+
+@strong{Example}:
+@lisp
+'((name . "Work Items")
+  (filters . ((area-of-focus . "Work"))))
+@end lisp
+
+@strong{Example}: Work projects only:
+@lisp
+'((name . "Work Projects")
+  (filters . ((category . active-projects)
+              (area-of-focus . "Work"))))
+@end lisp
+@end itemize
+
+@node Tag Filters
+@subsection Tag Filters
+
+Filter by org tags:
+
+@itemize
+@item
+@anchor{@code{(tags ("TAG1" "TAG2"))}}@code{(tags . ("TAG1" "TAG2"))}
+
+
+@strong{Matches}: Items with any of the specified tags
+
+@strong{Use case}: Filter by context, priority, or custom tags
+
+@strong{Example}:
+@lisp
+'((name . "Home and Errands")
+  (filters . ((todo . ("NEXT"))
+              (tags . ("@@home" "@@errands")))))
+@end lisp
+
+@item
+@anchor{@code{(tags-match "PATTERN")}}@code{(tags-match . "PATTERN")}
+
+
+@strong{Matches}: Items matching org-mode tag expression pattern
+
+@strong{Use case}: Complex tag queries
+
+@strong{Example}: All items with context tags (tags starting with @@):
+@lisp
+'((name . "Context-Tagged Items")
+  (filters . ((tags-match . "@{^@@@}"))))
+@end lisp
+
+@strong{Org tag expressions}:
+@table @asis
+@item @code{"tag1|tag2"}
+Has tag1 OR tag2
+@item @code{"tag1&tag2"}
+Has tag1 AND tag2
+@item @code{"@{^@@@}"}
+Has any tag starting with @@
+@end table
+@end itemize
+
+@node Property Filters
+@subsection Property Filters
+
+Filter by arbitrary org properties:
+
+@itemize
+@item
+@anchor{@code{(property (("PROP" "VALUE")))}}@code{(property . (("PROP" . "VALUE")))}
+
+
+@strong{Matches}: Items with specified property value
+
+@strong{Use case}: Filter by custom properties
+
+@strong{Example}:
+@lisp
+'((name . "High Priority Actions")
+  (filters . ((property . (("PRIORITY" . "A")))
+              (todo . ("NEXT")))))
+@end lisp
+
+@strong{Example}: Multiple property filters:
+@lisp
+'((name . "Project Tasks")
+  (filters . ((property . (("ORG_GTD" . "Actions"))))))
+@end lisp
+@end itemize
+
+@node Structural Filters
+@subsection Structural Filters
+
+Filter by org heading structure:
+
+@itemize
+@item
+@anchor{@code{(level N)}}@code{(level . N)}
+
+
+@strong{Matches}: Headings at level N
+
+@strong{Use case}: Show only top-level items
+
+@strong{Example}: Top-level projects only:
+@lisp
+'((name . "Top-Level Projects")
+  (filters . ((category . projects)
+              (level . 2))))
+@end lisp
+
+@strong{Note}: org-gtd projects are typically at level 2 in their files (under a category heading at level 1).
+@end itemize
+
+@node Special Filters
+@subsection Special Filters
+
+@itemize
+@item
+@anchor{@code{(not-habit t)}}@code{(not-habit . t)}
+
+
+@strong{Matches}: Items that are NOT habits
+
+@strong{Use case}: Exclude habits from views
+
+@strong{Example}:
+@lisp
+'((name . "NEXT Actions (No Habits)")
+  (filters . ((todo . ("NEXT"))
+              (not-habit . t))))
+@end lisp
+
+@item
+@anchor{@code{(invalid-timestamp t)}}@code{(invalid-timestamp . t)}
+
+
+@strong{Matches}: Items with missing or malformed @code{ORG_GTD_TIMESTAMP} property
+
+@strong{Use case}: Data validation, finding broken calendar/delegate items
+
+@strong{Example}:
+@lisp
+'((name . "Items with Invalid Timestamps")
+  (filters . ((invalid-timestamp . t))))
+@end lisp
+@end itemize
+
+@node View Configuration Options
+@subsection View Configuration Options
+
+These options control how the view is displayed:
+
+@itemize
+@item
+@anchor{@code{(view-type agenda)}}@code{(view-type . agenda)}
+
+
+@strong{Purpose}: Create a native org-agenda view instead of org-ql block
+
+@strong{Use case}: When you want a day/week agenda view
+
+@strong{Example}:
+@lisp
+'((name . "Weekly Agenda")
+  (view-type . agenda)
+  (agenda-span . 7)
+  (filters . ()))
+@end lisp
+
+@item
+@anchor{@code{(agenda-span N)}}@code{(agenda-span . N)}
+
+
+@strong{Purpose}: Number of days to show in agenda view
+
+@strong{Default}: 1
+
+@strong{Requires}: @code{(view-type . agenda)}
+
+@strong{Example}: Week view:
+@lisp
+'((name . "Week Ahead")
+  (view-type . agenda)
+  (agenda-span . 7))
+@end lisp
+
+@item
+@anchor{@code{(show-habits t)} or @code{(show-habits nil)}}@code{(show-habits . t)} or @code{(show-habits . nil)}
+
+
+@strong{Purpose}: Control habit visibility in agenda views
+
+@strong{Default}: Habits shown
+
+@strong{Requires}: @code{(view-type . agenda)}
+
+@strong{Example}: Agenda without habits:
+@lisp
+'((name . "Today (No Habits)")
+  (view-type . agenda)
+  (show-habits . nil))
+@end lisp
+
+@item
+@anchor{@code{(additional-blocks BLOCK-SPECS)}}@code{(additional-blocks . BLOCK-SPECS)}
+
+
+@strong{Purpose}: Add additional agenda blocks to the view
+
+@strong{Format}: List of block specifications
+
+@strong{Example}: Agenda + NEXT actions:
+@lisp
+'((name . "Today + Actions")
+  (view-type . agenda)
+  (additional-blocks . ((todo . "NEXT"))))
+@end lisp
+
+@item
+@anchor{@code{(prefix-format FORMAT-STRING)}}@code{(prefix-format . FORMAT-STRING)}
+
+
+@strong{Purpose}: Custom agenda prefix format
+
+@strong{Use case}: Customize how items appear in agenda
+
+@strong{Example}:
+@lisp
+'((name . "Custom Format View")
+  (view-type . agenda)
+  (prefix-format . "  %-12:c %?-12t% s"))
+@end lisp
+@end itemize
+
+@node Complete View Examples
+@subsection Complete View Examples
+
+@itemize
+@item
+@anchor{Weekly Review View}Weekly Review View
+
+
+@lisp
+(defun my-weekly-review ()
+  "Weekly review showing completed items, active projects, and stuck projects."
+  (interactive)
+  (org-agenda nil "w")
+  (let ((org-agenda-custom-commands
+         '(("w" "Weekly Review"
+            ((org-ql-block '(and (property "ORG_GTD" "Projects")
+                                 (project-has-active-tasks))
+                           ((org-ql-block-header "Active Projects")))
+             (org-ql-block '(and (property "ORG_GTD" "Projects")
+                                 (project-is-stuck))
+                           ((org-ql-block-header "Stuck Projects")))
+             (org-ql-block '(closed :from "-7d")
+                           ((org-ql-block-header "Completed This Week"))))))))
+    (org-agenda nil "w")))
+@end lisp
+
+@item
+@anchor{Context-Based View}Context-Based View
+
+
+@lisp
+(defun my-contexts-view ()
+  "Show NEXT actions grouped by context."
+  (interactive)
+  (org-gtd-engage-grouped-by-context))
+@end lisp
+
+@item
+@anchor{Morning Planning View}Morning Planning View
+
+
+@lisp
+(defun my-morning-view ()
+  "Morning planning: today's agenda, NEXT actions, and delegations to follow up."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Morning Planning")
+     (view-type . agenda)
+     (agenda-span . 1)
+     (additional-blocks . ((todo . "NEXT"))))))
+@end lisp
+@end itemize
+
+@node Creating Custom Views
+@subsection Creating Custom Views
+
+To create a custom view:
+
+@enumerate
+@item
+@strong{@strong{Define the view specification}}:
+@lisp
+(defun my-custom-view ()
+  "Description of what this view shows."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "View Name")
+     (filters . ((filter1 . value1)
+                 (filter2 . value2))))))
+@end lisp
+
+@item
+@strong{@strong{Bind to a key}} (optional):
+@lisp
+(global-set-key (kbd "C-c d v") 'my-custom-view)
+@end lisp
+
+@item
+@strong{@strong{Test and refine}} - Run the view and adjust filters as needed
+@end enumerate
+
+@node Hooks Framework Reference
+@section Hooks Framework Reference
+
+org-gtd provides hooks to customize behavior when organizing items. This section documents the hooks framework and how to write custom hooks.
+
+@menu
+* The org-gtd-organize-hooks Variable::
+* Built-in Hooks::
+* Writing Custom Hooks::
+* Example Custom Hooks::
+* Hook Execution Order::
+* Best Practices::
+* Complete Example Comprehensive Hook Setup::
+@end menu
+
+@node The org-gtd-organize-hooks Variable
+@subsection The org-gtd-organize-hooks Variable
+
+@strong{Type}: List of functions
+
+@strong{When run}: During @code{org-gtd-organize}, after you choose item type but before refiling
+
+@strong{Purpose}: Add metadata (tags, properties, etc.) to items as they're organized
+
+@strong{Default value}: @code{'(org-set-tags-command)}
+
+@node Built-in Hooks
+@subsection Built-in Hooks
+
+@itemize
+@item
+@anchor{@code{org-set-tags-command}}@code{org-set-tags-command}
+
+
+@strong{What it does}: Prompts for tags to add to the item
+
+@strong{Use when}: You want to tag items during organization (default)
+
+@strong{To use}:
+@lisp
+(setq org-gtd-organize-hooks '(org-set-tags-command))
+@end lisp
+
+@item
+@anchor{@code{org-gtd-set-area-of-focus}}@code{org-gtd-set-area-of-focus}
+
+
+@strong{What it does}: Prompts for area of focus (from @code{org-gtd-areas-of-focus}) and sets CATEGORY property
+
+@strong{Use when}: You use GTD Horizon 2 (areas of focus)
+
+@strong{To use}:
+@lisp
+(setq org-gtd-organize-hooks '(org-set-tags-command
+                               org-gtd-set-area-of-focus))
+@end lisp
+
+@strong{Behavior}: Skips prompt for:
+@itemize
+@item
+Project tasks (sets on project instead)
+@item
+Trash items
+@item
+Knowledge items
+@item
+Quick actions
+@end itemize
+@end itemize
+
+@node Writing Custom Hooks
+@subsection Writing Custom Hooks
+
+Custom hooks are functions that run during organization. They can:
+@itemize
+@item
+Add properties
+@item
+Set tags
+@item
+Modify heading text
+@item
+Prompt for information
+@item
+Skip certain item types
+@end itemize
+
+@itemize
+@item
+@anchor{Basic Hook Structure}Basic Hook Structure
+
+
+@lisp
+(defun my-organize-hook ()
+  "Description of what this hook does."
+  (interactive)  ;; hooks can be interactive or not
+  ;; Your code here
+  ;; Point will be on the heading being organized
+  ;; Use org-mode functions to modify it
+  )
+@end lisp
+
+@item
+@anchor{Using org-gtd-organize-type-member-p}Using org-gtd-organize-type-member-p
+
+
+This helper function lets you run code only for specific item types.
+
+@strong{Function signature}:
+@lisp
+(org-gtd-organize-type-member-p TYPE-LIST)
+@end lisp
+
+@strong{Arguments}:
+@table @asis
+@item @code{TYPE-LIST}
+List of item type symbols to check against
+@end table
+
+@strong{Returns}: @code{t} if current item matches one of the types, @code{nil} otherwise
+
+@strong{Available types}:
+@table @asis
+@item @code{'action}
+Single actions
+@item @code{'project}
+Project headings
+@item @code{'project-task}
+Tasks within projects
+@item @code{'calendar}
+Calendar items
+@item @code{'delegate}
+Delegated items
+@item @code{'incubate}
+Someday/maybe items
+@item @code{'habit}
+Habits
+@item @code{'knowledge}
+Reference items
+@item @code{'quick}
+Quick actions (<2 min)
+@item @code{'trash}
+Trashed items
+@end table
+
+@strong{Example}: Only run for actions and projects:
+@lisp
+(defun my-hook ()
+  (when (org-gtd-organize-type-member-p '(action project))
+    ;; do something
+    ))
+@end lisp
+@end itemize
+
+@node Example Custom Hooks
+@subsection Example Custom Hooks
+
+@itemize
+@item
+@anchor{Add Effort Estimation}Add Effort Estimation
+
+
+@lisp
+(defun my-add-effort ()
+  "Prompt for effort estimation when organizing actions and projects."
+  (when (org-gtd-organize-type-member-p '(action project))
+    (call-interactively #'org-set-effort)))
+
+(add-to-list 'org-gtd-organize-hooks 'my-add-effort)
+@end lisp
+
+*### Add Priority
+
+@lisp
+(defun my-add-priority ()
+  "Prompt for priority when organizing actions."
+  (when (org-gtd-organize-type-member-p '(action))
+    (call-interactively #'org-priority)))
+
+(add-to-list 'org-gtd-organize-hooks 'my-add-priority)
+@end lisp
+
+@item
+@anchor{Auto-Set Property Based on Keywords}Auto-Set Property Based on Keywords
+
+
+@lisp
+(defun my-auto-tag-urgent ()
+  "Automatically tag items with 'urgent' in their heading."
+  (when (org-gtd-organize-type-member-p '(action project))
+    (let ((heading (org-get-heading t t t t)))
+      (when (string-match-p (regexp-quote "URGENT") heading)
+        (org-set-tags ":urgent:")))))
+
+(add-to-list 'org-gtd-organize-hooks 'my-auto-tag-urgent)
+@end lisp
+
+@item
+@anchor{Add Custom Property}Add Custom Property
+
+
+@lisp
+(defun my-add-client ()
+  "Prompt for client name on work-related items."
+  (when (org-gtd-organize-type-member-p '(action project))
+    (when (y-or-n-p "Is this for a client? ")
+      (let ((client (read-string "Client name: ")))
+        (org-set-property "CLIENT" client)))))
+
+(add-to-list 'org-gtd-organize-hooks 'my-add-client)
+@end lisp
+
+@item
+@anchor{Integration with Org-Roam}Integration with Org-Roam
+
+
+@lisp
+(defun my-link-to-roam-project ()
+  "Link GTD project to Org-Roam note."
+  (when (org-gtd-organize-type-member-p '(project))
+    (when (y-or-n-p "Link to Org-Roam note? ")
+      (org-roam-node-insert))))
+
+(add-to-list 'org-gtd-organize-hooks 'my-link-to-roam-project)
+@end lisp
+
+@item
+@anchor{Set Effort from Keywords}Set Effort from Keywords
+
+
+@lisp
+(defun my-auto-set-effort ()
+  "Automatically set effort based on keywords in heading."
+  (when (org-gtd-organize-type-member-p '(action))
+    (let ((heading (downcase (org-get-heading t t t t))))
+      (cond
+       ((string-match-p "quick\\|call\\|email" heading)
+        (org-set-property "Effort" "0:15"))
+       ((string-match-p "meeting\\|review" heading)
+        (org-set-property "Effort" "1:00"))
+       ((string-match-p "research\\|write\\|design" heading)
+        (org-set-property "Effort" "2:00"))))))
+
+(add-to-list 'org-gtd-organize-hooks 'my-auto-set-effort)
+@end lisp
+@end itemize
+
+@node Hook Execution Order
+@subsection Hook Execution Order
+
+Hooks run in the order they appear in @code{org-gtd-organize-hooks}.
+
+@strong{Example}: Set area first, then tags:
+@lisp
+(setq org-gtd-organize-hooks
+      '(org-gtd-set-area-of-focus  ;; runs first
+        org-set-tags-command))      ;; runs second
+@end lisp
+
+This order matters if one hook depends on another's results.
+
+@node Best Practices
+@subsection Best Practices
+
+@enumerate
+@item
+@strong{@strong{Use type checking}}: Always use @code{org-gtd-organize-type-member-p} to run hooks only for relevant item types
+
+@item
+@strong{@strong{Keep hooks focused}}: Each hook should do one thing well
+
+@item
+@strong{@strong{Make hooks optional}}: Use @code{y-or-n-p} for optional metadata:
+@lisp
+(when (y-or-n-p "Add custom property? ")
+  (org-set-property "PROP" value))
+@end lisp
+
+@item
+@strong{@strong{Test interactively}}: Make hooks interactive for testing:
+@lisp
+(defun my-hook ()
+  (interactive)  ;; can test with M-x my-hook
+  ...)
+@end lisp
+
+@item
+@strong{@strong{Handle errors gracefully}}: Wrap risky code in condition-case:
+@lisp
+(condition-case err
+    (my-risky-operation)
+  (error (message "Hook failed: %s" err)))
+@end lisp
+
+@item
+@strong{@strong{Document your hooks}}: Add docstrings explaining what each hook does
+@end enumerate
+
+@node Complete Example Comprehensive Hook Setup
+@subsection Complete Example: Comprehensive Hook Setup
+
+@lisp
+;; Custom hooks for org-gtd
+(defun my-add-effort ()
+  "Prompt for effort on actions and projects."
+  (when (org-gtd-organize-type-member-p '(action project))
+    (call-interactively #'org-set-effort)))
+
+(defun my-add-priority ()
+  "Prompt for priority on actions."
+  (when (org-gtd-organize-type-member-p '(action))
+    (call-interactively #'org-priority)))
+
+(defun my-auto-tag-contexts ()
+  "Automatically suggest context tags based on heading keywords."
+  (when (org-gtd-organize-type-member-p '(action))
+    (let* ((heading (downcase (org-get-heading t t t t)))
+           (suggested-tags '()))
+      (when (string-match-p "\\(phone\\|call\\)" heading)
+        (push "@@phone" suggested-tags))
+      (when (string-match-p "\\(computer\\|code\\|write\\)" heading)
+        (push "@@computer" suggested-tags))
+      (when (string-match-p "\\(store\\|buy\\|shop\\)" heading)
+        (push "@@errands" suggested-tags))
+      (when suggested-tags
+        (message "Suggested contexts: %s" (string-join suggested-tags ", "))))))
+
+(defun my-track-creation-date ()
+  "Add CREATED property with current timestamp."
+  (unless (org-gtd-organize-type-member-p '(trash quick))
+    (org-set-property "CREATED"
+                      (format-time-string "[%Y-%m-%d %a %H:%M]"))))
+
+;; Install hooks
+(setq org-gtd-organize-hooks
+      '(org-gtd-set-area-of-focus  ;; set area first
+        org-set-tags-command        ;; then tags
+        my-auto-tag-contexts        ;; suggest context tags
+        my-add-effort               ;; estimate effort
+        my-add-priority             ;; set priority if needed
+        my-track-creation-date))    ;; track when created
+@end lisp
+
+This creates a comprehensive metadata capture workflow during organization.
+
 @node Troubleshooting
 @chapter Troubleshooting
+
+This section covers common problems and their solutions. For complete command documentation, see @ref{Commands Reference}.
 
 @menu
 * Finding lost tasks::
 * Projects without a NEXT item::
 * I can't create a project when clarifying an inbox item!::
+* Configuration problems::
+* Still stuck?::
 @end menu
 
 @node Finding lost tasks
 @section Finding lost tasks
 
-Sometimes things break. The following functions will help you find these items:
+Sometimes items get stuck or fall through the cracks. org-gtd provides several commands to find problematic items:
 
-@itemize
-@item
-@code{org-gtd-review-stuck-calendar-items}
-@item
-@code{org-gtd-review-stuck-incubated-items}
-@item
-@code{org-gtd-review-stuck-habit-items}
-@item
-@code{org-gtd-review-stuck-delegated-items}
-@item
-@code{org-gtd-review-stuck-single-action-items}
-@item
-@code{org-gtd-review-stuck-projects}
-@item
-@code{org-gtd-review-missed-items}
-@end itemize
+@table @asis
+@item @code{org-gtd-review-stuck-calendar-items}
+Calendar items with invalid or missing timestamps
+@item @code{org-gtd-review-stuck-incubated-items}
+Incubated items with invalid or missing review dates
+@item @code{org-gtd-review-stuck-habit-items}
+Habits with incorrect configuration
+@item @code{org-gtd-review-stuck-delegated-items}
+Delegated items missing delegate or date information
+@item @code{org-gtd-review-stuck-single-action-items}
+Single actions that aren't marked as NEXT
+@item @code{org-gtd-review-stuck-projects}
+Projects that have tasks but no NEXT actions
+@item @code{org-gtd-review-missed-items}
+Items that should have been processed but weren't
+@end table
+
+See @ref{Commands Reference} for detailed documentation of these commands.
 
 @node Projects without a NEXT item
 @section Projects without a NEXT item
 
-@code{org-edna} needs to be configured and enabled, see @ref{Configuring org-edna}.
+If a project has active tasks but none are marked NEXT, this usually indicates:
+@enumerate
+@item
+Missing dependency configuration (no @code{ORG_GTD_FIRST_TASKS} property)
+@item
+org-edna is not enabled
+@item
+Dependency properties need recalculation
+@end enumerate
 
-To fix such a stuck project, put the point on the project heading and call @code{M-x org-gtd-projects-fix-todo-keywords-for-project-at-point}.
+@strong{Solution}: Put the point on the project heading and run @code{M-x org-gtd-projects-fix-todo-keywords-for-project-at-point}.
+
+@strong{Note}: Make sure org-edna is enabled: @code{(org-edna-mode 1)} in your init file. See @ref{Configuring} for setup instructions.
+
+See also: @ref{Working with Projects (Advanced)} for complete project troubleshooting guide.
 
 @node I can't create a project when clarifying an inbox item!
 @section I can't create a project when clarifying an inbox item!
 
-See @ref{data shape requirements}. If this does not help you, please open an issue and show exactly what you have done before asking @samp{org-gtd} to create a project.
+When organizing an item as a project, org-gtd expects a specific structure:
+
+@example
+* Project heading
+** First task
+** Second task
+** Third task
+@end example
+
+@strong{Common issues}:
+@itemize
+@item
+Top-level heading must be a single asterisk @code{*}
+@item
+Tasks must be second-level headings @code{**}
+@item
+Must have at least one task under the project heading
+@end itemize
+
+See @ref{data shape requirements} for complete details.
+
+If this doesn't solve your problem, please open an issue at @uref{https://github.com/Trevoke/org-gtd.el/issues} with:
+@enumerate
+@item
+The exact structure of your item in the clarify buffer
+@item
+What happens when you try to organize it
+@item
+Any error messages
+@end enumerate
+
+@node Configuration problems
+@section Configuration problems
+
+@menu
+* Keywords not working::
+* Items not showing in engage view::
+@end menu
+
+@node Keywords not working
+@subsection Keywords not working
+
+If TODO keywords aren't changing correctly:
+
+@enumerate
+@item
+@strong{Check @code{org-todo-keywords} includes all GTD keywords in one sequence}:
+@lisp
+(setq org-todo-keywords
+      '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+@end lisp
+
+@item
+@strong{Check @code{org-gtd-keyword-mapping} maps to those keywords}:
+@lisp
+(setq org-gtd-keyword-mapping
+      '((todo . "TODO")
+        (next . "NEXT")
+        (wait . "WAIT")
+        (canceled . "CNCL")))
+@end lisp
+
+@item
+@strong{Remove any @code{#+TODO:} lines from GTD org files}
+@end enumerate
+
+See @ref{Configuring} for complete setup instructions.
+
+@node Items not showing in engage view
+@subsection Items not showing in engage view
+
+If items aren't appearing in @code{org-gtd-engage}:
+
+@enumerate
+@item
+@strong{Check org-agenda-files includes org-gtd-directory}:
+@lisp
+(setq org-agenda-files (list org-gtd-directory))
+@end lisp
+
+@item
+@strong{Check item has correct properties}:
+@itemize
+@item
+Single actions should have @code{ORG_GTD: Actions} and TODO keyword NEXT
+@item
+Project tasks should have @code{ORG_GTD: Actions} and be part of a project
+@end itemize
+
+@item
+@strong{Verify org-edna is enabled}:
+@lisp
+(org-edna-mode 1)
+@end lisp
+@end enumerate
+
+See @ref{Configuration Variables Reference} for all configuration options.
+
+@node Still stuck?
+@section Still stuck?
+
+If you're still having problems:
+
+@enumerate
+@item
+Check @ref{Reference} for complete documentation
+@item
+Search existing issues: @uref{https://github.com/Trevoke/org-gtd.el/issues}
+@item
+Ask on Discord: @uref{https://discord.gg/2kAK6TfqJq}
+@item
+Open a new issue with:
+@itemize
+@item
+Your org-gtd configuration
+@item
+Steps to reproduce the problem
+@item
+Expected vs actual behavior
+@item
+Any error messages
+@end itemize
+@end enumerate
 
 @bye
