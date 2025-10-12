@@ -46,7 +46,11 @@ This package tries to replicate as closely as possible the GTD workflow (see dia
 
 This package, and this documentation, assume familiarity with the flow of GTD as described in the book.
 
-This package provides a system that allows you to capture incoming things into an inbox, then process the inbox and categorize each item based on the GTD categories. It leverages org-agenda to show today's items as well as the NEXT items. It also has a simple project management system, which currently assumes all tasks in a project are sequential.
+This package provides a system that allows you to capture incoming things into an inbox, then process the inbox and categorize each item based on the GTD categories. It leverages org-agenda to show today's items as well as the NEXT items. It provides a flexible project management system with support for both sequential and parallel task execution.
+
+*New to org-gtd?* Start with [[#getting-started][Getting Started with Org GTD]] for a hands-on tutorial.
+
+*Upgrading from 3.x?* See [[#upgrading][Upgrading]] for required configuration changes and migration steps.
 #+begin_example
                                     +-------+
                                     |"STUFF"|
@@ -1073,7 +1077,7 @@ Now that you understand views, you can create:
 - *Time-based views* - Overdue items, upcoming deadlines, this week's schedule
 - *Focus views* - Deep work items, quick wins, waiting-for items
 
-See [[#defining-your-own-agenda-views][Defining your own agenda views]] in the "Using Org GTD" section for more advanced examples and the full filter reference.
+See [[#view-dsl-reference][View DSL Filter Reference]] for the complete filter documentation with all available options and many more examples.
 
 *** Where to Go From Here
 
@@ -1096,6 +1100,11 @@ Read those sections as you need them. For now, *start using what you've learned*
 - Experiment with custom views
 
 The best way to learn GTD is to practice the workflow. org-gtd handles the complexity - you just do the work.
+
+*Quick reference*:
+- [[#using-org-gtd][Using Org GTD]] - Deep dive into daily workflow and all item types
+- [[#reference][Reference]] - Complete documentation for configuration, commands, properties, views, and hooks
+- [[#troubleshooting][Troubleshooting]] - Solutions to common problems
 
 * Using Org GTD
 :PROPERTIES:
@@ -1135,7 +1144,9 @@ These are the commands you'll use most:
 | ~org-gtd-review-stuck-projects~ | Find stuck projects | Weekly review |
 | ~org-gtd-archive-completed-items~ | Archive finished items | Weekly/monthly cleanup |
 
-For details on each step, see the subsections below.
+For complete command reference with detailed explanations, see [[#commands-reference][Commands Reference]].
+
+For details on each workflow step, see the subsections below.
 
 ** The GTD Flow in Depth
 :PROPERTIES:
@@ -1162,6 +1173,8 @@ You can customize these templates as you see fit. In order to maintain proper fu
 
 1. the first two characters of the template string must be a single asterisk followed by a space: ~"* "~
 2. the entry type must be like this: =entry  (file ,#'org-gtd-inbox-path)=
+
+*See also*: [[#config-vars-reference][Configuration Variables Reference]] for complete documentation of ~org-gtd-capture-templates~ and ~org-gtd-directory~.
 
 *** Processing the inbox
 :PROPERTIES:
@@ -1214,6 +1227,8 @@ If you are clarifying a project, you may be interested in project templates:
 - ~org-gtd-clarify-project-insert-template~ :: a function that will ask you to choose a template to insert.
 - ~org-gtd-clarify-project-templates~ :: an alist of the form =(name . template)= where both name and template are strings. =name= will be used in the interactive menu, and =template= will be inserted in the buffer.
 
+*See also*: [[#config-vars-reference][Configuration Variables Reference]] for complete documentation of clarification options, and [[#commands-reference][Commands Reference]] for all clarification commands.
+
 *** Organizing an item into the system
 :PROPERTIES:
 :CUSTOM_ID: organizing-an-item
@@ -1222,8 +1237,10 @@ When you are done clarifying, call ~M-x org-gtd-organize~ (or hit your keybindin
 
 Organizing is broken up into three steps:
 - Choosing a task type (see [[#understanding-gtd-item-types][Understanding GTD Item Types]])
-- Applying hooks to add additional relevant information (see [[#hooks-framework][Customization: Hooks]])
+- Applying hooks to add additional relevant information (see [[#hooks-reference][Hooks Framework Reference]])
 - Refiling to the appropriate area (see [[#refiling-after-organizing][Refiling]] below)
+
+*See also*: [[#commands-reference][Commands Reference]] for the ~org-gtd-organize~ command and all organization-related commands.
 
 **** Refiling to the appropriate area
 :PROPERTIES:
@@ -1453,6 +1470,8 @@ See [[#working-with-projects-advanced][Working with Projects]] for advanced feat
 
 *GTD principle*: Be ruthless. If it's not actionable and not valuable information, delete it. Clutter in your system creates noise.
 
+*See also*: For technical details on how each item type is stored, see [[#properties-reference][Properties Reference]].
+
 *** Working with the GTD Horizons
 :PROPERTIES:
 :CUSTOM_ID: working-with-horizons
@@ -1494,46 +1513,342 @@ A variable, ~org-gtd-clarify-show-horizons~, determines whether/where to display
 
 Regardless of the value of this variable, you can use the function ~org-gtd-clarify-toggle-horizons-window~ to display or hide the side window. If the above variable is nil, then the horizons window will be toggled on the right side of the screen.
 
-*** Working with projects
+*See also*:
+- [[#config-vars-reference][Configuration Variables Reference]] for ~org-gtd-areas-of-focus~, ~org-gtd-horizons-file~, and ~org-gtd-clarify-show-horizons~
+- [[#commands-reference][Commands Reference]] for all horizon-related commands
+- [[#hooks-reference][Hooks Framework Reference]] for ~org-gtd-set-area-of-focus~ hook
+
+** Working with Projects (Advanced)
 :PROPERTIES:
-:CUSTOM_ID: working-with-projects
+:CUSTOM_ID: working-with-projects-advanced
 :END:
 
-Projects in Org GTD are multi-step actions represented as a top-level heading with task sub-headings underneath. Version 4.0 introduces flexible task dependencies, allowing you to create complex project structures.
+You learned sequential projects in [[#tutorial-your-first-project][Tutorial: Your First Project]]. This section covers advanced project features: parallel tasks, custom dependencies, and complex project structures.
 
-**** Default sequential behavior
-By default, tasks in a project work sequentially - when you complete the first task, the second task automatically becomes NEXT. This happens automatically without any configuration needed.
+*** Understanding Project Dependencies
 
-**** Creating custom dependencies
-You can create more complex dependency relationships between tasks:
+Projects in org-gtd use a dependency graph to track task relationships. Version 4.0 introduced flexible dependencies - you're not limited to sequential execution anymore.
 
-- *Parallel tasks* - Multiple tasks can be NEXT at the same time if they don't depend on each other
-- *Custom blocking relationships* - Define which tasks must complete before others can start
-- *Directed acyclic graph (DAG)* - Tasks form a dependency graph where work flows from blockers to blocked tasks
+**** How dependencies work
 
-The system automatically prevents circular dependencies that would create deadlocks.
-
-**** Dependency properties
 Task dependencies are managed through two org properties:
 
-- ~ORG_GTD_DEPENDS_ON~ - Contains IDs of tasks that must complete before this task can start (this task is blocked by those tasks)
-- ~ORG_GTD_BLOCKS~ - Contains IDs of tasks that this task blocks (those tasks depend on this one)
+- ~ORG_GTD_DEPENDS_ON~ :: Contains IDs of tasks that must complete before this task can start (what blocks this task)
+- ~ORG_GTD_BLOCKS~ :: Contains IDs of tasks that this task blocks (what depends on this task)
+- ~ORG_GTD_FIRST_TASKS~ :: (On project heading) Contains IDs of tasks with no dependencies (the starting points)
 
-These properties are managed automatically when you use the dependency commands.
+**** Sequential vs Parallel
 
-**** Visualizing dependencies (optional)
-You can enable a visual dependency helper while clarifying projects:
+- *Sequential* (default): Tasks execute one after another (A → B → C)
+  - Only one task is NEXT at a time
+  - Each task blocks the next
+  - Great for workflows where order matters
+
+- *Parallel*: Multiple tasks can be NEXT simultaneously
+  - Multiple independent work streams
+  - Tasks with no dependencies start together
+  - Faster project completion
+
+- *Mixed*: Some tasks parallel, others sequential
+  - Most real projects use this
+  - Example: Research and Planning happen in parallel, but both must finish before Building starts
+
+**** The dependency graph (DAG)
+
+Tasks form a Directed Acyclic Graph (DAG):
+- *Directed*: Dependencies flow one way (A → B means B depends on A, not vice versa)
+- *Acyclic*: No circular dependencies (A → B → C → A is prevented)
+- *Graph*: Tasks can have multiple dependencies and block multiple tasks
+
+org-gtd automatically prevents circular dependencies to avoid deadlocks.
+
+*** Tutorial: Project with Parallel Tasks
+
+Let's create a project where some tasks can happen simultaneously.
+
+**** The Scenario
+
+You need to "Fix Shoulder Pain":
+1. Find MRI facility (research task)
+2. Make MRI appointment (depends on finding facility)
+3. Make orthopedist appointment (independent research - can happen in parallel with 1 & 2)
+4. Get diagnosis (depends on both appointments completing)
+
+Tasks 1 and 3 can happen in parallel - they don't depend on each other.
+
+**** Step 1: Capture the Project
+
+~C-c d c~ to capture:
+
+#+begin_example
+* Fix Shoulder Pain
+** Find place to get MRI
+** Make MRI appointment
+** Make orthopedist appointment
+** Get diagnosis from orthopedist
+#+end_example
+
+**** Step 2: Organize with Custom Dependencies
+
+After organizing as a project (~C-c c~ → ~[P]~), org-gtd creates sequential dependencies by default. We need to modify them for parallel execution.
+
+**Open the project file:**
+
+Find your project in the engage view (~C-c d e~), press ~RET~ on any task to jump to the project file.
+
+**The project looks like this:**
+
+#+begin_example
+* Fix Shoulder Pain
+:PROPERTIES:
+:ORG_GTD: Projects
+:ORG_GTD_FIRST_TASKS: <id-of-find-mri>
+:END:
+** NEXT Find place to get MRI
+:PROPERTIES:
+:ID: <id-of-find-mri>
+:ORG_GTD: Actions
+:ORG_GTD_BLOCKS: <id-of-make-mri-appt>
+:END:
+** TODO Make MRI appointment
+:PROPERTIES:
+:ID: <id-of-make-mri-appt>
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: <id-of-find-mri>
+:ORG_GTD_BLOCKS: <id-of-make-ortho-appt>
+:END:
+** TODO Make orthopedist appointment
+... (and so on, sequential)
+#+end_example
+
+**** Step 3: Modify for Parallel Execution
+
+We want "Find MRI place" and "Make orthopedist appointment" to be parallel starting tasks.
+
+**On the project heading**, add the orthopedist appointment ID to FIRST_TASKS:
+
+#+begin_example
+:ORG_GTD_FIRST_TASKS: <id-of-find-mri> <id-of-make-ortho-appt>
+#+end_example
+
+**On "Make orthopedist appointment" task**, remove the DEPENDS_ON property:
+
+Remove the line: ~:ORG_GTD_DEPENDS_ON: <id-of-make-mri-appt>~
+
+**On "Get diagnosis" task**, make it depend on BOTH appointments:
+
+#+begin_example
+:ORG_GTD_DEPENDS_ON: <id-of-make-mri-appt> <id-of-make-ortho-appt>
+#+end_example
+
+**Fix the BLOCKS properties:**
+- Remove orthopedist appointment from MRI appointment's BLOCKS
+- Add diagnosis ID to both appointment tasks' BLOCKS
+
+**** Step 4: Fix Keywords
+
+Put point on the project heading and run:
+
+~M-x org-gtd-projects-fix-todo-keywords-for-project-at-point~
+
+This recalculates which tasks should be NEXT based on the dependency graph.
+
+**** Step 5: See the Results
+
+~C-c d e~ to view the engage agenda.
+
+You'll now see:
+- *NEXT: Find place to get MRI*
+- *NEXT: Make orthopedist appointment*
+
+Both are NEXT simultaneously! You can work on whichever you want.
+
+When you complete both appointments, "Get diagnosis" automatically becomes NEXT.
+
+**** The Dependency Pattern (Diamond)
+
+This is called a "diamond" pattern:
+
+#+begin_example
+    Find MRI ─────┐
+                  ├──→ Get Diagnosis
+Make Ortho Appt ──┘
+#+end_example
+
+Two parallel paths converge at a single task. This is common in real projects.
+
+*** Tutorial: Complex Project Dependencies
+
+Let's look at a more complex example: "Release Next Version of Software".
+
+**** The Scenario
+
+Steps:
+1. List features (starting task)
+2. Implement features (depends on list)
+3. Write documentation (can start after list, parallel with implement)
+4. Get beta tester feedback (depends on both implement AND documentation)
+5. Update code based on feedback (depends on beta feedback)
+6. Update documentation based on feedback (depends on beta feedback, parallel with code updates)
+7. Release (depends on both updates completing)
+
+**** The Dependency Graph
+
+#+begin_example
+List Features
+    ├──→ Implement Features ───┐
+    └──→ Write Documentation ───┼──→ Get Beta Feedback
+                                │         ├──→ Update Code ─────┐
+                                │         └──→ Update Docs ──────┼──→ Release
+                                └───────────────────────────────┘
+#+end_example
+
+**** Key Patterns
+
+1. *Parallel branches* after List Features
+2. *Converging paths* at Get Beta Feedback (both branches must complete)
+3. *Parallel updates* after feedback
+4. *Final convergence* at Release
+
+**** Setting This Up
+
+You would:
+1. Capture the project structure
+2. Organize as project (creates sequential by default)
+3. Open the project file
+4. Modify FIRST_TASKS to include only "List Features"
+5. Set DEPENDS_ON for "Implement" to only List Features
+6. Set DEPENDS_ON for "Write Documentation" to only List Features
+7. Set DEPENDS_ON for "Get Beta Feedback" to both Implement AND Write Documentation
+8. Set DEPENDS_ON for both Update tasks to Get Beta Feedback
+9. Set DEPENDS_ON for "Release" to both Update tasks
+10. Run ~org-gtd-projects-fix-todo-keywords-for-project-at-point~
+
+*** Common Dependency Patterns
+
+**** Sequential Chain (A → B → C)
+The simplest pattern. Default for all projects.
+
+Use when: Order matters, each task depends on the previous.
+
+Example: Review blueprints → Order windows → Schedule carpenter
+
+**** Parallel Independent (A, B, C all start together)
+All tasks are in FIRST_TASKS, no dependencies between them.
+
+Use when: Tasks are completely independent and can all start immediately.
+
+Example: Research destinations, Check budget, Ask for time off (for vacation planning)
+
+**** Fan-out (A → B, A → C, A → D)
+One task blocks multiple tasks that can then proceed in parallel.
+
+Use when: Initial work enables multiple independent paths.
+
+Example: Get project approval → (Design UI, Write backend API, Setup infrastructure)
+
+**** Fan-in / Convergence (A → C, B → C)
+Multiple tasks must complete before next task can start. Also called "join".
+
+Use when: Final task needs all previous work completed.
+
+Example: (Write code, Write tests) → Merge to main
+
+**** Diamond (A → B → D, A → C → D)
+Parallel paths that converge. Combination of fan-out and fan-in.
+
+Use when: Work splits, proceeds in parallel, then combines.
+
+Example: Research → (Write content, Design graphics) → Publish article
+
+*** Practical Tips
+
+**** When to use sequential
+- Order truly matters (can't install before purchasing)
+- You're not sure what the next task will be until you complete the current one
+- The project is simple and you don't want to think about dependencies
+
+**** When to use parallel
+- You have multiple people working on the project
+- Tasks are independent and could be done in any order
+- You want to optimize for speed
+- Clear what all tasks are upfront
+
+**** Managing complexity
+- Start sequential, make parallel only when needed
+- Use areas of focus or tags to group related tasks
+- Keep task names clear and specific
+- Review stuck projects weekly to catch dependency issues
+
+**** Modifying projects over time
+- Add tasks: Use "Add to existing project" when organizing new items
+- Change dependencies: Edit properties directly, then run fix-keywords command
+- Split tasks: Break down a task into sub-tasks, adjust dependencies
+- Merge tasks: Mark unnecessary tasks DONE or CNCL
+
+*** Reference: Dependency Management Commands
+
+**** During organizing
+- ~org-gtd-organize~ → ~[P]~ :: Creates project with sequential dependencies (default)
+- ~org-gtd-organize~ → ~[A]~ :: Adds task to existing project
+
+**** After organizing
+- ~org-gtd-projects-fix-todo-keywords-for-project-at-point~ :: Recalculates NEXT tasks based on dependency graph. Use after manually editing dependencies.
+
+**** Properties to edit manually
+- ~ORG_GTD_FIRST_TASKS~ :: (on project heading) Space-separated list of task IDs with no dependencies
+- ~ORG_GTD_DEPENDS_ON~ :: (on task) Space-separated list of task IDs this task depends on
+- ~ORG_GTD_BLOCKS~ :: (on task) Space-separated list of task IDs this task blocks
+
+After editing these properties, always run ~org-gtd-projects-fix-todo-keywords-for-project-at-point~ to update task states.
+
+*** Optional: Visualizing Dependencies
+
+Enable visual dependency helper while clarifying projects:
 
 #+begin_src emacs-lisp
 (setq org-gtd-clarify-display-helper-buffer t)
 #+end_src
 
-When enabled, a side window shows task relationships as you work on a project in the WIP buffer.
+When enabled, a side window shows task relationships as you work on a project in the WIP buffer during clarification.
 
-**** Fixing project keywords
-If tasks in a project get out of sync, you can fix them with:
+This is useful for:
+- Understanding complex dependency graphs
+- Spotting cycles before they cause problems
+- Planning parallel execution paths
 
-- ~org-gtd-projects-fix-todo-keywords-for-project-at-point~ - When point is on a project heading, this recalculates which tasks should be NEXT based on the dependency graph
+*** Troubleshooting Projects
+
+**** Project is stuck (has TODO tasks but no NEXT)
+
+Run ~M-x org-gtd-review-stuck-projects~ to find stuck projects.
+
+Common causes:
+- Circular dependency (A depends on B, B depends on A)
+- Missing FIRST_TASKS (project has no starting point)
+- All first tasks are DONE but dependencies not set up correctly
+
+Fix: Put point on project heading, run ~org-gtd-projects-fix-todo-keywords-for-project-at-point~
+
+**** Task should be NEXT but shows as TODO
+
+The dependency graph says it's blocked. Check:
+1. What tasks are in its ORG_GTD_DEPENDS_ON?
+2. Are those tasks actually DONE?
+3. Did you forget to remove a dependency?
+
+Fix: Edit ORG_GTD_DEPENDS_ON property, run fix-keywords command.
+
+**** Too many tasks are NEXT
+
+You probably have tasks that should have dependencies but don't.
+
+Fix: Add appropriate ORG_GTD_DEPENDS_ON properties to tasks that shouldn't start yet, run fix-keywords command.
+
+*See also*:
+- [[#properties-reference][Properties Reference]] for complete documentation of ~ORG_GTD_DEPENDS_ON~, ~ORG_GTD_BLOCKS~, and ~ORG_GTD_FIRST_TASKS~ properties
+- [[#commands-reference][Commands Reference]] for all project management and task dependency commands
+- [[#view-dsl-reference][View DSL Filter Reference]] for creating custom project views
 
 *** Cleaning up / archiving completed work
 :PROPERTIES:
@@ -1562,6 +1877,8 @@ You can define your own agenda views by defining your own functions like shown b
         (let ((org-agenda-custom-commands '(your-definition-here)))
           (org-agenda nil "x"))))
 #+end_src
+
+*See also*: For a much easier way to create custom views, see [[#view-dsl-reference][View DSL Filter Reference]], which provides a declarative language for defining views without writing skip functions.
 *** Adding your own hooks when organizing
 :PROPERTIES:
 :CUSTOM_ID: hooks-framework
@@ -1574,6 +1891,8 @@ Org GTD therefore provides a helper function, ~org-gtd-organize-type-member-p~, 
 When called as part of a hook, this function will check a buffer-local variable called ~org-gtd--organize-type~, managed by Org GTD, to determine truthiness.
 
 For an example, see the source code for ~org-gtd-areas-of-focus--set~, which will not run if the task being organized is a project task, trash, knowledge, or a quick action.
+
+*See also*: For complete documentation on the hooks framework, including many examples and best practices, see [[#hooks-reference][Hooks Framework Reference]].
 ** Automating through emacs
 There's now a few functions you can use when you are doing work within emacs and would like GTD to track something for you as a result:
 - ~org-gtd-habit-create~
@@ -1598,22 +1917,2230 @@ For instance, one way this could work:
   (add-hook 'message-send-hook 'org-gtd-email-reminder)
 #+end_src
 
-* Troubleshooting
-** Finding lost tasks
-Sometimes things break. The following functions will help you find these items:
+*See also*: [[#commands-reference][Commands Reference]] for complete documentation of all programmatic creation commands.
 
-- ~org-gtd-review-stuck-calendar-items~
-- ~org-gtd-review-stuck-incubated-items~
-- ~org-gtd-review-stuck-habit-items~
-- ~org-gtd-review-stuck-delegated-items~
-- ~org-gtd-review-stuck-single-action-items~
-- ~org-gtd-review-stuck-projects~
-- ~org-gtd-review-missed-items~
+* Reference
+:PROPERTIES:
+:DESCRIPTION: Complete reference for all org-gtd features
+:CUSTOM_ID: reference
+:END:
+
+This section provides complete reference documentation for all org-gtd configuration variables, commands, properties, and advanced features. Use this section when you need to look up specific details about a configuration option, command, or property.
+
+*Quick navigation*:
+- [[#config-vars-reference][Configuration Variables Reference]] - All customization options
+- [[#commands-reference][Commands Reference]] - All interactive commands organized by workflow step
+- [[#properties-reference][Properties Reference]] - All org properties used by org-gtd
+- [[#view-dsl-reference][View DSL Filter Reference]] - Complete guide to creating custom views
+- [[#hooks-reference][Hooks Framework Reference]] - Complete guide to customization hooks
+
+For learning how to use org-gtd, start with [[#getting-started][Getting Started with Org GTD]] and [[#using-org-gtd][Using Org GTD]].
+
+** Configuration Variables Reference
+:PROPERTIES:
+:DESCRIPTION: All customization variables explained
+:CUSTOM_ID: config-vars-reference
+:END:
+
+These variables control how org-gtd behaves. All can be customized via ~M-x customize-group RET org-gtd~.
+
+*** Required Configuration
+
+**** ~org-todo-keywords~ (org-mode variable)
+
+*Type*: List of keyword sequences
+
+*Default*: Varies by org-mode installation
+
+*Description*: Defines TODO keyword sequences for org-mode. All GTD keywords must be in the *same sequence*.
+
+*Required format*:
+#+begin_src emacs-lisp
+(setq org-todo-keywords
+      '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+#+end_src
+
+The ~|~ separator marks done states (right side) from active states (left side).
+
+**** ~org-gtd-keyword-mapping~
+
+*Type*: Alist mapping GTD states to keyword strings
+
+*Default*:
+#+begin_src emacs-lisp
+'((todo . "TODO")
+  (next . "NEXT")
+  (wait . "WAIT")
+  (canceled . "CNCL"))
+#+end_src
+
+*Description*: Maps GTD semantic states to your chosen TODO keywords.
+
+*Required keys*:
+- ~todo~ :: Tasks not ready to be acted upon
+- ~next~ :: Tasks ready to act on immediately
+- ~wait~ :: Tasks blocked or delegated to someone else
+- ~canceled~ :: Tasks that won't be completed
+
+*Example*: Using custom keywords:
+#+begin_src emacs-lisp
+(setq org-todo-keywords
+      '((sequence "TASK" "DOING" "BLOCKED" "|" "COMPLETE" "CANCELLED")))
+
+(setq org-gtd-keyword-mapping
+      '((todo . "TASK")
+        (next . "DOING")
+        (wait . "BLOCKED")
+        (canceled . "CANCELLED")))
+#+end_src
+
+*** Directory and File Configuration
+
+**** ~org-gtd-directory~
+
+*Type*: String (directory path)
+
+*Default*: ~"~/gtd/"~
+
+*Description*: Directory where org-gtd keeps all its files.
+
+org-gtd will look for all its files in this directory:
+- ~inbox.org~ - Capture target
+- ~org-gtd-tasks.org~ - Main GTD file
+- ~org-gtd-incubate.org~ - Someday/maybe items
+- ~org-gtd-calendar.org~ - Calendar items
+
+*Example*:
+#+begin_src emacs-lisp
+(setq org-gtd-directory "~/my-gtd/")
+#+end_src
+
+*Note*: Make sure to add this directory to ~org-agenda-files~:
+#+begin_src emacs-lisp
+(setq org-agenda-files (list org-gtd-directory))
+#+end_src
+
+**** ~org-gtd-horizons-file~
+
+*Type*: String (filename)
+
+*Default*: ~"horizons.org"~
+
+*Description*: Name of file (in ~org-gtd-directory~) containing your GTD horizons (long-term goals, areas of focus, purpose).
+
+This file can be displayed during clarification for context.
+
+*Example*:
+#+begin_src emacs-lisp
+(setq org-gtd-horizons-file "my-horizons.org")
+#+end_src
+
+*** Capture Configuration
+
+**** ~org-gtd-capture-templates~
+
+*Type*: List of org-capture template specifications
+
+*Default*:
+#+begin_src emacs-lisp
+'(("i" "Inbox"
+   entry  (file ,#'org-gtd-inbox-path)
+   "* %?\n%U\n\n  %i"
+   :kill-buffer t)
+  ("l" "Inbox with link"
+   entry  (file ,#'org-gtd-inbox-path)
+   "* %?\n%U\n\n  %i\n  %a"
+   :kill-buffer t))
+#+end_src
+
+*Description*: Capture templates specific to org-gtd inbox.
+
+*Constraints* (must be satisfied for org-gtd to work correctly):
+1. Template string must start with ~"* "~ (asterisk + space for org heading)
+2. Entry type must be: ~entry (file ,#'org-gtd-inbox-path)~
+
+*Example*: Adding a custom template:
+#+begin_src emacs-lisp
+(setq org-gtd-capture-templates
+      '(("i" "Inbox"
+         entry (file ,#'org-gtd-inbox-path)
+         "* %?\n%U\n\n  %i"
+         :kill-buffer t)
+        ("m" "Meeting note"
+         entry (file ,#'org-gtd-inbox-path)
+         "* Meeting: %?\n%U\n\nAttendees:\n\nNotes:\n"
+         :kill-buffer t)))
+#+end_src
+
+*** Organize and Process Configuration
+
+**** ~org-gtd-organize-hooks~
+
+*Type*: List of functions
+
+*Default*: ~'(org-set-tags-command)~
+
+*Description*: Functions run when organizing each item. Each function can add metadata (tags, properties, etc.) to the item being organized.
+
+The default value prompts for tags. Built-in options:
+- ~org-set-tags-command~ :: Prompt for tags (default)
+- ~org-gtd-set-area-of-focus~ :: Prompt for area of focus
+- Custom functions you write
+
+*Example*: Add effort estimation and area of focus:
+#+begin_src emacs-lisp
+(defun my-add-effort ()
+  "Prompt for effort when organizing."
+  (when (org-gtd-organize-type-member-p '(action project))
+    (org-set-effort)))
+
+(setq org-gtd-organize-hooks
+      '(org-set-tags-command
+        org-gtd-set-area-of-focus
+        my-add-effort))
+#+end_src
+
+*Helper function*: ~org-gtd-organize-type-member-p~
+- Takes a list of item types to check against
+- Returns t if current item matches one of the types
+- Available types: ~action~, ~project~, ~project-task~, ~calendar~, ~delegate~, ~incubate~, ~habit~, ~knowledge~, ~quick~, ~trash~
+
+**** ~org-gtd-save-after-organize~
+
+*Type*: Boolean
+
+*Default*: ~nil~
+
+*Description*: If non-nil, save all modified buffers after each organize step.
+
+Useful if you want automatic saves during inbox processing.
+
+*Example*:
+#+begin_src emacs-lisp
+(setq org-gtd-save-after-organize t)
+#+end_src
+
+**** ~org-gtd-refile-to-any-target~
+
+*Type*: Boolean
+
+*Default*: ~t~
+
+*Description*: Control refile behavior when organizing items.
+
+- When ~t~: org-gtd will refile to the first target it finds, or create a target if necessary, without confirmation
+- When ~nil~: org-gtd will ask for confirmation regardless of number of options
+
+*Example*: Require manual refile target selection:
+#+begin_src emacs-lisp
+(setq org-gtd-refile-to-any-target nil)
+#+end_src
+
+*** Clarification Configuration
+
+**** ~org-gtd-clarify-show-horizons~
+
+*Type*: Symbol or nil
+
+*Default*: ~nil~
+
+*Description*: Whether to show horizons file during clarification.
+
+Values:
+- ~nil~ :: Don't show horizons by default
+- ~'top~ :: Show horizons window at top
+- ~'bottom~ :: Show horizons window at bottom
+- ~'left~ :: Show horizons window on left
+- ~'right~ :: Show horizons window on right
+
+*Example*:
+#+begin_src emacs-lisp
+(setq org-gtd-clarify-show-horizons 'right)
+#+end_src
+
+*Related command*: ~org-gtd-clarify-toggle-horizons-window~ to toggle visibility during clarification.
+
+**** ~org-gtd-clarify-display-helper-buffer~
+
+*Type*: Boolean
+
+*Default*: ~nil~
+
+*Description*: If non-nil, display project dependencies helper window when clarifying projects.
+
+When enabled, shows a live view of task relationships in a side window when there are multiple tasks in the WIP buffer.
+
+Useful for:
+- Understanding complex dependency graphs
+- Spotting cycles before they cause problems
+- Planning parallel execution paths
+
+*Example*:
+#+begin_src emacs-lisp
+(setq org-gtd-clarify-display-helper-buffer t)
+#+end_src
+
+**** ~org-gtd-clarify-project-templates~
+
+*Type*: Alist of (name . template) strings
+
+*Default*: ~nil~
+
+*Description*: Pre-defined project templates for common project types.
+
+Each entry is a pair of (template-name . template-tasks) where template-tasks is a string of org headings to insert.
+
+*Example*:
+#+begin_src emacs-lisp
+(setq org-gtd-clarify-project-templates
+      '(("Blog Post" . "** Research topic\n** Write draft\n** Edit\n** Add images\n** Publish")
+        ("Code Feature" . "** Design API\n** Write tests\n** Implement feature\n** Code review\n** Merge")))
+#+end_src
+
+Use ~org-gtd-clarify-project-insert-template~ during clarification to insert a template.
+
+*** Areas of Focus Configuration
+
+**** ~org-gtd-areas-of-focus~
+
+*Type*: List of strings
+
+*Default*: ~'("Home" "Health" "Family" "Career")~
+
+*Description*: Your areas of focus (GTD Horizon 2) - the major areas in your life where you don't want to drop balls.
+
+Used when:
+- Adding area of focus to items (via ~org-gtd-set-area-of-focus~ hook)
+- Reviewing specific areas with ~org-gtd-review-area-of-focus~
+
+*Example*:
+#+begin_src emacs-lisp
+(setq org-gtd-areas-of-focus
+      '("Work" "Home" "Health" "Learning" "Relationships" "Finance"))
+#+end_src
+
+*** Engage View Configuration
+
+**** ~org-gtd-engage-prefix-width~
+
+*Type*: Integer
+
+*Default*: ~12~
+
+*Description*: How many characters to dedicate to the prefix in the engage agenda view.
+
+The prefix shows the project name on the left side of each task.
+
+*Example*: Increase space for longer project names:
+#+begin_src emacs-lisp
+(setq org-gtd-engage-prefix-width 20)
+#+end_src
+
+*** Archive Configuration
+
+**** ~org-gtd-archive-location~
+
+*Type*: Function (zero arguments, returns string)
+
+*Default*: ~#'org-gtd-archive-location-func~
+
+*Description*: Function that generates the archive location string for completed items.
+
+The returned string must match ~org-archive-location~ format.
+
+Default function generates: =archive-YYYY.org::datetree/= (year-based archive files).
+
+*Example*: Archive to a single file:
+#+begin_src emacs-lisp
+(defun my-archive-location ()
+  "Archive to a single file."
+  "archive.org::")
+
+(setq org-gtd-archive-location #'my-archive-location)
+#+end_src
+
+*Example*: Archive to month-based files:
+#+begin_src emacs-lisp
+(defun my-monthly-archive ()
+  "Archive to month-based files."
+  (format "archive-%s.org::datetree/"
+          (format-time-string "%Y-%m")))
+
+(setq org-gtd-archive-location #'my-monthly-archive)
+#+end_src
+
+*** Oops View Configuration
+
+**** ~org-gtd-oops-custom-views~
+
+*Type*: List of GTD view specifications
+
+*Default*: ~nil~
+
+*Description*: Additional custom "oops" views for finding missed/overdue items.
+
+Each view is a GTD view specification alist with ~'name~ and ~'filters~ keys.
+
+*Example*:
+#+begin_src emacs-lisp
+(setq org-gtd-oops-custom-views
+      '(((name . "Overdue Work Items")
+         (filters . ((area-of-focus . "Work")
+                     (deadline . past))))
+        ((name . "Missed Delegations")
+         (filters . ((category . delegated)
+                     (timestamp . past))))))
+#+end_src
+
+Use ~org-gtd-oops-with-custom~ to see all oops views including your custom ones.
+
+*** ID Overlay Configuration
+
+**** ~org-gtd-id-overlay-truncate-length~
+
+*Type*: Integer
+
+*Default*: ~20~
+
+*Description*: Maximum length for displayed heading text in ID overlays.
+
+When ~org-gtd-id-overlay-mode~ is enabled, task IDs are replaced with truncated heading text for readability.
+
+*Example*:
+#+begin_src emacs-lisp
+(setq org-gtd-id-overlay-truncate-length 30)
+#+end_src
+
+**** ~org-gtd-id-overlay-ellipsis~
+
+*Type*: String
+
+*Default*: ~"..."~
+
+*Description*: String to append to truncated heading text in ID overlays.
+
+*Example*:
+#+begin_src emacs-lisp
+(setq org-gtd-id-overlay-ellipsis "…")
+#+end_src
+
+*** Advanced Item Configuration
+
+**** ~org-gtd-user-item-config~
+
+*Type*: Alist
+
+*Default*: ~'()~
+
+*Description*: Override default behavior for GTD item types.
+
+This is an advanced feature for customizing how org-gtd handles different item types. If org-gtd finds an item type in this alist, it uses your configuration instead of the built-in one.
+
+See source code for examples of the expected structure.
+
+*** Obsolete Variables (Do Not Use)
+
+These variables are obsolete as of version 4.0. They are listed here for reference only.
+
+**** ~org-gtd-todo-keyword~ (obsolete)
+*Use instead*: ~org-gtd-keyword-mapping~ with key ~'todo~
+
+**** ~org-gtd-next-keyword~ (obsolete)
+*Use instead*: ~org-gtd-keyword-mapping~ with key ~'next~
+
+**** ~org-gtd-wait-keyword~ (obsolete)
+*Use instead*: ~org-gtd-keyword-mapping~ with key ~'wait~
+
+**** ~org-gtd-canceled-keyword~ (obsolete)
+*Use instead*: ~org-gtd-keyword-mapping~ with key ~'canceled~
+
+** Commands Reference
+:PROPERTIES:
+:DESCRIPTION: All interactive commands explained
+:CUSTOM_ID: commands-reference
+:END:
+
+This section lists all interactive commands available in org-gtd, organized by workflow step.
+
+*** Core GTD Workflow Commands
+
+**** ~org-gtd-capture~
+
+*Binding*: Typically ~C-c d c~ (user-configurable)
+
+*When to use*: Anytime something comes up that you need to capture
+
+*What it does*:
+- Opens org-capture for the inbox
+- Uses templates from ~org-gtd-capture-templates~
+- Stores item in inbox.org for later processing
+
+*Arguments*: Optional ~goto~ and ~keys~ (same as ~org-capture~)
+
+*Example usage*:
+#+begin_example
+M-x org-gtd-capture
+Type: "Call dentist to schedule checkup"
+C-c C-c to save
+#+end_example
+
+**** ~org-gtd-process-inbox~
+
+*Binding*: Typically ~C-c d p~
+
+*When to use*: When your inbox has items (daily or multiple times daily)
+
+*What it does*:
+- Starts processing loop through inbox items
+- Opens each item in a clarify buffer (WIP mode)
+- Continues until inbox is empty or you quit
+
+*How to use*:
+1. Run command
+2. Edit each item to clarify it
+3. Press your organize binding (~C-c c~) to organize it
+4. Repeat for next item
+
+*Related*: ~org-gtd-clarify-item~ to clarify a single item without processing whole inbox
+
+**** ~org-gtd-organize~
+
+*Binding*: Typically ~C-c c~ (only works in clarify buffers)
+
+*When to use*: After clarifying an item, to categorize it
+
+*What it does*:
+- Opens transient menu with organization options
+- Prompts for item-specific information (dates, names, etc.)
+- Runs organize hooks
+- Refiles item to appropriate location
+
+*Important*: This only works in clarify buffers (org-gtd-wip-mode). It won't work in regular org files.
+
+*Item types available*:
+- [P] Project
+- [A] Add to existing project
+- [C] Calendar
+- [D] Delegate
+- [S] Single action
+- [H] Habit
+- [I] Incubate
+- [K] Knowledge
+- [Q] Quick action
+- [T] Trash
+
+**** ~org-gtd-engage~
+
+*Binding*: Typically ~C-c d e~
+
+*When to use*: Daily (or multiple times daily) to see what you can work on right now
+
+*What it does*:
+- Shows org-agenda view customized for GTD
+- Displays:
+  - Agenda for today (appointments, deadlines, scheduled items)
+  - All NEXT actions (grouped by project)
+- Uses prefix width from ~org-gtd-engage-prefix-width~
+
+*Agenda commands available in this view*:
+- ~t~ :: Change TODO state
+- ~RET~ :: Visit item
+- ~r~ :: Refile
+- And all other org-agenda commands
+
+**** ~org-gtd-show-all-next~
+
+*Binding*: Typically ~C-c d n~
+
+*When to use*: When you want to focus only on NEXT actions, without calendar/scheduled items
+
+*What it does*:
+- Shows all items with NEXT keyword
+- Simpler than engage view (no agenda section)
+- Useful for "get things done" focus mode
+
+*** Review Commands
+
+**** ~org-gtd-review-stuck-projects~
+
+*Binding*: Typically ~C-c d s~
+
+*When to use*: Weekly review, or when projects seem stalled
+
+*What it does*:
+- Finds projects that have active tasks but no NEXT actions
+- Indicates dependency problems or missing FIRST_TASKS
+
+*How to fix stuck projects*:
+1. Navigate to project heading
+2. Run ~org-gtd-projects-fix-todo-keywords-for-project-at-point~
+3. If still stuck, check dependencies
+
+**** ~org-gtd-review-area-of-focus~
+
+*Arguments*: Optional AREA and START-DATE
+
+*When to use*: During weekly/monthly reviews to focus on specific life area
+
+*What it does*:
+- Generates agenda view for items tagged with a specific area of focus
+- Prompts for area if not provided
+- Shows all items (projects, actions, calendar) for that area
+
+*Example*:
+#+begin_example
+M-x org-gtd-review-area-of-focus
+Area: Work
+Shows: All Work-related items
+#+end_example
+
+**** ~org-gtd-review-completed-items~
+
+*Arguments*: Optional DAYS-BACK (default 7)
+
+*When to use*: Weekly review to see what you accomplished
+
+*What it does*:
+- Shows items completed in the last N days
+- Good for weekly review reflection
+
+*Example*:
+#+begin_example
+M-x org-gtd-review-completed-items
+Shows: Items completed in last 7 days
+
+C-u 30 M-x org-gtd-review-completed-items
+Shows: Items completed in last 30 days
+#+end_example
+
+**** ~org-gtd-review-completed-projects~
+
+*When to use*: Weekly/monthly review to see finished projects
+
+*What it does*:
+- Shows all projects where all tasks are DONE
+- Ready to archive
+
+**** ~org-gtd-review-missed-items~
+
+*When to use*: When you suspect items have fallen through the cracks
+
+*What it does*:
+- Finds items that should have been processed but weren't
+- Looks for various data inconsistencies
+
+*** Stuck Item Review Commands
+
+Each of these commands finds items with problems in a specific category:
+
+**** ~org-gtd-review-stuck-calendar-items~
+
+Finds calendar items with invalid or missing timestamps.
+
+**** ~org-gtd-review-stuck-incubated-items~
+
+Finds incubated items with invalid or missing review dates.
+
+**** ~org-gtd-review-stuck-habit-items~
+
+Finds habit items with incorrect configuration.
+
+**** ~org-gtd-review-stuck-delegated-items~
+
+Finds delegated items with missing delegate or date information.
+
+**** ~org-gtd-review-stuck-single-action-items~
+
+Finds single actions that aren't marked as NEXT.
+
+*** Oops Commands (Missed/Overdue Items)
+
+**** ~org-gtd-oops~
+
+*When to use*: Daily or weekly to catch missed appointments and overdue tasks
+
+*What it does*:
+- Shows all missed calendar appointments
+- Shows overdue projects
+- Shows past-due delegations
+
+**** ~org-gtd-oops-calendar~
+
+Shows only missed calendar appointments.
+
+**** ~org-gtd-oops-delegated~
+
+Shows only delegated items where the follow-up date has passed.
+
+**** ~org-gtd-oops-projects~
+
+Shows only projects with overdue deadlines.
+
+**** ~org-gtd-oops-with-custom~
+
+Shows all oops views plus any custom views defined in ~org-gtd-oops-custom-views~.
+
+*** Clarification Commands
+
+**** ~org-gtd-clarify-item~
+
+*Arguments*: Optional MARKER and WINDOW-CONFIG
+
+*When to use*: To clarify a single org heading without processing the entire inbox
+
+*What it does*:
+- Opens item in clarify buffer (WIP mode)
+- You can edit and organize it
+- Returns to previous location when done
+
+*Example*: Clarifying an item in your tasks file that needs re-organization.
+
+**** ~org-gtd-clarify-agenda-item~
+
+*When to use*: When viewing agenda and want to re-clarify an item
+
+*What it does*:
+- Opens agenda item in clarify buffer
+- Same as ~org-gtd-clarify-item~ but works from agenda view
+
+**** ~org-gtd-clarify-toggle-horizons-window~
+
+*When to use*: During clarification, to show/hide your horizons file
+
+*What it does*:
+- Toggles display of horizons file in side window
+- Position determined by ~org-gtd-clarify-show-horizons~ (or right side if variable is nil)
+
+**** ~org-gtd-clarify-project-insert-template~
+
+*When to use*: During project clarification, to insert a predefined template
+
+*What it does*:
+- Prompts for template from ~org-gtd-clarify-project-templates~
+- Inserts template tasks into current project
+
+### Archive Commands
+
+**** ~org-gtd-archive-completed-items~
+
+*When to use*: Weekly or monthly cleanup
+
+*What it does*:
+- Finds all DONE/CNCL items in GTD files
+- Archives them to location specified by ~org-gtd-archive-location~
+- Keeps your active files clean
+
+*Example*:
+#+begin_example
+M-x org-gtd-archive-completed-items
+Archives: All completed items
+Result: Clean active files, archived items in archive file(s)
+#+end_example
+
+*** Agenda-Specific Commands
+
+These commands only work when point is on an agenda item:
+
+**** ~org-gtd-delegate-agenda-item~
+
+*When to use*: In agenda view, to delegate an existing action to someone else
+
+*What it does*:
+- Prompts for person to delegate to
+- Prompts for follow-up date
+- Updates item properties
+- Refiles to delegated items location
+
+**** ~org-gtd-project-cancel-from-agenda~
+
+*When to use*: In agenda view, when you want to cancel an entire project
+
+*What it does*:
+- Finds the project containing the agenda item
+- Marks all remaining tasks as CNCL
+- Updates project status
+
+*** Project Management Commands
+
+**** ~org-gtd-projects-fix-todo-keywords-for-project-at-point~
+
+*When to use*: After manually editing project dependencies
+
+*What it does*:
+- Recalculates which tasks should be NEXT based on dependency graph
+- Updates all task keywords in the project
+- Fixes stuck projects
+
+*Required*: Point must be on project heading
+
+*Example workflow*:
+1. Edit ORG_GTD_DEPENDS_ON properties manually
+2. Put point on project heading
+3. Run this command
+4. Keywords are updated to match dependencies
+
+*** Task Dependency Commands
+
+These commands help manage task relationships in projects:
+
+**** ~org-gtd-task-add-blockers~
+
+*When to use*: To specify that the current task depends on other task(s) completing first
+
+*What it does*:
+- Prompts to select tasks that block the current task
+- Creates bidirectional relationships:
+  - Adds selected task IDs to current task's ORG_GTD_DEPENDS_ON
+  - Adds current task ID to selected tasks' ORG_GTD_BLOCKS
+- Can select multiple blockers
+
+*Example*:
+#+begin_example
+On task: "Get diagnosis"
+M-x org-gtd-task-add-blockers
+Select: "Make MRI appointment" and "Make orthopedist appointment"
+Result: Both appointments must complete before diagnosis can start
+#+end_example
+
+**** ~org-gtd-task-remove-blockers~
+
+*When to use*: To remove blocking relationships from current task
+
+*What it does*:
+- Shows current blockers
+- Prompts to select which to remove
+- Removes bidirectional relationships
+
+**** ~org-gtd-task-add-dependent~
+
+*When to use*: To specify that another task depends on the current task completing
+
+*What it does*:
+- Prompts to select a task that depends on current task
+- Creates bidirectional relationship:
+  - Adds selected task ID to current task's ORG_GTD_BLOCKS
+  - Adds current task ID to selected task's ORG_GTD_DEPENDS_ON
+
+*Example*:
+#+begin_example
+On task: "Get project approval"
+M-x org-gtd-task-add-dependent
+Select: "Start implementation"
+Result: Implementation can't start until approval is done
+#+end_example
+
+**** ~org-gtd-task-add-dependents~
+
+*When to use*: To specify multiple tasks that depend on the current task
+
+*What it does*:
+- Same as ~org-gtd-task-add-dependent~ but allows multiple selections
+
+**** ~org-gtd-task-clear-relationships~
+
+*When to use*: To remove ALL dependency relationships from current task
+
+*What it does*:
+- Removes all ORG_GTD_BLOCKS and ORG_GTD_DEPENDS_ON properties
+- Updates related tasks to remove references to this task
+- Use with caution!
+
+**** ~org-gtd-task-show-relationships~
+
+*When to use*: To see what tasks are related to the current task
+
+*What it does*:
+- Displays in minibuffer:
+  - Tasks this task depends on (blockers)
+  - Tasks that depend on this task (dependents)
+- Useful for understanding dependency graph
+
+**** ~org-gtd-validate-project-dependencies~
+
+*When to use*: To check for dependency problems in a project
+
+*What it does*:
+- Detects broken dependency references (task IDs that don't exist)
+- Finds orphaned tasks (not reachable from FIRST_TASKS)
+- Identifies circular dependencies
+- Provides guidance on fixes
+
+*Required*: Point must be on project heading
+
+**** ~org-gtd-remove-task-from-project~
+
+*When to use*: To remove a task from a project structure
+
+*What it does*:
+- Removes the project ID from task's ORG_GTD_PROJECT_IDS property
+- Doesn't delete the task, just removes project association
+- Useful when reorganizing project structures
+
+### Area of Focus Commands
+
+**** ~org-gtd-area-of-focus-set-on-item-at-point~
+
+*When to use*: To add area of focus to an existing item (not during organize)
+
+*What it does*:
+- Prompts for area from ~org-gtd-areas-of-focus~
+- Sets CATEGORY property
+- Use this on any org heading
+
+*Note*: Trusts you to use it correctly (no validation)
+
+**** ~org-gtd-area-of-focus-set-on-agenda-item~
+
+*When to use*: In agenda view, to set area of focus on an item
+
+*What it does*:
+- Same as ~org-gtd-area-of-focus-set-on-item-at-point~ but from agenda
+- Smarter: detects if you're on a project task and sets area on the project instead
+
+*** Programmatic Creation Commands
+
+These commands create GTD items programmatically (useful for automation and Emacs Lisp code):
+
+**** ~org-gtd-habit-create~
+
+*Arguments*: STRING and additional parameters
+
+*Use case*: Creating habits from Emacs Lisp
+
+*Example*:
+#+begin_src emacs-lisp
+(org-gtd-habit-create "Exercise" "daily" (org-read-date nil nil "+0d"))
+#+end_src
+
+**** ~org-gtd-calendar-create~
+
+*Arguments*: STRING and DATE-TIME
+
+*Use case*: Creating calendar items from Emacs Lisp
+
+*Example*:
+#+begin_src emacs-lisp
+(org-gtd-calendar-create "Team meeting" (org-read-date nil nil "+7d 9:00"))
+#+end_src
+
+**** ~org-gtd-delegate-create~
+
+*Arguments*: STRING, DELEGATED-TO, and REMINDER-DATE
+
+*Use case*: Auto-delegating from email, code review systems, etc.
+
+*Example*:
+#+begin_src emacs-lisp
+(defun org-gtd-email-reminder ()
+  (let ((topic (message-fetch-field "subject"))
+        (delegated-to (message-fetch-field "to"))
+        (reminder-date (org-read-date nil nil "+3d")))
+    (org-gtd-delegate-create (format "Reminder: %s" topic)
+                             delegated-to
+                             reminder-date)))
+
+(add-hook 'message-send-hook 'org-gtd-email-reminder)
+#+end_src
+
+**** ~org-gtd-incubate-create~
+
+*Arguments*: STRING and REVIEW-DATE
+
+*Use case*: Programmatically adding someday/maybe items
+
+*Example*:
+#+begin_src emacs-lisp
+(org-gtd-incubate-create "Learn Rust" (org-read-date nil nil "+6m"))
+#+end_src
+
+**** ~org-gtd-single-action-create~
+
+*Arguments*: STRING
+
+*Use case*: Programmatically adding actions
+
+*Example*:
+#+begin_src emacs-lisp
+(org-gtd-single-action-create "Follow up on proposal")
+#+end_src
+
+### Utility Commands
+
+**** ~org-gtd-setup-keywords-wizard~
+
+*When to use*: Initial setup or when changing keyword configuration
+
+*What it does*:
+- Interactive wizard to configure GTD keyword mapping
+- Guides you through setting up ~org-gtd-keyword-mapping~
+- Validates configuration
+
+**** ~org-gtd-inbox-path~
+
+*Not interactive, but useful in Emacs Lisp*
+
+*Returns*: Full path to inbox.org file
+
+*Use case*: When writing custom capture templates or automation
+
+*Example*:
+#+begin_src emacs-lisp
+(defun my-custom-capture ()
+  (let ((inbox (org-gtd-inbox-path)))
+    ;; do something with inbox file
+    ))
+#+end_src
+
+*** ID Overlay Commands
+
+**** ~org-gtd-id-overlay-mode~
+
+*Type*: Minor mode
+
+*When to use*: When working with project dependencies and wanting readable task references
+
+*What it does*:
+- Replaces task IDs with truncated heading text
+- Makes dependency properties more readable
+- Automatically enabled in WIP buffers
+
+**** ~org-gtd-id-overlay-refresh-buffer~
+
+*When to use*: After modifying headings, to update overlays
+
+*What it does*:
+- Refreshes all ID overlays in current buffer
+- Usually automatic, but available for manual refresh
+
+**** ~org-gtd-id-overlay-clear-buffer~
+
+*When to use*: To remove all overlays (see raw IDs)
+
+*What it does*:
+- Removes all ID overlays from buffer
+- Shows actual ID values
+
+*** Migration and Upgrade Commands
+
+**** ~org-gtd-upgrade-v3-to-v4~
+
+*When to use*: REQUIRED when upgrading from version 3.x to 4.0
+
+*What it does*:
+1. Adds ORG_GTD properties to identify items
+2. Converts TRIGGER-based projects to dependency-based system
+3. Updates task states based on new dependency graph
+
+*Important*:
+- Make a backup first!
+- Required for existing projects to work in v4
+- Safe to run multiple times
+- See [[#upgrading][Upgrading section]] for complete details
+
+*** Obsolete Commands
+
+**** ~org-gtd-mode~ (obsolete since 4.0)
+
+*Use instead*:
+#+begin_src emacs-lisp
+(setq org-agenda-files (list org-gtd-directory))
+(org-edna-mode 1)
+#+end_src
+
+This minor mode is no longer needed and will be removed in a future version.
+
+** Properties Reference
+:PROPERTIES:
+:DESCRIPTION: All org properties used by org-gtd
+:CUSTOM_ID: properties-reference
+:END:
+
+org-gtd uses org-mode properties extensively to track state and relationships. This section documents all properties used by the system.
+
+*** Core GTD Properties
+
+**** ORG_GTD
+
+*Used on*: All GTD items (projects, actions, calendar items, incubated items, etc.)
+
+*Purpose*: Identifies the type of GTD item
+
+*Values*:
+- ~"Projects"~ :: Project heading
+- ~"Actions"~ :: Project tasks and single actions
+- ~"Calendar"~ :: Calendar items (appointments, deadlines)
+- ~"Incubated"~ :: Someday/maybe items
+- ~"Delegated"~ :: Delegated tasks (set in combination with DELEGATED_TO)
+
+*Example*:
+#+begin_example
+* My Project
+:PROPERTIES:
+:ORG_GTD: Projects
+:END:
+** NEXT Task 1
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+#+end_example
+
+*Note*: This property is how org-gtd identifies items. Don't modify manually unless you understand the implications.
+
+*** Project Properties
+
+**** ORG_GTD_FIRST_TASKS
+
+*Used on*: Project headings
+
+*Purpose*: Identifies which tasks can start immediately (have no dependencies)
+
+*Format*: Space-separated list of task IDs
+
+*Example*:
+#+begin_example
+* Software Release
+:PROPERTIES:
+:ORG_GTD: Projects
+:ORG_GTD_FIRST_TASKS: abc123 def456
+:END:
+#+end_example
+
+This means tasks with IDs "abc123" and "def456" can both start immediately (parallel execution).
+
+*When to modify*:
+- After organizing a project (org-gtd sets this automatically)
+- When adding parallel starting points to a project
+- Always run ~org-gtd-projects-fix-todo-keywords-for-project-at-point~ after manual edits
+
+*** Task Dependency Properties
+
+**** ORG_GTD_DEPENDS_ON
+
+*Used on*: Project tasks
+
+*Purpose*: Lists task IDs that must complete before this task can start
+
+*Format*: Space-separated list of task IDs
+
+*Example*:
+#+begin_example
+** NEXT Get project approval
+:PROPERTIES:
+:ID: task-001
+:ORG_GTD: Actions
+:ORG_GTD_BLOCKS: task-002 task-003
+:END:
+** TODO Design solution
+:PROPERTIES:
+:ID: task-002
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: task-001
+:ORG_GTD_BLOCKS: task-004
+:END:
+** TODO Setup infrastructure
+:PROPERTIES:
+:ID: task-003
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: task-001
+:ORG_GTD_BLOCKS: task-004
+:END:
+** TODO Implement feature
+:PROPERTIES:
+:ID: task-004
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: task-002 task-003
+:END:
+#+end_example
+
+In this example:
+- Task 001 (approval) starts first
+- Tasks 002 (design) and 003 (infrastructure) can run in parallel after approval
+- Task 004 (implement) waits for both 002 and 003 to complete
+
+*When to modify*:
+- When creating custom dependency structures
+- When changing task relationships
+- Always update ORG_GTD_BLOCKS on the blocking tasks too (bidirectional)
+- Always run ~org-gtd-projects-fix-todo-keywords-for-project-at-point~ after edits
+
+**** ORG_GTD_BLOCKS
+
+*Used on*: Project tasks
+
+*Purpose*: Lists task IDs that depend on this task completing (inverse of DEPENDS_ON)
+
+*Format*: Space-separated list of task IDs
+
+*Relationship*: If task A has ~ORG_GTD_BLOCKS: B C~, then:
+- Task B should have ~ORG_GTD_DEPENDS_ON: A~
+- Task C should have ~ORG_GTD_DEPENDS_ON: A~
+
+*When to modify*:
+- Manually when setting up dependencies (maintain bidirectional relationship)
+- Use ~org-gtd-task-add-dependent~ command instead of manual edits when possible
+
+**** ORG_GTD_PROJECT_IDS
+
+*Used on*: Tasks
+
+*Purpose*: Lists project IDs this task belongs to (supports multi-project tasks)
+
+*Format*: Space-separated list of project IDs
+
+*Note*: Currently org-gtd creates one project per task, but this property supports future multi-project features.
+
+*** Calendar and Time Properties
+
+**** ORG_GTD_TIMESTAMP
+
+*Used on*: Calendar items, delegated items
+
+*Purpose*: Stores the appointment time or follow-up date
+
+*Format*: Org timestamp (inactive timestamp)
+
+*Example*:
+#+begin_example
+* Doctor appointment
+:PROPERTIES:
+:ORG_GTD: Calendar
+:ORG_GTD_TIMESTAMP: [2025-10-15 Wed 14:00]
+:END:
+#+end_example
+
+*Why not use SCHEDULED*: org-gtd uses a custom property to distinguish between "do this at this time" (GTD calendar items) and "start working on this sometime after this date" (org-mode scheduling).
+
+*When to modify*: Use ~org-gtd-organize~ to change calendar items rather than manual edits.
+
+### Delegation Properties
+
+**** DELEGATED_TO
+
+*Used on*: Delegated items
+
+*Purpose*: Stores the name of person/team the task is delegated to
+
+*Format*: String (person's name)
+
+*Example*:
+#+begin_example
+* Review document
+:PROPERTIES:
+:ORG_GTD: Delegated
+:DELEGATED_TO: Alice Smith
+:ORG_GTD_TIMESTAMP: [2025-10-18 Fri]
+:END:
+#+end_example
+
+*When to modify*: Use ~org-gtd-delegate-agenda-item~ or organize flow rather than manual edits.
+
+*Customization*: Set ~org-gtd-delegate-read-func~ to customize how names are entered (e.g., for completion).
+
+### Habit Properties
+
+**** STYLE
+
+*Used on*: Habits
+
+*Purpose*: Identifies item as an org-mode habit
+
+*Value*: ~"habit"~
+
+*Example*:
+#+begin_example
+* TODO Exercise
+SCHEDULED: <2025-10-11 Fri .+1d>
+:PROPERTIES:
+:STYLE: habit
+:END:
+#+end_example
+
+*Note*: This is a standard org-mode habit property. See org-mode documentation for habit repeat patterns and configuration.
+
+*** Area of Focus Properties
+
+**** CATEGORY
+
+*Used on*: All items (when using areas of focus)
+
+*Purpose*: Identifies which area of focus (GTD Horizon 2) an item belongs to
+
+*Format*: String matching value from ~org-gtd-areas-of-focus~
+
+*Example*:
+#+begin_example
+* Finish quarterly report
+:PROPERTIES:
+:ORG_GTD: Actions
+:CATEGORY: Work
+:END:
+#+end_example
+
+*When to set*:
+- During organize, if ~org-gtd-set-area-of-focus~ is in ~org-gtd-organize-hooks~
+- Manually with ~org-gtd-area-of-focus-set-on-item-at-point~
+- From agenda with ~org-gtd-area-of-focus-set-on-agenda-item~
+
+*Use*: Filter views by area with ~org-gtd-review-area-of-focus~ or custom views.
+
+*** Standard Org Properties Used by org-gtd
+
+**** ID
+
+*Used on*: All GTD items
+
+*Purpose*: Unique identifier for the item (org-mode standard)
+
+*Format*: Auto-generated UUID
+
+*Note*: org-gtd relies heavily on IDs for task relationships. Don't delete ID properties.
+
+**** TODO
+
+*Not a property, but a heading keyword*
+
+*Values used by org-gtd*:
+- Value from ~org-gtd-keyword-mapping~'s ~todo~ key (default "TODO")
+- Value from ~org-gtd-keyword-mapping~'s ~next~ key (default "NEXT")
+- Value from ~org-gtd-keyword-mapping~'s ~wait~ key (default "WAIT")
+- Value from ~org-gtd-keyword-mapping~'s ~canceled~ key (default "CNCL")
+- ~"DONE"~ (standard org-mode)
+
+**** SCHEDULED (org-mode standard)
+
+*Used on*: Habits primarily
+
+*Purpose*: For org-mode habits, defines repeat pattern
+
+*Note*: org-gtd uses ORG_GTD_TIMESTAMP for calendar items instead of SCHEDULED to maintain GTD semantics.
+
+**** DEADLINE (org-mode standard)
+
+*Used on*: Items with hard deadlines
+
+*Purpose*: Mark items that must be done by a specific date
+
+*Note*: org-gtd respects org-mode deadlines in all views and oops checks.
+
+** View DSL Filter Reference
+:PROPERTIES:
+:DESCRIPTION: Complete reference for the View DSL
+:CUSTOM_ID: view-dsl-reference
+:END:
+
+The View DSL (Domain-Specific Language) lets you create custom agenda views using simple, declarative syntax. This section documents all available filters.
+
+*** View Structure
+
+A GTD view is defined as an alist:
+
+#+begin_src emacs-lisp
+'((name . "View Name")
+  (filters . ((filter-type . filter-value) ...)))
+#+end_src
+
+Multiple filters create AND logic (all must match).
+
+*** Category Filters
+
+Filter by GTD item category:
+
+**** ~(category . delegated)~
+
+*Matches*: Items with DELEGATED_TO property
+
+*Use case*: See all delegated tasks
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "All Delegations")
+  (filters . ((category . delegated))))
+#+end_src
+
+**** ~(category . calendar)~
+
+*Matches*: Items with ~ORG_GTD="Calendar"~
+
+*Use case*: See all calendar items/appointments
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Calendar Items")
+  (filters . ((category . calendar))))
+#+end_src
+
+**** ~(category . projects)~
+
+*Matches*: Project headings (~ORG_GTD="Projects"~)
+
+*Use case*: List all projects
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "All Projects")
+  (filters . ((category . projects))))
+#+end_src
+
+*#### ~(category . active-projects)~
+
+*Matches*: Projects with at least one active (non-done) task
+
+*Use case*: See projects with work remaining
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Active Projects")
+  (filters . ((category . active-projects))))
+#+end_src
+
+*#### ~(category . completed-projects)~
+
+*Matches*: Projects where all tasks are DONE
+
+*Use case*: Weekly review to see completed projects ready to archive
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Completed Projects")
+  (filters . ((category . completed-projects))))
+#+end_src
+
+**** ~(category . stuck-projects)~
+
+*Matches*: Projects with active tasks but no NEXT or WAIT tasks
+
+*Use case*: Find projects needing attention (dependency problems)
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Stuck Projects")
+  (filters . ((category . stuck-projects))))
+#+end_src
+
+**** ~(category . incubate)~
+
+*Matches*: Items with ~ORG_GTD="Incubated"~ (someday/maybe)
+
+*Use case*: Review someday/maybe list
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Someday/Maybe")
+  (filters . ((category . incubate))))
+#+end_src
+
+**** ~(category . habit)~
+
+*Matches*: Items with ~STYLE="habit"~
+
+*Use case*: See all habits
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "All Habits")
+  (filters . ((category . habit))))
+#+end_src
+
+*** Time-based Filters
+
+Filter by timestamps, deadlines, and scheduled dates:
+
+**** ~(timestamp . past)~
+
+*Matches*: Items with ~ORG_GTD_TIMESTAMP~ in the past that aren't done
+
+*Use case*: Missed appointments and follow-ups
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Missed Appointments")
+  (filters . ((category . calendar)
+              (timestamp . past))))
+#+end_src
+
+**** ~(timestamp . future)~
+
+*Matches*: Items with ~ORG_GTD_TIMESTAMP~ in the future
+
+*Use case*: Upcoming appointments
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Upcoming Appointments")
+  (filters . ((category . calendar)
+              (timestamp . future))))
+#+end_src
+
+**** ~(deadline . past)~
+
+*Matches*: Items with deadline in the past that aren't done
+
+*Use case*: Overdue items
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Overdue Items")
+  (filters . ((deadline . past))))
+#+end_src
+
+*#### ~(scheduled . past)~
+
+*Matches*: Items scheduled in the past that aren't done
+
+*Use case*: Find items that should have started
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Overdue Start Dates")
+  (filters . ((scheduled . past))))
+#+end_src
+
+**** ~(scheduled . future)~
+
+*Matches*: Items scheduled in the future
+
+*Use case*: See what's coming up
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Future Scheduled")
+  (filters . ((scheduled . future))))
+#+end_src
+
+**** ~(scheduled . today)~
+
+*Matches*: Items scheduled for today
+
+*Use case*: Today's habits and scheduled actions
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Today's Scheduled Items")
+  (filters . ((scheduled . today))))
+#+end_src
+
+*#### ~(closed . recent)~
+
+*Matches*: Items closed in last 7 days
+
+*Use case*: Weekly review accomplishments
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Recent Completions")
+  (filters . ((closed . recent))))
+#+end_src
+
+**** ~(closed . past-day)~
+
+*Matches*: Items closed in last day
+
+**** ~(closed . past-week)~
+
+*Matches*: Items closed in last week
+
+**** ~(closed . past-month)~
+
+*Matches*: Items closed in last month
+
+**** ~(closed . past-year)~
+
+*Matches*: Items closed in last year
+
+**** ~(closed . today)~
+
+*Matches*: Items closed today
+
+*Use case*: End-of-day review
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Completed Today")
+  (filters . ((closed . today))))
+#+end_src
+
+*** TODO Keyword Filters
+
+Filter by TODO state:
+
+**** ~(todo . ("KEYWORD1" "KEYWORD2"))~
+
+*Matches*: Items with any of the specified TODO keywords
+
+*Use case*: Show specific states
+
+*Example*: Show only NEXT actions:
+#+begin_src emacs-lisp
+'((name . "NEXT Actions Only")
+  (filters . ((todo . ("NEXT")))))
+#+end_src
+
+*Example*: Show NEXT and WAIT:
+#+begin_src emacs-lisp
+'((name . "Active and Waiting")
+  (filters . ((todo . ("NEXT" "WAIT")))))
+#+end_src
+
+*#### ~(done . t)~
+
+*Matches*: Items with done TODO states (right side of ~|~ in keyword sequence)
+
+*Use case*: Show completed items
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Completed Items")
+  (filters . ((done . t))))
+#+end_src
+
+*** Area of Focus Filters
+
+Filter by life area:
+
+**** ~(area-of-focus . "AREA")~
+
+*Matches*: Items with ~CATEGORY="AREA"~
+
+*Use case*: Focus on specific life area
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Work Items")
+  (filters . ((area-of-focus . "Work"))))
+#+end_src
+
+*Example*: Work projects only:
+#+begin_src emacs-lisp
+'((name . "Work Projects")
+  (filters . ((category . active-projects)
+              (area-of-focus . "Work"))))
+#+end_src
+
+*** Tag Filters
+
+Filter by org tags:
+
+*#### ~(tags . ("TAG1" "TAG2"))~
+
+*Matches*: Items with any of the specified tags
+
+*Use case*: Filter by context, priority, or custom tags
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Home and Errands")
+  (filters . ((todo . ("NEXT"))
+              (tags . ("@home" "@errands")))))
+#+end_src
+
+**** ~(tags-match . "PATTERN")~
+
+*Matches*: Items matching org-mode tag expression pattern
+
+*Use case*: Complex tag queries
+
+*Example*: All items with context tags (tags starting with @):
+#+begin_src emacs-lisp
+'((name . "Context-Tagged Items")
+  (filters . ((tags-match . "{^@}"))))
+#+end_src
+
+*Org tag expressions*:
+- ~"tag1|tag2"~ :: Has tag1 OR tag2
+- ~"tag1&tag2"~ :: Has tag1 AND tag2
+- ~"{^@}"~ :: Has any tag starting with @
+
+*** Property Filters
+
+Filter by arbitrary org properties:
+
+**** ~(property . (("PROP" . "VALUE")))~
+
+*Matches*: Items with specified property value
+
+*Use case*: Filter by custom properties
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "High Priority Actions")
+  (filters . ((property . (("PRIORITY" . "A")))
+              (todo . ("NEXT")))))
+#+end_src
+
+*Example*: Multiple property filters:
+#+begin_src emacs-lisp
+'((name . "Project Tasks")
+  (filters . ((property . (("ORG_GTD" . "Actions"))))))
+#+end_src
+
+*** Structural Filters
+
+Filter by org heading structure:
+
+**** ~(level . N)~
+
+*Matches*: Headings at level N
+
+*Use case*: Show only top-level items
+
+*Example*: Top-level projects only:
+#+begin_src emacs-lisp
+'((name . "Top-Level Projects")
+  (filters . ((category . projects)
+              (level . 2))))
+#+end_src
+
+*Note*: org-gtd projects are typically at level 2 in their files (under a category heading at level 1).
+
+*** Special Filters
+
+**** ~(not-habit . t)~
+
+*Matches*: Items that are NOT habits
+
+*Use case*: Exclude habits from views
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "NEXT Actions (No Habits)")
+  (filters . ((todo . ("NEXT"))
+              (not-habit . t))))
+#+end_src
+
+*#### ~(invalid-timestamp . t)~
+
+*Matches*: Items with missing or malformed ~ORG_GTD_TIMESTAMP~ property
+
+*Use case*: Data validation, finding broken calendar/delegate items
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Items with Invalid Timestamps")
+  (filters . ((invalid-timestamp . t))))
+#+end_src
+
+*** View Configuration Options
+
+These options control how the view is displayed:
+
+**** ~(view-type . agenda)~
+
+*Purpose*: Create a native org-agenda view instead of org-ql block
+
+*Use case*: When you want a day/week agenda view
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Weekly Agenda")
+  (view-type . agenda)
+  (agenda-span . 7)
+  (filters . ()))
+#+end_src
+
+*#### ~(agenda-span . N)~
+
+*Purpose*: Number of days to show in agenda view
+
+*Default*: 1
+
+*Requires*: ~(view-type . agenda)~
+
+*Example*: Week view:
+#+begin_src emacs-lisp
+'((name . "Week Ahead")
+  (view-type . agenda)
+  (agenda-span . 7))
+#+end_src
+
+*#### ~(show-habits . t)~ or ~(show-habits . nil)~
+
+*Purpose*: Control habit visibility in agenda views
+
+*Default*: Habits shown
+
+*Requires*: ~(view-type . agenda)~
+
+*Example*: Agenda without habits:
+#+begin_src emacs-lisp
+'((name . "Today (No Habits)")
+  (view-type . agenda)
+  (show-habits . nil))
+#+end_src
+
+*#### ~(additional-blocks . BLOCK-SPECS)~
+
+*Purpose*: Add additional agenda blocks to the view
+
+*Format*: List of block specifications
+
+*Example*: Agenda + NEXT actions:
+#+begin_src emacs-lisp
+'((name . "Today + Actions")
+  (view-type . agenda)
+  (additional-blocks . ((todo . "NEXT"))))
+#+end_src
+
+*#### ~(prefix-format . FORMAT-STRING)~
+
+*Purpose*: Custom agenda prefix format
+
+*Use case*: Customize how items appear in agenda
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Custom Format View")
+  (view-type . agenda)
+  (prefix-format . "  %-12:c %?-12t% s"))
+#+end_src
+
+*** Complete View Examples
+
+**** Weekly Review View
+
+#+begin_src emacs-lisp
+(defun my-weekly-review ()
+  "Weekly review showing completed items, active projects, and stuck projects."
+  (interactive)
+  (org-agenda nil "w")
+  (let ((org-agenda-custom-commands
+         '(("w" "Weekly Review"
+            ((org-ql-block '(and (property "ORG_GTD" "Projects")
+                                 (project-has-active-tasks))
+                           ((org-ql-block-header "Active Projects")))
+             (org-ql-block '(and (property "ORG_GTD" "Projects")
+                                 (project-is-stuck))
+                           ((org-ql-block-header "Stuck Projects")))
+             (org-ql-block '(closed :from "-7d")
+                           ((org-ql-block-header "Completed This Week"))))))))
+    (org-agenda nil "w")))
+#+end_src
+
+**** Context-Based View
+
+#+begin_src emacs-lisp
+(defun my-contexts-view ()
+  "Show NEXT actions grouped by context."
+  (interactive)
+  (org-gtd-engage-grouped-by-context))
+#+end_src
+
+**** Morning Planning View
+
+#+begin_src emacs-lisp
+(defun my-morning-view ()
+  "Morning planning: today's agenda, NEXT actions, and delegations to follow up."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Morning Planning")
+     (view-type . agenda)
+     (agenda-span . 1)
+     (additional-blocks . ((todo . "NEXT"))))))
+#+end_src
+
+*** Creating Custom Views
+
+To create a custom view:
+
+1. **Define the view specification**:
+   #+begin_src emacs-lisp
+   (defun my-custom-view ()
+     "Description of what this view shows."
+     (interactive)
+     (org-gtd-view-show
+      '((name . "View Name")
+        (filters . ((filter1 . value1)
+                    (filter2 . value2))))))
+   #+end_src
+
+2. **Bind to a key** (optional):
+   #+begin_src emacs-lisp
+   (global-set-key (kbd "C-c d v") 'my-custom-view)
+   #+end_src
+
+3. **Test and refine** - Run the view and adjust filters as needed
+
+** Hooks Framework Reference
+:PROPERTIES:
+:DESCRIPTION: Complete guide to customization hooks
+:CUSTOM_ID: hooks-reference
+:END:
+
+org-gtd provides hooks to customize behavior when organizing items. This section documents the hooks framework and how to write custom hooks.
+
+*** The org-gtd-organize-hooks Variable
+
+*Type*: List of functions
+
+*When run*: During ~org-gtd-organize~, after you choose item type but before refiling
+
+*Purpose*: Add metadata (tags, properties, etc.) to items as they're organized
+
+*Default value*: ~'(org-set-tags-command)~
+
+*** Built-in Hooks
+
+**** ~org-set-tags-command~
+
+*What it does*: Prompts for tags to add to the item
+
+*Use when*: You want to tag items during organization (default)
+
+*To use*:
+#+begin_src emacs-lisp
+(setq org-gtd-organize-hooks '(org-set-tags-command))
+#+end_src
+
+*#### ~org-gtd-set-area-of-focus~
+
+*What it does*: Prompts for area of focus (from ~org-gtd-areas-of-focus~) and sets CATEGORY property
+
+*Use when*: You use GTD Horizon 2 (areas of focus)
+
+*To use*:
+#+begin_src emacs-lisp
+(setq org-gtd-organize-hooks '(org-set-tags-command
+                               org-gtd-set-area-of-focus))
+#+end_src
+
+*Behavior*: Skips prompt for:
+- Project tasks (sets on project instead)
+- Trash items
+- Knowledge items
+- Quick actions
+
+*** Writing Custom Hooks
+
+Custom hooks are functions that run during organization. They can:
+- Add properties
+- Set tags
+- Modify heading text
+- Prompt for information
+- Skip certain item types
+
+**** Basic Hook Structure
+
+#+begin_src emacs-lisp
+(defun my-organize-hook ()
+  "Description of what this hook does."
+  (interactive)  ;; hooks can be interactive or not
+  ;; Your code here
+  ;; Point will be on the heading being organized
+  ;; Use org-mode functions to modify it
+  )
+#+end_src
+
+*#### Using org-gtd-organize-type-member-p
+
+This helper function lets you run code only for specific item types.
+
+*Function signature*:
+#+begin_src emacs-lisp
+(org-gtd-organize-type-member-p TYPE-LIST)
+#+end_src
+
+*Arguments*:
+- ~TYPE-LIST~ :: List of item type symbols to check against
+
+*Returns*: ~t~ if current item matches one of the types, ~nil~ otherwise
+
+*Available types*:
+- ~'action~ :: Single actions
+- ~'project~ :: Project headings
+- ~'project-task~ :: Tasks within projects
+- ~'calendar~ :: Calendar items
+- ~'delegate~ :: Delegated items
+- ~'incubate~ :: Someday/maybe items
+- ~'habit~ :: Habits
+- ~'knowledge~ :: Reference items
+- ~'quick~ :: Quick actions (<2 min)
+- ~'trash~ :: Trashed items
+
+*Example*: Only run for actions and projects:
+#+begin_src emacs-lisp
+(defun my-hook ()
+  (when (org-gtd-organize-type-member-p '(action project))
+    ;; do something
+    ))
+#+end_src
+
+*** Example Custom Hooks
+
+**** Add Effort Estimation
+
+#+begin_src emacs-lisp
+(defun my-add-effort ()
+  "Prompt for effort estimation when organizing actions and projects."
+  (when (org-gtd-organize-type-member-p '(action project))
+    (call-interactively #'org-set-effort)))
+
+(add-to-list 'org-gtd-organize-hooks 'my-add-effort)
+#+end_src
+
+*### Add Priority
+
+#+begin_src emacs-lisp
+(defun my-add-priority ()
+  "Prompt for priority when organizing actions."
+  (when (org-gtd-organize-type-member-p '(action))
+    (call-interactively #'org-priority)))
+
+(add-to-list 'org-gtd-organize-hooks 'my-add-priority)
+#+end_src
+
+*#### Auto-Set Property Based on Keywords
+
+#+begin_src emacs-lisp
+(defun my-auto-tag-urgent ()
+  "Automatically tag items with 'urgent' in their heading."
+  (when (org-gtd-organize-type-member-p '(action project))
+    (let ((heading (org-get-heading t t t t)))
+      (when (string-match-p (regexp-quote "URGENT") heading)
+        (org-set-tags ":urgent:")))))
+
+(add-to-list 'org-gtd-organize-hooks 'my-auto-tag-urgent)
+#+end_src
+
+*#### Add Custom Property
+
+#+begin_src emacs-lisp
+(defun my-add-client ()
+  "Prompt for client name on work-related items."
+  (when (org-gtd-organize-type-member-p '(action project))
+    (when (y-or-n-p "Is this for a client? ")
+      (let ((client (read-string "Client name: ")))
+        (org-set-property "CLIENT" client)))))
+
+(add-to-list 'org-gtd-organize-hooks 'my-add-client)
+#+end_src
+
+*#### Integration with Org-Roam
+
+#+begin_src emacs-lisp
+(defun my-link-to-roam-project ()
+  "Link GTD project to Org-Roam note."
+  (when (org-gtd-organize-type-member-p '(project))
+    (when (y-or-n-p "Link to Org-Roam note? ")
+      (org-roam-node-insert))))
+
+(add-to-list 'org-gtd-organize-hooks 'my-link-to-roam-project)
+#+end_src
+
+*#### Set Effort from Keywords
+
+#+begin_src emacs-lisp
+(defun my-auto-set-effort ()
+  "Automatically set effort based on keywords in heading."
+  (when (org-gtd-organize-type-member-p '(action))
+    (let ((heading (downcase (org-get-heading t t t t))))
+      (cond
+       ((string-match-p "quick\\|call\\|email" heading)
+        (org-set-property "Effort" "0:15"))
+       ((string-match-p "meeting\\|review" heading)
+        (org-set-property "Effort" "1:00"))
+       ((string-match-p "research\\|write\\|design" heading)
+        (org-set-property "Effort" "2:00"))))))
+
+(add-to-list 'org-gtd-organize-hooks 'my-auto-set-effort)
+#+end_src
+
+### Hook Execution Order
+
+Hooks run in the order they appear in ~org-gtd-organize-hooks~.
+
+*Example*: Set area first, then tags:
+#+begin_src emacs-lisp
+(setq org-gtd-organize-hooks
+      '(org-gtd-set-area-of-focus  ;; runs first
+        org-set-tags-command))      ;; runs second
+#+end_src
+
+This order matters if one hook depends on another's results.
+
+*** Best Practices
+
+1. **Use type checking**: Always use ~org-gtd-organize-type-member-p~ to run hooks only for relevant item types
+
+2. **Keep hooks focused**: Each hook should do one thing well
+
+3. **Make hooks optional**: Use ~y-or-n-p~ for optional metadata:
+   #+begin_src emacs-lisp
+   (when (y-or-n-p "Add custom property? ")
+     (org-set-property "PROP" value))
+   #+end_src
+
+4. **Test interactively**: Make hooks interactive for testing:
+   #+begin_src emacs-lisp
+   (defun my-hook ()
+     (interactive)  ;; can test with M-x my-hook
+     ...)
+   #+end_src
+
+5. **Handle errors gracefully**: Wrap risky code in condition-case:
+   #+begin_src emacs-lisp
+   (condition-case err
+       (my-risky-operation)
+     (error (message "Hook failed: %s" err)))
+   #+end_src
+
+6. **Document your hooks**: Add docstrings explaining what each hook does
+
+*** Complete Example: Comprehensive Hook Setup
+
+#+begin_src emacs-lisp
+;; Custom hooks for org-gtd
+(defun my-add-effort ()
+  "Prompt for effort on actions and projects."
+  (when (org-gtd-organize-type-member-p '(action project))
+    (call-interactively #'org-set-effort)))
+
+(defun my-add-priority ()
+  "Prompt for priority on actions."
+  (when (org-gtd-organize-type-member-p '(action))
+    (call-interactively #'org-priority)))
+
+(defun my-auto-tag-contexts ()
+  "Automatically suggest context tags based on heading keywords."
+  (when (org-gtd-organize-type-member-p '(action))
+    (let* ((heading (downcase (org-get-heading t t t t)))
+           (suggested-tags '()))
+      (when (string-match-p "\\(phone\\|call\\)" heading)
+        (push "@phone" suggested-tags))
+      (when (string-match-p "\\(computer\\|code\\|write\\)" heading)
+        (push "@computer" suggested-tags))
+      (when (string-match-p "\\(store\\|buy\\|shop\\)" heading)
+        (push "@errands" suggested-tags))
+      (when suggested-tags
+        (message "Suggested contexts: %s" (string-join suggested-tags ", "))))))
+
+(defun my-track-creation-date ()
+  "Add CREATED property with current timestamp."
+  (unless (org-gtd-organize-type-member-p '(trash quick))
+    (org-set-property "CREATED"
+                      (format-time-string "[%Y-%m-%d %a %H:%M]"))))
+
+;; Install hooks
+(setq org-gtd-organize-hooks
+      '(org-gtd-set-area-of-focus  ;; set area first
+        org-set-tags-command        ;; then tags
+        my-auto-tag-contexts        ;; suggest context tags
+        my-add-effort               ;; estimate effort
+        my-add-priority             ;; set priority if needed
+        my-track-creation-date))    ;; track when created
+#+end_src
+
+This creates a comprehensive metadata capture workflow during organization.
+
+* Troubleshooting
+:PROPERTIES:
+:CUSTOM_ID: troubleshooting
+:END:
+
+This section covers common problems and their solutions. For complete command documentation, see [[#commands-reference][Commands Reference]].
+
+** Finding lost tasks
+
+Sometimes items get stuck or fall through the cracks. org-gtd provides several commands to find problematic items:
+
+- ~org-gtd-review-stuck-calendar-items~ :: Calendar items with invalid or missing timestamps
+- ~org-gtd-review-stuck-incubated-items~ :: Incubated items with invalid or missing review dates
+- ~org-gtd-review-stuck-habit-items~ :: Habits with incorrect configuration
+- ~org-gtd-review-stuck-delegated-items~ :: Delegated items missing delegate or date information
+- ~org-gtd-review-stuck-single-action-items~ :: Single actions that aren't marked as NEXT
+- ~org-gtd-review-stuck-projects~ :: Projects that have tasks but no NEXT actions
+- ~org-gtd-review-missed-items~ :: Items that should have been processed but weren't
+
+See [[#commands-reference][Commands Reference]] for detailed documentation of these commands.
 
 ** Projects without a NEXT item
 
-~org-edna~ needs to be configured and enabled, see [[#configuring-org-edna][Configuring org-edna]].
+If a project has active tasks but none are marked NEXT, this usually indicates:
+1. Missing dependency configuration (no ~ORG_GTD_FIRST_TASKS~ property)
+2. org-edna is not enabled
+3. Dependency properties need recalculation
 
-To fix such a stuck project, put the point on the project heading and call ~M-x org-gtd-projects-fix-todo-keywords-for-project-at-point~.
+*Solution*: Put the point on the project heading and run ~M-x org-gtd-projects-fix-todo-keywords-for-project-at-point~.
+
+*Note*: Make sure org-edna is enabled: ~(org-edna-mode 1)~ in your init file. See [[#configuring][Configuring]] for setup instructions.
+
+See also: [[#working-with-projects-advanced][Working with Projects (Advanced)]] for complete project troubleshooting guide.
+
 ** I can't create a project when clarifying an inbox item!
-See [[#data-shape-requirement-while-clarifying][data shape requirements]]. If this does not help you, please open an issue and show exactly what you have done before asking =org-gtd= to create a project.
+
+When organizing an item as a project, org-gtd expects a specific structure:
+
+#+begin_example
+* Project heading
+** First task
+** Second task
+** Third task
+#+end_example
+
+*Common issues*:
+- Top-level heading must be a single asterisk ~*~
+- Tasks must be second-level headings ~**~
+- Must have at least one task under the project heading
+
+See [[#data-shape-requirement-while-clarifying][data shape requirements]] for complete details.
+
+If this doesn't solve your problem, please open an issue at https://github.com/Trevoke/org-gtd.el/issues with:
+1. The exact structure of your item in the clarify buffer
+2. What happens when you try to organize it
+3. Any error messages
+
+** Configuration problems
+
+*** Keywords not working
+
+If TODO keywords aren't changing correctly:
+
+1. *Check ~org-todo-keywords~ includes all GTD keywords in one sequence*:
+   #+begin_src emacs-lisp
+   (setq org-todo-keywords
+         '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+   #+end_src
+
+2. *Check ~org-gtd-keyword-mapping~ maps to those keywords*:
+   #+begin_src emacs-lisp
+   (setq org-gtd-keyword-mapping
+         '((todo . "TODO")
+           (next . "NEXT")
+           (wait . "WAIT")
+           (canceled . "CNCL")))
+   #+end_src
+
+3. *Remove any ~#+TODO:~ lines from GTD org files*
+
+See [[#configuring][Configuring]] for complete setup instructions.
+
+*** Items not showing in engage view
+
+If items aren't appearing in ~org-gtd-engage~:
+
+1. *Check org-agenda-files includes org-gtd-directory*:
+   #+begin_src emacs-lisp
+   (setq org-agenda-files (list org-gtd-directory))
+   #+end_src
+
+2. *Check item has correct properties*:
+   - Single actions should have ~ORG_GTD: Actions~ and TODO keyword NEXT
+   - Project tasks should have ~ORG_GTD: Actions~ and be part of a project
+
+3. *Verify org-edna is enabled*:
+   #+begin_src emacs-lisp
+   (org-edna-mode 1)
+   #+end_src
+
+See [[#config-vars-reference][Configuration Variables Reference]] for all configuration options.
+
+** Still stuck?
+
+If you're still having problems:
+
+1. Check [[#reference][Reference]] for complete documentation
+2. Search existing issues: https://github.com/Trevoke/org-gtd.el/issues
+3. Ask on Discord: https://discord.gg/2kAK6TfqJq
+4. Open a new issue with:
+   - Your org-gtd configuration
+   - Steps to reproduce the problem
+   - Expected vs actual behavior
+   - Any error messages
