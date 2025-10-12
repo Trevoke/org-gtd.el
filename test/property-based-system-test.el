@@ -180,14 +180,11 @@
           (expect (format "%s" org-ql-query) :to-match "ORG_GTD")))))
 
  (describe
-  "Org-edna without inheritance"
+  "Property-based dependency system"
 
-  (it "disables org-edna inheritance for property-based system"
-      ;; Test that org-edna inheritance is disabled
-      (org-gtd-mode 1)
-      (expect org-edna-use-inheritance :to-equal 0)
-
-      ;; Test that dependency relationships work without inheritance
+  (it "uses explicit dependency properties (ORG_GTD_DEPENDS_ON, ORG_GTD_BLOCKS)"
+      ;; Test that dependency relationships work using explicit properties
+      ;; (not relying on org-edna inheritance)
       (with-temp-buffer
         (org-mode)
         ;; Create project with dependent tasks using builders

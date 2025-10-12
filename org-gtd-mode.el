@@ -41,7 +41,6 @@ is enabled.")
 ;;;; Variables
 
 (defvar org-gtd-edna nil "Private.")
-(defvar org-gtd-edna-inheritance nil "Private.")
 
 ;;;; Modes
 
@@ -51,7 +50,6 @@ is enabled.")
 
 Instead, configure org-gtd manually in your init file:
   (setq org-agenda-files (list org-gtd-directory))
-  (setq org-edna-use-inheritance t)
   (org-edna-mode 1)
 
 This mode previously wrapped all org-agenda commands with org-gtd context,
@@ -88,7 +86,6 @@ previous values."
   (mapc
    (lambda (x) (advice-remove x #'org-gtd--wrap))
    org-gtd--agenda-functions)
-  (setq org-edna-use-inheritance org-gtd-edna-inheritance)
   (org-edna-mode org-gtd-edna))
 
 (defun org-gtd--enable-org-gtd-mode ()
@@ -101,9 +98,7 @@ configuration."
   (mapc
    (lambda (x) (advice-add x :around #'org-gtd--wrap))
    org-gtd--agenda-functions)
-  (setq org-gtd-edna-inheritance org-edna-use-inheritance
-        org-gtd-edna org-edna-mode)
-  (setq org-edna-use-inheritance 0)
+  (setq org-gtd-edna org-edna-mode)
   (org-edna-mode 1))
 
 (defun org-gtd--wrap (fun &rest r)

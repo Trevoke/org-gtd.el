@@ -256,7 +256,6 @@ If you were using ~org-gtd-mode~, simply remove it and add these lines to your c
 
 #+begin_src emacs-lisp
 (setq org-agenda-files (list org-gtd-directory))
-(setq org-edna-use-inheritance t)
 (org-edna-mode 1)
 #+end_src
 
@@ -296,6 +295,312 @@ You need to configure three things for org-gtd to work:
 See the configuration sections below for details.
 
 Note: ~org-gtd-mode~ is obsolete as of version 4.0. Just configure org-agenda-files and org-edna directly.
+
+*** Complete Configuration Examples
+
+*Configuration is the most critical part of setup.* The examples below are complete, working configurations you can copy-paste into your init file.
+
+**** Example 1: Vanilla Emacs (Minimal Configuration)
+
+This is the simplest possible configuration for org-gtd. Copy this entire block into your init file:
+
+#+begin_src emacs-lisp
+;; Configure org-mode TODO keywords
+;; All GTD keywords MUST be in the same sequence
+(setq org-todo-keywords
+      '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+
+;; Map GTD semantic states to your keywords
+(setq org-gtd-keyword-mapping
+      '((todo . "TODO")      ; tasks not ready to act on
+        (next . "NEXT")      ; tasks ready to act on immediately
+        (wait . "WAIT")      ; tasks blocked or delegated
+        (canceled . "CNCL"))) ; tasks that won't be completed
+
+;; Optional: Set GTD directory (defaults to ~/gtd/)
+;; (setq org-gtd-directory "~/my-gtd/")
+
+;; Add org-gtd files to your agenda
+(setq org-agenda-files (list org-gtd-directory))
+
+;; REQUIRED: Enable org-edna for project dependencies
+(org-edna-mode 1)
+
+;; Global keybindings for GTD commands
+;; These work anywhere in Emacs
+(global-set-key (kbd "C-c d c") 'org-gtd-capture)
+(global-set-key (kbd "C-c d e") 'org-gtd-engage)
+(global-set-key (kbd "C-c d p") 'org-gtd-process-inbox)
+(global-set-key (kbd "C-c d n") 'org-gtd-show-all-next)
+(global-set-key (kbd "C-c d s") 'org-gtd-review-stuck-projects)
+
+;; Keybinding for clarify map
+;; This only works when you're in a clarify buffer
+(with-eval-after-load 'org-gtd
+  (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize))
+#+end_src
+
+**** Example 2: Doom Emacs Configuration
+
+If you use Doom Emacs, add this to your ~packages.el~:
+
+#+begin_src emacs-lisp
+(package! org-gtd)
+#+end_src
+
+Then add this to your ~config.el~:
+
+#+begin_src emacs-lisp
+(use-package! org-gtd
+  :after org
+  :custom
+  (org-gtd-directory "~/gtd/")
+  (org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+  (org-gtd-keyword-mapping '((todo . "TODO")
+                             (next . "NEXT")
+                             (wait . "WAIT")
+                             (canceled . "CNCL")))
+  (org-agenda-files (list org-gtd-directory))
+  :config
+  (org-edna-mode)
+  ;; Doom-style leader key bindings
+  (map! :leader
+        (:prefix ("d" . "org-gtd")
+         :desc "Capture"        "c"  #'org-gtd-capture
+         :desc "Engage"         "e"  #'org-gtd-engage
+         :desc "Process inbox"  "p"  #'org-gtd-process-inbox
+         :desc "Show all next"  "n"  #'org-gtd-show-all-next
+         :desc "Stuck projects" "s"  #'org-gtd-review-stuck-projects))
+  ;; Clarify map binding
+  (map! :map org-gtd-clarify-map
+        :desc "Organize this item" "C-c c" #'org-gtd-organize))
+#+end_src
+
+**** Example 3: Spacemacs Configuration
+
+If you use Spacemacs, add this to your ~dotspacemacs/user-config~ function:
+
+#+begin_src emacs-lisp
+;; Install org-gtd
+(use-package org-gtd
+  :ensure t
+  :after org
+  :init
+  ;; Configure org-mode TODO keywords
+  (setq org-todo-keywords
+        '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+  ;; Map GTD semantic states
+  (setq org-gtd-keyword-mapping
+        '((todo . "TODO")
+          (next . "NEXT")
+          (wait . "WAIT")
+          (canceled . "CNCL")))
+  ;; Optional: Set GTD directory
+  (setq org-gtd-directory "~/gtd/")
+  ;; Add to agenda files
+  (setq org-agenda-files (list org-gtd-directory))
+  :config
+  ;; REQUIRED: Enable org-edna for project dependencies
+  (org-edna-mode 1)
+  ;; Spacemacs leader key bindings
+  (spacemacs/set-leader-keys
+    "od c" 'org-gtd-capture
+    "od e" 'org-gtd-engage
+    "od p" 'org-gtd-process-inbox
+    "od n" 'org-gtd-show-all-next
+    "od s" 'org-gtd-review-stuck-projects)
+  ;; Clarify map binding
+  (with-eval-after-load 'org-gtd
+    (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize)))
+#+end_src
+
+**** What These Configurations Do
+
+All three examples configure the same essential pieces:
+
+1. *~org-todo-keywords~* - Defines the workflow states (TODO → NEXT → WAIT → DONE/CNCL)
+   - The ~|~ separator marks done states (right side) vs active states (left side)
+   - All GTD keywords must be in a single sequence
+
+2. *~org-gtd-keyword-mapping~* - Maps GTD concepts to your keyword choices
+   - ~todo~ - Tasks not yet actionable
+   - ~next~ - Tasks ready to work on right now
+   - ~wait~ - Tasks blocked or delegated
+   - ~canceled~ - Tasks that won't be done
+
+3. *~org-gtd-directory~* - Where org-gtd keeps its files (defaults to =~/gtd/=)
+
+4. *~org-agenda-files~* - Makes org-gtd items appear in agenda views
+
+5. *~org-edna-mode~* - REQUIRED for projects to work
+
+6. *Keybindings* - Two types:
+   - *Global bindings*: Work anywhere in Emacs (capture, engage, process, etc.)
+   - *Clarify map binding*: Only works when organizing items in clarify buffers
+
+**** Testing Your Configuration
+
+After adding one of the configurations above and restarting Emacs, verify everything works:
+
+**Test 1: Capture works**
+
+#+begin_example
+M-x org-gtd-capture
+#+end_example
+
+Expected: Opens a capture buffer for the inbox.
+
+If it fails: Check that ~org-gtd-directory~ exists and you have write permissions.
+
+**Test 2: Engage works**
+
+#+begin_example
+M-x org-gtd-engage
+#+end_example
+
+Expected: Opens an agenda view (might be empty if you haven't organized anything yet).
+
+If it fails: Check that ~org-agenda-files~ includes your GTD directory.
+
+**Test 3: Keywords are recognized**
+
+1. Open any org file: ~M-x find-file ~/test.org~
+2. Type: ~* Test heading~
+3. Put cursor on the heading
+4. Try cycling TODO states: ~C-c C-t~
+
+Expected: Should cycle through TODO → NEXT → WAIT → DONE → CNCL.
+
+If it fails: Check that ~org-todo-keywords~ is set correctly.
+
+**Test 4: org-edna is enabled**
+
+#+begin_example
+M-x describe-variable RET org-edna-mode
+#+end_example
+
+Expected: Should show "t" (enabled).
+
+If it fails: Make sure ~(org-edna-mode 1)~ is in your config and you've restarted Emacs.
+
+**** Common Configuration Problems
+
+Before troubleshooting, identify which configuration style you're using:
+- *Vanilla Emacs*: See [[#example-1-vanilla-emacs-minimal-configuration][Example 1: Vanilla Emacs]]
+- *Doom Emacs*: See [[#example-2-doom-emacs-configuration][Example 2: Doom Emacs]]
+- *Spacemacs*: See [[#example-3-spacemacs-configuration][Example 3: Spacemacs]]
+
+Each example shows the complete, correct configuration for that environment.
+
+**Problem: "org-gtd-capture" is undefined**
+
+*Cause*: org-gtd package isn't installed or loaded.
+
+*Solution*:
+- *Vanilla Emacs*: Install from MELPA with ~M-x package-install RET org-gtd RET~
+- *Doom Emacs*: Add ~(package! org-gtd)~ to your ~packages.el~ and run ~doom sync~
+- *Spacemacs*: The ~use-package~ form in the [[#example-3-spacemacs-configuration][Spacemacs example]] automatically installs it with ~:ensure t~
+
+**Problem: Keywords don't change when I press C-c C-t**
+
+*Cause*: ~org-todo-keywords~ not configured correctly.
+
+*Solution*: Check your configuration has this setting:
+#+begin_src emacs-lisp
+(setq org-todo-keywords
+      '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+#+end_src
+
+Common mistakes:
+- Keywords not in quotes: Should be ~"TODO"~ not ~TODO~
+- Missing sequence wrapper: Need ~'((sequence ...))~ not just ~'("TODO" ...)~
+- No done separator: Need ~|~ before ~"DONE"~ and ~"CNCL"~
+
+See the complete configuration for your environment above.
+
+**Problem: Projects don't advance when I mark tasks DONE**
+
+*Cause*: org-edna isn't enabled.
+
+*Solution*: All three configuration examples include ~(org-edna-mode 1)~. Make sure you have:
+- *Vanilla/Spacemacs*: ~(org-edna-mode 1)~ in the ~:config~ section
+- *Doom*: ~(org-edna-mode)~ in the ~:config~ section (Doom handles the argument)
+
+**Problem: Can't see GTD items in agenda**
+
+*Cause*: GTD directory not in ~org-agenda-files~.
+
+*Solution*: All three configuration examples include this. Check you have:
+#+begin_src emacs-lisp
+(setq org-agenda-files (list org-gtd-directory))
+#+end_src
+
+Or if using ~use-package~ / ~use-package!~:
+#+begin_src emacs-lisp
+:custom
+(org-agenda-files (list org-gtd-directory))
+#+end_src
+
+**Problem: Keybindings don't work**
+
+*Cause*: Keybindings not defined, or defined incorrectly for your environment.
+
+*Solution*:
+- *Vanilla Emacs*: Use ~global-set-key~ for global commands, ~define-key org-gtd-clarify-map~ for clarify buffer commands
+- *Doom Emacs*: Use ~map!~ with ~:leader~ prefix for global, ~:map org-gtd-clarify-map~ for clarify buffer
+- *Spacemacs*: Use ~spacemacs/set-leader-keys~ for global, ~define-key~ for clarify buffer
+
+The clarify binding (~C-c c~) *only works in clarify buffers* - you must run ~M-x org-gtd-process-inbox~ first.
+
+See the complete configuration for your environment to copy the correct keybinding syntax.
+
+*** Understanding Keybindings
+
+org-gtd uses two types of keybindings, and understanding the difference is important:
+
+**** Global Keybindings
+
+These work *anywhere* in Emacs and let you access the main GTD commands:
+
+#+begin_src emacs-lisp
+;; These commands are always available:
+(global-set-key (kbd "C-c d c") 'org-gtd-capture)       ; Capture to inbox
+(global-set-key (kbd "C-c d e") 'org-gtd-engage)        ; Daily view
+(global-set-key (kbd "C-c d p") 'org-gtd-process-inbox) ; Process inbox
+(global-set-key (kbd "C-c d n") 'org-gtd-show-all-next) ; Show NEXT actions
+#+end_src
+
+You can use any key combination you prefer. The ~C-c d~ prefix is just a convention.
+
+**** Clarify Map Keybindings
+
+These only work when you're in a *clarify buffer* (during inbox processing). The most important one is:
+
+#+begin_src emacs-lisp
+;; This only works in clarify buffers:
+(define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize)
+#+end_src
+
+**When you're in a clarify buffer:**
+1. You've called ~org-gtd-process-inbox~ and are looking at an item
+2. You've edited the item to make it clear and actionable
+3. Now you press ~C-c c~ to organize it (choose its type: project, single action, etc.)
+
+**Why the distinction?**
+
+The clarify map is a separate keymap because:
+- It prevents conflicts with other org-mode bindings
+- It only activates when you need it (during processing)
+- You can bind different keys for organizing without affecting the rest of Emacs
+
+**Common patterns:**
+
+Most users bind:
+- ~C-c d *~ for global commands (capture, engage, process)
+- ~C-c c~ for organizing (only in clarify buffers)
+
+But you can use whatever works for your workflow!
+
 *** Required configuration of sub-packages
 :PROPERTIES:
 :CUSTOM_ID: configuring-sub-packages
@@ -309,7 +614,6 @@ package: https://www.nongnu.org/org-edna-el/
 This configuration is *REQUIRED* for project dependencies to work correctly. It enables org-edna to automatically update task states when you complete tasks in a project.
 
 #+begin_src emacs-lisp
-(setq org-edna-use-inheritance t)
 (org-edna-mode 1)
 #+end_src
 
@@ -418,7 +722,6 @@ If you are a Doom Emacs user, then your configuration may look something like th
                                (wait . "WAIT")
                                (canceled . "CNCL")))
     (org-agenda-files (list org-gtd-directory))
-    (org-edna-use-inheritance t)
     :config
     (org-edna-mode)
     (map! :leader
