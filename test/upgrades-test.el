@@ -177,6 +177,72 @@ Do that thing.
  (describe
   "Property-based project system migration"
 
+  (it "removes ORG_GTD from level 1 category headings while adding it to level 2 children"
+      (with-current-buffer (org-gtd--default-file)
+        (insert """
+* Projects
+:PROPERTIES:
+:ORG_GTD: Projects
+:END:
+** Build a webapp
+*** Design database
+""")
+        (basic-save-buffer))
+
+      ;; Run property addition (Step 1 only)
+      (org-gtd-upgrade--add-org-gtd-properties)
+
+      (with-current-buffer (org-gtd--default-file)
+        ;; Verify level 1 heading does NOT have ORG_GTD
+        (goto-char (point-min))
+        (re-search-forward "^\\* Projects$")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "ORG_GTD")
+                :to-be nil)
+
+        ;; Verify level 2 heading HAS ORG_GTD="Projects"
+        (goto-char (point-min))
+        (search-forward "Build a webapp")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "ORG_GTD")
+                :to-equal "Projects")
+
+        ;; Verify level 3 heading HAS ORG_GTD="Actions"
+        (goto-char (point-min))
+        (search-forward "Design database")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "ORG_GTD")
+                :to-equal "Actions")))
+
+  (it "handles non-Projects categories correctly (e.g., Actions)"
+      (with-current-buffer (org-gtd--default-file)
+        (insert """
+* Actions
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+** Call mom
+""")
+        (basic-save-buffer))
+
+      ;; Run property addition (Step 1 only)
+      (org-gtd-upgrade--add-org-gtd-properties)
+
+      (with-current-buffer (org-gtd--default-file)
+        ;; Verify level 1 Actions heading does NOT have ORG_GTD
+        (goto-char (point-min))
+        (re-search-forward "^\\* Actions$")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "ORG_GTD")
+                :to-be nil)
+
+        ;; Verify level 2 item HAS ORG_GTD="Actions"
+        (goto-char (point-min))
+        (search-forward "Call mom")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "ORG_GTD")
+                :to-equal "Actions")))
+
   (it "migrates level-based projects to property-based system where project headings can exist at any level"
       (with-current-buffer (org-gtd--default-file)
         (insert """
@@ -300,6 +366,70 @@ Do that thing.
 
  (describe
   "Complete v3 to v4 user upgrade path"
+
+  (it "removes ORG_GTD property from level 1 category headings"
+      (with-current-buffer (org-gtd--default-file)
+        (insert """
+* Projects
+:PROPERTIES:
+:ORG_GTD: Projects
+:END:
+** Build a webapp
+*** Design database
+:PROPERTIES:
+:ID: task-1
+:END:
+
+* Actions
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+** Call mom
+:PROPERTIES:
+:ID: action-1
+:END:
+""")
+        (basic-save-buffer))
+
+      ;; Run full migration
+      (cl-letf (((symbol-function 'yes-or-no-p) (lambda (_) t)))
+        (org-gtd-upgrade-v3-to-v4))
+
+      ;; Verify level 1 category headings do NOT have ORG_GTD property
+      (with-current-buffer (org-gtd--default-file)
+        ;; Check Projects category heading
+        (goto-char (point-min))
+        (re-search-forward "^\\* Projects$")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "ORG_GTD")
+                :to-be nil)
+
+        ;; Check Actions category heading
+        (goto-char (point-min))
+        (re-search-forward "^\\* Actions$")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "ORG_GTD")
+                :to-be nil)
+
+        ;; Verify level 2 items DO have ORG_GTD property
+        (goto-char (point-min))
+        (search-forward "Build a webapp")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "ORG_GTD")
+                :to-equal "Projects")
+
+        (goto-char (point-min))
+        (search-forward "Call mom")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "ORG_GTD")
+                :to-equal "Actions")
+
+        ;; Verify level 3 under Projects has ORG_GTD="Actions"
+        (goto-char (point-min))
+        (search-forward "Design database")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "ORG_GTD")
+                :to-equal "Actions")))
 
   (it "full migration: converts v3 sequential projects to v4 dependency-based with correct task states"
       (with-current-buffer (org-gtd--default-file)
@@ -471,4 +601,71 @@ Content here.
         (org-back-to-heading t)
         (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
           (expect project-ids :to-be-truthy)
-          (expect (member "proj-docs-456" project-ids) :to-be-truthy)))))
+          (expect (member "proj-docs-456" project-ids) :to-be-truthy))))
+
+  (it "adds TRIGGER property to all project tasks"
+      (with-current-buffer (org-gtd--default-file)
+        (insert """
+* Projects
+:PROPERTIES:
+:ORG_GTD: Projects
+:END:
+** Build a webapp
+:PROPERTIES:
+:ID: proj-webapp-123
+:END:
+*** TODO Design database
+:PROPERTIES:
+:ID: task-1
+:END:
+*** TODO Implement API
+:PROPERTIES:
+:ID: task-2
+:END:
+**** TODO Create endpoint
+:PROPERTIES:
+:ID: task-3
+:END:
+** Write documentation
+:PROPERTIES:
+:ID: proj-docs-456
+:END:
+*** TODO Create user manual
+:PROPERTIES:
+:ID: task-4
+:END:
+""")
+        (basic-save-buffer))
+
+      ;; Run full migration
+      (cl-letf (((symbol-function 'yes-or-no-p) (lambda (_) t)))
+        (org-gtd-upgrade-v3-to-v4))
+
+      ;; Verify all tasks have TRIGGER property set
+      (with-current-buffer (org-gtd--default-file)
+        ;; Check first project's tasks
+        (goto-char (point-min))
+        (search-forward "Design database")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "TRIGGER")
+                :to-equal "org-gtd-update-project-after-task-done!")
+
+        (goto-char (point-min))
+        (search-forward "Implement API")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "TRIGGER")
+                :to-equal "org-gtd-update-project-after-task-done!")
+
+        ;; Check nested task
+        (goto-char (point-min))
+        (search-forward "Create endpoint")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "TRIGGER")
+                :to-equal "org-gtd-update-project-after-task-done!")
+
+        ;; Check second project's task
+        (goto-char (point-min))
+        (search-forward "Create user manual")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "TRIGGER")
+                :to-equal "org-gtd-update-project-after-task-done!"))))

@@ -166,19 +166,26 @@ Make a backup before running! Safe to run multiple times."
 (defun org-gtd-upgrade--add-org-gtd-properties ()
   "Add ORG_GTD properties to existing items (Step 1 of migration)."
   (with-org-gtd-context
-      ;; Find Projects category headings and process their level 2 children as project headings
+      ;; Find ALL level 1 category headings with ORG_GTD property
+      ;; For each: save category type, remove from level 1, add to level 2 children
       (org-map-entries
        (lambda ()
-         (let ((category-level (org-current-level)))
-           (outline-next-heading)
-           (while (and (not (eobp))
-                       (> (org-current-level) category-level))
-             (when (= (org-current-level) (1+ category-level))
-               ;; This is a level 2 item under Projects category - it's a project heading
-               (unless (org-entry-get (point) "ORG_GTD")
-                 (org-entry-put (point) "ORG_GTD" "Projects")))
-             (outline-next-heading))))
-       "+ORG_GTD=\"Projects\"+LEVEL=1"
+         (let ((category-type (org-entry-get (point) "ORG_GTD"))
+               (category-level (org-current-level)))
+           (when category-type
+             ;; Remove ORG_GTD from level 1 category heading
+             (org-entry-delete (point) "ORG_GTD")
+
+             ;; Add category type to all level 2 children
+             (outline-next-heading)
+             (while (and (not (eobp))
+                         (> (org-current-level) category-level))
+               (when (= (org-current-level) (1+ category-level))
+                 ;; This is a level 2 item under category - add the category type
+                 (unless (org-entry-get (point) "ORG_GTD")
+                   (org-entry-put (point) "ORG_GTD" category-type)))
+               (outline-next-heading)))))
+       "LEVEL=1"
        'agenda)
 
       ;; Find all project headings and process their children as project tasks
@@ -197,8 +204,9 @@ Make a backup before running! Safe to run multiple times."
        'agenda)))
 
 (defun org-gtd-upgrade--set-project-ids-on-tasks (project-marker)
-  "Set ORG_GTD_PROJECT_IDS property on all tasks under project at PROJECT-MARKER.
-Safe to run multiple times - only adds project ID if not already present."
+  "Set ORG_GTD_PROJECT_IDS and TRIGGER properties on all tasks under PROJECT-MARKER.
+Safe to run multiple times - only adds project ID if not already present.
+Sets TRIGGER to org-gtd-update-project-after-task-done! on all tasks."
   (org-with-point-at project-marker
     (let ((project-id (or (org-entry-get (point) "ID")
                           (org-gtd-id-get-create))))
@@ -209,7 +217,9 @@ Safe to run multiple times - only adds project ID if not already present."
            ;; Add project ID to ORG_GTD_PROJECT_IDS (multivalued property)
            (let ((existing-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
              (unless (member project-id existing-ids)
-               (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)))))
+               (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)))
+           ;; Add TRIGGER property to task
+           (org-entry-put (point) "TRIGGER" "org-gtd-update-project-after-task-done!")))
        nil
        'tree))))
 
