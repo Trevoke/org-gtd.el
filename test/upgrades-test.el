@@ -400,4 +400,75 @@ Content here.
         (goto-char (point-min))
         (re-search-forward "^\\*\\* Proj$")
         (org-back-to-heading t)
-        (expect (org-entry-get (point) "ORG_GTD") :to-be nil))))
+        (expect (org-entry-get (point) "ORG_GTD") :to-be nil)))
+
+  (it "adds ORG_GTD_PROJECT_IDS property to all project tasks"
+      (with-current-buffer (org-gtd--default-file)
+        (insert """
+* Projects
+:PROPERTIES:
+:ORG_GTD: Projects
+:END:
+** Build a webapp
+:PROPERTIES:
+:ID: proj-webapp-123
+:END:
+*** TODO Design database
+:PROPERTIES:
+:ID: task-1
+:END:
+*** TODO Implement API
+:PROPERTIES:
+:ID: task-2
+:END:
+**** TODO Create endpoint
+:PROPERTIES:
+:ID: task-3
+:END:
+** Write documentation
+:PROPERTIES:
+:ID: proj-docs-456
+:END:
+*** TODO Create user manual
+:PROPERTIES:
+:ID: task-4
+:END:
+""")
+        (basic-save-buffer))
+
+      ;; Run full migration
+      (cl-letf (((symbol-function 'yes-or-no-p) (lambda (_) t)))
+        (org-gtd-upgrade-v3-to-v4))
+
+      ;; Verify all tasks have ORG_GTD_PROJECT_IDS set to their project's ID
+      (with-current-buffer (org-gtd--default-file)
+        ;; Check first project's tasks
+        (goto-char (point-min))
+        (search-forward "Design database")
+        (org-back-to-heading t)
+        (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+          (expect project-ids :to-be-truthy)
+          (expect (member "proj-webapp-123" project-ids) :to-be-truthy))
+
+        (goto-char (point-min))
+        (search-forward "Implement API")
+        (org-back-to-heading t)
+        (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+          (expect project-ids :to-be-truthy)
+          (expect (member "proj-webapp-123" project-ids) :to-be-truthy))
+
+        ;; Check nested task
+        (goto-char (point-min))
+        (search-forward "Create endpoint")
+        (org-back-to-heading t)
+        (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+          (expect project-ids :to-be-truthy)
+          (expect (member "proj-webapp-123" project-ids) :to-be-truthy))
+
+        ;; Check second project's task
+        (goto-char (point-min))
+        (search-forward "Create user manual")
+        (org-back-to-heading t)
+        (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+          (expect project-ids :to-be-truthy)
+          (expect (member "proj-docs-456" project-ids) :to-be-truthy)))))

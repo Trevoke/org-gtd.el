@@ -196,6 +196,23 @@ Make a backup before running! Safe to run multiple times."
        "+ORG_GTD=\"Projects\"+LEVEL=2"
        'agenda)))
 
+(defun org-gtd-upgrade--set-project-ids-on-tasks (project-marker)
+  "Set ORG_GTD_PROJECT_IDS property on all tasks under project at PROJECT-MARKER.
+Safe to run multiple times - only adds project ID if not already present."
+  (org-with-point-at project-marker
+    (let ((project-id (or (org-entry-get (point) "ID")
+                          (org-gtd-id-get-create))))
+      ;; Process all descendants under the project heading
+      (org-map-entries
+       (lambda ()
+         (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
+           ;; Add project ID to ORG_GTD_PROJECT_IDS (multivalued property)
+           (let ((existing-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+             (unless (member project-id existing-ids)
+               (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)))))
+       nil
+       'tree))))
+
 (defun org-gtd-upgrade--add-project-dependencies ()
   "Add dependency properties to existing projects (Step 2 of migration)."
   (require 'org-gtd-projects)
@@ -205,6 +222,8 @@ Make a backup before running! Safe to run multiple times."
        (lambda ()
          (let ((project-marker (point-marker)))
            (message "Processing project: %s" (org-get-heading t t t t))
+           ;; Add ORG_GTD_PROJECT_IDS to all tasks under this project
+           (org-gtd-upgrade--set-project-ids-on-tasks project-marker)
            ;; Setup sequential dependencies for this project
            (org-gtd-project--setup-dependencies project-marker)
            ;; Recalculate task states based on new dependencies
