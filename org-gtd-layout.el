@@ -259,12 +259,56 @@ NODES is the hash table of all nodes."
   :type 'integer
   :group 'org-gtd-layout)
 
-(defun org-gtd-layout--calculate-edge-waypoints (from-node to-node)
-  "Calculate waypoints for edge from FROM-NODE to TO-NODE.
+;;;; Edge Routing Strategy
+;;
+;; TEMPORARY HEURISTIC (to be replaced by dummy nodes in Phase 3.5)
+;;
+;; This section implements smart waypoint routing to minimize edge crossings.
+;; When full Sugiyama is implemented with dummy nodes, this entire section
+;; will be REMOVED and replaced with dummy node insertion before Phase 3.
+;;
+;; The interface contract:
+;;   Input:  from-node, to-node (with layer, x, y coordinates set)
+;;   Output: List of (x y) waypoints forming edge path
+;;
+;; Replacement strategy:
+;;   1. Insert dummy nodes between layers (before Phase 3)
+;;   2. Dummy nodes participate in crossing minimization
+;;   3. Chain dummy node coordinates to form polyline
+;;   4. Remove this heuristic-based waypoint calculation
+
+(defun org-gtd-layout--should-route-left-p (graph from-node to-node)
+  "Decide whether to route edge LEFT around column to minimize crossings.
+GRAPH is the graph structure (for querying nearby nodes).
+FROM-NODE and TO-NODE define the edge being routed.
+
+Returns t if edge should detour to the left, nil for right.
+
+TEMPORARY HEURISTIC: In full Sugiyama, crossing minimization would
+handle this via dummy node placement in Phase 3."
+  (let* ((from-x (org-gtd-graph-node-x from-node))
+         (node-width (org-gtd-graph-node-width from-node))
+         (column-right-edge (+ from-x node-width))
+         (nodes (org-gtd-graph-nodes graph))
+         (has-nodes-to-right nil))
+
+    ;; Check if any nodes exist to the right of this column
+    (maphash (lambda (_id node)
+               (when (> (org-gtd-graph-node-x node) column-right-edge)
+                 (setq has-nodes-to-right t)))
+             nodes)
+
+    ;; Route left if nodes exist to the right (to avoid crossing them)
+    has-nodes-to-right))
+
+(defun org-gtd-layout--calculate-edge-waypoints (graph from-node to-node)
+  "Calculate waypoints for edge from FROM-NODE to TO-NODE in GRAPH.
 Returns list of (x y) coordinate pairs forming a polyline path.
 For adjacent-layer edges, returns 2 points (straight line).
 For multi-layer edges, returns 4+ points with routing waypoints.
-For same-column multi-layer edges, adds horizontal detour to make edge visible."
+
+TEMPORARY: Uses heuristic-based routing. Will be replaced by dummy node
+chaining when full Sugiyama is implemented."
   (let* ((from-x (+ (org-gtd-graph-node-x from-node)
                     (/ (org-gtd-graph-node-width from-node) 2)))
          (from-y (+ (org-gtd-graph-node-y from-node)
@@ -284,9 +328,17 @@ For same-column multi-layer edges, adds horizontal detour to make edge visible."
       ;; Multi-layer: check if same column (vertically aligned)
       (if (= from-x to-x)
           ;; Same column: add horizontal detour to make edge visible
-          (let* ((node-width (org-gtd-graph-node-width from-node))
-                 ;; Route to the right side of the column
-                 (detour-x (+ from-x (/ node-width 2) 30)))
+          ;; TEMPORARY HEURISTIC: Choose routing direction to minimize crossings
+          (let* ((node-x (org-gtd-graph-node-x from-node))
+                 (node-width (org-gtd-graph-node-width from-node))
+                 (route-left (org-gtd-layout--should-route-left-p
+                              graph from-node to-node))
+                 (detour-offset 30)
+                 (detour-x (if route-left
+                               ;; Route to left of node left edge
+                               (max 10 (- node-x detour-offset))
+                             ;; Route to right of node right edge
+                             (+ node-x node-width detour-offset))))
             (list
              ;; Start: bottom-center of source
              (list from-x from-y)
@@ -326,7 +378,9 @@ For same-column multi-layer edges, adds horizontal detour to make edge visible."
 (defun org-gtd-layout--calculate-edge-paths (graph)
   "Calculate polyline paths for all edges in GRAPH.
 Updates the points field of each edge with (x y) coordinate pairs.
-Uses waypoints for multi-layer edges to route around intermediate nodes."
+
+TEMPORARY: Uses waypoint-based routing. Will be replaced by dummy node
+chaining when full Sugiyama is implemented."
   (let ((edges (org-gtd-graph-edges graph)))
     (dolist (edge edges)
       (let* ((from-node (org-gtd-graph-data-get-node
@@ -335,9 +389,9 @@ Uses waypoints for multi-layer edges to route around intermediate nodes."
                        graph (org-gtd-graph-edge-to-id edge))))
 
         (when (and from-node to-node)
-          ;; Calculate waypoints (2 points for adjacent, 5 for multi-layer)
+          ;; Calculate waypoints with smart routing
           (setf (org-gtd-graph-edge-points edge)
-                (org-gtd-layout--calculate-edge-waypoints from-node to-node)))))))
+                (org-gtd-layout--calculate-edge-waypoints graph from-node to-node)))))))
 
 ;;;; Utility Functions
 

@@ -40,6 +40,16 @@ WIDTH and HEIGHT default to 120 and 40."
    :width (or width 120)
    :height (or height 40)))
 
+(defun org-gtd-layout-test--create-test-graph (&rest nodes)
+  "Create a minimal graph containing NODES for testing."
+  (let ((graph (org-gtd-graph-create
+                :project-id "test-project"
+                :project-name "Test"
+                :root-ids '("node-a"))))
+    (dolist (node nodes)
+      (puthash (org-gtd-graph-node-id node) node (org-gtd-graph-nodes graph)))
+    graph))
+
 ;;;; Edge Waypoint Calculation Tests
 
 (describe "org-gtd-layout--calculate-edge-waypoints"
@@ -52,7 +62,8 @@ WIDTH and HEIGHT default to 120 and 40."
                          "node-a" "Node A" 100 0 0 120 40))
              (to-node (org-gtd-layout-test--create-node
                        "node-b" "Node B" 100 80 1 120 40))
-             (points (org-gtd-layout--calculate-edge-waypoints from-node to-node)))
+             (graph (org-gtd-layout-test--create-test-graph from-node to-node))
+             (points (org-gtd-layout--calculate-edge-waypoints graph from-node to-node)))
 
         ;; Should be straight line (2 points)
         (expect (length points) :to-equal 2)
@@ -71,7 +82,8 @@ WIDTH and HEIGHT default to 120 and 40."
                          "node-a" "Node A" 100 0 0 120 40))
              (to-node (org-gtd-layout-test--create-node
                        "node-b" "Node B" 250 80 1 120 40))
-             (points (org-gtd-layout--calculate-edge-waypoints from-node to-node)))
+             (graph (org-gtd-layout-test--create-test-graph from-node to-node))
+             (points (org-gtd-layout--calculate-edge-waypoints graph from-node to-node)))
 
         ;; Still just 2 points for adjacent layers
         (expect (length points) :to-equal 2))))
@@ -84,7 +96,8 @@ WIDTH and HEIGHT default to 120 and 40."
                          "node-a" "Node A" 100 0 0 120 40))
              (to-node (org-gtd-layout-test--create-node
                        "node-d" "Node D" 100 240 3 120 40))
-             (points (org-gtd-layout--calculate-edge-waypoints from-node to-node)))
+             (graph (org-gtd-layout-test--create-test-graph from-node to-node))
+             (points (org-gtd-layout--calculate-edge-waypoints graph from-node to-node)))
 
         ;; Should have waypoints (more than 2 points)
         (expect (length points) :to-be-greater-than 2)))
@@ -95,7 +108,8 @@ WIDTH and HEIGHT default to 120 and 40."
                          "node-a" "Node A" 100 0 0 120 40))
              (to-node (org-gtd-layout-test--create-node
                        "node-d" "Node D" 100 240 3 120 40))
-             (points (org-gtd-layout--calculate-edge-waypoints from-node to-node)))
+             (graph (org-gtd-layout-test--create-test-graph from-node to-node))
+             (points (org-gtd-layout--calculate-edge-waypoints graph from-node to-node)))
 
         ;; Second point should be below source (waypoint-down)
         (expect (cadr (nth 1 points)) :to-be-greater-than 40)))
@@ -106,7 +120,8 @@ WIDTH and HEIGHT default to 120 and 40."
                          "node-a" "Node A" 100 0 0 120 40))
              (to-node (org-gtd-layout-test--create-node
                        "node-d" "Node D" 100 240 3 120 40))
-             (points (org-gtd-layout--calculate-edge-waypoints from-node to-node))
+             (graph (org-gtd-layout-test--create-test-graph from-node to-node))
+             (points (org-gtd-layout--calculate-edge-waypoints graph from-node to-node))
              (penultimate-point (nth (- (length points) 2) points)))
 
         ;; Penultimate point should be above target
@@ -120,7 +135,8 @@ WIDTH and HEIGHT default to 120 and 40."
                          "node-a" "Node A" 100 0 0 120 40))
              (to-node (org-gtd-layout-test--create-node
                        "node-d" "Node D" 400 240 3 120 40))
-             (points (org-gtd-layout--calculate-edge-waypoints from-node to-node)))
+             (graph (org-gtd-layout-test--create-test-graph from-node to-node))
+             (points (org-gtd-layout--calculate-edge-waypoints graph from-node to-node)))
 
         ;; Should have 5 points for multi-layer routing
         (expect (length points) :to-equal 5)
@@ -140,24 +156,27 @@ WIDTH and HEIGHT default to 120 and 40."
                          "node-a" "Node A" 100 0 0 120 40))
              (to-node (org-gtd-layout-test--create-node
                        "node-d" "Node D" 100 240 3 120 40))
-             (points (org-gtd-layout--calculate-edge-waypoints from-node to-node)))
+             (graph (org-gtd-layout-test--create-test-graph from-node to-node))
+             (points (org-gtd-layout--calculate-edge-waypoints graph from-node to-node)))
 
         ;; Should have 6 points for same-column routing (includes detour)
         (expect (length points) :to-equal 6)))
 
-    (it "detour routes to the right of the column"
-      ;; Verify the detour goes to the right side
+    (it "routes to appropriate side based on surrounding nodes"
+      ;; Verify detour direction depends on node placement
+      ;; When no nodes to the right, routes right
       (let* ((from-node (org-gtd-layout-test--create-node
                          "node-a" "Node A" 100 0 0 120 40))
              (to-node (org-gtd-layout-test--create-node
                        "node-d" "Node D" 100 240 3 120 40))
-             (points (org-gtd-layout--calculate-edge-waypoints from-node to-node))
+             (graph (org-gtd-layout-test--create-test-graph from-node to-node))
+             (points (org-gtd-layout--calculate-edge-waypoints graph from-node to-node))
              (from-center-x (+ 100 (/ 120 2))) ; 160
              ;; Waypoints 2 and 3 should be the detour points
              (detour-point-1 (nth 2 points))
              (detour-point-2 (nth 3 points)))
 
-        ;; Detour should be to the right of the center line
+        ;; Detour should be to the right (no nodes on right side)
         (expect (car detour-point-1) :to-be-greater-than from-center-x)
         (expect (car detour-point-2) :to-be-greater-than from-center-x)
 
