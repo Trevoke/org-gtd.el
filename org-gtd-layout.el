@@ -254,9 +254,79 @@ NODES is the hash table of all nodes."
                              org-gtd-layout-node-spacing))))
     (- total-width org-gtd-layout-node-spacing)))  ; Remove trailing spacing
 
+(defcustom org-gtd-layout-waypoint-offset 15
+  "Vertical offset in pixels for routing waypoints above/below nodes."
+  :type 'integer
+  :group 'org-gtd-layout)
+
+(defun org-gtd-layout--calculate-edge-waypoints (from-node to-node)
+  "Calculate waypoints for edge from FROM-NODE to TO-NODE.
+Returns list of (x y) coordinate pairs forming a polyline path.
+For adjacent-layer edges, returns 2 points (straight line).
+For multi-layer edges, returns 4+ points with routing waypoints.
+For same-column multi-layer edges, adds horizontal detour to make edge visible."
+  (let* ((from-x (+ (org-gtd-graph-node-x from-node)
+                    (/ (org-gtd-graph-node-width from-node) 2)))
+         (from-y (+ (org-gtd-graph-node-y from-node)
+                    (org-gtd-graph-node-height from-node)))
+         (to-x (+ (org-gtd-graph-node-x to-node)
+                  (/ (org-gtd-graph-node-width to-node) 2)))
+         (to-y (org-gtd-graph-node-y to-node))
+         (from-layer (org-gtd-graph-node-layer from-node))
+         (to-layer (org-gtd-graph-node-layer to-node))
+         (layer-span (- to-layer from-layer)))
+
+    (if (<= layer-span 1)
+        ;; Adjacent layers: straight line
+        (list (list from-x from-y)
+              (list to-x to-y))
+
+      ;; Multi-layer: check if same column (vertically aligned)
+      (if (= from-x to-x)
+          ;; Same column: add horizontal detour to make edge visible
+          (let* ((node-width (org-gtd-graph-node-width from-node))
+                 ;; Route to the right side of the column
+                 (detour-x (+ from-x (/ node-width 2) 30)))
+            (list
+             ;; Start: bottom-center of source
+             (list from-x from-y)
+
+             ;; Waypoint 1: drop down from source
+             (list from-x (+ from-y org-gtd-layout-waypoint-offset))
+
+             ;; Waypoint 2: route right to detour
+             (list detour-x (+ from-y org-gtd-layout-waypoint-offset))
+
+             ;; Waypoint 3: drop parallel to column
+             (list detour-x (- to-y org-gtd-layout-waypoint-offset))
+
+             ;; Waypoint 4: route back to target column
+             (list to-x (- to-y org-gtd-layout-waypoint-offset))
+
+             ;; End: top-center of target
+             (list to-x to-y)))
+
+        ;; Different columns: standard horizontal routing
+        (list
+         ;; Start: bottom-center of source
+         (list from-x from-y)
+
+         ;; Waypoint 1: drop down from source
+         (list from-x (+ from-y org-gtd-layout-waypoint-offset))
+
+         ;; Waypoint 2: route horizontally to target column
+         (list to-x (+ from-y org-gtd-layout-waypoint-offset))
+
+         ;; Waypoint 3: drop to just above target
+         (list to-x (- to-y org-gtd-layout-waypoint-offset))
+
+         ;; End: top-center of target
+         (list to-x to-y))))))
+
 (defun org-gtd-layout--calculate-edge-paths (graph)
   "Calculate polyline paths for all edges in GRAPH.
-Updates the points field of each edge with (x y) coordinate pairs."
+Updates the points field of each edge with (x y) coordinate pairs.
+Uses waypoints for multi-layer edges to route around intermediate nodes."
   (let ((edges (org-gtd-graph-edges graph)))
     (dolist (edge edges)
       (let* ((from-node (org-gtd-graph-data-get-node
@@ -265,29 +335,24 @@ Updates the points field of each edge with (x y) coordinate pairs."
                        graph (org-gtd-graph-edge-to-id edge))))
 
         (when (and from-node to-node)
-          (let* ((from-x (+ (org-gtd-graph-node-x from-node)
-                            (/ (org-gtd-graph-node-width from-node) 2)))
-                 (from-y (+ (org-gtd-graph-node-y from-node)
-                            (org-gtd-graph-node-height from-node)))
-                 (to-x (+ (org-gtd-graph-node-x to-node)
-                          (/ (org-gtd-graph-node-width to-node) 2)))
-                 (to-y (org-gtd-graph-node-y to-node)))
-
-            ;; Simple straight line for now (could add bezier curves later)
-            (setf (org-gtd-graph-edge-points edge)
-                  (list (list from-x from-y) (list to-x to-y)))))))))
+          ;; Calculate waypoints (2 points for adjacent, 5 for multi-layer)
+          (setf (org-gtd-graph-edge-points edge)
+                (org-gtd-layout--calculate-edge-waypoints from-node to-node)))))))
 
 ;;;; Utility Functions
 
 (defun org-gtd-layout-get-graph-bounds (graph)
   "Calculate bounding box of GRAPH after layout.
-Returns (min-x min-y max-x max-y)."
+Returns (min-x min-y max-x max-y).
+Considers both node positions and edge waypoints."
   (let ((min-x most-positive-fixnum)
         (min-y most-positive-fixnum)
         (max-x 0)
         (max-y 0)
-        (nodes (org-gtd-graph-nodes graph)))
+        (nodes (org-gtd-graph-nodes graph))
+        (edges (org-gtd-graph-edges graph)))
 
+    ;; Consider node positions
     (maphash (lambda (_id node)
                (let ((x (org-gtd-graph-node-x node))
                      (y (org-gtd-graph-node-y node))
@@ -298,6 +363,17 @@ Returns (min-x min-y max-x max-y)."
                        max-x (max max-x (+ x w))
                        max-y (max max-y (+ y h)))))
              nodes)
+
+    ;; Also consider edge waypoints
+    (dolist (edge edges)
+      (when-let ((points (org-gtd-graph-edge-points edge)))
+        (dolist (point points)
+          (let ((px (car point))
+                (py (cadr point)))
+            (setq min-x (min min-x px)
+                  min-y (min min-y py)
+                  max-x (max max-x px)
+                  max-y (max max-y py))))))
 
     (list min-x min-y max-x max-y)))
 

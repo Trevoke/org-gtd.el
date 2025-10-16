@@ -29,6 +29,7 @@
 ;;;; Requirements
 
 (require 'svg)
+(require 'dom)
 (require 'color)
 (require 'org-gtd-graph-data)
 (require 'org-gtd-layout)
@@ -279,9 +280,10 @@ If NODE's ID matches SELECTED-NODE-ID, draw with bold border."
       (dom-append-child svg g))))
 
 (defun org-gtd-svg-draw-edge (svg edge graph)
-  "Draw a dependency EDGE on SVG canvas.
+  "Draw a dependency EDGE on SVG canvas with waypoint routing.
 EDGE is an org-gtd-graph-edge structure.
-GRAPH is used to look up node information."
+GRAPH is used to look up node information.
+Uses polylines for multi-layer edges, straight lines for adjacent layers."
   (let* ((points (org-gtd-graph-edge-points edge))
          (from-node (org-gtd-graph-data-get-node
                      graph (org-gtd-graph-edge-from-id edge)))
@@ -289,17 +291,44 @@ GRAPH is used to look up node information."
                    graph (org-gtd-graph-edge-to-id edge))))
 
     (when (and points from-node to-node)
-      (let ((from-point (car points))
-            (to-point (car (last points))))
+      ;; Debug output
+      (when (> (length points) 2)
+        (message "Drawing polyline %s -> %s with %d points:"
+                 (org-gtd-graph-node-title from-node)
+                 (org-gtd-graph-node-title to-node)
+                 (length points))
+        (dolist (point points)
+          (message "  (%d, %d)" (car point) (cadr point))))
 
-        ;; Draw the edge line
-        (svg-line svg
-                  (car from-point) (cadr from-point)
-                  (car to-point) (cadr to-point)
-                  :stroke "#636e72"
-                  :stroke-width org-gtd-svg-edge-width
-                  :marker-end "url(#arrowhead)"
-                  :class "edge")))))
+      (if (= (length points) 2)
+          ;; Straight line for adjacent layers (2 points)
+          (let ((from-point (car points))
+                (to-point (cadr points)))
+            (svg-line svg
+                      (car from-point) (cadr from-point)
+                      (car to-point) (cadr to-point)
+                      :stroke "#636e72"
+                      :stroke-width org-gtd-svg-edge-width
+                      :marker-end "url(#arrowhead)"
+                      :class "edge"))
+
+        ;; Polyline for multi-layer edges (3+ points)
+        ;; NOTE: svg-polyline has a bug - it formats points incorrectly
+        ;; We manually construct the points string in correct SVG format
+        (let ((points-string
+               (mapconcat (lambda (point)
+                            (format "%d,%d" (car point) (cadr point)))
+                          points
+                          " ")))
+          (dom-append-child
+           svg
+           (dom-node 'polyline
+                     `((points . ,points-string)
+                       (stroke . "#636e72")
+                       (stroke-width . ,org-gtd-svg-edge-width)
+                       (fill . "none")
+                       (marker-end . "url(#arrowhead)")
+                       (class . "edge")))))))))
 
 ;;;; Helper Functions
 
