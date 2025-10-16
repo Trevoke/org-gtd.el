@@ -67,6 +67,7 @@
 (require 'org-gtd-value-objects)
 (require 'org-gtd-dependencies)
 (require 'org-gtd-projects)
+(require 'org-gtd-graph-mode)
 (require 'org-gtd-agenda)
 (require 'org-gtd-organize)
 (require 'org-gtd-process)
