@@ -20,7 +20,9 @@
  (after-each (ogt--close-and-delete-files)
              ;; Clear org-id locations after tests
              (setq org-id-locations nil)
-             (setq org-id-files nil))
+             (setq org-id-files nil)
+             ;; Save cleared state to disk to prevent test pollution
+             (org-id-locations-save))
 
  (describe
   "org-gtd-projects--collect-tasks-by-graph function"

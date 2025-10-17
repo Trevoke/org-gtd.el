@@ -106,6 +106,11 @@
         ;; returning stale buffers from previous test directories
         file-name-history nil)
 
+  ;; CRITICAL: Save the cleared org-id state to disk
+  ;; Without this, the .org-id-locations file still contains stale IDs
+  ;; from previous tests, which get reloaded and cause test pollution
+  (org-id-locations-save)
+
   ;; Clear transient state that might be left over from previous tests
   (when (fboundp 'transient--emergency-exit)
     (transient--emergency-exit))

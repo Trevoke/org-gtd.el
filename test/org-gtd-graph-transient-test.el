@@ -93,13 +93,10 @@
 (describe "Placeholder commands for future phases"
 
   (it "navigation commands are defined and callable"
-    (expect (commandp 'org-gtd-graph-nav-next) :to-be-truthy)
-    (expect (commandp 'org-gtd-graph-nav-previous) :to-be-truthy)
     (expect (commandp 'org-gtd-graph-nav-next-sibling) :to-be-truthy)
     (expect (commandp 'org-gtd-graph-nav-goto) :to-be-truthy))
 
   (it "view commands are defined and callable"
-    (expect (commandp 'org-gtd-graph-transient-filter) :to-be-truthy)
     (expect (commandp 'org-gtd-graph-transient-zoom) :to-be-truthy))
 
   (it "undo/redo commands are defined and callable"
@@ -204,40 +201,6 @@
             (org-gtd-graph-transient-add-child))))
 
       (expect refresh-called :to-be-truthy))))
-
-;;;; org-gtd-graph-transient-add-sibling Tests
-
-(describe "org-gtd-graph-transient-add-sibling"
-
-  (before-each (org-gtd-graph-transient-test--setup))
-  (after-each (org-gtd-graph-transient-test--teardown))
-
-  (it "creates a sibling task at same level as selected node"
-    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Sibling Project"))
-           (buffer (get-buffer-create "*Org GTD Graph: sibling-test*"))
-           first-task-id)
-
-      (with-current-buffer (org-gtd--default-file)
-        (goto-char (point-min))
-        (search-forward "Task 1")
-        (org-back-to-heading t)
-        (setq first-task-id (org-entry-get (point) "ID")))
-
-      (with-current-buffer buffer
-        (org-gtd-graph-view-mode)
-        (setq org-gtd-graph-view--project-marker project-marker)
-        (setq org-gtd-graph-ui--selected-node-id first-task-id)
-        (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
-          (with-simulated-input "Sibling SPC Task RET"
-            (org-gtd-graph-transient-add-sibling))))
-
-      (with-current-buffer (org-gtd--default-file)
-        (goto-char (point-min))
-        (search-forward "Sibling Task")
-        (org-back-to-heading t)
-        (let ((heading (org-get-heading t t t t)))
-          (expect heading :to-equal "Sibling Task")
-          (expect (org-current-level) :to-equal 2))))))
 
 ;;;; org-gtd-graph-transient-add-root Tests
 

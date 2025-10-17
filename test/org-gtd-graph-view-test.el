@@ -14,7 +14,6 @@
 ;; Unit tests for org-gtd-graph-view interactive functions.
 ;;
 ;; Test Coverage:
-;; - org-gtd-graph-view-create-task (create level 1 single action)
 ;; - org-gtd-graph-view-add-dependency (add dependency from any task)
 ;; - org-gtd-graph-view-add-blocker (add blocker as root task)
 ;;
@@ -73,80 +72,6 @@
     (org-back-to-heading t)
     (basic-save-buffer)
     (point-marker)))
-
-;;;; org-gtd-graph-view-create-task Tests
-
-(describe "org-gtd-graph-view-create-task"
-
-  (before-each (org-gtd-graph-view-test--setup))
-  (after-each (org-gtd-graph-view-test--teardown))
-
-  (it "creates a level 1 single action task"
-    (let* ((project-marker (org-gtd-graph-view-test--create-project "Test Project"))
-           (buffer (get-buffer-create "*Org GTD Graph: project-test*")))
-      ;; Set up minimal graph view buffer
-      (with-current-buffer buffer
-        (org-gtd-graph-view-mode)
-        (setq org-gtd-graph-view--project-marker project-marker)
-        ;; Mock the refresh function to avoid window system issues
-        (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
-          ;; Create task with simulated input
-          (with-simulated-input "New SPC Task RET"
-            (org-gtd-graph-view-create-task))))
-
-      ;; Verify task was created in org-gtd-tasks.org as level 1
-      (with-current-buffer (org-gtd--default-file)
-        (goto-char (point-min))
-        ;; Search for the heading text (without TODO keyword which org adds)
-        (let ((found (search-forward "New Task" nil t)))
-          (expect found :to-be-truthy)
-          (when found
-            ;; Verify it's a level 1 heading (starts with single *)
-            (org-back-to-heading t)
-            (expect (org-current-level) :to-equal 1))))))
-
-  (it "sets correct properties on the new task"
-    (let* ((project-marker (org-gtd-graph-view-test--create-project "Test Project"))
-           (buffer (get-buffer-create "*Org GTD Graph: project-test*")))
-      ;; Set up minimal graph view buffer
-      (with-current-buffer buffer
-        (org-gtd-graph-view-mode)
-        (setq org-gtd-graph-view--project-marker project-marker)
-        ;; Mock the refresh function
-        (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
-          (with-simulated-input "Property SPC Test RET"
-            (org-gtd-graph-view-create-task))))
-
-      ;; Verify properties are set correctly
-      (with-current-buffer (org-gtd--default-file)
-        (goto-char (point-min))
-        (let ((found (search-forward "Property Test" nil t)))
-          (expect found :to-be-truthy)
-          (when found
-            (org-back-to-heading t)
-            ;; Check ORG_GTD property
-            (expect (org-entry-get (point) "ORG_GTD") :to-equal "Actions")
-            ;; Check TODO state
-            (expect (org-get-todo-state) :to-equal "NEXT")
-            ;; Check ID exists
-            (expect (org-entry-get (point) "ID") :not :to-be nil))))))
-
-  (it "refreshes the graph after creation"
-    (let* ((project-marker (org-gtd-graph-view-test--create-project "Test Project"))
-           (buffer (get-buffer-create "*Org GTD Graph: project-test*"))
-           (refresh-called nil))
-      ;; Set up minimal graph view buffer
-      (with-current-buffer buffer
-        (org-gtd-graph-view-mode)
-        (setq org-gtd-graph-view--project-marker project-marker)
-        ;; Mock refresh to track if it was called
-        (cl-letf (((symbol-function 'org-gtd-graph-view-refresh)
-                   (lambda () (setq refresh-called t))))
-          (with-simulated-input "Refresh SPC Test RET"
-            (org-gtd-graph-view-create-task))))
-
-      ;; Verify refresh was called
-      (expect refresh-called :to-be-truthy))))
 
 ;;;; org-gtd-graph-view-add-dependency Tests
 

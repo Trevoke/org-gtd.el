@@ -156,8 +156,7 @@ _EVENT is the file-notify event (unused)."
       (let ((svg (org-gtd-svg-render-graph graph org-gtd-graph-ui--selected-node-id)))
         ;; Store both the full graph and the displayed (possibly filtered) graph
         (setq org-gtd-graph-view--graph full-graph)
-        (org-gtd-graph-view--display-svg svg graph)
-        (org-gtd-graph-view--setup-image-map graph)))))
+        (org-gtd-graph-view--display-svg svg graph)))))
 
 (defun org-gtd-graph-view--display-svg (svg displayed-graph)
   "Display SVG in the current buffer showing DISPLAYED-GRAPH."
@@ -174,105 +173,18 @@ _EVENT is the file-notify event (unused)."
     (insert-image image)
     (insert "\n\n")
 
-    ;; Insert filter status if active
-    (when org-gtd-graph-view--filter
-      (insert (propertize "Active Filters:\n" 'face 'bold))
-      (org-gtd-graph-view--display-filter-status org-gtd-graph-view--filter displayed-graph)
-      (insert "\n"))
-
     ;; Insert legend
     (insert (propertize "Graph View Controls:\n" 'face 'bold))
     (insert "  Quick Keys:      ? - Show all commands (transient menu)\n")
-    (insert "  Navigation:      n/p/j/k - Next/previous node | TAB - Next sibling | g - Go to node\n")
-    (insert "  View:            f - Filter | z - Zoom\n")
+    (insert "  Navigation:      n/p/j/k - Down/up dependency | TAB - Next sibling | g - Go to node\n")
+    (insert "  View:            z - Zoom\n")
     (insert "  Actions:         r - Refresh | u - Undo | C-r - Redo | q - Quit\n")
     (insert "\n")
-    (insert "  Press ? to see all commands including: add child/sibling/root tasks, edit properties, etc.\n")
+    (insert "  Press ? to see all commands including: add child/root/blocker tasks\n")
 
     (goto-char (point-min))))
 
-;;;; Filter Status Display
-
-(defun org-gtd-graph-view--display-filter-status (filter displayed-graph)
-  "Display status of active FILTER showing info from DISPLAYED-GRAPH."
-  (let ((total-nodes (hash-table-count (org-gtd-graph-nodes org-gtd-graph-view--graph)))
-        (visible-nodes (hash-table-count (org-gtd-graph-nodes displayed-graph)))
-        (parts nil))
-
-    ;; Show node count
-    (insert (format "  Showing %d/%d tasks\n" visible-nodes total-nodes))
-
-    ;; TODO states
-    (when-let ((states (org-gtd-graph-filter-todo-states filter)))
-      (push (format "TODO: %s" (mapconcat #'identity states ", ")) parts))
-
-    ;; Priorities
-    (when-let ((priorities (org-gtd-graph-filter-priorities filter)))
-      (push (format "Priority: %s" (mapconcat #'identity priorities ", ")) parts))
-
-    ;; Tags
-    (when-let ((tags (org-gtd-graph-filter-tags filter)))
-      (push (format "Tags: %s" (mapconcat #'identity tags ", ")) parts))
-
-    ;; Scheduled
-    (when-let ((scheduled (org-gtd-graph-filter-scheduled filter)))
-      (push (format "Scheduled: %s" (symbol-name scheduled)) parts))
-
-    ;; Zoom
-    (when-let ((zoom-id (org-gtd-graph-filter-zoom-node-id filter)))
-      (when-let ((node (org-gtd-graph-data-get-node org-gtd-graph-view--graph zoom-id)))
-        (push (format "Zoomed to: %s" (org-gtd-graph-node-title node)) parts)))
-
-    ;; Display filter details
-    (when parts
-      (insert (format "  %s\n" (mapconcat #'identity (nreverse parts) " | "))))))
-
-;;;; Image Map Setup
-
-(defun org-gtd-graph-view--setup-image-map (displayed-graph)
-  "Create image map for clickable regions in DISPLAYED-GRAPH."
-  (when displayed-graph
-    (let ((map (make-sparse-keymap))
-          (nodes (org-gtd-graph-nodes displayed-graph)))
-
-      ;; Add click handlers for each node
-      (maphash (lambda (node-id node)
-                 (org-gtd-graph-view--add-node-click-area
-                  map node-id node))
-               nodes)
-
-      (setq org-gtd-graph-view--image-map map)
-
-      ;; Apply map to image at point-min
-      (save-excursion
-        (goto-char (point-min))
-        (when-let ((image (get-text-property (point) 'display)))
-          (when (eq (car image) 'image)
-            (put-text-property (point) (1+ (point)) 'keymap map)))))))
-
-(defun org-gtd-graph-view--add-node-click-area (map node-id node)
-  "Add clickable area for NODE with NODE-ID to MAP."
-  (let* ((x (org-gtd-graph-node-x node))
-         (y (org-gtd-graph-node-y node))
-         (w (org-gtd-graph-node-width node))
-         (h (org-gtd-graph-node-height node))
-         (area (list 'rect
-                     (cons x y)
-                     (cons (+ x w) (+ y h)))))
-
-    ;; Define click handler for this area
-    (define-key map (vector area 'mouse-1)
-                (lambda ()
-                  (interactive)
-                  (org-gtd-graph-view--node-clicked node-id)))))
-
-;;;; Event Handlers
-
-(defun org-gtd-graph-view--node-clicked (node-id)
-  "Handle click on node with NODE-ID."
-  (message "Clicked node: %s" node-id)
-  ;; Update details panel with selected node
-  (org-gtd-graph-ui-select-node node-id))
+;;;; Dependency Management
 
 (defun org-gtd-graph-view-add-dependency ()
   "Add a dependency between two tasks.
@@ -379,49 +291,6 @@ If blocker is external to project, adds project ID and TRIGGER property."
         ;; TODO: Record for undo (currently disabled - causes test failures)
         ;; (org-gtd-graph-undo-record-remove-dependency blocker-id blocked-id)
         (org-gtd-graph-view-refresh)))))
-
-(defun org-gtd-graph-view-create-task ()
-  "Create a new level 1 single action task in org-gtd-tasks.org."
-  (interactive)
-  (unless org-gtd-graph-view--project-marker
-    (user-error "No project marker set"))
-  (unless (markerp org-gtd-graph-view--project-marker)
-    (user-error "Invalid project marker"))
-  (unless (marker-buffer org-gtd-graph-view--project-marker)
-    (user-error "Project marker buffer is not available"))
-  (let ((title (read-string "Task title: ")))
-    (when (and title (not (string-empty-p title)))
-      ;; Create level 1 heading in org-gtd-tasks.org
-      (with-current-buffer (org-gtd--default-file)
-        (goto-char (point-max))
-        (unless (bolp) (insert "\n"))
-        (insert "* " title "\n")
-        (forward-line -1)
-        (org-back-to-heading t)
-        ;; Use org-gtd-configure-item to set up as single action
-        (org-gtd-configure-item (point) :next)
-        (save-buffer))
-      (message "Created task: %s" title)
-      (org-gtd-graph-view-refresh))))
-
-(defun org-gtd-graph-view-delete-task ()
-  "Delete a task from the project."
-  (interactive)
-  (when org-gtd-graph-view--graph
-    (let* ((nodes (org-gtd-graph-nodes org-gtd-graph-view--graph))
-           (node-list (org-gtd-graph-view--nodes-to-completion-list nodes))
-           (title (completing-read "Delete task: " node-list nil t))
-           (node-id (cdr (assoc title node-list))))
-
-      (when node-id
-        (when (yes-or-no-p (format "Delete task '%s'? " title))
-          (when-let ((marker (org-id-find node-id t)))
-            (with-current-buffer (marker-buffer marker)
-              (goto-char (marker-position marker))
-              (org-cut-subtree)
-              (save-buffer))
-            (message "Deleted task: %s" title)
-            (org-gtd-graph-view-refresh)))))))
 
 ;;;; Helper Functions
 

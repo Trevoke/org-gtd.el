@@ -50,15 +50,11 @@
     (define-key map (kbd "a") #'org-gtd-graph-view-add-dependency)
     (define-key map (kbd "d") #'org-gtd-graph-view-remove-dependency)
 
-    ;; Task operations
-    (define-key map (kbd "C-c n") #'org-gtd-graph-view-create-task)
-    (define-key map (kbd "C-c k") #'org-gtd-graph-view-delete-task)
-
-    ;; Sequential navigation
-    (define-key map (kbd "n") #'org-gtd-graph-nav-next)
-    (define-key map (kbd "p") #'org-gtd-graph-nav-previous)
-    (define-key map (kbd "j") #'org-gtd-graph-nav-next)
-    (define-key map (kbd "k") #'org-gtd-graph-nav-previous)
+    ;; Dependency-based navigation
+    (define-key map (kbd "n") #'org-gtd-graph-nav-down-dependency)
+    (define-key map (kbd "p") #'org-gtd-graph-nav-up-dependency)
+    (define-key map (kbd "j") #'org-gtd-graph-nav-down-dependency)
+    (define-key map (kbd "k") #'org-gtd-graph-nav-up-dependency)
 
     ;; Layer-based navigation
     (define-key map (kbd "TAB") #'org-gtd-graph-nav-next-sibling)
@@ -66,20 +62,12 @@
     (define-key map (kbd "<") #'org-gtd-graph-nav-first-in-layer)
     (define-key map (kbd ">") #'org-gtd-graph-nav-last-in-layer)
 
-    ;; Dependency-based navigation
-    (define-key map (kbd "C-n") #'org-gtd-graph-nav-down-dependency)
-    (define-key map (kbd "C-p") #'org-gtd-graph-nav-up-dependency)
-
     ;; Goto navigation
     (define-key map (kbd "g") #'org-gtd-graph-nav-goto)
 
     ;; Navigation history
     (define-key map (kbd "[") #'org-gtd-graph-ui-back)
     (define-key map (kbd "]") #'org-gtd-graph-ui-forward)
-
-    ;; Basic navigation
-    (define-key map (kbd "RET") #'org-gtd-graph-view-goto-node-at-point)
-    (define-key map (kbd "<mouse-1>") #'org-gtd-graph-view-click)
 
     map)
   "Keymap for `org-gtd-graph-view-mode'.")
@@ -110,18 +98,6 @@ The graph auto-updates when you refresh (\\[org-gtd-graph-view-refresh])."
   (setq-local buffer-read-only t
               truncate-lines nil)
   (buffer-disable-undo))
-
-;;;; Interactive Commands
-
-(defun org-gtd-graph-view-goto-node-at-point ()
-  "Jump to the org heading for the node at point."
-  (interactive)
-  (message "Use mouse click or 'a'/'d' to interact with nodes"))
-
-(defun org-gtd-graph-view-click (event)
-  "Handle mouse click EVENT on the graph."
-  (interactive "e")
-  (mouse-set-point event))
 
 ;;;; Autoload Entry Point
 

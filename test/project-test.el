@@ -24,6 +24,8 @@
              ;; Clear org-id locations after tests
              (setq org-id-locations nil)
              (setq org-id-files nil)
+             ;; Save cleared state to disk to prevent test pollution
+             (org-id-locations-save)
              ;; TODO figure out if this can / should be removed
              (remove-hook 'post-command-hook 'org-add-log-note))
 

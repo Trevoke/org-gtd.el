@@ -41,24 +41,16 @@
   ["Org GTD Graph Commands"
    ["Add"
     ("a c" "child task" org-gtd-graph-transient-add-child)
-    ("a s" "sibling task" org-gtd-graph-transient-add-sibling)
     ("a r" "root task" org-gtd-graph-transient-add-root)
-    ("a l" "link dependency" org-gtd-graph-view-add-dependency)
-    ("a b" "add blocker" org-gtd-graph-view-add-blocker)]
-   ["Edit"
-    ("e p" "properties" org-gtd-graph-transient-edit-properties)
-    ("e t" "todo state" org-gtd-graph-transient-edit-todo)
-    ("e s" "schedule" org-gtd-graph-transient-schedule)
-    ("e d" "deadline" org-gtd-graph-transient-deadline)]
+    ("a b" "blocker task" org-gtd-graph-view-add-blocker)]
    ["Navigate"
-    ("n" "next node" org-gtd-graph-nav-next :transient t)
-    ("j" "next node" org-gtd-graph-nav-next :transient t)
-    ("p" "previous node" org-gtd-graph-nav-previous :transient t)
-    ("k" "previous node" org-gtd-graph-nav-previous :transient t)
+    ("n" "down dependency" org-gtd-graph-nav-down-dependency :transient t)
+    ("j" "down dependency" org-gtd-graph-nav-down-dependency :transient t)
+    ("p" "up dependency" org-gtd-graph-nav-up-dependency :transient t)
+    ("k" "up dependency" org-gtd-graph-nav-up-dependency :transient t)
     ("TAB" "next sibling" org-gtd-graph-nav-next-sibling :transient t)
     ("g" "goto node" org-gtd-graph-nav-goto)]
    ["View"
-    ("f" "filter" org-gtd-graph-transient-filter)
     ("z" "zoom" org-gtd-graph-transient-zoom)]
    ["Actions"
     ("r" "refresh" org-gtd-graph-view-refresh :transient t)
@@ -104,37 +96,6 @@ creates a dependency where the parent blocks the child."
               (message "Created child task: %s" title)
               (org-gtd-graph-view-refresh))))))))
 
-(defun org-gtd-graph-transient-add-sibling ()
-  "Add a sibling task to the selected node.
-Creates a new task at the same level as the currently selected node."
-  (interactive)
-  (unless org-gtd-graph-ui--selected-node-id
-    (user-error "No node selected. Click on a node first"))
-
-  (let* ((sibling-id org-gtd-graph-ui--selected-node-id)
-         (title (read-string "Sibling task title: ")))
-    (when (and title (not (string-empty-p title)))
-      (let ((sibling-marker (org-id-find sibling-id t)))
-        (unless sibling-marker
-          (user-error "Cannot find sibling node with ID: %s" sibling-id))
-
-        (org-with-point-at sibling-marker
-          (let ((level (org-current-level)))
-            (org-end-of-subtree t t)
-            (unless (bolp) (insert "\n"))
-            (insert (make-string level ?\*) " " title "\n")
-            (forward-line -1)
-            (org-back-to-heading t)
-            (let ((new-id (org-gtd-id-get-create)))
-              (org-todo "TODO")
-              (org-entry-put (point) "ORG_GTD" "Actions")
-              (let ((project-id (org-entry-get sibling-marker "ORG_GTD_PROJECT_IDS")))
-                (when project-id
-                  (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)))
-              (save-buffer)
-              (message "Created sibling task: %s" title)
-              (org-gtd-graph-view-refresh))))))))
-
 (defun org-gtd-graph-transient-add-root ()
   "Add a new root task to the project.
 Creates a task that has no dependencies and adds it to the project's
@@ -169,39 +130,7 @@ ORG_GTD_FIRST_TASKS property."
       (message "Created root task: %s" title)
       (org-gtd-graph-view-refresh))))
 
-;;;; Edit Commands
-
-(defun org-gtd-graph-transient-edit-properties ()
-  "Edit properties of selected node."
-  (interactive)
-  (message "Edit properties (Phase 2)"))
-
-(defun org-gtd-graph-transient-edit-todo ()
-  "Change TODO state of selected node."
-  (interactive)
-  (message "Edit TODO state (Phase 2)"))
-
-(defun org-gtd-graph-transient-schedule ()
-  "Schedule selected node."
-  (interactive)
-  (message "Schedule node (Phase 2)"))
-
-(defun org-gtd-graph-transient-deadline ()
-  "Set deadline for selected node."
-  (interactive)
-  (message "Set deadline (Phase 2)"))
-
 ;;;; Navigation Commands (Phase 3 placeholders)
-
-(defun org-gtd-graph-nav-next ()
-  "Move to next node in graph."
-  (interactive)
-  (message "Navigation: next node (Phase 3)"))
-
-(defun org-gtd-graph-nav-previous ()
-  "Move to previous node in graph."
-  (interactive)
-  (message "Navigation: previous node (Phase 3)"))
 
 (defun org-gtd-graph-nav-next-sibling ()
   "Move to next sibling node."
@@ -214,19 +143,6 @@ ORG_GTD_FIRST_TASKS property."
   (message "Navigation: goto node (Phase 3)"))
 
 ;;;; View Commands
-
-;;;###autoload (autoload 'org-gtd-graph-transient-filter "org-gtd-graph-transient" nil t)
-(transient-define-prefix org-gtd-graph-transient-filter ()
-  "Filter graph view by various criteria."
-  ["Filter Graph View"
-   ["By Status"
-    ("t" "TODO state" org-gtd-graph-filter-by-todo)
-    ("p" "priority" org-gtd-graph-filter-by-priority)]
-   ["By Metadata"
-    ("g" "tags" org-gtd-graph-filter-by-tag)
-    ("s" "scheduled date" org-gtd-graph-filter-by-scheduled)]
-   ["Clear"
-    ("c" "clear all filters" org-gtd-graph-filter-clear-all)]])
 
 ;;;###autoload (autoload 'org-gtd-graph-transient-zoom "org-gtd-graph-transient" nil t)
 (transient-define-prefix org-gtd-graph-transient-zoom ()

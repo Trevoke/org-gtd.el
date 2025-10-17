@@ -63,7 +63,7 @@
       ;; Calculate waypoints (will include detour to x=250)
       (let* ((from-node (org-gtd-graph-data-get-node graph "node-a"))
              (to-node (org-gtd-graph-data-get-node graph "node-b"))
-             (points (org-gtd-layout--calculate-edge-waypoints from-node to-node)))
+             (points (org-gtd-layout--calculate-edge-waypoints graph from-node to-node)))
         (setf (org-gtd-graph-edge-points edge) points))
       (push edge (org-gtd-graph-edges graph)))
 
