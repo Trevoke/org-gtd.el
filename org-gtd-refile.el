@@ -49,19 +49,45 @@ setting as part of following the instructions to add your own refile targets."
   :package-version '(org-gtd . "2.0.0")
   :type 'boolean)
 
+(defcustom org-gtd-use-refile-system t
+  "Whether to use org-gtd's refile system or standard org-refile.
+
+When t (default), org-gtd uses ORG_GTD_REFILE properties to find refile
+targets. This provides GTD-specific organization.
+
+When nil, org-gtd respects your existing org-refile-targets configuration.
+Items can be refiled anywhere you've configured org-mode refile targets.
+
+In V4, items can exist anywhere in org-agenda-files regardless of refile
+organization. This setting only affects the refile operation after clarifying."
+  :group 'org-gtd-organize
+  :package-version '(org-gtd . "4.0.0")
+  :type 'boolean)
+
 ;;;; Macros
 
 (defmacro with-org-gtd-refile (type &rest body)
   "Macro to refile specifically within org-gtd context.
 
-TYPE is the org-gtd action type.  BODY... is the rest of the code."
+TYPE is the org-gtd action type. BODY... is the rest of the code.
+
+If org-gtd-use-refile-system is t (default), searches for headings with
+ORG_GTD_REFILE property matching TYPE at any level in org-agenda-files.
+
+If org-gtd-use-refile-system is nil, uses standard org-refile configuration
+from org-refile-targets."
   (declare (debug t) (indent 1))
-  `(let ((org-refile-target-verify-function (lambda () (org-gtd-refile--group-p ,type)))
-         (org-refile-targets '((org-agenda-files :level . 1)))
-         (org-refile-use-outline-path nil)
-         (org-outline-path-complete-in-steps nil))
-     (unwind-protect
-         (with-org-gtd-context (progn ,@body)))))
+  `(if org-gtd-use-refile-system
+       ;; Use org-gtd's ORG_GTD_REFILE property-based refile system
+       (let ((org-refile-target-verify-function
+              (lambda () (org-gtd-refile--group-p ,type)))
+             (org-refile-targets '((org-agenda-files :maxlevel . 9)))
+             (org-refile-use-outline-path t)
+             (org-outline-path-complete-in-steps nil))
+         (unwind-protect
+             (with-org-gtd-context (progn ,@body))))
+     ;; Use standard org-refile configuration
+     (with-org-gtd-context (progn ,@body))))
 
 (defmacro with-org-gtd-refile-project-task (&rest body)
   "Refile specifically into an existing project.
@@ -90,8 +116,8 @@ TYPE is one of the org-gtd action types.
 REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
 
   (with-org-gtd-refile type
-      (unless (org-refile-get-targets)
-        (org-gtd-refile--add-target refile-target-element))
+    (unless (org-refile-get-targets)
+      (org-gtd-refile--add-target refile-target-element))
 
     (if org-gtd-refile-to-any-target
         (org-refile nil nil (car (org-refile-get-targets)))
@@ -102,10 +128,13 @@ REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
       (org-refile 3 nil nil "Which project should this task go to? ")))
 
 (defun org-gtd-refile--add-target (refile-target-element)
-  "Private function used to create a missing org-gtd refile target.
+  "Create a missing org-gtd refile target in the default GTD file.
 
-GTD-TYPE is an action type.
-REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
+REFILE-TARGET-ELEMENT is a string version of a valid org-heading target.
+
+Creates the target in org-gtd--default-file to ensure consistent location.
+In future, this could be enhanced to prompt for file location when multiple
+org-gtd files exist."
   (with-current-buffer (org-gtd--default-file)
     (goto-char (point-max))
     (newline)
@@ -115,7 +144,7 @@ REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
 (defun org-gtd-refile--group-p (type)
   "Determine whether the current heading is of a given gtd TYPE."
   (string-equal type
-                (org-element-property :ORG_GTD (org-element-at-point))))
+                (org-element-property :ORG_GTD_REFILE (org-element-at-point))))
 
 ;;;; Footer
 

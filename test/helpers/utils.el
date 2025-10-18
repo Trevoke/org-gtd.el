@@ -3,7 +3,7 @@
 
 (defun create-additional-project-target (filename)
   "Create an additional file for project organization with a project heading."
-  (let ((base-heading "* AdditionalHeading\n:PROPERTIES:\n:ORG_GTD:  Projects\n:END:\n"))
+  (let ((base-heading "* AdditionalHeading\n:PROPERTIES:\n:ORG_GTD_REFILE:  Projects\n:END:\n"))
     (ogt--create-org-file-in-org-gtd-dir filename base-heading)))
 
 (defun ogt-inbox-buffer ()

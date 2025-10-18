@@ -123,6 +123,7 @@ planning keyword in `org-mode'."
     (setq org-map-continue-from (- (org-element-property :begin
                                                          (org-element-at-point))
                                    1))
+    (org-entry-put (point) "ORG_GTD" org-gtd-habit)
     (org-gtd-refile--do org-gtd-habit org-gtd-habit-template)))
 
 (defun org-gtd-upgrades--scheduled-item-p ()
@@ -136,14 +137,28 @@ planning keyword in `org-mode'."
 
 This migration performs TWO required steps:
 
-STEP 1: Add ORG_GTD properties
-  - Adds ORG_GTD=\"Projects\" property to project headings
-  - Adds ORG_GTD=\"Actions\" property to project tasks
+STEP 1: Migrate ORG_GTD properties
+  - Level 1 category headings: Renames ORG_GTD → ORG_GTD_REFILE
+    (preserves them as refile targets for org-gtd's refile system)
+  - Level 2+ items: Adds ORG_GTD property to mark item type
+  - Project tasks: Adds ORG_GTD=\"Actions\" property
 
 STEP 2: Add dependency properties to projects
   - Adds ORG_GTD_DEPENDS_ON and ORG_GTD_BLOCKS for sequential dependencies
   - Adds ORG_GTD_FIRST_TASKS to project headings
   - Sets correct NEXT/TODO states based on dependencies
+
+AFTER UPGRADE:
+
+Your level 1 category headings now use ORG_GTD_REFILE property and can
+serve as refile targets. You can:
+  - Move these headings anywhere in org-agenda-files (any level)
+  - Create new refile targets by adding ORG_GTD_REFILE property
+  - Disable org-gtd refile: (setq org-gtd-use-refile-system nil)
+  - Use your own org-refile-targets configuration instead
+
+Items can now exist anywhere in org-agenda-files - ORG_GTD_REFILE markers
+are purely for organizational convenience with org-gtd's refile system.
 
 This is REQUIRED for org-gtd v4 to work correctly. The old TRIGGER-based
 project system no longer works - v4 uses dependency properties instead.
@@ -173,7 +188,9 @@ Make a backup before running! Safe to run multiple times."
          (let ((category-type (org-entry-get (point) "ORG_GTD"))
                (category-level (org-current-level)))
            (when category-type
-             ;; Remove ORG_GTD from level 1 category heading
+             ;; Rename ORG_GTD to ORG_GTD_REFILE on level 1 category heading
+             ;; This preserves the heading as a refile target in v4
+             (org-entry-put (point) "ORG_GTD_REFILE" category-type)
              (org-entry-delete (point) "ORG_GTD")
 
              ;; Add category type to all level 2 children

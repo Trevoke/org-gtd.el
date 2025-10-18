@@ -43,6 +43,18 @@
    "finding a refile target"
    (before-each (setq org-gtd-refile-to-any-target nil))
 
+   (it "finds targets marked with ORG_GTD_REFILE property"
+       (with-current-buffer (org-gtd--default-file)
+         (goto-char (point-max))
+         (insert "\n* Work Projects
+:PROPERTIES:
+:ORG_GTD_REFILE: Projects
+:END:")
+         (save-buffer))
+       (let ((targets (mapcar 'car (with-org-gtd-refile org-gtd-projects
+                                     (org-refile-get-targets)))))
+         (expect targets :to-contain "Work Projects")))
+
    (it "finds the Project target"
        (let ((targets (caar (with-org-gtd-refile org-gtd-projects
                               (org-refile-get-targets)))))
@@ -53,11 +65,11 @@
          (goto-char (point-max))
          (insert "* To Read
 :PROPERTIES:
-:ORG_GTD: Incubated
+:ORG_GTD_REFILE: Incubated
 :END:
 * To Eat
 :PROPERTIES:
-:ORG_GTD: Incubated
+:ORG_GTD_REFILE: Incubated
 :END:")
          (save-buffer))
        (with-org-gtd-refile org-gtd-incubate

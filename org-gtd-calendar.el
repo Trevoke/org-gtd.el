@@ -42,7 +42,7 @@
 (defconst org-gtd-calendar-template
   (format "* Calendar
 :PROPERTIES:
-:ORG_GTD: %s
+:ORG_GTD_REFILE: %s
 :END:
 " org-gtd-calendar))
 

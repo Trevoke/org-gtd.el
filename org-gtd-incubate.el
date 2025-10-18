@@ -44,7 +44,7 @@
 (defconst org-gtd-incubate-template
   (format "* Incubate
 :PROPERTIES:
-:ORG_GTD: %s
+:ORG_GTD_REFILE: %s
 :END:
 " org-gtd-incubate)
   "Template for the GTD someday/maybe list.")

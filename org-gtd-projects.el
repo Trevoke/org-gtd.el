@@ -73,7 +73,7 @@ instead.")
 (defconst org-gtd-projects-template
   (format "* Projects
 :PROPERTIES:
-:ORG_GTD: %s
+:ORG_GTD_REFILE: %s
 :END:
 " org-gtd-projects))
 

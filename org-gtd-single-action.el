@@ -41,7 +41,7 @@
 (defconst org-gtd-action-template
   (format "* Actions
 :PROPERTIES:
-:ORG_GTD: %s
+:ORG_GTD_REFILE: %s
 :END:
 " org-gtd-action))
 

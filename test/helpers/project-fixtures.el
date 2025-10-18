@@ -4,7 +4,7 @@
 (defconst ogt--base-project-heading
   "* AdditionalHeading
 :PROPERTIES:
-:ORG_GTD:  Projects
+:ORG_GTD_REFILE:  Projects
 :END:
 ")
 

@@ -52,13 +52,13 @@
                 "Task 1"))
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-min))
-        (search-forward ":ORG_GTD: Incubated")
+        (search-forward ":ORG_GTD_REFILE: Incubated")
         (org-narrow-to-subtree)
         (expect (current-buffer-raw-text)
                 :not :to-match
                 "projectify")
         (widen)
-        (search-forward ":ORG_GTD: Projects")
+        (search-forward ":ORG_GTD_REFILE: Projects")
         (org-narrow-to-subtree)
         (expect (current-buffer-raw-text)
                 :to-match

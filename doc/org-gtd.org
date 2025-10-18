@@ -1259,26 +1259,82 @@ Organizing is broken up into three steps:
 :PROPERTIES:
 :CUSTOM_ID: refiling-after-organizing
 :END:
-By default, org-gtd will refile to a single file in the directory, but you can create your own headings if you find it helpful.
 
-If you would like to add new refile targets, it's simple, follow these instructions.
-***** New project heading
-Add a top-level heading in any ~.org~ file (including a new one) in ~org-gtd-directory~ and make sure its property drawer matches the one in the constant ~org-gtd-projects-template~.
-***** Other headings
-Create a new top-level heading in any ~.org~ file (including a new one) in ~org-gtd-directory~ and make sure its property drawer matches the one in the relevant template constant:
+***** Understanding Refiling in V4
 
-- ~org-gtd-habit-template~
-- ~org-gtd-calendar-template~
-- ~org-gtd-incubate-template~
-- ~org-gtd-action-template~
+In org-gtd v4, refiling is *optional organizational preference*, not a structural requirement. Items can exist anywhere in your ~org-agenda-files~.
 
-Here is an example:
+By default, org-gtd uses ~ORG_GTD_REFILE~ properties to mark refile target headings. These can be at *any level* in *any file* in ~org-agenda-files~.
 
-#+begin_src org-mode
+***** Default Refile System
+
+When ~org-gtd-use-refile-system~ is t (default), org-gtd finds refile targets by searching for ~ORG_GTD_REFILE~ property:
+
+#+begin_example
+,* Projects         <-- Can be anywhere, any level
 :PROPERTIES:
-:ORG_GTD: Action
+:ORG_GTD_REFILE: Projects
+:END:
+
+,** Work/
+,*** Development Projects   <-- Also a valid refile target!
+:PROPERTIES:
+:ORG_GTD_REFILE: Projects
+:END:
+#+end_example
+
+When you organize an item as a Project, org-gtd finds *all* headings with ~ORG_GTD_REFILE: Projects~ and lets you choose where to refile.
+
+***** Creating New Refile Targets
+
+To create a new refile target, add ~ORG_GTD_REFILE~ property to any heading:
+
+For Projects:
+#+begin_src org-mode
+,* My Projects
+:PROPERTIES:
+:ORG_GTD_REFILE: Projects
 :END:
 #+end_src
+
+For other types, use the appropriate template constant value:
+- Projects: ~ORG_GTD_REFILE: Projects~
+- Actions: ~ORG_GTD_REFILE: Actions~
+- Calendar: ~ORG_GTD_REFILE: Calendar~
+- Incubated: ~ORG_GTD_REFILE: Incubated~
+- Habits: ~ORG_GTD_REFILE: Habits~
+
+If no refile target exists when organizing, org-gtd automatically creates one in your default GTD file.
+
+***** Using Your Own Refile Configuration
+
+If you prefer your own refile organization:
+
+#+begin_src elisp
+(setq org-gtd-use-refile-system nil)
+#+end_src
+
+Now org-gtd respects your ~org-refile-targets~ configuration. You can refile anywhere you've configured.
+
+***** Migration from V3
+
+V3 required this structure:
+#+begin_example
+,* Projects      <-- MUST be level 1
+:PROPERTIES:
+:ORG_GTD: Projects    <-- Dual-purpose property
+:END:
+#+end_example
+
+V4 is flexible:
+#+begin_example
+,* Projects      <-- Can be anywhere, any level
+:PROPERTIES:
+:ORG_GTD_REFILE: Projects    <-- Marks refile target
+:END:
+#+end_example
+
+The upgrade script (~org-gtd-upgrade-v3-to-v4~) automatically renames ~ORG_GTD~ → ~ORG_GTD_REFILE~ on your old category headings.
 
 *** Engaging with your GTD items
 
@@ -2361,6 +2417,30 @@ Useful if you want automatic saves during inbox processing.
 (setq org-gtd-refile-to-any-target nil)
 #+end_src
 
+**** ~org-gtd-use-refile-system~
+
+*Type*: Boolean
+
+*Default*: ~t~
+
+*Description*: Whether to use org-gtd's refile system or standard org-refile.
+
+- When ~t~ (default): org-gtd uses ~ORG_GTD_REFILE~ properties to find refile targets. This provides GTD-specific organization with flexible target placement.
+- When ~nil~: org-gtd respects your existing ~org-refile-targets~ configuration. Items can be refiled anywhere you've configured org-mode refile targets.
+
+*Important*: In V4, items can exist anywhere in ~org-agenda-files~ regardless of refile organization. This setting only affects the refile operation after clarifying items during inbox processing.
+
+*Example*: Use your own refile configuration:
+#+begin_src emacs-lisp
+;; Disable org-gtd's refile system
+(setq org-gtd-use-refile-system nil)
+
+;; Configure standard org-refile targets
+(setq org-refile-targets '((org-agenda-files :maxlevel . 3)))
+#+end_src
+
+*See also*: [[#refiling-v4][Refiling section]] for complete documentation on creating refile targets and understanding the refile system.
+
 *** Clarification Configuration
 
 **** ~org-gtd-clarify-show-horizons~
@@ -3230,6 +3310,43 @@ If you find yourself manually editing properties, that indicates a missing featu
 #+end_example
 
 *Note*: This property is how org-gtd identifies items. Don't modify manually unless you understand the implications.
+
+**** ORG_GTD_REFILE
+
+*Used on*: Category headings that serve as refile targets
+
+*Purpose*: Marks a heading as a refile target for org-gtd's optional refile system (see [[#refiling-v4][Refiling section]])
+
+*Values*:
+- ~"Projects"~ :: Target for refiling projects
+- ~"Actions"~ :: Target for refiling single actions
+- ~"Calendar"~ :: Target for refiling calendar items
+- ~"Incubated"~ :: Target for refiling incubated items
+- ~"Habits"~ :: Target for refiling habits
+
+*Example*:
+#+begin_example
+,* Projects         <-- Can be at any level in any file
+:PROPERTIES:
+:ORG_GTD_REFILE: Projects
+:END:
+
+,* Work/Development Projects   <-- Can have multiple targets per type
+:PROPERTIES:
+:ORG_GTD_REFILE: Projects
+:END:
+#+end_example
+
+*How it's set*:
+- Automatically created by ~org-gtd-upgrade-v3-to-v4~ (renames ORG_GTD on level 1 headings)
+- Manually when creating custom refile targets
+- Via ~org-entry-put~ in elisp: ~(org-entry-put nil "ORG_GTD_REFILE" "Projects")~
+
+*Important notes*:
+- This property is OPTIONAL - only used if ~org-gtd-use-refile-system~ is ~t~ (default)
+- Can exist at ANY level in ANY file in ~org-agenda-files~
+- You can have multiple refile targets for the same category type
+- Set ~org-gtd-use-refile-system~ to ~nil~ to use standard org-refile instead
 
 *** Project Properties
 

@@ -44,7 +44,7 @@
 (defconst org-gtd-habit-template
   (format "* Habits
 :PROPERTIES:
-:ORG_GTD: %s
+:ORG_GTD_REFILE: %s
 :END:
 " org-gtd-habit))
 
