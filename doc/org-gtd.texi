@@ -54,6 +54,7 @@ This manual is for Org GTD version 4.0
 * Setting up Org GTD::
 * Getting Started with Org GTD:: Tutorials to get you productive quickly
 * Using Org GTD::                How Org GTD maps to the GTD flow
+* Fix Shoulder Pain::
 * Reference::                    Complete reference for all org-gtd features
 * Troubleshooting::
 
@@ -144,7 +145,6 @@ Using Org GTD
 * The GTD Flow in Depth::        Detailed explanation of each GTD step
 * Understanding GTD Item Types:: When to use each type in the organize menu
 * Working with Projects (Advanced)::
-* Automating through emacs::
 
 Your Daily Workflow
 
@@ -177,14 +177,29 @@ Understanding GTD Item Types
 
 Working with Projects (Advanced)
 
+* First Contact Why Visual Project Management?::
+* Black Triangle Your First Project Graph View::
 * Understanding Project Dependencies::
-* Tutorial Project with Parallel Tasks::
-* Tutorial Complex Project Dependencies::
-* Common Dependency Patterns::
-* Practical Tips::
-* Reference Dependency Management Commands::
-* Optional Visualizing Dependencies::
-* Troubleshooting Projects::
+* Tutorial Parallel Tasks with Graph View::
+
+
+Fix Shoulder Pain
+
+* Find place to get MRI::
+* Make MRI appointment::
+* Make orthopedist appointment::
+* Get diagnosis from orthopedist::
+* Automating through emacs::
+
+Get diagnosis from orthopedist
+
+* Tutorial Complex Dependencies with Graph View::
+* Common Dependency Patterns (Visual Reference)::
+* Graph View Command Reference::
+* Practical Tips for Project Management::
+* Troubleshooting Projects with Graph View::
+* Graph View Command Reference: Graph View Command Reference (1). 
+* See Also::
 * Cleaning up / archiving completed work::
 * Commands you can call on org-agenda::
 * Defining your own agenda views::
@@ -195,7 +210,8 @@ Reference
 
 * Configuration Variables Reference:: All customization variables explained
 * Commands Reference::           All interactive commands explained
-* Properties Reference::         All org properties used by org-gtd
+* Properties Reference (Internal Implementation):: All org properties used by org-gtd
+* Troubleshooting Projects::     How to fix project dependency problems
 * View DSL Filter Reference::    Complete reference for the View DSL
 * Hooks Framework Reference::    Complete guide to customization hooks
 
@@ -234,7 +250,7 @@ Commands Reference
 * Obsolete Commands::
 
 
-Properties Reference
+Properties Reference (Internal Implementation)
 
 * Core GTD Properties::
 * Project Properties::
@@ -244,6 +260,13 @@ Properties Reference
 * Habit Properties::
 * Area of Focus Properties::
 * Standard Org Properties Used by org-gtd::
+
+
+Troubleshooting Projects
+
+* Fixing Broken Dependencies::
+* When Manual Property Editing is Needed::
+* Common Problems and Solutions::
 
 
 View DSL Filter Reference
@@ -1885,7 +1908,6 @@ You've completed the tutorials and understand the basics. This section covers ev
 * The GTD Flow in Depth::        Detailed explanation of each GTD step
 * Understanding GTD Item Types:: When to use each type in the organize menu
 * Working with Projects (Advanced)::
-* Automating through emacs::
 @end menu
 
 @node Your Daily Workflow
@@ -2078,41 +2100,99 @@ Refiling to the appropriate area (see @ref{Refiling to the appropriate area, , R
 @anchor{Refiling to the appropriate area}Refiling to the appropriate area
 
 
-By default, org-gtd will refile to a single file in the directory, but you can create your own headings if you find it helpful.
-
-If you would like to add new refile targets, it's simple, follow these instructions.
-
 @itemize
 @item
-@anchor{New project heading}New project heading
+@anchor{Understanding Refiling in V4}Understanding Refiling in V4
 
 
-Add a top-level heading in any @code{.org} file (including a new one) in @code{org-gtd-directory} and make sure its property drawer matches the one in the constant @code{org-gtd-projects-template}.
+In org-gtd v4, refiling is @strong{optional organizational preference}, not a structural requirement. Items can exist anywhere in your @code{org-agenda-files}.
+
+By default, org-gtd uses @code{ORG_GTD_REFILE} properties to mark refile target headings. These can be at @strong{any level} in @strong{any file} in @code{org-agenda-files}.
 
 @item
-@anchor{Other headings}Other headings
+@anchor{Default Refile System}Default Refile System
 
 
-Create a new top-level heading in any @code{.org} file (including a new one) in @code{org-gtd-directory} and make sure its property drawer matches the one in the relevant template constant:
-
-@itemize
-@item
-@code{org-gtd-habit-template}
-@item
-@code{org-gtd-calendar-template}
-@item
-@code{org-gtd-incubate-template}
-@item
-@code{org-gtd-action-template}
-@end itemize
-
-Here is an example:
+When @code{org-gtd-use-refile-system} is t (default), org-gtd finds refile targets by searching for @code{ORG_GTD_REFILE} property:
 
 @example
+* Projects         <-- Can be anywhere, any level
 :PROPERTIES:
-:ORG_GTD: Action
+:ORG_GTD_REFILE: Projects
+:END:
+
+** Work/
+*** Development Projects   <-- Also a valid refile target!
+:PROPERTIES:
+:ORG_GTD_REFILE: Projects
 :END:
 @end example
+
+When you organize an item as a Project, org-gtd finds @strong{all} headings with @code{ORG_GTD_REFILE: Projects} and lets you choose where to refile.
+
+@item
+@anchor{Creating New Refile Targets}Creating New Refile Targets
+
+
+To create a new refile target, add @code{ORG_GTD_REFILE} property to any heading:
+
+For Projects:
+@example
+* My Projects
+:PROPERTIES:
+:ORG_GTD_REFILE: Projects
+:END:
+@end example
+
+For other types, use the appropriate template constant value:
+@itemize
+@item
+Projects: @code{ORG_GTD_REFILE: Projects}
+@item
+Actions: @code{ORG_GTD_REFILE: Actions}
+@item
+Calendar: @code{ORG_GTD_REFILE: Calendar}
+@item
+Incubated: @code{ORG_GTD_REFILE: Incubated}
+@item
+Habits: @code{ORG_GTD_REFILE: Habits}
+@end itemize
+
+If no refile target exists when organizing, org-gtd automatically creates one in your default GTD file.
+
+@item
+@anchor{Using Your Own Refile Configuration}Using Your Own Refile Configuration
+
+
+If you prefer your own refile organization:
+
+@lisp
+(setq org-gtd-use-refile-system nil)
+@end lisp
+
+Now org-gtd respects your @code{org-refile-targets} configuration. You can refile anywhere you've configured.
+
+@item
+@anchor{Migration from V3}Migration from V3
+
+
+V3 required this structure:
+@example
+* Projects      <-- MUST be level 1
+:PROPERTIES:
+:ORG_GTD: Projects    <-- Dual-purpose property
+:END:
+@end example
+
+V4 is flexible:
+@example
+* Projects      <-- Can be anywhere, any level
+:PROPERTIES:
+:ORG_GTD_REFILE: Projects    <-- Marks refile target
+:END:
+@end example
+
+The upgrade script (@code{org-gtd-upgrade-v3-to-v4}) automatically renames @code{ORG_GTD} → @code{ORG_GTD_REFILE} on your old category headings.
 @end itemize
 @end itemize
 
@@ -2446,7 +2526,7 @@ Doesn't archive, just removes it
 
 @strong{GTD principle}: Be ruthless. If it's not actionable and not valuable information, delete it. Clutter in your system creates noise.
 
-@strong{See also}: For technical details on how each item type is stored, see @ref{Properties Reference}.
+@strong{See also}: For technical details on how each item type is stored, see @ref{Properties Reference (Internal Implementation), , Properties Reference}.
 
 @node Working with the GTD Horizons
 @subsection Working with the GTD Horizons
@@ -2525,102 +2605,171 @@ Regardless of the value of this variable, you can use the function @code{org-gtd
 @node Working with Projects (Advanced)
 @section Working with Projects (Advanced)
 
-You learned sequential projects in @ref{Tutorial Your First Project}. This section covers advanced project features: parallel tasks, custom dependencies, and complex project structures.
+You learned sequential projects in @ref{Tutorial Your First Project}. This section teaches you how to handle complex projects with parallel work streams, custom dependencies, and sophisticated project structures—all using visual project management.
 
 @menu
+* First Contact Why Visual Project Management?::
+* Black Triangle Your First Project Graph View::
 * Understanding Project Dependencies::
-* Tutorial Project with Parallel Tasks::
-* Tutorial Complex Project Dependencies::
-* Common Dependency Patterns::
-* Practical Tips::
-* Reference Dependency Management Commands::
-* Optional Visualizing Dependencies::
-* Troubleshooting Projects::
-* Cleaning up / archiving completed work::
-* Commands you can call on org-agenda::
-* Defining your own agenda views::
-* Adding your own hooks when organizing::
+* Tutorial Parallel Tasks with Graph View::
 @end menu
+
+@node First Contact Why Visual Project Management?
+@subsection First Contact: Why Visual Project Management?
+
+Real projects are rarely simple sequences. You might have:
+@itemize
+@item
+Tasks that can start simultaneously (parallel research streams)
+@item
+Multiple tasks that must all finish before the next step (convergence points)
+@item
+Independent work paths that later merge (diamond patterns)
+@end itemize
+
+Managing these mentally or through text properties is error-prone. You forget dependencies, create accidental bottlenecks, or miss opportunities for parallelization.
+
+@strong{Visual project management solves this.} You SEE your project as a dependency graph—boxes for tasks, arrows for dependencies, colors for states. Adding tasks, creating dependencies, and understanding project structure becomes intuitive and immediate.
+
+@node Black Triangle Your First Project Graph View
+@subsection Black Triangle: Your First Project Graph View
+
+Let's see this in action right now.
+
+@itemize
+@item
+@anchor{Step 1 Find a project}Step 1: Find a project
+
+
+Open your engage view: @code{C-c d e}
+
+Find any project task in your agenda (or create a quick test project if you don't have one).
+
+@item
+@anchor{Step 2 Open the graph view}Step 2: Open the graph view
+
+
+Press @code{RET} on the project task to jump to the project heading.
+
+Run: @code{M-x org-gtd-graph-view}
+
+@item
+@anchor{Step 3 Explore}Step 3: Explore
+
+
+You're now looking at your project as a visual graph:
+@itemize
+@item
+The project heading is at the top
+@item
+Tasks are arranged in layers below
+@item
+Arrows show which tasks block other tasks
+@item
+Green boxes are NEXT (ready to work on)
+@item
+Gray boxes are TODO (waiting for dependencies)
+@end itemize
+
+Press @code{?} to see all available commands.
+
+@strong{Success!} You've visualized your first project. Everything from here builds on this.
+@end itemize
 
 @node Understanding Project Dependencies
 @subsection Understanding Project Dependencies
 
-Projects in org-gtd use a dependency graph to track task relationships. Version 4.0 introduced flexible dependencies - you're not limited to sequential execution anymore.
+Before we build complex projects, let's understand how dependencies work visually.
 
 @itemize
 @item
-@anchor{How dependencies work}How dependencies work
+@anchor{The Dependency Graph (DAG)}The Dependency Graph (DAG)
 
 
-Task dependencies are managed through two org properties:
+Projects in org-gtd are @strong{Directed Acyclic Graphs} (DAGs):
 
 @table @asis
-@item @code{ORG_GTD_DEPENDS_ON}
-Contains IDs of tasks that must complete before this task can start (what blocks this task)
-@item @code{ORG_GTD_BLOCKS}
-Contains IDs of tasks that this task blocks (what depends on this task)
-@item @code{ORG_GTD_FIRST_TASKS}
-(On project heading) Contains IDs of tasks with no dependencies (the starting points)
+@item @strong{Directed}
+Dependencies have direction. If Task A blocks Task B, the arrow points from A → B@. B can't start until A finishes.
+
+@item @strong{Acyclic}
+No circular dependencies. A → B → C → A would create a deadlock. Org-gtd prevents these automatically.
+
+@item @strong{Graph}
+Tasks can have multiple dependencies. Task C might need both A AND B to finish before it can start.
 @end table
 
 @item
-@anchor{Sequential vs Parallel}Sequential vs Parallel
+@anchor{What You See in Graph View}What You See in Graph View
 
+
+The graph view arranges tasks in @strong{layers}:
 
 @itemize
 @item
-@strong{Sequential} (default): Tasks execute one after another (A → B → C)
+@strong{Layer 0}: Root tasks (no dependencies, can start immediately)
+@item
+@strong{Layer 1}: Tasks blocked by layer 0
+@item
+@strong{Layer 2}: Tasks blocked by layer 1
+@item
+And so on@dots{}
+@end itemize
+
+@strong{Green boxes} (NEXT state) mean "ready to work on right now."
+@strong{Gray boxes} (TODO state) mean "blocked by dependencies."
+
+When you complete a NEXT task, org-gtd automatically updates the graph:
 @itemize
+@item
+Completed task disappears (or grays out if you keep DONE tasks visible)
+@item
+Tasks that were waiting for it may turn green
+@end itemize
+
+@item
+@anchor{Sequential vs Parallel vs Mixed}Sequential vs Parallel vs Mixed
+
+
+@strong{Sequential} (default for new projects):
+@itemize
+@item
+Tasks execute one after another: A → B → C
 @item
 Only one task is NEXT at a time
 @item
-Each task blocks the next
-@item
-Great for workflows where order matters
+Simple, linear workflow
 @end itemize
 
-@item
-@strong{Parallel}: Multiple tasks can be NEXT simultaneously
+In graph view, sequential projects look like a vertical chain of boxes with arrows flowing downward.
+
+@strong{Parallel}:
 @itemize
 @item
-Multiple independent work streams
+Multiple tasks can be NEXT simultaneously
 @item
-Tasks with no dependencies start together
+Multiple tasks at layer 0 (all root tasks)
 @item
-Faster project completion
+Faster project completion when tasks are independent
 @end itemize
 
-@item
-@strong{Mixed}: Some tasks parallel, others sequential
+In graph view, parallel projects have multiple green boxes at the same layer.
+
+@strong{Mixed} (most real projects):
 @itemize
 @item
-Most real projects use this
+Some tasks parallel, others sequential
 @item
-Example: Research and Planning happen in parallel, but both must finish before Building starts
-@end itemize
-@end itemize
-
-@item
-@anchor{The dependency graph (DAG)}The dependency graph (DAG)
-
-
-Tasks form a Directed Acyclic Graph (DAG):
-@itemize
-@item
-@strong{Directed}: Dependencies flow one way (A → B means B depends on A, not vice versa)
-@item
-@strong{Acyclic}: No circular dependencies (A → B → C → A is prevented)
-@item
-@strong{Graph}: Tasks can have multiple dependencies and block multiple tasks
+Example: Research and Planning happen together, but both must finish before Building starts
 @end itemize
 
-org-gtd automatically prevents circular dependencies to avoid deadlocks.
+In graph view, mixed projects show parallel branches that converge at join points.
 @end itemize
 
-@node Tutorial Project with Parallel Tasks
-@subsection Tutorial: Project with Parallel Tasks
+@node Tutorial Parallel Tasks with Graph View
+@subsection Tutorial: Parallel Tasks with Graph View
 
-Let's create a project where some tasks can happen simultaneously.
+Let's build a project where some tasks happen simultaneously.
 
 @itemize
 @item
@@ -2634,125 +2783,171 @@ Find MRI facility (research task)
 @item
 Make MRI appointment (depends on finding facility)
 @item
-Make orthopedist appointment (independent research - can happen in parallel with 1 & 2)
+Make orthopedist appointment (independent research - parallel with 1 & 2)
 @item
 Get diagnosis (depends on both appointments completing)
 @end enumerate
 
-Tasks 1 and 3 can happen in parallel - they don't depend on each other.
+Tasks 1 and 3 can happen in parallel—they're independent research tasks.
 
 @item
-@anchor{Step 1 Capture the Project (1)}Step 1: Capture the Project
+@anchor{Step 1 Capture and Organize}Step 1: Capture and Organize
 
 
-@code{C-c d c} to capture:
+Capture the project: @code{C-c d c}
 
-@example
-* Fix Shoulder Pain
-** Find place to get MRI
-** Make MRI appointment
-** Make orthopedist appointment
-** Get diagnosis from orthopedist
-@end example
-
-@item
-@anchor{Step 2 Organize with Custom Dependencies}Step 2: Organize with Custom Dependencies
-
-
-After organizing as a project (@code{C-c c} → @code{[P]}), org-gtd creates sequential dependencies by default. We need to modify them for parallel execution.
-
-@strong{@strong{Open the project file:}}
-
-Find your project in the engage view (@code{C-c d e}), press @code{RET} on any task to jump to the project file.
-
-@strong{@strong{The project looks like this:}}
-
-@example
-* Fix Shoulder Pain
-:PROPERTIES:
-:ORG_GTD: Projects
-:ORG_GTD_FIRST_TASKS: <id-of-find-mri>
-:END:
-** NEXT Find place to get MRI
-:PROPERTIES:
-:ID: <id-of-find-mri>
-:ORG_GTD: Actions
-:ORG_GTD_BLOCKS: <id-of-make-mri-appt>
-:END:
-** TODO Make MRI appointment
-:PROPERTIES:
-:ID: <id-of-make-mri-appt>
-:ORG_GTD: Actions
-:ORG_GTD_DEPENDS_ON: <id-of-find-mri>
-:ORG_GTD_BLOCKS: <id-of-make-ortho-appt>
-:END:
-** TODO Make orthopedist appointment
-... (and so on, sequential)
-@end example
-
-@item
-@anchor{Step 3 Modify for Parallel Execution}Step 3: Modify for Parallel Execution
-
-
-We want "Find MRI place" and "Make orthopedist appointment" to be parallel starting tasks.
-
-@strong{@strong{On the project heading}}, add the orthopedist appointment ID to FIRST@math{_TASKS}:
-
-@example
-:ORG_GTD_FIRST_TASKS: <id-of-find-mri> <id-of-make-ortho-appt>
-@end example
-
-@strong{@strong{On "Make orthopedist appointment" task}}, remove the DEPENDS@math{_ON} property:
-
-Remove the line: @code{:ORG_GTD_DEPENDS_ON: <id-of-make-mri-appt>}
-
-@strong{@strong{On "Get diagnosis" task}}, make it depend on BOTH appointments:
-
-@example
-:ORG_GTD_DEPENDS_ON: <id-of-make-mri-appt> <id-of-make-ortho-appt>
-@end example
-
-@strong{@strong{Fix the BLOCKS properties:}}
-@itemize
-@item
-Remove orthopedist appointment from MRI appointment's BLOCKS
-@item
-Add diagnosis ID to both appointment tasks' BLOCKS
+#+begin@math{_example}
 @end itemize
 
-@item
-@anchor{Step 4 Fix Keywords}Step 4: Fix Keywords
+@node Fix Shoulder Pain
+@chapter Fix Shoulder Pain
 
+@menu
+* Find place to get MRI::
+* Make MRI appointment::
+* Make orthopedist appointment::
+* Get diagnosis from orthopedist::
+* Automating through emacs::
+@end menu
 
-Put point on the project heading and run:
+@node Find place to get MRI
+@section Find place to get MRI
 
-@code{M-x org-gtd-projects-fix-todo-keywords-for-project-at-point}
+@node Make MRI appointment
+@section Make MRI appointment
 
-This recalculates which tasks should be NEXT based on the dependency graph.
+@node Make orthopedist appointment
+@section Make orthopedist appointment
 
-@item
-@anchor{Step 5 See the Results}Step 5: See the Results
+@node Get diagnosis from orthopedist
+@section Get diagnosis from orthopedist
 
+#+end@math{_example}
 
-@code{C-c d e} to view the engage agenda.
+Process the inbox: @code{C-c d p}
 
-You'll now see:
+Organize as a project: @code{C-c c} → @code{[P]}
+
+@menu
+* Tutorial Complex Dependencies with Graph View::
+* Common Dependency Patterns (Visual Reference)::
+* Graph View Command Reference::
+* Practical Tips for Project Management::
+* Troubleshooting Projects with Graph View::
+* Graph View Command Reference: Graph View Command Reference (1). 
+* See Also::
+* Cleaning up / archiving completed work::
+* Commands you can call on org-agenda::
+* Defining your own agenda views::
+* Adding your own hooks when organizing::
+@end menu
+
 @itemize
 @item
-@strong{NEXT: Find place to get MRI}
+@anchor{Step 2 Open Graph View}Step 2: Open Graph View
+
+
+From the engage view (@code{C-c d e}), press @code{RET} on any task to jump to the project.
+
+Run: @code{M-x org-gtd-graph-view}
+
+You'll see a sequential graph (the default):
+@example
+[Fix Shoulder Pain]
+        ↓
+[NEXT: Find place to get MRI]
+        ↓
+[TODO: Make MRI appointment]
+        ↓
+[TODO: Make orthopedist appointment]
+        ↓
+[TODO: Get diagnosis from orthopedist]
+@end example
+
+We need to make tasks 1 and 3 parallel.
+
 @item
-@strong{NEXT: Make orthopedist appointment}
-@end itemize
+@anchor{Step 3 Add Orthopedist Appointment as Root Task}Step 3: Add Orthopedist Appointment as Root Task
 
-Both are NEXT simultaneously! You can work on whichever you want.
 
-When you complete both appointments, "Get diagnosis" automatically becomes NEXT@.
+Click on (or navigate to) the "Find place to get MRI" task.
+
+Press @code{a r} (add root task)
+
+At the prompt, type: @code{Make orthopedist appointment}
+
+@strong{Wait!} We already have that task. So instead, we'll restructure.
+
+Actually, let's do this differently. We need to:
+@enumerate
+@item
+Make "Make orthopedist appointment" a root task (no dependencies)
+@item
+Remove it from the sequential chain
+@end enumerate
+
+@strong{CURRENT LIMITATION}: The graph view can ADD tasks but can't MODIFY existing dependencies. So we'll build this from scratch using graph view commands.
+
+@item
+@anchor{Step 3 (Revised) Build with Graph View Commands}Step 3 (Revised): Build with Graph View Commands
+
+
+Let me show you the INTENDED workflow (this reveals what features are still needed):
+
+@enumerate
+@item
+Delete "Make orthopedist appointment" from the middle of the chain
+@item
+Add it as a new root task
+@item
+Make "Get diagnosis" depend on BOTH appointments
+@end enumerate
+
+But our graph view doesn't have delete/modify yet. Let's note this and continue with what we CAN do.
+
+@item
+@anchor{What Graph View CAN Do Right Now}What Graph View CAN Do Right Now
+
+
+From the project heading in graph view:
+
+@table @asis
+@item @code{a c}
+Add a child task (creates: selected task → new task)
+@item @code{a r}
+Add a root task (no dependencies, starts immediately)
+@item @code{a b}
+Add a blocker task (creates: new task → selected task)
+@end table
+
+Example: Building a parallel structure from scratch:
+
+@enumerate
+@item
+Start with project heading selected
+@item
+@code{a r} → "Find place to get MRI"
+@item
+@code{a r} → "Make orthopedist appointment" (now TWO root tasks!)
+@item
+Select "Find place to get MRI"
+@item
+@code{a c} → "Make MRI appointment"
+@item
+Select "Make MRI appointment", @code{a c} → "Get diagnosis (MRI side)"
+@item
+Select "Make orthopedist appointment", @code{a c} → "Get diagnosis (ortho side)"
+@end enumerate
+
+But wait—we can't make ONE task depend on TWO tasks with current commands.
+
+@strong{THIS REVEALS A MISSING FEATURE@.}
 
 @item
 @anchor{The Dependency Pattern (Diamond)}The Dependency Pattern (Diamond)
 
 
-This is called a "diamond" pattern:
+The pattern we want is called a "diamond":
 
 @example
     Find MRI ─────┐
@@ -2760,20 +2955,39 @@ This is called a "diamond" pattern:
 Make Ortho Appt ──┘
 @end example
 
-Two parallel paths converge at a single task. This is common in real projects.
+Two parallel paths converge at a single task.
+
+@item
+@anchor{Current Workaround}Current Workaround
+
+
+For now, to create complex convergence patterns, you would:
+@enumerate
+@item
+Use graph view to build the basic structure
+@item
+Press @code{r} to refresh and verify
+@item
+For convergence points (multiple tasks blocking one task), you need to either:
+@itemize
+@item
+Structure the project differently
+@item
+Wait for "modify dependency" commands to be implemented
+@end itemize
+@end enumerate
 @end itemize
 
-@node Tutorial Complex Project Dependencies
-@subsection Tutorial: Complex Project Dependencies
-
-Let's look at a more complex example: "Release Next Version of Software".
+@node Tutorial Complex Dependencies with Graph View
+@subsection Tutorial: Complex Dependencies with Graph View
 
 @itemize
 @item
 @anchor{The Scenario (1)}The Scenario
 
 
-Steps:
+"Release Next Version of Software":
+
 @enumerate
 @item
 List features (starting task)
@@ -2805,123 +3019,304 @@ List Features
 @end example
 
 @item
-@anchor{Key Patterns}Key Patterns
+@anchor{Building with Graph View}Building with Graph View
 
+
+Starting from the project heading:
 
 @enumerate
 @item
-@strong{Parallel branches} after List Features
+@code{a r} → "List features" (root task)
 @item
-@strong{Converging paths} at Get Beta Feedback (both branches must complete)
+Select "List features"
 @item
-@strong{Parallel updates} after feedback
+@code{a c} → "Implement features" (depends on list)
 @item
-@strong{Final convergence} at Release
+Go back to "List features"
+@item
+@code{a c} → "Write documentation" (also depends on list - now parallel!)
 @end enumerate
 
+Now you have two parallel branches. Both are green (NEXT) because they only depend on the root task.
+
+For the convergence at "Get Beta Feedback":
+@itemize
 @item
-@anchor{Setting This Up}Setting This Up
+Select "Implement features"
+@item
+@code{a c} → "Get Beta Feedback (from implement)"
+@end itemize
+
+@strong{But we can't make it ALSO depend on "Write documentation" yet.}
+
+@strong{THIS REVEALS THE SAME MISSING FEATURE@.}
+
+@item
+@anchor{Key Patterns This Example Shows}Key Patterns This Example Shows
 
 
-You would:
 @enumerate
 @item
-Capture the project structure
+@strong{Parallel branches} after List Features (we CAN do this with @code{a c} from same parent)
 @item
-Organize as project (creates sequential by default)
+@strong{Converging paths} at Get Beta Feedback (we CANNOT do this yet—needs "add as blocker to existing task")
 @item
-Open the project file
+@strong{Parallel updates} after feedback (we CAN do this)
 @item
-Modify FIRST@math{_TASKS} to include only "List Features"
-@item
-Set DEPENDS@math{_ON} for "Implement" to only List Features
-@item
-Set DEPENDS@math{_ON} for "Write Documentation" to only List Features
-@item
-Set DEPENDS@math{_ON} for "Get Beta Feedback" to both Implement AND Write Documentation
-@item
-Set DEPENDS@math{_ON} for both Update tasks to Get Beta Feedback
-@item
-Set DEPENDS@math{_ON} for "Release" to both Update tasks
-@item
-Run @code{org-gtd-projects-fix-todo-keywords-for-project-at-point}
+@strong{Final convergence} at Release (we CANNOT do this yet)
 @end enumerate
 @end itemize
 
-@node Common Dependency Patterns
-@subsection Common Dependency Patterns
+@node Common Dependency Patterns (Visual Reference)
+@subsection Common Dependency Patterns (Visual Reference)
+
+Here's what different patterns look like in graph view:
 
 @itemize
 @item
 @anchor{Sequential Chain (A → B → C)}Sequential Chain (A → B → C)
 
 
-The simplest pattern. Default for all projects.
+@example
+[A - NEXT]
+    ↓
+[B - TODO]
+    ↓
+[C - TODO]
+@end example
 
-Use when: Order matters, each task depends on the previous.
+@strong{When to use}: Order matters, each task depends on the previous.
 
-Example: Review blueprints → Order windows → Schedule carpenter
+@strong{How to build}: Start at project, @code{a r} for first task, then @code{a c} repeatedly.
+
+@strong{Example}: Review blueprints → Order windows → Schedule carpenter
 
 @item
 @anchor{Parallel Independent (A B C all start together)}Parallel Independent (A, B, C all start together)
 
 
-All tasks are in FIRST@math{_TASKS}, no dependencies between them.
+@example
+[A - NEXT]  [B - NEXT]  [C - NEXT]
+@end example
 
-Use when: Tasks are completely independent and can all start immediately.
+@strong{When to use}: Tasks are completely independent, all can start immediately.
 
-Example: Research destinations, Check budget, Ask for time off (for vacation planning)
+@strong{How to build}: From project heading, @code{a r} for each task.
+
+@strong{Example}: Research destinations, Check budget, Ask for time off (vacation planning)
 
 @item
 @anchor{Fan-out (A → B A → C A → D)}Fan-out (A → B, A → C, A → D)
 
 
-One task blocks multiple tasks that can then proceed in parallel.
+@example
+      [A - NEXT]
+     /    |    \
+    ↓     ↓     ↓
+[B-TODO][C-TODO][D-TODO]
+@end example
 
-Use when: Initial work enables multiple independent paths.
+@strong{When to use}: Initial work enables multiple independent paths.
 
-Example: Get project approval → (Design UI, Write backend API, Setup infrastructure)
+@strong{How to build}: @code{a r} for A, select A, then @code{a c} for B, C, D@.
+
+@strong{Example}: Get project approval → (Design UI, Write backend API, Setup infrastructure)
 
 @item
 @anchor{Fan-in / Convergence (A → C B → C)}Fan-in / Convergence (A → C, B → C)
 
 
-Multiple tasks must complete before next task can start. Also called "join".
+@example
+[A - NEXT]  [B - NEXT]
+      \        /
+       ↓      ↓
+      [C - TODO]
+@end example
 
-Use when: Final task needs all previous work completed.
+@strong{When to use}: Final task needs all previous work completed.
 
-Example: (Write code, Write tests) → Merge to main
+@strong{How to build}: CANNOT BUILD YET—needs "multiple blockers" feature.
+
+@strong{Workaround}: Make A → C → @dots{} and B → something-else for now.
+
+@strong{Example}: (Write code, Write tests) → Merge to main
 
 @item
 @anchor{Diamond (A → B → D A → C → D)}Diamond (A → B → D, A → C → D)
 
 
-Parallel paths that converge. Combination of fan-out and fan-in.
+@example
+    [A - NEXT]
+     /      \
+    ↓        ↓
+[B-TODO] [C-TODO]
+    \      /
+     ↓    ↓
+   [D-TODO]
+@end example
 
-Use when: Work splits, proceeds in parallel, then combines.
+@strong{When to use}: Work splits, proceeds in parallel, then combines.
 
-Example: Research → (Write content, Design graphics) → Publish article
+@strong{How to build}: CANNOT BUILD YET—convergence at D needs multiple blockers.
+
+@strong{Example}: Research → (Write content, Design graphics) → Publish article
 @end itemize
 
-@node Practical Tips
-@subsection Practical Tips
+@node Graph View Command Reference
+@subsection Graph View Command Reference
 
 @itemize
 @item
-@anchor{When to use sequential}When to use sequential
+@anchor{Opening Graph View}Opening Graph View
+
+
+@code{M-x org-gtd-graph-view}
+
+@strong{Requires}: Point must be on a project heading (not a task)
+
+@strong{Creates}: Interactive SVG buffer named @code{*Org GTD Graph: <project-name>*}
+
+@item
+@anchor{Navigation Commands}Navigation Commands
+
+
+@multitable {aaaaa} {aaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Key
+@tab Command
+@tab Description
+@item n / j
+@tab Down dependency
+@tab Move to a task this one blocks
+@item p / k
+@tab Up dependency
+@tab Move to a task that blocks this one
+@item TAB
+@tab Next sibling
+@tab Next task in same layer (same dependency depth)
+@item g
+@tab Goto node
+@tab Jump to task by name (with completion)
+@item RET
+@tab Jump to task in org file
+@tab Opens the org file at the task's location
+@end multitable
+
+@item
+@anchor{Adding Tasks}Adding Tasks
+
+
+@multitable {aaa} {aaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Key
+@tab Command
+@tab Description
+@item a c
+@tab Add child
+@tab Create task that depends on selected task
+@item a r
+@tab Add root
+@tab Create task with no dependencies (starts immediately)
+@item a b
+@tab Add blocker
+@tab Create task that blocks the selected task
+@end multitable
+
+@strong{After adding}: Graph automatically refreshes to show new task.
+
+@item
+@anchor{View Commands}View Commands
+
+
+@multitable {aaa} {aaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Key
+@tab Command
+@tab Description
+@item ?
+@tab Show menu
+@tab Display transient menu with all commands
+@item r
+@tab Refresh
+@tab Rebuild graph (use after external changes)
+@item q
+@tab Quit
+@tab Close graph view, keep buffer
+@item Q
+@tab Quit and kill
+@tab Close graph view and kill buffer
+@end multitable
+
+@item
+@anchor{Future Commands (Planned)}Future Commands (Planned)
+
+
+@multitable {aaa} {aaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Key
+@tab Command
+@tab Status
+@item z
+@tab Zoom
+@tab Not implemented (filter/focus features)
+@item u
+@tab Undo
+@tab Not implemented (undo last graph change)
+@item C-r
+@tab Redo
+@tab Not implemented (redo undone change)
+@end multitable
+
+@item
+@anchor{Visual Indicators}Visual Indicators
+
+
+@itemize
+@item
+@strong{Green boxes}: NEXT tasks (ready to work on)
+@item
+@strong{Gray boxes}: TODO tasks (blocked by dependencies)
+@item
+@strong{Arrows}: Dependencies (from blocker → blocked task)
+@item
+@strong{Layers}: Vertical positioning shows dependency depth
+@end itemize
+@end itemize
+
+@node Practical Tips for Project Management
+@subsection Practical Tips for Project Management
+
+@itemize
+@item
+@anchor{When to Use Graph View}When to Use Graph View
+
+
+@itemize
+@item
+@strong{Planning complex projects}: Visualize before committing to structure
+@item
+@strong{Understanding stuck projects}: See why tasks are blocked
+@item
+@strong{Weekly review}: Quick visual health check of all projects
+@item
+@strong{Adding tasks mid-project}: Add with correct dependencies immediately
+@end itemize
+
+@item
+@anchor{When to Use Sequential (Default)}When to Use Sequential (Default)
 
 
 @itemize
 @item
 Order truly matters (can't install before purchasing)
 @item
-You're not sure what the next task will be until you complete the current one
+You're unsure what the next task will be until you complete current one
 @item
-The project is simple and you don't want to think about dependencies
+The project is simple (3-4 tasks)
+@item
+You don't want to think about dependencies
 @end itemize
 
+@strong{Just organize as project} (@code{C-c c} → @code{[P]}) and you're done.
+
 @item
-@anchor{When to use parallel}When to use parallel
+@anchor{When to Create Parallel Structures}When to Create Parallel Structures
 
 
 @itemize
@@ -2932,156 +3327,211 @@ Tasks are independent and could be done in any order
 @item
 You want to optimize for speed
 @item
-Clear what all tasks are upfront
+You know all tasks upfront
 @end itemize
 
+@strong{Use @code{a r} multiple times} from graph view to create parallel roots.
+
 @item
-@anchor{Managing complexity}Managing complexity
+@anchor{Managing Complexity}Managing Complexity
 
 
 @itemize
 @item
-Start sequential, make parallel only when needed
+@strong{Start sequential, add parallel only when needed}: Don't over-engineer.
 @item
-Use areas of focus or tags to group related tasks
+@strong{Use graph view to understand before modifying}: Visualize first.
 @item
-Keep task names clear and specific
+@strong{Keep task names clear and specific}: "Research venues" not "Research"
 @item
-Review stuck projects weekly to catch dependency issues
+@strong{Review stuck projects weekly}: @code{M-x org-gtd-review-stuck-projects}
 @end itemize
 
 @item
-@anchor{Modifying projects over time}Modifying projects over time
+@anchor{Growing Projects Over Time}Growing Projects Over Time
 
+
+As projects evolve, you need to add tasks:
 
 @itemize
 @item
-Add tasks: Use "Add to existing project" when organizing new items
+@strong{New independent work stream}: @code{a r} (add root task)
 @item
-Change dependencies: Edit properties directly, then run fix-keywords command
+@strong{Next step in sequence}: Select current task, @code{a c} (add child)
 @item
-Split tasks: Break down a task into sub-tasks, adjust dependencies
-@item
-Merge tasks: Mark unnecessary tasks DONE or CNCL
-@end itemize
+@strong{Prerequisite for existing task}: Select existing task, @code{a b} (add blocker)
 @end itemize
 
-@node Reference Dependency Management Commands
-@subsection Reference: Dependency Management Commands
+After adding, press @code{r} to refresh the view.
+@end itemize
+
+@node Troubleshooting Projects with Graph View
+@subsection Troubleshooting Projects with Graph View
 
 @itemize
 @item
-@anchor{During organizing}During organizing
-
-
-@table @asis
-@item @code{org-gtd-organize} → @code{[P]}
-Creates project with sequential dependencies (default)
-@item @code{org-gtd-organize} → @code{[A]}
-Adds task to existing project
-@end table
-
-@item
-@anchor{After organizing}After organizing
-
-
-@table @asis
-@item @code{org-gtd-projects-fix-todo-keywords-for-project-at-point}
-Recalculates NEXT tasks based on dependency graph. Use after manually editing dependencies.
-@end table
-
-@item
-@anchor{Properties to edit manually}Properties to edit manually
-
-
-@table @asis
-@item @code{ORG_GTD_FIRST_TASKS}
-(on project heading) Space-separated list of task IDs with no dependencies
-@item @code{ORG_GTD_DEPENDS_ON}
-(on task) Space-separated list of task IDs this task depends on
-@item @code{ORG_GTD_BLOCKS}
-(on task) Space-separated list of task IDs this task blocks
-@end table
-
-After editing these properties, always run @code{org-gtd-projects-fix-todo-keywords-for-project-at-point} to update task states.
-@end itemize
-
-@node Optional Visualizing Dependencies
-@subsection Optional: Visualizing Dependencies
-
-Enable visual dependency helper while clarifying projects:
-
-@lisp
-(setq org-gtd-clarify-display-helper-buffer t)
-@end lisp
-
-When enabled, a side window shows task relationships as you work on a project in the WIP buffer during clarification.
-
-This is useful for:
-@itemize
-@item
-Understanding complex dependency graphs
-@item
-Spotting cycles before they cause problems
-@item
-Planning parallel execution paths
-@end itemize
-
-@node Troubleshooting Projects
-@subsection Troubleshooting Projects
-
-@itemize
-@item
-@anchor{Project is stuck (has TODO tasks but no NEXT)}Project is stuck (has TODO tasks but no NEXT)
+@anchor{Project is Stuck (has TODO tasks but no NEXT)}Project is Stuck (has TODO tasks but no NEXT)
 
 
 Run @code{M-x org-gtd-review-stuck-projects} to find stuck projects.
 
-Common causes:
+Open the stuck project in graph view: @code{M-x org-gtd-graph-view}
+
+@strong{What to look for}:
 @itemize
 @item
-Circular dependency (A depends on B, B depends on A)
+@strong{No green boxes?} All tasks might be waiting for dependencies that are DONE@. Press @code{r} to refresh.
 @item
-Missing FIRST@math{_TASKS} (project has no starting point)
+@strong{Gray boxes at layer 0?} These should be green (root tasks are never blocked). Something's wrong with the dependency structure.
 @item
-All first tasks are DONE but dependencies not set up correctly
+@strong{Circular dependency?} Org-gtd prevents these, but if you see arrows forming a loop, you've found a bug.
 @end itemize
 
-Fix: Put point on project heading, run @code{org-gtd-projects-fix-todo-keywords-for-project-at-point}
-
-@item
-@anchor{Task should be NEXT but shows as TODO}Task should be NEXT but shows as TODO
-
-
-The dependency graph says it's blocked. Check:
-@enumerate
-@item
-What tasks are in its ORG@math{_GTD}@math{_DEPENDS}@math{_ON}?
-@item
-Are those tasks actually DONE@?
-@item
-Did you forget to remove a dependency?
-@end enumerate
-
-Fix: Edit ORG@math{_GTD}@math{_DEPENDS}@math{_ON} property, run fix-keywords command.
-
-@item
-@anchor{Too many tasks are NEXT}Too many tasks are NEXT
-
-
-You probably have tasks that should have dependencies but don't.
-
-Fix: Add appropriate ORG@math{_GTD}@math{_DEPENDS}@math{_ON} properties to tasks that shouldn't start yet, run fix-keywords command.
-
-@strong{See also}:
+@strong{How to fix}:
 @itemize
 @item
-@ref{Properties Reference} for complete documentation of @code{ORG_GTD_DEPENDS_ON}, @code{ORG_GTD_BLOCKS}, and @code{ORG_GTD_FIRST_TASKS} properties
+Use graph view to understand the structure
 @item
-@ref{Commands Reference} for all project management and task dependency commands
+Add a new root task (@code{a r}) if nothing can start
+@item
+Refresh (@code{r}) after any changes
+@end itemize
+
+@item
+@anchor{Task Should Be NEXT But Shows as TODO}Task Should Be NEXT But Shows as TODO
+
+
+In graph view, look at the task:
+@itemize
+@item
+Is it gray (TODO)?
+@item
+Trace arrows pointing TO it—these are its blockers
+@item
+Are all those blockers green? Then something's wrong.
+@item
+Are some blockers gray? Then the task is correctly blocked.
+@end itemize
+
+If blockers are actually DONE but still showing as green, press @code{r} to refresh.
+
+@strong{How to fix}: Use @code{d} to remove incorrect dependencies, or @code{x} to clear all relationships for a task and rebuild.
+
+@item
+@anchor{Too Many Tasks Are NEXT}Too Many Tasks Are NEXT
+
+
+In graph view:
+@itemize
+@item
+Count green boxes
+@item
+If you have 10+ green tasks, you probably have dependency problems
+@item
+Some tasks should depend on others but don't
+@end itemize
+
+@strong{How to fix}:
+@itemize
+@item
+Select a task that should be blocked
+@item
+Press @code{a b} to add a blocker task
+@item
+Or restructure: tasks later in the workflow should be children (@code{a c}) of earlier tasks
+@end itemize
+@end itemize
+
+@node Graph View Command Reference (1)
+@subsection Graph View Command Reference
+
+The graph view supports comprehensive dependency management through keyboard commands. Press @code{?} in graph view to see the full command menu.
+
+@itemize
+@item
+@anchor{Dependency Operations}Dependency Operations
+
+
+@strong{Available commands}:
+@itemize
+@item
+@code{a}: Add dependency between two tasks (supports convergence/diamond patterns)
+@item
+@code{d}: Remove a dependency between two tasks
+@item
+@code{x}: Clear all relationships from selected task
+@item
+@code{i}: Show all relationships for selected task
+@end itemize
+
+@item
+@anchor{Adding Tasks (1)}Adding Tasks
+
+
+@strong{Available commands}:
+@itemize
+@item
+@code{a c}: Add child task (depends on current task)
+@item
+@code{a r}: Add root task (no dependencies)
+@item
+@code{a b}: Add blocker task (blocks current task and becomes root)
+@end itemize
+
+@item
+@anchor{Operations Not in Graph View}Operations Not in Graph View
+
+
+Some operations are standard org-mode functionality, not graph-specific:
+
+@strong{Changing task properties}:
+@itemize
+@item
+TODO state (@code{C-c C-t} in org file)
+@item
+Deadlines/schedules (@code{C-c C-d}, @code{C-c C-s} in org file)
+@item
+Task title/description (edit in org file)
+@item
+Tags/properties (edit in org file)
+@end itemize
+
+@strong{Access org file}: Press @code{RET} on any task in graph view to jump to it in the org file.
+
+@strong{Deleting tasks}: Mark task DONE or CNCL in the org file. Completed tasks still show in graph view (as green boxes) to maintain project history.
+
+@item
+@anchor{When to Use Text-Based Commands}When to Use Text-Based Commands
+
+
+Most users will find the graph view intuitive for dependency management. However, text-based task management commands are available:
+
+@itemize
+@item
+@code{org-gtd-task-add-blockers} - Add blockers via text interface
+@item
+@code{org-gtd-task-remove-blockers} - Remove blockers via text interface
+@item
+@code{org-gtd-task-show-relationships} - Display relationships in minibuffer
+@item
+@code{org-gtd-validate-project-dependencies} - Validate project structure
+@end itemize
+
+See @ref{Task Dependency Commands} for details.
+@end itemize
+
+@node See Also
+@subsection See Also
+
+@itemize
+@item
+@ref{Tutorial Your First Project} for sequential project basics
+@item
+@ref{Properties Reference (Internal Implementation), , Properties Reference} for @code{ORG_GTD_FIRST_TASKS}, @code{ORG_GTD_DEPENDS_ON}, and @code{ORG_GTD_BLOCKS} (internal implementation)
+@item
+@ref{Commands Reference} for all project management commands
 @item
 @ref{View DSL Filter Reference} for creating custom project views
-@end itemize
 @end itemize
 
 @node Cleaning up / archiving completed work
@@ -3184,7 +3634,7 @@ This section provides complete reference documentation for all org-gtd configura
 @item
 @ref{Commands Reference} - All interactive commands organized by workflow step
 @item
-@ref{Properties Reference} - All org properties used by org-gtd
+@ref{Properties Reference (Internal Implementation), , Properties Reference} - All org properties used by org-gtd
 @item
 @ref{View DSL Filter Reference} - Complete guide to creating custom views
 @item
@@ -3196,7 +3646,8 @@ For learning how to use org-gtd, start with @ref{Getting Started with Org GTD} a
 @menu
 * Configuration Variables Reference:: All customization variables explained
 * Commands Reference::           All interactive commands explained
-* Properties Reference::         All org properties used by org-gtd
+* Properties Reference (Internal Implementation):: All org properties used by org-gtd
+* Troubleshooting Projects::     How to fix project dependency problems
 * View DSL Filter Reference::    Complete reference for the View DSL
 * Hooks Framework Reference::    Complete guide to customization hooks
 @end menu
@@ -3469,6 +3920,36 @@ When @code{nil}: org-gtd will ask for confirmation regardless of number of optio
 @lisp
 (setq org-gtd-refile-to-any-target nil)
 @end lisp
+
+@item
+@anchor{@code{org-gtd-use-refile-system}}@code{org-gtd-use-refile-system}
+
+
+@strong{Type}: Boolean
+
+@strong{Default}: @code{t}
+
+@strong{Description}: Whether to use org-gtd's refile system or standard org-refile.
+
+@itemize
+@item
+When @code{t} (default): org-gtd uses @code{ORG_GTD_REFILE} properties to find refile targets. This provides GTD-specific organization with flexible target placement.
+@item
+When @code{nil}: org-gtd respects your existing @code{org-refile-targets} configuration. Items can be refiled anywhere you've configured org-mode refile targets.
+@end itemize
+
+@strong{Important}: In V4, items can exist anywhere in @code{org-agenda-files} regardless of refile organization. This setting only affects the refile operation after clarifying items during inbox processing.
+
+@strong{Example}: Use your own refile configuration:
+@lisp
+;; Disable org-gtd's refile system
+(setq org-gtd-use-refile-system nil)
+
+;; Configure standard org-refile targets
+(setq org-refile-targets '((org-agenda-files :maxlevel . 3)))
+@end lisp
+
+@strong{See also}: @ref{Refiling to the appropriate area, , Refiling section} for complete documentation on creating refile targets and understanding the refile system.
 @end itemize
 
 @node Clarification Configuration
@@ -4283,7 +4764,7 @@ Updates project status
 @anchor{@code{org-gtd-projects-fix-todo-keywords-for-project-at-point}}@code{org-gtd-projects-fix-todo-keywords-for-project-at-point}
 
 
-@strong{When to use}: After manually editing project dependencies
+@strong{When to use}: When project TODO states seem incorrect after dependency changes
 
 @strong{What it does}:
 @itemize
@@ -4297,23 +4778,34 @@ Fixes stuck projects
 
 @strong{Required}: Point must be on project heading
 
-@strong{Example workflow}:
-@enumerate
-@item
-Edit ORG@math{_GTD}@math{_DEPENDS}@math{_ON} properties manually
-@item
-Put point on project heading
-@item
-Run this command
-@item
-Keywords are updated to match dependencies
-@end enumerate
+@strong{Note}: This is automatically called after graph UI operations and text-based task management commands. You typically only need this for troubleshooting edge cases.
 @end itemize
 
 @node Task Dependency Commands
 @subsection Task Dependency Commands
 
-These commands help manage task relationships in projects:
+These text-based commands manage task relationships without using the graph view. Most users will find the graph view more intuitive (press @code{M-x org-gtd-show-project-graph}), but these commands are useful for:
+
+@itemize
+@item
+Working in the org file directly
+@item
+Scripting/automation
+@item
+Preference for text-based workflows
+@end itemize
+
+@strong{Graph UI equivalents}:
+@itemize
+@item
+Adding dependencies: @code{a} (add dependency), @code{a b} (add blocker), @code{a c} (add child)
+@item
+Removing dependencies: @code{d} (remove dependency), @code{x} (clear all)
+@item
+Viewing relationships: @code{i} (show relationships)
+@end itemize
+
+See @ref{Graph View Command Reference} for the visual approach.
 
 @itemize
 @item
@@ -4732,10 +5224,26 @@ See @ref{Upgrading, , Upgrading section} for complete details
 This minor mode is no longer needed and will be removed in a future version.
 @end itemize
 
-@node Properties Reference
-@section Properties Reference
+@node Properties Reference (Internal Implementation)
+@section Properties Reference (Internal Implementation)
 
-org-gtd uses org-mode properties extensively to track state and relationships. This section documents all properties used by the system.
+@strong{For most users}: You don't need to read this section! Use the graph view or text-based task management commands instead.
+
+@strong{This section is for}:
+@itemize
+@item
+Understanding org-gtd's internal data model
+@item
+Writing elisp automation/integration code
+@item
+Debugging edge cases
+@item
+Migrating data from other systems
+@end itemize
+
+org-gtd uses org-mode properties to track state and relationships. These properties are managed automatically by org-gtd commands - @strong{@strong{you should not edit them manually during normal use.}}
+
+If you find yourself manually editing properties, that indicates a missing feature - please file an issue!
 
 @menu
 * Core GTD Properties::
@@ -4787,6 +5295,63 @@ Delegated tasks (set in combination with DELEGATED@math{_TO})
 @end example
 
 @strong{Note}: This property is how org-gtd identifies items. Don't modify manually unless you understand the implications.
+
+@item
+@anchor{ORG@math{_GTD}@math{_REFILE}}ORG@math{_GTD}@math{_REFILE}
+
+
+@strong{Used on}: Category headings that serve as refile targets
+
+@strong{Purpose}: Marks a heading as a refile target for org-gtd's optional refile system (see @ref{Refiling to the appropriate area, , Refiling section})
+
+@strong{Values}:
+@table @asis
+@item @code{"Projects"}
+Target for refiling projects
+@item @code{"Actions"}
+Target for refiling single actions
+@item @code{"Calendar"}
+Target for refiling calendar items
+@item @code{"Incubated"}
+Target for refiling incubated items
+@item @code{"Habits"}
+Target for refiling habits
+@end table
+
+@strong{Example}:
+@example
+* Projects         <-- Can be at any level in any file
+:PROPERTIES:
+:ORG_GTD_REFILE: Projects
+:END:
+
+* Work/Development Projects   <-- Can have multiple targets per type
+:PROPERTIES:
+:ORG_GTD_REFILE: Projects
+:END:
+@end example
+
+@strong{How it's set}:
+@itemize
+@item
+Automatically created by @code{org-gtd-upgrade-v3-to-v4} (renames ORG@math{_GTD} on level 1 headings)
+@item
+Manually when creating custom refile targets
+@item
+Via @code{org-entry-put} in elisp: @code{(org-entry-put nil "ORG_GTD_REFILE" "Projects")}
+@end itemize
+
+@strong{Important notes}:
+@itemize
+@item
+This property is OPTIONAL - only used if @code{org-gtd-use-refile-system} is @code{t} (default)
+@item
+Can exist at ANY level in ANY file in @code{org-agenda-files}
+@item
+You can have multiple refile targets for the same category type
+@item
+Set @code{org-gtd-use-refile-system} to @code{nil} to use standard org-refile instead
+@end itemize
 @end itemize
 
 @node Project Properties
@@ -4814,15 +5379,17 @@ Delegated tasks (set in combination with DELEGATED@math{_TO})
 
 This means tasks with IDs "abc123" and "def456" can both start immediately (parallel execution).
 
-@strong{When to modify}:
+@strong{How it's set}:
 @itemize
 @item
-After organizing a project (org-gtd sets this automatically)
+Automatically when organizing a project
 @item
-When adding parallel starting points to a project
+Automatically by graph view @code{a r} (add root task) and @code{a b} (add blocker as root)
 @item
-Always run @code{org-gtd-projects-fix-todo-keywords-for-project-at-point} after manual edits
+Programmatically via @code{org-entry-add-to-multivalued-property}
 @end itemize
+
+@strong{For interactive use}: Use graph view commands instead of editing this property directly.
 @end itemize
 
 @node Task Dependency Properties
@@ -4879,17 +5446,17 @@ Tasks 002 (design) and 003 (infrastructure) can run in parallel after approval
 Task 004 (implement) waits for both 002 and 003 to complete
 @end itemize
 
-@strong{When to modify}:
+@strong{How it's set}:
 @itemize
 @item
-When creating custom dependency structures
+Automatically by graph view @code{a} (add dependency), @code{a c} (add child), @code{a b} (add blocker)
 @item
-When changing task relationships
+Automatically by text commands @code{org-gtd-task-add-blockers}, @code{org-gtd-task-add-dependent}
 @item
-Always update ORG@math{_GTD}@math{_BLOCKS} on the blocking tasks too (bidirectional)
-@item
-Always run @code{org-gtd-projects-fix-todo-keywords-for-project-at-point} after edits
+Programmatically via @code{org-gtd-dependencies-create} (maintains bidirectional relationships)
 @end itemize
+
+@strong{For interactive use}: Use graph view or text-based task commands instead of editing this property directly.
 
 @item
 @anchor{ORG@math{_GTD}@math{_BLOCKS}}ORG@math{_GTD}@math{_BLOCKS}
@@ -4909,13 +5476,15 @@ Task B should have @code{ORG_GTD_DEPENDS_ON: A}
 Task C should have @code{ORG_GTD_DEPENDS_ON: A}
 @end itemize
 
-@strong{When to modify}:
+@strong{How it's set}:
 @itemize
 @item
-Manually when setting up dependencies (maintain bidirectional relationship)
+Automatically maintained when setting ORG@math{_GTD}@math{_DEPENDS}@math{_ON} (bidirectional)
 @item
-Use @code{org-gtd-task-add-dependent} command instead of manual edits when possible
+Programmatically via @code{org-gtd-dependencies-create} (handles bidirectional updates)
 @end itemize
+
+@strong{For interactive use}: Use graph view or text-based task commands - they maintain the bidirectional relationship automatically.
 
 @item
 @anchor{ORG@math{_GTD}@math{_PROJECT}@math{_IDS}}ORG@math{_GTD}@math{_PROJECT}@math{_IDS}
@@ -4955,7 +5524,15 @@ Use @code{org-gtd-task-add-dependent} command instead of manual edits when possi
 
 @strong{Why not use SCHEDULED}: org-gtd uses a custom property to distinguish between "do this at this time" (GTD calendar items) and "start working on this sometime after this date" (org-mode scheduling).
 
-@strong{When to modify}: Use @code{org-gtd-organize} to change calendar items rather than manual edits.
+@strong{How it's set}:
+@itemize
+@item
+Automatically by @code{org-gtd-organize} when organizing items as calendar items
+@item
+Programmatically when creating calendar items
+@end itemize
+
+@strong{For interactive use}: Use @code{org-gtd-organize} to change calendar items.
 @end itemize
 
 @node Delegation Properties
@@ -4982,7 +5559,17 @@ Use @code{org-gtd-task-add-dependent} command instead of manual edits when possi
 :END:
 @end example
 
-@strong{When to modify}: Use @code{org-gtd-delegate-agenda-item} or organize flow rather than manual edits.
+@strong{How it's set}:
+@itemize
+@item
+Automatically by @code{org-gtd-organize} when organizing as delegated item
+@item
+Automatically by @code{org-gtd-delegate-agenda-item} from agenda
+@item
+Programmatically when creating delegated items
+@end itemize
+
+@strong{For interactive use}: Use @code{org-gtd-delegate-agenda-item} or organize flow.
 
 @strong{Customization}: Set @code{org-gtd-delegate-read-func} to customize how names are entered (e.g., for completion).
 @end itemize
@@ -5104,6 +5691,202 @@ Value from @code{org-gtd-keyword-mapping}'s @code{canceled} key (default "CNCL")
 @strong{Purpose}: Mark items that must be done by a specific date
 
 @strong{Note}: org-gtd respects org-mode deadlines in all views and oops checks.
+@end itemize
+
+@node Troubleshooting Projects
+@section Troubleshooting Projects
+
+This section covers how to fix problems with project dependencies. @strong{@strong{You should rarely need this}} - the graph view and task management commands handle dependencies correctly. If you find yourself needing these troubleshooting steps frequently, that indicates a bug - please file an issue!
+
+@menu
+* Fixing Broken Dependencies::
+* When Manual Property Editing is Needed::
+* Common Problems and Solutions::
+@end menu
+
+@node Fixing Broken Dependencies
+@subsection Fixing Broken Dependencies
+
+If you encounter dependency problems (circular dependencies, broken references, orphaned tasks):
+
+@enumerate
+@item
+@strong{@strong{Validate project structure}}:
+@itemize
+@item
+Put point on project heading
+@item
+Run @code{M-x org-gtd-validate-project-dependencies}
+@item
+This detects broken references, orphaned tasks, and circular dependencies
+@item
+Follow the guidance provided
+@end itemize
+
+@item
+@strong{@strong{Visual inspection with graph view}}:
+@itemize
+@item
+Run @code{M-x org-gtd-show-project-graph}
+@item
+Visual inspection often makes problems obvious
+@item
+Missing arrows? Use @code{a} to add missing dependencies
+@item
+Wrong arrows? Use @code{d} to remove incorrect dependencies
+@item
+Task with too many relationships? Use @code{i} to inspect, @code{x} to clear all
+@end itemize
+
+@item
+@strong{@strong{Clear and rebuild}}:
+If task relationships are completely corrupted:
+@itemize
+@item
+In graph view: Select the problematic task, press @code{x} to clear all relationships
+@item
+Or in text: Put point on task, run @code{M-x org-gtd-task-clear-relationships}
+@item
+Rebuild dependencies using graph view add commands (@code{a}, @code{a c}, @code{a b})
+@end itemize
+@end enumerate
+
+@node When Manual Property Editing is Needed
+@subsection When Manual Property Editing is Needed
+
+@strong{@strong{You should never need to manually edit properties during normal use.}}
+
+The ONLY cases where manual property editing might be necessary:
+
+@enumerate
+@item
+@strong{@strong{Writing elisp automation/integration code}}
+@itemize
+@item
+See @ref{Properties Reference (Internal Implementation), , Properties Reference} for property documentation
+@item
+Use programmatic functions: @code{org-gtd-dependencies-create}, @code{org-entry-add-to-multivalued-property}, etc.
+@item
+Never manipulate properties directly from interactive commands
+@end itemize
+
+@item
+@strong{@strong{Debugging org-gtd internals}}
+@itemize
+@item
+If you suspect a bug in org-gtd's property management
+@item
+Compare properties with graph view to identify discrepancies
+@item
+File an issue with details!
+@end itemize
+
+@item
+@strong{@strong{Migrating data from another system}}
+@itemize
+@item
+If importing projects from external tools
+@item
+Batch property updates may be more efficient
+@item
+Validate with @code{org-gtd-validate-project-dependencies} afterward
+@end itemize
+
+@item
+@strong{@strong{Emergency recovery from data corruption}}
+@itemize
+@item
+Only as last resort if graph view and commands fail
+@item
+After manual edits, run @code{org-gtd-projects-fix-todo-keywords-for-project-at-point}
+@item
+Consider this a bug and file an issue
+@end itemize
+@end enumerate
+
+@strong{If you find yourself manually editing properties regularly}, that indicates missing features. Please file an issue describing your workflow - we'll add the missing commands!
+
+@node Common Problems and Solutions
+@subsection Common Problems and Solutions
+
+@itemize
+@item
+@anchor{Project Shows No NEXT Tasks (Stuck Project)}Project Shows No NEXT Tasks (Stuck Project)
+
+
+@strong{Symptom}: Project has incomplete tasks but none are NEXT@.
+
+@strong{Diagnosis}:
+@itemize
+@item
+Run @code{M-x org-gtd-show-project-graph}
+@item
+Look for green boxes (NEXT tasks)
+@item
+If no green boxes, check for:
+@itemize
+@item
+Circular dependencies (arrows forming a loop)
+@item
+All tasks waiting on incomplete tasks
+@item
+Missing ORG@math{_GTD}@math{_FIRST}@math{_TASKS} property
+@end itemize
+@end itemize
+
+@strong{Solution}:
+@itemize
+@item
+Fix circular dependencies: Use @code{d} to remove incorrect dependencies
+@item
+Add root tasks: Use @code{a r} or @code{a b} to create tasks that can start immediately
+@item
+Run @code{org-gtd-validate-project-dependencies} for detailed diagnosis
+@end itemize
+
+@item
+@anchor{Too Many NEXT Tasks}Too Many NEXT Tasks
+
+
+@strong{Symptom}: Project shows 10+ green boxes in graph view.
+
+@strong{Diagnosis}: Tasks that should be dependent are independent.
+
+@strong{Solution}:
+@itemize
+@item
+In graph view, identify tasks that should depend on others
+@item
+Use @code{a} to add dependencies between tasks
+@item
+Or restructure: tasks later in workflow should be children (@code{a c}) of earlier tasks
+@end itemize
+
+@item
+@anchor{Task Won't Advance to NEXT}Task Won't Advance to NEXT
+
+
+@strong{Symptom}: Completed a task, but dependent task still shows TODO (gray).
+
+@strong{Diagnosis}:
+@itemize
+@item
+In graph view, select the gray task
+@item
+Press @code{i} to show relationships
+@item
+Check if all blockers are actually DONE
+@end itemize
+
+@strong{Solution}:
+@itemize
+@item
+If blockers are DONE but showing as blocking: Press @code{r} to refresh graph
+@item
+If blocker shouldn't block this task: Use @code{d} to remove the dependency
+@item
+If multiple wrong dependencies: Use @code{x} to clear all, rebuild with @code{a}
+@end itemize
 @end itemize
 
 @node View DSL Filter Reference

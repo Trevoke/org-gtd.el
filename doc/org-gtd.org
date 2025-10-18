@@ -1941,6 +1941,9 @@ Here's what different patterns look like in graph view:
 *Example*: Research → (Write content, Design graphics) → Publish article
 
 *** Graph View Command Reference
+:PROPERTIES:
+:CUSTOM_ID: graph-view-command-reference
+:END:
 
 **** Opening Graph View
 
@@ -2439,7 +2442,7 @@ Useful if you want automatic saves during inbox processing.
 (setq org-refile-targets '((org-agenda-files :maxlevel . 3)))
 #+end_src
 
-*See also*: [[#refiling-v4][Refiling section]] for complete documentation on creating refile targets and understanding the refile system.
+*See also*: [[#refiling-after-organizing][Refiling section]] for complete documentation on creating refile targets and understanding the refile system.
 
 *** Clarification Configuration
 
@@ -3315,7 +3318,7 @@ If you find yourself manually editing properties, that indicates a missing featu
 
 *Used on*: Category headings that serve as refile targets
 
-*Purpose*: Marks a heading as a refile target for org-gtd's optional refile system (see [[#refiling-v4][Refiling section]])
+*Purpose*: Marks a heading as a refile target for org-gtd's optional refile system (see [[#refiling-after-organizing][Refiling section]])
 
 *Values*:
 - ~"Projects"~ :: Target for refiling projects
