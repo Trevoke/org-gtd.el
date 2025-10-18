@@ -43,6 +43,12 @@
     ("a c" "child task" org-gtd-graph-transient-add-child)
     ("a r" "root task" org-gtd-graph-transient-add-root)
     ("a b" "blocker task" org-gtd-graph-view-add-blocker)]
+   ["Modify"
+    ("a" "add dependency" org-gtd-graph-view-add-dependency)
+    ("d" "remove dependency" org-gtd-graph-view-remove-dependency)
+    ("x" "clear all relationships" org-gtd-graph-view-clear-relationships)]
+   ["Inspect"
+    ("i" "show relationships" org-gtd-graph-view-show-relationships)]
    ["Navigate"
     ("n" "down dependency" org-gtd-graph-nav-down-dependency :transient t)
     ("j" "down dependency" org-gtd-graph-nav-down-dependency :transient t)

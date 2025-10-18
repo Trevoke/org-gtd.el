@@ -292,6 +292,81 @@ If blocker is external to project, adds project ID and TRIGGER property."
         ;; (org-gtd-graph-undo-record-remove-dependency blocker-id blocked-id)
         (org-gtd-graph-view-refresh)))))
 
+(defun org-gtd-graph-view-show-relationships ()
+  "Show relationships for the currently selected node.
+Displays which tasks block this task and which tasks this task blocks."
+  (interactive)
+  (if (not org-gtd-graph-ui--selected-node-id)
+      (user-error "No node selected. Click on a node first")
+    (let* ((node-id org-gtd-graph-ui--selected-node-id)
+           (nodes (org-gtd-graph-nodes org-gtd-graph-view--graph))
+           (node (gethash node-id nodes))
+           (title (org-gtd-graph-node-title node))
+           (depends-on (org-gtd-get-depends-on node-id))
+           (blocks (org-gtd-get-blocks node-id)))
+
+      (with-output-to-temp-buffer "*Org GTD Relationships*"
+        (princ (format "Relationships for: %s\n" title))
+        (princ (make-string 60 ?=))
+        (princ "\n\n")
+
+        (if depends-on
+            (progn
+              (princ "This task depends on (blockers):\n")
+              (dolist (blocker-id depends-on)
+                (when-let ((blocker-node (gethash blocker-id nodes)))
+                  (princ (format "  • %s\n" (org-gtd-graph-node-title blocker-node))))))
+          (princ "This task has no blockers.\n"))
+
+        (princ "\n")
+
+        (if blocks
+            (progn
+              (princ "This task blocks (dependents):\n")
+              (dolist (dependent-id blocks)
+                (when-let ((dependent-node (gethash dependent-id nodes)))
+                  (princ (format "  • %s\n" (org-gtd-graph-node-title dependent-node))))))
+          (princ "This task blocks no other tasks.\n"))))))
+
+(defun org-gtd-graph-view-clear-relationships ()
+  "Remove all dependency relationships from the currently selected node.
+Removes both blockers (tasks this depends on) and dependents (tasks that depend on this)."
+  (interactive)
+  (if (not org-gtd-graph-ui--selected-node-id)
+      (user-error "No node selected. Click on a node first")
+    (let* ((node-id org-gtd-graph-ui--selected-node-id)
+           (nodes (org-gtd-graph-nodes org-gtd-graph-view--graph))
+           (node (gethash node-id nodes))
+           (title (org-gtd-graph-node-title node))
+           (depends-on (org-gtd-get-depends-on node-id))
+           (blocks (org-gtd-get-blocks node-id))
+           (total-relationships (+ (length depends-on) (length blocks))))
+
+      (when (zerop total-relationships)
+        (user-error "Task '%s' has no relationships to clear" title))
+
+      (when (yes-or-no-p
+             (format "Clear all %d relationship%s from '%s'? "
+                     total-relationships
+                     (if (= total-relationships 1) "" "s")
+                     title))
+
+        ;; Remove all blockers (tasks this depends on)
+        (dolist (blocker-id depends-on)
+          (org-gtd-remove-from-multivalued-property blocker-id org-gtd-prop-blocks node-id)
+          (org-gtd-remove-from-multivalued-property node-id org-gtd-prop-depends-on blocker-id))
+
+        ;; Remove all dependents (tasks that depend on this)
+        (dolist (dependent-id blocks)
+          (org-gtd-remove-from-multivalued-property node-id org-gtd-prop-blocks dependent-id)
+          (org-gtd-remove-from-multivalued-property dependent-id org-gtd-prop-depends-on node-id))
+
+        (message "Cleared %d relationship%s from '%s'"
+                 total-relationships
+                 (if (= total-relationships 1) "" "s")
+                 title)
+        (org-gtd-graph-view-refresh)))))
+
 ;;;; Helper Functions
 
 (defun org-gtd-graph-view--get-all-tasks ()

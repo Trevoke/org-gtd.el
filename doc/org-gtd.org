@@ -1536,151 +1536,202 @@ Regardless of the value of this variable, you can use the function ~org-gtd-clar
 :CUSTOM_ID: working-with-projects-advanced
 :END:
 
-You learned sequential projects in [[#tutorial-your-first-project][Tutorial: Your First Project]]. This section covers advanced project features: parallel tasks, custom dependencies, and complex project structures.
+You learned sequential projects in [[#tutorial-your-first-project][Tutorial: Your First Project]]. This section teaches you how to handle complex projects with parallel work streams, custom dependencies, and sophisticated project structures—all using visual project management.
+
+*** First Contact: Why Visual Project Management?
+
+Real projects are rarely simple sequences. You might have:
+- Tasks that can start simultaneously (parallel research streams)
+- Multiple tasks that must all finish before the next step (convergence points)
+- Independent work paths that later merge (diamond patterns)
+
+Managing these mentally or through text properties is error-prone. You forget dependencies, create accidental bottlenecks, or miss opportunities for parallelization.
+
+*Visual project management solves this.* You SEE your project as a dependency graph—boxes for tasks, arrows for dependencies, colors for states. Adding tasks, creating dependencies, and understanding project structure becomes intuitive and immediate.
+
+*** Black Triangle: Your First Project Graph View
+
+Let's see this in action right now.
+
+**** Step 1: Find a project
+
+Open your engage view: ~C-c d e~
+
+Find any project task in your agenda (or create a quick test project if you don't have one).
+
+**** Step 2: Open the graph view
+
+Press ~RET~ on the project task to jump to the project heading.
+
+Run: ~M-x org-gtd-graph-view~
+
+**** Step 3: Explore
+
+You're now looking at your project as a visual graph:
+- The project heading is at the top
+- Tasks are arranged in layers below
+- Arrows show which tasks block other tasks
+- Green boxes are NEXT (ready to work on)
+- Gray boxes are TODO (waiting for dependencies)
+
+Press ~?~ to see all available commands.
+
+*Success!* You've visualized your first project. Everything from here builds on this.
 
 *** Understanding Project Dependencies
 
-Projects in org-gtd use a dependency graph to track task relationships. Version 4.0 introduced flexible dependencies - you're not limited to sequential execution anymore.
+Before we build complex projects, let's understand how dependencies work visually.
 
-**** How dependencies work
+**** The Dependency Graph (DAG)
 
-Task dependencies are managed through two org properties:
+Projects in org-gtd are *Directed Acyclic Graphs* (DAGs):
 
-- ~ORG_GTD_DEPENDS_ON~ :: Contains IDs of tasks that must complete before this task can start (what blocks this task)
-- ~ORG_GTD_BLOCKS~ :: Contains IDs of tasks that this task blocks (what depends on this task)
-- ~ORG_GTD_FIRST_TASKS~ :: (On project heading) Contains IDs of tasks with no dependencies (the starting points)
+- *Directed* :: Dependencies have direction. If Task A blocks Task B, the arrow points from A → B. B can't start until A finishes.
 
-**** Sequential vs Parallel
+- *Acyclic* :: No circular dependencies. A → B → C → A would create a deadlock. Org-gtd prevents these automatically.
 
-- *Sequential* (default): Tasks execute one after another (A → B → C)
-  - Only one task is NEXT at a time
-  - Each task blocks the next
-  - Great for workflows where order matters
+- *Graph* :: Tasks can have multiple dependencies. Task C might need both A AND B to finish before it can start.
 
-- *Parallel*: Multiple tasks can be NEXT simultaneously
-  - Multiple independent work streams
-  - Tasks with no dependencies start together
-  - Faster project completion
+**** What You See in Graph View
 
-- *Mixed*: Some tasks parallel, others sequential
-  - Most real projects use this
-  - Example: Research and Planning happen in parallel, but both must finish before Building starts
+The graph view arranges tasks in *layers*:
 
-**** The dependency graph (DAG)
+- *Layer 0*: Root tasks (no dependencies, can start immediately)
+- *Layer 1*: Tasks blocked by layer 0
+- *Layer 2*: Tasks blocked by layer 1
+- And so on...
 
-Tasks form a Directed Acyclic Graph (DAG):
-- *Directed*: Dependencies flow one way (A → B means B depends on A, not vice versa)
-- *Acyclic*: No circular dependencies (A → B → C → A is prevented)
-- *Graph*: Tasks can have multiple dependencies and block multiple tasks
+*Green boxes* (NEXT state) mean "ready to work on right now."
+*Gray boxes* (TODO state) mean "blocked by dependencies."
 
-org-gtd automatically prevents circular dependencies to avoid deadlocks.
+When you complete a NEXT task, org-gtd automatically updates the graph:
+- Completed task disappears (or grays out if you keep DONE tasks visible)
+- Tasks that were waiting for it may turn green
 
-*** Tutorial: Project with Parallel Tasks
+**** Sequential vs Parallel vs Mixed
 
-Let's create a project where some tasks can happen simultaneously.
+*Sequential* (default for new projects):
+- Tasks execute one after another: A → B → C
+- Only one task is NEXT at a time
+- Simple, linear workflow
+
+In graph view, sequential projects look like a vertical chain of boxes with arrows flowing downward.
+
+*Parallel*:
+- Multiple tasks can be NEXT simultaneously
+- Multiple tasks at layer 0 (all root tasks)
+- Faster project completion when tasks are independent
+
+In graph view, parallel projects have multiple green boxes at the same layer.
+
+*Mixed* (most real projects):
+- Some tasks parallel, others sequential
+- Example: Research and Planning happen together, but both must finish before Building starts
+
+In graph view, mixed projects show parallel branches that converge at join points.
+
+*** Tutorial: Parallel Tasks with Graph View
+
+Let's build a project where some tasks happen simultaneously.
 
 **** The Scenario
 
 You need to "Fix Shoulder Pain":
 1. Find MRI facility (research task)
 2. Make MRI appointment (depends on finding facility)
-3. Make orthopedist appointment (independent research - can happen in parallel with 1 & 2)
+3. Make orthopedist appointment (independent research - parallel with 1 & 2)
 4. Get diagnosis (depends on both appointments completing)
 
-Tasks 1 and 3 can happen in parallel - they don't depend on each other.
+Tasks 1 and 3 can happen in parallel—they're independent research tasks.
 
-**** Step 1: Capture the Project
+**** Step 1: Capture and Organize
 
-~C-c d c~ to capture:
-
-#+begin_example
-,* Fix Shoulder Pain
-,** Find place to get MRI
-,** Make MRI appointment
-,** Make orthopedist appointment
-,** Get diagnosis from orthopedist
-#+end_example
-
-**** Step 2: Organize with Custom Dependencies
-
-After organizing as a project (~C-c c~ → ~[P]~), org-gtd creates sequential dependencies by default. We need to modify them for parallel execution.
-
-**Open the project file:**
-
-Find your project in the engage view (~C-c d e~), press ~RET~ on any task to jump to the project file.
-
-**The project looks like this:**
+Capture the project: ~C-c d c~
 
 #+begin_example
-,* Fix Shoulder Pain
-:PROPERTIES:
-:ORG_GTD: Projects
-:ORG_GTD_FIRST_TASKS: <id-of-find-mri>
-:END:
-,** NEXT Find place to get MRI
-:PROPERTIES:
-:ID: <id-of-find-mri>
-:ORG_GTD: Actions
-:ORG_GTD_BLOCKS: <id-of-make-mri-appt>
-:END:
-,** TODO Make MRI appointment
-:PROPERTIES:
-:ID: <id-of-make-mri-appt>
-:ORG_GTD: Actions
-:ORG_GTD_DEPENDS_ON: <id-of-find-mri>
-:ORG_GTD_BLOCKS: <id-of-make-ortho-appt>
-:END:
-,** TODO Make orthopedist appointment
-... (and so on, sequential)
+* Fix Shoulder Pain
+** Find place to get MRI
+** Make MRI appointment
+** Make orthopedist appointment
+** Get diagnosis from orthopedist
 #+end_example
 
-**** Step 3: Modify for Parallel Execution
+Process the inbox: ~C-c d p~
 
-We want "Find MRI place" and "Make orthopedist appointment" to be parallel starting tasks.
+Organize as a project: ~C-c c~ → ~[P]~
 
-**On the project heading**, add the orthopedist appointment ID to FIRST_TASKS:
+**** Step 2: Open Graph View
 
+From the engage view (~C-c d e~), press ~RET~ on any task to jump to the project.
+
+Run: ~M-x org-gtd-graph-view~
+
+You'll see a sequential graph (the default):
 #+begin_example
-:ORG_GTD_FIRST_TASKS: <id-of-find-mri> <id-of-make-ortho-appt>
+[Fix Shoulder Pain]
+        ↓
+[NEXT: Find place to get MRI]
+        ↓
+[TODO: Make MRI appointment]
+        ↓
+[TODO: Make orthopedist appointment]
+        ↓
+[TODO: Get diagnosis from orthopedist]
 #+end_example
 
-**On "Make orthopedist appointment" task**, remove the DEPENDS_ON property:
+We need to make tasks 1 and 3 parallel.
 
-Remove the line: ~:ORG_GTD_DEPENDS_ON: <id-of-make-mri-appt>~
+**** Step 3: Add Orthopedist Appointment as Root Task
 
-**On "Get diagnosis" task**, make it depend on BOTH appointments:
+Click on (or navigate to) the "Find place to get MRI" task.
 
-#+begin_example
-:ORG_GTD_DEPENDS_ON: <id-of-make-mri-appt> <id-of-make-ortho-appt>
-#+end_example
+Press ~a r~ (add root task)
 
-**Fix the BLOCKS properties:**
-- Remove orthopedist appointment from MRI appointment's BLOCKS
-- Add diagnosis ID to both appointment tasks' BLOCKS
+At the prompt, type: ~Make orthopedist appointment~
 
-**** Step 4: Fix Keywords
+*Wait!* We already have that task. So instead, we'll restructure.
 
-Put point on the project heading and run:
+Actually, let's do this differently. We need to:
+1. Make "Make orthopedist appointment" a root task (no dependencies)
+2. Remove it from the sequential chain
 
-~M-x org-gtd-projects-fix-todo-keywords-for-project-at-point~
+*CURRENT LIMITATION*: The graph view can ADD tasks but can't MODIFY existing dependencies. So we'll build this from scratch using graph view commands.
 
-This recalculates which tasks should be NEXT based on the dependency graph.
+**** Step 3 (Revised): Build with Graph View Commands
 
-**** Step 5: See the Results
+Let me show you the INTENDED workflow (this reveals what features are still needed):
 
-~C-c d e~ to view the engage agenda.
+1. Delete "Make orthopedist appointment" from the middle of the chain
+2. Add it as a new root task
+3. Make "Get diagnosis" depend on BOTH appointments
 
-You'll now see:
-- *NEXT: Find place to get MRI*
-- *NEXT: Make orthopedist appointment*
+But our graph view doesn't have delete/modify yet. Let's note this and continue with what we CAN do.
 
-Both are NEXT simultaneously! You can work on whichever you want.
+**** What Graph View CAN Do Right Now
 
-When you complete both appointments, "Get diagnosis" automatically becomes NEXT.
+From the project heading in graph view:
+
+- ~a c~ :: Add a child task (creates: selected task → new task)
+- ~a r~ :: Add a root task (no dependencies, starts immediately)
+- ~a b~ :: Add a blocker task (creates: new task → selected task)
+
+Example: Building a parallel structure from scratch:
+
+1. Start with project heading selected
+2. ~a r~ → "Find place to get MRI"
+3. ~a r~ → "Make orthopedist appointment" (now TWO root tasks!)
+4. Select "Find place to get MRI"
+5. ~a c~ → "Make MRI appointment"
+6. Select "Make MRI appointment", ~a c~ → "Get diagnosis (MRI side)"
+7. Select "Make orthopedist appointment", ~a c~ → "Get diagnosis (ortho side)"
+
+But wait—we can't make ONE task depend on TWO tasks with current commands.
+
+*THIS REVEALS A MISSING FEATURE.*
 
 **** The Dependency Pattern (Diamond)
 
-This is called a "diamond" pattern:
+The pattern we want is called a "diamond":
 
 #+begin_example
     Find MRI ─────┐
@@ -1688,15 +1739,23 @@ This is called a "diamond" pattern:
 Make Ortho Appt ──┘
 #+end_example
 
-Two parallel paths converge at a single task. This is common in real projects.
+Two parallel paths converge at a single task.
 
-*** Tutorial: Complex Project Dependencies
+**** Current Workaround
 
-Let's look at a more complex example: "Release Next Version of Software".
+For now, to create complex convergence patterns, you would:
+1. Use graph view to build the basic structure
+2. Press ~r~ to refresh and verify
+3. For convergence points (multiple tasks blocking one task), you need to either:
+   - Structure the project differently
+   - Wait for "modify dependency" commands to be implemented
+
+*** Tutorial: Complex Dependencies with Graph View
 
 **** The Scenario
 
-Steps:
+"Release Next Version of Software":
+
 1. List features (starting task)
 2. Implement features (depends on list)
 3. Write documentation (can start after list, parallel with implement)
@@ -1716,151 +1775,304 @@ List Features
                                 └───────────────────────────────┘
 #+end_example
 
-**** Key Patterns
+**** Building with Graph View
 
-1. *Parallel branches* after List Features
-2. *Converging paths* at Get Beta Feedback (both branches must complete)
-3. *Parallel updates* after feedback
-4. *Final convergence* at Release
+Starting from the project heading:
 
-**** Setting This Up
+1. ~a r~ → "List features" (root task)
+2. Select "List features"
+3. ~a c~ → "Implement features" (depends on list)
+4. Go back to "List features"
+5. ~a c~ → "Write documentation" (also depends on list - now parallel!)
 
-You would:
-1. Capture the project structure
-2. Organize as project (creates sequential by default)
-3. Open the project file
-4. Modify FIRST_TASKS to include only "List Features"
-5. Set DEPENDS_ON for "Implement" to only List Features
-6. Set DEPENDS_ON for "Write Documentation" to only List Features
-7. Set DEPENDS_ON for "Get Beta Feedback" to both Implement AND Write Documentation
-8. Set DEPENDS_ON for both Update tasks to Get Beta Feedback
-9. Set DEPENDS_ON for "Release" to both Update tasks
-10. Run ~org-gtd-projects-fix-todo-keywords-for-project-at-point~
+Now you have two parallel branches. Both are green (NEXT) because they only depend on the root task.
 
-*** Common Dependency Patterns
+For the convergence at "Get Beta Feedback":
+- Select "Implement features"
+- ~a c~ → "Get Beta Feedback (from implement)"
+
+*But we can't make it ALSO depend on "Write documentation" yet.*
+
+*THIS REVEALS THE SAME MISSING FEATURE.*
+
+**** Key Patterns This Example Shows
+
+1. *Parallel branches* after List Features (we CAN do this with ~a c~ from same parent)
+2. *Converging paths* at Get Beta Feedback (we CANNOT do this yet—needs "add as blocker to existing task")
+3. *Parallel updates* after feedback (we CAN do this)
+4. *Final convergence* at Release (we CANNOT do this yet)
+
+*** Common Dependency Patterns (Visual Reference)
+
+Here's what different patterns look like in graph view:
 
 **** Sequential Chain (A → B → C)
-The simplest pattern. Default for all projects.
 
-Use when: Order matters, each task depends on the previous.
+#+begin_example
+[A - NEXT]
+    ↓
+[B - TODO]
+    ↓
+[C - TODO]
+#+end_example
 
-Example: Review blueprints → Order windows → Schedule carpenter
+*When to use*: Order matters, each task depends on the previous.
+
+*How to build*: Start at project, ~a r~ for first task, then ~a c~ repeatedly.
+
+*Example*: Review blueprints → Order windows → Schedule carpenter
 
 **** Parallel Independent (A, B, C all start together)
-All tasks are in FIRST_TASKS, no dependencies between them.
 
-Use when: Tasks are completely independent and can all start immediately.
+#+begin_example
+[A - NEXT]  [B - NEXT]  [C - NEXT]
+#+end_example
 
-Example: Research destinations, Check budget, Ask for time off (for vacation planning)
+*When to use*: Tasks are completely independent, all can start immediately.
+
+*How to build*: From project heading, ~a r~ for each task.
+
+*Example*: Research destinations, Check budget, Ask for time off (vacation planning)
 
 **** Fan-out (A → B, A → C, A → D)
-One task blocks multiple tasks that can then proceed in parallel.
 
-Use when: Initial work enables multiple independent paths.
+#+begin_example
+        [A - NEXT]
+       /    |    \
+      ↓     ↓     ↓
+  [B-TODO][C-TODO][D-TODO]
+#+end_example
 
-Example: Get project approval → (Design UI, Write backend API, Setup infrastructure)
+*When to use*: Initial work enables multiple independent paths.
+
+*How to build*: ~a r~ for A, select A, then ~a c~ for B, C, D.
+
+*Example*: Get project approval → (Design UI, Write backend API, Setup infrastructure)
 
 **** Fan-in / Convergence (A → C, B → C)
-Multiple tasks must complete before next task can start. Also called "join".
 
-Use when: Final task needs all previous work completed.
+#+begin_example
+[A - NEXT]  [B - NEXT]
+      \        /
+       ↓      ↓
+      [C - TODO]
+#+end_example
 
-Example: (Write code, Write tests) → Merge to main
+*When to use*: Final task needs all previous work completed.
+
+*How to build*: CANNOT BUILD YET—needs "multiple blockers" feature.
+
+*Workaround*: Make A → C → ... and B → something-else for now.
+
+*Example*: (Write code, Write tests) → Merge to main
 
 **** Diamond (A → B → D, A → C → D)
-Parallel paths that converge. Combination of fan-out and fan-in.
 
-Use when: Work splits, proceeds in parallel, then combines.
+#+begin_example
+      [A - NEXT]
+       /      \
+      ↓        ↓
+  [B-TODO] [C-TODO]
+      \      /
+       ↓    ↓
+     [D-TODO]
+#+end_example
 
-Example: Research → (Write content, Design graphics) → Publish article
+*When to use*: Work splits, proceeds in parallel, then combines.
 
-*** Practical Tips
+*How to build*: CANNOT BUILD YET—convergence at D needs multiple blockers.
 
-**** When to use sequential
+*Example*: Research → (Write content, Design graphics) → Publish article
+
+*** Graph View Command Reference
+
+**** Opening Graph View
+
+~M-x org-gtd-graph-view~
+
+*Requires*: Point must be on a project heading (not a task)
+
+*Creates*: Interactive SVG buffer named ~*Org GTD Graph: <project-name>*~
+
+**** Navigation Commands
+
+| Key     | Command                    | Description                                           |
+|---------+----------------------------+-------------------------------------------------------|
+| n / j   | Down dependency            | Move to a task this one blocks                        |
+| p / k   | Up dependency              | Move to a task that blocks this one                   |
+| TAB     | Next sibling               | Next task in same layer (same dependency depth)       |
+| g       | Goto node                  | Jump to task by name (with completion)                |
+| RET     | Jump to task in org file   | Opens the org file at the task's location             |
+
+**** Adding Tasks
+
+| Key   | Command          | Description                                                  |
+|-------+------------------+--------------------------------------------------------------|
+| a c   | Add child        | Create task that depends on selected task                    |
+| a r   | Add root         | Create task with no dependencies (starts immediately)        |
+| a b   | Add blocker      | Create task that blocks the selected task                    |
+
+*After adding*: Graph automatically refreshes to show new task.
+
+**** View Commands
+
+| Key   | Command          | Description                                                  |
+|-------+------------------+--------------------------------------------------------------|
+| ?     | Show menu        | Display transient menu with all commands                     |
+| r     | Refresh          | Rebuild graph (use after external changes)                   |
+| q     | Quit             | Close graph view, keep buffer                                |
+| Q     | Quit and kill    | Close graph view and kill buffer                             |
+
+**** Future Commands (Planned)
+
+| Key   | Command          | Status                                                       |
+|-------+------------------+--------------------------------------------------------------|
+| z     | Zoom             | Not implemented (filter/focus features)                      |
+| u     | Undo             | Not implemented (undo last graph change)                     |
+| C-r   | Redo             | Not implemented (redo undone change)                         |
+
+**** Visual Indicators
+
+- *Green boxes*: NEXT tasks (ready to work on)
+- *Gray boxes*: TODO tasks (blocked by dependencies)
+- *Arrows*: Dependencies (from blocker → blocked task)
+- *Layers*: Vertical positioning shows dependency depth
+
+*** Practical Tips for Project Management
+
+**** When to Use Graph View
+
+- *Planning complex projects*: Visualize before committing to structure
+- *Understanding stuck projects*: See why tasks are blocked
+- *Weekly review*: Quick visual health check of all projects
+- *Adding tasks mid-project*: Add with correct dependencies immediately
+
+**** When to Use Sequential (Default)
+
 - Order truly matters (can't install before purchasing)
-- You're not sure what the next task will be until you complete the current one
-- The project is simple and you don't want to think about dependencies
+- You're unsure what the next task will be until you complete current one
+- The project is simple (3-4 tasks)
+- You don't want to think about dependencies
 
-**** When to use parallel
+*Just organize as project* (~C-c c~ → ~[P]~) and you're done.
+
+**** When to Create Parallel Structures
+
 - You have multiple people working on the project
 - Tasks are independent and could be done in any order
 - You want to optimize for speed
-- Clear what all tasks are upfront
+- You know all tasks upfront
 
-**** Managing complexity
-- Start sequential, make parallel only when needed
-- Use areas of focus or tags to group related tasks
-- Keep task names clear and specific
-- Review stuck projects weekly to catch dependency issues
+*Use ~a r~ multiple times* from graph view to create parallel roots.
 
-**** Modifying projects over time
-- Add tasks: Use "Add to existing project" when organizing new items
-- Change dependencies: Edit properties directly, then run fix-keywords command
-- Split tasks: Break down a task into sub-tasks, adjust dependencies
-- Merge tasks: Mark unnecessary tasks DONE or CNCL
+**** Managing Complexity
 
-*** Reference: Dependency Management Commands
+- *Start sequential, add parallel only when needed*: Don't over-engineer.
+- *Use graph view to understand before modifying*: Visualize first.
+- *Keep task names clear and specific*: "Research venues" not "Research"
+- *Review stuck projects weekly*: ~M-x org-gtd-review-stuck-projects~
 
-**** During organizing
-- ~org-gtd-organize~ → ~[P]~ :: Creates project with sequential dependencies (default)
-- ~org-gtd-organize~ → ~[A]~ :: Adds task to existing project
+**** Growing Projects Over Time
 
-**** After organizing
-- ~org-gtd-projects-fix-todo-keywords-for-project-at-point~ :: Recalculates NEXT tasks based on dependency graph. Use after manually editing dependencies.
+As projects evolve, you need to add tasks:
 
-**** Properties to edit manually
-- ~ORG_GTD_FIRST_TASKS~ :: (on project heading) Space-separated list of task IDs with no dependencies
-- ~ORG_GTD_DEPENDS_ON~ :: (on task) Space-separated list of task IDs this task depends on
-- ~ORG_GTD_BLOCKS~ :: (on task) Space-separated list of task IDs this task blocks
+- *New independent work stream*: ~a r~ (add root task)
+- *Next step in sequence*: Select current task, ~a c~ (add child)
+- *Prerequisite for existing task*: Select existing task, ~a b~ (add blocker)
 
-After editing these properties, always run ~org-gtd-projects-fix-todo-keywords-for-project-at-point~ to update task states.
+After adding, press ~r~ to refresh the view.
 
-*** Optional: Visualizing Dependencies
+*** Troubleshooting Projects with Graph View
 
-Enable visual dependency helper while clarifying projects:
-
-#+begin_src emacs-lisp
-(setq org-gtd-clarify-display-helper-buffer t)
-#+end_src
-
-When enabled, a side window shows task relationships as you work on a project in the WIP buffer during clarification.
-
-This is useful for:
-- Understanding complex dependency graphs
-- Spotting cycles before they cause problems
-- Planning parallel execution paths
-
-*** Troubleshooting Projects
-
-**** Project is stuck (has TODO tasks but no NEXT)
+**** Project is Stuck (has TODO tasks but no NEXT)
 
 Run ~M-x org-gtd-review-stuck-projects~ to find stuck projects.
 
-Common causes:
-- Circular dependency (A depends on B, B depends on A)
-- Missing FIRST_TASKS (project has no starting point)
-- All first tasks are DONE but dependencies not set up correctly
+Open the stuck project in graph view: ~M-x org-gtd-graph-view~
 
-Fix: Put point on project heading, run ~org-gtd-projects-fix-todo-keywords-for-project-at-point~
+*What to look for*:
+- *No green boxes?* All tasks might be waiting for dependencies that are DONE. Press ~r~ to refresh.
+- *Gray boxes at layer 0?* These should be green (root tasks are never blocked). Something's wrong with the dependency structure.
+- *Circular dependency?* Org-gtd prevents these, but if you see arrows forming a loop, you've found a bug.
 
-**** Task should be NEXT but shows as TODO
+*How to fix*:
+- Use graph view to understand the structure
+- Add a new root task (~a r~) if nothing can start
+- Refresh (~r~) after any changes
 
-The dependency graph says it's blocked. Check:
-1. What tasks are in its ORG_GTD_DEPENDS_ON?
-2. Are those tasks actually DONE?
-3. Did you forget to remove a dependency?
+**** Task Should Be NEXT But Shows as TODO
 
-Fix: Edit ORG_GTD_DEPENDS_ON property, run fix-keywords command.
+In graph view, look at the task:
+- Is it gray (TODO)?
+- Trace arrows pointing TO it—these are its blockers
+- Are all those blockers green? Then something's wrong.
+- Are some blockers gray? Then the task is correctly blocked.
 
-**** Too many tasks are NEXT
+If blockers are actually DONE but still showing as green, press ~r~ to refresh.
 
-You probably have tasks that should have dependencies but don't.
+*How to fix*: Use ~d~ to remove incorrect dependencies, or ~x~ to clear all relationships for a task and rebuild.
 
-Fix: Add appropriate ORG_GTD_DEPENDS_ON properties to tasks that shouldn't start yet, run fix-keywords command.
+**** Too Many Tasks Are NEXT
 
-*See also*:
-- [[#properties-reference][Properties Reference]] for complete documentation of ~ORG_GTD_DEPENDS_ON~, ~ORG_GTD_BLOCKS~, and ~ORG_GTD_FIRST_TASKS~ properties
-- [[#commands-reference][Commands Reference]] for all project management and task dependency commands
+In graph view:
+- Count green boxes
+- If you have 10+ green tasks, you probably have dependency problems
+- Some tasks should depend on others but don't
+
+*How to fix*:
+- Select a task that should be blocked
+- Press ~a b~ to add a blocker task
+- Or restructure: tasks later in the workflow should be children (~a c~) of earlier tasks
+
+*** Graph View Command Reference
+
+The graph view supports comprehensive dependency management through keyboard commands. Press ~?~ in graph view to see the full command menu.
+
+**** Dependency Operations
+
+*Available commands*:
+- ~a~: Add dependency between two tasks (supports convergence/diamond patterns)
+- ~d~: Remove a dependency between two tasks
+- ~x~: Clear all relationships from selected task
+- ~i~: Show all relationships for selected task
+
+**** Adding Tasks
+
+*Available commands*:
+- ~a c~: Add child task (depends on current task)
+- ~a r~: Add root task (no dependencies)
+- ~a b~: Add blocker task (blocks current task and becomes root)
+
+**** Operations Not in Graph View
+
+Some operations are standard org-mode functionality, not graph-specific:
+
+*Changing task properties*:
+- TODO state (~C-c C-t~ in org file)
+- Deadlines/schedules (~C-c C-d~, ~C-c C-s~ in org file)
+- Task title/description (edit in org file)
+- Tags/properties (edit in org file)
+
+*Access org file*: Press ~RET~ on any task in graph view to jump to it in the org file.
+
+*Deleting tasks*: Mark task DONE or CNCL in the org file. Completed tasks still show in graph view (as green boxes) to maintain project history.
+
+**** When to Use Text-Based Commands
+
+Most users will find the graph view intuitive for dependency management. However, text-based task management commands are available:
+
+- ~org-gtd-task-add-blockers~ - Add blockers via text interface
+- ~org-gtd-task-remove-blockers~ - Remove blockers via text interface
+- ~org-gtd-task-show-relationships~ - Display relationships in minibuffer
+- ~org-gtd-validate-project-dependencies~ - Validate project structure
+
+See [[#task-dependency-commands][Task Dependency Commands]] for details.
+
+*** See Also
+
+- [[#tutorial-your-first-project][Tutorial: Your First Project]] for sequential project basics
+- [[#properties-reference][Properties Reference]] for ~ORG_GTD_FIRST_TASKS~, ~ORG_GTD_DEPENDS_ON~, and ~ORG_GTD_BLOCKS~ (internal implementation)
+- [[#commands-reference][Commands Reference]] for all project management commands
 - [[#view-dsl-reference][View DSL Filter Reference]] for creating custom project views
 
 *** Cleaning up / archiving completed work
@@ -2677,7 +2889,7 @@ These commands only work when point is on an agenda item:
 
 **** ~org-gtd-projects-fix-todo-keywords-for-project-at-point~
 
-*When to use*: After manually editing project dependencies
+*When to use*: When project TODO states seem incorrect after dependency changes
 
 *What it does*:
 - Recalculates which tasks should be NEXT based on dependency graph
@@ -2686,15 +2898,25 @@ These commands only work when point is on an agenda item:
 
 *Required*: Point must be on project heading
 
-*Example workflow*:
-1. Edit ORG_GTD_DEPENDS_ON properties manually
-2. Put point on project heading
-3. Run this command
-4. Keywords are updated to match dependencies
+*Note*: This is automatically called after graph UI operations and text-based task management commands. You typically only need this for troubleshooting edge cases.
 
 *** Task Dependency Commands
+:PROPERTIES:
+:CUSTOM_ID: task-dependency-commands
+:END:
 
-These commands help manage task relationships in projects:
+These text-based commands manage task relationships without using the graph view. Most users will find the graph view more intuitive (press ~M-x org-gtd-show-project-graph~), but these commands are useful for:
+
+- Working in the org file directly
+- Scripting/automation
+- Preference for text-based workflows
+
+*Graph UI equivalents*:
+- Adding dependencies: ~a~ (add dependency), ~a b~ (add blocker), ~a c~ (add child)
+- Removing dependencies: ~d~ (remove dependency), ~x~ (clear all)
+- Viewing relationships: ~i~ (show relationships)
+
+See [[#graph-view-command-reference][Graph View Command Reference]] for the visual approach.
 
 **** ~org-gtd-task-add-blockers~
 
@@ -2962,13 +3184,23 @@ These commands create GTD items programmatically (useful for automation and Emac
 
 This minor mode is no longer needed and will be removed in a future version.
 
-** Properties Reference
+** Properties Reference (Internal Implementation)
 :PROPERTIES:
 :DESCRIPTION: All org properties used by org-gtd
 :CUSTOM_ID: properties-reference
 :END:
 
-org-gtd uses org-mode properties extensively to track state and relationships. This section documents all properties used by the system.
+*For most users*: You don't need to read this section! Use the graph view or text-based task management commands instead.
+
+*This section is for*:
+- Understanding org-gtd's internal data model
+- Writing elisp automation/integration code
+- Debugging edge cases
+- Migrating data from other systems
+
+org-gtd uses org-mode properties to track state and relationships. These properties are managed automatically by org-gtd commands - **you should not edit them manually during normal use.**
+
+If you find yourself manually editing properties, that indicates a missing feature - please file an issue!
 
 *** Core GTD Properties
 
@@ -3020,10 +3252,12 @@ org-gtd uses org-mode properties extensively to track state and relationships. T
 
 This means tasks with IDs "abc123" and "def456" can both start immediately (parallel execution).
 
-*When to modify*:
-- After organizing a project (org-gtd sets this automatically)
-- When adding parallel starting points to a project
-- Always run ~org-gtd-projects-fix-todo-keywords-for-project-at-point~ after manual edits
+*How it's set*:
+- Automatically when organizing a project
+- Automatically by graph view ~a r~ (add root task) and ~a b~ (add blocker as root)
+- Programmatically via ~org-entry-add-to-multivalued-property~
+
+*For interactive use*: Use graph view commands instead of editing this property directly.
 
 *** Task Dependency Properties
 
@@ -3070,11 +3304,12 @@ In this example:
 - Tasks 002 (design) and 003 (infrastructure) can run in parallel after approval
 - Task 004 (implement) waits for both 002 and 003 to complete
 
-*When to modify*:
-- When creating custom dependency structures
-- When changing task relationships
-- Always update ORG_GTD_BLOCKS on the blocking tasks too (bidirectional)
-- Always run ~org-gtd-projects-fix-todo-keywords-for-project-at-point~ after edits
+*How it's set*:
+- Automatically by graph view ~a~ (add dependency), ~a c~ (add child), ~a b~ (add blocker)
+- Automatically by text commands ~org-gtd-task-add-blockers~, ~org-gtd-task-add-dependent~
+- Programmatically via ~org-gtd-dependencies-create~ (maintains bidirectional relationships)
+
+*For interactive use*: Use graph view or text-based task commands instead of editing this property directly.
 
 **** ORG_GTD_BLOCKS
 
@@ -3088,9 +3323,11 @@ In this example:
 - Task B should have ~ORG_GTD_DEPENDS_ON: A~
 - Task C should have ~ORG_GTD_DEPENDS_ON: A~
 
-*When to modify*:
-- Manually when setting up dependencies (maintain bidirectional relationship)
-- Use ~org-gtd-task-add-dependent~ command instead of manual edits when possible
+*How it's set*:
+- Automatically maintained when setting ORG_GTD_DEPENDS_ON (bidirectional)
+- Programmatically via ~org-gtd-dependencies-create~ (handles bidirectional updates)
+
+*For interactive use*: Use graph view or text-based task commands - they maintain the bidirectional relationship automatically.
 
 **** ORG_GTD_PROJECT_IDS
 
@@ -3123,7 +3360,11 @@ In this example:
 
 *Why not use SCHEDULED*: org-gtd uses a custom property to distinguish between "do this at this time" (GTD calendar items) and "start working on this sometime after this date" (org-mode scheduling).
 
-*When to modify*: Use ~org-gtd-organize~ to change calendar items rather than manual edits.
+*How it's set*:
+- Automatically by ~org-gtd-organize~ when organizing items as calendar items
+- Programmatically when creating calendar items
+
+*For interactive use*: Use ~org-gtd-organize~ to change calendar items.
 
 *** Delegation Properties
 
@@ -3145,7 +3386,12 @@ In this example:
 :END:
 #+end_example
 
-*When to modify*: Use ~org-gtd-delegate-agenda-item~ or organize flow rather than manual edits.
+*How it's set*:
+- Automatically by ~org-gtd-organize~ when organizing as delegated item
+- Automatically by ~org-gtd-delegate-agenda-item~ from agenda
+- Programmatically when creating delegated items
+
+*For interactive use*: Use ~org-gtd-delegate-agenda-item~ or organize flow.
 
 *Customization*: Set ~org-gtd-delegate-read-func~ to customize how names are entered (e.g., for completion).
 
@@ -3234,6 +3480,109 @@ SCHEDULED: <2025-10-11 Fri .+1d>
 *Purpose*: Mark items that must be done by a specific date
 
 *Note*: org-gtd respects org-mode deadlines in all views and oops checks.
+
+** Troubleshooting Projects
+:PROPERTIES:
+:DESCRIPTION: How to fix project dependency problems
+:CUSTOM_ID: troubleshooting-projects
+:END:
+
+This section covers how to fix problems with project dependencies. **You should rarely need this** - the graph view and task management commands handle dependencies correctly. If you find yourself needing these troubleshooting steps frequently, that indicates a bug - please file an issue!
+
+*** Fixing Broken Dependencies
+
+If you encounter dependency problems (circular dependencies, broken references, orphaned tasks):
+
+1. **Validate project structure**:
+   - Put point on project heading
+   - Run ~M-x org-gtd-validate-project-dependencies~
+   - This detects broken references, orphaned tasks, and circular dependencies
+   - Follow the guidance provided
+
+2. **Visual inspection with graph view**:
+   - Run ~M-x org-gtd-show-project-graph~
+   - Visual inspection often makes problems obvious
+   - Missing arrows? Use ~a~ to add missing dependencies
+   - Wrong arrows? Use ~d~ to remove incorrect dependencies
+   - Task with too many relationships? Use ~i~ to inspect, ~x~ to clear all
+
+3. **Clear and rebuild**:
+   If task relationships are completely corrupted:
+   - In graph view: Select the problematic task, press ~x~ to clear all relationships
+   - Or in text: Put point on task, run ~M-x org-gtd-task-clear-relationships~
+   - Rebuild dependencies using graph view add commands (~a~, ~a c~, ~a b~)
+
+*** When Manual Property Editing is Needed
+
+**You should never need to manually edit properties during normal use.**
+
+The ONLY cases where manual property editing might be necessary:
+
+1. **Writing elisp automation/integration code**
+   - See [[#properties-reference][Properties Reference]] for property documentation
+   - Use programmatic functions: ~org-gtd-dependencies-create~, ~org-entry-add-to-multivalued-property~, etc.
+   - Never manipulate properties directly from interactive commands
+
+2. **Debugging org-gtd internals**
+   - If you suspect a bug in org-gtd's property management
+   - Compare properties with graph view to identify discrepancies
+   - File an issue with details!
+
+3. **Migrating data from another system**
+   - If importing projects from external tools
+   - Batch property updates may be more efficient
+   - Validate with ~org-gtd-validate-project-dependencies~ afterward
+
+4. **Emergency recovery from data corruption**
+   - Only as last resort if graph view and commands fail
+   - After manual edits, run ~org-gtd-projects-fix-todo-keywords-for-project-at-point~
+   - Consider this a bug and file an issue
+
+*If you find yourself manually editing properties regularly*, that indicates missing features. Please file an issue describing your workflow - we'll add the missing commands!
+
+*** Common Problems and Solutions
+
+**** Project Shows No NEXT Tasks (Stuck Project)
+
+*Symptom*: Project has incomplete tasks but none are NEXT.
+
+*Diagnosis*:
+- Run ~M-x org-gtd-show-project-graph~
+- Look for green boxes (NEXT tasks)
+- If no green boxes, check for:
+  - Circular dependencies (arrows forming a loop)
+  - All tasks waiting on incomplete tasks
+  - Missing ORG_GTD_FIRST_TASKS property
+
+*Solution*:
+- Fix circular dependencies: Use ~d~ to remove incorrect dependencies
+- Add root tasks: Use ~a r~ or ~a b~ to create tasks that can start immediately
+- Run ~org-gtd-validate-project-dependencies~ for detailed diagnosis
+
+**** Too Many NEXT Tasks
+
+*Symptom*: Project shows 10+ green boxes in graph view.
+
+*Diagnosis*: Tasks that should be dependent are independent.
+
+*Solution*:
+- In graph view, identify tasks that should depend on others
+- Use ~a~ to add dependencies between tasks
+- Or restructure: tasks later in workflow should be children (~a c~) of earlier tasks
+
+**** Task Won't Advance to NEXT
+
+*Symptom*: Completed a task, but dependent task still shows TODO (gray).
+
+*Diagnosis*:
+- In graph view, select the gray task
+- Press ~i~ to show relationships
+- Check if all blockers are actually DONE
+
+*Solution*:
+- If blockers are DONE but showing as blocking: Press ~r~ to refresh graph
+- If blocker shouldn't block this task: Use ~d~ to remove the dependency
+- If multiple wrong dependencies: Use ~x~ to clear all, rebuild with ~a~
 
 ** View DSL Filter Reference
 :PROPERTIES:

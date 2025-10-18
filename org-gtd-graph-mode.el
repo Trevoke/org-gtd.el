@@ -49,6 +49,8 @@
     ;; Dependency operations
     (define-key map (kbd "a") #'org-gtd-graph-view-add-dependency)
     (define-key map (kbd "d") #'org-gtd-graph-view-remove-dependency)
+    (define-key map (kbd "x") #'org-gtd-graph-view-clear-relationships)
+    (define-key map (kbd "i") #'org-gtd-graph-view-show-relationships)
 
     ;; Dependency-based navigation
     (define-key map (kbd "n") #'org-gtd-graph-nav-down-dependency)
