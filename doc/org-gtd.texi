@@ -3128,22 +3128,26 @@ Here's what different patterns look like in graph view:
 @node Graph View Command Reference
 @subsection Graph View Command Reference
 
-This is the complete command reference for expert users. Press @code{?} in graph view to see the full command menu.
+This is the complete command reference for expert users.
+
+@strong{@strong{Most operations require the transient menu}}: Press @code{?} to access all commands.
 
 @itemize
 @item
 @anchor{Opening Graph View}Opening Graph View
 
 
-@code{M-x org-gtd-graph-view}
+@code{M-x org-gtd-show-project-graph}
 
-@strong{Requires}: Point must be on a project heading (not a task)
+@strong{Requires}: Point must be on a project heading (not a task), or will prompt for project selection
 
 @strong{Creates}: Interactive SVG buffer named @code{*Org GTD Graph: <project-name>*}
 
 @item
-@anchor{Navigation Commands}Navigation Commands
+@anchor{Direct Keybindings (Always Available)}Direct Keybindings (Always Available)
 
+
+@strong{@strong{Navigation:}}
 
 @multitable {aaaaa} {aaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 @headitem Key
@@ -3161,16 +3165,20 @@ This is the complete command reference for expert users. Press @code{?} in graph
 @item g
 @tab Goto node
 @tab Jump to task by name (with completion)
+@item [
+@tab Back
+@tab Navigate to previous node in history
+@item ]
+@tab Forward
+@tab Navigate to next node in history
 @item RET
 @tab Jump to task in org file
 @tab Opens the org file at the task's location
 @end multitable
 
-@item
-@anchor{View and Display Commands}View and Display Commands
+@strong{@strong{View:}}
 
-
-@multitable {aaa} {aaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@multitable {aaa} {aaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 @headitem Key
 @tab Command
 @tab Description
@@ -3183,16 +3191,15 @@ This is the complete command reference for expert users. Press @code{?} in graph
 @item q
 @tab Quit
 @tab Close graph view, keep buffer
-@item Q
-@tab Quit and kill
-@tab Close graph view and kill buffer
 @end multitable
 
 @item
-@anchor{Adding Tasks}Adding Tasks
+@anchor{Transient Menu Commands (Press @code{?} first)}Transient Menu Commands (Press @code{?} first)
 
 
-@multitable {aaa} {aaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@strong{@strong{Add Operations (@code{a} prefix):}}
+
+@multitable {aaa} {aaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 @headitem Key
 @tab Command
 @tab Description
@@ -3205,30 +3212,50 @@ This is the complete command reference for expert users. Press @code{?} in graph
 @item a b
 @tab Add blocker
 @tab Create task that blocks the selected task
+@item a d
+@tab Add dependency
+@tab Add dependency between two tasks (supports convergence)
 @end multitable
 
 @strong{After adding}: Graph automatically refreshes to show new task.
 
-@item
-@anchor{Dependency Operations}Dependency Operations
+@strong{@strong{Modify Operations:}}
 
-
-@multitable {aaa} {aaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@multitable {aaa} {aaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 @headitem Key
 @tab Command
 @tab Description
-@item a
-@tab Add dependency
-@tab Add dependency between two tasks (supports convergence)
 @item d
 @tab Remove dependency
 @tab Remove a dependency between two tasks
 @item x
 @tab Clear all relationships
 @tab Clear all relationships from selected task
+@end multitable
+
+@strong{@strong{Inspect:}}
+
+@multitable {aaa} {aaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Key
+@tab Command
+@tab Description
 @item i
 @tab Show relationships
 @tab Display all relationships for selected task
+@end multitable
+
+@strong{@strong{Other:}}
+
+@multitable {aaa} {aaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Key
+@tab Command
+@tab Description
+@item Q
+@tab Quit and kill
+@tab Close graph view and kill buffer
+@item z
+@tab Zoom
+@tab Zoom/filter submenu (not yet implemented)
 @end multitable
 
 @item
@@ -3286,25 +3313,6 @@ Most users will find the graph view intuitive for dependency management. However
 @end itemize
 
 See @ref{Task Dependency Commands} for details.
-
-@item
-@anchor{Future Commands (Planned)}Future Commands (Planned)
-
-
-@multitable {aaa} {aaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
-@headitem Key
-@tab Command
-@tab Status
-@item z
-@tab Zoom
-@tab Not implemented (filter/focus features)
-@item u
-@tab Undo
-@tab Not implemented (undo last graph change)
-@item C-r
-@tab Redo
-@tab Not implemented (redo undone change)
-@end multitable
 @end itemize
 
 @node Practical Tips for Project Management

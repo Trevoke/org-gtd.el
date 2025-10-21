@@ -1945,17 +1945,21 @@ Here's what different patterns look like in graph view:
 :CUSTOM_ID: graph-view-command-reference
 :END:
 
-This is the complete command reference for expert users. Press ~?~ in graph view to see the full command menu.
+This is the complete command reference for expert users.
+
+**Most operations require the transient menu**: Press ~?~ to access all commands.
 
 **** Opening Graph View
 
-~M-x org-gtd-graph-view~
+~M-x org-gtd-show-project-graph~
 
-*Requires*: Point must be on a project heading (not a task)
+*Requires*: Point must be on a project heading (not a task), or will prompt for project selection
 
 *Creates*: Interactive SVG buffer named ~*Org GTD Graph: <project-name>*~
 
-**** Navigation Commands
+**** Direct Keybindings (Always Available)
+
+**Navigation:**
 
 | Key     | Command                    | Description                                           |
 |---------+----------------------------+-------------------------------------------------------|
@@ -1963,35 +1967,50 @@ This is the complete command reference for expert users. Press ~?~ in graph view
 | p / k   | Up dependency              | Move to a task that blocks this one                   |
 | TAB     | Next sibling               | Next task in same layer (same dependency depth)       |
 | g       | Goto node                  | Jump to task by name (with completion)                |
+| [       | Back                       | Navigate to previous node in history                  |
+| ]       | Forward                    | Navigate to next node in history                      |
 | RET     | Jump to task in org file   | Opens the org file at the task's location             |
 
-**** View and Display Commands
+**View:**
 
 | Key   | Command          | Description                                                  |
 |-------+------------------+--------------------------------------------------------------|
 | ?     | Show menu        | Display transient menu with all commands                     |
 | r     | Refresh          | Rebuild graph (use after external changes)                   |
 | q     | Quit             | Close graph view, keep buffer                                |
-| Q     | Quit and kill    | Close graph view and kill buffer                             |
 
-**** Adding Tasks
+**** Transient Menu Commands (Press ~?~ first)
+
+**Add Operations (~a~ prefix):**
 
 | Key   | Command          | Description                                                  |
 |-------+------------------+--------------------------------------------------------------|
 | a c   | Add child        | Create task that depends on selected task                    |
 | a r   | Add root         | Create task with no dependencies (starts immediately)        |
 | a b   | Add blocker      | Create task that blocks the selected task                    |
+| a d   | Add dependency   | Add dependency between two tasks (supports convergence)      |
 
 *After adding*: Graph automatically refreshes to show new task.
 
-**** Dependency Operations
+**Modify Operations:**
 
 | Key   | Command                    | Description                                              |
 |-------+----------------------------+----------------------------------------------------------|
-| a     | Add dependency             | Add dependency between two tasks (supports convergence)  |
 | d     | Remove dependency          | Remove a dependency between two tasks                    |
 | x     | Clear all relationships    | Clear all relationships from selected task               |
+
+**Inspect:**
+
+| Key   | Command                    | Description                                              |
+|-------+----------------------------+----------------------------------------------------------|
 | i     | Show relationships         | Display all relationships for selected task              |
+
+**Other:**
+
+| Key   | Command          | Description                                                  |
+|-------+------------------+--------------------------------------------------------------|
+| Q     | Quit and kill    | Close graph view and kill buffer                             |
+| z     | Zoom             | Zoom/filter submenu (not yet implemented)                    |
 
 **** Visual Indicators
 
@@ -2024,14 +2043,6 @@ Most users will find the graph view intuitive for dependency management. However
 - ~org-gtd-validate-project-dependencies~ - Validate project structure
 
 See [[#task-dependency-commands][Task Dependency Commands]] for details.
-
-**** Future Commands (Planned)
-
-| Key   | Command          | Status                                                       |
-|-------+------------------+--------------------------------------------------------------|
-| z     | Zoom             | Not implemented (filter/focus features)                      |
-| u     | Undo             | Not implemented (undo last graph change)                     |
-| C-r   | Redo             | Not implemented (redo undone change)                         |
 
 *** Practical Tips for Project Management
 
