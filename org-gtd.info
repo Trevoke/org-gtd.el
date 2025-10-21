@@ -35,7 +35,6 @@ This manual is for Org GTD version 4.0
 * Setting up Org GTD::
 * Getting Started with Org GTD:: Tutorials to get you productive quickly
 * Using Org GTD::                How Org GTD maps to the GTD flow
-* Fix Shoulder Pain::
 * Reference::                    Complete reference for all org-gtd features
 * Troubleshooting::
 
@@ -125,6 +124,7 @@ Using Org GTD
 * The GTD Flow in Depth::        Detailed explanation of each GTD step
 * Understanding GTD Item Types:: When to use each type in the organize menu
 * Working with Projects (Advanced)::
+* Automating through emacs::
 
 Your Daily Workflow
 
@@ -161,24 +161,11 @@ Working with Projects (Advanced)
 * Black Triangle Your First Project Graph View::
 * Understanding Project Dependencies::
 * Tutorial Parallel Tasks with Graph View::
-
-
-Fix Shoulder Pain
-
-* Find place to get MRI::
-* Make MRI appointment::
-* Make orthopedist appointment::
-* Get diagnosis from orthopedist::
-* Automating through emacs::
-
-Get diagnosis from orthopedist
-
 * Tutorial Complex Dependencies with Graph View::
 * Common Dependency Patterns (Visual Reference)::
 * Graph View Command Reference::
 * Practical Tips for Project Management::
 * Troubleshooting Projects with Graph View::
-* Graph View Command Reference: Graph View Command Reference (1).
 * See Also::
 * Cleaning up / archiving completed work::
 * Commands you can call on org-agenda::
@@ -1826,7 +1813,7 @@ handles the complexity - you just do the work.
    • *note Troubleshooting:: - Solutions to common problems
 
 
-File: org-gtd.info,  Node: Using Org GTD,  Next: Fix Shoulder Pain,  Prev: Getting Started with Org GTD,  Up: Top
+File: org-gtd.info,  Node: Using Org GTD,  Next: Reference,  Prev: Getting Started with Org GTD,  Up: Top
 
 5 Using Org GTD
 ***************
@@ -1841,6 +1828,7 @@ want to explore more advanced features.
 * The GTD Flow in Depth::        Detailed explanation of each GTD step
 * Understanding GTD Item Types:: When to use each type in the organize menu
 * Working with Projects (Advanced)::
+* Automating through emacs::
 
 
 File: org-gtd.info,  Node: Your Daily Workflow,  Next: The GTD Flow in Depth,  Up: Using Org GTD
@@ -2506,7 +2494,7 @@ are ready...
           ‘org-gtd-set-area-of-focus’ hook
 
 
-File: org-gtd.info,  Node: Working with Projects (Advanced),  Prev: Understanding GTD Item Types,  Up: Using Org GTD
+File: org-gtd.info,  Node: Working with Projects (Advanced),  Next: Automating through emacs,  Prev: Understanding GTD Item Types,  Up: Using Org GTD
 
 5.4 Working with Projects (Advanced)
 ====================================
@@ -2522,6 +2510,16 @@ structures—all using visual project management.
 * Black Triangle Your First Project Graph View::
 * Understanding Project Dependencies::
 * Tutorial Parallel Tasks with Graph View::
+* Tutorial Complex Dependencies with Graph View::
+* Common Dependency Patterns (Visual Reference)::
+* Graph View Command Reference::
+* Practical Tips for Project Management::
+* Troubleshooting Projects with Graph View::
+* See Also::
+* Cleaning up / archiving completed work::
+* Commands you can call on org-agenda::
+* Defining your own agenda views::
+* Adding your own hooks when organizing::
 
 
 File: org-gtd.info,  Node: First Contact Why Visual Project Management?,  Next: Black Triangle Your First Project Graph View,  Up: Working with Projects (Advanced)
@@ -2649,7 +2647,7 @@ visually.
      at join points.
 
 
-File: org-gtd.info,  Node: Tutorial Parallel Tasks with Graph View,  Prev: Understanding Project Dependencies,  Up: Working with Projects (Advanced)
+File: org-gtd.info,  Node: Tutorial Parallel Tasks with Graph View,  Next: Tutorial Complex Dependencies with Graph View,  Prev: Understanding Project Dependencies,  Up: Working with Projects (Advanced)
 
 5.4.4 Tutorial: Parallel Tasks with Graph View
 ----------------------------------------------
@@ -2672,65 +2670,15 @@ Let's build a project where some tasks happen simultaneously.
 
      Capture the project: ‘C-c d c’
 
-     #+begin_example
+          * Fix Shoulder Pain
+          ** Find place to get MRI
+          ** Make MRI appointment
+          ** Make orthopedist appointment
+          ** Get diagnosis from orthopedist
 
-
-File: org-gtd.info,  Node: Fix Shoulder Pain,  Next: Reference,  Prev: Using Org GTD,  Up: Top
+     Process the inbox: ‘C-c d p’
 
-6 Fix Shoulder Pain
-*******************
-
-* Menu:
-
-* Find place to get MRI::
-* Make MRI appointment::
-* Make orthopedist appointment::
-* Get diagnosis from orthopedist::
-* Automating through emacs::
-
-
-File: org-gtd.info,  Node: Find place to get MRI,  Next: Make MRI appointment,  Up: Fix Shoulder Pain
-
-6.1 Find place to get MRI
-=========================
-
-
-File: org-gtd.info,  Node: Make MRI appointment,  Next: Make orthopedist appointment,  Prev: Find place to get MRI,  Up: Fix Shoulder Pain
-
-6.2 Make MRI appointment
-========================
-
-
-File: org-gtd.info,  Node: Make orthopedist appointment,  Next: Get diagnosis from orthopedist,  Prev: Make MRI appointment,  Up: Fix Shoulder Pain
-
-6.3 Make orthopedist appointment
-================================
-
-
-File: org-gtd.info,  Node: Get diagnosis from orthopedist,  Next: Automating through emacs,  Prev: Make orthopedist appointment,  Up: Fix Shoulder Pain
-
-6.4 Get diagnosis from orthopedist
-==================================
-
-#+end_example
-
-   Process the inbox: ‘C-c d p’
-
-   Organize as a project: ‘C-c c’ → ‘[P]’
-
-* Menu:
-
-* Tutorial Complex Dependencies with Graph View::
-* Common Dependency Patterns (Visual Reference)::
-* Graph View Command Reference::
-* Practical Tips for Project Management::
-* Troubleshooting Projects with Graph View::
-* Graph View Command Reference: Graph View Command Reference (1).
-* See Also::
-* Cleaning up / archiving completed work::
-* Commands you can call on org-agenda::
-* Defining your own agenda views::
-* Adding your own hooks when organizing::
+     Organize as a project: ‘C-c c’ → ‘[P]’
 
    • Step 2: Open Graph View
 
@@ -2833,9 +2781,9 @@ File: org-gtd.info,  Node: Get diagnosis from orthopedist,  Next: Automating thr
              • Wait for "modify dependency" commands to be implemented
 
 
-File: org-gtd.info,  Node: Tutorial Complex Dependencies with Graph View,  Next: Common Dependency Patterns (Visual Reference),  Up: Get diagnosis from orthopedist
+File: org-gtd.info,  Node: Tutorial Complex Dependencies with Graph View,  Next: Common Dependency Patterns (Visual Reference),  Prev: Tutorial Parallel Tasks with Graph View,  Up: Working with Projects (Advanced)
 
-6.4.1 Tutorial: Complex Dependencies with Graph View
+5.4.5 Tutorial: Complex Dependencies with Graph View
 ----------------------------------------------------
 
    • The Scenario
@@ -2894,9 +2842,9 @@ File: org-gtd.info,  Node: Tutorial Complex Dependencies with Graph View,  Next:
        4. *Final convergence* at Release (we CANNOT do this yet)
 
 
-File: org-gtd.info,  Node: Common Dependency Patterns (Visual Reference),  Next: Graph View Command Reference,  Prev: Tutorial Complex Dependencies with Graph View,  Up: Get diagnosis from orthopedist
+File: org-gtd.info,  Node: Common Dependency Patterns (Visual Reference),  Next: Graph View Command Reference,  Prev: Tutorial Complex Dependencies with Graph View,  Up: Working with Projects (Advanced)
 
-6.4.2 Common Dependency Patterns (Visual Reference)
+5.4.6 Common Dependency Patterns (Visual Reference)
 ---------------------------------------------------
 
 Here's what different patterns look like in graph view:
@@ -2976,10 +2924,13 @@ Here's what different patterns look like in graph view:
      article
 
 
-File: org-gtd.info,  Node: Graph View Command Reference,  Next: Practical Tips for Project Management,  Prev: Common Dependency Patterns (Visual Reference),  Up: Get diagnosis from orthopedist
+File: org-gtd.info,  Node: Graph View Command Reference,  Next: Practical Tips for Project Management,  Prev: Common Dependency Patterns (Visual Reference),  Up: Working with Projects (Advanced)
 
-6.4.3 Graph View Command Reference
+5.4.7 Graph View Command Reference
 ----------------------------------
+
+This is the complete command reference for expert users.  Press ‘?’ in
+graph view to see the full command menu.
 
    • Opening Graph View
 
@@ -3000,6 +2951,15 @@ File: org-gtd.info,  Node: Graph View Command Reference,  Next: Practical Tips f
      g       Goto node                  Jump to task by name (with completion)
      RET     Jump to task in org file   Opens the org file at the task's location
 
+   • View and Display Commands
+
+     Key   Command         Description
+     -------------------------------------------------------------------
+     ?     Show menu       Display transient menu with all commands
+     r     Refresh         Rebuild graph (use after external changes)
+     q     Quit            Close graph view, keep buffer
+     Q     Quit and kill   Close graph view and kill buffer
+
    • Adding Tasks
 
      Key   Command       Description
@@ -3010,14 +2970,55 @@ File: org-gtd.info,  Node: Graph View Command Reference,  Next: Practical Tips f
 
      *After adding*: Graph automatically refreshes to show new task.
 
-   • View Commands
+   • Dependency Operations
 
-     Key   Command         Description
-     -------------------------------------------------------------------
-     ?     Show menu       Display transient menu with all commands
-     r     Refresh         Rebuild graph (use after external changes)
-     q     Quit            Close graph view, keep buffer
-     Q     Quit and kill   Close graph view and kill buffer
+     Key   Command                   Description
+     ------------------------------------------------------------------------------------------
+     a     Add dependency            Add dependency between two tasks (supports convergence)
+     d     Remove dependency         Remove a dependency between two tasks
+     x     Clear all relationships   Clear all relationships from selected task
+     i     Show relationships        Display all relationships for selected task
+
+   • Visual Indicators
+
+        • *Green boxes*: NEXT tasks (ready to work on)
+        • *Gray boxes*: TODO tasks (blocked by dependencies)
+        • *Arrows*: Dependencies (from blocker → blocked task)
+        • *Layers*: Vertical positioning shows dependency depth
+
+   • Operations Not Available in Graph View
+
+     Some operations are standard org-mode functionality and must be
+     done in the org file:
+
+     *Changing task properties*:
+        • TODO state: ‘C-c C-t’ in org file
+        • Deadlines/schedules: ‘C-c C-d’, ‘C-c C-s’ in org file
+        • Task title/description: edit in org file
+        • Tags/properties: edit in org file
+
+     *Deleting tasks*: Mark task DONE or CNCL in the org file.
+     Completed tasks still show in graph view (green boxes) to maintain
+     project history.
+
+     *Access org file*: Press ‘RET’ on any task in graph view to jump to
+     it in the org file.
+
+   • Text-Based Alternatives
+
+     Most users will find the graph view intuitive for dependency
+     management.  However, text-based task management commands are
+     available:
+
+        • ‘org-gtd-task-add-blockers’ - Add blockers via text interface
+        • ‘org-gtd-task-remove-blockers’ - Remove blockers via text
+          interface
+        • ‘org-gtd-task-show-relationships’ - Display relationships in
+          minibuffer
+        • ‘org-gtd-validate-project-dependencies’ - Validate project
+          structure
+
+     See *note Task Dependency Commands:: for details.
 
    • Future Commands (Planned)
 
@@ -3027,17 +3028,10 @@ File: org-gtd.info,  Node: Graph View Command Reference,  Next: Practical Tips f
      u     Undo      Not implemented (undo last graph change)
      C-r   Redo      Not implemented (redo undone change)
 
-   • Visual Indicators
-
-        • *Green boxes*: NEXT tasks (ready to work on)
-        • *Gray boxes*: TODO tasks (blocked by dependencies)
-        • *Arrows*: Dependencies (from blocker → blocked task)
-        • *Layers*: Vertical positioning shows dependency depth
-
 
-File: org-gtd.info,  Node: Practical Tips for Project Management,  Next: Troubleshooting Projects with Graph View,  Prev: Graph View Command Reference,  Up: Get diagnosis from orthopedist
+File: org-gtd.info,  Node: Practical Tips for Project Management,  Next: Troubleshooting Projects with Graph View,  Prev: Graph View Command Reference,  Up: Working with Projects (Advanced)
 
-6.4.4 Practical Tips for Project Management
+5.4.8 Practical Tips for Project Management
 -------------------------------------------
 
    • When to Use Graph View
@@ -3093,9 +3087,9 @@ File: org-gtd.info,  Node: Practical Tips for Project Management,  Next: Trouble
      After adding, press ‘r’ to refresh the view.
 
 
-File: org-gtd.info,  Node: Troubleshooting Projects with Graph View,  Next: Graph View Command Reference (1),  Prev: Practical Tips for Project Management,  Up: Get diagnosis from orthopedist
+File: org-gtd.info,  Node: Troubleshooting Projects with Graph View,  Next: See Also,  Prev: Practical Tips for Project Management,  Up: Working with Projects (Advanced)
 
-6.4.5 Troubleshooting Projects with Graph View
+5.4.9 Troubleshooting Projects with Graph View
 ----------------------------------------------
 
    • Project is Stuck (has TODO tasks but no NEXT)
@@ -3147,70 +3141,10 @@ File: org-gtd.info,  Node: Troubleshooting Projects with Graph View,  Next: Grap
           (‘a c’) of earlier tasks
 
 
-File: org-gtd.info,  Node: Graph View Command Reference (1),  Next: See Also,  Prev: Troubleshooting Projects with Graph View,  Up: Get diagnosis from orthopedist
+File: org-gtd.info,  Node: See Also,  Next: Cleaning up / archiving completed work,  Prev: Troubleshooting Projects with Graph View,  Up: Working with Projects (Advanced)
 
-6.4.6 Graph View Command Reference
-----------------------------------
-
-The graph view supports comprehensive dependency management through
-keyboard commands.  Press ‘?’ in graph view to see the full command
-menu.
-
-   • Dependency Operations
-
-     *Available commands*:
-        • ‘a’: Add dependency between two tasks (supports
-          convergence/diamond patterns)
-        • ‘d’: Remove a dependency between two tasks
-        • ‘x’: Clear all relationships from selected task
-        • ‘i’: Show all relationships for selected task
-
-   • Adding Tasks
-
-     *Available commands*:
-        • ‘a c’: Add child task (depends on current task)
-        • ‘a r’: Add root task (no dependencies)
-        • ‘a b’: Add blocker task (blocks current task and becomes root)
-
-   • Operations Not in Graph View
-
-     Some operations are standard org-mode functionality, not
-     graph-specific:
-
-     *Changing task properties*:
-        • TODO state (‘C-c C-t’ in org file)
-        • Deadlines/schedules (‘C-c C-d’, ‘C-c C-s’ in org file)
-        • Task title/description (edit in org file)
-        • Tags/properties (edit in org file)
-
-     *Access org file*: Press ‘RET’ on any task in graph view to jump to
-     it in the org file.
-
-     *Deleting tasks*: Mark task DONE or CNCL in the org file.
-     Completed tasks still show in graph view (as green boxes) to
-     maintain project history.
-
-   • When to Use Text-Based Commands
-
-     Most users will find the graph view intuitive for dependency
-     management.  However, text-based task management commands are
-     available:
-
-        • ‘org-gtd-task-add-blockers’ - Add blockers via text interface
-        • ‘org-gtd-task-remove-blockers’ - Remove blockers via text
-          interface
-        • ‘org-gtd-task-show-relationships’ - Display relationships in
-          minibuffer
-        • ‘org-gtd-validate-project-dependencies’ - Validate project
-          structure
-
-     See *note Task Dependency Commands:: for details.
-
-
-File: org-gtd.info,  Node: See Also,  Next: Cleaning up / archiving completed work,  Prev: Graph View Command Reference (1),  Up: Get diagnosis from orthopedist
-
-6.4.7 See Also
---------------
+5.4.10 See Also
+---------------
 
    • *note Tutorial Your First Project:: for sequential project basics
    • *note Properties Reference: Properties Reference (Internal
@@ -3220,10 +3154,10 @@ File: org-gtd.info,  Node: See Also,  Next: Cleaning up / archiving completed wo
    • *note View DSL Filter Reference:: for creating custom project views
 
 
-File: org-gtd.info,  Node: Cleaning up / archiving completed work,  Next: Commands you can call on org-agenda,  Prev: See Also,  Up: Get diagnosis from orthopedist
+File: org-gtd.info,  Node: Cleaning up / archiving completed work,  Next: Commands you can call on org-agenda,  Prev: See Also,  Up: Working with Projects (Advanced)
 
-6.4.8 Cleaning up / archiving completed work
---------------------------------------------
+5.4.11 Cleaning up / archiving completed work
+---------------------------------------------
 
 Doing this without user intervention is tricky, as it makes undoing
 actions more complicated.  As such, Org GTD provides a function that
@@ -3239,10 +3173,10 @@ a function in order to allow the filename to be dynamic.
 org-gtd-archive-completed-items’.
 
 
-File: org-gtd.info,  Node: Commands you can call on org-agenda,  Next: Defining your own agenda views,  Prev: Cleaning up / archiving completed work,  Up: Get diagnosis from orthopedist
+File: org-gtd.info,  Node: Commands you can call on org-agenda,  Next: Defining your own agenda views,  Prev: Cleaning up / archiving completed work,  Up: Working with Projects (Advanced)
 
-6.4.9 Commands you can call on org-agenda
------------------------------------------
+5.4.12 Commands you can call on org-agenda
+------------------------------------------
 
 Since Org provides the agenda, it is a convenient base of operations for
 interacting with things that come up through ‘org-gtd-engage’.
@@ -3260,9 +3194,9 @@ interacting with things that come up through ‘org-gtd-engage’.
      agenda view, for whatever reason, this is your entry point.
 
 
-File: org-gtd.info,  Node: Defining your own agenda views,  Next: Adding your own hooks when organizing,  Prev: Commands you can call on org-agenda,  Up: Get diagnosis from orthopedist
+File: org-gtd.info,  Node: Defining your own agenda views,  Next: Adding your own hooks when organizing,  Prev: Commands you can call on org-agenda,  Up: Working with Projects (Advanced)
 
-6.4.10 Defining your own agenda views
+5.4.13 Defining your own agenda views
 -------------------------------------
 
 You can define your own agenda views by defining your own functions like
@@ -3278,9 +3212,9 @@ View DSL Filter Reference::, which provides a declarative language for
 defining views without writing skip functions.
 
 
-File: org-gtd.info,  Node: Adding your own hooks when organizing,  Prev: Defining your own agenda views,  Up: Get diagnosis from orthopedist
+File: org-gtd.info,  Node: Adding your own hooks when organizing,  Prev: Defining your own agenda views,  Up: Working with Projects (Advanced)
 
-6.4.11 Adding your own hooks when organizing
+5.4.14 Adding your own hooks when organizing
 --------------------------------------------
 
 Adding useful metadata to the tasks allows you to enhance the agenda
@@ -3308,9 +3242,9 @@ including many examples and best practices, see *note Hooks Framework
 Reference::.
 
 
-File: org-gtd.info,  Node: Automating through emacs,  Prev: Get diagnosis from orthopedist,  Up: Fix Shoulder Pain
+File: org-gtd.info,  Node: Automating through emacs,  Prev: Working with Projects (Advanced),  Up: Using Org GTD
 
-6.5 Automating through emacs
+5.5 Automating through emacs
 ============================
 
 There's now a few functions you can use when you are doing work within
@@ -3341,9 +3275,9 @@ org heading that gets stored in org-gtd.
 all programmatic creation commands.
 
 
-File: org-gtd.info,  Node: Reference,  Next: Troubleshooting,  Prev: Fix Shoulder Pain,  Up: Top
+File: org-gtd.info,  Node: Reference,  Next: Troubleshooting,  Prev: Using Org GTD,  Up: Top
 
-7 Reference
+6 Reference
 ***********
 
 This section provides complete reference documentation for all org-gtd
@@ -3378,7 +3312,7 @@ with Org GTD:: and *note Using Org GTD::.
 
 File: org-gtd.info,  Node: Configuration Variables Reference,  Next: Commands Reference,  Up: Reference
 
-7.1 Configuration Variables Reference
+6.1 Configuration Variables Reference
 =====================================
 
 These variables control how org-gtd behaves.  All can be customized via
@@ -3402,7 +3336,7 @@ These variables control how org-gtd behaves.  All can be customized via
 
 File: org-gtd.info,  Node: Required Configuration,  Next: Directory and File Configuration,  Up: Configuration Variables Reference
 
-7.1.1 Required Configuration
+6.1.1 Required Configuration
 ----------------------------
 
    • ‘org-todo-keywords’ (org-mode variable)
@@ -3457,7 +3391,7 @@ File: org-gtd.info,  Node: Required Configuration,  Next: Directory and File Con
 
 File: org-gtd.info,  Node: Directory and File Configuration,  Next: Capture Configuration,  Prev: Required Configuration,  Up: Configuration Variables Reference
 
-7.1.2 Directory and File Configuration
+6.1.2 Directory and File Configuration
 --------------------------------------
 
    • ‘org-gtd-directory’
@@ -3497,7 +3431,7 @@ File: org-gtd.info,  Node: Directory and File Configuration,  Next: Capture Conf
 
 File: org-gtd.info,  Node: Capture Configuration,  Next: Organize and Process Configuration,  Prev: Directory and File Configuration,  Up: Configuration Variables Reference
 
-7.1.3 Capture Configuration
+6.1.3 Capture Configuration
 ---------------------------
 
    • ‘org-gtd-capture-templates’
@@ -3535,7 +3469,7 @@ File: org-gtd.info,  Node: Capture Configuration,  Next: Organize and Process Co
 
 File: org-gtd.info,  Node: Organize and Process Configuration,  Next: Clarification Configuration,  Prev: Capture Configuration,  Up: Configuration Variables Reference
 
-7.1.4 Organize and Process Configuration
+6.1.4 Organize and Process Configuration
 ----------------------------------------
 
    • ‘org-gtd-organize-hooks’
@@ -3638,7 +3572,7 @@ File: org-gtd.info,  Node: Organize and Process Configuration,  Next: Clarificat
 
 File: org-gtd.info,  Node: Clarification Configuration,  Next: Areas of Focus Configuration,  Prev: Organize and Process Configuration,  Up: Configuration Variables Reference
 
-7.1.5 Clarification Configuration
+6.1.5 Clarification Configuration
 ---------------------------------
 
    • ‘org-gtd-clarify-show-horizons’
@@ -3710,7 +3644,7 @@ File: org-gtd.info,  Node: Clarification Configuration,  Next: Areas of Focus Co
 
 File: org-gtd.info,  Node: Areas of Focus Configuration,  Next: Engage View Configuration,  Prev: Clarification Configuration,  Up: Configuration Variables Reference
 
-7.1.6 Areas of Focus Configuration
+6.1.6 Areas of Focus Configuration
 ----------------------------------
 
    • ‘org-gtd-areas-of-focus’
@@ -3734,7 +3668,7 @@ File: org-gtd.info,  Node: Areas of Focus Configuration,  Next: Engage View Conf
 
 File: org-gtd.info,  Node: Engage View Configuration,  Next: Archive Configuration,  Prev: Areas of Focus Configuration,  Up: Configuration Variables Reference
 
-7.1.7 Engage View Configuration
+6.1.7 Engage View Configuration
 -------------------------------
 
    • ‘org-gtd-engage-prefix-width’
@@ -3754,7 +3688,7 @@ File: org-gtd.info,  Node: Engage View Configuration,  Next: Archive Configurati
 
 File: org-gtd.info,  Node: Archive Configuration,  Next: Oops View Configuration,  Prev: Engage View Configuration,  Up: Configuration Variables Reference
 
-7.1.8 Archive Configuration
+6.1.8 Archive Configuration
 ---------------------------
 
    • ‘org-gtd-archive-location’
@@ -3789,7 +3723,7 @@ File: org-gtd.info,  Node: Archive Configuration,  Next: Oops View Configuration
 
 File: org-gtd.info,  Node: Oops View Configuration,  Next: ID Overlay Configuration,  Prev: Archive Configuration,  Up: Configuration Variables Reference
 
-7.1.9 Oops View Configuration
+6.1.9 Oops View Configuration
 -----------------------------
 
    • ‘org-gtd-oops-custom-views’
@@ -3819,7 +3753,7 @@ File: org-gtd.info,  Node: Oops View Configuration,  Next: ID Overlay Configurat
 
 File: org-gtd.info,  Node: ID Overlay Configuration,  Next: Advanced Item Configuration,  Prev: Oops View Configuration,  Up: Configuration Variables Reference
 
-7.1.10 ID Overlay Configuration
+6.1.10 ID Overlay Configuration
 -------------------------------
 
    • ‘org-gtd-id-overlay-truncate-length’
@@ -3852,7 +3786,7 @@ File: org-gtd.info,  Node: ID Overlay Configuration,  Next: Advanced Item Config
 
 File: org-gtd.info,  Node: Advanced Item Configuration,  Next: Obsolete Variables (Do Not Use),  Prev: ID Overlay Configuration,  Up: Configuration Variables Reference
 
-7.1.11 Advanced Item Configuration
+6.1.11 Advanced Item Configuration
 ----------------------------------
 
    • ‘org-gtd-user-item-config’
@@ -3872,7 +3806,7 @@ File: org-gtd.info,  Node: Advanced Item Configuration,  Next: Obsolete Variable
 
 File: org-gtd.info,  Node: Obsolete Variables (Do Not Use),  Prev: Advanced Item Configuration,  Up: Configuration Variables Reference
 
-7.1.12 Obsolete Variables (Do Not Use)
+6.1.12 Obsolete Variables (Do Not Use)
 --------------------------------------
 
 These variables are obsolete as of version 4.0.  They are listed here
@@ -3897,7 +3831,7 @@ for reference only.
 
 File: org-gtd.info,  Node: Commands Reference,  Next: Properties Reference (Internal Implementation),  Prev: Configuration Variables Reference,  Up: Reference
 
-7.2 Commands Reference
+6.2 Commands Reference
 ======================
 
 This section lists all interactive commands available in org-gtd,
@@ -3924,7 +3858,7 @@ organized by workflow step.
 
 File: org-gtd.info,  Node: Core GTD Workflow Commands,  Next: Review Commands,  Up: Commands Reference
 
-7.2.1 Core GTD Workflow Commands
+6.2.1 Core GTD Workflow Commands
 --------------------------------
 
    • ‘org-gtd-capture’
@@ -4033,7 +3967,7 @@ File: org-gtd.info,  Node: Core GTD Workflow Commands,  Next: Review Commands,  
 
 File: org-gtd.info,  Node: Review Commands,  Next: Stuck Item Review Commands,  Prev: Core GTD Workflow Commands,  Up: Commands Reference
 
-7.2.2 Review Commands
+6.2.2 Review Commands
 ---------------------
 
    • ‘org-gtd-review-stuck-projects’
@@ -4106,7 +4040,7 @@ File: org-gtd.info,  Node: Review Commands,  Next: Stuck Item Review Commands,  
 
 File: org-gtd.info,  Node: Stuck Item Review Commands,  Next: Oops Commands (Missed/Overdue Items),  Prev: Review Commands,  Up: Commands Reference
 
-7.2.3 Stuck Item Review Commands
+6.2.3 Stuck Item Review Commands
 --------------------------------
 
 Each of these commands finds items with problems in a specific category:
@@ -4134,7 +4068,7 @@ Each of these commands finds items with problems in a specific category:
 
 File: org-gtd.info,  Node: Oops Commands (Missed/Overdue Items),  Next: Clarification Commands,  Prev: Stuck Item Review Commands,  Up: Commands Reference
 
-7.2.4 Oops Commands (Missed/Overdue Items)
+6.2.4 Oops Commands (Missed/Overdue Items)
 ------------------------------------------
 
    • ‘org-gtd-oops’
@@ -4167,7 +4101,7 @@ File: org-gtd.info,  Node: Oops Commands (Missed/Overdue Items),  Next: Clarific
 
 File: org-gtd.info,  Node: Clarification Commands,  Next: Archive Commands,  Prev: Oops Commands (Missed/Overdue Items),  Up: Commands Reference
 
-7.2.5 Clarification Commands
+6.2.5 Clarification Commands
 ----------------------------
 
    • ‘org-gtd-clarify-item’
@@ -4215,7 +4149,7 @@ File: org-gtd.info,  Node: Clarification Commands,  Next: Archive Commands,  Pre
 
 File: org-gtd.info,  Node: Archive Commands,  Next: Agenda-Specific Commands,  Prev: Clarification Commands,  Up: Commands Reference
 
-7.2.6 Archive Commands
+6.2.6 Archive Commands
 ----------------------
 
    • ‘org-gtd-archive-completed-items’
@@ -4236,7 +4170,7 @@ File: org-gtd.info,  Node: Archive Commands,  Next: Agenda-Specific Commands,  P
 
 File: org-gtd.info,  Node: Agenda-Specific Commands,  Next: Project Management Commands,  Prev: Archive Commands,  Up: Commands Reference
 
-7.2.7 Agenda-Specific Commands
+6.2.7 Agenda-Specific Commands
 ------------------------------
 
 These commands only work when point is on an agenda item:
@@ -4265,7 +4199,7 @@ These commands only work when point is on an agenda item:
 
 File: org-gtd.info,  Node: Project Management Commands,  Next: Task Dependency Commands,  Prev: Agenda-Specific Commands,  Up: Commands Reference
 
-7.2.8 Project Management Commands
+6.2.8 Project Management Commands
 ---------------------------------
 
    • ‘org-gtd-projects-fix-todo-keywords-for-project-at-point’
@@ -4288,7 +4222,7 @@ File: org-gtd.info,  Node: Project Management Commands,  Next: Task Dependency C
 
 File: org-gtd.info,  Node: Task Dependency Commands,  Next: Area of Focus Commands,  Prev: Project Management Commands,  Up: Commands Reference
 
-7.2.9 Task Dependency Commands
+6.2.9 Task Dependency Commands
 ------------------------------
 
 These text-based commands manage task relationships without using the
@@ -4408,7 +4342,7 @@ graph view.  Most users will find the graph view more intuitive (press
 
 File: org-gtd.info,  Node: Area of Focus Commands,  Next: Programmatic Creation Commands,  Prev: Task Dependency Commands,  Up: Commands Reference
 
-7.2.10 Area of Focus Commands
+6.2.10 Area of Focus Commands
 -----------------------------
 
    • ‘org-gtd-area-of-focus-set-on-item-at-point’
@@ -4436,7 +4370,7 @@ File: org-gtd.info,  Node: Area of Focus Commands,  Next: Programmatic Creation 
 
 File: org-gtd.info,  Node: Programmatic Creation Commands,  Next: Utility Commands,  Prev: Area of Focus Commands,  Up: Commands Reference
 
-7.2.11 Programmatic Creation Commands
+6.2.11 Programmatic Creation Commands
 -------------------------------------
 
 These commands create GTD items programmatically (useful for automation
@@ -4498,7 +4432,7 @@ and Emacs Lisp code):
 
 File: org-gtd.info,  Node: Utility Commands,  Next: ID Overlay Commands,  Prev: Programmatic Creation Commands,  Up: Commands Reference
 
-7.2.12 Utility Commands
+6.2.12 Utility Commands
 -----------------------
 
    • ‘org-gtd-setup-keywords-wizard’
@@ -4527,7 +4461,7 @@ File: org-gtd.info,  Node: Utility Commands,  Next: ID Overlay Commands,  Prev: 
 
 File: org-gtd.info,  Node: ID Overlay Commands,  Next: Migration and Upgrade Commands,  Prev: Utility Commands,  Up: Commands Reference
 
-7.2.13 ID Overlay Commands
+6.2.13 ID Overlay Commands
 --------------------------
 
    • ‘org-gtd-id-overlay-mode’
@@ -4561,7 +4495,7 @@ File: org-gtd.info,  Node: ID Overlay Commands,  Next: Migration and Upgrade Com
 
 File: org-gtd.info,  Node: Migration and Upgrade Commands,  Next: Obsolete Commands,  Prev: ID Overlay Commands,  Up: Commands Reference
 
-7.2.14 Migration and Upgrade Commands
+6.2.14 Migration and Upgrade Commands
 -------------------------------------
 
    • ‘org-gtd-upgrade-v3-to-v4’
@@ -4582,7 +4516,7 @@ File: org-gtd.info,  Node: Migration and Upgrade Commands,  Next: Obsolete Comma
 
 File: org-gtd.info,  Node: Obsolete Commands,  Prev: Migration and Upgrade Commands,  Up: Commands Reference
 
-7.2.15 Obsolete Commands
+6.2.15 Obsolete Commands
 ------------------------
 
    • ‘org-gtd-mode’ (obsolete since 4.0)
@@ -4597,7 +4531,7 @@ File: org-gtd.info,  Node: Obsolete Commands,  Prev: Migration and Upgrade Comma
 
 File: org-gtd.info,  Node: Properties Reference (Internal Implementation),  Next: Troubleshooting Projects,  Prev: Commands Reference,  Up: Reference
 
-7.3 Properties Reference (Internal Implementation)
+6.3 Properties Reference (Internal Implementation)
 ==================================================
 
 *For most users*: You don't need to read this section!  Use the graph
@@ -4630,7 +4564,7 @@ missing feature - please file an issue!
 
 File: org-gtd.info,  Node: Core GTD Properties,  Next: Project Properties,  Up: Properties Reference (Internal Implementation)
 
-7.3.1 Core GTD Properties
+6.3.1 Core GTD Properties
 -------------------------
 
    • ORG_GTD
@@ -4715,7 +4649,7 @@ File: org-gtd.info,  Node: Core GTD Properties,  Next: Project Properties,  Up: 
 
 File: org-gtd.info,  Node: Project Properties,  Next: Task Dependency Properties,  Prev: Core GTD Properties,  Up: Properties Reference (Internal Implementation)
 
-7.3.2 Project Properties
+6.3.2 Project Properties
 ------------------------
 
    • ORG_GTD_FIRST_TASKS
@@ -4749,7 +4683,7 @@ File: org-gtd.info,  Node: Project Properties,  Next: Task Dependency Properties
 
 File: org-gtd.info,  Node: Task Dependency Properties,  Next: Calendar and Time Properties,  Prev: Project Properties,  Up: Properties Reference (Internal Implementation)
 
-7.3.3 Task Dependency Properties
+6.3.3 Task Dependency Properties
 --------------------------------
 
    • ORG_GTD_DEPENDS_ON
@@ -4843,7 +4777,7 @@ File: org-gtd.info,  Node: Task Dependency Properties,  Next: Calendar and Time 
 
 File: org-gtd.info,  Node: Calendar and Time Properties,  Next: Delegation Properties,  Prev: Task Dependency Properties,  Up: Properties Reference (Internal Implementation)
 
-7.3.4 Calendar and Time Properties
+6.3.4 Calendar and Time Properties
 ----------------------------------
 
    • ORG_GTD_TIMESTAMP
@@ -4877,7 +4811,7 @@ File: org-gtd.info,  Node: Calendar and Time Properties,  Next: Delegation Prope
 
 File: org-gtd.info,  Node: Delegation Properties,  Next: Habit Properties,  Prev: Calendar and Time Properties,  Up: Properties Reference (Internal Implementation)
 
-7.3.5 Delegation Properties
+6.3.5 Delegation Properties
 ---------------------------
 
    • DELEGATED_TO
@@ -4911,7 +4845,7 @@ File: org-gtd.info,  Node: Delegation Properties,  Next: Habit Properties,  Prev
 
 File: org-gtd.info,  Node: Habit Properties,  Next: Area of Focus Properties,  Prev: Delegation Properties,  Up: Properties Reference (Internal Implementation)
 
-7.3.6 Habit Properties
+6.3.6 Habit Properties
 ----------------------
 
    • STYLE
@@ -4935,7 +4869,7 @@ File: org-gtd.info,  Node: Habit Properties,  Next: Area of Focus Properties,  P
 
 File: org-gtd.info,  Node: Area of Focus Properties,  Next: Standard Org Properties Used by org-gtd,  Prev: Habit Properties,  Up: Properties Reference (Internal Implementation)
 
-7.3.7 Area of Focus Properties
+6.3.7 Area of Focus Properties
 ------------------------------
 
    • CATEGORY
@@ -4966,7 +4900,7 @@ File: org-gtd.info,  Node: Area of Focus Properties,  Next: Standard Org Propert
 
 File: org-gtd.info,  Node: Standard Org Properties Used by org-gtd,  Prev: Area of Focus Properties,  Up: Properties Reference (Internal Implementation)
 
-7.3.8 Standard Org Properties Used by org-gtd
+6.3.8 Standard Org Properties Used by org-gtd
 ---------------------------------------------
 
    • ID
@@ -5016,7 +4950,7 @@ File: org-gtd.info,  Node: Standard Org Properties Used by org-gtd,  Prev: Area 
 
 File: org-gtd.info,  Node: Troubleshooting Projects,  Next: View DSL Filter Reference,  Prev: Properties Reference (Internal Implementation),  Up: Reference
 
-7.4 Troubleshooting Projects
+6.4 Troubleshooting Projects
 ============================
 
 This section covers how to fix problems with project dependencies.
@@ -5034,7 +4968,7 @@ file an issue!
 
 File: org-gtd.info,  Node: Fixing Broken Dependencies,  Next: When Manual Property Editing is Needed,  Up: Troubleshooting Projects
 
-7.4.1 Fixing Broken Dependencies
+6.4.1 Fixing Broken Dependencies
 --------------------------------
 
 If you encounter dependency problems (circular dependencies, broken
@@ -5067,7 +5001,7 @@ references, orphaned tasks):
 
 File: org-gtd.info,  Node: When Manual Property Editing is Needed,  Next: Common Problems and Solutions,  Prev: Fixing Broken Dependencies,  Up: Troubleshooting Projects
 
-7.4.2 When Manual Property Editing is Needed
+6.4.2 When Manual Property Editing is Needed
 --------------------------------------------
 
 **You should never need to manually edit properties during normal use.**
@@ -5105,7 +5039,7 @@ workflow - we'll add the missing commands!
 
 File: org-gtd.info,  Node: Common Problems and Solutions,  Prev: When Manual Property Editing is Needed,  Up: Troubleshooting Projects
 
-7.4.3 Common Problems and Solutions
+6.4.3 Common Problems and Solutions
 -----------------------------------
 
    • Project Shows No NEXT Tasks (Stuck Project)
@@ -5161,7 +5095,7 @@ File: org-gtd.info,  Node: Common Problems and Solutions,  Prev: When Manual Pro
 
 File: org-gtd.info,  Node: View DSL Filter Reference,  Next: Hooks Framework Reference,  Prev: Troubleshooting Projects,  Up: Reference
 
-7.5 View DSL Filter Reference
+6.5 View DSL Filter Reference
 =============================
 
 The View DSL (Domain-Specific Language) lets you create custom agenda
@@ -5186,7 +5120,7 @@ available filters.
 
 File: org-gtd.info,  Node: View Structure,  Next: Category Filters,  Up: View DSL Filter Reference
 
-7.5.1 View Structure
+6.5.1 View Structure
 --------------------
 
 A GTD view is defined as an alist:
@@ -5199,7 +5133,7 @@ A GTD view is defined as an alist:
 
 File: org-gtd.info,  Node: Category Filters,  Next: Time-based Filters,  Prev: View Structure,  Up: View DSL Filter Reference
 
-7.5.2 Category Filters
+6.5.2 Category Filters
 ----------------------
 
 Filter by GTD item category:
@@ -5288,7 +5222,7 @@ Filter by GTD item category:
 
 File: org-gtd.info,  Node: Time-based Filters,  Next: Keyword Filters,  Prev: Category Filters,  Up: View DSL Filter Reference
 
-7.5.3 Time-based Filters
+6.5.3 Time-based Filters
 ------------------------
 
 Filter by timestamps, deadlines, and scheduled dates:
@@ -5395,7 +5329,7 @@ Filter by timestamps, deadlines, and scheduled dates:
 
 File: org-gtd.info,  Node: Keyword Filters,  Next: Area of Focus Filters,  Prev: Time-based Filters,  Up: View DSL Filter Reference
 
-7.5.4 *TODO* Keyword Filters
+6.5.4 *TODO* Keyword Filters
 ----------------------------
 
 Filter by TODO state:
@@ -5428,7 +5362,7 @@ Filter by TODO state:
 
 File: org-gtd.info,  Node: Area of Focus Filters,  Next: Tag Filters,  Prev: Keyword Filters,  Up: View DSL Filter Reference
 
-7.5.5 Area of Focus Filters
+6.5.5 Area of Focus Filters
 ---------------------------
 
 Filter by life area:
@@ -5451,7 +5385,7 @@ Filter by life area:
 
 File: org-gtd.info,  Node: Tag Filters,  Next: Property Filters,  Prev: Area of Focus Filters,  Up: View DSL Filter Reference
 
-7.5.6 Tag Filters
+6.5.6 Tag Filters
 -----------------
 
 Filter by org tags:
@@ -5488,7 +5422,7 @@ Filter by org tags:
 
 File: org-gtd.info,  Node: Property Filters,  Next: Structural Filters,  Prev: Tag Filters,  Up: View DSL Filter Reference
 
-7.5.7 Property Filters
+6.5.7 Property Filters
 ----------------------
 
 Filter by arbitrary org properties:
@@ -5511,7 +5445,7 @@ Filter by arbitrary org properties:
 
 File: org-gtd.info,  Node: Structural Filters,  Next: Special Filters,  Prev: Property Filters,  Up: View DSL Filter Reference
 
-7.5.8 Structural Filters
+6.5.8 Structural Filters
 ------------------------
 
 Filter by org heading structure:
@@ -5533,7 +5467,7 @@ Filter by org heading structure:
 
 File: org-gtd.info,  Node: Special Filters,  Next: View Configuration Options,  Prev: Structural Filters,  Up: View DSL Filter Reference
 
-7.5.9 Special Filters
+6.5.9 Special Filters
 ---------------------
 
    • ‘(not-habit . t)’
@@ -5561,7 +5495,7 @@ File: org-gtd.info,  Node: Special Filters,  Next: View Configuration Options,  
 
 File: org-gtd.info,  Node: View Configuration Options,  Next: Complete View Examples,  Prev: Special Filters,  Up: View DSL Filter Reference
 
-7.5.10 View Configuration Options
+6.5.10 View Configuration Options
 ---------------------------------
 
 These options control how the view is displayed:
@@ -5629,7 +5563,7 @@ These options control how the view is displayed:
 
 File: org-gtd.info,  Node: Complete View Examples,  Next: Creating Custom Views,  Prev: View Configuration Options,  Up: View DSL Filter Reference
 
-7.5.11 Complete View Examples
+6.5.11 Complete View Examples
 -----------------------------
 
    • Weekly Review View
@@ -5671,7 +5605,7 @@ File: org-gtd.info,  Node: Complete View Examples,  Next: Creating Custom Views,
 
 File: org-gtd.info,  Node: Creating Custom Views,  Prev: Complete View Examples,  Up: View DSL Filter Reference
 
-7.5.12 Creating Custom Views
+6.5.12 Creating Custom Views
 ----------------------------
 
 To create a custom view:
@@ -5693,7 +5627,7 @@ To create a custom view:
 
 File: org-gtd.info,  Node: Hooks Framework Reference,  Prev: View DSL Filter Reference,  Up: Reference
 
-7.6 Hooks Framework Reference
+6.6 Hooks Framework Reference
 =============================
 
 org-gtd provides hooks to customize behavior when organizing items.
@@ -5713,7 +5647,7 @@ hooks.
 
 File: org-gtd.info,  Node: The org-gtd-organize-hooks Variable,  Next: Built-in Hooks,  Up: Hooks Framework Reference
 
-7.6.1 The org-gtd-organize-hooks Variable
+6.6.1 The org-gtd-organize-hooks Variable
 -----------------------------------------
 
 *Type*: List of functions
@@ -5729,7 +5663,7 @@ organized
 
 File: org-gtd.info,  Node: Built-in Hooks,  Next: Writing Custom Hooks,  Prev: The org-gtd-organize-hooks Variable,  Up: Hooks Framework Reference
 
-7.6.2 Built-in Hooks
+6.6.2 Built-in Hooks
 --------------------
 
    • ‘org-set-tags-command’
@@ -5761,7 +5695,7 @@ File: org-gtd.info,  Node: Built-in Hooks,  Next: Writing Custom Hooks,  Prev: T
 
 File: org-gtd.info,  Node: Writing Custom Hooks,  Next: Example Custom Hooks,  Prev: Built-in Hooks,  Up: Hooks Framework Reference
 
-7.6.3 Writing Custom Hooks
+6.6.3 Writing Custom Hooks
 --------------------------
 
 Custom hooks are functions that run during organization.  They can:
@@ -5827,7 +5761,7 @@ Custom hooks are functions that run during organization.  They can:
 
 File: org-gtd.info,  Node: Example Custom Hooks,  Next: Hook Execution Order,  Prev: Writing Custom Hooks,  Up: Hooks Framework Reference
 
-7.6.4 Example Custom Hooks
+6.6.4 Example Custom Hooks
 --------------------------
 
    • Add Effort Estimation
@@ -5899,7 +5833,7 @@ File: org-gtd.info,  Node: Example Custom Hooks,  Next: Hook Execution Order,  P
 
 File: org-gtd.info,  Node: Hook Execution Order,  Next: Best Practices,  Prev: Example Custom Hooks,  Up: Hooks Framework Reference
 
-7.6.5 Hook Execution Order
+6.6.5 Hook Execution Order
 --------------------------
 
 Hooks run in the order they appear in ‘org-gtd-organize-hooks’.
@@ -5914,7 +5848,7 @@ Hooks run in the order they appear in ‘org-gtd-organize-hooks’.
 
 File: org-gtd.info,  Node: Best Practices,  Next: Complete Example Comprehensive Hook Setup,  Prev: Hook Execution Order,  Up: Hooks Framework Reference
 
-7.6.6 Best Practices
+6.6.6 Best Practices
 --------------------
 
   1. **Use type checking**: Always use ‘org-gtd-organize-type-member-p’
@@ -5942,7 +5876,7 @@ File: org-gtd.info,  Node: Best Practices,  Next: Complete Example Comprehensive
 
 File: org-gtd.info,  Node: Complete Example Comprehensive Hook Setup,  Prev: Best Practices,  Up: Hooks Framework Reference
 
-7.6.7 Complete Example: Comprehensive Hook Setup
+6.6.7 Complete Example: Comprehensive Hook Setup
 ------------------------------------------------
 
      ;; Custom hooks for org-gtd
@@ -5991,7 +5925,7 @@ organization.
 
 File: org-gtd.info,  Node: Troubleshooting,  Prev: Reference,  Up: Top
 
-8 Troubleshooting
+7 Troubleshooting
 *****************
 
 This section covers common problems and their solutions.  For complete
@@ -6008,7 +5942,7 @@ command documentation, see *note Commands Reference::.
 
 File: org-gtd.info,  Node: Finding lost tasks,  Next: Projects without a NEXT item,  Up: Troubleshooting
 
-8.1 Finding lost tasks
+7.1 Finding lost tasks
 ======================
 
 Sometimes items get stuck or fall through the cracks.  org-gtd provides
@@ -6035,7 +5969,7 @@ commands.
 
 File: org-gtd.info,  Node: Projects without a NEXT item,  Next: I can't create a project when clarifying an inbox item!,  Prev: Finding lost tasks,  Up: Troubleshooting
 
-8.2 Projects without a NEXT item
+7.2 Projects without a NEXT item
 ================================
 
 If a project has active tasks but none are marked NEXT, this usually
@@ -6057,7 +5991,7 @@ project troubleshooting guide.
 
 File: org-gtd.info,  Node: I can't create a project when clarifying an inbox item!,  Next: Configuration problems,  Prev: Projects without a NEXT item,  Up: Troubleshooting
 
-8.3 I can't create a project when clarifying an inbox item!
+7.3 I can't create a project when clarifying an inbox item!
 ===========================================================
 
 When organizing an item as a project, org-gtd expects a specific
@@ -6084,7 +6018,7 @@ structure:
 
 File: org-gtd.info,  Node: Configuration problems,  Next: Still stuck?,  Prev: I can't create a project when clarifying an inbox item!,  Up: Troubleshooting
 
-8.4 Configuration problems
+7.4 Configuration problems
 ==========================
 
 * Menu:
@@ -6095,7 +6029,7 @@ File: org-gtd.info,  Node: Configuration problems,  Next: Still stuck?,  Prev: I
 
 File: org-gtd.info,  Node: Keywords not working,  Next: Items not showing in engage view,  Up: Configuration problems
 
-8.4.1 Keywords not working
+7.4.1 Keywords not working
 --------------------------
 
 If TODO keywords aren't changing correctly:
@@ -6119,7 +6053,7 @@ If TODO keywords aren't changing correctly:
 
 File: org-gtd.info,  Node: Items not showing in engage view,  Prev: Keywords not working,  Up: Configuration problems
 
-8.4.2 Items not showing in engage view
+7.4.2 Items not showing in engage view
 --------------------------------------
 
 If items aren't appearing in ‘org-gtd-engage’:
@@ -6142,7 +6076,7 @@ options.
 
 File: org-gtd.info,  Node: Still stuck?,  Prev: Configuration problems,  Up: Troubleshooting
 
-8.5 Still stuck?
+7.5 Still stuck?
 ================
 
 If you're still having problems:
@@ -6160,380 +6094,373 @@ If you're still having problems:
 
 Tag Table:
 Node: Top736
-Node: Summary7287
-Node: What's new in 4011012
-Node: Flexible project dependencies (the big one!)11606
-Node: Simplified keyword configuration12722
-Node: Data-driven configuration13742
-Node: Declarative view language14327
-Node: Better project modification14913
-Node: Enhanced review capabilities15378
-Node: Simplified configuration15817
-Node: What you need to do16294
-Node: Previous versions16973
-Node: Setting up Org GTD17201
-Node: Upgrading17597
-Node: 400 <- 3xx17880
-Ref: Required Configuration changes18234
-Ref: Required Data migration19814
-Ref: Why these changes?21265
-Ref: org-gtd-mode is obsolete21910
-Node: Installing22586
-Node: use-package22881
-Node: Manually23093
-Node: Configuring23459
-Node: Basic setup23809
-Node: Complete Configuration Examples24458
-Ref: Example 1 Vanilla Emacs (Minimal Configuration)24826
-Ref: Example 2 Doom Emacs Configuration26533
-Ref: Example 3 Spacemacs Configuration27870
-Ref: What These Configurations Do29275
-Ref: Testing Your Configuration30512
-Ref: Common Configuration Problems31723
-Node: Understanding Keybindings35022
-Ref: Global Keybindings35342
-Ref: Clarify Map Keybindings35937
-Node: Required configuration of sub-packages37067
-Ref: Configuring org-edna37328
-Ref: Adding org-gtd files to your agenda37627
-Node: configuration options for org-gtd38022
-Ref: I don't care just let me start using it38272
-Ref: Tell me all the levers I can pull38859
-Ref: Required keyword configuration39022
-Ref: Optional configuration40713
-Node: Recommended key bindings44305
-Node: Sample Doom Emacs Config45064
-Node: Getting Started with Org GTD46285
-Node: Quick Start Reference46696
-Node: Tutorial Your First Project47234
-Node: What You'll Learn48004
-Node: The Project48404
-Node: Step 1 Capture the Project48838
-Node: Step 2 Process the Inbox49464
-Node: Step 3 Organize as a Project50041
-Node: Step 4 View in Engage50767
-Node: Step 5 Complete the First Task51442
-Node: Step 6 Refresh and See the Change51973
-Node: What Just Happened?52532
-Node: Continue the Project53617
-Node: Key Takeaways54186
-Node: What's Next?54812
-Node: Tutorial Creating Your First Custom View55547
-Node: What You'll Learn (1)56353
-Node: Why This View?56710
-Node: Understanding the View DSL57242
-Node: Creating the View Function58089
-Node: Using Your View58773
-Node: Binding to a Key59081
-Node: What You'll See59807
-Node: Experiment Modify the View60360
-Node: Available Filters61621
-Node: Key Takeaways (1)62529
-Node: What's Next? (1)63076
-Node: Where to Go From Here63729
-Node: Using Org GTD65063
-Node: Your Daily Workflow65662
-Node: Quick command reference66549
-Node: The GTD Flow in Depth67724
-Node: Adding things to the inbox68130
-Node: Processing the inbox69508
-Node: Clarifying each item70043
-Ref: How to start clarifying70566
-Ref: data shape requirements71069
-Ref: Options and commands related to clarification71626
-Node: Organizing an item into the system73006
-Ref: Refiling to the appropriate area73932
-Ref: Understanding Refiling in V473978
-Ref: Default Refile System74394
-Ref: Creating New Refile Targets75098
-Ref: Using Your Own Refile Configuration75869
-Ref: Migration from V376156
-Node: Engaging with your GTD items76758
-Node: Understanding GTD Item Types77295
-Node: Single Action [S]78033
-Node: Project [P]78683
-Node: Add to existing project [A]79678
-Node: Calendar [C]80539
-Node: Delegate [D]81378
-Node: Quick Action [Q]82194
-Node: Incubate [I]82829
-Node: Habit [H]83630
-Node: Knowledge [K]84319
-Node: Trash [T]85064
-Node: Working with the GTD Horizons85920
-Ref: Areas of focus86613
-Ref: Longer-term horizons87897
-Node: Working with Projects (Advanced)89068
-Node: First Contact Why Visual Project Management?89708
-Node: Black Triangle Your First Project Graph View90697
-Ref: Step 1 Find a project91056
-Ref: Step 2 Open the graph view91234
-Ref: Step 3 Explore91384
-Node: Understanding Project Dependencies91869
-Ref: The Dependency Graph (DAG)92248
-Ref: What You See in Graph View92785
-Ref: Sequential vs Parallel vs Mixed93432
-Node: Tutorial Parallel Tasks with Graph View94339
-Ref: The Scenario94656
-Ref: Step 1 Capture and Organize95067
-Node: Fix Shoulder Pain95160
-Node: Find place to get MRI95457
-Node: Make MRI appointment95615
-Node: Make orthopedist appointment95808
-Node: Get diagnosis from orthopedist96026
-Ref: Step 2 Open Graph View96833
-Ref: Step 3 Add Orthopedist Appointment as Root Task97396
-Ref: Step 3 (Revised) Build with Graph View Commands98049
-Ref: What Graph View CAN Do Right Now98498
-Ref: The Dependency Pattern (Diamond)99468
-Ref: Current Workaround99744
-Node: Tutorial Complex Dependencies with Graph View100153
-Ref: The Scenario (1)100434
-Ref: The Dependency Graph101000
-Ref: Building with Graph View101558
-Ref: Key Patterns This Example Shows102297
-Node: Common Dependency Patterns (Visual Reference)102692
-Ref: Sequential Chain (A → B → C)103065
-Ref: Parallel Independent (A B C all start together)103451
-Ref: Fan-out (A → B A → C A → D)103807
-Ref: Fan-in / Convergence (A → C B → C)104222
-Ref: Diamond (A → B → D A → C → D)104667
-Node: Graph View Command Reference105132
-Ref: Opening Graph View105406
-Ref: Navigation Commands105623
-Ref: Adding Tasks106191
-Ref: View Commands106615
-Ref: Future Commands (Planned)107005
-Ref: Visual Indicators107314
-Node: Practical Tips for Project Management107587
-Ref: When to Use Graph View107874
-Ref: When to Use Sequential (Default)108231
-Ref: When to Create Parallel Structures108612
-Ref: Managing Complexity108947
-Ref: Growing Projects Over Time109345
-Node: Troubleshooting Projects with Graph View109739
-Ref: Project is Stuck (has TODO tasks but no NEXT)110036
-Ref: Task Should Be NEXT But Shows as TODO110868
-Ref: Too Many Tasks Are NEXT111417
-Node: Graph View Command Reference (1)111872
-Ref: Dependency Operations112263
-Ref: Adding Tasks (1)112610
-Ref: Operations Not in Graph View112857
-Ref: When to Use Text-Based Commands113503
-Node: See Also114108
-Node: Cleaning up / archiving completed work114723
-Node: Commands you can call on org-agenda115585
-Node: Defining your own agenda views116508
-Node: Adding your own hooks when organizing117260
-Node: Automating through emacs118638
-Node: Reference119904
-Node: Configuration Variables Reference121344
-Node: Required Configuration122025
-Ref: org-todo-keywords (org-mode variable)122225
-Ref: org-gtd-keyword-mapping122712
-Node: Directory and File Configuration123636
-Ref: org-gtd-directory123886
-Ref: org-gtd-horizons-file124525
-Node: Capture Configuration124906
-Ref: org-gtd-capture-templates125146
-Node: Organize and Process Configuration126284
-Ref: org-gtd-organize-hooks126545
-Ref: org-gtd-save-after-organize127864
-Ref: org-gtd-refile-to-any-target128175
-Ref: org-gtd-use-refile-system128685
-Node: Clarification Configuration129909
-Ref: org-gtd-clarify-show-horizons130163
-Ref: org-gtd-clarify-display-helper-buffer130822
-Ref: org-gtd-clarify-project-templates131406
-Node: Areas of Focus Configuration132131
-Ref: org-gtd-areas-of-focus132378
-Node: Engage View Configuration132952
-Ref: org-gtd-engage-prefix-width133187
-Node: Archive Configuration133546
-Ref: org-gtd-archive-location133768
-Node: Oops View Configuration134693
-Ref: org-gtd-oops-custom-views134918
-Node: ID Overlay Configuration135682
-Ref: org-gtd-id-overlay-truncate-length135917
-Ref: org-gtd-id-overlay-ellipsis136295
-Node: Advanced Item Configuration136533
-Ref: org-gtd-user-item-config136782
-Node: Obsolete Variables (Do Not Use)137194
-Ref: org-gtd-todo-keyword (obsolete)137509
-Ref: org-gtd-next-keyword (obsolete)137627
-Ref: org-gtd-wait-keyword (obsolete)137745
-Ref: org-gtd-canceled-keyword (obsolete)137863
-Node: Commands Reference137982
-Node: Core GTD Workflow Commands138721
-Ref: org-gtd-capture138901
-Ref: org-gtd-process-inbox139465
-Ref: org-gtd-organize140101
-Ref: org-gtd-engage140913
-Ref: org-gtd-show-all-next141626
-Node: Review Commands141977
-Ref: org-gtd-review-stuck-projects142170
-Ref: org-gtd-review-area-of-focus142672
-Ref: org-gtd-review-completed-items143201
-Ref: org-gtd-review-completed-projects143693
-Ref: org-gtd-review-missed-items143916
-Node: Stuck Item Review Commands144172
-Ref: org-gtd-review-stuck-calendar-items144471
-Ref: org-gtd-review-stuck-incubated-items144584
-Ref: org-gtd-review-stuck-habit-items144701
-Ref: org-gtd-review-stuck-delegated-items144802
-Ref: org-gtd-review-stuck-single-action-items144924
-Node: Oops Commands (Missed/Overdue Items)145027
-Ref: org-gtd-oops145279
-Ref: org-gtd-oops-calendar145542
-Ref: org-gtd-oops-delegated145625
-Ref: org-gtd-oops-projects145732
-Ref: org-gtd-oops-with-custom145818
-Node: Clarification Commands145948
-Ref: org-gtd-clarify-item146162
-Ref: org-gtd-clarify-agenda-item146598
-Ref: org-gtd-clarify-toggle-horizons-window146856
-Ref: org-gtd-clarify-project-insert-template147187
-Node: Archive Commands147478
-Ref: org-gtd-archive-completed-items147668
-Node: Agenda-Specific Commands148136
-Ref: org-gtd-delegate-agenda-item148406
-Ref: org-gtd-project-cancel-from-agenda148729
-Node: Project Management Commands149015
-Ref: org-gtd-projects-fix-todo-keywords-for-project-at-point149240
-Node: Task Dependency Commands149823
-Ref: org-gtd-task-add-blockers150710
-Ref: org-gtd-task-remove-blockers151436
-Ref: org-gtd-task-add-dependent151702
-Ref: org-gtd-task-add-dependents152345
-Ref: org-gtd-task-clear-relationships152587
-Ref: org-gtd-task-show-relationships152910
-Ref: org-gtd-validate-project-dependencies153255
-Ref: org-gtd-remove-task-from-project153684
-Node: Area of Focus Commands154021
-Ref: org-gtd-area-of-focus-set-on-item-at-point154239
-Ref: org-gtd-area-of-focus-set-on-agenda-item154606
-Node: Programmatic Creation Commands154944
-Ref: org-gtd-habit-create155265
-Ref: org-gtd-calendar-create155501
-Ref: org-gtd-delegate-create155740
-Ref: org-gtd-incubate-create156394
-Ref: org-gtd-single-action-create156632
-Node: Utility Commands156826
-Ref: org-gtd-setup-keywords-wizard157021
-Ref: org-gtd-inbox-path157333
-Node: ID Overlay Commands157690
-Ref: org-gtd-id-overlay-mode157891
-Ref: org-gtd-id-overlay-refresh-buffer158239
-Ref: org-gtd-id-overlay-clear-buffer158495
-Node: Migration and Upgrade Commands158697
-Ref: org-gtd-upgrade-v3-to-v4158921
-Node: Obsolete Commands159446
-Ref: org-gtd-mode (obsolete since 40)159616
-Node: Properties Reference (Internal Implementation)159853
-Node: Core GTD Properties160974
-Ref: ORG_GTD161164
-Ref: ORG_GTD_REFILE161995
-Node: Project Properties163597
-Ref: ORG_GTD_FIRST_TASKS163820
-Node: Task Dependency Properties164646
-Ref: ORG_GTD_DEPENDS_ON164894
-Ref: ORG_GTD_BLOCKS166601
-Ref: ORG_GTD_PROJECT_IDS167353
-Node: Calendar and Time Properties167666
-Ref: ORG_GTD_TIMESTAMP167921
-Node: Delegation Properties168761
-Ref: DELEGATED_TO168992
-Node: Habit Properties169817
-Ref: STYLE170034
-Node: Area of Focus Properties170433
-Ref: CATEGORY170684
-Node: Standard Org Properties Used by org-gtd171432
-Ref: ID171688
-Ref: keyword171935
-Ref: SCHEDULED (org-mode standard)172473
-Ref: DEADLINE (org-mode standard)172723
-Node: Troubleshooting Projects172946
-Node: Fixing Broken Dependencies173575
-Node: When Manual Property Editing is Needed174949
-Node: Common Problems and Solutions176662
-Ref: Project Shows No NEXT Tasks (Stuck Project)176880
-Ref: Too Many NEXT Tasks177642
-Ref: Task Won't Advance to NEXT178056
-Node: View DSL Filter Reference178650
-Node: View Structure179291
-Node: Category Filters179612
-Ref: (category delegated)179825
-Ref: (category calendar)180060
-Ref: (category projects)180307
-Ref: (category active-projects)180542
-Ref: (category completed-projects)180815
-Ref: (category stuck-projects)181110
-Ref: (category incubate)181404
-Ref: (category habit)181657
-Node: Time-based Filters181861
-Ref: (timestamp past)182104
-Ref: (timestamp future)182428
-Ref: (deadline past)182725
-Ref: (scheduled past)182954
-Ref: (scheduled future)183209
-Ref: (scheduled today)183435
-Ref: (closed recent)183678
-Ref: (closed past-day)183907
-Ref: (closed past-week)183983
-Ref: (closed past-month)184061
-Ref: (closed past-year)184141
-Ref: (closed today)184219
-Node: Keyword Filters184415
-Ref: (todo ("KEYWORD1" "KEYWORD2"))184639
-Ref: (done t)185046
-Node: Area of Focus Filters185291
-Ref: (area-of-focus "AREA")185505
-Node: Tag Filters185915
-Ref: (tags ("TAG1" "TAG2"))186109
-Ref: (tags-match "PATTERN")186420
-Node: Property Filters186902
-Ref: (property (("PROP" "VALUE")))187119
-Node: Structural Filters187571
-Ref: (level N)187793
-Node: Special Filters188177
-Ref: (not-habit t)188369
-Ref: (invalid-timestamp t)188636
-Node: View Configuration Options188949
-Ref: (view-type agenda)189219
-Ref: (agenda-span N)189527
-Ref: (show-habits t) or (show-habits nil)189804
-Ref: (additional-blocks BLOCK-SPECS)190145
-Ref: (prefix-format FORMAT-STRING)190461
-Node: Complete View Examples190744
-Ref: Weekly Review View190962
-Ref: Context-Based View191892
-Ref: Morning Planning View192084
-Node: Creating Custom Views192463
-Node: Hooks Framework Reference193145
-Node: The org-gtd-organize-hooks Variable193664
-Node: Built-in Hooks194126
-Ref: org-set-tags-command194326
-Ref: org-gtd-set-area-of-focus194569
-Node: Writing Custom Hooks195088
-Ref: Basic Hook Structure195480
-Ref: Using org-gtd-organize-type-member-p195814
-Node: Example Custom Hooks196887
-Ref: Add Effort Estimation197090
-Ref: Auto-Set Property Based on Keywords197722
-Ref: Add Custom Property198190
-Ref: Integration with Org-Roam198621
-Ref: Set Effort from Keywords198984
-Node: Hook Execution Order199704
-Node: Best Practices200214
-Node: Complete Example Comprehensive Hook Setup201209
-Node: Troubleshooting203338
-Node: Finding lost tasks203746
-Node: Projects without a NEXT item204748
-Node: I can't create a project when clarifying an inbox item!205588
-Node: Configuration problems206546
-Node: Keywords not working206833
-Node: Items not showing in engage view207613
-Node: Still stuck?208361
+Node: Summary7026
+Node: What's new in 4010751
+Node: Flexible project dependencies (the big one!)11345
+Node: Simplified keyword configuration12461
+Node: Data-driven configuration13481
+Node: Declarative view language14066
+Node: Better project modification14652
+Node: Enhanced review capabilities15117
+Node: Simplified configuration15556
+Node: What you need to do16033
+Node: Previous versions16712
+Node: Setting up Org GTD16940
+Node: Upgrading17336
+Node: 400 <- 3xx17619
+Ref: Required Configuration changes17973
+Ref: Required Data migration19553
+Ref: Why these changes?21004
+Ref: org-gtd-mode is obsolete21649
+Node: Installing22325
+Node: use-package22620
+Node: Manually22832
+Node: Configuring23198
+Node: Basic setup23548
+Node: Complete Configuration Examples24197
+Ref: Example 1 Vanilla Emacs (Minimal Configuration)24565
+Ref: Example 2 Doom Emacs Configuration26272
+Ref: Example 3 Spacemacs Configuration27609
+Ref: What These Configurations Do29014
+Ref: Testing Your Configuration30251
+Ref: Common Configuration Problems31462
+Node: Understanding Keybindings34761
+Ref: Global Keybindings35081
+Ref: Clarify Map Keybindings35676
+Node: Required configuration of sub-packages36806
+Ref: Configuring org-edna37067
+Ref: Adding org-gtd files to your agenda37366
+Node: configuration options for org-gtd37761
+Ref: I don't care just let me start using it38011
+Ref: Tell me all the levers I can pull38598
+Ref: Required keyword configuration38761
+Ref: Optional configuration40452
+Node: Recommended key bindings44044
+Node: Sample Doom Emacs Config44803
+Node: Getting Started with Org GTD46024
+Node: Quick Start Reference46435
+Node: Tutorial Your First Project46973
+Node: What You'll Learn47743
+Node: The Project48143
+Node: Step 1 Capture the Project48577
+Node: Step 2 Process the Inbox49203
+Node: Step 3 Organize as a Project49780
+Node: Step 4 View in Engage50506
+Node: Step 5 Complete the First Task51181
+Node: Step 6 Refresh and See the Change51712
+Node: What Just Happened?52271
+Node: Continue the Project53356
+Node: Key Takeaways53925
+Node: What's Next?54551
+Node: Tutorial Creating Your First Custom View55286
+Node: What You'll Learn (1)56092
+Node: Why This View?56449
+Node: Understanding the View DSL56981
+Node: Creating the View Function57828
+Node: Using Your View58512
+Node: Binding to a Key58820
+Node: What You'll See59546
+Node: Experiment Modify the View60099
+Node: Available Filters61360
+Node: Key Takeaways (1)62268
+Node: What's Next? (1)62815
+Node: Where to Go From Here63468
+Node: Using Org GTD64802
+Node: Your Daily Workflow65422
+Node: Quick command reference66309
+Node: The GTD Flow in Depth67484
+Node: Adding things to the inbox67890
+Node: Processing the inbox69268
+Node: Clarifying each item69803
+Ref: How to start clarifying70326
+Ref: data shape requirements70829
+Ref: Options and commands related to clarification71386
+Node: Organizing an item into the system72766
+Ref: Refiling to the appropriate area73692
+Ref: Understanding Refiling in V473738
+Ref: Default Refile System74154
+Ref: Creating New Refile Targets74858
+Ref: Using Your Own Refile Configuration75629
+Ref: Migration from V375916
+Node: Engaging with your GTD items76518
+Node: Understanding GTD Item Types77055
+Node: Single Action [S]77793
+Node: Project [P]78443
+Node: Add to existing project [A]79438
+Node: Calendar [C]80299
+Node: Delegate [D]81138
+Node: Quick Action [Q]81954
+Node: Incubate [I]82589
+Node: Habit [H]83390
+Node: Knowledge [K]84079
+Node: Trash [T]84824
+Node: Working with the GTD Horizons85680
+Ref: Areas of focus86373
+Ref: Longer-term horizons87657
+Node: Working with Projects (Advanced)88828
+Node: First Contact Why Visual Project Management?89894
+Node: Black Triangle Your First Project Graph View90883
+Ref: Step 1 Find a project91242
+Ref: Step 2 Open the graph view91420
+Ref: Step 3 Explore91570
+Node: Understanding Project Dependencies92055
+Ref: The Dependency Graph (DAG)92434
+Ref: What You See in Graph View92971
+Ref: Sequential vs Parallel vs Mixed93618
+Node: Tutorial Parallel Tasks with Graph View94525
+Ref: The Scenario94896
+Ref: Step 1 Capture and Organize95307
+Ref: Step 2 Open Graph View95665
+Ref: Step 3 Add Orthopedist Appointment as Root Task96228
+Ref: Step 3 (Revised) Build with Graph View Commands96881
+Ref: What Graph View CAN Do Right Now97330
+Ref: The Dependency Pattern (Diamond)98300
+Ref: Current Workaround98576
+Node: Tutorial Complex Dependencies with Graph View98985
+Ref: The Scenario (1)99316
+Ref: The Dependency Graph99882
+Ref: Building with Graph View100440
+Ref: Key Patterns This Example Shows101179
+Node: Common Dependency Patterns (Visual Reference)101574
+Ref: Sequential Chain (A → B → C)101949
+Ref: Parallel Independent (A B C all start together)102335
+Ref: Fan-out (A → B A → C A → D)102691
+Ref: Fan-in / Convergence (A → C B → C)103106
+Ref: Diamond (A → B → D A → C → D)103551
+Node: Graph View Command Reference104016
+Ref: Opening Graph View104409
+Ref: Navigation Commands104626
+Ref: View and Display Commands105194
+Ref: Adding Tasks105596
+Ref: Dependency Operations106020
+Ref: Visual Indicators106525
+Ref: Operations Not Available in Graph View106805
+Ref: Text-Based Alternatives107467
+Ref: Future Commands (Planned)108071
+Node: Practical Tips for Project Management108373
+Ref: When to Use Graph View108662
+Ref: When to Use Sequential (Default)109019
+Ref: When to Create Parallel Structures109400
+Ref: Managing Complexity109735
+Ref: Growing Projects Over Time110133
+Node: Troubleshooting Projects with Graph View110527
+Ref: Project is Stuck (has TODO tasks but no NEXT)110802
+Ref: Task Should Be NEXT But Shows as TODO111634
+Ref: Too Many Tasks Are NEXT112183
+Node: See Also112638
+Node: Cleaning up / archiving completed work113265
+Node: Commands you can call on org-agenda114131
+Node: Defining your own agenda views115058
+Node: Adding your own hooks when organizing115812
+Node: Automating through emacs117192
+Node: Reference118456
+Node: Configuration Variables Reference119892
+Node: Required Configuration120573
+Ref: org-todo-keywords (org-mode variable)120773
+Ref: org-gtd-keyword-mapping121260
+Node: Directory and File Configuration122184
+Ref: org-gtd-directory122434
+Ref: org-gtd-horizons-file123073
+Node: Capture Configuration123454
+Ref: org-gtd-capture-templates123694
+Node: Organize and Process Configuration124832
+Ref: org-gtd-organize-hooks125093
+Ref: org-gtd-save-after-organize126412
+Ref: org-gtd-refile-to-any-target126723
+Ref: org-gtd-use-refile-system127233
+Node: Clarification Configuration128457
+Ref: org-gtd-clarify-show-horizons128711
+Ref: org-gtd-clarify-display-helper-buffer129370
+Ref: org-gtd-clarify-project-templates129954
+Node: Areas of Focus Configuration130679
+Ref: org-gtd-areas-of-focus130926
+Node: Engage View Configuration131500
+Ref: org-gtd-engage-prefix-width131735
+Node: Archive Configuration132094
+Ref: org-gtd-archive-location132316
+Node: Oops View Configuration133241
+Ref: org-gtd-oops-custom-views133466
+Node: ID Overlay Configuration134230
+Ref: org-gtd-id-overlay-truncate-length134465
+Ref: org-gtd-id-overlay-ellipsis134843
+Node: Advanced Item Configuration135081
+Ref: org-gtd-user-item-config135330
+Node: Obsolete Variables (Do Not Use)135742
+Ref: org-gtd-todo-keyword (obsolete)136057
+Ref: org-gtd-next-keyword (obsolete)136175
+Ref: org-gtd-wait-keyword (obsolete)136293
+Ref: org-gtd-canceled-keyword (obsolete)136411
+Node: Commands Reference136530
+Node: Core GTD Workflow Commands137269
+Ref: org-gtd-capture137449
+Ref: org-gtd-process-inbox138013
+Ref: org-gtd-organize138649
+Ref: org-gtd-engage139461
+Ref: org-gtd-show-all-next140174
+Node: Review Commands140525
+Ref: org-gtd-review-stuck-projects140718
+Ref: org-gtd-review-area-of-focus141220
+Ref: org-gtd-review-completed-items141749
+Ref: org-gtd-review-completed-projects142241
+Ref: org-gtd-review-missed-items142464
+Node: Stuck Item Review Commands142720
+Ref: org-gtd-review-stuck-calendar-items143019
+Ref: org-gtd-review-stuck-incubated-items143132
+Ref: org-gtd-review-stuck-habit-items143249
+Ref: org-gtd-review-stuck-delegated-items143350
+Ref: org-gtd-review-stuck-single-action-items143472
+Node: Oops Commands (Missed/Overdue Items)143575
+Ref: org-gtd-oops143827
+Ref: org-gtd-oops-calendar144090
+Ref: org-gtd-oops-delegated144173
+Ref: org-gtd-oops-projects144280
+Ref: org-gtd-oops-with-custom144366
+Node: Clarification Commands144496
+Ref: org-gtd-clarify-item144710
+Ref: org-gtd-clarify-agenda-item145146
+Ref: org-gtd-clarify-toggle-horizons-window145404
+Ref: org-gtd-clarify-project-insert-template145735
+Node: Archive Commands146026
+Ref: org-gtd-archive-completed-items146216
+Node: Agenda-Specific Commands146684
+Ref: org-gtd-delegate-agenda-item146954
+Ref: org-gtd-project-cancel-from-agenda147277
+Node: Project Management Commands147563
+Ref: org-gtd-projects-fix-todo-keywords-for-project-at-point147788
+Node: Task Dependency Commands148371
+Ref: org-gtd-task-add-blockers149258
+Ref: org-gtd-task-remove-blockers149984
+Ref: org-gtd-task-add-dependent150250
+Ref: org-gtd-task-add-dependents150893
+Ref: org-gtd-task-clear-relationships151135
+Ref: org-gtd-task-show-relationships151458
+Ref: org-gtd-validate-project-dependencies151803
+Ref: org-gtd-remove-task-from-project152232
+Node: Area of Focus Commands152569
+Ref: org-gtd-area-of-focus-set-on-item-at-point152787
+Ref: org-gtd-area-of-focus-set-on-agenda-item153154
+Node: Programmatic Creation Commands153492
+Ref: org-gtd-habit-create153813
+Ref: org-gtd-calendar-create154049
+Ref: org-gtd-delegate-create154288
+Ref: org-gtd-incubate-create154942
+Ref: org-gtd-single-action-create155180
+Node: Utility Commands155374
+Ref: org-gtd-setup-keywords-wizard155569
+Ref: org-gtd-inbox-path155881
+Node: ID Overlay Commands156238
+Ref: org-gtd-id-overlay-mode156439
+Ref: org-gtd-id-overlay-refresh-buffer156787
+Ref: org-gtd-id-overlay-clear-buffer157043
+Node: Migration and Upgrade Commands157245
+Ref: org-gtd-upgrade-v3-to-v4157469
+Node: Obsolete Commands157994
+Ref: org-gtd-mode (obsolete since 40)158164
+Node: Properties Reference (Internal Implementation)158401
+Node: Core GTD Properties159522
+Ref: ORG_GTD159712
+Ref: ORG_GTD_REFILE160543
+Node: Project Properties162145
+Ref: ORG_GTD_FIRST_TASKS162368
+Node: Task Dependency Properties163194
+Ref: ORG_GTD_DEPENDS_ON163442
+Ref: ORG_GTD_BLOCKS165149
+Ref: ORG_GTD_PROJECT_IDS165901
+Node: Calendar and Time Properties166214
+Ref: ORG_GTD_TIMESTAMP166469
+Node: Delegation Properties167309
+Ref: DELEGATED_TO167540
+Node: Habit Properties168365
+Ref: STYLE168582
+Node: Area of Focus Properties168981
+Ref: CATEGORY169232
+Node: Standard Org Properties Used by org-gtd169980
+Ref: ID170236
+Ref: keyword170483
+Ref: SCHEDULED (org-mode standard)171021
+Ref: DEADLINE (org-mode standard)171271
+Node: Troubleshooting Projects171494
+Node: Fixing Broken Dependencies172123
+Node: When Manual Property Editing is Needed173497
+Node: Common Problems and Solutions175210
+Ref: Project Shows No NEXT Tasks (Stuck Project)175428
+Ref: Too Many NEXT Tasks176190
+Ref: Task Won't Advance to NEXT176604
+Node: View DSL Filter Reference177198
+Node: View Structure177839
+Node: Category Filters178160
+Ref: (category delegated)178373
+Ref: (category calendar)178608
+Ref: (category projects)178855
+Ref: (category active-projects)179090
+Ref: (category completed-projects)179363
+Ref: (category stuck-projects)179658
+Ref: (category incubate)179952
+Ref: (category habit)180205
+Node: Time-based Filters180409
+Ref: (timestamp past)180652
+Ref: (timestamp future)180976
+Ref: (deadline past)181273
+Ref: (scheduled past)181502
+Ref: (scheduled future)181757
+Ref: (scheduled today)181983
+Ref: (closed recent)182226
+Ref: (closed past-day)182455
+Ref: (closed past-week)182531
+Ref: (closed past-month)182609
+Ref: (closed past-year)182689
+Ref: (closed today)182767
+Node: Keyword Filters182963
+Ref: (todo ("KEYWORD1" "KEYWORD2"))183187
+Ref: (done t)183594
+Node: Area of Focus Filters183839
+Ref: (area-of-focus "AREA")184053
+Node: Tag Filters184463
+Ref: (tags ("TAG1" "TAG2"))184657
+Ref: (tags-match "PATTERN")184968
+Node: Property Filters185450
+Ref: (property (("PROP" "VALUE")))185667
+Node: Structural Filters186119
+Ref: (level N)186341
+Node: Special Filters186725
+Ref: (not-habit t)186917
+Ref: (invalid-timestamp t)187184
+Node: View Configuration Options187497
+Ref: (view-type agenda)187767
+Ref: (agenda-span N)188075
+Ref: (show-habits t) or (show-habits nil)188352
+Ref: (additional-blocks BLOCK-SPECS)188693
+Ref: (prefix-format FORMAT-STRING)189009
+Node: Complete View Examples189292
+Ref: Weekly Review View189510
+Ref: Context-Based View190440
+Ref: Morning Planning View190632
+Node: Creating Custom Views191011
+Node: Hooks Framework Reference191693
+Node: The org-gtd-organize-hooks Variable192212
+Node: Built-in Hooks192674
+Ref: org-set-tags-command192874
+Ref: org-gtd-set-area-of-focus193117
+Node: Writing Custom Hooks193636
+Ref: Basic Hook Structure194028
+Ref: Using org-gtd-organize-type-member-p194362
+Node: Example Custom Hooks195435
+Ref: Add Effort Estimation195638
+Ref: Auto-Set Property Based on Keywords196270
+Ref: Add Custom Property196738
+Ref: Integration with Org-Roam197169
+Ref: Set Effort from Keywords197532
+Node: Hook Execution Order198252
+Node: Best Practices198762
+Node: Complete Example Comprehensive Hook Setup199757
+Node: Troubleshooting201886
+Node: Finding lost tasks202294
+Node: Projects without a NEXT item203296
+Node: I can't create a project when clarifying an inbox item!204136
+Node: Configuration problems205094
+Node: Keywords not working205381
+Node: Items not showing in engage view206161
+Node: Still stuck?206909
 
 End Tag Table
 

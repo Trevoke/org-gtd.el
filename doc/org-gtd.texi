@@ -54,7 +54,6 @@ This manual is for Org GTD version 4.0
 * Setting up Org GTD::
 * Getting Started with Org GTD:: Tutorials to get you productive quickly
 * Using Org GTD::                How Org GTD maps to the GTD flow
-* Fix Shoulder Pain::
 * Reference::                    Complete reference for all org-gtd features
 * Troubleshooting::
 
@@ -145,6 +144,7 @@ Using Org GTD
 * The GTD Flow in Depth::        Detailed explanation of each GTD step
 * Understanding GTD Item Types:: When to use each type in the organize menu
 * Working with Projects (Advanced)::
+* Automating through emacs::
 
 Your Daily Workflow
 
@@ -181,24 +181,11 @@ Working with Projects (Advanced)
 * Black Triangle Your First Project Graph View::
 * Understanding Project Dependencies::
 * Tutorial Parallel Tasks with Graph View::
-
-
-Fix Shoulder Pain
-
-* Find place to get MRI::
-* Make MRI appointment::
-* Make orthopedist appointment::
-* Get diagnosis from orthopedist::
-* Automating through emacs::
-
-Get diagnosis from orthopedist
-
 * Tutorial Complex Dependencies with Graph View::
 * Common Dependency Patterns (Visual Reference)::
 * Graph View Command Reference::
 * Practical Tips for Project Management::
 * Troubleshooting Projects with Graph View::
-* Graph View Command Reference: Graph View Command Reference (1). 
 * See Also::
 * Cleaning up / archiving completed work::
 * Commands you can call on org-agenda::
@@ -1908,6 +1895,7 @@ You've completed the tutorials and understand the basics. This section covers ev
 * The GTD Flow in Depth::        Detailed explanation of each GTD step
 * Understanding GTD Item Types:: When to use each type in the organize menu
 * Working with Projects (Advanced)::
+* Automating through emacs::
 @end menu
 
 @node Your Daily Workflow
@@ -2612,6 +2600,16 @@ You learned sequential projects in @ref{Tutorial Your First Project}. This secti
 * Black Triangle Your First Project Graph View::
 * Understanding Project Dependencies::
 * Tutorial Parallel Tasks with Graph View::
+* Tutorial Complex Dependencies with Graph View::
+* Common Dependency Patterns (Visual Reference)::
+* Graph View Command Reference::
+* Practical Tips for Project Management::
+* Troubleshooting Projects with Graph View::
+* See Also::
+* Cleaning up / archiving completed work::
+* Commands you can call on org-agenda::
+* Defining your own agenda views::
+* Adding your own hooks when organizing::
 @end menu
 
 @node First Contact Why Visual Project Management?
@@ -2796,53 +2794,18 @@ Tasks 1 and 3 can happen in parallel—they're independent research tasks.
 
 Capture the project: @code{C-c d c}
 
-#+begin@math{_example}
-@end itemize
-
-@node Fix Shoulder Pain
-@chapter Fix Shoulder Pain
-
-@menu
-* Find place to get MRI::
-* Make MRI appointment::
-* Make orthopedist appointment::
-* Get diagnosis from orthopedist::
-* Automating through emacs::
-@end menu
-
-@node Find place to get MRI
-@section Find place to get MRI
-
-@node Make MRI appointment
-@section Make MRI appointment
-
-@node Make orthopedist appointment
-@section Make orthopedist appointment
-
-@node Get diagnosis from orthopedist
-@section Get diagnosis from orthopedist
-
-#+end@math{_example}
+@example
+* Fix Shoulder Pain
+** Find place to get MRI
+** Make MRI appointment
+** Make orthopedist appointment
+** Get diagnosis from orthopedist
+@end example
 
 Process the inbox: @code{C-c d p}
 
 Organize as a project: @code{C-c c} → @code{[P]}
 
-@menu
-* Tutorial Complex Dependencies with Graph View::
-* Common Dependency Patterns (Visual Reference)::
-* Graph View Command Reference::
-* Practical Tips for Project Management::
-* Troubleshooting Projects with Graph View::
-* Graph View Command Reference: Graph View Command Reference (1). 
-* See Also::
-* Cleaning up / archiving completed work::
-* Commands you can call on org-agenda::
-* Defining your own agenda views::
-* Adding your own hooks when organizing::
-@end menu
-
-@itemize
 @item
 @anchor{Step 2 Open Graph View}Step 2: Open Graph View
 
@@ -3165,6 +3128,8 @@ Here's what different patterns look like in graph view:
 @node Graph View Command Reference
 @subsection Graph View Command Reference
 
+This is the complete command reference for expert users. Press @code{?} in graph view to see the full command menu.
+
 @itemize
 @item
 @anchor{Opening Graph View}Opening Graph View
@@ -3202,28 +3167,7 @@ Here's what different patterns look like in graph view:
 @end multitable
 
 @item
-@anchor{Adding Tasks}Adding Tasks
-
-
-@multitable {aaa} {aaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
-@headitem Key
-@tab Command
-@tab Description
-@item a c
-@tab Add child
-@tab Create task that depends on selected task
-@item a r
-@tab Add root
-@tab Create task with no dependencies (starts immediately)
-@item a b
-@tab Add blocker
-@tab Create task that blocks the selected task
-@end multitable
-
-@strong{After adding}: Graph automatically refreshes to show new task.
-
-@item
-@anchor{View Commands}View Commands
+@anchor{View and Display Commands}View and Display Commands
 
 
 @multitable {aaa} {aaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
@@ -3245,6 +3189,105 @@ Here's what different patterns look like in graph view:
 @end multitable
 
 @item
+@anchor{Adding Tasks}Adding Tasks
+
+
+@multitable {aaa} {aaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Key
+@tab Command
+@tab Description
+@item a c
+@tab Add child
+@tab Create task that depends on selected task
+@item a r
+@tab Add root
+@tab Create task with no dependencies (starts immediately)
+@item a b
+@tab Add blocker
+@tab Create task that blocks the selected task
+@end multitable
+
+@strong{After adding}: Graph automatically refreshes to show new task.
+
+@item
+@anchor{Dependency Operations}Dependency Operations
+
+
+@multitable {aaa} {aaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Key
+@tab Command
+@tab Description
+@item a
+@tab Add dependency
+@tab Add dependency between two tasks (supports convergence)
+@item d
+@tab Remove dependency
+@tab Remove a dependency between two tasks
+@item x
+@tab Clear all relationships
+@tab Clear all relationships from selected task
+@item i
+@tab Show relationships
+@tab Display all relationships for selected task
+@end multitable
+
+@item
+@anchor{Visual Indicators}Visual Indicators
+
+
+@itemize
+@item
+@strong{Green boxes}: NEXT tasks (ready to work on)
+@item
+@strong{Gray boxes}: TODO tasks (blocked by dependencies)
+@item
+@strong{Arrows}: Dependencies (from blocker → blocked task)
+@item
+@strong{Layers}: Vertical positioning shows dependency depth
+@end itemize
+
+@item
+@anchor{Operations Not Available in Graph View}Operations Not Available in Graph View
+
+
+Some operations are standard org-mode functionality and must be done in the org file:
+
+@strong{Changing task properties}:
+@itemize
+@item
+TODO state: @code{C-c C-t} in org file
+@item
+Deadlines/schedules: @code{C-c C-d}, @code{C-c C-s} in org file
+@item
+Task title/description: edit in org file
+@item
+Tags/properties: edit in org file
+@end itemize
+
+@strong{Deleting tasks}: Mark task DONE or CNCL in the org file. Completed tasks still show in graph view (green boxes) to maintain project history.
+
+@strong{Access org file}: Press @code{RET} on any task in graph view to jump to it in the org file.
+
+@item
+@anchor{Text-Based Alternatives}Text-Based Alternatives
+
+
+Most users will find the graph view intuitive for dependency management. However, text-based task management commands are available:
+
+@itemize
+@item
+@code{org-gtd-task-add-blockers} - Add blockers via text interface
+@item
+@code{org-gtd-task-remove-blockers} - Remove blockers via text interface
+@item
+@code{org-gtd-task-show-relationships} - Display relationships in minibuffer
+@item
+@code{org-gtd-validate-project-dependencies} - Validate project structure
+@end itemize
+
+See @ref{Task Dependency Commands} for details.
+
+@item
 @anchor{Future Commands (Planned)}Future Commands (Planned)
 
 
@@ -3262,21 +3305,6 @@ Here's what different patterns look like in graph view:
 @tab Redo
 @tab Not implemented (redo undone change)
 @end multitable
-
-@item
-@anchor{Visual Indicators}Visual Indicators
-
-
-@itemize
-@item
-@strong{Green boxes}: NEXT tasks (ready to work on)
-@item
-@strong{Gray boxes}: TODO tasks (blocked by dependencies)
-@item
-@strong{Arrows}: Dependencies (from blocker → blocked task)
-@item
-@strong{Layers}: Vertical positioning shows dependency depth
-@end itemize
 @end itemize
 
 @node Practical Tips for Project Management
@@ -3440,84 +3468,6 @@ Press @code{a b} to add a blocker task
 @item
 Or restructure: tasks later in the workflow should be children (@code{a c}) of earlier tasks
 @end itemize
-@end itemize
-
-@node Graph View Command Reference (1)
-@subsection Graph View Command Reference
-
-The graph view supports comprehensive dependency management through keyboard commands. Press @code{?} in graph view to see the full command menu.
-
-@itemize
-@item
-@anchor{Dependency Operations}Dependency Operations
-
-
-@strong{Available commands}:
-@itemize
-@item
-@code{a}: Add dependency between two tasks (supports convergence/diamond patterns)
-@item
-@code{d}: Remove a dependency between two tasks
-@item
-@code{x}: Clear all relationships from selected task
-@item
-@code{i}: Show all relationships for selected task
-@end itemize
-
-@item
-@anchor{Adding Tasks (1)}Adding Tasks
-
-
-@strong{Available commands}:
-@itemize
-@item
-@code{a c}: Add child task (depends on current task)
-@item
-@code{a r}: Add root task (no dependencies)
-@item
-@code{a b}: Add blocker task (blocks current task and becomes root)
-@end itemize
-
-@item
-@anchor{Operations Not in Graph View}Operations Not in Graph View
-
-
-Some operations are standard org-mode functionality, not graph-specific:
-
-@strong{Changing task properties}:
-@itemize
-@item
-TODO state (@code{C-c C-t} in org file)
-@item
-Deadlines/schedules (@code{C-c C-d}, @code{C-c C-s} in org file)
-@item
-Task title/description (edit in org file)
-@item
-Tags/properties (edit in org file)
-@end itemize
-
-@strong{Access org file}: Press @code{RET} on any task in graph view to jump to it in the org file.
-
-@strong{Deleting tasks}: Mark task DONE or CNCL in the org file. Completed tasks still show in graph view (as green boxes) to maintain project history.
-
-@item
-@anchor{When to Use Text-Based Commands}When to Use Text-Based Commands
-
-
-Most users will find the graph view intuitive for dependency management. However, text-based task management commands are available:
-
-@itemize
-@item
-@code{org-gtd-task-add-blockers} - Add blockers via text interface
-@item
-@code{org-gtd-task-remove-blockers} - Remove blockers via text interface
-@item
-@code{org-gtd-task-show-relationships} - Display relationships in minibuffer
-@item
-@code{org-gtd-validate-project-dependencies} - Validate project structure
-@end itemize
-
-See @ref{Task Dependency Commands} for details.
 @end itemize
 
 @node See Also

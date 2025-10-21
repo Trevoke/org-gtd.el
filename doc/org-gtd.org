@@ -1705,11 +1705,11 @@ Tasks 1 and 3 can happen in parallel—they're independent research tasks.
 Capture the project: ~C-c d c~
 
 #+begin_example
-* Fix Shoulder Pain
-** Find place to get MRI
-** Make MRI appointment
-** Make orthopedist appointment
-** Get diagnosis from orthopedist
+,* Fix Shoulder Pain
+,** Find place to get MRI
+,** Make MRI appointment
+,** Make orthopedist appointment
+,** Get diagnosis from orthopedist
 #+end_example
 
 Process the inbox: ~C-c d p~
@@ -1945,6 +1945,8 @@ Here's what different patterns look like in graph view:
 :CUSTOM_ID: graph-view-command-reference
 :END:
 
+This is the complete command reference for expert users. Press ~?~ in graph view to see the full command menu.
+
 **** Opening Graph View
 
 ~M-x org-gtd-graph-view~
@@ -1963,6 +1965,15 @@ Here's what different patterns look like in graph view:
 | g       | Goto node                  | Jump to task by name (with completion)                |
 | RET     | Jump to task in org file   | Opens the org file at the task's location             |
 
+**** View and Display Commands
+
+| Key   | Command          | Description                                                  |
+|-------+------------------+--------------------------------------------------------------|
+| ?     | Show menu        | Display transient menu with all commands                     |
+| r     | Refresh          | Rebuild graph (use after external changes)                   |
+| q     | Quit             | Close graph view, keep buffer                                |
+| Q     | Quit and kill    | Close graph view and kill buffer                             |
+
 **** Adding Tasks
 
 | Key   | Command          | Description                                                  |
@@ -1973,14 +1984,46 @@ Here's what different patterns look like in graph view:
 
 *After adding*: Graph automatically refreshes to show new task.
 
-**** View Commands
+**** Dependency Operations
 
-| Key   | Command          | Description                                                  |
-|-------+------------------+--------------------------------------------------------------|
-| ?     | Show menu        | Display transient menu with all commands                     |
-| r     | Refresh          | Rebuild graph (use after external changes)                   |
-| q     | Quit             | Close graph view, keep buffer                                |
-| Q     | Quit and kill    | Close graph view and kill buffer                             |
+| Key   | Command                    | Description                                              |
+|-------+----------------------------+----------------------------------------------------------|
+| a     | Add dependency             | Add dependency between two tasks (supports convergence)  |
+| d     | Remove dependency          | Remove a dependency between two tasks                    |
+| x     | Clear all relationships    | Clear all relationships from selected task               |
+| i     | Show relationships         | Display all relationships for selected task              |
+
+**** Visual Indicators
+
+- *Green boxes*: NEXT tasks (ready to work on)
+- *Gray boxes*: TODO tasks (blocked by dependencies)
+- *Arrows*: Dependencies (from blocker → blocked task)
+- *Layers*: Vertical positioning shows dependency depth
+
+**** Operations Not Available in Graph View
+
+Some operations are standard org-mode functionality and must be done in the org file:
+
+*Changing task properties*:
+- TODO state: ~C-c C-t~ in org file
+- Deadlines/schedules: ~C-c C-d~, ~C-c C-s~ in org file
+- Task title/description: edit in org file
+- Tags/properties: edit in org file
+
+*Deleting tasks*: Mark task DONE or CNCL in the org file. Completed tasks still show in graph view (green boxes) to maintain project history.
+
+*Access org file*: Press ~RET~ on any task in graph view to jump to it in the org file.
+
+**** Text-Based Alternatives
+
+Most users will find the graph view intuitive for dependency management. However, text-based task management commands are available:
+
+- ~org-gtd-task-add-blockers~ - Add blockers via text interface
+- ~org-gtd-task-remove-blockers~ - Remove blockers via text interface
+- ~org-gtd-task-show-relationships~ - Display relationships in minibuffer
+- ~org-gtd-validate-project-dependencies~ - Validate project structure
+
+See [[#task-dependency-commands][Task Dependency Commands]] for details.
 
 **** Future Commands (Planned)
 
@@ -1989,13 +2032,6 @@ Here's what different patterns look like in graph view:
 | z     | Zoom             | Not implemented (filter/focus features)                      |
 | u     | Undo             | Not implemented (undo last graph change)                     |
 | C-r   | Redo             | Not implemented (redo undone change)                         |
-
-**** Visual Indicators
-
-- *Green boxes*: NEXT tasks (ready to work on)
-- *Gray boxes*: TODO tasks (blocked by dependencies)
-- *Arrows*: Dependencies (from blocker → blocked task)
-- *Layers*: Vertical positioning shows dependency depth
 
 *** Practical Tips for Project Management
 
@@ -2082,50 +2118,6 @@ In graph view:
 - Select a task that should be blocked
 - Press ~a b~ to add a blocker task
 - Or restructure: tasks later in the workflow should be children (~a c~) of earlier tasks
-
-*** Graph View Command Reference
-
-The graph view supports comprehensive dependency management through keyboard commands. Press ~?~ in graph view to see the full command menu.
-
-**** Dependency Operations
-
-*Available commands*:
-- ~a~: Add dependency between two tasks (supports convergence/diamond patterns)
-- ~d~: Remove a dependency between two tasks
-- ~x~: Clear all relationships from selected task
-- ~i~: Show all relationships for selected task
-
-**** Adding Tasks
-
-*Available commands*:
-- ~a c~: Add child task (depends on current task)
-- ~a r~: Add root task (no dependencies)
-- ~a b~: Add blocker task (blocks current task and becomes root)
-
-**** Operations Not in Graph View
-
-Some operations are standard org-mode functionality, not graph-specific:
-
-*Changing task properties*:
-- TODO state (~C-c C-t~ in org file)
-- Deadlines/schedules (~C-c C-d~, ~C-c C-s~ in org file)
-- Task title/description (edit in org file)
-- Tags/properties (edit in org file)
-
-*Access org file*: Press ~RET~ on any task in graph view to jump to it in the org file.
-
-*Deleting tasks*: Mark task DONE or CNCL in the org file. Completed tasks still show in graph view (as green boxes) to maintain project history.
-
-**** When to Use Text-Based Commands
-
-Most users will find the graph view intuitive for dependency management. However, text-based task management commands are available:
-
-- ~org-gtd-task-add-blockers~ - Add blockers via text interface
-- ~org-gtd-task-remove-blockers~ - Remove blockers via text interface
-- ~org-gtd-task-show-relationships~ - Display relationships in minibuffer
-- ~org-gtd-validate-project-dependencies~ - Validate project structure
-
-See [[#task-dependency-commands][Task Dependency Commands]] for details.
 
 *** See Also
 
