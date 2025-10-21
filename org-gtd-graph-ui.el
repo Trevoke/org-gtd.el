@@ -31,6 +31,7 @@
 
 (require 'org)
 (require 'org-id)
+(require 'org-gtd-task-management)
 
 ;;;; Customization
 
@@ -64,7 +65,7 @@
 Creates side window for task details panel.
 Returns (graph-window . details-window) cons cell."
   (let* ((graph-window (get-buffer-window graph-buffer))
-         (total-width (window-body-width graph-window t))
+         (total-width (window-body-width graph-window))
          (graph-width (floor (* total-width org-gtd-graph-ui-split-ratio)))
          (details-width (- total-width graph-width))
          (details-window (split-window-right (- details-width) graph-window))
@@ -185,24 +186,56 @@ Returns formatted text suitable for display in details buffer."
                (todo-state (org-get-todo-state))
                (scheduled (org-entry-get nil "SCHEDULED"))
                (deadline (org-entry-get nil "DEADLINE"))
-               (properties (org-entry-properties))
-               (body (org-get-entry)))
+               (file (buffer-file-name))
+               (depends-on (org-entry-get-multivalued-property nil "ORG_GTD_DEPENDS_ON"))
+               (blocks (org-entry-get-multivalued-property nil "ORG_GTD_BLOCKS"))
+               (body (org-gtd-graph-ui--get-body-text)))
           (concat
            (format "* %s" heading)
            (when todo-state (format " [%s]" todo-state))
-           "\n"
+           "\n\n"
+           (when file (format "File: %s\n\n" file))
            (when scheduled (format "SCHEDULED: %s\n" scheduled))
            (when deadline (format "DEADLINE: %s\n" deadline))
-           "\n:PROPERTIES:\n"
-           (mapconcat
-            (lambda (prop)
-              (format ":%s: %s" (car prop) (cdr prop)))
-            properties
-            "\n")
-           "\n:END:\n\n"
-           (or body "")
-           "\n\n"
+           (when (or scheduled deadline) "\n")
+           (when depends-on
+             (concat "Blocked by:\n"
+                     (mapconcat (lambda (id)
+                                  (format "  - %s"
+                                          (org-gtd-task-management--get-heading-for-id id)))
+                                depends-on
+                                "\n")
+                     "\n\n"))
+           (when blocks
+             (concat "Blocks:\n"
+                     (mapconcat (lambda (id)
+                                  (format "  - %s"
+                                          (org-gtd-task-management--get-heading-for-id id)))
+                                blocks
+                                "\n")
+                     "\n\n"))
+           (when (and body (not (string-empty-p (string-trim body))))
+             (concat body "\n\n"))
            "[Press RET to jump to task in org file]"))))))
+
+(defun org-gtd-graph-ui--get-body-text ()
+  "Get body text of current entry, excluding property drawer and child headings."
+  (save-excursion
+    (org-back-to-heading t)
+    (let* ((element (org-element-at-point))
+           (content-begin (org-element-property :contents-begin element))
+           (content-end (org-element-property :contents-end element)))
+      (when (and content-begin content-end)
+        (let ((content (buffer-substring-no-properties content-begin content-end)))
+          ;; Remove property drawer (handle multiline with [\s\S] which matches any char including newlines)
+          (setq content (replace-regexp-in-string
+                         "^[ \t]*:PROPERTIES:[[:ascii:][:nonascii:]]*?:END:[ \t]*\n"
+                         ""
+                         content))
+          ;; Remove child headings and everything after them
+          (when (string-match "^\\*+" content)
+            (setq content (substring content 0 (match-beginning 0))))
+          (string-trim content))))))
 
 (defun org-gtd-graph-ui-jump-to-task ()
   "Jump to the currently selected task in its org file."

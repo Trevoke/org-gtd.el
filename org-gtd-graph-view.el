@@ -80,11 +80,6 @@
       (setq org-gtd-graph-view--project-marker project-marker)
       (org-gtd-graph-view-refresh)
 
-      ;; Auto-select project heading as initial node
-      (when-let* ((graph org-gtd-graph-view--graph)
-                  (project-id (org-gtd-graph-project-id graph)))
-        (org-gtd-graph-ui-select-node project-id t))  ; t = no history
-
       (org-gtd-graph-view--setup-file-watch)
       (add-hook 'kill-buffer-hook #'org-gtd-graph-view--cleanup-file-watch nil t)
       (add-hook 'kill-buffer-hook #'org-gtd-graph-ui-cleanup-windows nil t))
@@ -92,6 +87,12 @@
     (switch-to-buffer buffer)
     ;; Setup split-window layout after buffer is displayed
     (org-gtd-graph-ui-setup-windows buffer)
+
+    ;; Auto-select project heading as initial node (after window setup)
+    (when-let* ((graph org-gtd-graph-view--graph)
+                (project-id (org-gtd-graph-project-id graph)))
+      (org-gtd-graph-ui-select-node project-id t))  ; t = no history
+
     buffer))
 
 (defun org-gtd-graph-view--setup-file-watch ()
