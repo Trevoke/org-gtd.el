@@ -74,7 +74,9 @@
       "Bash(~/bin/eldev:*)",
       "Bash(/home/stag/bin/eldev test:*)",
       "WebSearch",
-      "mcp__emacs-30__eval_elisp"
+      "mcp__emacs-30__eval_elisp",
+      "Bash(git log:*)",
+      "WebFetch(domain:stevelosh.com)"
     ],
     "deny": []
   },

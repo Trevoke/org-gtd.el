@@ -42,9 +42,9 @@
    ["Add"
     ("a c" "child task" org-gtd-graph-transient-add-child)
     ("a r" "root task" org-gtd-graph-transient-add-root)
-    ("a b" "blocker task" org-gtd-graph-view-add-blocker)]
+    ("a b" "blocker task" org-gtd-graph-view-add-blocker)
+    ("a d" "dependency" org-gtd-graph-view-add-dependency)]
    ["Modify"
-    ("a" "add dependency" org-gtd-graph-view-add-dependency)
     ("d" "remove dependency" org-gtd-graph-view-remove-dependency)
     ("x" "clear all relationships" org-gtd-graph-view-clear-relationships)]
    ["Inspect"
@@ -59,9 +59,7 @@
    ["View"
     ("z" "zoom" org-gtd-graph-transient-zoom)]
    ["Actions"
-    ("r" "refresh" org-gtd-graph-view-refresh :transient t)
-    ("u" "undo" org-gtd-graph-undo)
-    ("C-r" "redo" org-gtd-graph-redo)]
+    ("r" "refresh" org-gtd-graph-view-refresh :transient t)]
    ["Quit"
     ("q" "quit" transient-quit-one)
     ("Q" "quit and kill" org-gtd-graph-quit-and-kill)]])
@@ -157,18 +155,6 @@ ORG_GTD_FIRST_TASKS property."
    ["Zoom"
     ("z" "zoom to selected subtree" org-gtd-graph-zoom-to-subtree)
     ("o" "zoom out to full view" org-gtd-graph-zoom-out-full)]])
-
-;;;; Undo/Redo Commands (Phase 6 placeholders)
-
-(defun org-gtd-graph-undo ()
-  "Undo last graph change."
-  (interactive)
-  (message "Undo (Phase 6)"))
-
-(defun org-gtd-graph-redo ()
-  "Redo last undone change."
-  (interactive)
-  (message "Redo (Phase 6)"))
 
 ;;;; Quit Commands
 

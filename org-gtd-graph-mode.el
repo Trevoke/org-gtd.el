@@ -31,7 +31,6 @@
 (require 'org-gtd-graph-transient)
 (require 'org-gtd-graph-navigation)
 (require 'org-gtd-graph-ui)
-(require 'org-gtd-graph-undo)
 
 ;;;; Keymap
 
@@ -43,14 +42,6 @@
     ;; Graph operations
     (define-key map (kbd "r") #'org-gtd-graph-view-refresh)
     (define-key map (kbd "q") #'quit-window)
-    (define-key map (kbd "u") #'org-gtd-graph-undo)
-    (define-key map (kbd "C-r") #'org-gtd-graph-redo)
-
-    ;; Dependency operations
-    (define-key map (kbd "a") #'org-gtd-graph-view-add-dependency)
-    (define-key map (kbd "d") #'org-gtd-graph-view-remove-dependency)
-    (define-key map (kbd "x") #'org-gtd-graph-view-clear-relationships)
-    (define-key map (kbd "i") #'org-gtd-graph-view-show-relationships)
 
     ;; Dependency-based navigation
     (define-key map (kbd "n") #'org-gtd-graph-nav-down-dependency)
