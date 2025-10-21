@@ -33,6 +33,9 @@
 (require 'org-id)
 (require 'org-gtd-task-management)
 
+;; Forward declarations to avoid circular dependency
+(declare-function org-gtd-graph-view-refresh "org-gtd-graph-view")
+
 ;;;; Customization
 
 (defcustom org-gtd-graph-ui-split-ratio 0.7
@@ -152,7 +155,10 @@ If NO-HISTORY is non-nil, don't add to navigation history."
     ;; Clear future stack when navigating normally (not via back/forward)
     (setq org-gtd-graph-ui--navigation-future nil))
   (setq org-gtd-graph-ui--selected-node-id node-id)
-  (org-gtd-graph-ui-update-details))
+  (org-gtd-graph-ui-update-details)
+  ;; Refresh graph to show selection highlight
+  (when (fboundp 'org-gtd-graph-view-refresh)
+    (org-gtd-graph-view-refresh)))
 
 (defun org-gtd-graph-ui-update-details ()
   "Update details panel with info from selected node.
@@ -189,6 +195,7 @@ Returns formatted text suitable for display in details buffer."
                (file (buffer-file-name))
                (depends-on (org-entry-get-multivalued-property nil "ORG_GTD_DEPENDS_ON"))
                (blocks (org-entry-get-multivalued-property nil "ORG_GTD_BLOCKS"))
+               (first-tasks (org-entry-get-multivalued-property nil "ORG_GTD_FIRST_TASKS"))
                (body (org-gtd-graph-ui--get-body-text)))
           (concat
            (format "* %s" heading)
@@ -198,6 +205,14 @@ Returns formatted text suitable for display in details buffer."
            (when scheduled (format "SCHEDULED: %s\n" scheduled))
            (when deadline (format "DEADLINE: %s\n" deadline))
            (when (or scheduled deadline) "\n")
+           (when first-tasks
+             (concat "First tasks:\n"
+                     (mapconcat (lambda (id)
+                                  (format "  - %s"
+                                          (org-gtd-task-management--get-heading-for-id id)))
+                                first-tasks
+                                "\n")
+                     "\n\n"))
            (when depends-on
              (concat "Blocked by:\n"
                      (mapconcat (lambda (id)
