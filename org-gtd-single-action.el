@@ -36,14 +36,12 @@
 
 ;;;; Constants
 
-(defconst org-gtd-action "Actions")
-
 (defconst org-gtd-action-template
   (format "* Actions
 :PROPERTIES:
-:ORG_GTD_REFILE: %s
+:%s: %s
 :END:
-" org-gtd-action))
+" org-gtd-prop-refile org-gtd-action))
 
 (defconst org-gtd-single-action-func #'org-gtd-single-action--apply
   "Function called when organizing item at point as a single next action.")

@@ -54,8 +54,6 @@
   "+ORG_GTD=\"Projects\""
   "How to tell `org-mode' to find project headings.")
 
-(defconst org-gtd-projects "Projects")
-
 (defconst org-gtd-projects--malformed
   "A 'project' in GTD is a finite set of steps after which a given task is
 complete. In Org GTD, this is defined as a top-level org heading with at least
@@ -73,9 +71,9 @@ instead.")
 (defconst org-gtd-projects-template
   (format "* Projects
 :PROPERTIES:
-:ORG_GTD_REFILE: %s
+:%s: %s
 :END:
-" org-gtd-projects))
+" org-gtd-prop-refile org-gtd-projects))
 
 ;;;###autoload
 (defun org-gtd-stuck-projects ()
@@ -151,7 +149,7 @@ Only resets states that should be recalculated (preserves WAIT, DONE, CNCL)."
   (let ((all-task-markers (org-gtd-projects--collect-tasks-by-graph project-marker)))
     (dolist (task-marker all-task-markers)
       (org-with-point-at task-marker
-        (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
+        (when (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-action)
           (let ((todo-state (org-entry-get (point) "TODO")))
             (when (org-gtd-todo-state-should-reset-p todo-state)
               (org-entry-put (point) "TODO" (org-gtd-keywords--todo)))))))))
@@ -292,18 +290,18 @@ Refile to `org-gtd-actionable-file-basename'."
     (save-excursion
       ;; Navigate up to find the project heading (has ORG_GTD="Projects")
       (while (and (org-up-heading-safe)
-                  (not (string= (org-entry-get (point) "ORG_GTD") "Projects"))))
-      (when (string= (org-entry-get (point) "ORG_GTD") "Projects")
+                  (not (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-projects))))
+      (when (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-projects)
         (let ((project-name (org-get-heading t t t t))
               (project-id (or (org-entry-get (point) "ID")
                               (org-gtd-id-get-create))))
           ;; Go back to original task and set the properties
           (goto-char original-point)
           ;; Set the multi-valued project IDs property
-          (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)
+          (org-entry-add-to-multivalued-property (point) org-gtd-prop-project-ids project-id)
           ;; Only set ORG_GTD_PROJECT if not already set (preserves first project for multi-project tasks)
-          (unless (org-entry-get (point) "ORG_GTD_PROJECT")
-            (org-entry-put (point) "ORG_GTD_PROJECT" project-name)))))))
+          (unless (org-entry-get (point) org-gtd-prop-project)
+            (org-entry-put (point) org-gtd-prop-project project-name)))))))
 
 (defun org-gtd-projects--configure-all-tasks ()
   "Configure all sub-tasks in the project as project-task items."
@@ -316,12 +314,12 @@ Refile to `org-gtd-actionable-file-basename'."
                          (org-get-heading t t t t))))
     (org-map-entries
      (lambda ()
-       (unless (string= (org-entry-get (point) "ORG_GTD") "Projects")
+       (unless (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-projects)
          (org-gtd-configure-item (point) :project-task)
-         (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)
+         (org-entry-add-to-multivalued-property (point) org-gtd-prop-project-ids project-id)
          ;; Only set ORG_GTD_PROJECT if not already set (preserves first project for multi-project tasks)
-         (unless (org-entry-get (point) "ORG_GTD_PROJECT")
-           (org-entry-put (point) "ORG_GTD_PROJECT" project-name))))
+         (unless (org-entry-get (point) org-gtd-prop-project)
+           (org-entry-put (point) org-gtd-prop-project project-name))))
      nil
      'tree)))
 
@@ -364,7 +362,7 @@ Works cross-file by combining graph traversal with tree search."
                                  (error nil))))
       (dolist (task-marker graph-task-markers)
         (org-with-point-at task-marker
-          (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
+          (when (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-action)
             (let ((task-id (org-entry-get (point) "ID")))
               (when task-id
                 (puthash task-id task-marker seen-task-ids)))))))
@@ -372,7 +370,7 @@ Works cross-file by combining graph traversal with tree search."
     ;; Part 2: Also check current buffer tree (finds newly added unconnected tasks)
     (org-map-entries
      (lambda ()
-       (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
+       (when (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-action)
          (let ((task-id (org-entry-get (point) "ID")))
            (when (and task-id (not (gethash task-id seen-task-ids)))
              (puthash task-id (point-marker) seen-task-ids)))))
@@ -385,7 +383,7 @@ Works cross-file by combining graph traversal with tree search."
       ;; Collect all seen tasks in document order from current buffer
       (org-map-entries
        (lambda ()
-         (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
+         (when (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-action)
            (let ((task-id (org-entry-get (point) "ID")))
              (when (gethash task-id seen-task-ids)
                (push (point-marker) ordered-task-markers)))))
@@ -425,7 +423,7 @@ Returns list of markers pointing to task headings with ORG_GTD=Actions."
   (let ((tasks '()))
     (org-map-entries
      (lambda ()
-       (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
+       (when (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-action)
          (push (point-marker) tasks)))
      nil
      'tree)
@@ -474,7 +472,7 @@ Returns list of task markers in breadth-first order."
             ;; 1. Has current project ID in ORG_GTD_PROJECT_IDS, OR
             ;; 2. Has no ORG_GTD_PROJECT_IDS (simple task belonging only to this project)
             (org-with-point-at task-location
-              (let ((task-project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+              (let ((task-project-ids (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids)))
                 (when (or (null task-project-ids)  ; No project IDs - belongs to this project
                           (member project-id task-project-ids))  ; Has this project's ID
                   (push task-location result-tasks)
@@ -609,7 +607,7 @@ Orchestrates adding a new task to an existing project:
   "Decorate tasks for project at point."
   (org-map-entries
    (lambda ()
-     (when (string= (org-entry-get (point) "ORG_GTD") "Actions")
+     (when (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-action)
        (org-narrow-to-element)
        (org-gtd-organize-apply-hooks)
        (widen)))

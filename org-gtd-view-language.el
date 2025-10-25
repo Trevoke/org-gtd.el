@@ -217,33 +217,33 @@ GTD-VIEW-SPEC should be an alist with 'name and 'filters keys."
    ((eq category 'delegated)
     (list '(property "DELEGATED_TO")))
    ((eq category 'calendar)
-    (list '(property "ORG_GTD" "Calendar")))
+    (list `(property ,org-gtd-prop-category ,org-gtd-calendar)))
    ((eq category 'projects)
-    (list '(property "ORG_GTD" "Projects")))
+    (list `(property ,org-gtd-prop-category ,org-gtd-projects)))
    ((eq category 'active-projects)
-    (list '(and (property "ORG_GTD" "Projects")
+    (list `(and (property ,org-gtd-prop-category ,org-gtd-projects)
                 (project-has-active-tasks))))
    ((eq category 'completed-projects)
-    (list '(and (property "ORG_GTD" "Projects")
+    (list `(and (property ,org-gtd-prop-category ,org-gtd-projects)
                 (level 2)
                 (not (project-has-active-tasks)))))
    ((eq category 'stuck-projects)
-    (list '(and (property "ORG_GTD" "Projects")
+    (list `(and (property ,org-gtd-prop-category ,org-gtd-projects)
                 (level 2)
                 (project-is-stuck))))
    ((eq category 'incubate)
-    (list '(property "ORG_GTD" "Incubated")))
+    (list `(property ,org-gtd-prop-category ,org-gtd-incubate)))
    ((eq category 'habit)
-    (list '(property "STYLE" "habit")))
+    (list `(property ,org-gtd-prop-style ,org-gtd-prop-style-value-habit)))
    (t (error "Unknown category: %s" category))))
 
 (defun org-gtd-view-lang--translate-timestamp-filter (time-spec)
   "Translate timestamp TIME-SPEC to org-ql time filter."
   (cond
    ((eq time-spec 'past)
-    (list '(property-ts< "ORG_GTD_TIMESTAMP" "today") '(not (done))))
+    (list `(property-ts< ,org-gtd-timestamp "today") '(not (done))))
    ((eq time-spec 'future)
-    (list '(property-ts> "ORG_GTD_TIMESTAMP" "today")))
+    (list `(property-ts> ,org-gtd-timestamp "today")))
    (t (error "Unknown timestamp spec: %s" time-spec))))
 
 
@@ -292,16 +292,16 @@ GTD-VIEW-SPEC should be an alist with 'name and 'filters keys."
 Uses property-invalid-timestamp predicate to find items with missing or
 malformed ORG_GTD_TIMESTAMP properties."
   (when value
-    (list '(property-invalid-timestamp "ORG_GTD_TIMESTAMP"))))
+    (list `(property-invalid-timestamp ,org-gtd-timestamp))))
 
 (defun org-gtd-view-lang--translate-not-habit-filter (value)
   "Translate not-habit VALUE to org-ql filter."
   (when value
-    (list '(not (property "STYLE" "habit")))))
+    (list `(not (property ,org-gtd-prop-style ,org-gtd-prop-style-value-habit)))))
 
 (defun org-gtd-view-lang--translate-area-of-focus-filter (area)
   "Translate area-of-focus AREA to org-ql category filter."
-  (list `(property "CATEGORY" ,area)))
+  (list `(property ,org-gtd-prop-area-of-focus ,area)))
 
 (defun org-gtd-view-lang--translate-todo-filter (keywords)
   "Translate todo KEYWORDS to org-ql todo filter."

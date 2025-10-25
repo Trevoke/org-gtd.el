@@ -140,7 +140,7 @@ Directories are expanded to their contained .org files recursively."
 
 (defun org-gtd--remove-project-id-from-task (pom project-id)
   "Remove PROJECT-ID from ORG_GTD_PROJECT_IDS property at position POM."
-  (org-entry-remove-from-multivalued-property pom "ORG_GTD_PROJECT_IDS" project-id))
+  (org-entry-remove-from-multivalued-property pom org-gtd-prop-project-ids project-id))
 
 (defun org-gtd--archive-task-if-no-projects (pom project-id)
   "Remove PROJECT-ID from task at POM, and archive task if no projects remain.
@@ -158,7 +158,7 @@ POM can be a marker or an integer position."
     ;; Then check if any projects remain
     (let ((should-archive nil))
       (org-with-point-at pom
-        (let ((remaining-projects (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+        (let ((remaining-projects (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids)))
           (when (null remaining-projects)
             (setq should-archive t))))
 
@@ -233,7 +233,7 @@ handled separately via graph traversal)."
           ;; Collect child tasks that still have project IDs (i.e., shared tasks)
           (while (and (not (eobp)) (> (org-current-level) level))
             (when (and (= (org-current-level) (1+ level))
-                       (org-entry-get (point) "ORG_GTD_PROJECT_IDS"))
+                       (org-entry-get (point) org-gtd-prop-project-ids))
               (push (point-marker) tasks-to-refile))
             (outline-next-heading))
           ;; Refile shared tasks to Actions category at top level

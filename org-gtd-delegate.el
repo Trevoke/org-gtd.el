@@ -126,7 +126,7 @@ CONFIG-OVERRIDE can provide input configuration to override default prompting be
 
 (defun org-gtd-delegate--insert-timestamp ()
   "Insert timestamp from ORG_GTD_TIMESTAMP property into item content."
-  (let ((timestamp (org-entry-get (point) "ORG_GTD_TIMESTAMP")))
+  (let ((timestamp (org-entry-get (point) org-gtd-timestamp)))
     (when timestamp
       (save-excursion
         (org-end-of-meta-data t)

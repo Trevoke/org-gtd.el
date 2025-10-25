@@ -134,8 +134,8 @@ This assumes all GTD files are also agenda files."
 
 (defun org-gtd-agenda--prefix-format ()
   "Format prefix for items in agenda buffer."
-  (let* ((project-name (org-entry-get (point) "ORG_GTD_PROJECT"))
-         (category (org-entry-get (point) "CATEGORY" t))
+  (let* ((project-name (org-entry-get (point) org-gtd-prop-project))
+         (category (org-entry-get (point) org-gtd-prop-area-of-focus t))
          (tally-cookie-regexp "\[[[:digit:]]+/[[:digit:]]+\][[:space:]]*"))
     (org-gtd--truncate-project-to-width
      ;; if has ORG_GTD_PROJECT, use it

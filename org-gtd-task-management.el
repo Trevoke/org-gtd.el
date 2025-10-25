@@ -222,7 +222,7 @@ related tasks to maintain bidirectional consistency."
             (org-entry-delete (point) "ORG_GTD_DEPENDS_ON"))
 
           ;; Remove project name since task is no longer connected to project
-          (org-entry-delete (point) "ORG_GTD_PROJECT")
+          (org-entry-delete (point) org-gtd-prop-project)
 
           ;; Update project TODO states if task belongs to a project
           (when project-id
@@ -264,7 +264,7 @@ Returns empty list if task not found or blocks nothing."
   "Get the project ID for the task at point.
 If task belongs to multiple projects, prompts user to select one.
 Returns nil if task doesn't belong to any project."
-  (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+  (let ((project-ids (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids)))
     (cond
      ((null project-ids) nil)
      ((= 1 (length project-ids)) (car project-ids))
@@ -280,9 +280,9 @@ Returns nil if task doesn't belong to any project."
   "Add TASK-ID to PROJECT-ID by updating ORG_GTD_PROJECT_IDS property."
   (when-let ((marker (org-id-find task-id t)))
     (org-with-point-at marker
-      (let ((current-projects (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+      (let ((current-projects (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids)))
         (unless (member project-id current-projects)
-          (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id))))))
+          (org-entry-add-to-multivalued-property (point) org-gtd-prop-project-ids project-id))))))
 
 (defun org-gtd-task-management--update-project-state (project-id)
   "Update TODO states for PROJECT-ID after dependency changes."
@@ -771,7 +771,7 @@ Handles reconnection of dependent tasks based on user choice."
 
   (let* ((task-id (or (org-entry-get (point) "ID")
                      (user-error "Task must have an ID to remove from project")))
-         (project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+         (project-ids (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids)))
 
     (unless project-ids
       (user-error "Task does not belong to any projects"))
@@ -813,12 +813,12 @@ Handles reconnection of dependent tasks based on user choice."
         (org-entry-delete (point) "ORG_GTD_BLOCKS"))
 
       ;; Remove project ID from task
-      (org-entry-remove-from-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)
+      (org-entry-remove-from-multivalued-property (point) org-gtd-prop-project-ids project-id)
 
       ;; TODO: Remove from project's ORG_GTD_FIRST_TASKS if present
 
       ;; Check if this was the last project - if so, convert to single action
-      (let ((remaining-projects (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+      (let ((remaining-projects (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids)))
         (when (or (null remaining-projects) (equal remaining-projects '("")))
           ;; This was the last project - convert task to single action (property only, stay in place)
           (org-gtd-configure-item (point) :next)))

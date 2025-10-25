@@ -254,7 +254,11 @@ and edges between visible nodes."
   "Prompt for TODO states to filter."
   (interactive)
   (require 'org-gtd-graph-view)
-  (let* ((all-states '("TODO" "NEXT" "WAIT" "DONE" "CNCL"))
+  (let* ((all-states (list (org-gtd-keywords--todo)
+                           (org-gtd-keywords--next)
+                           (org-gtd-keywords--wait)
+                           (org-gtd-keywords--canceled)
+                           "DONE"))
          (selected (completing-read-multiple
                     "Filter by TODO states (comma-separated): "
                     all-states nil t))

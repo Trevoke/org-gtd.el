@@ -262,6 +262,67 @@ the mapping is valid."
 (defconst org-gtd-timestamp "ORG_GTD_TIMESTAMP"
   "Org property storing timestamps for `org-gtd' logic.")
 
+;;;;; GTD Category Constants
+
+(defconst org-gtd-action "Actions"
+  "GTD category for single action tasks.")
+
+(defconst org-gtd-projects "Projects"
+  "GTD category for multi-step projects.")
+
+(defconst org-gtd-calendar "Calendar"
+  "GTD category for calendar/time-specific items.")
+
+(defconst org-gtd-habit "Habits"
+  "GTD category for recurring habits.")
+
+(defconst org-gtd-incubate "Incubated"
+  "GTD category for someday/maybe items.")
+
+(defconst org-gtd-knowledge "Reference"
+  "GTD category for reference materials/knowledge.")
+
+(defconst org-gtd-trash "Trash"
+  "GTD category for discarded items.")
+
+;;;;; Org-mode Special Property Names
+
+(defconst org-gtd-prop-todo "TODO"
+  "Org-mode property name that stores the TODO keyword state.")
+
+(defconst org-gtd-prop-style "STYLE"
+  "Org-mode STYLE property name, used for habits and other styling.")
+
+(defconst org-gtd-prop-style-value-habit "habit"
+  "Value for STYLE property to mark an item as a habit.")
+
+(defconst org-gtd-prop-area-of-focus "CATEGORY"
+  "Org-mode CATEGORY property, used in org-gtd for Areas of Focus (GTD Horizons).
+This property also controls the prefix displayed in agenda views.")
+
+;;;;; Org-gtd Property Names
+
+(defconst org-gtd-prop-depends-on "ORG_GTD_DEPENDS_ON"
+  "Property storing task IDs this task depends on.")
+
+(defconst org-gtd-prop-blocks "ORG_GTD_BLOCKS"
+  "Property storing task IDs this task blocks.")
+
+(defconst org-gtd-prop-first-tasks "ORG_GTD_FIRST_TASKS"
+  "Property storing root task IDs for a project.")
+
+(defconst org-gtd-prop-project-ids "ORG_GTD_PROJECT_IDS"
+  "Property storing project IDs this task belongs to.")
+
+(defconst org-gtd-prop-category "ORG_GTD"
+  "Property storing org-gtd category (Actions, Projects, etc.).")
+
+(defconst org-gtd-prop-project "ORG_GTD_PROJECT"
+  "Property storing the primary project name for a task.")
+
+(defconst org-gtd-prop-refile "ORG_GTD_REFILE"
+  "Property storing the refile target category.")
+
 ;;;; Variables
 
 (defvar-local org-gtd--loading-p nil

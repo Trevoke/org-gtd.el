@@ -48,23 +48,6 @@
 (declare-function 'org-gtd-keywords--is-done-p 'org-gtd-core)
 (declare-function 'org-gtd-keywords--canceled 'org-gtd-core)
 
-;;;; Property Name Constants
-
-(defconst org-gtd-prop-depends-on "ORG_GTD_DEPENDS_ON"
-  "Property storing task IDs this task depends on.")
-
-(defconst org-gtd-prop-blocks "ORG_GTD_BLOCKS"
-  "Property storing task IDs this task blocks.")
-
-(defconst org-gtd-prop-first-tasks "ORG_GTD_FIRST_TASKS"
-  "Property storing root task IDs for a project.")
-
-(defconst org-gtd-prop-project-ids "ORG_GTD_PROJECT_IDS"
-  "Property storing project IDs this task belongs to.")
-
-(defconst org-gtd-prop-category "ORG_GTD"
-  "Property storing org-gtd category (Actions, Projects, etc.).")
-
 ;;;; Property Readers
 
 (defun org-gtd-get-task-dependencies (task-id)

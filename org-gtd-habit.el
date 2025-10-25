@@ -36,17 +36,15 @@
 
 ;;;; Constants
 
-(defconst org-gtd-habit "Habits")
-
 (defconst org-gtd-habit-func #'org-gtd-habit--apply
   "Function called when organizing item as a habit.")
 
 (defconst org-gtd-habit-template
   (format "* Habits
 :PROPERTIES:
-:ORG_GTD_REFILE: %s
+:%s: %s
 :END:
-" org-gtd-habit))
+" org-gtd-prop-refile org-gtd-habit))
 
 ;;;; Commands
 

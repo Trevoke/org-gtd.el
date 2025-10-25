@@ -36,17 +36,15 @@
 
 ;;;; Constants
 
-(defconst org-gtd-incubate "Incubated")
-
 (defconst org-gtd-incubate-func #'org-gtd-incubate--apply
   "Function called when organizing item as incubated.")
 
 (defconst org-gtd-incubate-template
   (format "* Incubate
 :PROPERTIES:
-:ORG_GTD_REFILE: %s
+:%s: %s
 :END:
-" org-gtd-incubate)
+" org-gtd-prop-refile org-gtd-incubate)
   "Template for the GTD someday/maybe list.")
 
 ;;;; Commands
@@ -91,7 +89,7 @@ CONFIG-OVERRIDE can provide input configuration to override default prompting be
 
 (defun org-gtd-incubate--insert-timestamp ()
   "Insert timestamp from ORG_GTD_TIMESTAMP property into item content."
-  (let ((timestamp (org-entry-get (point) "ORG_GTD_TIMESTAMP")))
+  (let ((timestamp (org-entry-get (point) org-gtd-timestamp)))
     (when timestamp
       (save-excursion
         (org-end-of-meta-data t)
