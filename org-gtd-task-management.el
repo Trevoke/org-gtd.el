@@ -552,7 +552,7 @@ First tries current buffer, then falls back to org-id-find."
         (with-current-buffer (marker-buffer marker)
           (save-excursion
             (goto-char marker)
-            (let ((todo-state (org-entry-get (point) "TODO")))
+            (let ((todo-state (org-entry-get (point) org-gtd-prop-todo)))
               (and todo-state (org-gtd-keywords--is-done-p todo-state)))))
       nil))) ; If we can't find the task, assume not done
 
@@ -563,16 +563,16 @@ First tries current buffer, then falls back to org-id-find."
       (with-current-buffer (marker-buffer marker)
         (save-excursion
           (goto-char marker)
-          (let ((current-state (org-entry-get (point) "TODO")))
+          (let ((current-state (org-entry-get (point) org-gtd-prop-todo)))
             ;; Only update if it's currently TODO (not already NEXT, DONE, etc.)
-            (when (equal current-state "TODO")
+            (when (string= current-state (org-gtd-keywords--todo))
               (org-todo (org-gtd-keywords--next)))))))))
 
 (defun org-gtd-task-management--after-todo-state-change ()
   "Hook function to be called after TODO state changes.
 For Story 15: Automatically update dependent tasks when a task becomes DONE."
   (when (org-entry-get (point) "ID")
-    (let ((current-state (org-entry-get (point) "TODO"))
+    (let ((current-state (org-entry-get (point) org-gtd-prop-todo))
           (task-id (org-entry-get (point) "ID")))
       (when (and current-state (org-gtd-keywords--is-done-p current-state))
         (org-gtd-task-management--update-dependent-tasks task-id)))))

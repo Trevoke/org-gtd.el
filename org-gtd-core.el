@@ -95,7 +95,7 @@ your own files if you want multiple refile targets (projects, etc.)."
 SYMBOL should be `org-gtd-keyword-mapping' and VALUE should be the new mapping.
 
 Validates that:
-- All required mappings exist (todo, next, wait, canceled)
+- All required mappings exist (todo, next, wait, done, canceled)
 - All mapped keywords exist in `org-todo-keywords'
 - All GTD keywords are in the same sequence within `org-todo-keywords'
 
@@ -114,6 +114,7 @@ Only sets the value if validation passes."
   (let ((todo-kw (alist-get 'todo value))
         (next-kw (alist-get 'next value))
         (wait-kw (alist-get 'wait value))
+        (done-kw (alist-get 'done value))
         (canceled-kw (alist-get 'canceled value))
         (all-sequences (if (listp (car org-todo-keywords))
                            org-todo-keywords
@@ -127,11 +128,13 @@ Only sets the value if validation passes."
       (push "Missing 'next' mapping in org-gtd-keyword-mapping" errors))
     (unless wait-kw
       (push "Missing 'wait' mapping in org-gtd-keyword-mapping" errors))
+    (unless done-kw
+      (push "Missing 'done' mapping in org-gtd-keyword-mapping" errors))
     (unless canceled-kw
       (push "Missing 'canceled' mapping in org-gtd-keyword-mapping" errors))
 
-    (when (and todo-kw next-kw wait-kw canceled-kw)
-      (let ((gtd-keywords (list todo-kw next-kw wait-kw canceled-kw))
+    (when (and todo-kw next-kw wait-kw done-kw canceled-kw)
+      (let ((gtd-keywords (list todo-kw next-kw wait-kw done-kw canceled-kw))
             (found-sequence nil))
 
         ;; Check that all keywords exist somewhere in org-todo-keywords
@@ -163,7 +166,7 @@ Only sets the value if validation passes."
 
     ;; Only set the value if validation passed
     (if errors
-        (user-error "org-gtd keyword configuration errors:\n%s\n\nExample valid configuration:\n(setq org-todo-keywords '((sequence \"TODO\" \"NEXT\" \"WAIT\" \"|\" \"DONE\" \"CNCL\")))\n(setopt org-gtd-keyword-mapping\n        '((todo . \"TODO\") (next . \"NEXT\") (wait . \"WAIT\") (canceled . \"CNCL\")))"
+        (user-error "org-gtd keyword configuration errors:\n%s\n\nExample valid configuration:\n(setq org-todo-keywords '((sequence \"TODO\" \"NEXT\" \"WAIT\" \"|\" \"DONE\" \"CNCL\")))\n(setopt org-gtd-keyword-mapping\n        '((todo . \"TODO\") (next . \"NEXT\") (wait . \"WAIT\") (done . \"DONE\") (canceled . \"CNCL\")))"
                     (string-join (reverse errors) "\n"))
       (set-default symbol value))))
 
@@ -202,6 +205,7 @@ Only sets the value if validation passes."
   '((todo . "TODO")
     (next . "NEXT")
     (wait . "WAIT")
+    (done . "DONE")
     (canceled . "CNCL"))
   "Mapping of GTD semantic states to org-todo-keywords.
 
@@ -209,10 +213,11 @@ Each entry maps a GTD semantic state to a keyword from your `org-todo-keywords':
 - \\='todo\\=' - tasks not ready to be acted upon
 - \\='next\\=' - tasks ready to be acted upon immediately
 - \\='wait\\=' - tasks waiting for someone else or blocked
+- \\='done\\=' - tasks successfully completed
 - \\='canceled\\=' - tasks terminated and will not be completed
 
 This variable validates that:
-- All required mappings exist (todo, next, wait, canceled)
+- All required mappings exist (todo, next, wait, done, canceled)
 - All mapped keywords exist in `org-todo-keywords'
 - All GTD keywords are in the same sequence within `org-todo-keywords'
 
@@ -222,6 +227,7 @@ the mapping is valid."
   :type '(alist :key-type (choice (const todo)
                                   (const next)
                                   (const wait)
+                                  (const done)
                                   (const canceled))
                 :value-type string)
   :set #'org-gtd--validate-and-set-keyword-mapping
@@ -382,6 +388,7 @@ This property also controls the prefix displayed in agenda views.")
          (alist-get 'todo org-gtd-keyword-mapping)
          (alist-get 'next org-gtd-keyword-mapping)
          (alist-get 'wait org-gtd-keyword-mapping)
+         (alist-get 'done org-gtd-keyword-mapping)
          (alist-get 'canceled org-gtd-keyword-mapping))
     org-gtd-keyword-mapping)
    ;; If old variables are set, convert them (with warning)
@@ -393,6 +400,7 @@ This property also controls the prefix displayed in agenda views.")
     `((todo . ,(or org-gtd-todo-keyword "TODO"))
       (next . ,(or org-gtd-next-keyword "NEXT"))
       (wait . ,(or org-gtd-wait-keyword "WAIT"))
+      (done . "DONE")
       (canceled . ,(or org-gtd-canceled-keyword "CNCL"))))
    ;; Default fallback
    (t org-gtd-keyword-mapping)))
@@ -408,6 +416,10 @@ This property also controls the prefix displayed in agenda views.")
 (defun org-gtd-keywords--wait ()
   "Get keyword for GTD \\='wait\\=' semantic state."
   (alist-get 'wait (org-gtd-keywords--get-effective-mapping)))
+
+(defun org-gtd-keywords--done ()
+  "Get keyword for GTD \\='done\\=' semantic state."
+  (alist-get 'done (org-gtd-keywords--get-effective-mapping)))
 
 (defun org-gtd-keywords--canceled ()
   "Get keyword for GTD \\='canceled\\=' semantic state."

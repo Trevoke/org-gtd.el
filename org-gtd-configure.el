@@ -96,7 +96,7 @@
                                    (_ value))))
 
             ;; Special handling for TODO keyword vs properties
-            (if (string-equal key "TODO")
+            (if (string-equal key org-gtd-prop-todo)
                 (org-with-point-at pos (org-todo computed-value))
               (org-entry-put pos (upcase key) (format "%s" computed-value)))))))))
 

@@ -543,6 +543,7 @@ Version 4.0 introduces major improvements to keyword configuration and project m
         '((todo . "TODO")      ;; tasks not ready to be acted upon
           (next . "NEXT")      ;; tasks ready to act on immediately
           (wait . "WAIT")      ;; tasks blocked or delegated
+          (done . "DONE")      ;; tasks successfully completed
           (canceled . "CNCL"))) ;; tasks that won't be completed
 @end lisp
 
@@ -745,6 +746,7 @@ This is the simplest possible configuration for org-gtd. Copy this entire block 
       '((todo . "TODO")      ; tasks not ready to act on
         (next . "NEXT")      ; tasks ready to act on immediately
         (wait . "WAIT")      ; tasks blocked or delegated
+        (done . "DONE")      ; tasks successfully completed
         (canceled . "CNCL"))) ; tasks that won't be completed
 
 ;; Optional: Set GTD directory (defaults to ~/gtd/)
@@ -791,6 +793,7 @@ Then add this to your @code{config.el}:
   (org-gtd-keyword-mapping '((todo . "TODO")
                              (next . "NEXT")
                              (wait . "WAIT")
+                             (done . "DONE")
                              (canceled . "CNCL")))
   (org-agenda-files (list org-gtd-directory))
   :config
@@ -828,6 +831,7 @@ If you use Spacemacs, add this to your @code{dotspacemacs/user-config} function:
         '((todo . "TODO")
           (next . "NEXT")
           (wait . "WAIT")
+          (done . "DONE")
           (canceled . "CNCL")))
   ;; Optional: Set GTD directory
   (setq org-gtd-directory "~/gtd/")
@@ -873,6 +877,8 @@ All GTD keywords must be in a single sequence
 @code{next} - Tasks ready to work on right now
 @item
 @code{wait} - Tasks blocked or delegated
+@item
+@code{done} - Tasks successfully completed
 @item
 @code{canceled} - Tasks that won't be done
 @end itemize
@@ -1183,7 +1189,7 @@ These settings are @strong{required} for Org GTD to work properly:
 @end lisp
 
 @item @code{org-gtd-keyword-mapping}
-Map GTD semantic states to your chosen keywords. This tells Org GTD which keyword means what. The four required mappings are.
+Map GTD semantic states to your chosen keywords. This tells Org GTD which keyword means what. The five required mappings are.
 @table @asis
 @item @code{todo}
 Tasks not ready to be acted upon
@@ -1191,6 +1197,8 @@ Tasks not ready to be acted upon
 Tasks ready to act on immediately
 @item @code{wait}
 Tasks blocked or delegated to someone else
+@item @code{done}
+Tasks successfully completed
 @item @code{canceled}
 Tasks that won't be completed
 @end table
@@ -1201,6 +1209,7 @@ Example configuration (use @code{setopt} for Emacs 29+ to get automatic validati
         '((todo . "TODO")
           (next . "NEXT")
           (wait . "WAIT")
+          (done . "DONE")
           (canceled . "CNCL")))
 @end lisp
 
@@ -1210,6 +1219,7 @@ Or for older Emacs versions:
       '((todo . "TODO")
         (next . "NEXT")
         (wait . "WAIT")
+        (done . "DONE")
         (canceled . "CNCL")))
 @end lisp
 @end table
@@ -1281,6 +1291,7 @@ If you are a Doom Emacs user, then your configuration may look something like th
   (org-gtd-keyword-mapping '((todo . "TODO")
                              (next . "NEXT")
                              (wait . "WAIT")
+                             (done . "DONE")
                              (canceled . "CNCL")))
   (org-agenda-files (list org-gtd-directory))
   :config
@@ -3676,6 +3687,8 @@ Tasks not ready to be acted upon
 Tasks ready to act on immediately
 @item @code{wait}
 Tasks blocked or delegated to someone else
+@item @code{done}
+Tasks successfully completed
 @item @code{canceled}
 Tasks that won't be completed
 @end table
@@ -3689,6 +3702,7 @@ Tasks that won't be completed
       '((todo . "TASK")
         (next . "DOING")
         (wait . "BLOCKED")
+        (done . "COMPLETE")
         (canceled . "CANCELLED")))
 @end lisp
 @end itemize
@@ -5625,9 +5639,9 @@ Value from @code{org-gtd-keyword-mapping}'s @code{next} key (default "NEXT")
 @item
 Value from @code{org-gtd-keyword-mapping}'s @code{wait} key (default "WAIT")
 @item
-Value from @code{org-gtd-keyword-mapping}'s @code{canceled} key (default "CNCL")
+Value from @code{org-gtd-keyword-mapping}'s @code{done} key (default "DONE")
 @item
-@code{"DONE"} (standard org-mode)
+Value from @code{org-gtd-keyword-mapping}'s @code{canceled} key (default "CNCL")
 @end itemize
 
 @item
@@ -6975,6 +6989,7 @@ If TODO keywords aren't changing correctly:
       '((todo . "TODO")
         (next . "NEXT")
         (wait . "WAIT")
+        (done . "DONE")
         (canceled . "CNCL")))
 @end lisp
 

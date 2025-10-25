@@ -257,8 +257,8 @@ and edges between visible nodes."
   (let* ((all-states (list (org-gtd-keywords--todo)
                            (org-gtd-keywords--next)
                            (org-gtd-keywords--wait)
-                           (org-gtd-keywords--canceled)
-                           "DONE"))
+                           (org-gtd-keywords--done)
+                           (org-gtd-keywords--canceled)))
          (selected (completing-read-multiple
                     "Filter by TODO states (comma-separated): "
                     all-states nil t))

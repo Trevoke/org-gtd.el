@@ -195,6 +195,7 @@ Version 4.0 introduces major improvements to keyword configuration and project m
         '((todo . "TODO")      ;; tasks not ready to be acted upon
           (next . "NEXT")      ;; tasks ready to act on immediately
           (wait . "WAIT")      ;; tasks blocked or delegated
+          (done . "DONE")      ;; tasks successfully completed
           (canceled . "CNCL"))) ;; tasks that won't be completed
 #+end_src
 
@@ -323,6 +324,7 @@ This is the simplest possible configuration for org-gtd. Copy this entire block 
       '((todo . "TODO")      ; tasks not ready to act on
         (next . "NEXT")      ; tasks ready to act on immediately
         (wait . "WAIT")      ; tasks blocked or delegated
+        (done . "DONE")      ; tasks successfully completed
         (canceled . "CNCL"))) ; tasks that won't be completed
 
 ;; Optional: Set GTD directory (defaults to ~/gtd/)
@@ -370,6 +372,7 @@ Then add this to your ~config.el~:
   (org-gtd-keyword-mapping '((todo . "TODO")
                              (next . "NEXT")
                              (wait . "WAIT")
+                             (done . "DONE")
                              (canceled . "CNCL")))
   (org-agenda-files (list org-gtd-directory))
   :config
@@ -408,6 +411,7 @@ If you use Spacemacs, add this to your ~dotspacemacs/user-config~ function:
         '((todo . "TODO")
           (next . "NEXT")
           (wait . "WAIT")
+          (done . "DONE")
           (canceled . "CNCL")))
   ;; Optional: Set GTD directory
   (setq org-gtd-directory "~/gtd/")
@@ -440,6 +444,7 @@ All three examples configure the same essential pieces:
    - ~todo~ - Tasks not yet actionable
    - ~next~ - Tasks ready to work on right now
    - ~wait~ - Tasks blocked or delegated
+   - ~done~ - Tasks successfully completed
    - ~canceled~ - Tasks that won't be done
 
 3. *~org-gtd-directory~* - Where org-gtd keeps its files (defaults to =~/gtd/=)
@@ -667,10 +672,11 @@ These settings are *required* for Org GTD to work properly:
         '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
   #+end_src
 
-- ~org-gtd-keyword-mapping~ :: Map GTD semantic states to your chosen keywords. This tells Org GTD which keyword means what. The four required mappings are.
+- ~org-gtd-keyword-mapping~ :: Map GTD semantic states to your chosen keywords. This tells Org GTD which keyword means what. The five required mappings are.
   - ~todo~ :: Tasks not ready to be acted upon
   - ~next~ :: Tasks ready to act on immediately
   - ~wait~ :: Tasks blocked or delegated to someone else
+  - ~done~ :: Tasks successfully completed
   - ~canceled~ :: Tasks that won't be completed
 
   Example configuration (use ~setopt~ for Emacs 29+ to get automatic validation):
@@ -679,6 +685,7 @@ These settings are *required* for Org GTD to work properly:
           '((todo . "TODO")
             (next . "NEXT")
             (wait . "WAIT")
+            (done . "DONE")
             (canceled . "CNCL")))
   #+end_src
 
@@ -688,6 +695,7 @@ These settings are *required* for Org GTD to work properly:
         '((todo . "TODO")
           (next . "NEXT")
           (wait . "WAIT")
+          (done . "DONE")
           (canceled . "CNCL")))
   #+end_src
 
@@ -734,6 +742,7 @@ If you are a Doom Emacs user, then your configuration may look something like th
     (org-gtd-keyword-mapping '((todo . "TODO")
                                (next . "NEXT")
                                (wait . "WAIT")
+                               (done . "DONE")
                                (canceled . "CNCL")))
     (org-agenda-files (list org-gtd-directory))
     :config
@@ -2267,6 +2276,7 @@ The ~|~ separator marks done states (right side) from active states (left side).
 - ~todo~ :: Tasks not ready to be acted upon
 - ~next~ :: Tasks ready to act on immediately
 - ~wait~ :: Tasks blocked or delegated to someone else
+- ~done~ :: Tasks successfully completed
 - ~canceled~ :: Tasks that won't be completed
 
 *Example*: Using custom keywords:
@@ -2278,6 +2288,7 @@ The ~|~ separator marks done states (right side) from active states (left side).
       '((todo . "TASK")
         (next . "DOING")
         (wait . "BLOCKED")
+        (done . "COMPLETE")
         (canceled . "CANCELLED")))
 #+end_src
 
@@ -3585,8 +3596,8 @@ SCHEDULED: <2025-10-11 Fri .+1d>
 - Value from ~org-gtd-keyword-mapping~'s ~todo~ key (default "TODO")
 - Value from ~org-gtd-keyword-mapping~'s ~next~ key (default "NEXT")
 - Value from ~org-gtd-keyword-mapping~'s ~wait~ key (default "WAIT")
+- Value from ~org-gtd-keyword-mapping~'s ~done~ key (default "DONE")
 - Value from ~org-gtd-keyword-mapping~'s ~canceled~ key (default "CNCL")
-- ~"DONE"~ (standard org-mode)
 
 **** SCHEDULED (org-mode standard)
 
@@ -4590,6 +4601,7 @@ If TODO keywords aren't changing correctly:
          '((todo . "TODO")
            (next . "NEXT")
            (wait . "WAIT")
+           (done . "DONE")
            (canceled . "CNCL")))
    #+end_src
 

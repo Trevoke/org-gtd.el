@@ -68,14 +68,15 @@
 
 ;;;; Color Schemes
 
-(defconst org-gtd-svg--state-colors
-  '(("TODO" . "#ff6b6b")
-    ("NEXT" . "#4ecdc4")
-    ("DONE" . "#95e1d3")
-    ("WAIT" . "#feca57")
+(defun org-gtd-svg--state-colors ()
+  "Get color mapping for task states using keyword mapping."
+  `((,(org-gtd-keywords--todo) . "#ff6b6b")
+    (,(org-gtd-keywords--next) . "#4ecdc4")
+    (,(org-gtd-keywords--done) . "#95e1d3")
+    (,(org-gtd-keywords--wait) . "#feca57")
     ("HOLD" . "#ee5a6f")
-    (nil . "#b8c5d0"))  ; Default for tasks with no state
-  "Color mapping for task states.")
+    (,(org-gtd-keywords--canceled) . "#ee5a6f")
+    (nil . "#b8c5d0")))  ; Default for tasks with no state
 
 (defconst org-gtd-svg--priority-colors
   '(("A" . "#e74c3c")
@@ -98,8 +99,9 @@
 
 (defun org-gtd-svg--get-state-color (state)
   "Get color for STATE, or default if not found."
-  (or (cdr (assoc state org-gtd-svg--state-colors))
-      (cdr (assoc nil org-gtd-svg--state-colors))))
+  (let ((colors (org-gtd-svg--state-colors)))
+    (or (cdr (assoc state colors))
+        (cdr (assoc nil colors)))))
 
 (defun org-gtd-svg--get-node-color (priority tags)
   "Get fill color for node based on PRIORITY and TAGS.
@@ -118,8 +120,9 @@ Priority takes precedence over tags. Returns hex color string."
 
 (defun org-gtd-svg--get-node-opacity (state)
   "Get opacity for node based on TODO STATE.
-Completed states (DONE, CNCL) return \"0.5\", others return \"1.0\"."
-  (if (member state '("DONE" "CNCL"))
+Completed states (done or canceled) return \"0.5\", others return \"1.0\"."
+  (if (or (string= state (org-gtd-keywords--done))
+          (string= state (org-gtd-keywords--canceled)))
       "0.5"
     "1.0"))
 

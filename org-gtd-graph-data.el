@@ -115,7 +115,7 @@ extracted from the project's task tree and dependency relationships."
       (goto-char (marker-position project-marker))
       (setq project-id (org-gtd-id-get-create)
             project-name (org-get-heading t t t t)
-            project-state (org-entry-get (point) "TODO")
+            project-state (org-entry-get (point) org-gtd-prop-todo)
             project-category (org-entry-get (point) "ORG_GTD")
             project-priority (org-entry-get (point) "PRIORITY")
             project-tags (org-get-tags)
@@ -129,7 +129,7 @@ extracted from the project's task tree and dependency relationships."
       (org-with-point-at marker
         (let ((task (list :id (org-entry-get (point) "ID")
                           :title (org-get-heading t t t t)
-                          :state (org-entry-get (point) "TODO")
+                          :state (org-entry-get (point) org-gtd-prop-todo)
                           :category (org-entry-get (point) "ORG_GTD")
                           :depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")
                           :blocks (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")

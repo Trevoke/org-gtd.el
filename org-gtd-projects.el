@@ -150,9 +150,9 @@ Only resets states that should be recalculated (preserves WAIT, DONE, CNCL)."
     (dolist (task-marker all-task-markers)
       (org-with-point-at task-marker
         (when (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-action)
-          (let ((todo-state (org-entry-get (point) "TODO")))
+          (let ((todo-state (org-entry-get (point) org-gtd-prop-todo)))
             (when (org-gtd-todo-state-should-reset-p todo-state)
-              (org-entry-put (point) "TODO" (org-gtd-keywords--todo)))))))))
+              (org-entry-put (point) org-gtd-prop-todo (org-gtd-keywords--todo)))))))))
 
 ;;;;; Command: Mark Ready Tasks
 
@@ -500,7 +500,7 @@ projects that have work remaining to be done."
     (while (and tasks (not has-active))
       (let ((task-marker (pop tasks)))
         (org-with-point-at task-marker
-          (let ((todo-state (org-entry-get (point) "TODO")))
+          (let ((todo-state (org-entry-get (point) org-gtd-prop-todo)))
             ;; Task is active if it has a TODO state and it's not done
             (when (and todo-state
                        (not (member todo-state org-done-keywords)))
@@ -520,7 +520,7 @@ dependencies aren't set up properly."
     ;; Check each task to see if we have any TODO tasks and any actionable tasks
     (dolist (task-marker tasks)
       (org-with-point-at task-marker
-        (let ((todo-state (org-entry-get (point) "TODO")))
+        (let ((todo-state (org-entry-get (point) org-gtd-prop-todo)))
           (when todo-state
             (cond
              ;; Done or canceled tasks don't count
@@ -642,7 +642,7 @@ and if so, marks it NEXT."
             (let* ((depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON"))
                    (all-deps-done (cl-every #'org-gtd-task-management--task-is-done-p depends-on)))
               (when all-deps-done
-                (org-entry-put (point) "TODO" (org-gtd-keywords--next))))))))))
+                (org-entry-put (point) org-gtd-prop-todo (org-gtd-keywords--next))))))))))
 
 (defalias 'org-edna-action/org-gtd-update-project-after-task-done!
   'org-gtd-projects--edna-update-project-after-task-done)
@@ -657,7 +657,7 @@ Return nil if there isn't one."
                   (lambda ()
                     (and (not (equal heading-level (org-current-level)))
                          (string-equal (org-gtd-keywords--todo)
-                                       (org-entry-get (point) "TODO"))
+                                       (org-entry-get (point) org-gtd-prop-todo))
                          (org-element-at-point)))
                   t
                   'tree)))))
@@ -672,7 +672,7 @@ Return nil if there isn't one."
                   (lambda ()
                     (and (not (equal heading-level (org-current-level)))
                          (string-equal (org-gtd-keywords--wait)
-                                       (org-entry-get (point) "TODO"))
+                                       (org-entry-get (point) org-gtd-prop-todo))
                          (org-element-at-point)))
                   t
                   'tree)))))
