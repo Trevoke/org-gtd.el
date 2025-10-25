@@ -35,12 +35,23 @@
 (require 'org-gtd-graph-undo)
 (require 'org-gtd-layout)
 (require 'org-gtd-svg-render)
+(require 'org-gtd-ascii-render)
 (require 'org-gtd-projects)
 (require 'org-gtd-dependencies)
 (require 'org-gtd-accessors)
 (require 'org-gtd-id)
 (require 'org-gtd-configure)
 (require 'org-gtd-files)
+
+;;;; Customization
+
+(defcustom org-gtd-graph-render-mode 'svg
+  "Default rendering mode for project graphs.
+Can be 'svg (default) or 'ascii.
+Users can toggle per-buffer using `org-gtd-graph-toggle-render-mode'."
+  :type '(choice (const :tag "SVG (graphical)" svg)
+                 (const :tag "ASCII (text-based)" ascii))
+  :group 'org-gtd)
 
 ;;;; Variables
 
@@ -62,6 +73,11 @@
 (defvar-local org-gtd-graph-view--refresh-timer nil
   "Timer for debounced refresh after file changes.")
 
+(defvar-local org-gtd-graph-view--render-mode nil
+  "Current render mode for this buffer ('svg or 'ascii).
+Initialized from `org-gtd-graph-render-mode' on buffer creation.
+Can be toggled with `org-gtd-graph-toggle-render-mode'.")
+
 ;;;; Buffer Management
 
 (defun org-gtd-graph-view--buffer-name (project-id)
@@ -78,6 +94,9 @@
     (with-current-buffer buffer
       (org-gtd-graph-view-mode)
       (setq org-gtd-graph-view--project-marker project-marker)
+      ;; Initialize render mode from customization variable
+      (unless org-gtd-graph-view--render-mode
+        (setq org-gtd-graph-view--render-mode org-gtd-graph-render-mode))
       (org-gtd-graph-view-refresh)
 
       (org-gtd-graph-view--setup-file-watch)
@@ -154,10 +173,18 @@ _EVENT is the file-notify event (unused)."
 
       ;; Apply layout and render
       (org-gtd-layout-apply graph)
-      (let ((svg (org-gtd-svg-render-graph graph org-gtd-graph-ui--selected-node-id)))
-        ;; Store both the full graph and the displayed (possibly filtered) graph
-        (setq org-gtd-graph-view--graph full-graph)
-        (org-gtd-graph-view--display-svg svg graph)))))
+      ;; Store the graph before rendering
+      (setq org-gtd-graph-view--graph full-graph)
+
+      ;; Render using appropriate mode
+      (cond
+       ((eq org-gtd-graph-view--render-mode 'ascii)
+        (let ((ascii-text (org-gtd-ascii-render-graph graph org-gtd-graph-ui--selected-node-id)))
+          (org-gtd-graph-view--display-ascii ascii-text graph)))
+
+       (t  ; Default to SVG
+        (let ((svg (org-gtd-svg-render-graph graph org-gtd-graph-ui--selected-node-id)))
+          (org-gtd-graph-view--display-svg svg graph)))))))
 
 (defun org-gtd-graph-view--display-svg (svg displayed-graph)
   "Display SVG in the current buffer showing DISPLAYED-GRAPH."
@@ -184,6 +211,39 @@ _EVENT is the file-notify event (unused)."
     (insert "  Press ? to see all commands including: add child/root/blocker tasks\n")
 
     (goto-char (point-min))))
+
+(defun org-gtd-graph-view--display-ascii (ascii-text displayed-graph)
+  "Display ASCII-TEXT in the current buffer showing DISPLAYED-GRAPH."
+  (let ((inhibit-read-only t))
+    (erase-buffer)
+
+    ;; Insert ASCII graph
+    (insert ascii-text)
+    (insert "\n\n")
+
+    ;; Insert legend
+    (insert (propertize "Graph View Controls:\n" 'face 'bold))
+    (insert "  Quick Keys:      ? - Show all commands (transient menu) | v - Toggle ASCII/SVG\n")
+    (insert "  Navigation:      n/p/j/k - Down/up dependency | TAB - Next sibling | g - Go to node\n")
+    (insert "  View:            z - Zoom\n")
+    (insert "  Actions:         r - Refresh | u - Undo | C-r - Redo | q - Quit\n")
+    (insert "\n")
+    (insert "  Press ? to see all commands including: add child/root/blocker tasks\n")
+    (insert (format "\n  Render mode: ASCII (press 'v' to toggle)\n"))
+
+    (goto-char (point-min))))
+
+;;;; Render Mode Toggle
+
+(defun org-gtd-graph-toggle-render-mode ()
+  "Toggle between SVG and ASCII rendering for current graph view."
+  (interactive)
+  (setq org-gtd-graph-view--render-mode
+        (if (eq org-gtd-graph-view--render-mode 'ascii)
+            'svg
+          'ascii))
+  (message "Graph render mode: %s" (upcase (symbol-name org-gtd-graph-view--render-mode)))
+  (org-gtd-graph-view-refresh))
 
 ;;;; Dependency Management
 

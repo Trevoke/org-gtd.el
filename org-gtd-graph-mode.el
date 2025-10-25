@@ -41,6 +41,7 @@
 
     ;; Graph operations
     (define-key map (kbd "r") #'org-gtd-graph-view-refresh)
+    (define-key map (kbd "v") #'org-gtd-graph-toggle-render-mode)
     (define-key map (kbd "q") #'quit-window)
 
     ;; Dependency-based navigation

@@ -57,6 +57,7 @@
     ("TAB" "next sibling" org-gtd-graph-nav-next-sibling :transient t)
     ("g" "goto node" org-gtd-graph-nav-goto)]
    ["View"
+    ("v" "toggle ASCII/SVG" org-gtd-graph-toggle-render-mode :transient t)
     ("z" "zoom" org-gtd-graph-transient-zoom)]
    ["Actions"
     ("r" "refresh" org-gtd-graph-view-refresh :transient t)]
