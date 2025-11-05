@@ -1603,7 +1603,26 @@ Regardless of the value of this variable, you can use the function ~org-gtd-clar
 
 You learned sequential projects in [[#tutorial-your-first-project][Tutorial: Your First Project]]. This section teaches you how to handle complex projects with parallel work streams, custom dependencies, and sophisticated project structures—all using visual project management.
 
+*** Quick Navigation
+
+This section covers:
+
+- [[#graph-first-contact][Why Visual Project Management?]] - Understanding the motivation
+- [[#graph-black-triangle][Your First Project Graph View]] - Get started in 30 seconds
+- [[#graph-understanding-dependencies][Understanding Project Dependencies]] - Learn the DAG model
+- [[#graph-tutorial-parallel][Tutorial: Parallel Tasks]] - Build your first complex project
+- [[#graph-dependency-patterns][Common Dependency Patterns]] - Visual reference for typical structures
+- [[#graph-view-command-reference][Graph View Command Reference]] - Complete command listing
+- [[#graph-rendering-modes][Rendering Modes]] - SVG vs ASCII
+- [[#graph-keyboard-reference][Complete Keyboard Reference]] - Quick reference card
+- [[#graph-technical-details][Technical Details]] - Implementation and properties
+- [[#graph-practical-tips][Practical Tips]] - When and how to use graph view
+- [[#graph-troubleshooting][Troubleshooting]] - Common problems and solutions
+
 *** First Contact: Why Visual Project Management?
+:PROPERTIES:
+:CUSTOM_ID: graph-first-contact
+:END:
 
 Real projects are rarely simple sequences. You might have:
 - Tasks that can start simultaneously (parallel research streams)
@@ -1615,6 +1634,9 @@ Managing these mentally or through text properties is error-prone. You forget de
 *Visual project management solves this.* You SEE your project as a dependency graph—boxes for tasks, arrows for dependencies, colors for states. Adding tasks, creating dependencies, and understanding project structure becomes intuitive and immediate.
 
 *** Black Triangle: Your First Project Graph View
+:PROPERTIES:
+:CUSTOM_ID: graph-black-triangle
+:END:
 
 Let's see this in action right now.
 
@@ -1628,7 +1650,7 @@ Find any project task in your agenda (or create a quick test project if you don'
 
 Press ~RET~ on the project task to jump to the project heading.
 
-Run: ~M-x org-gtd-graph-view~
+Run: ~M-x org-gtd-show-project-graph~
 
 **** Step 3: Explore
 
@@ -1644,6 +1666,9 @@ Press ~?~ to see all available commands.
 *Success!* You've visualized your first project. Everything from here builds on this.
 
 *** Understanding Project Dependencies
+:PROPERTIES:
+:CUSTOM_ID: graph-understanding-dependencies
+:END:
 
 Before we build complex projects, let's understand how dependencies work visually.
 
@@ -1696,6 +1721,9 @@ In graph view, parallel projects have multiple green boxes at the same layer.
 In graph view, mixed projects show parallel branches that converge at join points.
 
 *** Tutorial: Parallel Tasks with Graph View
+:PROPERTIES:
+:CUSTOM_ID: graph-tutorial-parallel
+:END:
 
 Let's build a project where some tasks happen simultaneously.
 
@@ -1729,7 +1757,7 @@ Organize as a project: ~C-c c~ → ~[P]~
 
 From the engage view (~C-c d e~), press ~RET~ on any task to jump to the project.
 
-Run: ~M-x org-gtd-graph-view~
+Run: ~M-x org-gtd-show-project-graph~
 
 You'll see a sequential graph (the default):
 #+begin_example
@@ -1868,6 +1896,9 @@ For the convergence at "Get Beta Feedback":
 4. *Final convergence* at Release (we CANNOT do this yet)
 
 *** Common Dependency Patterns (Visual Reference)
+:PROPERTIES:
+:CUSTOM_ID: graph-dependency-patterns
+:END:
 
 Here's what different patterns look like in graph view:
 
@@ -2053,7 +2084,165 @@ Most users will find the graph view intuitive for dependency management. However
 
 See [[#task-dependency-commands][Task Dependency Commands]] for details.
 
+*** Graph Rendering Modes
+:PROPERTIES:
+:CUSTOM_ID: graph-rendering-modes
+:END:
+
+The graph view supports two rendering modes that you can toggle between at any time.
+
+**** SVG Mode (Default)
+
+High-quality graphical rendering with:
+- Smooth curves for dependency arrows
+- Anti-aliased text
+- Visual polish
+- Larger display area
+- Better for GUI Emacs
+
+Set as default with:
+#+begin_src emacs-lisp
+(setq org-gtd-graph-render-mode 'svg)
+#+end_src
+
+**** ASCII Mode
+
+Text-based rendering using box-drawing characters:
+- Works in terminal Emacs
+- Accessible for screen readers
+- Compact display
+- No external dependencies
+- Uses Unicode box-drawing glyphs
+
+Set as default with:
+#+begin_src emacs-lisp
+(setq org-gtd-graph-render-mode 'ascii)
+#+end_src
+
+**** Toggling Modes
+
+Press ~v~ while in graph view to toggle between SVG and ASCII rendering.
+
+**** Troubleshooting ASCII Rendering
+
+If ASCII rendering looks broken:
+- Ensure your terminal supports UTF-8 box-drawing characters
+- Try SVG mode (~v~ to toggle)
+- Check that your font supports box-drawing glyphs
+- Verify ~(char-displayable-p ?│)~ returns ~t~
+
+*** Complete Keyboard Reference
+:PROPERTIES:
+:CUSTOM_ID: graph-keyboard-reference
+:END:
+
+This is a comprehensive quick reference for all graph view keybindings.
+
+**** Navigation
+
+| Key         | Action                                    |
+|-------------+-------------------------------------------|
+| ~?~         | Show command menu (transient)             |
+| ~n~ / ~j~   | Down dependency (to task this blocks)     |
+| ~p~ / ~k~   | Up dependency (to task that blocks this)  |
+| ~TAB~       | Next sibling (same layer)                 |
+| ~<backtab>~ | Previous sibling                          |
+| ~<~         | First task in layer                       |
+| ~>~         | Last task in layer                        |
+| ~g~         | Go to task by name                        |
+| ~[~         | Navigate back in history                  |
+| ~]~         | Navigate forward in history               |
+
+**** Modification (via transient menu ~?~)
+
+| Key   | Action                              |
+|-------+-------------------------------------|
+| ~a a~ | Insert task AFTER selected (child)  |
+| ~a b~ | Insert task BEFORE selected         |
+| ~a r~ | Add root task (no dependencies)     |
+| ~m b~ | Modify what blocks this task        |
+| ~m a~ | Modify what this task blocks        |
+| ~r~   | Remove task from project            |
+| ~t~   | Change TODO state                   |
+
+**** Information
+
+| Key | Action                           |
+|-----+----------------------------------|
+| ~i~ | Show relationships for task      |
+| ~e~ | Edit task in org file (jump to)  |
+| ~RET~ | Jump to task in org file       |
+
+**** View Control
+
+| Key | Action                                |
+|-----+---------------------------------------|
+| ~v~ | Toggle ASCII/SVG rendering            |
+| ~z~ | Zoom menu (filter/focus)              |
+| ~R~ | Refresh graph (rebuild from org file) |
+| ~q~ | Quit graph view                       |
+| ~Q~ | Quit and kill buffer                  |
+
+*** Auto-Refresh on File Changes
+
+Graph view automatically watches the org file and refreshes when changes are detected (with 300ms debounce). This means:
+
+- Changes in the org file appear in graph view automatically
+- No need to manually refresh after external edits
+- Multiple graph views of the same project stay in sync
+- File watching is buffer-local and cleaned up on quit
+
+You can still manually refresh with ~R~ if needed.
+
+*** Technical Details
+:PROPERTIES:
+:CUSTOM_ID: graph-technical-details
+:END:
+
+**** Graph Data Structure
+
+Projects are represented as *Directed Acyclic Graphs* (DAGs):
+
+- *Directed*: Dependencies have direction (A blocks B, not vice versa)
+- *Acyclic*: No circular dependencies (org-gtd prevents these)
+- *Graph*: Tasks can have multiple blockers and multiple dependents
+
+**** Layout Algorithm
+
+The Sugiyama layout algorithm:
+1. Assigns tasks to layers based on dependency depth
+2. Minimizes edge crossings between layers
+3. Centers nodes horizontally for visual balance
+4. Calculates smooth curved arrows (SVG) or line-drawing characters (ASCII)
+
+**** Properties Used
+
+Graph view reads and writes these org properties:
+
+- ~ORG_GTD_FIRST_TASKS~ (on project heading): Space-separated list of task IDs with no dependencies
+- ~ORG_GTD_DEPENDS_ON~ (on tasks): Space-separated list of task IDs this task depends on
+- ~ORG_GTD_BLOCKS~ (on tasks): Space-separated list of task IDs this task blocks
+- ~ORG_GTD_PROJECT_IDS~ (on tasks): Space-separated list of project IDs this task belongs to
+
+These properties maintain bidirectional consistency. When you add dependency A→B:
+- A's ~ORG_GTD_BLOCKS~ includes B's ID
+- B's ~ORG_GTD_DEPENDS_ON~ includes A's ID
+
+You typically don't edit these properties directly—use graph view commands or the text-based alternatives.
+
+**** Undo/Redo Support
+
+Currently, undo/redo is not implemented in graph view. Graph modifications are immediately saved to the org file.
+
+To undo changes:
+- Switch to the org file buffer
+- Use ~C-x u~ (undo) as normal
+- The graph view will auto-refresh to show the reverted state
+
 *** Practical Tips for Project Management
+:PROPERTIES:
+:CUSTOM_ID: graph-practical-tips
+:END:
 
 **** When to Use Graph View
 
@@ -2098,12 +2287,15 @@ As projects evolve, you need to add tasks:
 After adding, press ~r~ to refresh the view.
 
 *** Troubleshooting Projects with Graph View
+:PROPERTIES:
+:CUSTOM_ID: graph-troubleshooting
+:END:
 
 **** Project is Stuck (has TODO tasks but no NEXT)
 
 Run ~M-x org-gtd-review-stuck-projects~ to find stuck projects.
 
-Open the stuck project in graph view: ~M-x org-gtd-graph-view~
+Open the stuck project in graph view: ~M-x org-gtd-show-project-graph~
 
 *What to look for*:
 - *No green boxes?* All tasks might be waiting for dependencies that are DONE. Press ~r~ to refresh.
@@ -2138,6 +2330,42 @@ In graph view:
 - Select a task that should be blocked
 - Press ~a b~ to add a blocker task
 - Or restructure: tasks later in the workflow should be children (~a c~) of earlier tasks
+
+**** Graph Won't Open
+
+If ~M-x org-gtd-show-project-graph~ doesn't work:
+
+- Verify you're on a project heading (not a task heading)
+- Check that the heading has ~ORG_GTD~ property set to "Projects"
+- Try explicitly: ~M-x org-gtd-show-project-graph~
+- Check for errors in ~*Messages*~ buffer
+
+**** Graph Shows No Tasks
+
+If the graph opens but shows no tasks:
+
+- Check if the project has subtasks (tasks should be subheadings under the project)
+- Verify tasks have ~ORG_GTD_PROJECT_IDS~ property containing the project ID
+- Press ~R~ to force a complete refresh
+- Check ~*Messages*~ buffer for parsing errors
+
+**** Task Shows Wrong State (NEXT vs TODO)
+
+If a task's color doesn't match its expected state:
+
+- Press ~R~ to refresh (state might be stale from external edits)
+- Check the task's actual TODO state in the org file (press ~e~ to jump there)
+- Verify dependencies are correct (press ~i~ to inspect relationships)
+- Look for completed tasks that haven't been refreshed
+
+**** Can't Modify Dependencies
+
+If modification commands don't work:
+
+- Ensure a task is selected (should see highlighted box)
+- Press ~?~ to verify commands are available in the transient menu
+- Check that you're in the graph view buffer, not the org file buffer
+- Try ~R~ to refresh if the graph is in an inconsistent state
 
 *** See Also
 

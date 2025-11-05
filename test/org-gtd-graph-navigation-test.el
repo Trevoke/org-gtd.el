@@ -30,29 +30,9 @@
 (require 'org-gtd-graph-view)
 (require 'org-gtd-graph-ui)
 (require 'org-gtd-graph-navigation)
+(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 (require 'org-gtd-test-helper-utils (file-name-concat default-directory "test/helpers/utils.el"))
 (require 'with-simulated-input)
-
-;;;; Test Setup
-
-(defun org-gtd-graph-navigation-test--setup ()
-  "Set up minimal test environment for navigation tests."
-  (setq org-gtd-directory (make-temp-file "org-gtd-nav-test" t)
-        org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL"))
-        org-done-keywords '("DONE")
-        org-gtd-keyword-mapping '((todo . "TODO")
-                                  (next . "NEXT")
-                                  (wait . "WAIT")
-                                  (canceled . "CNCL")))
-  ;; Create the tasks file
-  (let ((tasks-file (f-join org-gtd-directory "org-gtd-tasks.org")))
-    (with-temp-file tasks-file
-      (insert ""))))
-
-(defun org-gtd-graph-navigation-test--teardown ()
-  "Clean up after navigation tests."
-  (when (and org-gtd-directory (file-exists-p org-gtd-directory))
-    (delete-directory org-gtd-directory t)))
 
 (defun org-gtd-graph-navigation-test--create-test-graph ()
   "Create a test graph structure with known topology.
@@ -289,7 +269,7 @@ Returns a graph with the following structure:
         (setq org-gtd-graph-view--graph graph
               org-gtd-graph-ui--selected-node-id "A")
         ;; Simulate selecting "Task D"
-        (with-simulated-input "Task SPC D RET"
+        (with-simulated-input "Task C-q SPC D RET"
           (org-gtd-graph-nav-goto))
         (expect org-gtd-graph-ui--selected-node-id :to-equal "D")))))
 
@@ -297,8 +277,11 @@ Returns a graph with the following structure:
 
 (describe "Project heading as graph node"
 
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
   (it "project heading is included as a node in the graph"
-    (org-gtd-graph-navigation-test--setup)
     (let* ((tasks-file (f-join org-gtd-directory "org-gtd-tasks.org"))
            project-marker)
       ;; Create a project with some tasks
@@ -330,12 +313,9 @@ Returns a graph with the following structure:
 
         ;; Project heading should be a node in the graph
         (expect project-node :not :to-be nil)
-        (expect (org-gtd-graph-node-title project-node) :to-equal "My Project")))
-
-    (org-gtd-graph-navigation-test--teardown))
+        (expect (org-gtd-graph-node-title project-node) :to-equal "My Project"))))
 
   (it "project heading should have edges to first tasks"
-    (org-gtd-graph-navigation-test--setup)
     (let* ((tasks-file (f-join org-gtd-directory "org-gtd-tasks.org"))
            project-marker)
       ;; Create a project with multiple first tasks
@@ -367,14 +347,15 @@ Returns a graph with the following structure:
         ;; Project should have edges to task-1 and task-2
         (expect (length successors) :to-equal 2)
         (expect (member "task-1" successors) :to-be-truthy)
-        (expect (member "task-2" successors) :to-be-truthy)))
-
-    (org-gtd-graph-navigation-test--teardown)))
+        (expect (member "task-2" successors) :to-be-truthy)))))
 
 (describe "Initial node selection in graph view"
 
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
   (it "initial selected node should be the project heading"
-    (org-gtd-graph-navigation-test--setup)
     (let* ((tasks-file (f-join org-gtd-directory "org-gtd-tasks.org"))
            project-marker
            project-id)
@@ -392,7 +373,7 @@ Returns a graph with the following structure:
         (insert ":END:\n")
         (goto-char (point-min))
         (org-back-to-heading t)
-        (setq project-id (org-gtd-id-get-create))
+        (setq project-id (org-id-get-create))
         (setq project-marker (point-marker))
         (save-buffer))
 
@@ -403,14 +384,15 @@ Returns a graph with the following structure:
 
         ;; The first (and only) root should be the project heading
         (expect (length root-ids) :to-equal 1)
-        (expect first-root :to-equal project-id)))
-
-    (org-gtd-graph-navigation-test--teardown)))
+        (expect first-root :to-equal project-id)))))
 
 (describe "DAG-based navigation with 'n' key"
 
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
   (it "'n' navigates to first child (successor) in DAG, not BFS order"
-    (org-gtd-graph-navigation-test--setup)
     (let* ((tasks-file (f-join org-gtd-directory "org-gtd-tasks.org"))
            project-marker
            project-id)
@@ -439,7 +421,7 @@ Returns a graph with the following structure:
         (insert ":END:\n")
         (goto-char (point-min))
         (org-back-to-heading t)
-        (setq project-id (org-gtd-id-get-create))
+        (setq project-id (org-id-get-create))
         (setq project-marker (point-marker))
         (save-buffer))
 
@@ -461,14 +443,15 @@ Returns a graph with the following structure:
           ;; Get successors of task-1 - should be task-2
           (let ((task1-successors (org-gtd-graph-data-get-successors graph "task-1")))
             (expect (length task1-successors) :to-equal 1)
-            (expect (car task1-successors) :to-equal "task-2")))))
-
-    (org-gtd-graph-navigation-test--teardown)))
+            (expect (car task1-successors) :to-equal "task-2")))))))
 
 (describe "'p' navigation prefers task parents over project heading"
 
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
   (it "'p' navigates to task parent, not project heading"
-    (org-gtd-graph-navigation-test--setup)
     (let* ((tasks-file (f-join org-gtd-directory "org-gtd-tasks.org"))
            project-marker
            project-id)
@@ -494,7 +477,7 @@ Returns a graph with the following structure:
         (insert ":END:\n")
         (goto-char (point-min))
         (org-back-to-heading t)
-        (setq project-id (org-gtd-id-get-create))
+        (setq project-id (org-id-get-create))
         (setq project-marker (point-marker))
         (save-buffer))
 
@@ -508,9 +491,7 @@ Returns a graph with the following structure:
 
           ;; Navigate up - should go to task-1, not project
           (org-gtd-graph-nav-previous)
-          (expect org-gtd-graph-ui--selected-node-id :to-equal "task-1"))))
-
-    (org-gtd-graph-navigation-test--teardown)))
+          (expect org-gtd-graph-ui--selected-node-id :to-equal "task-1"))))))
 
 (provide 'org-gtd-graph-navigation-test)
 

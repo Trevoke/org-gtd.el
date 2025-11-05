@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**Note**: This project uses [bd (beads)](https://github.com/steveyegge/beads) for issue tracking. Use `bd` commands instead of markdown TODOs. See AGENTS.md for workflow details.
+
 ## Development Commands
 
 ### Setup Requirements
@@ -174,10 +176,6 @@ Key testing dependencies: `with-simulated-input`, `dash`
 - **org-agenda-property 1.3.1**: Agenda enhancements
 - **transient 0.3.7**: Menu interface
 - **f 0.20.0**: File utilities
-
-## Development Environment
-
-The `dev/` directory contains a sandboxed environment for testing. Use `HOME="dev/" emacs` to run in isolation.
 
 ## Documentation
 

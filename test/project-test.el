@@ -135,12 +135,12 @@
  (it "creates sequential dependencies for tasks without existing relationships"
      ;; Create a project with 3 tasks and verify sequential dependencies are created
      (create-project "sequential project")
-     
+
      ;; Verify the project was created and check the sequential dependencies
      (with-current-buffer (org-gtd--default-file)
        (goto-char (point-min))
        (search-forward "sequential project")
-       
+
        ;; Find Task 1 - should have no ORG_GTD_DEPENDS_ON but should BLOCK Task 2
        (search-forward "Task 1")
        (org-back-to-heading t)
@@ -176,16 +176,16 @@
      (make-task "Task 1" :level 2)
      (make-task "Task 2" :level 2)
      (make-task "Task 3" :level 2)
-     
+
      ;; Add custom dependency: Task 3 depends on Task 1 (skipping Task 2)
      (goto-char (point-min))
      (search-forward "Task 3")
      (org-back-to-heading t)
-     (let ((task3-id (org-gtd-id-get-create)))
+     (let ((task3-id (org-id-get-create)))
        (goto-char (point-min))
        (search-forward "Task 1")
        (org-back-to-heading t)
-       (let ((task1-id (org-gtd-id-get-create)))
+       (let ((task1-id (org-id-get-create)))
          ;; Create custom dependency: Task 3 depends on Task 1
          (goto-char (point-min))
          (search-forward "Task 3")

@@ -29,29 +29,9 @@
 (require 'org-gtd-graph-ui)
 (require 'org-gtd-files)
 (require 'org-gtd-core)
+(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 (require 'org-gtd-test-helper-utils (file-name-concat default-directory "test/helpers/utils.el"))
 (require 'with-simulated-input)
-
-;;;; Test Setup
-
-(defun org-gtd-graph-transient-test--setup ()
-  "Set up minimal test environment for transient menu tests."
-  (setq org-gtd-directory (make-temp-file "org-gtd-transient-test" t)
-        org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL"))
-        org-done-keywords '("DONE")
-        org-gtd-keyword-mapping '((todo . "TODO")
-                                  (next . "NEXT")
-                                  (wait . "WAIT")
-                                  (canceled . "CNCL")))
-  ;; Create the tasks file
-  (let ((tasks-file (f-join org-gtd-directory "org-gtd-tasks.org")))
-    (with-temp-file tasks-file
-      (insert ""))))
-
-(defun org-gtd-graph-transient-test--teardown ()
-  "Clean up after transient menu tests."
-  (when (and org-gtd-directory (file-exists-p org-gtd-directory))
-    (delete-directory org-gtd-directory t)))
 
 (defun org-gtd-graph-transient-test--create-project (title)
   "Create a test project with TITLE and return its marker."
@@ -60,20 +40,22 @@
     (insert (format "* %s\n" title))
     (insert ":PROPERTIES:\n")
     (insert ":ORG_GTD: Projects\n")
-    (let ((id (org-gtd-id-get-create)))
+    (let ((id (org-id-get-create)))
       (insert (format ":ID: %s\n" id))
-      (insert (format ":ORG_GTD_FIRST_TASKS: task-%s\n" (make-temp-name "id")))
       (insert ":END:\n")
       (insert "** TODO Task 1\n")
       (insert ":PROPERTIES:\n")
-      (let ((task-id (org-gtd-id-get-create)))
+      (let ((task-id (org-id-get-create)))
         (insert (format ":ID: %s\n" task-id))
         (insert ":ORG_GTD: Actions\n")
-        (insert (format ":ORG_GTD_PROJECT_IDS: %s\n" id))
         (insert ":END:\n")
+        ;; Use proper function to set properties
+        (org-gtd-add-to-multivalued-property task-id org-gtd-prop-project-ids id)
+        ;; Go back to project and add task to FIRST_TASKS
         (goto-char (point-min))
         (search-forward title)
         (org-back-to-heading t)
+        (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" task-id)
         (basic-save-buffer)
         (point-marker)))))
 
@@ -110,8 +92,9 @@
 
 (describe "org-gtd-graph-transient-add-child"
 
-  (before-each (org-gtd-graph-transient-test--setup))
-  (after-each (org-gtd-graph-transient-test--teardown))
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
 
   (it "creates a child task under selected node"
     (let* ((project-marker (org-gtd-graph-transient-test--create-project "Test Project"))
@@ -132,7 +115,7 @@
         (setq org-gtd-graph-ui--selected-node-id parent-task-id)
         ;; Mock refresh function
         (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
-          (with-simulated-input "Child SPC Task RET"
+          (with-simulated-input "Child C-q SPC Task RET"
             (org-gtd-graph-transient-add-child))))
 
       ;; Verify child task was created
@@ -166,7 +149,7 @@
         (setq org-gtd-graph-view--project-marker project-marker)
         (setq org-gtd-graph-ui--selected-node-id parent-task-id)
         (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
-          (with-simulated-input "Dependent SPC Child RET"
+          (with-simulated-input "Dependent C-q SPC Child RET"
             (org-gtd-graph-transient-add-child))))
 
       ;; Get child task ID
@@ -197,7 +180,7 @@
         (setq org-gtd-graph-ui--selected-node-id parent-task-id)
         (cl-letf (((symbol-function 'org-gtd-graph-view-refresh)
                    (lambda () (setq refresh-called t))))
-          (with-simulated-input "Refresh SPC Child RET"
+          (with-simulated-input "Refresh C-q SPC Child RET"
             (org-gtd-graph-transient-add-child))))
 
       (expect refresh-called :to-be-truthy))))
@@ -206,8 +189,9 @@
 
 (describe "org-gtd-graph-transient-add-root"
 
-  (before-each (org-gtd-graph-transient-test--setup))
-  (after-each (org-gtd-graph-transient-test--teardown))
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
 
   (it "creates a new root task in the project"
     (let* ((project-marker (org-gtd-graph-transient-test--create-project "Root Project"))
@@ -238,6 +222,70 @@
           (org-back-to-heading t)
           (let ((first-tasks (org-entry-get-multivalued-property (point) "ORG_GTD_FIRST_TASKS")))
             (expect (member task-id first-tasks) :to-be-truthy)))))))
+
+;;;; org-gtd-graph-insert-before Tests
+
+(describe "org-gtd-graph-insert-before"
+
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
+  (it "inserts before root task (no blockers) and makes new task the root"
+    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Insert Before Root"))
+           (buffer (get-buffer-create "*Org GTD Graph: insert-before-root*"))
+           project-id selected-task-id new-task-id)
+
+      ;; Get project ID and task ID
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Insert Before Root")
+        (org-back-to-heading t)
+        (setq project-id (org-entry-get (point) "ID"))
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (setq selected-task-id (org-entry-get (point) "ID")))
+
+      ;; Verify selected task is root
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Insert Before Root")
+        (org-back-to-heading t)
+        (let ((first-tasks (org-entry-get-multivalued-property (point) "ORG_GTD_FIRST_TASKS")))
+          (expect (member selected-task-id first-tasks) :to-be-truthy)))
+
+      ;; Set up graph view and insert before
+      (with-current-buffer buffer
+        (org-gtd-graph-view-mode)
+        (setq org-gtd-graph-view--project-marker project-marker)
+        (setq org-gtd-graph-ui--selected-node-id selected-task-id)
+        (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
+          (with-simulated-input "NewPredecessor RET"
+            (org-gtd-graph-insert-before))))
+
+      ;; Verify new task created
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "NewPredecessor")
+        (org-back-to-heading t)
+        (setq new-task-id (org-entry-get (point) "ID"))
+        (expect new-task-id :not :to-be nil))
+
+      ;; Verify new task is now root (in FIRST_TASKS)
+      ;; Use the same marker context instead of switching buffers
+      (org-with-point-at project-marker
+        (let ((first-tasks (org-entry-get-multivalued-property (point) "ORG_GTD_FIRST_TASKS")))
+          (expect (member new-task-id first-tasks) :to-be-truthy)
+          (expect (member selected-task-id first-tasks) :not :to-be-truthy)))
+
+      ;; Verify dependency: new → selected
+      (expect (org-gtd-get-task-dependencies selected-task-id) :to-equal (list new-task-id))))
+
+  (it "inserts before task with single blocker and rewires dependencies"
+    (pending "Test implementation needed"))
+
+  (it "inserts before task with multiple blockers and prompts user"
+    (pending "Test implementation needed")))
 
 (provide 'org-gtd-graph-transient-test)
 
