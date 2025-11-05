@@ -203,12 +203,13 @@ _EVENT is the file-notify event (unused)."
 
     ;; Insert legend
     (insert (propertize "Graph View Controls:\n" 'face 'bold))
-    (insert "  Quick Keys:      ? - Show all commands (transient menu)\n")
-    (insert "  Navigation:      n/p/j/k - Down/up dependency | TAB - Next sibling | g - Go to node\n")
+    (insert "  Quick Keys:      ? - Show all commands (transient menu) v - Toggle ASCII/SVG\n")
+    (insert "  Navigation:      n/p - Down/up dependency | TAB - Next sibling | g - Go to node\n")
     (insert "  View:            z - Zoom\n")
-    (insert "  Actions:         r - Refresh | u - Undo | C-r - Redo | q - Quit\n")
+    (insert "  Actions:         r - Refresh | q - Quit\n")
     (insert "\n")
     (insert "  Press ? to see all commands including: add child/root/blocker tasks\n")
+    (insert (format "\n  Render mode: SVG (press 'v' to toggle)\n"))
 
     (goto-char (point-min))))
 
@@ -224,9 +225,9 @@ _EVENT is the file-notify event (unused)."
     ;; Insert legend
     (insert (propertize "Graph View Controls:\n" 'face 'bold))
     (insert "  Quick Keys:      ? - Show all commands (transient menu) | v - Toggle ASCII/SVG\n")
-    (insert "  Navigation:      n/p/j/k - Down/up dependency | TAB - Next sibling | g - Go to node\n")
+    (insert "  Navigation:      n/p - Down/up dependency | TAB - Next sibling | g - Go to node\n")
     (insert "  View:            z - Zoom\n")
-    (insert "  Actions:         r - Refresh | u - Undo | C-r - Redo | q - Quit\n")
+    (insert "  Actions:         r - Refresh | q - Quit\n")
     (insert "\n")
     (insert "  Press ? to see all commands including: add child/root/blocker tasks\n")
     (insert (format "\n  Render mode: ASCII (press 'v' to toggle)\n"))

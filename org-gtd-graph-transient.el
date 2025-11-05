@@ -45,8 +45,8 @@
    ("a b" "Insert BEFORE this" org-gtd-graph-insert-before)
    ("a a" "Insert AFTER this" org-gtd-graph-insert-after)]
   ["Modify Relationships"
-   ("m b" "Modify what blocks this" org-gtd-graph-modify-blockers)
-   ("m a" "Modify what this blocks" org-gtd-graph-modify-successors)]
+   ("m b" "Modify blockers" org-gtd-graph-modify-blockers)
+   ("m d" "Modify dependents" org-gtd-graph-modify-successors)]
   ["Task Operations"
    ("r" "Remove from project" org-gtd-graph-remove-task)
    ("e" "Edit in org file" org-gtd-graph-ui-jump-to-task)
@@ -54,9 +54,7 @@
    ("i" "Show relationships" org-gtd-graph-view-show-relationships)]
   ["Navigation"
    ("n" "Next successor" org-gtd-graph-nav-down-dependency :transient t)
-   ("j" "Next successor" org-gtd-graph-nav-down-dependency :transient t)
    ("p" "Previous blocker" org-gtd-graph-nav-up-dependency :transient t)
-   ("k" "Previous blocker" org-gtd-graph-nav-up-dependency :transient t)
    ("TAB" "Next sibling" org-gtd-graph-nav-next-sibling :transient t)
    ("g" "Goto task" org-gtd-graph-nav-goto)]
   ["View"

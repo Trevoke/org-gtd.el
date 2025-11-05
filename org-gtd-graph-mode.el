@@ -47,8 +47,6 @@
     ;; Dependency-based navigation
     (define-key map (kbd "n") #'org-gtd-graph-nav-down-dependency)
     (define-key map (kbd "p") #'org-gtd-graph-nav-up-dependency)
-    (define-key map (kbd "j") #'org-gtd-graph-nav-down-dependency)
-    (define-key map (kbd "k") #'org-gtd-graph-nav-up-dependency)
 
     ;; Layer-based navigation
     (define-key map (kbd "TAB") #'org-gtd-graph-nav-next-sibling)
