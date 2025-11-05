@@ -501,7 +501,25 @@ Prompts for where to insert if selected task has blockers."
 
          ;; Case 3: Multiple predecessors - prompt user
          (t
-          (user-error "Multiple predecessors not yet implemented")))
+          (let* ((predecessor-choices
+                  (mapcar (lambda (pred-id)
+                            (let* ((marker (org-id-find pred-id t))
+                                   (title (org-with-point-at marker
+                                            (org-get-heading t t t t))))
+                              (cons title pred-id)))
+                          predecessors))
+                 (chosen-title (completing-read
+                                "Insert between which blocker and selected task? "
+                                predecessor-choices
+                                nil t))
+                 (chosen-predecessor-id (cdr (assoc chosen-title predecessor-choices))))
+            ;; Remove: chosen-predecessor → selected
+            (org-gtd-remove-from-multivalued-property chosen-predecessor-id org-gtd-prop-blocks selected-id)
+            (org-gtd-remove-from-multivalued-property selected-id org-gtd-prop-depends-on chosen-predecessor-id)
+            ;; Add: chosen-predecessor → new
+            (org-gtd-dependencies-create chosen-predecessor-id new-task-id)
+            ;; Add: new → selected
+            (org-gtd-dependencies-create new-task-id selected-id))))
 
         (message "Created predecessor task: %s" title)
         (org-gtd-graph-view-refresh)))))

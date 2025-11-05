@@ -282,10 +282,157 @@
       (expect (org-gtd-get-task-dependencies selected-task-id) :to-equal (list new-task-id))))
 
   (it "inserts before task with single blocker and rewires dependencies"
-    (pending "Test implementation needed"))
+    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Single Blocker Project"))
+           (buffer (get-buffer-create "*Org GTD Graph: single-blocker*"))
+           project-id task-a-id task-c-id new-task-id)
+
+      ;; Create Task A and Task C with A → C dependency
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Single Blocker Project")
+        (org-back-to-heading t)
+        (setq project-id (org-entry-get (point) "ID"))
+
+        ;; Create Task A
+        (org-end-of-subtree t t)
+        (insert "** TODO Task A\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq task-a-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+
+        ;; Create Task C
+        (goto-char (point-min))
+        (search-forward "Single Blocker Project")
+        (org-end-of-subtree t t)
+        (insert "** TODO Task C\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq task-c-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+
+        ;; Create A → C dependency
+        (org-gtd-dependencies-create task-a-id task-c-id)
+
+        ;; Make A a root task
+        (goto-char (point-min))
+        (search-forward "Single Blocker Project")
+        (org-back-to-heading t)
+        (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" task-a-id)
+        (basic-save-buffer))
+
+      ;; Verify initial state: A → C
+      (expect (org-gtd-get-task-dependencies task-c-id) :to-equal (list task-a-id))
+      (expect (org-gtd-get-task-blockers task-a-id) :to-equal (list task-c-id))
+
+      ;; Set up graph view and insert B before C
+      (with-current-buffer buffer
+        (org-gtd-graph-view-mode)
+        (setq org-gtd-graph-view--project-marker project-marker)
+        (setq org-gtd-graph-ui--selected-node-id task-c-id)
+        (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
+          (with-simulated-input "Task C-q SPC B RET"
+            (org-gtd-graph-insert-before))))
+
+      ;; Get new task ID
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Task B")
+        (org-back-to-heading t)
+        (setq new-task-id (org-entry-get (point) "ID")))
+
+      ;; Verify final state: A → B → C
+      (expect (org-gtd-get-task-dependencies new-task-id) :to-equal (list task-a-id))
+      (expect (org-gtd-get-task-blockers task-a-id) :to-equal (list new-task-id))
+      (expect (org-gtd-get-task-dependencies task-c-id) :to-equal (list new-task-id))
+      (expect (org-gtd-get-task-blockers new-task-id) :to-equal (list task-c-id))))
 
   (it "inserts before task with multiple blockers and prompts user"
-    (pending "Test implementation needed")))
+    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Multi Blocker Project"))
+           (buffer (get-buffer-create "*Org GTD Graph: multi-blocker*"))
+           project-id task-a-id task-b-id task-c-id new-task-id)
+
+      ;; Create Task A, Task B, Task C with A → C and B → C dependencies
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Multi Blocker Project")
+        (org-back-to-heading t)
+        (setq project-id (org-entry-get (point) "ID"))
+
+        ;; Create Task A
+        (org-end-of-subtree t t)
+        (insert "** TODO Task A\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq task-a-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+
+        ;; Create Task B
+        (goto-char (point-min))
+        (search-forward "Multi Blocker Project")
+        (org-end-of-subtree t t)
+        (insert "** TODO Task B\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq task-b-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+
+        ;; Create Task C
+        (goto-char (point-min))
+        (search-forward "Multi Blocker Project")
+        (org-end-of-subtree t t)
+        (insert "** TODO Task C\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq task-c-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+
+        ;; Create A → C and B → C dependencies
+        (org-gtd-dependencies-create task-a-id task-c-id)
+        (org-gtd-dependencies-create task-b-id task-c-id)
+
+        ;; Make A and B root tasks
+        (goto-char (point-min))
+        (search-forward "Multi Blocker Project")
+        (org-back-to-heading t)
+        (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" task-a-id)
+        (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" task-b-id)
+        (basic-save-buffer))
+
+      ;; Verify initial state: A → C, B → C
+      (let ((c-deps (org-gtd-get-task-dependencies task-c-id)))
+        (expect (member task-a-id c-deps) :to-be-truthy)
+        (expect (member task-b-id c-deps) :to-be-truthy))
+
+      ;; Set up graph view and insert X before C, choosing B as the blocker to replace
+      (with-current-buffer buffer
+        (org-gtd-graph-view-mode)
+        (setq org-gtd-graph-view--project-marker project-marker)
+        (setq org-gtd-graph-ui--selected-node-id task-c-id)
+        (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
+          ;; First input: task name, Second input: which blocker to insert between
+          (with-simulated-input "Task C-q SPC X RET Task C-q SPC B RET"
+            (org-gtd-graph-insert-before))))
+
+      ;; Get new task ID
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Task X")
+        (org-back-to-heading t)
+        (setq new-task-id (org-entry-get (point) "ID")))
+
+      ;; Verify final state: A → C (unchanged), B → X → C
+      (let ((c-deps (org-gtd-get-task-dependencies task-c-id)))
+        (expect (member task-a-id c-deps) :to-be-truthy)  ; A → C still exists
+        (expect (member task-b-id c-deps) :not :to-be-truthy)  ; B → C removed
+        (expect (member new-task-id c-deps) :to-be-truthy))  ; X → C created
+      (expect (org-gtd-get-task-dependencies new-task-id) :to-equal (list task-b-id))  ; B → X
+      (expect (org-gtd-get-task-blockers task-b-id) :to-equal (list new-task-id)))))
 
 (provide 'org-gtd-graph-transient-test)
 
