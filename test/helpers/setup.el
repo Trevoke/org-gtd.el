@@ -24,6 +24,7 @@
         org-gtd-keyword-mapping '((todo . "TODO")
                                   (next . "NEXT")
                                   (wait . "WAIT")
+                                  (done . "DONE")
                                   (canceled . "CNCL")))
   (org-edna-mode 1)
   (define-key org-gtd-clarify-map (kbd "C-c c") #'org-gtd-organize))
