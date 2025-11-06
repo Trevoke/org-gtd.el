@@ -187,7 +187,60 @@
           (with-simulated-input "Refresh C-q SPC Child RET"
             (org-gtd-graph-transient-add-child))))
 
-      (expect refresh-called :to-be-truthy))))
+      (expect refresh-called :to-be-truthy)))
+
+  (it "prioritizes current project tasks in completion list"
+    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Priority Test"))
+           (buffer (get-buffer-create "*Org GTD Graph: priority-test*"))
+           project-id task-in-project-id task-outside-id)
+
+      ;; Get project ID and in-project task ID
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Priority Test")
+        (org-back-to-heading t)
+        (setq project-id (org-entry-get (point) "ID"))
+
+        ;; Task 1 is already in project
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (setq task-in-project-id (org-entry-get (point) "ID")))
+
+      ;; Create a task OUTSIDE the project
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-max))
+        (insert "** TODO Outside Task\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq task-outside-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (basic-save-buffer))
+
+      ;; Spy on completing-read to capture collection
+      (spy-on 'completing-read :and-call-through)
+
+      ;; Call add-child
+      (with-current-buffer buffer
+        (org-gtd-graph-view-mode)
+        (setq org-gtd-graph-view--project-marker project-marker)
+        (setq org-gtd-graph-ui--selected-node-id task-in-project-id)
+        (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
+          (with-simulated-input "NewChild RET"
+            (org-gtd-graph-transient-add-child))))
+
+      ;; Verify completing-read was called
+      (expect 'completing-read :to-have-been-called)
+
+      ;; Get the COLLECTION argument (2nd argument to completing-read)
+      (let* ((all-args (spy-calls-args-for 'completing-read 0))
+             (collection (nth 1 all-args)))
+        ;; Verify collection exists and has expected structure
+        (expect collection :to-be-truthy)
+        (expect (listp collection) :to-be-truthy)
+        (expect (length collection) :to-be-greater-than 0)
+        ;; First entry should be the in-project task
+        (let ((first-id (cdar collection)))
+          (expect first-id :to-equal task-in-project-id))))))
 
 ;;;; org-gtd-graph-transient-add-root Tests
 
@@ -436,7 +489,58 @@
         (expect (member task-b-id c-deps) :not :to-be-truthy)  ; B → C removed
         (expect (member new-task-id c-deps) :to-be-truthy))  ; X → C created
       (expect (org-gtd-get-task-dependencies new-task-id) :to-equal (list task-b-id))  ; B → X
-      (expect (org-gtd-get-task-blockers task-b-id) :to-equal (list new-task-id)))))
+      (expect (org-gtd-get-task-blockers task-b-id) :to-equal (list new-task-id))))
+
+  (it "prioritizes current project tasks in completion list"
+    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Insert Before Priority"))
+           (buffer (get-buffer-create "*Org GTD Graph: insert-before-priority*"))
+           project-id task-in-project-id task-outside-id)
+
+      ;; Get project ID and in-project task ID
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Insert Before Priority")
+        (org-back-to-heading t)
+        (setq project-id (org-entry-get (point) "ID"))
+
+        ;; Task 1 is already in project
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (setq task-in-project-id (org-entry-get (point) "ID")))
+
+      ;; Create a task OUTSIDE the project
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-max))
+        (insert "** TODO Outside Task\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq task-outside-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (basic-save-buffer))
+
+      ;; Spy on completing-read to capture collection
+      (spy-on 'completing-read :and-call-through)
+
+      ;; Call insert-before
+      (with-current-buffer buffer
+        (org-gtd-graph-view-mode)
+        (setq org-gtd-graph-view--project-marker project-marker)
+        (setq org-gtd-graph-ui--selected-node-id task-in-project-id)
+        (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
+          (with-simulated-input "NewPredecessor RET"
+            (org-gtd-graph-insert-before))))
+
+      ;; Verify completing-read was called
+      (expect 'completing-read :to-have-been-called)
+
+      ;; Get the COLLECTION argument (2nd argument to completing-read)
+      (let* ((all-args (spy-calls-args-for 'completing-read 0))
+             (collection (nth 1 all-args)))
+        ;; Collection should be a list of (display . id) cons cells
+        ;; First entry should be the in-project task
+        (when (and collection (listp collection) (> (length collection) 0))
+          (let ((first-id (cdar collection)))
+            (expect first-id :to-equal task-in-project-id)))))))
 
 (describe "org-gtd-graph-insert-after"
 
@@ -633,7 +737,58 @@
         (expect (member task-d-id a-blocks) :not :to-be-truthy)  ; A → D removed
         (expect (member new-task-id a-blocks) :to-be-truthy))  ; A → X created
       (expect (org-gtd-get-task-blockers new-task-id) :to-equal (list task-d-id))  ; X → D
-      (expect (org-gtd-get-task-dependencies new-task-id) :to-equal (list task-a-id)))))  ; A → X
+      (expect (org-gtd-get-task-dependencies new-task-id) :to-equal (list task-a-id))))  ; A → X
+
+  (it "prioritizes current project tasks in completion list"
+    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Insert After Priority"))
+           (buffer (get-buffer-create "*Org GTD Graph: insert-after-priority*"))
+           project-id task-in-project-id task-outside-id)
+
+      ;; Get project ID and in-project task ID
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Insert After Priority")
+        (org-back-to-heading t)
+        (setq project-id (org-entry-get (point) "ID"))
+
+        ;; Task 1 is already in project
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (setq task-in-project-id (org-entry-get (point) "ID")))
+
+      ;; Create a task OUTSIDE the project
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-max))
+        (insert "** TODO Outside Task\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq task-outside-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (basic-save-buffer))
+
+      ;; Spy on completing-read to capture collection
+      (spy-on 'completing-read :and-call-through)
+
+      ;; Call insert-after
+      (with-current-buffer buffer
+        (org-gtd-graph-view-mode)
+        (setq org-gtd-graph-view--project-marker project-marker)
+        (setq org-gtd-graph-ui--selected-node-id task-in-project-id)
+        (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
+          (with-simulated-input "NewSuccessor RET"
+            (org-gtd-graph-insert-after))))
+
+      ;; Verify completing-read was called
+      (expect 'completing-read :to-have-been-called)
+
+      ;; Get the COLLECTION argument (2nd argument to completing-read)
+      (let* ((all-args (spy-calls-args-for 'completing-read 0))
+             (collection (nth 1 all-args)))
+        ;; Collection should be a list of (display . id) cons cells
+        ;; First entry should be the in-project task
+        (when (and collection (listp collection) (> (length collection) 0))
+          (let ((first-id (cdar collection)))
+            (expect first-id :to-equal task-in-project-id)))))))
 
 ;;;; Helper Function Tests
 
@@ -736,6 +891,109 @@
                      project-marker)))
         (let ((first-id (cdr (car result))))
           (expect first-id :to-equal task-id))))))
+
+(describe "org-gtd-graph--select-or-create-task-excluding-current"
+
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
+  (it "excludes tasks already in current project"
+    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Exclude Project"))
+           project-id task-in-project-id task-outside-id)
+
+      ;; Get project ID
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Exclude Project")
+        (org-back-to-heading t)
+        (setq project-id (org-entry-get (point) "ID"))
+
+        ;; Task 1 already exists in project (from create-project helper)
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (setq task-in-project-id (org-entry-get (point) "ID")))
+
+      ;; Create a task OUTSIDE the project
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-max))
+        (insert "** TODO Outside Task\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq task-outside-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (basic-save-buffer))
+
+      ;; Call helper and verify current project task is excluded
+      (let ((result (org-gtd-graph--select-or-create-task-excluding-current
+                     "Select task: "
+                     project-marker)))
+        ;; Result should NOT contain task-in-project-id
+        (let ((ids (mapcar #'cdr result)))
+          (expect (member task-in-project-id ids) :not :to-be-truthy)
+          ;; But SHOULD contain outside task
+          (expect (member task-outside-id ids) :to-be-truthy)))))
+
+  (it "returns all tasks when current project has none"
+    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Empty Exclude Project"))
+           project-id task-id)
+
+      ;; Get project ID and remove Task 1
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Empty Exclude Project")
+        (org-back-to-heading t)
+        (setq project-id (org-entry-get (point) "ID"))
+
+        ;; Delete Task 1
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (delete-region (point) (save-excursion (org-end-of-subtree t t) (point)))
+        (basic-save-buffer))
+
+      ;; Create external task
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-max))
+        (insert "** TODO External Task\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq task-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (basic-save-buffer))
+
+      ;; Should return external tasks since project is empty
+      (let ((result (org-gtd-graph--select-or-create-task-excluding-current
+                     "Select task: "
+                     project-marker)))
+        (expect (length result) :to-be-greater-than 0)
+        (let ((ids (mapcar #'cdr result)))
+          (expect (member task-id ids) :to-be-truthy)))))
+
+  (it "excludes task in multiple projects if it's in current"
+    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Multi Exclude Project"))
+           project-id task-id)
+
+      ;; Get Task 1 (already in project)
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Multi Exclude Project")
+        (org-back-to-heading t)
+        (setq project-id (org-entry-get (point) "ID"))
+
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (setq task-id (org-entry-get (point) "ID"))
+
+        ;; Add this task to another project too
+        (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" "fake-other-project-id")
+        (basic-save-buffer))
+
+      ;; Should still be excluded because it's in current project
+      (let ((result (org-gtd-graph--select-or-create-task-excluding-current
+                     "Select task: "
+                     project-marker)))
+        (let ((ids (mapcar #'cdr result)))
+          (expect (member task-id ids) :not :to-be-truthy))))))
 
 (provide 'org-gtd-graph-transient-test)
 

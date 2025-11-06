@@ -154,6 +154,31 @@ Returns list of (display . id) cons cells with current project tasks first."
                       (plist-get task :id)))
               prioritized-tasks))))
 
+(defun org-gtd-graph--select-or-create-task-excluding-current (prompt project-marker)
+  "Select task or create new one, excluding tasks already in current project.
+PROMPT is displayed to the user.
+PROJECT-MARKER identifies the current project.
+Returns list of (display . id) cons cells with tasks NOT in current project."
+  (let* ((project-id (org-with-point-at project-marker
+                       (org-entry-get (point) "ID")))
+         (all-tasks (org-gtd-graph--get-all-gtd-tasks))
+         (not-in-project '()))
+
+    ;; Filter to only tasks NOT in current project
+    (dolist (task all-tasks)
+      (let* ((task-id (plist-get task :id))
+             (project-ids (org-gtd-get-task-projects task-id)))
+        (unless (and project-ids (member project-id project-ids))
+          (push task not-in-project))))
+
+    ;; Build choices from excluded tasks only
+    (mapcar (lambda (task)
+              (cons (format "%s (%s)"
+                           (plist-get task :title)
+                           (or (plist-get task :category) "Unknown"))
+                    (plist-get task :id)))
+            (nreverse not-in-project))))
+
 ;;;; Add Commands
 
 (defun org-gtd-graph-transient-add-child ()
@@ -167,9 +192,13 @@ Creates a dependency where the parent blocks the child."
   (let* ((parent-id org-gtd-graph-ui--selected-node-id)
          (parent-marker (org-id-find parent-id t))
          (project-ids (org-entry-get parent-marker "ORG_GTD_PROJECT_IDS"))
-         (selection (org-gtd-graph--select-or-create-task "Select or create child task: "))
-         (existing-id (car selection))
-         (title (cdr selection)))
+         (choices (org-gtd-graph--select-or-create-task-prioritizing-current
+                   "Select or create child task: "
+                   org-gtd-graph-view--project-marker))
+         (selected (completing-read "Select or create child task: " choices nil nil))
+         (match (assoc-string selected choices))
+         (existing-id (if match (cdr match) nil))
+         (title (if match selected selected)))
 
     (unless parent-marker
       (user-error "Cannot find parent node with ID: %s" parent-id))
@@ -479,9 +508,13 @@ Prompts for where to insert if selected task has blockers."
          ;; Filter out project ID from predecessors (virtual edge for visualization)
          (predecessors (seq-remove (lambda (id) (string= id project-id))
                                    (org-gtd-graph-data-get-predecessors graph selected-id)))
-         (selection (org-gtd-graph--select-or-create-task "Select or create predecessor task: "))
-         (existing-id (car selection))
-         (title (cdr selection)))
+         (choices (org-gtd-graph--select-or-create-task-prioritizing-current
+                   "Select or create predecessor task: "
+                   org-gtd-graph-view--project-marker))
+         (selected (completing-read "Select or create predecessor task: " choices nil nil))
+         (match (assoc-string selected choices))
+         (existing-id (if match (cdr match) nil))
+         (title (if match selected selected)))
 
     (when title
       ;; Get or create task
@@ -570,9 +603,13 @@ Prompts for which successor to rewire if selected task has multiple successors."
          ;; Filter out project ID from successors (virtual edge for visualization)
          (successors (seq-remove (lambda (id) (string= id project-id))
                                  (org-gtd-graph-data-get-successors graph selected-id)))
-         (selection (org-gtd-graph--select-or-create-task "Select or create successor task: "))
-         (existing-id (car selection))
-         (title (cdr selection)))
+         (choices (org-gtd-graph--select-or-create-task-prioritizing-current
+                   "Select or create successor task: "
+                   org-gtd-graph-view--project-marker))
+         (selected (completing-read "Select or create successor task: " choices nil nil))
+         (match (assoc-string selected choices))
+         (existing-id (if match (cdr match) nil))
+         (title (if match selected selected)))
 
     (when title
       ;; Get or create task

@@ -80,7 +80,8 @@
       "Bash(~/go/bin/bd ready:*)",
       "Bash(~/go/bin/bd close:*)",
       "Bash(~/go/bin/bd create:*)",
-      "Bash(~/go/bin/bd update:*)"
+      "Bash(~/go/bin/bd update:*)",
+      "Bash(~/go/bin/bd show:*)"
     ],
     "deny": []
   },
