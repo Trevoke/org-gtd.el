@@ -15,6 +15,8 @@ This document provides guidance for AI agents working on the org-gtd.el project.
 
 ### Quick Start
 
+The executable is at `~/go/bin/bd`. For short, we'll just say `bd` here.
+
 **Check for ready work:**
 ```bash
 bd ready --json

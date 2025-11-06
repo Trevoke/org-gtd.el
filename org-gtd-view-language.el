@@ -35,6 +35,7 @@
 ;; Available Filter Types:
 ;;
 ;; Category Filters:
+;;   (category . actions)             - Single-action items (ORG_GTD="Actions")
 ;;   (category . delegated)           - Items with DELEGATED_TO property
 ;;   (category . calendar)            - Calendar items (ORG_GTD="Calendar")
 ;;   (category . projects)            - Project items (ORG_GTD="Projects")
@@ -80,7 +81,18 @@
 ;;   (show-habits . t/nil)    - Control habit visibility in agenda
 ;;   (additional-blocks . ((todo . "NEXT"))) - Additional blocks to include
 ;;
-;; Example GTD View:
+;; Examples:
+;;
+;; Simple Example - Show all actions:
+;;
+;; '((name . "All My Actions")
+;;   (filters . ((category . actions))))
+;;
+;; This is the simplest possible view - just show all single-action items.
+;; It translates to org-ql query:
+;; '(and (property "ORG_GTD" "Actions"))
+;;
+;; Complex Example - Show overdue work projects:
 ;;
 ;; '((name . "Overdue Work Projects")
 ;;   (filters . ((category . projects)
@@ -88,7 +100,8 @@
 ;;               (deadline . past)
 ;;               (area-of-focus . "Work"))))
 ;;
-;; This translates to org-ql query:
+;; This combines multiple filters to narrow down to specific items.
+;; It translates to org-ql query:
 ;; '(and (property "ORG_GTD" "Projects")
 ;;       (level 2)
 ;;       (deadline :to "today")
@@ -218,6 +231,8 @@ GTD-VIEW-SPEC should be an alist with 'name and 'filters keys."
     (list '(property "DELEGATED_TO")))
    ((eq category 'calendar)
     (list `(property ,org-gtd-prop-category ,org-gtd-calendar)))
+   ((eq category 'actions)
+    (list `(property ,org-gtd-prop-category ,org-gtd-action)))
    ((eq category 'projects)
     (list `(property ,org-gtd-prop-category ,org-gtd-projects)))
    ((eq category 'active-projects)
@@ -389,6 +404,33 @@ dynamic grouped views with 'group-by."
          ;; Add other filter types as needed
          )))
     (string-join (reverse search-parts) "")))
+
+;;;; Public API
+
+;;;###autoload
+(defun org-gtd-view-show (view-spec)
+  "Display an org-gtd agenda view from VIEW-SPEC.
+
+VIEW-SPEC is an alist with the following structure:
+  ((name . \"View Name\")
+   (filters . ((filter-type . filter-value) ...)))
+
+Simple example - show all single-action items:
+  (org-gtd-view-show
+   '((name . \"All My Actions\")
+     (filters . ((category . actions)))))
+
+See the module commentary for complete filter documentation and more examples."
+  (interactive)
+  (org-gtd-core-prepare-agenda-buffers)
+  (with-org-gtd-context
+    (let ((org-agenda-custom-commands
+           (org-gtd-view-lang--create-custom-commands
+            (list view-spec)
+            "g"
+            (alist-get 'name view-spec))))
+      (org-agenda nil "g")
+      (goto-char (point-min)))))
 
 ;;;; Footer
 

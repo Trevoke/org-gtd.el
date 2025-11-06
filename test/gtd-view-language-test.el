@@ -44,6 +44,14 @@
                       (property-ts< "ORG_GTD_TIMESTAMP" "today")
                       (not (done))))))
 
+  (it "can define a simple GTD view for action items"
+      (let ((gtd-view-spec
+             '((name . "All Actions")
+               (filters . ((category . actions))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Actions")))))
+
   (it "can define a GTD view for overdue deadlines"
       (let ((gtd-view-spec
              '((name . "Overdue Deadlines")
@@ -438,3 +446,67 @@
         (let ((ts-value (org-entry-get (point) "ORG_GTD_TIMESTAMP")))
           (expect (org-string-match-p org-ts-regexp-both ts-value)
                   :to-be nil))))))
+
+(describe "org-gtd-view-show"
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
+  (it "displays an agenda view from a view spec"
+    ;; Create some test data
+    (with-current-buffer (org-gtd--default-file)
+      (insert "* My Project\n")
+      (insert ":PROPERTIES:\n")
+      (insert ":ORG_GTD: Projects\n")
+      (insert ":END:\n")
+      (basic-save-buffer))
+
+    ;; Call org-gtd-view-show
+    (org-gtd-view-show
+     '((name . "Test View")
+       (filters . ((category . projects)))))
+
+    ;; Verify agenda buffer was created
+    (let ((agenda-buffer (get-buffer org-agenda-buffer-name)))
+      (expect agenda-buffer :to-be-truthy)
+      (with-current-buffer agenda-buffer
+        (expect (buffer-string) :to-match "My Project"))))
+
+  (it "uses the name from the view spec as the agenda title"
+    ;; Create test data
+    (with-current-buffer (org-gtd--default-file)
+      (insert "* My Project\n")
+      (insert ":PROPERTIES:\n")
+      (insert ":ORG_GTD: Projects\n")
+      (insert ":END:\n")
+      (basic-save-buffer))
+
+    ;; Call with specific name
+    (org-gtd-view-show
+     '((name . "My Custom View Name")
+       (filters . ((category . projects)))))
+
+    ;; Verify the name appears in the buffer
+    (let ((agenda-buffer (get-buffer org-agenda-buffer-name)))
+      (expect agenda-buffer :to-be-truthy)
+      (with-current-buffer agenda-buffer
+        (expect (buffer-string) :to-match "My Custom View Name"))))
+
+  (it "positions cursor at beginning of buffer"
+    ;; Create test data
+    (with-current-buffer (org-gtd--default-file)
+      (insert "* My Project\n")
+      (insert ":PROPERTIES:\n")
+      (insert ":ORG_GTD: Projects\n")
+      (insert ":END:\n")
+      (basic-save-buffer))
+
+    ;; Call org-gtd-view-show
+    (org-gtd-view-show
+     '((name . "Test View")
+       (filters . ((category . projects)))))
+
+    ;; Verify cursor is at beginning
+    (let ((agenda-buffer (get-buffer org-agenda-buffer-name)))
+      (with-current-buffer agenda-buffer
+        (expect (point) :to-equal (point-min))))))

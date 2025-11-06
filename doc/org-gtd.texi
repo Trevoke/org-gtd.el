@@ -177,6 +177,7 @@ Understanding GTD Item Types
 
 Working with Projects (Advanced)
 
+* Quick Navigation::
 * First Contact Why Visual Project Management?::
 * Black Triangle Your First Project Graph View::
 * Understanding Project Dependencies::
@@ -184,6 +185,10 @@ Working with Projects (Advanced)
 * Tutorial Complex Dependencies with Graph View::
 * Common Dependency Patterns (Visual Reference)::
 * Graph View Command Reference::
+* Graph Rendering Modes::
+* Complete Keyboard Reference::
+* Auto-Refresh on File Changes::
+* Technical Details::
 * Practical Tips for Project Management::
 * Troubleshooting Projects with Graph View::
 * See Also::
@@ -2607,6 +2612,7 @@ Regardless of the value of this variable, you can use the function @code{org-gtd
 You learned sequential projects in @ref{Tutorial Your First Project}. This section teaches you how to handle complex projects with parallel work streams, custom dependencies, and sophisticated project structures—all using visual project management.
 
 @menu
+* Quick Navigation::
 * First Contact Why Visual Project Management?::
 * Black Triangle Your First Project Graph View::
 * Understanding Project Dependencies::
@@ -2614,6 +2620,10 @@ You learned sequential projects in @ref{Tutorial Your First Project}. This secti
 * Tutorial Complex Dependencies with Graph View::
 * Common Dependency Patterns (Visual Reference)::
 * Graph View Command Reference::
+* Graph Rendering Modes::
+* Complete Keyboard Reference::
+* Auto-Refresh on File Changes::
+* Technical Details::
 * Practical Tips for Project Management::
 * Troubleshooting Projects with Graph View::
 * See Also::
@@ -2622,6 +2632,36 @@ You learned sequential projects in @ref{Tutorial Your First Project}. This secti
 * Defining your own agenda views::
 * Adding your own hooks when organizing::
 @end menu
+
+@node Quick Navigation
+@subsection Quick Navigation
+
+This section covers:
+
+@itemize
+@item
+@ref{First Contact Why Visual Project Management?, , Why Visual Project Management?} - Understanding the motivation
+@item
+@ref{Black Triangle Your First Project Graph View, , Your First Project Graph View} - Get started in 30 seconds
+@item
+@ref{Understanding Project Dependencies} - Learn the DAG model
+@item
+@ref{Tutorial Parallel Tasks with Graph View, , Tutorial Parallel Tasks} - Build your first complex project
+@item
+@ref{Common Dependency Patterns (Visual Reference), , Common Dependency Patterns} - Visual reference for typical structures
+@item
+@ref{Graph View Command Reference} - Complete command listing
+@item
+@ref{Graph Rendering Modes, , Rendering Modes} - SVG vs ASCII
+@item
+@ref{Complete Keyboard Reference} - Quick reference card
+@item
+@ref{Technical Details} - Implementation and properties
+@item
+@ref{Practical Tips for Project Management, , Practical Tips} - When and how to use graph view
+@item
+@ref{Troubleshooting Projects with Graph View, , Troubleshooting} - Common problems and solutions
+@end itemize
 
 @node First Contact Why Visual Project Management?
 @subsection First Contact: Why Visual Project Management?
@@ -2660,7 +2700,7 @@ Find any project task in your agenda (or create a quick test project if you don'
 
 Press @code{RET} on the project task to jump to the project heading.
 
-Run: @code{M-x org-gtd-graph-view}
+Run: @code{M-x org-gtd-show-project-graph}
 
 @item
 @anchor{Step 3 Explore}Step 3: Explore
@@ -2823,7 +2863,7 @@ Organize as a project: @code{C-c c} → @code{[P]}
 
 From the engage view (@code{C-c d e}), press @code{RET} on any task to jump to the project.
 
-Run: @code{M-x org-gtd-graph-view}
+Run: @code{M-x org-gtd-show-project-graph}
 
 You'll see a sequential graph (the default):
 @example
@@ -3326,6 +3366,271 @@ Most users will find the graph view intuitive for dependency management. However
 See @ref{Task Dependency Commands} for details.
 @end itemize
 
+@node Graph Rendering Modes
+@subsection Graph Rendering Modes
+
+The graph view supports two rendering modes that you can toggle between at any time.
+
+@itemize
+@item
+@anchor{SVG Mode (Default)}SVG Mode (Default)
+
+
+High-quality graphical rendering with:
+@itemize
+@item
+Smooth curves for dependency arrows
+@item
+Anti-aliased text
+@item
+Visual polish
+@item
+Larger display area
+@item
+Better for GUI Emacs
+@end itemize
+
+Set as default with:
+@lisp
+(setq org-gtd-graph-render-mode 'svg)
+@end lisp
+
+@item
+@anchor{ASCII Mode}ASCII Mode
+
+
+Text-based rendering using box-drawing characters:
+@itemize
+@item
+Works in terminal Emacs
+@item
+Accessible for screen readers
+@item
+Compact display
+@item
+No external dependencies
+@item
+Uses Unicode box-drawing glyphs
+@end itemize
+
+Set as default with:
+@lisp
+(setq org-gtd-graph-render-mode 'ascii)
+@end lisp
+
+@item
+@anchor{Toggling Modes}Toggling Modes
+
+
+Press @code{v} while in graph view to toggle between SVG and ASCII rendering.
+
+@item
+@anchor{Troubleshooting ASCII Rendering}Troubleshooting ASCII Rendering
+
+
+If ASCII rendering looks broken:
+@itemize
+@item
+Ensure your terminal supports UTF-8 box-drawing characters
+@item
+Try SVG mode (@code{v} to toggle)
+@item
+Check that your font supports box-drawing glyphs
+@item
+Verify @code{(char-displayable-p ?│)} returns @code{t}
+@end itemize
+@end itemize
+
+@node Complete Keyboard Reference
+@subsection Complete Keyboard Reference
+
+This is a comprehensive quick reference for all graph view keybindings.
+
+@itemize
+@item
+@anchor{Navigation}Navigation
+
+
+@multitable {aaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Key
+@tab Action
+@item @code{?}
+@tab Show command menu (transient)
+@item @code{n} / @code{j}
+@tab Down dependency (to task this blocks)
+@item @code{p} / @code{k}
+@tab Up dependency (to task that blocks this)
+@item @code{TAB}
+@tab Next sibling (same layer)
+@item @code{<backtab>}
+@tab Previous sibling
+@item @code{<}
+@tab First task in layer
+@item @code{>}
+@tab Last task in layer
+@item @code{g}
+@tab Go to task by name
+@item @code{[}
+@tab Navigate back in history
+@item @code{]}
+@tab Navigate forward in history
+@end multitable
+
+@item
+@anchor{Modification (via transient menu @code{?})}Modification (via transient menu @code{?})
+
+
+@multitable {aaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Key
+@tab Action
+@item @code{a a}
+@tab Insert task AFTER selected (child)
+@item @code{a b}
+@tab Insert task BEFORE selected
+@item @code{a r}
+@tab Add root task (no dependencies)
+@item @code{m b}
+@tab Modify what blocks this task
+@item @code{m a}
+@tab Modify what this task blocks
+@item @code{r}
+@tab Remove task from project
+@item @code{t}
+@tab Change TODO state
+@end multitable
+
+@item
+@anchor{Information}Information
+
+
+@multitable {aaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Key
+@tab Action
+@item @code{i}
+@tab Show relationships for task
+@item @code{e}
+@tab Edit task in org file (jump to)
+@item @code{RET}
+@tab Jump to task in org file
+@end multitable
+
+@item
+@anchor{View Control}View Control
+
+
+@multitable {aaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Key
+@tab Action
+@item @code{v}
+@tab Toggle ASCII/SVG rendering
+@item @code{z}
+@tab Zoom menu (filter/focus)
+@item @code{R}
+@tab Refresh graph (rebuild from org file)
+@item @code{q}
+@tab Quit graph view
+@item @code{Q}
+@tab Quit and kill buffer
+@end multitable
+@end itemize
+
+@node Auto-Refresh on File Changes
+@subsection Auto-Refresh on File Changes
+
+Graph view automatically watches the org file and refreshes when changes are detected (with 300ms debounce). This means:
+
+@itemize
+@item
+Changes in the org file appear in graph view automatically
+@item
+No need to manually refresh after external edits
+@item
+Multiple graph views of the same project stay in sync
+@item
+File watching is buffer-local and cleaned up on quit
+@end itemize
+
+You can still manually refresh with @code{R} if needed.
+
+@node Technical Details
+@subsection Technical Details
+
+@itemize
+@item
+@anchor{Graph Data Structure}Graph Data Structure
+
+
+Projects are represented as @strong{Directed Acyclic Graphs} (DAGs):
+
+@itemize
+@item
+@strong{Directed}: Dependencies have direction (A blocks B, not vice versa)
+@item
+@strong{Acyclic}: No circular dependencies (org-gtd prevents these)
+@item
+@strong{Graph}: Tasks can have multiple blockers and multiple dependents
+@end itemize
+
+@item
+@anchor{Layout Algorithm}Layout Algorithm
+
+
+The Sugiyama layout algorithm:
+@enumerate
+@item
+Assigns tasks to layers based on dependency depth
+@item
+Minimizes edge crossings between layers
+@item
+Centers nodes horizontally for visual balance
+@item
+Calculates smooth curved arrows (SVG) or line-drawing characters (ASCII)
+@end enumerate
+
+@item
+@anchor{Properties Used}Properties Used
+
+
+Graph view reads and writes these org properties:
+
+@itemize
+@item
+@code{ORG_GTD_FIRST_TASKS} (on project heading): Space-separated list of task IDs with no dependencies
+@item
+@code{ORG_GTD_DEPENDS_ON} (on tasks): Space-separated list of task IDs this task depends on
+@item
+@code{ORG_GTD_BLOCKS} (on tasks): Space-separated list of task IDs this task blocks
+@item
+@code{ORG_GTD_PROJECT_IDS} (on tasks): Space-separated list of project IDs this task belongs to
+@end itemize
+
+These properties maintain bidirectional consistency. When you add dependency A→B:
+@itemize
+@item
+A's @code{ORG_GTD_BLOCKS} includes B's ID
+@item
+B's @code{ORG_GTD_DEPENDS_ON} includes A's ID
+@end itemize
+
+You typically don't edit these properties directly—use graph view commands or the text-based alternatives.
+
+@item
+@anchor{Undo/Redo Support}Undo/Redo Support
+
+
+Currently, undo/redo is not implemented in graph view. Graph modifications are immediately saved to the org file.
+
+To undo changes:
+@itemize
+@item
+Switch to the org file buffer
+@item
+Use @code{C-x u} (undo) as normal
+@item
+The graph view will auto-refresh to show the reverted state
+@end itemize
+@end itemize
+
 @node Practical Tips for Project Management
 @subsection Practical Tips for Project Management
 
@@ -3422,7 +3727,7 @@ After adding, press @code{r} to refresh the view.
 
 Run @code{M-x org-gtd-review-stuck-projects} to find stuck projects.
 
-Open the stuck project in graph view: @code{M-x org-gtd-graph-view}
+Open the stuck project in graph view: @code{M-x org-gtd-show-project-graph}
 
 @strong{What to look for}:
 @itemize
@@ -3486,6 +3791,74 @@ Select a task that should be blocked
 Press @code{a b} to add a blocker task
 @item
 Or restructure: tasks later in the workflow should be children (@code{a c}) of earlier tasks
+@end itemize
+
+@item
+@anchor{Graph Won't Open}Graph Won't Open
+
+
+If @code{M-x org-gtd-show-project-graph} doesn't work:
+
+@itemize
+@item
+Verify you're on a project heading (not a task heading)
+@item
+Check that the heading has @code{ORG_GTD} property set to "Projects"
+@item
+Try explicitly: @code{M-x org-gtd-show-project-graph}
+@item
+Check for errors in @code{*Messages*} buffer
+@end itemize
+
+@item
+@anchor{Graph Shows No Tasks}Graph Shows No Tasks
+
+
+If the graph opens but shows no tasks:
+
+@itemize
+@item
+Check if the project has subtasks (tasks should be subheadings under the project)
+@item
+Verify tasks have @code{ORG_GTD_PROJECT_IDS} property containing the project ID
+@item
+Press @code{R} to force a complete refresh
+@item
+Check @code{*Messages*} buffer for parsing errors
+@end itemize
+
+@item
+@anchor{Task Shows Wrong State (NEXT vs TODO)}Task Shows Wrong State (NEXT vs TODO)
+
+
+If a task's color doesn't match its expected state:
+
+@itemize
+@item
+Press @code{R} to refresh (state might be stale from external edits)
+@item
+Check the task's actual TODO state in the org file (press @code{e} to jump there)
+@item
+Verify dependencies are correct (press @code{i} to inspect relationships)
+@item
+Look for completed tasks that haven't been refreshed
+@end itemize
+
+@item
+@anchor{Can't Modify Dependencies}Can't Modify Dependencies
+
+
+If modification commands don't work:
+
+@itemize
+@item
+Ensure a task is selected (should see highlighted box)
+@item
+Press @code{?} to verify commands are available in the transient menu
+@item
+Check that you're in the graph view buffer, not the org file buffer
+@item
+Try @code{R} to refresh if the graph is in an inconsistent state
 @end itemize
 @end itemize
 

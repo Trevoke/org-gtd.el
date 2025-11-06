@@ -76,7 +76,11 @@
       "WebSearch",
       "mcp__emacs-30__eval_elisp",
       "Bash(git log:*)",
-      "WebFetch(domain:stevelosh.com)"
+      "WebFetch(domain:stevelosh.com)",
+      "Bash(~/go/bin/bd ready:*)",
+      "Bash(~/go/bin/bd close:*)",
+      "Bash(~/go/bin/bd create:*)",
+      "Bash(~/go/bin/bd update:*)"
     ],
     "deny": []
   },
