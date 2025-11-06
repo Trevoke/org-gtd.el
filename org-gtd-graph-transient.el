@@ -32,6 +32,8 @@
 (require 'org-gtd-graph-view)
 (require 'org-gtd-graph-filter)
 (require 'org-gtd-graph-ui)
+(require 'org-gtd-archive)
+(require 'org-gtd-accessors)
 
 ;;;; Main Transient Menu
 
@@ -103,24 +105,54 @@ If task is newly created, TASK-ID will be nil and only TITLE is set."
 
 (defun org-gtd-graph--get-all-gtd-tasks ()
   "Get all tasks with ORG_GTD property from agenda files.
-Returns list of plists with :id, :title, :category."
-  (let ((tasks '())
-        (files (org-gtd-core--agenda-files)))
-    (when (and files (listp files))
+Returns list of plists with :id, :title, :category.
+Excludes project headings (ORG_GTD=Projects)."
+  (let ((tasks '()))
+    (with-org-gtd-context
       (condition-case nil
           (org-map-entries
            (lambda ()
              (when-let ((category (org-entry-get (point) "ORG_GTD"))
                         (id (org-entry-get (point) "ID"))
                         (title (org-get-heading t t t t)))
-               (push (list :id id
-                          :title title
-                          :category category)
-                     tasks)))
+               ;; Exclude project headings - we only want tasks
+               (unless (string= category "Projects")
+                 (push (list :id id
+                            :title title
+                            :category category)
+                       tasks))))
            nil
-           files)
+           'agenda)
         (error nil)))
     (nreverse tasks)))
+
+(defun org-gtd-graph--select-or-create-task-prioritizing-current (prompt project-marker)
+  "Select task or create new one, with current project tasks prioritized.
+PROMPT is displayed to the user.
+PROJECT-MARKER identifies the current project.
+Returns list of (display . id) cons cells with current project tasks first."
+  (let* ((project-id (org-with-point-at project-marker
+                       (org-entry-get (point) "ID")))
+         (all-tasks (org-gtd-graph--get-all-gtd-tasks))
+         (in-project '())
+         (not-in-project '()))
+
+    ;; Partition tasks by project membership
+    (dolist (task all-tasks)
+      (let* ((task-id (plist-get task :id))
+             (project-ids (org-gtd-get-task-projects task-id)))
+        (if (and project-ids (member project-id project-ids))
+            (push task in-project)
+          (push task not-in-project))))
+
+    ;; Build choices: in-project first, then others
+    (let ((prioritized-tasks (append (nreverse in-project) (nreverse not-in-project))))
+      (mapcar (lambda (task)
+                (cons (format "%s (%s)"
+                             (plist-get task :title)
+                             (or (plist-get task :category) "Unknown"))
+                      (plist-get task :id)))
+              prioritized-tasks))))
 
 ;;;; Add Commands
 

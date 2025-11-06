@@ -37,21 +37,25 @@
   "Create a test project with TITLE and return its marker."
   (with-current-buffer (org-gtd--default-file)
     (goto-char (point-max))
+    ;; Create project heading
     (insert (format "* %s\n" title))
-    (insert ":PROPERTIES:\n")
-    (insert ":ORG_GTD: Projects\n")
-    (let ((id (org-id-get-create)))
-      (insert (format ":ID: %s\n" id))
-      (insert ":END:\n")
+    (forward-line -1)
+    (org-back-to-heading t)
+    (let ((project-id (org-id-get-create)))
+      (org-entry-put (point) "ORG_GTD" "Projects")
+
+      ;; Create task heading
+      (org-end-of-subtree t t)
       (insert "** TODO Task 1\n")
-      (insert ":PROPERTIES:\n")
+      (forward-line -1)
+      (org-back-to-heading t)
       (let ((task-id (org-id-get-create)))
-        (insert (format ":ID: %s\n" task-id))
-        (insert ":ORG_GTD: Actions\n")
-        (insert ":END:\n")
-        ;; Use proper function to set properties
-        (org-gtd-add-to-multivalued-property task-id org-gtd-prop-project-ids id)
-        ;; Go back to project and add task to FIRST_TASKS
+        (org-entry-put (point) "ORG_GTD" "Actions")
+
+        ;; Link task to project
+        (org-gtd-add-to-multivalued-property task-id org-gtd-prop-project-ids project-id)
+
+        ;; Add task to project's FIRST_TASKS
         (goto-char (point-min))
         (search-forward title)
         (org-back-to-heading t)
@@ -433,6 +437,108 @@
         (expect (member new-task-id c-deps) :to-be-truthy))  ; X → C created
       (expect (org-gtd-get-task-dependencies new-task-id) :to-equal (list task-b-id))  ; B → X
       (expect (org-gtd-get-task-blockers task-b-id) :to-equal (list new-task-id)))))
+
+;;;; Helper Function Tests
+
+(describe "org-gtd-graph--select-or-create-task-prioritizing-current"
+
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
+  (it "returns current project tasks first, then others"
+    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Priority Project"))
+           project-id task-in-project-id task-outside-id)
+
+      ;; Get project ID
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Priority Project")
+        (org-back-to-heading t)
+        (setq project-id (org-entry-get (point) "ID"))
+
+        ;; Task 1 already exists in project (from create-project helper)
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (setq task-in-project-id (org-entry-get (point) "ID")))
+
+      ;; Create a task OUTSIDE the project
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-max))
+        (insert "** TODO Outside Task\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq task-outside-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (basic-save-buffer))
+
+      ;; Call helper and check ordering
+      (let ((result (org-gtd-graph--select-or-create-task-prioritizing-current
+                     "Select task: "
+                     project-marker)))
+        ;; result should be list of (display . id) pairs
+        ;; First entry should be the in-project task
+        (let ((first-id (cdr (car result))))
+          (expect first-id :to-equal task-in-project-id)))))
+
+  (it "works when no current project tasks exist"
+    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Empty Project"))
+           project-id task-id)
+
+      ;; Get project ID and remove Task 1
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Empty Project")
+        (org-back-to-heading t)
+        (setq project-id (org-entry-get (point) "ID"))
+
+        ;; Delete Task 1
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (delete-region (point) (save-excursion (org-end-of-subtree t t) (point)))
+        (basic-save-buffer))
+
+      ;; Create external task
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-max))
+        (insert "** TODO External Task\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq task-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (basic-save-buffer))
+
+      ;; Should return external tasks
+      (let ((result (org-gtd-graph--select-or-create-task-prioritizing-current
+                     "Select task: "
+                     project-marker)))
+        (expect (length result) :to-be-greater-than 0))))
+
+  (it "handles task in multiple projects including current"
+    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Multi Project"))
+           project-id task-id)
+
+      ;; Get Task 1 (already in project)
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Multi Project")
+        (org-back-to-heading t)
+        (setq project-id (org-entry-get (point) "ID"))
+
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (setq task-id (org-entry-get (point) "ID"))
+
+        ;; Add this task to another project too
+        (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" "fake-other-project-id")
+        (basic-save-buffer))
+
+      ;; Should still appear in current project section
+      (let ((result (org-gtd-graph--select-or-create-task-prioritizing-current
+                     "Select task: "
+                     project-marker)))
+        (let ((first-id (cdr (car result))))
+          (expect first-id :to-equal task-id))))))
 
 (provide 'org-gtd-graph-transient-test)
 
