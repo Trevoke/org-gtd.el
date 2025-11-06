@@ -556,12 +556,89 @@ Prompts for where to insert if selected task has blockers."
 
 (defun org-gtd-graph-insert-after ()
   "Insert new task as successor to selected task.
-Creates dependency: selected → new task.
-Equivalent to adding a child task."
+Prompts for which successor to rewire if selected task has multiple successors."
   (interactive)
-  ;; insert-after is semantically identical to add-child:
-  ;; both create a successor that depends on the selected task
-  (org-gtd-graph-transient-add-child))
+  (require 'org-gtd-graph-view)
+  (require 'org-gtd-graph-data)
+  (unless org-gtd-graph-ui--selected-node-id
+    (user-error "No node selected"))
+
+  (let* ((selected-id org-gtd-graph-ui--selected-node-id)
+         (graph (org-gtd-graph-data--extract-from-project org-gtd-graph-view--project-marker))
+         (project-id (org-with-point-at org-gtd-graph-view--project-marker
+                       (org-entry-get (point) "ID")))
+         ;; Filter out project ID from successors (virtual edge for visualization)
+         (successors (seq-remove (lambda (id) (string= id project-id))
+                                 (org-gtd-graph-data-get-successors graph selected-id)))
+         (selection (org-gtd-graph--select-or-create-task "Select or create successor task: "))
+         (existing-id (car selection))
+         (title (cdr selection)))
+
+    (when title
+      ;; Get or create task
+      (let ((new-task-id existing-id))
+        (if existing-id
+            ;; Link existing task
+            (org-with-point-at (org-id-find existing-id t)
+              (org-gtd-add-to-multivalued-property existing-id org-gtd-prop-project-ids project-id)
+              (save-buffer))
+
+          ;; Create new task
+          (org-with-point-at org-gtd-graph-view--project-marker
+            (org-end-of-subtree t t)
+            (unless (bolp) (insert "\n"))
+            (insert "** " title "\n")
+            (forward-line -1)
+            (org-back-to-heading t)
+            (setq new-task-id (org-id-get-create))
+            (org-todo "TODO")
+            (org-entry-put (point) "ORG_GTD" "Actions")
+            (when project-id
+              (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id))
+            (save-buffer)))
+
+        ;; Handle different cases based on successors
+        (cond
+         ;; Case 1: No successors (leaf task) - simple add
+         ((null successors)
+          ;; Create dependency: selected → new
+          (org-gtd-dependencies-create selected-id new-task-id))
+
+         ;; Case 2: One successor - straightforward rewiring
+         ((= 1 (length successors))
+          (let ((successor-id (car successors)))
+            ;; Remove: selected → successor
+            (org-gtd-remove-from-multivalued-property selected-id org-gtd-prop-blocks successor-id)
+            (org-gtd-remove-from-multivalued-property successor-id org-gtd-prop-depends-on selected-id)
+            ;; Add: selected → new
+            (org-gtd-dependencies-create selected-id new-task-id)
+            ;; Add: new → successor
+            (org-gtd-dependencies-create new-task-id successor-id)))
+
+         ;; Case 3: Multiple successors - prompt user
+         (t
+          (let* ((successor-choices
+                  (mapcar (lambda (succ-id)
+                            (let* ((marker (org-id-find succ-id t))
+                                   (title (org-with-point-at marker
+                                            (org-get-heading t t t t))))
+                              (cons title succ-id)))
+                          successors))
+                 (chosen-title (completing-read
+                                "Insert between selected and which successor task? "
+                                successor-choices
+                                nil t))
+                 (chosen-successor-id (cdr (assoc chosen-title successor-choices))))
+            ;; Remove: selected → chosen-successor
+            (org-gtd-remove-from-multivalued-property selected-id org-gtd-prop-blocks chosen-successor-id)
+            (org-gtd-remove-from-multivalued-property chosen-successor-id org-gtd-prop-depends-on selected-id)
+            ;; Add: selected → new
+            (org-gtd-dependencies-create selected-id new-task-id)
+            ;; Add: new → chosen-successor
+            (org-gtd-dependencies-create new-task-id chosen-successor-id))))
+
+        (message "Created successor task: %s" title)
+        (org-gtd-graph-view-refresh)))))
 
 (defun org-gtd-graph--modify-blockers-internal (task-id new-blocker-ids project-marker)
   "Set TASK-ID's blockers to exactly NEW-BLOCKER-IDS in PROJECT-MARKER's context.
