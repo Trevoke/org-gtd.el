@@ -265,7 +265,7 @@
         (org-gtd-graph-view-mode)
         (setq org-gtd-graph-view--project-marker project-marker)
         (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
-          (with-simulated-input "New SPC Root RET"
+          (with-simulated-input "New C-q SPC Root RET"
             (org-gtd-graph-transient-add-root))))
 
       (with-current-buffer (org-gtd--default-file)
@@ -278,7 +278,60 @@
           (search-forward "Root Project")
           (org-back-to-heading t)
           (let ((first-tasks (org-entry-get-multivalued-property (point) "ORG_GTD_FIRST_TASKS")))
-            (expect (member task-id first-tasks) :to-be-truthy)))))))
+            (expect (member task-id first-tasks) :to-be-truthy))))))
+
+  (it "excludes current project tasks from completion list"
+    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Exclude Root Project"))
+           (buffer (get-buffer-create "*Org GTD Graph: exclude-root-test*"))
+           project-id task-in-project-id task-outside-id)
+
+      ;; Get project ID and in-project task ID
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Exclude Root Project")
+        (org-back-to-heading t)
+        (setq project-id (org-entry-get (point) "ID"))
+
+        ;; Task 1 is already in project
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (setq task-in-project-id (org-entry-get (point) "ID")))
+
+      ;; Create a task OUTSIDE the project
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-max))
+        (insert "** TODO Outside Root Task\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq task-outside-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (basic-save-buffer))
+
+      ;; Spy on completing-read to capture collection
+      (spy-on 'completing-read :and-call-through)
+
+      ;; Call add-root
+      (with-current-buffer buffer
+        (org-gtd-graph-view-mode)
+        (setq org-gtd-graph-view--project-marker project-marker)
+        (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
+          (with-simulated-input "NewRoot RET"
+            (org-gtd-graph-transient-add-root))))
+
+      ;; Verify completing-read was called
+      (expect 'completing-read :to-have-been-called)
+
+      ;; Get the COLLECTION argument (2nd argument to completing-read)
+      (let* ((all-args (spy-calls-args-for 'completing-read 0))
+             (collection (nth 1 all-args)))
+        ;; Verify collection exists and has expected structure
+        (expect collection :to-be-truthy)
+        (expect (listp collection) :to-be-truthy)
+        ;; Collection should NOT contain task-in-project-id
+        (let ((ids (mapcar #'cdr collection)))
+          (expect (member task-in-project-id ids) :not :to-be-truthy)
+          ;; But SHOULD contain outside task
+          (expect (member task-outside-id ids) :to-be-truthy))))))
 
 ;;;; org-gtd-graph-insert-before Tests
 

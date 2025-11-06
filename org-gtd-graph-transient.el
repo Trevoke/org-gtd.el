@@ -239,36 +239,52 @@ Creates a dependency where the parent blocks the child."
 
 (defun org-gtd-graph-transient-add-root ()
   "Add a new root task to the project.
+User can select an existing task or create a new one.
 Creates a task that has no dependencies and adds it to the project's
 ORG_GTD_FIRST_TASKS property."
   (interactive)
   (unless org-gtd-graph-view--project-marker
     (user-error "No project marker set"))
 
-  (let* ((title (read-string "Root task title: "))
-         (task-id nil))
+  (let* ((choices (org-gtd-graph--select-or-create-task-excluding-current
+                   "Select or create root task: "
+                   org-gtd-graph-view--project-marker))
+         (selected (completing-read "Select or create root task: " choices nil nil))
+         (match (assoc-string selected choices))
+         (existing-id (if match (cdr match) nil))
+         (title (if match selected selected))
+         (task-id existing-id))
     (when (and title (not (string-empty-p title)))
-      ;; First: create the task
-      (org-with-point-at org-gtd-graph-view--project-marker
-        (let ((project-id (org-entry-get (point) "ID")))
-          (org-end-of-subtree t t)
-          (unless (bolp) (insert "\n"))
-          (insert "** " title "\n")
-          (forward-line -1)
-          (org-back-to-heading t)
-          (setq task-id (org-id-get-create))
-          (org-todo "TODO")
-          (org-entry-put (point) "ORG_GTD" "Actions")
-          (when project-id
-            (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id))
-          (save-buffer)))
+      ;; Get or create task
+      (if existing-id
+          ;; Link existing task to project
+          (org-with-point-at org-gtd-graph-view--project-marker
+            (let ((project-id (org-entry-get (point) "ID")))
+              (org-with-point-at (org-id-find existing-id t)
+                (org-gtd-add-to-multivalued-property existing-id org-gtd-prop-project-ids project-id)
+                (save-buffer))))
 
-      ;; Second: add task to project's FIRST_TASKS (separate org-with-point-at)
+        ;; Create new task
+        (org-with-point-at org-gtd-graph-view--project-marker
+          (let ((project-id (org-entry-get (point) "ID")))
+            (org-end-of-subtree t t)
+            (unless (bolp) (insert "\n"))
+            (insert "** " title "\n")
+            (forward-line -1)
+            (org-back-to-heading t)
+            (setq task-id (org-id-get-create))
+            (org-todo "TODO")
+            (org-entry-put (point) "ORG_GTD" "Actions")
+            (when project-id
+              (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id))
+            (save-buffer))))
+
+      ;; Add task to project's FIRST_TASKS
       (org-with-point-at org-gtd-graph-view--project-marker
         (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" task-id)
         (save-buffer))
 
-      (message "Created root task: %s" title)
+      (message "Added root task: %s" title)
       (org-gtd-graph-view-refresh))))
 
 ;;;; Navigation Commands - using implementations from org-gtd-graph-navigation.el
