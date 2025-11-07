@@ -1048,6 +1048,121 @@
         (let ((ids (mapcar #'cdr result)))
           (expect (member task-id ids) :not :to-be-truthy))))))
 
+;;;; org-gtd-graph-remove-task Tests
+
+(describe "org-gtd-graph-remove-task"
+
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
+  (it "does not offer trash option when task in one project"
+    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Remove Test"))
+           (buffer (get-buffer-create "*Org GTD Graph: remove-test*"))
+           task-id)
+
+      ;; Create a task in the project
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (setq task-id (org-entry-get (point) "ID")))
+
+      ;; Spy on completing-read to capture choices
+      (spy-on 'completing-read :and-return-value "Remove from this project and keep as independent item")
+
+      (with-current-buffer buffer
+        (org-gtd-graph-view-mode)
+        (setq org-gtd-graph-view--project-marker project-marker)
+        (setq org-gtd-graph-ui--selected-node-id task-id)
+        (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
+          (org-gtd-graph-remove-task)))
+
+      ;; Verify completing-read was called
+      (expect 'completing-read :to-have-been-called)
+
+      ;; Get the COLLECTION argument (2nd argument to completing-read)
+      (let* ((all-args (spy-calls-args-for 'completing-read 0))
+             (collection (nth 1 all-args)))
+        (expect collection :to-be-truthy)
+        ;; Should NOT contain "Trash" in any option
+        (dolist (option collection)
+          (expect (string-match-p "Trash\\|trash\\|delete" option) :not :to-be-truthy)))))
+
+  (it "does not offer trash option when task in multiple projects"
+    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Multi Remove Test"))
+           (buffer (get-buffer-create "*Org GTD Graph: multi-remove-test*"))
+           task-id)
+
+      ;; Create a task in the project
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (setq task-id (org-entry-get (point) "ID"))
+        ;; Add task to another project
+        (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" "fake-other-project-id")
+        (basic-save-buffer))
+
+      ;; Spy on completing-read to capture choices
+      (spy-on 'completing-read :and-return-value "Remove from this project only")
+
+      (with-current-buffer buffer
+        (org-gtd-graph-view-mode)
+        (setq org-gtd-graph-view--project-marker project-marker)
+        (setq org-gtd-graph-ui--selected-node-id task-id)
+        (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
+          (org-gtd-graph-remove-task)))
+
+      ;; Verify completing-read was called
+      (expect 'completing-read :to-have-been-called)
+
+      ;; Get the COLLECTION argument (2nd argument to completing-read)
+      (let* ((all-args (spy-calls-args-for 'completing-read 0))
+             (collection (nth 1 all-args)))
+        (expect collection :to-be-truthy)
+        ;; Should NOT contain "Trash" in any option
+        (dolist (option collection)
+          (expect (string-match-p "Trash\\|trash\\|delete" option) :not :to-be-truthy))))))
+
+;;;; org-gtd-graph-trash-task Tests
+
+(describe "org-gtd-graph-trash-task"
+
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
+  (it "trashes the selected task and marks it as canceled"
+    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Trash Test"))
+           (buffer (get-buffer-create "*Org GTD Graph: trash-test*"))
+           task-id)
+
+      ;; Create a task in the project
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (setq task-id (org-entry-get (point) "ID")))
+
+      ;; Spy on yes-or-no-p to auto-confirm
+      (spy-on 'yes-or-no-p :and-return-value t)
+
+      (with-current-buffer buffer
+        (org-gtd-graph-view-mode)
+        (setq org-gtd-graph-view--project-marker project-marker)
+        (setq org-gtd-graph-ui--selected-node-id task-id)
+        (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
+          (org-gtd-graph-trash-task)))
+
+      ;; Verify task is marked as canceled
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (let ((todo-state (org-get-todo-state)))
+          (expect todo-state :to-equal (org-gtd-keywords--canceled)))))))
+
 (provide 'org-gtd-graph-transient-test)
 
 ;;; org-gtd-graph-transient-test.el ends here

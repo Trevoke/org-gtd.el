@@ -51,6 +51,7 @@
    ("m d" "Modify dependents" org-gtd-graph-modify-successors)]
   ["Task Operations"
    ("r" "Remove from project" org-gtd-graph-remove-task)
+   ("T" "Trash task" org-gtd-graph-trash-task)
    ("e" "Edit in org file" org-gtd-graph-ui-jump-to-task)
    ("t" "Change TODO state" org-gtd-graph-change-state)
    ("i" "Show relationships" org-gtd-graph-view-show-relationships)]
@@ -940,8 +941,8 @@ Updates FIRST_TASKS for affected successors based on their blocker status."
 Connects predecessors to successors before removal.
 
 Offers context-appropriate choices:
-- If task only in current project: remove and keep independent, or trash
-- If task in multiple projects: remove from current only, all projects, or trash"
+- If task only in current project: remove and keep independent
+- If task in multiple projects: remove from current only, or all projects"
   (interactive)
   (require 'org-gtd-graph-view)
   (unless org-gtd-graph-ui--selected-node-id
@@ -963,8 +964,7 @@ Offers context-appropriate choices:
      ((= project-count 1)
       (setq choice (completing-read
                     (format "Task '%s' only in this project: " task-title)
-                    '("Remove from this project and keep as independent item"
-                      "Trash task (delete completely)")
+                    '("Remove from this project and keep as independent item")
                     nil t)))
 
      ;; Task in multiple projects
@@ -972,8 +972,7 @@ Offers context-appropriate choices:
       (setq choice (completing-read
                     (format "Task '%s' is in %d projects: " task-title project-count)
                     '("Remove from this project only"
-                      "Remove from all projects and keep as independent item"
-                      "Trash task (remove from all projects and delete)")
+                      "Remove from all projects and keep as independent item")
                     nil t)))
 
      ;; Task not in any project (shouldn't happen, but handle gracefully)
@@ -989,16 +988,28 @@ Offers context-appropriate choices:
       ((or "Remove from this project and keep as independent item"
            "Remove from all projects and keep as independent item")
        (org-gtd-graph--keep-as-independent task-id)
-       (message "Removed '%s' from all projects (kept as independent)" task-title))
-
-      ((or "Trash task (delete completely)"
-           "Trash task (remove from all projects and delete)")
-       (when (yes-or-no-p (format "Trash task '%s'? This will remove it from all projects and mark it as canceled. " task-title))
-         (org-gtd-graph--trash-task task-id)
-         (message "Trashed task '%s'" task-title))))
+       (message "Removed '%s' from all projects (kept as independent)" task-title)))
 
     ;; Refresh the graph view
     (org-gtd-graph-view-refresh)))
+
+(defun org-gtd-graph-trash-task ()
+  "Trash selected task: remove from all projects and mark as canceled.
+Prompts for confirmation before trashing."
+  (interactive)
+  (require 'org-gtd-graph-view)
+  (unless org-gtd-graph-ui--selected-node-id
+    (user-error "No node selected"))
+
+  (let* ((task-id org-gtd-graph-ui--selected-node-id)
+         (task-title (when-let ((graph org-gtd-graph-view--graph)
+                                (node (org-gtd-graph-data-get-node graph task-id)))
+                       (org-gtd-graph-node-title node))))
+
+    (when (yes-or-no-p (format "Trash task '%s'? This will remove it from all projects and mark it as canceled. " task-title))
+      (org-gtd-graph--trash-task task-id)
+      (message "Trashed task '%s'" task-title)
+      (org-gtd-graph-view-refresh))))
 
 (defun org-gtd-graph-change-state ()
   "Change TODO state of selected task."
