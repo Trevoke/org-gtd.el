@@ -474,10 +474,10 @@ Steps:
                 (org-gtd-dependencies-create pred succ))))
 
           ;; Check if successors should become root tasks
+          ;; IMPORTANT: Check CURRENT state after rewiring, not stale graph
           (dolist (succ successors)
-            (let* ((succ-preds (org-gtd-graph-data-get-predecessors graph succ))
-                   (other-preds (cl-remove task-id succ-preds :test 'equal)))
-              (when (null other-preds)
+            (let ((current-preds (org-gtd-get-task-dependencies succ)))
+              (when (null current-preds)
                 (org-with-point-at project-marker
                   (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" succ)
                   (save-buffer)))))

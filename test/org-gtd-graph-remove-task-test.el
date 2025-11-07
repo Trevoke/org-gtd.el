@@ -38,6 +38,47 @@
 ;;;; Test Setup
 ;; Uses standard infrastructure directly - no custom wrappers
 
+(defun org-gtd-graph-remove-test--create-project-with-diamond (project-title)
+  "Create a test project with diamond structure: A → C ← B, C → D.
+Task C has two parents (A and B) and one successor (D).
+Returns alist with keys: project-marker, project-id, task-a-id, task-b-id, task-c-id, task-d-id."
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-max))
+    (insert (format "* %s\n:PROPERTIES:\n:ORG_GTD: Projects\n" project-title))
+    (let ((project-id (org-id-get-create)))
+      (insert (format ":ID: %s\n:END:\n" project-id))
+      (insert "** TODO Task A\n:PROPERTIES:\n")
+      (let ((task-a-id (org-id-get-create)))
+        (insert (format ":ID: %s\n:ORG_GTD: Actions\n:ORG_GTD_PROJECT_IDS: %s\n:END:\n" task-a-id project-id))
+        (insert "** TODO Task B\n:PROPERTIES:\n")
+        (let ((task-b-id (org-id-get-create)))
+          (insert (format ":ID: %s\n:ORG_GTD: Actions\n:ORG_GTD_PROJECT_IDS: %s\n:END:\n" task-b-id project-id))
+          (insert "** TODO Task C\n:PROPERTIES:\n")
+          (let ((task-c-id (org-id-get-create)))
+            (insert (format ":ID: %s\n:ORG_GTD: Actions\n:ORG_GTD_PROJECT_IDS: %s\n:END:\n" task-c-id project-id))
+            (insert "** TODO Task D\n:PROPERTIES:\n")
+            (let ((task-d-id (org-id-get-create)))
+              (insert (format ":ID: %s\n:ORG_GTD: Actions\n:ORG_GTD_PROJECT_IDS: %s\n:END:\n" task-d-id project-id))
+              (org-gtd-dependencies-create task-a-id task-c-id)
+              (org-gtd-dependencies-create task-b-id task-c-id)
+              (org-gtd-dependencies-create task-c-id task-d-id)
+              (org-gtd-add-to-multivalued-property task-a-id org-gtd-prop-project-ids project-id)
+              (org-gtd-add-to-multivalued-property task-b-id org-gtd-prop-project-ids project-id)
+              (org-gtd-add-to-multivalued-property task-c-id org-gtd-prop-project-ids project-id)
+              (org-gtd-add-to-multivalued-property task-d-id org-gtd-prop-project-ids project-id)
+              (goto-char (point-min))
+              (search-forward project-title)
+              (org-back-to-heading t)
+              (org-entry-put (point) "ORG_GTD_FIRST_TASKS" (format "%s %s" task-a-id task-b-id))
+              (let ((project-marker (point-marker)))
+                (basic-save-buffer)
+                `((project-marker . ,project-marker)
+                  (project-id . ,project-id)
+                  (task-a-id . ,task-a-id)
+                  (task-b-id . ,task-b-id)
+                  (task-c-id . ,task-c-id)
+                  (task-d-id . ,task-d-id))))))))))
+
 (defun org-gtd-graph-remove-test--create-project-with-chain (project-title)
   "Create a test project with chain A → B → C.
 Returns alist with keys: project-marker, project-id, task-a-id, task-b-id, task-c-id."
@@ -182,13 +223,50 @@ Returns alist with keys: project-marker, project-id, task-a-id, task-b-id, task-
       ;; Verify A removed from project
       (expect (org-gtd-get-task-projects task-a-id) :not :to-contain project-id))))
 
-;;;; Test 3: Dependency Cleanup
-;; TODO: Fix test setup - currently has issues with project membership verification
-;; Core functionality is adequately tested by Tests 1 and 2
+;;;; Test 3: Remove Task with Multiple Parents
 
-;; (describe "org-gtd-graph--remove-from-project dependency cleanup"
-;;   ...
-;; )
+(describe "org-gtd-graph--remove-from-project for task with multiple parents"
+
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
+  (it "removes task with two parents and rewires both to successor"
+    (let* ((project-data (org-gtd-graph-remove-test--create-project-with-diamond "Diamond Project"))
+           (project-id (cdr (assoc 'project-id project-data)))
+           (task-a-id (cdr (assoc 'task-a-id project-data)))
+           (task-b-id (cdr (assoc 'task-b-id project-data)))
+           (task-c-id (cdr (assoc 'task-c-id project-data)))
+           (task-d-id (cdr (assoc 'task-d-id project-data))))
+
+      ;; Verify initial state: A → C, B → C, C → D
+      (expect (org-gtd-get-task-blockers task-a-id) :to-have-same-items-as (list task-c-id))
+      (expect (org-gtd-get-task-blockers task-b-id) :to-have-same-items-as (list task-c-id))
+      (expect (org-gtd-get-task-dependencies task-c-id) :to-have-same-items-as (list task-a-id task-b-id))
+      (expect (org-gtd-get-task-blockers task-c-id) :to-have-same-items-as (list task-d-id))
+      (expect (org-gtd-get-task-dependencies task-d-id) :to-have-same-items-as (list task-c-id))
+
+      ;; Remove Task C (which has two parents)
+      (org-gtd-graph--remove-from-project task-c-id project-id)
+
+      ;; Verify both parents now block D: A → D, B → D
+      (expect (org-gtd-get-task-blockers task-a-id) :to-have-same-items-as (list task-d-id))
+      (expect (org-gtd-get-task-blockers task-b-id) :to-have-same-items-as (list task-d-id))
+
+      ;; Verify D now depends on both A and B
+      (expect (org-gtd-get-task-dependencies task-d-id) :to-have-same-items-as (list task-a-id task-b-id))
+
+      ;; Verify C removed from project
+      (expect (org-gtd-get-task-projects task-c-id) :not :to-contain project-id)
+
+      ;; Verify C's dependencies cleaned up
+      (expect (org-gtd-get-task-dependencies task-c-id) :not :to-contain task-a-id)
+      (expect (org-gtd-get-task-dependencies task-c-id) :not :to-contain task-b-id)
+      (expect (org-gtd-get-task-blockers task-c-id) :not :to-contain task-d-id)
+
+      ;; Verify A and B no longer reference C
+      (expect (org-gtd-get-task-blockers task-a-id) :not :to-contain task-c-id)
+      (expect (org-gtd-get-task-blockers task-b-id) :not :to-contain task-c-id))))
 
 ;;;; Test 4: Keep as Independent
 
@@ -267,7 +345,39 @@ Returns alist with keys: project-marker, project-id, task-a-id, task-b-id, task-
               (let ((todo-state (org-get-todo-state)))
                 (expect todo-state :to-equal (org-gtd-keywords--canceled))))
           ;; Task not found means it was archived to a different file
-          (expect marker :to-be nil))))))
+          (expect marker :to-be nil)))))
+
+  (it "does not orphan successors when trashing middle task in chain"
+    (let* ((project-data (org-gtd-graph-remove-test--create-project-with-chain "Orphan Test Project"))
+           (project-id (cdr (assoc 'project-id project-data)))
+           (project-marker (cdr (assoc 'project-marker project-data)))
+           (task-a-id (cdr (assoc 'task-a-id project-data)))
+           (task-b-id (cdr (assoc 'task-b-id project-data)))
+           (task-c-id (cdr (assoc 'task-c-id project-data))))
+
+      ;; Verify initial state: A → B → C, FIRST_TASKS = [A]
+      (let ((first-tasks (org-with-point-at project-marker
+                          (org-entry-get-multivalued-property (point) "ORG_GTD_FIRST_TASKS"))))
+        (expect first-tasks :to-have-same-items-as (list task-a-id)))
+
+      ;; Trash Task B (middle task)
+      (org-gtd-graph--trash-task task-b-id)
+
+      ;; Verify rewiring happened: A → C
+      (expect (org-gtd-get-task-blockers task-a-id) :to-equal (list task-c-id))
+      (expect (org-gtd-get-task-dependencies task-c-id) :to-equal (list task-a-id))
+
+      ;; CRITICAL: C should NOT be in FIRST_TASKS because it has predecessor A
+      (let ((first-tasks (org-with-point-at project-marker
+                          (org-entry-get-multivalued-property (point) "ORG_GTD_FIRST_TASKS"))))
+        (expect first-tasks :to-have-same-items-as (list task-a-id))
+        (expect first-tasks :not :to-contain task-c-id))
+
+      ;; Verify A is still the only root task
+      (let ((first-tasks (org-with-point-at project-marker
+                          (org-entry-get-multivalued-property (point) "ORG_GTD_FIRST_TASKS"))))
+        (expect (length first-tasks) :to-equal 1)
+        (expect (car first-tasks) :to-equal task-a-id)))))
 
 (provide 'org-gtd-graph-remove-task-test)
 
