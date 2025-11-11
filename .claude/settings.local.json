@@ -81,7 +81,9 @@
       "Bash(~/go/bin/bd close:*)",
       "Bash(~/go/bin/bd create:*)",
       "Bash(~/go/bin/bd update:*)",
-      "Bash(~/go/bin/bd show:*)"
+      "Bash(~/go/bin/bd show:*)",
+      "Skill(superpowers:brainstorming)",
+      "Bash(~/go/bin/bd list:*)"
     ],
     "deny": []
   },

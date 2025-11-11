@@ -593,7 +593,79 @@
         ;; First entry should be the in-project task
         (when (and collection (listp collection) (> (length collection) 0))
           (let ((first-id (cdar collection)))
-            (expect first-id :to-equal task-in-project-id)))))))
+            (expect first-id :to-equal task-in-project-id))))))
+
+  (it "inserts existing task between parent and selected with rewiring"
+    (let* ((project-marker (org-gtd-graph-transient-test--create-project "Existing Insert Project"))
+           (buffer (get-buffer-create "*Org GTD Graph: existing*"))
+           project-id task-a-id task-c-id task-b-id)
+
+      ;; Create project with tasks A and C with A → C dependency
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Existing Insert Project")
+        (org-back-to-heading t)
+        (setq project-id (org-entry-get (point) "ID"))
+
+        ;; Create Task A
+        (org-end-of-subtree t t)
+        (insert "** TODO Task A\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq task-a-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+
+        ;; Create Task C
+        (goto-char (point-min))
+        (search-forward "Existing Insert Project")
+        (org-end-of-subtree t t)
+        (insert "** TODO Task C\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq task-c-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+
+        ;; Create A → C dependency
+        (org-gtd-dependencies-create task-a-id task-c-id)
+
+        ;; Make A a root task
+        (goto-char (point-min))
+        (search-forward "Existing Insert Project")
+        (org-back-to-heading t)
+        (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" task-a-id)
+        (basic-save-buffer))
+
+      ;; Create Task B outside project (independent action)
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-max))
+        (insert "** TODO Task B\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq task-b-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (basic-save-buffer))
+
+      ;; Verify initial state: A → C
+      (expect (org-gtd-get-task-dependencies task-c-id) :to-equal (list task-a-id))
+      (expect (org-gtd-get-task-blockers task-a-id) :to-equal (list task-c-id))
+
+      ;; Set up graph view and insert existing B before C
+      (with-current-buffer buffer
+        (org-gtd-graph-view-mode)
+        (setq org-gtd-graph-view--project-marker project-marker)
+        (setq org-gtd-graph-ui--selected-node-id task-c-id)
+        (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
+          (with-simulated-input "Task C-q SPC B C-q SPC (Actions) RET"
+            (org-gtd-graph-insert-before))))
+
+      ;; Verify final state: A → B → C
+      (expect (org-gtd-get-task-blockers task-a-id) :to-equal (list task-b-id))
+      (expect (org-gtd-get-task-dependencies task-b-id) :to-equal (list task-a-id))
+      (expect (org-gtd-get-task-blockers task-b-id) :to-equal (list task-c-id))
+      (expect (org-gtd-get-task-dependencies task-c-id) :to-equal (list task-b-id))
+      (expect (org-gtd-get-task-projects task-b-id) :to-contain project-id))))
 
 (describe "org-gtd-graph-insert-after"
 
