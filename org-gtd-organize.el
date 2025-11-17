@@ -149,28 +149,31 @@ This handles the internal bits of `org-gtd'."
            nil))) ;; Return nil when no error was thrown
     (unless error-caught
       ;; Only run cleanup if no error was thrown
-      (let ((loop-p (and (boundp org-gtd-clarify--inbox-p) org-gtd-clarify--inbox-p))
+      (let ((loop-p org-gtd-clarify--inbox-p)
             (task-id org-gtd-clarify--clarify-id)
             (window-config org-gtd-clarify--window-config))
-        ;; Only proceed with cleanup if we have a valid marker
-        (when (and (boundp 'org-gtd-clarify--source-heading-marker)
-                   org-gtd-clarify--source-heading-marker
-                   (markerp org-gtd-clarify--source-heading-marker))
-          (let ((buffer (marker-buffer org-gtd-clarify--source-heading-marker))
-                (position (marker-position org-gtd-clarify--source-heading-marker)))
-            (when (and buffer position)
-              (with-current-buffer buffer
-                (goto-char position)
-                (with-temp-message ""
-                  (org-cut-subtree))))))
-        (when window-config
-          (set-window-configuration window-config))
-        (when task-id
-          (kill-buffer (org-gtd-wip--buffer-name task-id)))
-        (if loop-p (org-gtd-process-inbox))
-        ;; Save buffers if the user has set the option
-        (when org-gtd-save-after-organize
-          (save-some-buffers t))))))
+    ;; Only proceed with cleanup if we have a valid marker
+    (when (and (boundp 'org-gtd-clarify--source-heading-marker)
+               org-gtd-clarify--source-heading-marker
+               (markerp org-gtd-clarify--source-heading-marker))
+      (let ((buffer (marker-buffer org-gtd-clarify--source-heading-marker))
+            (position (marker-position org-gtd-clarify--source-heading-marker)))
+        (when (and buffer position)
+          (with-current-buffer buffer
+            (goto-char position)
+            (with-temp-message ""
+              (org-cut-subtree))))))
+    (when task-id
+      (kill-buffer (org-gtd-wip--buffer-name task-id)))
+    (when window-config
+      (set-window-configuration window-config))
+    (if loop-p (org-gtd-process-inbox))
+    ;; Save buffers if the user has set the option
+    (when org-gtd-save-after-organize
+      (save-some-buffers t))
+        ;; Clean up horizons view for one-off clarification
+        (unless loop-p
+          (org-gtd-clarify--cleanup-horizons-view))))))
 
 (define-error
   'org-gtd-invalid-organize-action-type-error

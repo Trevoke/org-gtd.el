@@ -84,7 +84,8 @@
       "Bash(~/go/bin/bd show:*)",
       "Skill(superpowers:brainstorming)",
       "Bash(~/go/bin/bd list:*)",
-      "WebFetch(domain:codeberg.org)"
+      "WebFetch(domain:codeberg.org)",
+      "Skill(superpowers:test-driven-development)",
     ],
     "deny": []
   },

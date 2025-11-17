@@ -57,6 +57,7 @@
 
 (defun org-gtd-process--stop ()
   "Stop processing the inbox."
+  (org-gtd-clarify--cleanup-horizons-view)
   (whitespace-cleanup))
 
 ;;;; Footer

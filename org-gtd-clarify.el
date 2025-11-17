@@ -222,11 +222,34 @@ the buffer contains more than one task heading."
 
 ;;;;; Private
 
+(defun org-gtd-clarify--get-or-create-horizons-view ()
+  "Get or create read-only indirect buffer for horizons file."
+  (let* ((horizons-buffer (org-gtd--horizons-file))
+         (view-buffer-name "*Org GTD Horizons View*")
+         (existing-view (get-buffer view-buffer-name)))
+    (if (and existing-view (buffer-live-p existing-view))
+        existing-view
+      (with-current-buffer horizons-buffer
+        (let ((view-buffer (make-indirect-buffer
+                            horizons-buffer
+                            view-buffer-name
+                            t)))
+          (with-current-buffer view-buffer
+            (read-only-mode 1))
+          view-buffer)))))
+
 (defun org-gtd-clarify--display-horizons-window ()
   "Display horizons window."
-  (let ((horizons-side (or org-gtd-clarify-show-horizons 'right)))
-    (display-buffer (org-gtd--horizons-file)
+  (let ((horizons-side (or org-gtd-clarify-show-horizons 'right))
+        (view-buffer (org-gtd-clarify--get-or-create-horizons-view)))
+    (display-buffer view-buffer
                     `(display-buffer-in-side-window . ((side . ,horizons-side))))))
+
+(defun org-gtd-clarify--cleanup-horizons-view ()
+  "Kill the horizons view buffer if it exists."
+  (let ((view-buffer (get-buffer "*Org GTD Horizons View*")))
+    (when (and view-buffer (buffer-live-p view-buffer))
+      (kill-buffer view-buffer))))
 
 (defun org-gtd-clarify--extract-project-name ()
   "Extract project name from the first level heading in current buffer."
