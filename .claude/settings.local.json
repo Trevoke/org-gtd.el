@@ -83,7 +83,8 @@
       "Bash(~/go/bin/bd update:*)",
       "Bash(~/go/bin/bd show:*)",
       "Skill(superpowers:brainstorming)",
-      "Bash(~/go/bin/bd list:*)"
+      "Bash(~/go/bin/bd list:*)",
+      "WebFetch(domain:codeberg.org)"
     ],
     "deny": []
   },

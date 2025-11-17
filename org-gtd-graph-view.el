@@ -33,9 +33,8 @@
 (require 'org-gtd-graph-filter)
 (require 'org-gtd-graph-ui)
 (require 'org-gtd-graph-undo)
-(require 'org-gtd-layout)
-(require 'org-gtd-svg-render)
-(require 'org-gtd-ascii-render)
+(require 'org-gtd-svg-render)  ; For color helpers and svg-to-image
+(require 'org-gtd-dag-draw)
 (require 'org-gtd-projects)
 (require 'org-gtd-dependencies)
 (require 'org-gtd-accessors)
@@ -171,20 +170,16 @@ _EVENT is the file-notify event (unused)."
         (message "Graph validation issues: %s"
                  (mapconcat #'identity issues "; ")))
 
-      ;; Apply layout and render
-      (org-gtd-layout-apply graph)
       ;; Store the graph before rendering
       (setq org-gtd-graph-view--graph full-graph)
 
-      ;; Render using appropriate mode
-      (cond
-       ((eq org-gtd-graph-view--render-mode 'ascii)
-        (let ((ascii-text (org-gtd-ascii-render-graph graph org-gtd-graph-ui--selected-node-id)))
-          (org-gtd-graph-view--display-ascii ascii-text graph)))
-
-       (t  ; Default to SVG
-        (let ((svg (org-gtd-svg-render-graph graph org-gtd-graph-ui--selected-node-id)))
-          (org-gtd-graph-view--display-svg svg graph)))))))
+      ;; Render using dag-draw
+      (if (eq org-gtd-graph-view--render-mode 'ascii)
+          (let ((ascii-text (org-gtd-dag-draw-render graph 'ascii org-gtd-graph-ui--selected-node-id)))
+            (org-gtd-graph-view--display-ascii ascii-text graph))
+        ;; Default to SVG
+        (let ((svg (org-gtd-dag-draw-render graph 'svg org-gtd-graph-ui--selected-node-id)))
+          (org-gtd-graph-view--display-svg svg graph)))))
 
 (defun org-gtd-graph-view--display-svg (svg displayed-graph)
   "Display SVG in the current buffer showing DISPLAYED-GRAPH."
