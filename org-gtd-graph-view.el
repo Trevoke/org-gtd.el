@@ -179,7 +179,7 @@ _EVENT is the file-notify event (unused)."
             (org-gtd-graph-view--display-ascii ascii-text graph))
         ;; Default to SVG
         (let ((svg (org-gtd-dag-draw-render graph 'svg org-gtd-graph-ui--selected-node-id)))
-          (org-gtd-graph-view--display-svg svg graph)))))
+          (org-gtd-graph-view--display-svg svg graph))))))
 
 (defun org-gtd-graph-view--display-svg (svg displayed-graph)
   "Display SVG in the current buffer showing DISPLAYED-GRAPH."
