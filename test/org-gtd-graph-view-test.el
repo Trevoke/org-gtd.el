@@ -28,6 +28,9 @@
 (require 'org-gtd-accessors)
 (require 'org-gtd-files)
 (require 'org-gtd-core)
+(require 'org-gtd-dag-draw)
+(require 'dag-draw)
+(require 'dag-draw-core)
 (require 'org-gtd-test-helper-utils (file-name-concat default-directory "test/helpers/utils.el"))
 (require 'with-simulated-input)
 
@@ -110,6 +113,100 @@
   (xit "handles external blockers correctly"
     ;; TODO: Implement when simulated input is refined for selecting tasks
     ))
+
+;;;; Graph Export Tests
+
+(describe "org-gtd-graph-export-svg"
+
+  (before-each (org-gtd-graph-view-test--setup))
+  (after-each (org-gtd-graph-view-test--teardown))
+
+  (it "exports graph to SVG file"
+    (let* ((project-marker (org-gtd-graph-view-test--create-project "Test Project"))
+           (export-file (make-temp-file "graph-export" nil ".svg")))
+      (unwind-protect
+          (progn
+            ;; Set up minimal graph view state (without full rendering)
+            (with-current-buffer (get-buffer-create "*Test Graph Export*")
+              (setq-local org-gtd-graph-view--graph
+                          (org-gtd-graph-data--extract-from-project project-marker))
+              (setq-local org-gtd-graph-ui--selected-node-id nil)
+
+              ;; Export to SVG (function should not exist yet)
+              (org-gtd-graph-export-svg export-file))
+
+            ;; Verify file exists and contains SVG
+            (expect (file-exists-p export-file) :to-be t)
+            (with-temp-buffer
+              (insert-file-contents export-file)
+              (expect (buffer-string) :to-match "<svg")
+              (expect (buffer-string) :to-match "Test Project")))
+        ;; Cleanup
+        (when (file-exists-p export-file)
+          (delete-file export-file))
+        (when (get-buffer "*Test Graph Export*")
+          (kill-buffer "*Test Graph Export*"))))))
+
+(describe "org-gtd-graph-export-dot"
+
+  (before-each (org-gtd-graph-view-test--setup))
+  (after-each (org-gtd-graph-view-test--teardown))
+
+  (it "exports graph to DOT file"
+    (let* ((project-marker (org-gtd-graph-view-test--create-project "Test Project"))
+           (export-file (make-temp-file "graph-export" nil ".dot")))
+      (unwind-protect
+          (progn
+            ;; Set up minimal graph view state (without full rendering)
+            (with-current-buffer (get-buffer-create "*Test Graph Export*")
+              (setq-local org-gtd-graph-view--graph
+                          (org-gtd-graph-data--extract-from-project project-marker))
+              (setq-local org-gtd-graph-ui--selected-node-id nil)
+
+              ;; Export to DOT (function should not exist yet)
+              (org-gtd-graph-export-dot export-file))
+
+            ;; Verify file exists and contains DOT format
+            (expect (file-exists-p export-file) :to-be t)
+            (with-temp-buffer
+              (insert-file-contents export-file)
+              (expect (buffer-string) :to-match "digraph G")
+              (expect (buffer-string) :to-match "Test Project")))
+        ;; Cleanup
+        (when (file-exists-p export-file)
+          (delete-file export-file))
+        (when (get-buffer "*Test Graph Export*")
+          (kill-buffer "*Test Graph Export*"))))))
+
+(describe "org-gtd-graph-export-ascii"
+
+  (before-each (org-gtd-graph-view-test--setup))
+  (after-each (org-gtd-graph-view-test--teardown))
+
+  (it "exports graph to ASCII file"
+    (let* ((project-marker (org-gtd-graph-view-test--create-project "Test Project"))
+           (export-file (make-temp-file "graph-export" nil ".txt")))
+      (unwind-protect
+          (progn
+            ;; Set up minimal graph view state (without full rendering)
+            (with-current-buffer (get-buffer-create "*Test Graph Export*")
+              (setq-local org-gtd-graph-view--graph
+                          (org-gtd-graph-data--extract-from-project project-marker))
+              (setq-local org-gtd-graph-ui--selected-node-id nil)
+
+              ;; Export to ASCII (function should not exist yet)
+              (org-gtd-graph-export-ascii export-file))
+
+            ;; Verify file exists and contains ASCII art
+            (expect (file-exists-p export-file) :to-be t)
+            (with-temp-buffer
+              (insert-file-contents export-file)
+              (expect (buffer-string) :to-match "Test Project")))
+        ;; Cleanup
+        (when (file-exists-p export-file)
+          (delete-file export-file))
+        (when (get-buffer "*Test Graph Export*")
+          (kill-buffer "*Test Graph Export*"))))))
 
 (provide 'org-gtd-graph-view-test)
 

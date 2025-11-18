@@ -190,6 +190,7 @@ Working with Projects (Advanced)
 * Auto-Refresh on File Changes::
 * Technical Details::
 * Practical Tips for Project Management::
+* Exporting Project Graphs::
 * Troubleshooting Projects with Graph View::
 * See Also::
 * Cleaning up / archiving completed work::
@@ -2627,6 +2628,7 @@ You learned sequential projects in @ref{Tutorial Your First Project}. This secti
 * Auto-Refresh on File Changes::
 * Technical Details::
 * Practical Tips for Project Management::
+* Exporting Project Graphs::
 * Troubleshooting Projects with Graph View::
 * See Also::
 * Cleaning up / archiving completed work::
@@ -3717,6 +3719,171 @@ As projects evolve, you need to add tasks:
 @end itemize
 
 After adding, press @code{r} to refresh the view.
+@end itemize
+
+@node Exporting Project Graphs
+@subsection Exporting Project Graphs
+
+@itemize
+@item
+@anchor{First Contact What is Graph Export?}First Contact: What is Graph Export?
+
+
+Graph export saves your project visualization as a file. Share project plans with teammates who don't use Emacs. Include project graphs in presentations or documentation. Process graphs with external tools like Graphviz.
+
+Three export formats:
+@itemize
+@item
+@strong{SVG}: High-quality graphics for documents and presentations
+@item
+@strong{DOT}: Graphviz source for custom styling and layouts
+@item
+@strong{ASCII}: Text-based diagrams for terminals and plain-text documentation
+@end itemize
+
+Who needs this? Anyone collaborating outside Emacs, creating documentation, or using graph analysis tools.
+
+@item
+@anchor{Tutorial Export Your First Graph}Tutorial: Export Your First Graph
+
+
+Let's export a project graph in under 30 seconds:
+
+@enumerate
+@item
+Open any project in graph view: @code{M-x org-gtd-show-project-graph}
+@item
+Press @code{?} to open the command menu
+@item
+Press @code{E s} to export as SVG
+@item
+Choose a filename (e.g., @code{project-plan.svg})
+@item
+Done! Open the file in any image viewer or web browser
+@end enumerate
+
+The exported graph preserves your current view, including which task is selected (highlighted).
+
+@item
+@anchor{Progressive Learning Choosing Export Formats}Progressive Learning: Choosing Export Formats
+
+
+@strong{@strong{Start with SVG}} when you first need to export. It works everywhere—documents, presentations, web pages, email attachments. Your colleague can open it in any browser.
+
+@strong{@strong{Use DOT when you need control}}. The DOT format is Graphviz's source language. Export to DOT when you want to:
+@itemize
+@item
+Change colors, fonts, or layout algorithms
+@item
+Combine multiple project graphs
+@item
+Generate different output formats (PNG, PDF, PostScript)
+@item
+Integrate with automated build systems
+@end itemize
+
+Process a DOT file with Graphviz:
+@example
+dot -Tpng project.dot -o project.png      # Convert to PNG
+dot -Tpdf project.dot -o project.pdf      # Convert to PDF
+neato -Tsvg project.dot -o custom.svg     # Different layout algorithm
+@end example
+
+@strong{@strong{Use ASCII for text contexts}}. ASCII export creates terminal-friendly diagrams. Use when:
+@itemize
+@item
+Writing plain-text documentation (README files)
+@item
+Sharing in chat or email where images don't work
+@item
+Reviewing projects over SSH without graphics
+@item
+Creating quick diagrams for code comments
+@end itemize
+
+Example ASCII output:
+@example
+Conference Planning
+├─ Research venues
+├─ Create budget
+│  └─ Get quotes
+└─ Book venue
+@end example
+
+@strong{@strong{Handling large projects}}: All formats work with complex graphs, but consider:
+@itemize
+@item
+SVG scales perfectly (zoom without quality loss)
+@item
+DOT can be processed with different layout algorithms for readability
+@item
+ASCII may become unwieldy with 20+ tasks (switch to SVG)
+@end itemize
+
+@item
+@anchor{When Exports Differ from Display}When Exports Differ from Display
+
+
+The export reflects your current graph state. If you've selected a task (navigated with @code{j~/~k} or clicked), that task appears highlighted in the export.
+
+To export without highlighting:
+@enumerate
+@item
+Press @code{ESC} to deselect the current task
+@item
+Export with @code{E s}, @code{E d}, or @code{E a}
+@item
+The export shows all tasks unhighlighted
+@end enumerate
+
+Changes you make in graph view are immediately saved to the org file, so exports always reflect the actual project structure.
+
+@item
+@anchor{Reference Export Commands}Reference: Export Commands
+
+
+From graph view (@code{M-x org-gtd-show-project-graph}), press @code{?} to open the menu, then:
+
+@multitable {aaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Key
+@tab Command
+@tab Format
+@tab Best For
+@item @code{E s}
+@tab @code{org-gtd-graph-export-svg}
+@tab SVG
+@tab Documents, presentations, sharing
+@item @code{E d}
+@tab @code{org-gtd-graph-export-dot}
+@tab DOT
+@tab Graphviz processing, customization
+@item @code{E a}
+@tab @code{org-gtd-graph-export-ascii}
+@tab ASCII
+@tab Terminals, plain-text docs
+@end multitable
+
+All commands prompt for a filename. The file is created immediately.
+
+@item
+@anchor{Troubleshooting Exports}Troubleshooting Exports
+
+
+@strong{@strong{"No graph to export" error}}: You must be in a graph view buffer. Open a project graph first with @code{M-x org-gtd-show-project-graph}.
+
+@strong{@strong{Empty or corrupted file}}:
+@itemize
+@item
+Verify the graph displays correctly before exporting
+@item
+Press @code{R} to refresh the graph view
+@item
+Try exporting to a different location with write permissions
+@end itemize
+
+@strong{@strong{SVG won't open in browser}}: Ensure the filename ends in @code{.svg}. Most programs detect format by file extension.
+
+@strong{@strong{DOT processing fails}}: Install Graphviz (@code{dot} command) on your system. The DOT file is plain text—open it in any editor to verify its contents.
 @end itemize
 
 @node Troubleshooting Projects with Graph View

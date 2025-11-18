@@ -64,6 +64,10 @@
    ("v" "Toggle ASCII/SVG" org-gtd-graph-toggle-render-mode :transient t)
    ("z" "Zoom" org-gtd-graph-transient-zoom)
    ("R" "Refresh" org-gtd-graph-view-refresh :transient t)]
+  ["Export"
+   ("E s" "Export as SVG" org-gtd-graph-export-svg)
+   ("E d" "Export as DOT" org-gtd-graph-export-dot)
+   ("E a" "Export as ASCII" org-gtd-graph-export-ascii)]
   ["Quit"
    ("q" "Quit" transient-quit-one)
    ("Q" "Quit and kill" org-gtd-graph-quit-and-kill)])

@@ -424,6 +424,47 @@ Removes both blockers (tasks this depends on) and dependents (tasks that depend 
                  title)
         (org-gtd-graph-view-refresh)))))
 
+;;;; Export Functions
+
+(defun org-gtd-graph-export-svg (filename)
+  "Export current graph to FILENAME as SVG."
+  (interactive "FSave SVG to: ")
+  (unless org-gtd-graph-view--graph
+    (user-error "No graph to export"))
+  (let ((svg (org-gtd-dag-draw-render
+              org-gtd-graph-view--graph
+              'svg
+              org-gtd-graph-ui--selected-node-id)))
+    (with-temp-file filename
+      (insert svg))
+    (message "Graph exported to %s" filename)))
+
+(defun org-gtd-graph-export-dot (filename)
+  "Export current graph to FILENAME as Graphviz DOT format."
+  (interactive "FSave DOT to: ")
+  (unless org-gtd-graph-view--graph
+    (user-error "No graph to export"))
+  (let ((dot (org-gtd-dag-draw-render
+              org-gtd-graph-view--graph
+              'dot
+              org-gtd-graph-ui--selected-node-id)))
+    (with-temp-file filename
+      (insert dot))
+    (message "Graph exported to %s" filename)))
+
+(defun org-gtd-graph-export-ascii (filename)
+  "Export current graph to FILENAME as ASCII art."
+  (interactive "FSave ASCII to: ")
+  (unless org-gtd-graph-view--graph
+    (user-error "No graph to export"))
+  (let ((ascii (org-gtd-dag-draw-render
+                org-gtd-graph-view--graph
+                'ascii
+                org-gtd-graph-ui--selected-node-id)))
+    (with-temp-file filename
+      (insert ascii))
+    (message "Graph exported to %s" filename)))
+
 ;;;; Helper Functions
 
 (defun org-gtd-graph-view--get-all-tasks ()
