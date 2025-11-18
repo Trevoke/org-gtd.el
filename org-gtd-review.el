@@ -258,6 +258,134 @@ This view helps identify projects ready for archiving."
   "`%s' is not a member of `%s'"
   'org-gtd-error)
 
+;;;; Missed Engagements Review (formerly "oops")
+
+(defconst org-gtd-review-missed-engagements-view-specs
+  '(((name . "Missed check-ins on delegated items")
+     (filters . ((category . delegated)
+                 (timestamp . past))))
+
+    ((name . "Missed appointments")
+     (filters . ((category . calendar)
+                 (timestamp . past))))
+
+    ((name . "Projects that should have finished")
+     (filters . ((category . projects)
+                 (deadline . past))))
+
+    ((name . "Projects that should have started")
+     (filters . ((category . projects)
+                 (scheduled . past)
+                 (not-habit . t)))))
+  "GTD view specifications for missed engagement reviews.")
+
+;;;###autoload
+(defun org-gtd-review-missed-engagements ()
+  "Agenda view for all missed engagements using GTD view language.
+Shows delegated items needing check-ins, missed appointments, and overdue projects."
+  (interactive)
+  (with-org-gtd-context
+      (let ((org-agenda-custom-commands
+             (org-gtd-view-lang--create-custom-commands
+              org-gtd-review-missed-engagements-view-specs
+              "o"
+              "GTD Missed Engagements Review")))
+        (org-agenda nil "o")
+        (goto-char (point-min)))))
+
+;;;###autoload
+(defun org-gtd-review-missed-delegated ()
+  "Show only missed delegated items needing check-in."
+  (interactive)
+  (with-org-gtd-context
+      (let ((org-agenda-custom-commands
+             (org-gtd-view-lang--create-custom-commands
+              (list (car org-gtd-review-missed-engagements-view-specs)))))
+        (org-agenda nil "o")
+        (goto-char (point-min)))))
+
+;;;###autoload
+(defun org-gtd-review-missed-calendar ()
+  "Show only missed calendar appointments."
+  (interactive)
+  (with-org-gtd-context
+      (let ((org-agenda-custom-commands
+             (org-gtd-view-lang--create-custom-commands
+              (list (cadr org-gtd-review-missed-engagements-view-specs)))))
+        (org-agenda nil "o")
+        (goto-char (point-min)))))
+
+;;;###autoload
+(defun org-gtd-review-missed-projects ()
+  "Show only overdue projects."
+  (interactive)
+  (with-org-gtd-context
+      (let ((org-agenda-custom-commands
+             (org-gtd-view-lang--create-custom-commands
+              (list (caddr org-gtd-review-missed-engagements-view-specs)
+                    (cadddr org-gtd-review-missed-engagements-view-specs)))))
+        (org-agenda nil "o")
+        (goto-char (point-min)))))
+
+(defcustom org-gtd-review-missed-custom-views nil
+  "Additional custom missed engagement views defined by the user.
+Each view should be a GTD view specification alist with 'name and 'filters keys.
+
+Example:
+'(((name . \"My Custom View\")
+   (filters . ((category . delegated)
+               (area-of-focus . \"Work\")))))"
+  :group 'org-gtd
+  :type '(repeat (alist :key-type symbol :value-type sexp))
+  :package-version '(org-gtd . "4.0"))
+
+;;;###autoload
+(defun org-gtd-review-missed-with-custom ()
+  "Show missed engagement reviews including user-defined custom views."
+  (interactive)
+  (with-org-gtd-context
+      (let* ((all-views (append org-gtd-review-missed-engagements-view-specs
+                                org-gtd-review-missed-custom-views))
+             (org-agenda-custom-commands
+              (org-gtd-view-lang--create-custom-commands all-views)))
+        (org-agenda nil "o")
+        (goto-char (point-min)))))
+
+;;;; Backward Compatibility Aliases
+
+;;;###autoload
+(defalias 'org-gtd-oops 'org-gtd-review-missed-engagements
+  "Deprecated alias for `org-gtd-review-missed-engagements'.
+This function is obsolete as of org-gtd 4.0; use `org-gtd-review-missed-engagements' instead.")
+
+;;;###autoload
+(defalias 'org-gtd-oops-delegated 'org-gtd-review-missed-delegated
+  "Deprecated alias for `org-gtd-review-missed-delegated'.
+This function is obsolete as of org-gtd 4.0; use `org-gtd-review-missed-delegated' instead.")
+
+;;;###autoload
+(defalias 'org-gtd-oops-calendar 'org-gtd-review-missed-calendar
+  "Deprecated alias for `org-gtd-review-missed-calendar'.
+This function is obsolete as of org-gtd 4.0; use `org-gtd-review-missed-calendar' instead.")
+
+;;;###autoload
+(defalias 'org-gtd-oops-projects 'org-gtd-review-missed-projects
+  "Deprecated alias for `org-gtd-review-missed-projects'.
+This function is obsolete as of org-gtd 4.0; use `org-gtd-review-missed-projects' instead.")
+
+;;;###autoload
+(defalias 'org-gtd-oops-with-custom 'org-gtd-review-missed-with-custom
+  "Deprecated alias for `org-gtd-review-missed-with-custom'.
+This function is obsolete as of org-gtd 4.0; use `org-gtd-review-missed-with-custom' instead.")
+
+(defvaralias 'org-gtd-oops-custom-views 'org-gtd-review-missed-custom-views
+  "Deprecated alias for `org-gtd-review-missed-custom-views'.
+This variable is obsolete as of org-gtd 4.0; use `org-gtd-review-missed-custom-views' instead.")
+
+(defvaralias 'org-gtd-oops-view-specs 'org-gtd-review-missed-engagements-view-specs
+  "Deprecated alias for `org-gtd-review-missed-engagements-view-specs'.
+This variable is obsolete as of org-gtd 4.0; use `org-gtd-review-missed-engagements-view-specs' instead.")
+
 ;;;; Footer
 
 (provide 'org-gtd-review)

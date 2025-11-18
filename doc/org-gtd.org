@@ -1351,7 +1351,7 @@ You can see a list of all NEXT actions, and scheduled actions, with ~M-x org-gtd
 
 You can call ~org-gtd-show-all-next~ to only see NEXT actions, nothing scheduled.
 
-You can use ~org-gtd-oops~ to see all the appointments you missed, and act on them accordingly.
+You can use ~M-x org-gtd-review-missed-engagements~ to find appointments you missed, delegated items needing check-ins, and late projects. This is your safety net for catching things that slipped through the cracks.
 
 The weekly review is not yet implemented.
 
@@ -2819,30 +2819,35 @@ Default function generates: =archive-YYYY.org::datetree/= (year-based archive fi
 (setq org-gtd-archive-location #'my-monthly-archive)
 #+end_src
 
-*** Oops View Configuration
+*** Missed Engagements Review Configuration
 
-**** ~org-gtd-oops-custom-views~
+**** ~org-gtd-review-missed-custom-views~
 
 *Type*: List of GTD view specifications
 
 *Default*: ~nil~
 
-*Description*: Additional custom "oops" views for finding missed/overdue items.
+*Purpose*: Create custom views to find specific types of missed engagements (e.g., only work-related items, only specific areas of focus).
 
-Each view is a GTD view specification alist with ~'name~ and ~'filters~ keys.
+Think of this like creating saved searches. Instead of seeing ALL missed items, you can create views that show only the ones relevant to a specific context.
 
-*Example*:
+*When to use*: If you have multiple areas of focus (Work, Home, Hobbies) and want to review each separately.
+
+*Example - Area-Specific Reviews*:
 #+begin_src emacs-lisp
-(setq org-gtd-oops-custom-views
+(setq org-gtd-review-missed-custom-views
       '(((name . "Overdue Work Items")
          (filters . ((area-of-focus . "Work")
                      (deadline . past))))
-        ((name . "Missed Delegations")
-         (filters . ((category . delegated)
+        ((name . "Missed Home Appointments")
+         (filters . ((area-of-focus . "Home")
+                     (category . calendar)
                      (timestamp . past))))))
 #+end_src
 
-Use ~org-gtd-oops-with-custom~ to see all oops views including your custom ones.
+After configuring, run ~M-x org-gtd-review-missed-with-custom~ to see all standard views plus your custom ones.
+
+*Backward compatibility*: The old variable name ~org-gtd-oops-custom-views~ still works but will be removed in a future version.
 
 *** ID Overlay Configuration
 
@@ -3103,32 +3108,111 @@ Finds delegated items with missing delegate or date information.
 
 Finds single actions that aren't marked as NEXT.
 
-*** Oops Commands (Missed/Overdue Items)
+*** Review Commands (Missed Engagements)
 
-**** ~org-gtd-oops~
+**** What Are Missed Engagements?
 
-*When to use*: Daily or weekly to catch missed appointments and overdue tasks
+Life doesn't go as planned. You miss appointments, delegated items slip through cracks, projects run late. These aren't failures—they're normal. What matters is catching them and deciding what to do next.
 
-*What it does*:
-- Shows all missed calendar appointments
-- Shows overdue projects
-- Shows past-due delegations
+The missed engagements review helps you find three types of items that need attention:
+- *Appointments you missed*: Calendar items with dates in the past
+- *Check-ins you forgot*: Delegated items where follow-up dates passed
+- *Projects running late*: Projects with overdue deadlines or start dates
 
-**** ~org-gtd-oops-calendar~
+This is your safety net. Run it daily or weekly to ensure nothing falls through the cracks.
 
-Shows only missed calendar appointments.
+**** Your First Review in 30 Seconds
 
-**** ~org-gtd-oops-delegated~
+Try this right now:
 
-Shows only delegated items where the follow-up date has passed.
+1. Run ~M-x org-gtd-review-missed-engagements~
+2. Look at what appears in the agenda view
+3. Press ~TAB~ on any item to see its details
 
-**** ~org-gtd-oops-projects~
+That's it. You're now reviewing missed engagements.
 
-Shows only projects with overdue deadlines.
+If you see items, ask yourself: "What should I do about this now?" Then organize accordingly (reschedule, cancel, or act).
 
-**** ~org-gtd-oops-with-custom~
+**** Understanding the Review Workflow
 
-Shows all oops views plus any custom views defined in ~org-gtd-oops-custom-views~.
+Think of GTD like a promise system. When you:
+- Schedule an appointment → you promise to be there at that time
+- Delegate a task → you promise to check in on the date you set
+- Set a project deadline → you promise to complete by that date
+
+When dates pass without action, you've broken a promise (to yourself or others).
+
+The review workflow helps you:
+1. *Find* broken promises (missed engagements)
+2. *Decide* what to do about them
+3. *Act* on your decision
+
+This isn't about guilt—it's about staying in control.
+
+**** Tutorial: Daily Review Workflow
+
+Here's how to use this in your daily routine:
+
+*Morning Review* (2 minutes):
+#+begin_example
+M-x org-gtd-review-missed-engagements
+
+Look at each item:
+- Missed appointment? Reschedule or apologize
+- Forgot to check in on delegation? Do it now
+- Project running late? Decide: extend deadline or cancel
+#+end_example
+
+*Focusing on One Type*:
+
+If you just want to see missed appointments:
+#+begin_example
+M-x org-gtd-review-missed-calendar
+#+end_example
+
+Or just delegated items needing check-ins:
+#+begin_example
+M-x org-gtd-review-missed-delegated
+#+end_example
+
+Or just late projects:
+#+begin_example
+M-x org-gtd-review-missed-projects
+#+end_example
+
+Each command shows only that type, making it easier to focus.
+
+**** Common Patterns
+
+**Pattern 1: Morning Triage**
+Start each day by reviewing missed engagements. Handle or reschedule everything before starting new work.
+
+**Pattern 2: Weekly Cleanup**
+During weekly review, run the full missed engagements view. This catches anything that slipped through daily reviews.
+
+**Pattern 3: Context-Specific Review**
+Use custom views to see missed items by area of focus (see configuration below).
+
+**** Command Reference
+
+| Command | Shows | Use When |
+|---------|-------|----------|
+| ~org-gtd-review-missed-engagements~ | All missed items | Daily/weekly review |
+| ~org-gtd-review-missed-calendar~ | Missed appointments only | Checking calendar |
+| ~org-gtd-review-missed-delegated~ | Delegations needing check-in | Following up on delegated work |
+| ~org-gtd-review-missed-projects~ | Late projects only | Project review |
+| ~org-gtd-review-missed-with-custom~ | All missed + custom views | Using custom filters |
+
+**** Backward Compatibility Note
+
+The old command names still work:
+- ~org-gtd-oops~ → ~org-gtd-review-missed-engagements~
+- ~org-gtd-oops-calendar~ → ~org-gtd-review-missed-calendar~
+- ~org-gtd-oops-delegated~ → ~org-gtd-review-missed-delegated~
+- ~org-gtd-oops-projects~ → ~org-gtd-review-missed-projects~
+- ~org-gtd-oops-with-custom~ → ~org-gtd-review-missed-with-custom~
+
+Update to the new names when convenient. The old names will be removed in a future version.
 
 *** Clarification Commands
 
