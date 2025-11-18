@@ -4573,7 +4573,38 @@ To create a custom view:
 :CUSTOM_ID: hooks-reference
 :END:
 
-org-gtd provides hooks to customize behavior when organizing items. This section documents the hooks framework and how to write custom hooks.
+*** What Are Organize Hooks?
+
+Hooks let you automatically capture information about tasks as you organize them—like tracking when tasks were created, auto-tagging items with "urgent" in the title, or estimating effort based on keywords.
+
+Without hooks, you'd manually add the same metadata to every task. With hooks, you define the pattern once and org-gtd applies it automatically during organization.
+
+For anyone who wants consistent metadata on their GTD items without repetitive manual work.
+
+*** Your First Hook in 2 Minutes
+
+Let's add automatic creation timestamps to all tasks except trash and quick actions.
+
+1. Add this to your config:
+   #+begin_src emacs-lisp
+   (defun my-track-creation-date ()
+     "Add CREATED property with current timestamp."
+     (unless (org-gtd-organize-type-member-p '(trash quick))
+       (org-set-property "CREATED"
+                         (format-time-string "[%Y-%m-%d %a %H:%M]"))))
+
+   (add-to-list 'org-gtd-organize-hooks 'my-track-creation-date)
+   #+end_src
+
+2. Restart Emacs (or eval the code with ~C-x C-e~)
+
+3. Capture something: ~M-x org-gtd-capture~, type "Test task", finish capture
+
+4. Process it: ~M-x org-gtd-process-inbox~, organize as "Single action"
+
+5. Look at the task: you'll see a CREATED property with today's timestamp
+
+You just automated metadata capture. Every item you organize now gets timestamped automatically.
 
 *** The org-gtd-organize-hooks Variable
 
@@ -4673,6 +4704,21 @@ This helper function lets you run code only for specific item types.
 
 *** Example Custom Hooks
 
+**** Selective Tagging with Unless
+
+The most common pattern is "run this hook for everything EXCEPT certain types". This example prompts for tags on all items except trash and knowledge (reference):
+
+#+begin_src emacs-lisp
+(defun my-tag-tasks ()
+  "Prompt for tags on all items except trash and knowledge."
+  (unless (org-gtd-organize-type-member-p '(trash knowledge))
+    (org-set-tags-command)))
+
+(setq org-gtd-organize-hooks '(my-tag-tasks))
+#+end_src
+
+This replaces the default ~org-set-tags-command~ with selective tagging. The ~unless~ pattern is cleaner than listing all the types you DO want: it says "skip these few, run for everything else."
+
 **** Add Effort Estimation
 
 #+begin_src emacs-lisp
@@ -4684,7 +4730,7 @@ This helper function lets you run code only for specific item types.
 (add-to-list 'org-gtd-organize-hooks 'my-add-effort)
 #+end_src
 
-*### Add Priority
+**** Add Priority
 
 #+begin_src emacs-lisp
 (defun my-add-priority ()
