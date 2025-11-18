@@ -158,4 +158,49 @@
       (with-current-buffer (car (org-gtd-wip--get-buffers))
         (org-gtd-trash))
       ;; View buffer should be cleaned up after inbox completes
-      (expect (get-buffer "*Org GTD Horizons View*") :to-be nil))))
+      (expect (get-buffer "*Org GTD Horizons View*") :to-be nil))
+
+  (it "stop clarifying command cleans up and restores state"
+      (ogt--create-org-file-in-org-gtd-dir
+       "horizons"
+       "* Purpose")
+      (let* ((task-buffer (ogt--create-org-file-in-org-gtd-dir
+                           "tasks"
+                           "* TODO Test task"))
+             (orig-window-config (current-window-configuration))
+             wip-buffer)
+        (with-current-buffer task-buffer
+          (goto-char (point-min))
+          (org-next-visible-heading 1)
+          (org-gtd-clarify-item))
+        (setq wip-buffer (car (org-gtd-wip--get-buffers)))
+        ;; View buffer and WIP buffer should exist
+        (expect (get-buffer "*Org GTD Horizons View*") :not :to-be nil)
+        (expect wip-buffer :not :to-be nil)
+        ;; Stop clarifying
+        (with-current-buffer wip-buffer
+          (org-gtd-clarify-stop))
+        ;; WIP buffer should be killed
+        (expect (buffer-live-p wip-buffer) :to-be nil)
+        ;; View buffer should be cleaned up
+        (expect (get-buffer "*Org GTD Horizons View*") :to-be nil)))
+
+  (it "C-c C-k keybinding is bound to stop clarifying"
+      (expect (lookup-key org-gtd-clarify-map (kbd "C-c C-k"))
+              :to-equal #'org-gtd-clarify-stop))
+
+  (it "header line shows both organize and stop keybindings"
+      (ogt--create-org-file-in-org-gtd-dir
+       "horizons"
+       "* Purpose")
+      (let ((task-buffer (ogt--create-org-file-in-org-gtd-dir
+                          "tasks"
+                          "* TODO Test task")))
+        (with-current-buffer task-buffer
+          (goto-char (point-min))
+          (org-next-visible-heading 1)
+          (org-gtd-clarify-item))
+        (with-current-buffer (car (org-gtd-wip--get-buffers))
+          (expect header-line-format :to-match "C-c c")
+          (expect header-line-format :to-match "C-c C-k")
+          (expect header-line-format :to-match "cancel"))))))

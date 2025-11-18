@@ -86,6 +86,8 @@ there are multiple tasks in the WIP buffer."
 
 (defvar org-gtd-clarify-map (make-sparse-keymap))
 
+(define-key org-gtd-clarify-map (kbd "C-c C-k") #'org-gtd-clarify-stop)
+
 ;; code to make windows atomic, from emacs manual
 ;; (let ((window (split-window-right)))
 ;;   (window-make-atom (window-parent window))
@@ -111,7 +113,7 @@ there are multiple tasks in the WIP buffer."
       (setq-local
        header-line-format
        (substitute-command-keys
-        "\\<org-gtd-clarify-map>Clarify item.  Use `\\[org-gtd-organize]' to file it appropriately when finished."))
+        "\\<org-gtd-clarify-map>Clarify item.  Use `\\[org-gtd-organize]' to file it when finished, or `\\[org-gtd-clarify-stop]' to cancel."))
     (setq-local header-line-format nil)))
 
 ;;;; Commands
@@ -165,6 +167,23 @@ WINDOW-CONFIG is the window config to set after clarification finishes."
     (if window
         (quit-window nil window)
       (org-gtd-clarify--display-horizons-window))))
+
+(defun org-gtd-clarify-stop ()
+  "Stop clarifying the current item and restore previous state.
+Closes the horizons view, restores the window configuration,
+and kills the WIP buffer without organizing the item."
+  (interactive)
+  (let ((window-config org-gtd-clarify--window-config)
+        (task-id org-gtd-clarify--clarify-id))
+    ;; Clean up horizons view
+    (org-gtd-clarify--cleanup-horizons-view)
+    ;; Kill the WIP buffer
+    (when task-id
+      (kill-buffer (org-gtd-wip--buffer-name task-id)))
+    ;; Restore window configuration
+    (when window-config
+      (set-window-configuration window-config))
+    (message "Stopped clarifying")))
 
 ;;;; Functions
 
