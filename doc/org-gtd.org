@@ -3315,6 +3315,123 @@ The old command names still work:
 
 Update to the new names when convenient. The old names will be removed in a future version.
 
+*** Review Commands (Upcoming Delegated)
+
+**** What Are Upcoming Delegated Check-ins?
+
+You delegate work and set check-in dates. Some people finish early. Others appreciate regular check-ins. Waiting until check-in dates pass means lost opportunities.
+
+The upcoming delegated review shows all active delegated items with future check-in dates. This helps you:
+- *Catch early completions*: Someone finished early, you can adjust the plan now
+- *Plan your follow-ups*: See what check-ins are coming this week or month
+- *Proactive management*: Reach out before problems develop
+
+This is your planning tool. Use it weekly to prepare your delegation check-ins, or ad-hoc when people report early progress.
+
+**** Your First Review in 30 Seconds
+
+Try this right now:
+
+1. Run ~M-x org-gtd-review-upcoming-delegated~
+2. Look at the delegated items with future check-in dates
+3. Press ~TAB~ on any item to see when the check-in is scheduled
+
+That's it. You're now seeing upcoming delegation check-ins.
+
+If someone tells you they finished early, you'll find that item here and can update your plans accordingly.
+
+**** Understanding Proactive Delegation Management
+
+Think about delegation timing:
+
+*Reactive management* (missed engagements):
+- Check-in date passes → you remember to follow up
+- Problem discovered after it's late
+- Always catching up
+
+*Proactive management* (upcoming review):
+- See check-ins coming this week → prepare questions
+- Someone finishes early → immediately unblock dependent work
+- Stay ahead of problems
+
+The upcoming delegated review shifts you from reactive to proactive.
+
+**** Tutorial: Weekly Planning Workflow
+
+Here's how to use this in your weekly planning:
+
+*Sunday Planning* (5 minutes):
+#+begin_example
+M-x org-gtd-review-upcoming-delegated
+
+For each item:
+- Check-in this week? Prepare questions or schedule call
+- Might finish early? Be ready to adjust plans
+- Blocked on something? Follow up proactively
+#+end_example
+
+*When Someone Reports Early Completion*:
+#+begin_example
+M-x org-gtd-review-upcoming-delegated
+
+Find their item in the list
+Press TAB to jump to the item
+Mark it DONE (it disappears from the upcoming view)
+Check if this unblocks other work in the project
+#+end_example
+
+*Combined with Missed Review*:
+#+begin_example
+# Morning routine
+M-x org-gtd-review-missed-delegated    # Catch up on late check-ins
+M-x org-gtd-review-upcoming-delegated  # Plan upcoming check-ins
+#+end_example
+
+The first shows what you missed. The second shows what's coming. Together they give complete delegation visibility.
+
+**** Common Patterns
+
+*Pattern 1: Weekly Planning*
+Every Sunday or Monday, review upcoming delegated items for the week. Know what check-ins are coming so you're prepared.
+
+*Pattern 2: Early Completion Response*
+When someone says "I finished that task you gave me," pull up this view to find it quickly and update your plans.
+
+*Pattern 3: Project Acceleration*
+Review a specific project's delegated items. If anyone finished early, immediately reassign work to take advantage of the extra time.
+
+*Pattern 4: Delegation Optimization*
+Notice patterns: Who consistently finishes early? Give them more work. Who's always late? More frequent check-ins.
+
+**** Understanding What You See
+
+The view shows all active (not done) delegated items with future check-in dates:
+- Items with TODO, NEXT, or WAIT states
+- Items with check-ins far in the future (months away)
+- Items from all areas of focus
+
+Once you mark an item DONE or CNCL, it disappears from this view automatically—you've already processed it and taken action.
+
+If you see too many items and want to filter:
+- Focus on one project at a time (use project-specific review)
+- Look at specific timeframes (future enhancement—not yet implemented)
+- Use custom views with area-of-focus filters
+
+**** Comparison: Missed vs Upcoming
+
+| Review Type | Shows | Mindset | Use When |
+|-------------|-------|---------|----------|
+| Missed Delegated | Past check-ins | Reactive - catching up | Daily triage |
+| Upcoming Delegated | Future check-ins | Proactive - planning | Weekly planning |
+
+Both are valuable. Missed helps you catch problems. Upcoming helps you prevent them.
+
+**** Command Reference
+
+| Command | Shows | Use When |
+|---------|-------|----------|
+| ~org-gtd-review-upcoming-delegated~ | All delegated items with future check-in dates | Weekly planning, early completion responses |
+
 *** Clarification Commands
 
 **** ~org-gtd-clarify-item~

@@ -93,4 +93,25 @@
     (it "org-gtd-oops-view-specs aliases to org-gtd-review-missed-view-specs"
       (expect (boundp 'org-gtd-oops-view-specs) :to-be t))))
 
+(describe "org-gtd-review Upcoming Delegated Implementation"
+
+  (describe "GTD View Specification"
+
+    (it "defines the upcoming delegated view specification"
+      (expect org-gtd-review-upcoming-delegated-view-spec)
+      (expect (alist-get 'name org-gtd-review-upcoming-delegated-view-spec)
+              :to-equal "Upcoming check-ins on delegated items"))
+
+    (it "can translate upcoming delegated view specification to org-ql"
+      (let* ((upcoming-spec org-gtd-review-upcoming-delegated-view-spec)
+             (query (org-gtd-view-lang--translate-to-org-ql upcoming-spec)))
+        (expect query :to-equal '(and (property "DELEGATED_TO")
+                                      (property-ts> "ORG_GTD_TIMESTAMP" "today")
+                                      (not (done)))))))
+
+  (describe "Function Availability"
+
+    (it "provides the org-gtd-review-upcoming-delegated function"
+      (expect (fboundp 'org-gtd-review-upcoming-delegated) :to-be t))))
+
 ;;; org-gtd-review-test.el ends here

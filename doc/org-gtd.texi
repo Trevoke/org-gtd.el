@@ -230,6 +230,7 @@ Commands Reference
 * Review Commands::
 * Stuck Item Review Commands::
 * Review Commands (Missed Engagements)::
+* Review Commands (Upcoming Delegated)::
 * Clarification Commands::
 * Archive Commands::
 * Agenda-Specific Commands::
@@ -4771,6 +4772,7 @@ This section lists all interactive commands available in org-gtd, organized by w
 * Review Commands::
 * Stuck Item Review Commands::
 * Review Commands (Missed Engagements)::
+* Review Commands (Upcoming Delegated)::
 * Clarification Commands::
 * Archive Commands::
 * Agenda-Specific Commands::
@@ -5255,6 +5257,187 @@ The old command names still work:
 @end itemize
 
 Update to the new names when convenient. The old names will be removed in a future version.
+@end itemize
+
+@node Review Commands (Upcoming Delegated)
+@subsection Review Commands (Upcoming Delegated)
+
+@itemize
+@item
+@anchor{What Are Upcoming Delegated Check-ins?}What Are Upcoming Delegated Check-ins?
+
+
+You delegate work and set check-in dates. Some people finish early. Others appreciate regular check-ins. Waiting until check-in dates pass means lost opportunities.
+
+The upcoming delegated review shows all active delegated items with future check-in dates. This helps you:
+@itemize
+@item
+@strong{Catch early completions}: Someone finished early, you can adjust the plan now
+@item
+@strong{Plan your follow-ups}: See what check-ins are coming this week or month
+@item
+@strong{Proactive management}: Reach out before problems develop
+@end itemize
+
+This is your planning tool. Use it weekly to prepare your delegation check-ins, or ad-hoc when people report early progress.
+
+@item
+@anchor{Your First Review in 30 Seconds (1)}Your First Review in 30 Seconds
+
+
+Try this right now:
+
+@enumerate
+@item
+Run @code{M-x org-gtd-review-upcoming-delegated}
+@item
+Look at the delegated items with future check-in dates
+@item
+Press @code{TAB} on any item to see when the check-in is scheduled
+@end enumerate
+
+That's it. You're now seeing upcoming delegation check-ins.
+
+If someone tells you they finished early, you'll find that item here and can update your plans accordingly.
+
+@item
+@anchor{Understanding Proactive Delegation Management}Understanding Proactive Delegation Management
+
+
+Think about delegation timing:
+
+@strong{Reactive management} (missed engagements):
+@itemize
+@item
+Check-in date passes → you remember to follow up
+@item
+Problem discovered after it's late
+@item
+Always catching up
+@end itemize
+
+@strong{Proactive management} (upcoming review):
+@itemize
+@item
+See check-ins coming this week → prepare questions
+@item
+Someone finishes early → immediately unblock dependent work
+@item
+Stay ahead of problems
+@end itemize
+
+The upcoming delegated review shifts you from reactive to proactive.
+
+@item
+@anchor{Tutorial Weekly Planning Workflow}Tutorial: Weekly Planning Workflow
+
+
+Here's how to use this in your weekly planning:
+
+@strong{Sunday Planning} (5 minutes):
+@example
+M-x org-gtd-review-upcoming-delegated
+
+For each item:
+- Check-in this week? Prepare questions or schedule call
+- Might finish early? Be ready to adjust plans
+- Blocked on something? Follow up proactively
+@end example
+
+@strong{When Someone Reports Early Completion}:
+@example
+M-x org-gtd-review-upcoming-delegated
+
+Find their item in the list
+Press TAB to jump to the item
+Mark it DONE (it disappears from the upcoming view)
+Check if this unblocks other work in the project
+@end example
+
+@strong{Combined with Missed Review}:
+@example
+# Morning routine
+M-x org-gtd-review-missed-delegated    # Catch up on late check-ins
+M-x org-gtd-review-upcoming-delegated  # Plan upcoming check-ins
+@end example
+
+The first shows what you missed. The second shows what's coming. Together they give complete delegation visibility.
+
+@item
+@anchor{Common Patterns (1)}Common Patterns
+
+
+@strong{Pattern 1: Weekly Planning}
+Every Sunday or Monday, review upcoming delegated items for the week. Know what check-ins are coming so you're prepared.
+
+@strong{Pattern 2: Early Completion Response}
+When someone says "I finished that task you gave me," pull up this view to find it quickly and update your plans.
+
+@strong{Pattern 3: Project Acceleration}
+Review a specific project's delegated items. If anyone finished early, immediately reassign work to take advantage of the extra time.
+
+@strong{Pattern 4: Delegation Optimization}
+Notice patterns: Who consistently finishes early? Give them more work. Who's always late? More frequent check-ins.
+
+@item
+@anchor{Understanding What You See}Understanding What You See
+
+
+The view shows all active (not done) delegated items with future check-in dates:
+@itemize
+@item
+Items with TODO, NEXT, or WAIT states
+@item
+Items with check-ins far in the future (months away)
+@item
+Items from all areas of focus
+@end itemize
+
+Once you mark an item DONE or CNCL, it disappears from this view automatically—you've already processed it and taken action.
+
+If you see too many items and want to filter:
+@itemize
+@item
+Focus on one project at a time (use project-specific review)
+@item
+Look at specific timeframes (future enhancement—not yet implemented)
+@item
+Use custom views with area-of-focus filters
+@end itemize
+
+@item
+@anchor{Comparison Missed vs Upcoming}Comparison: Missed vs Upcoming
+
+
+@multitable {aaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaa}
+@headitem Review Type
+@tab Shows
+@tab Mindset
+@tab Use When
+@item Missed Delegated
+@tab Past check-ins
+@tab Reactive - catching up
+@tab Daily triage
+@item Upcoming Delegated
+@tab Future check-ins
+@tab Proactive - planning
+@tab Weekly planning
+@end multitable
+
+Both are valuable. Missed helps you catch problems. Upcoming helps you prevent them.
+
+@item
+@anchor{Command Reference (1)}Command Reference
+
+
+@multitable {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Command
+@tab Shows
+@tab Use When
+@item @code{org-gtd-review-upcoming-delegated}
+@tab All delegated items with future check-in dates
+@tab Weekly planning, early completion responses
+@end multitable
 @end itemize
 
 @node Clarification Commands

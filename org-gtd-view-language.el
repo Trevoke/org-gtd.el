@@ -63,6 +63,7 @@
 ;;   (level . N)              - Heading level N
 ;;   (todo . ("TODO" "NEXT")) - Specific TODO keywords
 ;;   (done . t)               - Items with done TODO states
+;;   (not-done . t)           - Exclude items with done TODO states
 ;;
 ;; Metadata Filters:
 ;;   (area-of-focus . "Work") - Specific area of focus (CATEGORY property)
@@ -212,6 +213,8 @@ GTD-VIEW-SPEC should be an alist with 'name and 'filters keys."
       (org-gtd-view-lang--translate-todo-filter filter-value))
      ((eq filter-type 'done)
       (org-gtd-view-lang--translate-done-filter filter-value))
+     ((eq filter-type 'not-done)
+      (org-gtd-view-lang--translate-not-done-filter filter-value))
      ((eq filter-type 'invalid-timestamp)
       (org-gtd-view-lang--translate-invalid-timestamp-filter filter-value))
      ((eq filter-type 'tags)
@@ -301,6 +304,11 @@ GTD-VIEW-SPEC should be an alist with 'name and 'filters keys."
   "Translate done VALUE to org-ql done filter."
   (when value
     (list '(done))))
+
+(defun org-gtd-view-lang--translate-not-done-filter (value)
+  "Translate not-done VALUE to org-ql not-done filter."
+  (when value
+    (list '(not (done)))))
 
 (defun org-gtd-view-lang--translate-invalid-timestamp-filter (value)
   "Translate invalid-timestamp VALUE to org-ql filter.

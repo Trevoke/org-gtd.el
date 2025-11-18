@@ -279,6 +279,13 @@ This view helps identify projects ready for archiving."
                  (not-habit . t)))))
   "GTD view specifications for missed engagement reviews.")
 
+(defconst org-gtd-review-upcoming-delegated-view-spec
+  '((name . "Upcoming check-ins on delegated items")
+    (filters . ((category . delegated)
+                (timestamp . future)
+                (not-done . t))))
+  "GTD view specification for upcoming delegated item check-ins.")
+
 ;;;###autoload
 (defun org-gtd-review-missed-engagements ()
   "Agenda view for all missed engagements using GTD view language.
@@ -324,6 +331,21 @@ Shows delegated items needing check-ins, missed appointments, and overdue projec
              (org-gtd-view-lang--create-custom-commands
               (list (caddr org-gtd-review-missed-engagements-view-specs)
                     (cadddr org-gtd-review-missed-engagements-view-specs)))))
+        (org-agenda nil "o")
+        (goto-char (point-min)))))
+
+;;;###autoload
+(defun org-gtd-review-upcoming-delegated ()
+  "Show delegated items with upcoming check-in dates.
+Displays all delegated items where ORG_GTD_TIMESTAMP is in the future.
+Useful for planning follow-ups and catching early completions."
+  (interactive)
+  (with-org-gtd-context
+      (let ((org-agenda-custom-commands
+             (org-gtd-view-lang--create-custom-commands
+              (list org-gtd-review-upcoming-delegated-view-spec)
+              "o"
+              "Upcoming Delegated Check-ins")))
         (org-agenda nil "o")
         (goto-char (point-min)))))
 
