@@ -279,6 +279,8 @@ View DSL Filter Reference
 
 Hooks Framework Reference
 
+* What Are Organize Hooks?::
+* Your First Hook in 2 Minutes::
 * The org-gtd-organize-hooks Variable::
 * Built-in Hooks::
 * Writing Custom Hooks::
@@ -524,9 +526,9 @@ Version 4.0 introduces major improvements to keyword configuration and project m
 @anchor{Required Configuration changes}Required: Configuration changes
 
 
-@strong{@strong{1. Update keyword configuration}}
+@strong{1. Update keyword configuration}
 
-@strong{@strong{OLD way (version 3.x):}}
+@strong{OLD way (version 3.x):}
 @lisp
 ;; Individual keyword variables (no longer used)
 (setq org-gtd-next "NEXT")
@@ -535,7 +537,7 @@ Version 4.0 introduces major improvements to keyword configuration and project m
 (setq org-gtd-canceled "CNCL")
 @end lisp
 
-@strong{@strong{NEW way (version 4.0):}}
+@strong{NEW way (version 4.0):}
 @lisp
 ;; First, configure org-mode's global TODO keywords
 ;; All your GTD keywords must be in the same sequence
@@ -570,7 +572,7 @@ Ensure all GTD keywords appear in the @strong{same sequence} in @code{org-todo-k
 
 Version 4.0 changes how projects work internally. @strong{The old TRIGGER-based system no longer functions} - v4 uses dependency properties instead. You MUST run the migration for your existing projects to continue working.
 
-@strong{@strong{Run the migration command:}}
+@strong{Run the migration command:}
 
 @lisp
 M-x org-gtd-upgrade-v3-to-v4
@@ -578,7 +580,7 @@ M-x org-gtd-upgrade-v3-to-v4
 
 @strong{Make a backup first!} The migration modifies your GTD files.
 
-@strong{@strong{What the migration does:}}
+@strong{What the migration does:}
 
 The migration performs two steps automatically:
 
@@ -604,7 +606,7 @@ Updates task states (NEXT/TODO) based on the new dependency graph
 @end itemize
 @end enumerate
 
-@strong{@strong{After migration:}}
+@strong{After migration:}
 
 @itemize
 @item
@@ -621,7 +623,7 @@ Safe to run multiple times if needed
 @anchor{Why these changes?}Why these changes?
 
 
-@strong{@strong{Keyword configuration:}}
+@strong{Keyword configuration:}
 @itemize
 @item
 Simpler: One mapping structure instead of multiple variables
@@ -633,7 +635,7 @@ Better validation: Org GTD checks your configuration and provides helpful errors
 Future-proof: Easier to extend with new keyword types
 @end itemize
 
-@strong{@strong{Property-based system:}}
+@strong{Property-based system:}
 @itemize
 @item
 More robust: Properties work reliably across different org-mode features
@@ -913,7 +915,7 @@ All GTD keywords must be in a single sequence
 
 After adding one of the configurations above and restarting Emacs, verify everything works:
 
-@strong{@strong{Test 1: Capture works}}
+@strong{Test 1: Capture works}
 
 @example
 M-x org-gtd-capture
@@ -923,7 +925,7 @@ Expected: Opens a capture buffer for the inbox.
 
 If it fails: Check that @code{org-gtd-directory} exists and you have write permissions.
 
-@strong{@strong{Test 2: Engage works}}
+@strong{Test 2: Engage works}
 
 @example
 M-x org-gtd-engage
@@ -933,7 +935,7 @@ Expected: Opens an agenda view (might be empty if you haven't organized anything
 
 If it fails: Check that @code{org-agenda-files} includes your GTD directory.
 
-@strong{@strong{Test 3: Keywords are recognized}}
+@strong{Test 3: Keywords are recognized}
 
 @enumerate
 @item
@@ -950,7 +952,7 @@ Expected: Should cycle through TODO → NEXT → WAIT → DONE → CNCL@.
 
 If it fails: Check that @code{org-todo-keywords} is set correctly.
 
-@strong{@strong{Test 4: org-edna is enabled}}
+@strong{Test 4: org-edna is enabled}
 
 @example
 M-x describe-variable RET org-edna-mode
@@ -976,7 +978,7 @@ Before troubleshooting, identify which configuration style you're using:
 
 Each example shows the complete, correct configuration for that environment.
 
-@strong{@strong{Problem: "org-gtd-capture" is undefined}}
+@strong{Problem: "org-gtd-capture" is undefined}
 
 @strong{Cause}: org-gtd package isn't installed or loaded.
 
@@ -990,7 +992,7 @@ Each example shows the complete, correct configuration for that environment.
 @strong{Spacemacs}: The @code{use-package} form in the @ref{Example 3 Spacemacs Configuration, , Spacemacs example} automatically installs it with @code{:ensure t}
 @end itemize
 
-@strong{@strong{Problem: Keywords don't change when I press C-c C-t}}
+@strong{Problem: Keywords don't change when I press C-c C-t}
 
 @strong{Cause}: @code{org-todo-keywords} not configured correctly.
 
@@ -1012,7 +1014,7 @@ No done separator: Need @code{|} before @code{"DONE"} and @code{"CNCL"}
 
 See the complete configuration for your environment above.
 
-@strong{@strong{Problem: Projects don't advance when I mark tasks DONE}}
+@strong{Problem: Projects don't advance when I mark tasks DONE}
 
 @strong{Cause}: org-edna isn't enabled.
 
@@ -1024,7 +1026,7 @@ See the complete configuration for your environment above.
 @strong{Doom}: @code{(org-edna-mode)} in the @code{:config} section (Doom handles the argument)
 @end itemize
 
-@strong{@strong{Problem: Can't see GTD items in agenda}}
+@strong{Problem: Can't see GTD items in agenda}
 
 @strong{Cause}: GTD directory not in @code{org-agenda-files}.
 
@@ -1039,7 +1041,7 @@ Or if using @code{use-package} / @code{use-package!}:
 (org-agenda-files (list org-gtd-directory))
 @end lisp
 
-@strong{@strong{Problem: Keybindings don't work}}
+@strong{Problem: Keybindings don't work}
 
 @strong{Cause}: Keybindings not defined, or defined incorrectly for your environment.
 
@@ -1091,7 +1093,7 @@ These only work when you're in a @strong{clarify buffer} (during inbox processin
 (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize)
 @end lisp
 
-@strong{@strong{When you're in a clarify buffer:}}
+@strong{When you're in a clarify buffer:}
 @enumerate
 @item
 You've called @code{org-gtd-process-inbox} and are looking at an item
@@ -1101,7 +1103,7 @@ You've edited the item to make it clear and actionable
 Now you press @code{C-c c} to organize it (choose its type: project, single action, etc.)
 @end enumerate
 
-@strong{@strong{Why the distinction?}}
+@strong{Why the distinction?}
 
 The clarify map is a separate keymap because:
 @itemize
@@ -1113,7 +1115,7 @@ It only activates when you need it (during processing)
 You can bind different keys for organizing without affecting the rest of Emacs
 @end itemize
 
-@strong{@strong{Common patterns:}}
+@strong{Common patterns:}
 
 Most users bind:
 @itemize
@@ -3181,7 +3183,7 @@ Here's what different patterns look like in graph view:
 
 This is the complete command reference for expert users.
 
-@strong{@strong{Most operations require the transient menu}}: Press @code{?} to access all commands.
+@strong{Most operations require the transient menu:} Press @code{?} to access all commands.
 
 @itemize
 @item
@@ -3198,7 +3200,7 @@ This is the complete command reference for expert users.
 @anchor{Direct Keybindings (Always Available)}Direct Keybindings (Always Available)
 
 
-@strong{@strong{Navigation:}}
+@strong{Navigation:}
 
 @multitable {aaaaa} {aaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 @headitem Key
@@ -3227,7 +3229,7 @@ This is the complete command reference for expert users.
 @tab Opens the org file at the task's location
 @end multitable
 
-@strong{@strong{View:}}
+@strong{View:}
 
 @multitable {aaa} {aaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 @headitem Key
@@ -3248,7 +3250,7 @@ This is the complete command reference for expert users.
 @anchor{Transient Menu Commands (Press @code{?} first)}Transient Menu Commands (Press @code{?} first)
 
 
-@strong{@strong{Add Operations (@code{a} prefix):}}
+@strong{Add Operations (@code{a} prefix):}
 
 @multitable {aaa} {aaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 @headitem Key
@@ -3270,7 +3272,7 @@ This is the complete command reference for expert users.
 
 @strong{After adding}: Graph automatically refreshes to show new task.
 
-@strong{@strong{Modify Operations:}}
+@strong{Modify Operations:}
 
 @multitable {aaa} {aaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 @headitem Key
@@ -3284,7 +3286,7 @@ This is the complete command reference for expert users.
 @tab Clear all relationships from selected task
 @end multitable
 
-@strong{@strong{Inspect:}}
+@strong{Inspect:}
 
 @multitable {aaa} {aaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 @headitem Key
@@ -3295,7 +3297,7 @@ This is the complete command reference for expert users.
 @tab Display all relationships for selected task
 @end multitable
 
-@strong{@strong{Other:}}
+@strong{Other:}
 
 @multitable {aaa} {aaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 @headitem Key
@@ -5033,13 +5035,13 @@ Each command shows only that type, making it easier to focus.
 @anchor{Common Patterns}Common Patterns
 
 
-@strong{@strong{Pattern 1: Morning Triage}}
+@strong{Pattern 1: Morning Triage}
 Start each day by reviewing missed engagements. Handle or reschedule everything before starting new work.
 
-@strong{@strong{Pattern 2: Weekly Cleanup}}
+@strong{Pattern 2: Weekly Cleanup}
 During weekly review, run the full missed engagements view. This catches anything that slipped through daily reviews.
 
-@strong{@strong{Pattern 3: Context-Specific Review}}
+@strong{Pattern 3: Context-Specific Review}
 Use custom views to see missed items by area of focus (see configuration below).
 
 @item
@@ -5709,7 +5711,7 @@ Debugging edge cases
 Migrating data from other systems
 @end itemize
 
-org-gtd uses org-mode properties to track state and relationships. These properties are managed automatically by org-gtd commands - @strong{@strong{you should not edit them manually during normal use.}}
+org-gtd uses org-mode properties to track state and relationships. These properties are managed automatically by org-gtd commands - @strong{you should not edit them manually during normal use.}
 
 If you find yourself manually editing properties, that indicates a missing feature - please file an issue!
 
@@ -6164,7 +6166,7 @@ Value from @code{org-gtd-keyword-mapping}'s @code{canceled} key (default "CNCL")
 @node Troubleshooting Projects
 @section Troubleshooting Projects
 
-This section covers how to fix problems with project dependencies. @strong{@strong{You should rarely need this}} - the graph view and task management commands handle dependencies correctly. If you find yourself needing these troubleshooting steps frequently, that indicates a bug - please file an issue!
+This section covers how to fix problems with project dependencies. @strong{You should rarely need this} - the graph view and task management commands handle dependencies correctly. If you find yourself needing these troubleshooting steps frequently, that indicates a bug - please file an issue!
 
 @menu
 * Fixing Broken Dependencies::
@@ -6179,7 +6181,7 @@ If you encounter dependency problems (circular dependencies, broken references, 
 
 @enumerate
 @item
-@strong{@strong{Validate project structure}}:
+@strong{Validate project structure}:
 @itemize
 @item
 Put point on project heading
@@ -6192,7 +6194,7 @@ Follow the guidance provided
 @end itemize
 
 @item
-@strong{@strong{Visual inspection with graph view}}:
+@strong{Visual inspection with graph view}:
 @itemize
 @item
 Run @code{M-x org-gtd-show-project-graph}
@@ -6207,7 +6209,7 @@ Task with too many relationships? Use @code{i} to inspect, @code{x} to clear all
 @end itemize
 
 @item
-@strong{@strong{Clear and rebuild}}:
+@strong{Clear and rebuild}:
 If task relationships are completely corrupted:
 @itemize
 @item
@@ -6222,13 +6224,13 @@ Rebuild dependencies using graph view add commands (@code{a}, @code{a c}, @code{
 @node When Manual Property Editing is Needed
 @subsection When Manual Property Editing is Needed
 
-@strong{@strong{You should never need to manually edit properties during normal use.}}
+@strong{You should never need to manually edit properties during normal use.}
 
 The ONLY cases where manual property editing might be necessary:
 
 @enumerate
 @item
-@strong{@strong{Writing elisp automation/integration code}}
+@strong{Writing elisp automation/integration code}
 @itemize
 @item
 See @ref{Properties Reference (Internal Implementation), , Properties Reference} for property documentation
@@ -6239,7 +6241,7 @@ Never manipulate properties directly from interactive commands
 @end itemize
 
 @item
-@strong{@strong{Debugging org-gtd internals}}
+@strong{Debugging org-gtd internals}
 @itemize
 @item
 If you suspect a bug in org-gtd's property management
@@ -6250,7 +6252,7 @@ File an issue with details!
 @end itemize
 
 @item
-@strong{@strong{Migrating data from another system}}
+@strong{Migrating data from another system}
 @itemize
 @item
 If importing projects from external tools
@@ -6261,7 +6263,7 @@ Validate with @code{org-gtd-validate-project-dependencies} afterward
 @end itemize
 
 @item
-@strong{@strong{Emergency recovery from data corruption}}
+@strong{Emergency recovery from data corruption}
 @itemize
 @item
 Only as last resort if graph view and commands fail
@@ -7001,7 +7003,7 @@ To create a custom view:
 
 @enumerate
 @item
-@strong{@strong{Define the view specification}}:
+@strong{Define the view specification}:
 @lisp
 (defun my-custom-view ()
   "Description of what this view shows."
@@ -7013,21 +7015,21 @@ To create a custom view:
 @end lisp
 
 @item
-@strong{@strong{Bind to a key}} (optional):
+@strong{Bind to a key} (optional):
 @lisp
 (global-set-key (kbd "C-c d v") 'my-custom-view)
 @end lisp
 
 @item
-@strong{@strong{Test and refine}} - Run the view and adjust filters as needed
+@strong{Test and refine} - Run the view and adjust filters as needed
 @end enumerate
 
 @node Hooks Framework Reference
 @section Hooks Framework Reference
 
-org-gtd provides hooks to customize behavior when organizing items. This section documents the hooks framework and how to write custom hooks.
-
 @menu
+* What Are Organize Hooks?::
+* Your First Hook in 2 Minutes::
 * The org-gtd-organize-hooks Variable::
 * Built-in Hooks::
 * Writing Custom Hooks::
@@ -7036,6 +7038,48 @@ org-gtd provides hooks to customize behavior when organizing items. This section
 * Best Practices::
 * Complete Example Comprehensive Hook Setup::
 @end menu
+
+@node What Are Organize Hooks?
+@subsection What Are Organize Hooks?
+
+Hooks let you automatically capture information about tasks as you organize them—like tracking when tasks were created, auto-tagging items with "urgent" in the title, or estimating effort based on keywords.
+
+Without hooks, you'd manually add the same metadata to every task. With hooks, you define the pattern once and org-gtd applies it automatically during organization.
+
+For anyone who wants consistent metadata on their GTD items without repetitive manual work.
+
+@node Your First Hook in 2 Minutes
+@subsection Your First Hook in 2 Minutes
+
+Let's add automatic creation timestamps to all tasks except trash and quick actions.
+
+@enumerate
+@item
+Add this to your config:
+@lisp
+(defun my-track-creation-date ()
+  "Add CREATED property with current timestamp."
+  (unless (org-gtd-organize-type-member-p '(trash quick))
+    (org-set-property "CREATED"
+                      (format-time-string "[%Y-%m-%d %a %H:%M]"))))
+
+(add-to-list 'org-gtd-organize-hooks 'my-track-creation-date)
+@end lisp
+
+@item
+Restart Emacs (or eval the code with @code{C-x C-e})
+
+@item
+Capture something: @code{M-x org-gtd-capture}, type "Test task", finish capture
+
+@item
+Process it: @code{M-x org-gtd-process-inbox}, organize as "Single action"
+
+@item
+Look at the task: you'll see a CREATED property with today's timestamp
+@end enumerate
+
+You just automated metadata capture. Every item you organize now gets timestamped automatically.
 
 @node The org-gtd-organize-hooks Variable
 @subsection The org-gtd-organize-hooks Variable
@@ -7181,6 +7225,23 @@ Trashed items
 
 @itemize
 @item
+@anchor{Selective Tagging with Unless}Selective Tagging with Unless
+
+
+The most common pattern is "run this hook for everything EXCEPT certain types". This example prompts for tags on all items except trash and knowledge (reference):
+
+@lisp
+(defun my-tag-tasks ()
+  "Prompt for tags on all items except trash and knowledge."
+  (unless (org-gtd-organize-type-member-p '(trash knowledge))
+    (org-set-tags-command)))
+
+(setq org-gtd-organize-hooks '(my-tag-tasks))
+@end lisp
+
+This replaces the default @code{org-set-tags-command} with selective tagging. The @code{unless} pattern is cleaner than listing all the types you DO want: it says "skip these few, run for everything else."
+
+@item
 @anchor{Add Effort Estimation}Add Effort Estimation
 
 
@@ -7193,7 +7254,9 @@ Trashed items
 (add-to-list 'org-gtd-organize-hooks 'my-add-effort)
 @end lisp
 
-*### Add Priority
+@item
+@anchor{Add Priority}Add Priority
+
 
 @lisp
 (defun my-add-priority ()
@@ -7288,20 +7351,20 @@ This order matters if one hook depends on another's results.
 
 @enumerate
 @item
-@strong{@strong{Use type checking}}: Always use @code{org-gtd-organize-type-member-p} to run hooks only for relevant item types
+@strong{Use type checking}: Always use @code{org-gtd-organize-type-member-p} to run hooks only for relevant item types
 
 @item
-@strong{@strong{Keep hooks focused}}: Each hook should do one thing well
+@strong{Keep hooks focused}: Each hook should do one thing well
 
 @item
-@strong{@strong{Make hooks optional}}: Use @code{y-or-n-p} for optional metadata:
+@strong{Make hooks optional}: Use @code{y-or-n-p} for optional metadata:
 @lisp
 (when (y-or-n-p "Add custom property? ")
   (org-set-property "PROP" value))
 @end lisp
 
 @item
-@strong{@strong{Test interactively}}: Make hooks interactive for testing:
+@strong{Test interactively}: Make hooks interactive for testing:
 @lisp
 (defun my-hook ()
   (interactive)  ;; can test with M-x my-hook
@@ -7309,7 +7372,7 @@ This order matters if one hook depends on another's results.
 @end lisp
 
 @item
-@strong{@strong{Handle errors gracefully}}: Wrap risky code in condition-case:
+@strong{Handle errors gracefully}: Wrap risky code in condition-case:
 @lisp
 (condition-case err
     (my-risky-operation)
@@ -7317,7 +7380,7 @@ This order matters if one hook depends on another's results.
 @end lisp
 
 @item
-@strong{@strong{Document your hooks}}: Add docstrings explaining what each hook does
+@strong{Document your hooks}: Add docstrings explaining what each hook does
 @end enumerate
 
 @node Complete Example Comprehensive Hook Setup

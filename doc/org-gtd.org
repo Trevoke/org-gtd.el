@@ -171,9 +171,9 @@ Version 4.0 introduces major improvements to keyword configuration and project m
 
 **** Required: Configuration changes
 
-**1. Update keyword configuration**
+*1. Update keyword configuration*
 
-**OLD way (version 3.x):**
+*OLD way (version 3.x):*
 #+begin_src emacs-lisp
 ;; Individual keyword variables (no longer used)
 (setq org-gtd-next "NEXT")
@@ -182,7 +182,7 @@ Version 4.0 introduces major improvements to keyword configuration and project m
 (setq org-gtd-canceled "CNCL")
 #+end_src
 
-**NEW way (version 4.0):**
+*NEW way (version 4.0):*
 #+begin_src emacs-lisp
 ;; First, configure org-mode's global TODO keywords
 ;; All your GTD keywords must be in the same sequence
@@ -209,7 +209,7 @@ Steps:
 
 Version 4.0 changes how projects work internally. *The old TRIGGER-based system no longer functions* - v4 uses dependency properties instead. You MUST run the migration for your existing projects to continue working.
 
-**Run the migration command:**
+*Run the migration command:*
 
 #+begin_src emacs-lisp
 M-x org-gtd-upgrade-v3-to-v4
@@ -217,7 +217,7 @@ M-x org-gtd-upgrade-v3-to-v4
 
 *Make a backup first!* The migration modifies your GTD files.
 
-**What the migration does:**
+*What the migration does:*
 
 The migration performs two steps automatically:
 
@@ -230,7 +230,7 @@ The migration performs two steps automatically:
    - Adds ~ORG_GTD_FIRST_TASKS~ property to project headings
    - Updates task states (NEXT/TODO) based on the new dependency graph
 
-**After migration:**
+*After migration:*
 
 - Your projects continue to work sequentially (task 1 → task 2 → task 3)
 - The sequential behavior is now implemented via dependency properties instead of TRIGGER
@@ -239,13 +239,13 @@ The migration performs two steps automatically:
 
 **** Why these changes?
 
-**Keyword configuration:**
+*Keyword configuration:*
 - Simpler: One mapping structure instead of multiple variables
 - More reliable: Global configuration avoids file-level conflicts
 - Better validation: Org GTD checks your configuration and provides helpful errors
 - Future-proof: Easier to extend with new keyword types
 
-**Property-based system:**
+*Property-based system:*
 - More robust: Properties work reliably across different org-mode features
 - More flexible: Enables features like multi-project tasks
 - Better performance: Faster queries using org-ql
@@ -461,7 +461,7 @@ All three examples configure the same essential pieces:
 
 After adding one of the configurations above and restarting Emacs, verify everything works:
 
-**Test 1: Capture works**
+*Test 1: Capture works*
 
 #+begin_example
 M-x org-gtd-capture
@@ -471,7 +471,7 @@ Expected: Opens a capture buffer for the inbox.
 
 If it fails: Check that ~org-gtd-directory~ exists and you have write permissions.
 
-**Test 2: Engage works**
+*Test 2: Engage works*
 
 #+begin_example
 M-x org-gtd-engage
@@ -481,7 +481,7 @@ Expected: Opens an agenda view (might be empty if you haven't organized anything
 
 If it fails: Check that ~org-agenda-files~ includes your GTD directory.
 
-**Test 3: Keywords are recognized**
+*Test 3: Keywords are recognized*
 
 1. Open any org file: ~M-x find-file ~/test.org~
 2. Type: ~* Test heading~
@@ -492,7 +492,7 @@ Expected: Should cycle through TODO → NEXT → WAIT → DONE → CNCL.
 
 If it fails: Check that ~org-todo-keywords~ is set correctly.
 
-**Test 4: org-edna is enabled**
+*Test 4: org-edna is enabled*
 
 #+begin_example
 M-x describe-variable RET org-edna-mode
@@ -511,7 +511,7 @@ Before troubleshooting, identify which configuration style you're using:
 
 Each example shows the complete, correct configuration for that environment.
 
-**Problem: "org-gtd-capture" is undefined**
+*Problem: "org-gtd-capture" is undefined*
 
 *Cause*: org-gtd package isn't installed or loaded.
 
@@ -520,7 +520,7 @@ Each example shows the complete, correct configuration for that environment.
 - *Doom Emacs*: Add ~(package! org-gtd)~ to your ~packages.el~ and run ~doom sync~
 - *Spacemacs*: The ~use-package~ form in the [[#example-3-spacemacs-configuration][Spacemacs example]] automatically installs it with ~:ensure t~
 
-**Problem: Keywords don't change when I press C-c C-t**
+*Problem: Keywords don't change when I press C-c C-t*
 
 *Cause*: ~org-todo-keywords~ not configured correctly.
 
@@ -537,7 +537,7 @@ Common mistakes:
 
 See the complete configuration for your environment above.
 
-**Problem: Projects don't advance when I mark tasks DONE**
+*Problem: Projects don't advance when I mark tasks DONE*
 
 *Cause*: org-edna isn't enabled.
 
@@ -545,7 +545,7 @@ See the complete configuration for your environment above.
 - *Vanilla/Spacemacs*: ~(org-edna-mode 1)~ in the ~:config~ section
 - *Doom*: ~(org-edna-mode)~ in the ~:config~ section (Doom handles the argument)
 
-**Problem: Can't see GTD items in agenda**
+*Problem: Can't see GTD items in agenda*
 
 *Cause*: GTD directory not in ~org-agenda-files~.
 
@@ -560,7 +560,7 @@ Or if using ~use-package~ / ~use-package!~:
 (org-agenda-files (list org-gtd-directory))
 #+end_src
 
-**Problem: Keybindings don't work**
+*Problem: Keybindings don't work*
 
 *Cause*: Keybindings not defined, or defined incorrectly for your environment.
 
@@ -600,19 +600,19 @@ These only work when you're in a *clarify buffer* (during inbox processing). The
 (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize)
 #+end_src
 
-**When you're in a clarify buffer:**
+*When you're in a clarify buffer:*
 1. You've called ~org-gtd-process-inbox~ and are looking at an item
 2. You've edited the item to make it clear and actionable
 3. Now you press ~C-c c~ to organize it (choose its type: project, single action, etc.)
 
-**Why the distinction?**
+*Why the distinction?*
 
 The clarify map is a separate keymap because:
 - It prevents conflicts with other org-mode bindings
 - It only activates when you need it (during processing)
 - You can bind different keys for organizing without affecting the rest of Emacs
 
-**Common patterns:**
+*Common patterns:*
 
 Most users bind:
 - ~C-c d *~ for global commands (capture, engage, process)
@@ -1987,7 +1987,7 @@ Here's what different patterns look like in graph view:
 
 This is the complete command reference for expert users.
 
-**Most operations require the transient menu**: Press ~?~ to access all commands.
+*Most operations require the transient menu:* Press ~?~ to access all commands.
 
 **** Opening Graph View
 
@@ -1999,7 +1999,7 @@ This is the complete command reference for expert users.
 
 **** Direct Keybindings (Always Available)
 
-**Navigation:**
+*Navigation:*
 
 | Key     | Command                    | Description                                           |
 |---------+----------------------------+-------------------------------------------------------|
@@ -2011,7 +2011,7 @@ This is the complete command reference for expert users.
 | ]       | Forward                    | Navigate to next node in history                      |
 | RET     | Jump to task in org file   | Opens the org file at the task's location             |
 
-**View:**
+*View:*
 
 | Key   | Command          | Description                                                  |
 |-------+------------------+--------------------------------------------------------------|
@@ -2021,7 +2021,7 @@ This is the complete command reference for expert users.
 
 **** Transient Menu Commands (Press ~?~ first)
 
-**Add Operations (~a~ prefix):**
+*Add Operations (~a~ prefix):*
 
 | Key   | Command          | Description                                                  |
 |-------+------------------+--------------------------------------------------------------|
@@ -2032,20 +2032,20 @@ This is the complete command reference for expert users.
 
 *After adding*: Graph automatically refreshes to show new task.
 
-**Modify Operations:**
+*Modify Operations:*
 
 | Key   | Command                    | Description                                              |
 |-------+----------------------------+----------------------------------------------------------|
 | d     | Remove dependency          | Remove a dependency between two tasks                    |
 | x     | Clear all relationships    | Clear all relationships from selected task               |
 
-**Inspect:**
+*Inspect:*
 
 | Key   | Command                    | Description                                              |
 |-------+----------------------------+----------------------------------------------------------|
 | i     | Show relationships         | Display all relationships for selected task              |
 
-**Other:**
+*Other:*
 
 | Key   | Command          | Description                                                  |
 |-------+------------------+--------------------------------------------------------------|
@@ -3184,13 +3184,13 @@ Each command shows only that type, making it easier to focus.
 
 **** Common Patterns
 
-**Pattern 1: Morning Triage**
+*Pattern 1: Morning Triage*
 Start each day by reviewing missed engagements. Handle or reschedule everything before starting new work.
 
-**Pattern 2: Weekly Cleanup**
+*Pattern 2: Weekly Cleanup*
 During weekly review, run the full missed engagements view. This catches anything that slipped through daily reviews.
 
-**Pattern 3: Context-Specific Review**
+*Pattern 3: Context-Specific Review*
 Use custom views to see missed items by area of focus (see configuration below).
 
 **** Command Reference
@@ -3607,7 +3607,7 @@ This minor mode is no longer needed and will be removed in a future version.
 - Debugging edge cases
 - Migrating data from other systems
 
-org-gtd uses org-mode properties to track state and relationships. These properties are managed automatically by org-gtd commands - **you should not edit them manually during normal use.**
+org-gtd uses org-mode properties to track state and relationships. These properties are managed automatically by org-gtd commands - *you should not edit them manually during normal use.*
 
 If you find yourself manually editing properties, that indicates a missing feature - please file an issue!
 
@@ -3933,26 +3933,26 @@ SCHEDULED: <2025-10-11 Fri .+1d>
 :CUSTOM_ID: troubleshooting-projects
 :END:
 
-This section covers how to fix problems with project dependencies. **You should rarely need this** - the graph view and task management commands handle dependencies correctly. If you find yourself needing these troubleshooting steps frequently, that indicates a bug - please file an issue!
+This section covers how to fix problems with project dependencies. *You should rarely need this* - the graph view and task management commands handle dependencies correctly. If you find yourself needing these troubleshooting steps frequently, that indicates a bug - please file an issue!
 
 *** Fixing Broken Dependencies
 
 If you encounter dependency problems (circular dependencies, broken references, orphaned tasks):
 
-1. **Validate project structure**:
+1. *Validate project structure*:
    - Put point on project heading
    - Run ~M-x org-gtd-validate-project-dependencies~
    - This detects broken references, orphaned tasks, and circular dependencies
    - Follow the guidance provided
 
-2. **Visual inspection with graph view**:
+2. *Visual inspection with graph view*:
    - Run ~M-x org-gtd-show-project-graph~
    - Visual inspection often makes problems obvious
    - Missing arrows? Use ~a~ to add missing dependencies
    - Wrong arrows? Use ~d~ to remove incorrect dependencies
    - Task with too many relationships? Use ~i~ to inspect, ~x~ to clear all
 
-3. **Clear and rebuild**:
+3. *Clear and rebuild*:
    If task relationships are completely corrupted:
    - In graph view: Select the problematic task, press ~x~ to clear all relationships
    - Or in text: Put point on task, run ~M-x org-gtd-task-clear-relationships~
@@ -3960,26 +3960,26 @@ If you encounter dependency problems (circular dependencies, broken references, 
 
 *** When Manual Property Editing is Needed
 
-**You should never need to manually edit properties during normal use.**
+*You should never need to manually edit properties during normal use.*
 
 The ONLY cases where manual property editing might be necessary:
 
-1. **Writing elisp automation/integration code**
+1. *Writing elisp automation/integration code*
    - See [[#properties-reference][Properties Reference]] for property documentation
    - Use programmatic functions: ~org-gtd-dependencies-create~, ~org-entry-add-to-multivalued-property~, etc.
    - Never manipulate properties directly from interactive commands
 
-2. **Debugging org-gtd internals**
+2. *Debugging org-gtd internals*
    - If you suspect a bug in org-gtd's property management
    - Compare properties with graph view to identify discrepancies
    - File an issue with details!
 
-3. **Migrating data from another system**
+3. *Migrating data from another system*
    - If importing projects from external tools
    - Batch property updates may be more efficient
    - Validate with ~org-gtd-validate-project-dependencies~ afterward
 
-4. **Emergency recovery from data corruption**
+4. *Emergency recovery from data corruption*
    - Only as last resort if graph view and commands fail
    - After manual edits, run ~org-gtd-projects-fix-todo-keywords-for-project-at-point~
    - Consider this a bug and file an issue
@@ -4549,7 +4549,7 @@ These options control how the view is displayed:
 
 To create a custom view:
 
-1. **Define the view specification**:
+1. *Define the view specification*:
    #+begin_src emacs-lisp
    (defun my-custom-view ()
      "Description of what this view shows."
@@ -4560,12 +4560,12 @@ To create a custom view:
                     (filter2 . value2))))))
    #+end_src
 
-2. **Bind to a key** (optional):
+2. *Bind to a key* (optional):
    #+begin_src emacs-lisp
    (global-set-key (kbd "C-c d v") 'my-custom-view)
    #+end_src
 
-3. **Test and refine** - Run the view and adjust filters as needed
+3. *Test and refine* - Run the view and adjust filters as needed
 
 ** Hooks Framework Reference
 :PROPERTIES:
@@ -4812,31 +4812,31 @@ This order matters if one hook depends on another's results.
 
 *** Best Practices
 
-1. **Use type checking**: Always use ~org-gtd-organize-type-member-p~ to run hooks only for relevant item types
+1. *Use type checking*: Always use ~org-gtd-organize-type-member-p~ to run hooks only for relevant item types
 
-2. **Keep hooks focused**: Each hook should do one thing well
+2. *Keep hooks focused*: Each hook should do one thing well
 
-3. **Make hooks optional**: Use ~y-or-n-p~ for optional metadata:
+3. *Make hooks optional*: Use ~y-or-n-p~ for optional metadata:
    #+begin_src emacs-lisp
    (when (y-or-n-p "Add custom property? ")
      (org-set-property "PROP" value))
    #+end_src
 
-4. **Test interactively**: Make hooks interactive for testing:
+4. *Test interactively*: Make hooks interactive for testing:
    #+begin_src emacs-lisp
    (defun my-hook ()
      (interactive)  ;; can test with M-x my-hook
      ...)
    #+end_src
 
-5. **Handle errors gracefully**: Wrap risky code in condition-case:
+5. *Handle errors gracefully*: Wrap risky code in condition-case:
    #+begin_src emacs-lisp
    (condition-case err
        (my-risky-operation)
      (error (message "Hook failed: %s" err)))
    #+end_src
 
-6. **Document your hooks**: Add docstrings explaining what each hook does
+6. *Document your hooks*: Add docstrings explaining what each hook does
 
 *** Complete Example: Comprehensive Hook Setup
 
