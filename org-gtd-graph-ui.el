@@ -81,6 +81,12 @@ Returns (graph-window . details-window) cons cell."
     (set-window-dedicated-p details-window t)
     (set-window-parameter details-window 'no-delete-other-windows t)
 
+    ;; Make windows atomic so they behave as a single unit
+    ;; Only if parent is not the root window (which would cause errors)
+    (when-let ((parent-window (window-parent graph-window)))
+      (unless (eq parent-window (frame-root-window))
+        (window-make-atom parent-window)))
+
     ;; Store reference to details buffer in graph buffer
     (with-current-buffer graph-buffer
       (setq org-gtd-graph-ui--details-buffer details-buffer))

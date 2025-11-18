@@ -27,6 +27,7 @@
 (require 'buttercup)
 (require 'org-gtd)
 (require 'org-gtd-graph-ui)
+(require 'org-gtd-graph-mode)
 (require 'org-gtd-files)
 (require 'org-gtd-core)
 
@@ -67,7 +68,52 @@
         (expect (cdr windows) :to-be-truthy)
         (expect (windowp (car windows)) :to-be-truthy)
         (expect (windowp (cdr windows)) :to-be-truthy))
-      (kill-buffer graph-buffer))))
+      (kill-buffer graph-buffer)))
+
+  (it "creates an atomic window group when parent is not root"
+    (let ((graph-buffer (get-buffer-create "*test-graph*"))
+          (other-buffer (get-buffer-create "*other*")))
+      ;; Create a non-root parent by splitting the frame first
+      (switch-to-buffer other-buffer)
+      (delete-other-windows)
+      (let ((other-window (split-window-below)))
+        (select-window other-window)
+        (switch-to-buffer graph-buffer)
+        (let* ((windows (org-gtd-graph-ui-setup-windows graph-buffer))
+               (graph-window (car windows))
+               (details-window (cdr windows))
+               (parent-window (window-parent graph-window)))
+          ;; Parent window should have window-atom parameter set
+          ;; since it's not the root window
+          (expect parent-window :to-be-truthy)
+          (expect (eq parent-window (frame-root-window)) :not :to-be-truthy)
+          (expect (window-parameter parent-window 'window-atom) :to-be-truthy)))
+      (kill-buffer graph-buffer)
+      (kill-buffer other-buffer)))
+
+  (it "quit command closes both graph and details windows"
+    (let ((graph-buffer (get-buffer-create "*test-graph*")))
+      ;; Display the buffer in a window first
+      (switch-to-buffer graph-buffer)
+      (delete-other-windows)
+      (with-current-buffer graph-buffer
+        (setq org-gtd-graph-ui--details-buffer nil))
+      (let* ((windows (org-gtd-graph-ui-setup-windows graph-buffer))
+             (graph-window (car windows))
+             (details-window (cdr windows))
+             (details-buffer (with-current-buffer graph-buffer
+                              org-gtd-graph-ui--details-buffer)))
+        ;; Both windows should exist
+        (expect (window-live-p graph-window) :to-be-truthy)
+        (expect (window-live-p details-window) :to-be-truthy)
+        ;; Call org-gtd-graph-quit from the graph window
+        (with-selected-window graph-window
+          (with-current-buffer graph-buffer
+            (org-gtd-graph-quit)))
+        ;; Details window should be closed
+        (expect (window-live-p details-window) :not :to-be-truthy)
+        ;; Details buffer should be killed
+        (expect (buffer-live-p details-buffer) :not :to-be-truthy)))))
 
 (provide 'org-gtd-graph-ui-test)
 

@@ -32,6 +32,16 @@
 (require 'org-gtd-graph-navigation)
 (require 'org-gtd-graph-ui)
 
+;;;; Commands
+
+(defun org-gtd-graph-quit ()
+  "Quit graph view and close details pane."
+  (interactive)
+  ;; Clean up the split-window layout first
+  (org-gtd-graph-ui-cleanup-windows)
+  ;; Then quit the graph window
+  (quit-window))
+
 ;;;; Keymap
 
 (defvar org-gtd-graph-view-mode-map
@@ -42,7 +52,7 @@
     ;; Graph operations
     (define-key map (kbd "r") #'org-gtd-graph-view-refresh)
     (define-key map (kbd "v") #'org-gtd-graph-toggle-render-mode)
-    (define-key map (kbd "q") #'quit-window)
+    (define-key map (kbd "q") #'org-gtd-graph-quit)
 
     ;; Dependency-based navigation
     (define-key map (kbd "n") #'org-gtd-graph-nav-down-dependency)
