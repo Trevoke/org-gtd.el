@@ -678,7 +678,51 @@
         ;; 3. VERIFY project appears in stuck projects review
         (org-gtd-review-stuck-projects)
         (expect (agenda-raw-text)
-                :to-match "Launch new website")))
+                :to-match "Launch new website"))
+
+    (it "verifies completed project does NOT appear in stuck projects review"
+        ;; NOTE: This test verifies the disambiguation between stuck and completed projects.
+        ;; A completed project (all tasks DONE/CNCL) should:
+        ;; - NOT appear in stuck projects review (has no work remaining)
+        ;; - SHOULD appear in completed projects review (ready for archiving)
+
+        ;; 1. CAPTURE and ORGANIZE project
+        (capture-inbox-item "Finished Campaign")
+        (org-gtd-process-inbox)
+
+        (let ((wip-buffers (seq-filter (lambda (buf)
+                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                       (buffer-list))))
+          (when wip-buffers
+            (with-current-buffer (car wip-buffers)
+              (goto-char (point-max))
+              (newline)
+              (make-task "Research audience" :level 2)
+              (make-task "Create content" :level 2)
+              (make-task "Launch campaign" :level 2)
+              (organize-as-project))))
+
+        ;; 2. Complete all tasks (mark as DONE)
+        (with-current-buffer (org-gtd--default-file)
+          (goto-char (point-min))
+          (re-search-forward "Research audience")
+          (org-todo "DONE")
+          (goto-char (point-min))
+          (re-search-forward "Create content")
+          (org-todo "DONE")
+          (goto-char (point-min))
+          (re-search-forward "Launch campaign")
+          (org-todo "DONE"))
+
+        ;; 3. VERIFY project does NOT appear in stuck projects review
+        (org-gtd-review-stuck-projects)
+        (expect (agenda-raw-text)
+                :not :to-match "Finished Campaign")
+
+        ;; 4. VERIFY project DOES appear in completed projects review
+        (org-gtd-review-completed-projects)
+        (expect (agenda-raw-text)
+                :to-match "Finished Campaign")))
 
   (describe "Engage view for habits"
     (it "verifies habit appears in engage view"
@@ -1934,6 +1978,96 @@
                 (expect content :not :to-match "Gamma unique task")
                 (expect content :not :to-match "Delta unique task")
                 (expect content :not :to-match "Shared infrastructure task")))))))
+
+  (describe "Project: stuck projects do NOT get archived"
+    (it "verifies stuck project remains in main file, then archives when completed"
+        ;; This test verifies the critical distinction between stuck and completed projects:
+        ;; STUCK PROJECT (has TODO tasks, no NEXT/WAIT):
+        ;;   - Has work remaining but no actionable tasks
+        ;;   - Should NOT be archived (needs attention to plan next steps)
+        ;; COMPLETED PROJECT (all tasks DONE/CNCL):
+        ;;   - All work finished
+        ;;   - SHOULD be archived
+
+        ;; 1. CAPTURE and ORGANIZE project
+        (capture-inbox-item "Marketing Campaign")
+        (org-gtd-process-inbox)
+
+        (let ((wip-buffers (seq-filter (lambda (buf)
+                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                       (buffer-list))))
+          (when wip-buffers
+            (with-current-buffer (car wip-buffers)
+              (goto-char (point-max))
+              (newline)
+              (make-task "Research target audience" :level 2)
+              (make-task "Create content" :level 2)
+              (make-task "Launch campaign" :level 2)
+              (organize-as-project))))
+
+        ;; 2. Make project STUCK by ensuring all tasks are TODO (not NEXT or WAIT)
+        (with-current-buffer (org-gtd--default-file)
+          (goto-char (point-min))
+          (re-search-forward "Research target audience")
+          (org-todo "TODO")
+          (goto-char (point-min))
+          (re-search-forward "Create content")
+          (org-todo "TODO")
+          (goto-char (point-min))
+          (re-search-forward "Launch campaign")
+          (org-todo "TODO"))
+
+        ;; 3. VERIFY project appears in stuck projects review
+        (org-gtd-review-stuck-projects)
+        (expect (agenda-raw-text)
+                :to-match "Marketing C")  ; Project heading (truncated)
+
+        ;; 4. Try to ARCHIVE - stuck project should NOT be archived
+        (org-gtd-archive-completed-items)
+
+        ;; 5. VERIFY project is still in main file (NOT archived)
+        (with-current-buffer (org-gtd--default-file)
+          (let ((content (current-buffer-raw-text)))
+            (expect content :to-match "Marketing Campaign")
+            (expect content :to-match "Research target audience")
+            (expect content :to-match "Create content")
+            (expect content :to-match "Launch campaign")))
+
+        ;; 6. VERIFY project is NOT in archive file
+        (let ((archived-content (ogt--archive-string)))
+          (expect archived-content :not :to-match "Marketing Campaign"))
+
+        ;; 7. Now COMPLETE all tasks to make project archivable
+        (with-current-buffer (org-gtd--default-file)
+          (goto-char (point-min))
+          (re-search-forward "Research target audience")
+          (org-todo "DONE")
+          (goto-char (point-min))
+          (re-search-forward "Create content")
+          (org-todo "DONE")
+          (goto-char (point-min))
+          (re-search-forward "Launch campaign")
+          (org-todo "DONE"))
+
+        ;; 8. VERIFY project does NOT appear in stuck projects review anymore
+        (org-gtd-review-stuck-projects)
+        (expect (agenda-raw-text)
+                :not :to-match "Marketing C")
+
+        ;; 9. ARCHIVE again - completed project SHOULD now be archived
+        (org-gtd-archive-completed-items)
+
+        ;; 10. VERIFY project is NO LONGER in main file
+        (with-current-buffer (org-gtd--default-file)
+          (let ((content (current-buffer-raw-text)))
+            (expect content :not :to-match "Marketing Campaign")
+            (expect content :not :to-match "Research target audience")
+            (expect content :not :to-match "Create content")
+            (expect content :not :to-match "Launch campaign")))
+
+        ;; 11. VERIFY project IS now in archive file
+        (let ((archived-content (ogt--archive-string)))
+          (expect archived-content :to-match "Marketing Campaign"))))
 ))
 
 (describe "Multi-file Review and Validation Tests"
