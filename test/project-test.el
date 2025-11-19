@@ -84,6 +84,30 @@
                            (org-gtd-clarify-project-insert-template))
      (org-gtd-organize)
      (organize-as-project)
+
+     ;; VERIFY: Project template created exactly three tasks linked to the project
+     (with-current-buffer (org-gtd--default-file)
+       ;; Get the project ID
+       (goto-char (point-min))
+       (search-forward "New project")
+       (org-back-to-heading t)
+       (let ((project-id (org-id-get (point)))
+             (task-count 0))
+         (expect project-id :not :to-be nil)
+
+         ;; Count tasks with this project ID
+         (goto-char (point-min))
+         (while (re-search-forward "^\\*+ " nil t)
+           (org-back-to-heading t)
+           (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+             (when (member project-id project-ids)
+               (setq task-count (1+ task-count))))
+           (forward-line 1))
+
+         ;; Verify exactly 3 tasks belong to this project
+         (expect task-count :to-equal 3)))
+
+     ;; VERIFY: Template tasks appear in engage view
      (org-gtd-engage)
      (with-current-buffer org-agenda-buffer
        (expect (current-buffer-raw-text)

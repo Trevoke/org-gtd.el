@@ -2848,6 +2848,8 @@ Each entry is a pair of (template-name . template-tasks) where template-tasks is
         ("Code Feature" . "** Design API\n** Write tests\n** Implement feature\n** Code review\n** Merge")))
 #+end_src
 
+*Entering newlines in templates*: When setting this variable in your configuration file, use ~\n~ for newlines as shown above. If entering template strings interactively (e.g., via ~M-x customize-variable~ or in the minibuffer), use ~C-q C-j~ to insert a literal newline character. This works on all platforms including Windows.
+
 Use ~org-gtd-clarify-project-insert-template~ during clarification to insert a template.
 
 *** Areas of Focus Configuration
