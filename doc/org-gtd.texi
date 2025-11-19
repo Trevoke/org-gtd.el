@@ -4730,7 +4730,47 @@ When @code{org-gtd-id-overlay-mode} is enabled, task IDs are replaced with trunc
 
 This is an advanced feature for customizing how org-gtd handles different item types. If org-gtd finds an item type in this alist, it uses your configuration instead of the built-in one.
 
-See source code for examples of the expected structure.
+@strong{Example: Integrating Contact Managers with Delegation}
+
+BBDB (Insidious Big Brother Database) and its modern successor EBDB are Emacs contact management packages that store information about people (names, emails, addresses, phone numbers, etc.). They integrate with mail clients and other Emacs packages. If you use BBDB or EBDB to manage your contacts, you can configure org-gtd to use completion from your contacts database when delegating tasks.
+
+For EBDB integration:
+@lisp
+;; Define function to fetch EBDB contacts
+(defun my/ebdb-contacts ()
+  "Return alist of (name . uuid) from EBDB contacts."
+  (mapcar (lambda (rec)
+            (let* ((name (ebdb-record-name-string rec))
+                   (uuid (ebdb-record-uuid rec)))
+              (cons name uuid)))
+          (ebdb-records)))
+
+;; Create custom input type for delegation that uses EBDB
+(setq org-gtd-default-input-config
+      (append org-gtd-default-input-config
+              '(('delegate-person . (lambda (prompt)
+                                     (completing-read (format "%s: " prompt)
+                                                     (mapcar 'car (my/ebdb-contacts))
+                                                     nil t))))))
+
+;; Configure delegation to use the custom input type
+(setq org-gtd-user-item-config
+      '((:delegated
+         . ((DELEGATED_TO . ((type . 'delegate-person)
+                             (prompt . "Delegate to")))))))
+@end lisp
+
+For BBDB integration, adapt the function to use @code{bbdb-records} and @code{bbdb-record-name} instead:
+@lisp
+(defun my/bbdb-contacts ()
+  "Return alist of (name . uuid) from BBDB contacts."
+  (mapcar (lambda (rec)
+            (cons (bbdb-record-name rec)
+                  (bbdb-record-uuid rec)))
+          (bbdb-records)))
+@end lisp
+
+This same pattern can be used to integrate other completion sources (org-contacts, your own custom databases, etc.) with any org-gtd input prompt that uses the @code{'text} type.
 @end itemize
 
 @node Obsolete Variables (Do Not Use)
