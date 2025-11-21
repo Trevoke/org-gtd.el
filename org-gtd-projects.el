@@ -306,20 +306,33 @@ Refile to `org-gtd-actionable-file-basename'."
     (org-gtd-refile--do org-gtd-projects org-gtd-projects-template)))
 
 (defun org-gtd-projects--set-project-name-on-task ()
-  "Set ORG_GTD_PROJECT property on current task to its project heading name."
-  (let ((original-point (point)))
-    (save-excursion
-      ;; Navigate up to find the project heading (has ORG_GTD="Projects")
-      (while (and (org-up-heading-safe)
-                  (not (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-projects))))
-      (when (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-projects)
-        (let ((project-name (org-get-heading t t t t))
-              (project-id (or (org-entry-get (point) "ID")
-                              (org-gtd-id-get-create))))
-          ;; Go back to original task and set the properties
+  "Set ORG_GTD_PROJECT property on current task to its project heading name.
+Works for multi-file DAG by using ORG_GTD_PROJECT_IDS if available,
+otherwise falls back to outline hierarchy (org-up-heading-safe)."
+  (let* ((original-point (point))
+         ;; First try to find project via ORG_GTD_PROJECT_IDS (multi-file DAG)
+         (project-ids (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids))
+         (project-marker (if project-ids
+                             ;; Use first project ID to find project
+                             (org-id-find (car project-ids) t)
+                           ;; Fallback: navigate up outline to find project (same-file)
+                           (save-excursion
+                             (while (and (org-up-heading-safe)
+                                         (not (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-projects))))
+                             (when (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-projects)
+                               (point-marker))))))
+    (when project-marker
+      (let ((project-name (org-with-point-at project-marker
+                            (org-get-heading t t t t)))
+            (project-id (org-with-point-at project-marker
+                          (or (org-entry-get (point) "ID")
+                              (org-gtd-id-get-create)))))
+        ;; Set the properties on the task
+        (save-excursion
           (goto-char original-point)
-          ;; Set the multi-valued project IDs property
-          (org-entry-add-to-multivalued-property (point) org-gtd-prop-project-ids project-id)
+          ;; Set the multi-valued project IDs property (if not already there)
+          (unless project-ids
+            (org-entry-add-to-multivalued-property (point) org-gtd-prop-project-ids project-id))
           ;; Only set ORG_GTD_PROJECT if not already set (preserves first project for multi-project tasks)
           (unless (org-entry-get (point) org-gtd-prop-project)
             (org-entry-put (point) org-gtd-prop-project project-name)))))))
@@ -618,10 +631,17 @@ Orchestrates adding a new task to an existing project:
   (org-gtd-project--configure-single-task)
   (org-gtd-refile--do-project-task)
 
+  ;; Find the project marker using ORG_GTD_PROJECT_IDS if available (multi-file DAG)
+  ;; otherwise use outline hierarchy (same-file refile)
   (let ((project-marker (save-excursion
                           (org-refile-goto-last-stored)
-                          (org-up-heading-safe)
-                          (point-marker))))
+                          (let ((project-ids (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids)))
+                            (if project-ids
+                                ;; Use first project ID to find project (multi-file DAG)
+                                (org-id-find (car project-ids) t)
+                              ;; Fallback: task is outline child of project (standard refile)
+                              (org-up-heading-safe)
+                              (point-marker))))))
     (org-gtd-project--update-after-task-addition project-marker)))
 
 (defun org-gtd-projects--apply-organize-hooks-to-tasks ()

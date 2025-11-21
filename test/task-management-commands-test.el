@@ -1051,5 +1051,68 @@
         (when (file-exists-p temp-file)
           (delete-file temp-file))))))
 
+(describe
+ "org-gtd-task-management--find-project-heading for multi-file DAG"
+
+ (before-each (setq inhibit-message t) (ogt--configure-emacs))
+ (after-each (ogt--close-and-delete-files))
+
+ (it "finds project heading when task is in same file as project"
+     ;; Standard case - task is outline child of project
+     (capture-inbox-item "Same-file Project")
+     (org-gtd-process-inbox)
+     (goto-char (point-max))
+     (newline)
+     (make-task "Task in same file" :level 2)
+     (organize-as-project)
+
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task in same file")
+       (org-back-to-heading t)
+
+       ;; Should find the project heading via outline navigation
+       (let ((project-heading (org-gtd-task-management--find-project-heading)))
+         (expect project-heading :to-be-truthy)
+         (expect project-heading :to-match "Same-file Project"))))
+
+ (it "finds project heading when task is in different file (multi-file DAG)"
+     ;; Create project in main file
+     (capture-inbox-item "Multi-file DAG Project")
+     (org-gtd-process-inbox)
+     (goto-char (point-max))
+     (newline)
+     (make-task "Task in main file" :level 2)
+     (organize-as-project)
+
+     ;; Get project ID
+     (let (project-id second-file)
+       (with-current-buffer (org-gtd--default-file)
+         (goto-char (point-min))
+         (search-forward "Multi-file DAG Project")
+         (org-back-to-heading t)
+         (setq project-id (org-entry-get (point) "ID")))
+
+       ;; Create task in different file with ORG_GTD_PROJECT_IDS set
+       (setq second-file (org-gtd--path "other-tasks"))
+       (with-temp-file second-file
+         (insert "* Task in other file\n")
+         (insert ":PROPERTIES:\n")
+         (insert ":ID: task-other-123\n")
+         (insert ":ORG_GTD: Actions\n")
+         (insert (format ":ORG_GTD_PROJECT_IDS: %s\n" project-id))
+         (insert ":END:\n"))
+
+       ;; Should find project heading via ORG_GTD_PROJECT_IDS
+       (with-current-buffer (find-file-noselect second-file)
+         (org-mode)
+         (goto-char (point-min))
+         (search-forward "Task in other file")
+         (org-back-to-heading t)
+
+         (let ((project-heading (org-gtd-task-management--find-project-heading)))
+           (expect project-heading :to-be-truthy)
+           (expect project-heading :to-match "Multi-file DAG Project"))))))
+
 
 ;;; task-management-commands-test.el ends here

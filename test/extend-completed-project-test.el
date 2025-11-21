@@ -68,6 +68,49 @@
             (expect (length project-ids) :to-be 1)
             (expect (car project-ids) :to-equal project-id))))))
 
+  (it "works when task is in different file than project (multi-file DAG)"
+      ;; Create a project in main file
+      (capture-inbox-item "Multi-file Project")
+      (org-gtd-process-inbox)
+      (goto-char (point-max))
+      (newline)
+      (insert "** Task in main file")
+      (organize-as-project)
+
+      ;; Get the project ID
+      (let (project-id second-file)
+        (with-current-buffer (org-gtd--default-file)
+          (goto-char (point-min))
+          (search-forward "Multi-file Project")
+          (org-back-to-heading t)
+          (setq project-id (org-entry-get (point) "ID"))
+          (expect project-id :to-be-truthy))
+
+        ;; Create a task in a DIFFERENT file
+        (setq second-file (org-gtd--path "other-file"))
+        (with-temp-file second-file
+          (insert "* Task in other file\n")
+          (insert ":PROPERTIES:\n")
+          (insert ":ID: task-other-file\n")
+          (insert ":ORG_GTD: Actions\n")
+          (insert (format ":ORG_GTD_PROJECT_IDS: %s\n" project-id))
+          (insert ":END:\n"))
+
+        ;; Now call org-gtd-projects--set-project-name-on-task from the other file
+        (with-current-buffer (find-file-noselect second-file)
+          (org-mode)
+          (goto-char (point-min))
+          (search-forward "Task in other file")
+          (org-back-to-heading t)
+
+          ;; This should work even though task is in different file
+          (org-gtd-projects--set-project-name-on-task)
+
+          ;; Verify ORG_GTD_PROJECT was set
+          (let ((project-name (org-entry-get (point) "ORG_GTD_PROJECT")))
+            (expect project-name :to-be-truthy)
+            (expect project-name :to-match "Multi-file Project")))))
+
  (describe
   "Acceptance test: extending a completed but not archived project"
 

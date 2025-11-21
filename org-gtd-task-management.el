@@ -429,13 +429,24 @@ This function is kept for backward compatibility."
           (org-gtd-task-management--collect-all-task-info)))
 
 (defun org-gtd-task-management--find-project-heading ()
-  "Find the project heading (first level heading) for the current task."
-  (save-excursion
-    (when (org-up-heading-safe)
-      ;; Keep going up until we reach level 1 or can't go higher
-      (while (and (> (org-current-level) 1) (org-up-heading-safe)))
-      (when (= (org-current-level) 1)
-        (nth 4 (org-heading-components))))))
+  "Find the project heading for the current task.
+Works for multi-file DAG by using ORG_GTD_PROJECT_IDS if available,
+otherwise falls back to outline hierarchy (first level heading)."
+  ;; First try to find project via ORG_GTD_PROJECT_IDS (multi-file DAG)
+  (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+    (if project-ids
+        ;; Use first project ID to find project heading
+        (let ((project-marker (org-id-find (car project-ids) t)))
+          (when project-marker
+            (org-with-point-at project-marker
+              (org-get-heading t t t t))))
+      ;; Fallback: navigate up outline to find level-1 heading (same-file)
+      (save-excursion
+        (when (org-up-heading-safe)
+          ;; Keep going up until we reach level 1 or can't go higher
+          (while (and (> (org-current-level) 1) (org-up-heading-safe)))
+          (when (= (org-current-level) 1)
+            (nth 4 (org-heading-components))))))))
 
 (defun org-gtd-task-management--add-to-multivalued-property (property value)
   "Add VALUE to the multivalued PROPERTY of the current heading."
