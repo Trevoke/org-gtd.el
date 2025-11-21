@@ -73,13 +73,9 @@
         (unless (org-entry-get nil "ORG_GTD" t)
           (user-error "This item has no ORG_GTD property - cannot set area of focus"))
 
-        ;; Determine if this is a project task
-        (let* ((org-gtd-refile (org-entry-get nil "ORG_GTD_REFILE" t))
-               (org-gtd (org-entry-get nil "ORG_GTD" nil))
-               (is-project-task (and (string-equal org-gtd-refile "Projects")
-                                     (string-equal org-gtd "Actions"))))
-
-          (if is-project-task
+        ;; Determine if this is a project task by checking for project IDs
+        (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+          (if project-ids
               ;; Project task: set CATEGORY on all tasks in the project
               (org-gtd-areas-of-focus--set-on-project-tasks)
             ;; Non-project task: set CATEGORY on this task only

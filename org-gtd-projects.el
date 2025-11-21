@@ -91,13 +91,12 @@ instead.")
   (interactive)
   (org-edna-mode -1)
   (with-org-gtd-context
-      (org-map-entries
-       (lambda ()
-         (when (org-gtd-projects--incomplete-task-p)
-           (let ((org-inhibit-logging 'note))
-             (org-todo (org-gtd-keywords--canceled)))))
-       nil
-       'tree))
+      (let ((task-markers (org-gtd-projects--collect-tasks-by-graph (point-marker))))
+        (dolist (task-marker task-markers)
+          (org-with-point-at task-marker
+            (when (org-gtd-projects--incomplete-task-p)
+              (let ((org-inhibit-logging 'note))
+                (org-todo (org-gtd-keywords--canceled))))))))
   (org-edna-mode 1))
 
 ;;;###autoload
@@ -116,14 +115,30 @@ instead.")
       (with-current-buffer buffer
         (widen)
         (goto-char pos)
-        ;; Verify this is actually a project task before going up
-        (let ((org-gtd-refile (org-entry-get nil "ORG_GTD_REFILE" t))
-              (org-gtd (org-entry-get nil "ORG_GTD" nil)))
-          (unless (and (string-equal org-gtd-refile "Projects")
-                       (string-equal org-gtd "Actions"))
-            (user-error "This is not a project task - cannot cancel project from here")))
-        (org-up-heading-safe)
-        (org-gtd-project-cancel)))))
+        ;; Get project IDs - verify this is a project task
+        (let* ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS"))
+               (project-id (cond
+                            ;; No projects - not a project task
+                            ((null project-ids)
+                             (user-error "This is not a project task - cannot cancel project from here"))
+                            ;; Single project - use it
+                            ((= (length project-ids) 1)
+                             (car project-ids))
+                            ;; Multiple projects - prompt user
+                            (t
+                             (let* ((project-names
+                                     (mapcar (lambda (id)
+                                               (org-with-point-at (org-id-find id t)
+                                                 (cons (org-get-heading t t t t) id)))
+                                             project-ids))
+                                    (chosen-name (completing-read
+                                                  "Which project to cancel? "
+                                                  (mapcar #'car project-names)
+                                                  nil t)))
+                               (cdr (assoc chosen-name project-names))))))
+               (project-marker (org-id-find project-id t)))
+          (org-with-point-at project-marker
+            (org-gtd-project-cancel)))))))
 
 (defun org-gtd-project-extend ()
   "Organize, decorate and refile item as a new task in an existing project."

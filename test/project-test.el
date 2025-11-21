@@ -66,7 +66,77 @@
         ;; Should error because this is not a project task
         (expect (org-gtd-project-cancel-from-agenda)
                 :to-throw
-                'user-error))))
+                'user-error)))
+
+  (it "cancels project with task in different file (not outline child)"
+      ;; Multi-file DAG: project task doesn't have to be outline child of project
+      ;; Must find project via ORG_GTD_PROJECT_IDS, not via org-up-heading-safe
+      (capture-inbox-item "Multi-file project")
+      (org-gtd-process-inbox)
+
+      (let ((wip-buffers (seq-filter (lambda (buf)
+                                       (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                     (buffer-list))))
+        (when wip-buffers
+          (with-current-buffer (car wip-buffers)
+            (goto-char (point-max))
+            (newline)
+            (make-task "Task in main file" :level 2)
+            (organize-as-project))))
+
+      ;; Create task in different file
+      (let ((second-file (org-gtd--path "other-file")))
+        (with-temp-file second-file
+          (make-task "Task in other file" :id "other-file-task" :level 1 :status 'next))
+
+        (with-current-buffer (find-file-noselect second-file)
+          (org-mode)
+          (goto-char (point-min))
+          (search-forward "Task in other file")
+          (org-back-to-heading t)
+          (org-id-add-location "other-file-task" second-file))
+
+        ;; Link task from second file to project
+        (with-current-buffer (org-gtd--default-file)
+          (goto-char (point-min))
+          (search-forward "Multi-file project")
+          (org-back-to-heading t)
+          (let ((project-id (org-id-get-create)))
+            (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" "other-file-task")
+            ;; Add project ID to task in other file
+            (with-current-buffer (find-file-noselect second-file)
+              (goto-char (point-min))
+              (search-forward "Task in other file")
+              (org-back-to-heading t)
+              (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)
+              (basic-save-buffer))))
+
+        ;; Cancel project from agenda via task in OTHER file
+        (let ((org-agenda-files (append (org-agenda-files) (list second-file))))
+          (org-gtd-engage)
+          (with-current-buffer org-agenda-buffer
+            (goto-char (point-min))
+            (search-forward "Task in other file")
+            ;; This should cancel the whole project, even though task is not outline child
+            (org-gtd-project-cancel-from-agenda))
+
+          ;; Verify project was canceled by checking that tasks are CNCL
+          (with-current-buffer (org-gtd--default-file)
+            (goto-char (point-min))
+            (search-forward "Task in main file")
+            (org-back-to-heading t)
+            (expect (org-entry-get (point) "TODO")
+                    :to-equal
+                    "CNCL"))
+
+          ;; Also verify task in OTHER file was canceled
+          (with-current-buffer (find-file-noselect second-file)
+            (goto-char (point-min))
+            (search-forward "Task in other file")
+            (org-back-to-heading t)
+            (expect (org-entry-get (point) "TODO")
+                    :to-equal
+                    "CNCL"))))))
 
  (describe
   "displaying the guide when the project is poorly shaped"
