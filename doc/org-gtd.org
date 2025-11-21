@@ -1164,6 +1164,7 @@ These are the commands you'll use most:
 | ~org-gtd-engage~ | See actionable items | Daily (your "work from" view) |
 | ~org-gtd-show-all-next~ | See only NEXT actions | When you want to focus on actions |
 | ~org-gtd-review-stuck-projects~ | Find stuck projects | Weekly review |
+| ~org-gtd-projects-fix-all-todo-keywords~ | Fix task states after external edits | After mobile/web edits |
 | ~org-gtd-archive-completed-items~ | Archive finished items | Weekly/monthly cleanup |
 
 For complete command reference with detailed explanations, see [[#commands-reference][Commands Reference]].
@@ -3569,6 +3570,66 @@ These commands only work when point is on an agenda item:
 
 *Note*: This is automatically called after graph UI operations and text-based task management commands. You typically only need this for troubleshooting edge cases.
 
+**** ~org-gtd-projects-fix-all-todo-keywords~
+
+**What it is:** Recalculates and fixes TODO/NEXT states for ALL projects in your GTD system at once.
+
+**Why you'd use it:** After making changes in external tools (mobile apps, web interfaces, other editors) that don't know about org-gtd's dependency logic, your task states might be inconsistent. This command makes everything sane again.
+
+**Who needs it:** Anyone who edits their GTD files outside of org-gtd (mobile apps, sync conflicts, manual edits).
+
+**Your first use (30 seconds):**
+
+1. Edit tasks on your phone/tablet/other tool
+2. Sync back to Emacs
+3. Run: ~M-x org-gtd-projects-fix-all-todo-keywords~
+4. Done - all task states are now correct
+
+That's it. No need to manually check each project.
+
+**Common scenarios:**
+
+- Completed tasks on mobile → states might be wrong → run this
+- Changed task descriptions/notes externally → run this to be safe
+- Sync conflict resolution → run this after fixing conflicts
+- Bulk manual edits outside org-gtd → run this
+- After migration or data import → run this
+
+**When to use this vs the single-project version:**
+
+Use ~org-gtd-projects-fix-all-todo-keywords~ when:
+- You've worked in external tools (mobile, web, other editors)
+- You've edited multiple projects
+- You don't know which projects are affected
+- You want to fix everything at once (safest option)
+
+Use ~org-gtd-projects-fix-todo-keywords-for-project-at-point~ when:
+- You know which specific project has issues
+- You've just edited one project in Emacs
+- You want to fix just one project quickly
+
+**What it does (technical):**
+
+1. Scans all projects in agenda files
+2. Resets active task states (TODO/NEXT → TODO)
+3. Calculates which tasks are ready based on dependencies
+4. Marks ready tasks as NEXT
+5. Preserves user-set states (WAIT, DONE, CNCL)
+6. Handles multi-project tasks correctly (AND semantics)
+
+**Multi-project tasks:**
+
+Some tasks can belong to multiple projects. This command handles them safely:
+- Shared task becomes NEXT only if ready in ALL its projects
+- If ready in just some projects, stays TODO
+- WAIT states are never auto-changed
+
+**When NOT to use:**
+
+- If you only work in Emacs with org-gtd commands (automatic state management works)
+- If your projects look correct already
+- Before making external changes (use after, not before)
+
 *** Task Dependency Commands
 :PROPERTIES:
 :CUSTOM_ID: task-dependency-commands
@@ -4241,7 +4302,8 @@ The ONLY cases where manual property editing might be necessary:
 
 4. *Emergency recovery from data corruption*
    - Only as last resort if graph view and commands fail
-   - After manual edits, run ~org-gtd-projects-fix-todo-keywords-for-project-at-point~
+   - After manual edits, run ~org-gtd-projects-fix-todo-keywords-for-project-at-point~ (one project)
+   - Or run ~org-gtd-projects-fix-all-todo-keywords~ to fix all projects at once
    - Consider this a bug and file an issue
 
 *If you find yourself manually editing properties regularly*, that indicates missing features. Please file an issue describing your workflow - we'll add the missing commands!
@@ -4289,6 +4351,29 @@ The ONLY cases where manual property editing might be necessary:
 - If blockers are DONE but showing as blocking: Press ~r~ to refresh graph
 - If blocker shouldn't block this task: Use ~d~ to remove the dependency
 - If multiple wrong dependencies: Use ~x~ to clear all, rebuild with ~a~
+
+**** Task States Inconsistent After External Edits
+
+*Symptom*: After editing on mobile app or resolving sync conflicts, task states don't match dependencies.
+
+*Examples*:
+- Tasks marked NEXT but blocked by incomplete dependencies
+- Tasks stuck in TODO when they should be NEXT
+- Multiple projects showing inconsistent states
+
+*Diagnosis*:
+- External tools (mobile apps, web interfaces) don't understand org-gtd dependency logic
+- Manual edits or sync conflicts disrupted task states
+- Affects all projects if you edited multiple files
+
+*Solution*:
+- For one project: Put point on project heading, run ~M-x org-gtd-projects-fix-todo-keywords-for-project-at-point~
+- For all projects: Run ~M-x org-gtd-projects-fix-all-todo-keywords~
+
+*Recommended workflow after mobile edits*:
+1. Sync files to Emacs
+2. Run ~M-x org-gtd-projects-fix-all-todo-keywords~
+3. Verify with ~M-x org-gtd-engage~ - should show correct NEXT tasks
 
 ** View DSL Filter Reference
 :PROPERTIES:
@@ -5171,8 +5256,15 @@ If a project has active tasks but none are marked NEXT, this usually indicates:
 1. Missing dependency configuration (no ~ORG_GTD_FIRST_TASKS~ property)
 2. org-edna is not enabled
 3. Dependency properties need recalculation
+4. Task states are inconsistent after external edits (mobile apps, sync conflicts)
 
-*Solution*: Put the point on the project heading and run ~M-x org-gtd-projects-fix-todo-keywords-for-project-at-point~.
+*Solution for one project*: Put the point on the project heading and run ~M-x org-gtd-projects-fix-todo-keywords-for-project-at-point~.
+
+*Solution for all projects*: Run ~M-x org-gtd-projects-fix-all-todo-keywords~ to fix all projects at once. This is especially useful after:
+- Editing tasks on mobile apps or web interfaces
+- Resolving sync conflicts
+- Bulk manual edits outside org-gtd
+- Migrating or importing data
 
 *Note*: Make sure org-edna is enabled: ~(org-edna-mode 1)~ in your init file. See [[#configuring][Configuring]] for setup instructions.
 

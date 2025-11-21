@@ -795,12 +795,22 @@
 
           (let ((org-agenda-files (append (org-agenda-files) (list second-file))))
 
-            ;; 3. Link task from second file to project
-            (with-current-buffer (org-gtd--default-file)
-              (goto-char (point-min))
-              (search-forward "Multi-file project review")
-              (org-back-to-heading t)
-              (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" "review-task-id"))
+            ;; 3. Get project ID and link task from second file to project
+            (let ((project-id nil))
+              (with-current-buffer (org-gtd--default-file)
+                (goto-char (point-min))
+                (search-forward "Multi-file project review")
+                (org-back-to-heading t)
+                (setq project-id (org-entry-get (point) "ID"))
+                (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" "review-task-id"))
+
+              ;; 3a. Add project ID to task in second file (v4 compliance)
+              (with-current-buffer (find-file-noselect second-file)
+                (goto-char (point-min))
+                (search-forward "Task in second file")
+                (org-back-to-heading t)
+                (org-entry-put (point) "ORG_GTD" "Actions")
+                (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)))
 
             ;; 4. Make main file task TODO (project has work, but also has NEXT in other file)
             (with-current-buffer (org-gtd--default-file)

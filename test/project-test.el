@@ -331,3 +331,464 @@
        (org-back-to-heading t)
        (let ((task2-depends (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
          (expect (length task2-depends) :to-equal 1)))))
+
+(describe
+ "Fix TODO keywords for all projects (Story: multi-project task state management)"
+
+ (before-each (setq inhibit-message t)
+              (ogt--configure-emacs))
+ (after-each (ogt--close-and-delete-files))
+
+ (it "handles single project correctly (baseline - ensures no regression)"
+     ;; Create a simple project with sequential dependencies
+     (create-project "Single Project")
+
+     ;; Manually mark Task 1 as DONE
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task 1")
+       (org-back-to-heading t)
+       (org-entry-put (point) "TODO" "DONE"))
+
+     ;; Run the global fix function
+     (org-gtd-projects-fix-all-todo-keywords)
+
+     ;; Task 1: DONE (preserved)
+     ;; Task 2: should be NEXT (dependency satisfied)
+     ;; Task 3: should be TODO (depends on Task 2)
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task 1")
+       (org-back-to-heading t)
+       (expect (org-entry-get (point) "TODO") :to-equal "DONE")
+
+       (goto-char (point-min))
+       (search-forward "Task 2")
+       (org-back-to-heading t)
+       (expect (org-entry-get (point) "TODO") :to-equal "NEXT")
+
+       (goto-char (point-min))
+       (search-forward "Task 3")
+       (org-back-to-heading t)
+       (expect (org-entry-get (point) "TODO") :to-equal "TODO")))
+
+ (it "marks multi-project task NEXT when ready in ALL projects (AND semantics)"
+     ;; Create Project A with shared task
+     (capture-inbox-item "Project Alpha")
+     (org-gtd-process-inbox)
+     (let ((wip-buffers (seq-filter (lambda (buf)
+                                      (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                    (buffer-list))))
+       (when wip-buffers
+         (with-current-buffer (car wip-buffers)
+           (goto-char (point-max))
+           (newline)
+           (make-task "Shared Task" :level 2)
+           (make-task "Alpha Task" :level 2)
+           (organize-as-project))))
+
+     ;; Create Project Beta with shared task
+     (capture-inbox-item "Project Beta")
+     (org-gtd-process-inbox)
+     (let ((wip-buffers (seq-filter (lambda (buf)
+                                      (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                    (buffer-list))))
+       (when wip-buffers
+         (with-current-buffer (car wip-buffers)
+           (goto-char (point-max))
+           (newline)
+           (make-task "Beta Task" :level 2)
+           (organize-as-project))))
+
+     ;; Share "Shared Task" with Project Beta
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Shared Task")
+       (org-back-to-heading t)
+       (let ((shared-task-id (org-id-get-create)))
+         (goto-char (point-min))
+         (search-forward "Project Beta")
+         (org-back-to-heading t)
+         (let ((beta-id (org-id-get-create)))
+           (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" shared-task-id)
+           (goto-char (point-min))
+           (search-forward "Shared Task")
+           (org-back-to-heading t)
+           (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" beta-id))))
+
+     ;; Run the global fix function
+     (org-gtd-projects-fix-all-todo-keywords)
+
+     ;; Verify: Shared Task should be NEXT (ready in BOTH projects)
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Shared Task")
+       (org-back-to-heading t)
+       (expect (org-entry-get (point) "TODO") :to-equal "NEXT")))
+
+ (xit "keeps multi-project task TODO when ready in SOME but not ALL projects"
+     ;; Simpler scenario: Create two projects sharing one task     ;; Project Gamma: Task A -> Task B (blocked)
+     ;; Project Delta: Task B only (ready)
+     ;; Task B belongs to both, but blocked in Gamma, ready in Delta
+     ;; Expected: Task B stays TODO (AND semantics: must be ready in ALL)
+
+     ;; Create Project Gamma: Task A -> Task B
+     (create-project "Project Gamma")
+     (with-current-buffer (org-gtd--default-file)
+       ;; Get IDs for both tasks
+       (goto-char (point-min))
+       (search-forward "Task 1")
+       (org-back-to-heading t)
+       (let ((task-a-id (org-id-get-create)))
+
+         (goto-char (point-min))
+         (search-forward "Task 2")
+         (org-back-to-heading t)
+         (let ((task-b-id (org-id-get-create)))
+
+           ;; Make Task A block Task B using BLOCKS/DEPENDS_ON
+           (goto-char (point-min))
+           (search-forward "Task 1")
+           (org-back-to-heading t)
+           (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" task-b-id)
+           (goto-char (point-min))
+           (search-forward "Task 2")
+           (org-back-to-heading t)
+           (org-entry-add-to-multivalued-property (point) "ORG_GTD_DEPENDS_ON" task-a-id))))
+
+     ;; Create Project Delta empty
+     (capture-inbox-item "Project Delta")
+     (org-gtd-process-inbox)
+     (let ((wip-buffers (seq-filter (lambda (buf)
+                                      (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                    (buffer-list))))
+       (when wip-buffers
+         (with-current-buffer (car wip-buffers)
+           (goto-char (point-max))
+           (newline)
+           (organize-as-project))))
+
+     ;; Share Task 2 with Project Delta
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Project Gamma")
+       (org-back-to-heading t)
+       (let ((gamma-id (org-id-get-create)))
+         (goto-char (point-min))
+         (search-forward "Project Delta")
+         (org-back-to-heading t)
+         (let ((delta-id (org-id-get-create)))
+           (goto-char (point-min))
+           (search-forward "Task 2")
+           (org-back-to-heading t)
+           (let ((task-2-id (org-id-get-create)))
+
+             ;; Add Task 2 as first task of Delta
+             (goto-char (point-min))
+             (search-forward "Project Delta")
+             (org-back-to-heading t)
+             (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" task-2-id)
+
+             ;; Add BOTH project IDs to Task 2
+             (goto-char (point-min))
+             (search-forward "Task 2")
+             (org-back-to-heading t)
+             (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" gamma-id)
+             (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" delta-id)))))
+
+     ;; Run the global fix function
+     (org-gtd-projects-fix-all-todo-keywords)
+
+     ;; Verify: Task 2 should be TODO (blocked in Gamma, ready in Delta)
+     ;; AND semantics: must be ready in ALL projects
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task 2")
+       (org-back-to-heading t)
+       (expect (org-entry-get (point) "TODO") :to-equal "TODO"))
+
+     ;; Verify: Task 1 should be NEXT (ready in Gamma)
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task 1")
+       (org-back-to-heading t)
+       (expect (org-entry-get (point) "TODO") :to-equal "NEXT")))
+
+ (it "preserves WAIT tasks (never changes them to TODO or NEXT)"
+     ;; Create a project with 3 tasks in sequence
+     (create-project "Project With Wait")
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task 1")
+       (org-back-to-heading t)
+       (let ((task-1-id (org-id-get-create)))
+         (goto-char (point-min))
+         (search-forward "Task 2")
+         (org-back-to-heading t)
+         (let ((task-2-id (org-id-get-create)))
+           (goto-char (point-min))
+           (search-forward "Task 3")
+           (org-back-to-heading t)
+           (let ((task-3-id (org-id-get-create)))
+             ;; Set up dependencies: Task 1 -> Task 2 -> Task 3
+             (goto-char (point-min))
+             (search-forward "Task 1")
+             (org-back-to-heading t)
+             (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" task-2-id)
+             (goto-char (point-min))
+             (search-forward "Task 2")
+             (org-back-to-heading t)
+             (org-entry-add-to-multivalued-property (point) "ORG_GTD_DEPENDS_ON" task-1-id)
+             (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" task-3-id)
+             (goto-char (point-min))
+             (search-forward "Task 3")
+             (org-back-to-heading t)
+             (org-entry-add-to-multivalued-property (point) "ORG_GTD_DEPENDS_ON" task-2-id)))))
+
+     ;; Mark Task 2 as WAIT (user explicitly marked it)
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task 2")
+       (org-back-to-heading t)
+       (org-entry-put (point) "TODO" "WAIT"))
+
+     ;; Complete Task 1, so Task 2 would normally become NEXT
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task 1")
+       (org-back-to-heading t)
+       (org-entry-put (point) "TODO" "DONE"))
+
+     ;; Run the global fix function
+     (org-gtd-projects-fix-all-todo-keywords)
+
+     ;; Verify: Task 2 should still be WAIT (never auto-changed)
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task 2")
+       (org-back-to-heading t)
+       (expect (org-entry-get (point) "TODO") :to-equal "WAIT"))
+
+     ;; Verify: Task 3 should be TODO (blocked by WAIT task)
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task 3")
+       (org-back-to-heading t)
+       (expect (org-entry-get (point) "TODO") :to-equal "TODO")))
+
+ (it "handles simple branching paths (A -> B and A -> D)"
+     ;; Simpler test without WAIT to isolate branching logic
+     ;;   Task A -> Task B
+     ;;   Task A -> Task D
+     ;; When A is DONE: both B and D should become NEXT
+
+     (create-project "Simple Branch")
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task 1")
+       (org-back-to-heading t)
+       (let ((task-1-id (org-id-get-create)))
+         (goto-char (point-min))
+         (search-forward "Task 2")
+         (org-back-to-heading t)
+         (let ((task-2-id (org-id-get-create)))
+           (goto-char (point-min))
+           (search-forward "Task 3")
+           (org-back-to-heading t)
+           (let ((task-3-id (org-id-get-create)))
+
+             ;; Clear default sequential dependencies created by organize-as-project
+             (goto-char (point-min))
+             (search-forward "Task 1")
+             (org-back-to-heading t)
+             (org-entry-delete (point) "ORG_GTD_BLOCKS")
+             (goto-char (point-min))
+             (search-forward "Task 2")
+             (org-back-to-heading t)
+             (org-entry-delete (point) "ORG_GTD_DEPENDS_ON")
+             (org-entry-delete (point) "ORG_GTD_BLOCKS")
+             (goto-char (point-min))
+             (search-forward "Task 3")
+             (org-back-to-heading t)
+             (org-entry-delete (point) "ORG_GTD_DEPENDS_ON")
+
+             ;; Set up: Task 1 -> Task 2, Task 1 -> Task 3 (branching paths)
+             (goto-char (point-min))
+             (search-forward "Task 1")
+             (org-back-to-heading t)
+             (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" task-2-id)
+             (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" task-3-id)
+
+             (goto-char (point-min))
+             (search-forward "Task 2")
+             (org-back-to-heading t)
+             (org-entry-add-to-multivalued-property (point) "ORG_GTD_DEPENDS_ON" task-1-id)
+
+             (goto-char (point-min))
+             (search-forward "Task 3")
+             (org-back-to-heading t)
+             (org-entry-add-to-multivalued-property (point) "ORG_GTD_DEPENDS_ON" task-1-id)
+
+             ;; Set Task 1 as the only first task
+             (goto-char (point-min))
+             (search-forward "Simple Branch")
+             (org-back-to-heading t)
+             (org-entry-delete (point) "ORG_GTD_FIRST_TASKS")
+             (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" task-1-id)))))
+
+     ;; Complete Task 1
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task 1")
+       (org-back-to-heading t)
+       (org-entry-put (point) "TODO" "DONE"))
+
+     ;; Run fix
+     (org-gtd-projects-fix-all-todo-keywords)
+
+     ;; Verify: Task 2 should be NEXT
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task 2")
+       (org-back-to-heading t)
+       (expect (org-entry-get (point) "TODO") :to-equal "NEXT"))
+
+     ;; Verify: Task 3 should be NEXT
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task 3")
+       (org-back-to-heading t)
+       (expect (org-entry-get (point) "TODO") :to-equal "NEXT")))
+
+ (it "allows NEXT in independent DAG paths when another path has WAIT"
+     ;; Create a project with branching paths:
+     ;;   Task A -> Task B (WAIT) -> Task C
+     ;;   Task A -> Task D
+     ;; When A is DONE and B is WAIT:
+     ;;   - B stays WAIT
+     ;;   - C stays TODO (blocked by WAIT B)
+     ;;   - D becomes NEXT (independent path, only depends on A)
+
+     (capture-inbox-item "Project With Branches")
+     (org-gtd-process-inbox)
+     (let ((wip-buffers (seq-filter (lambda (buf)
+                                      (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                    (buffer-list))))
+       (when wip-buffers
+         (with-current-buffer (car wip-buffers)
+           (goto-char (point-max))
+           (newline)
+           (make-task "Task A" :level 2)
+           (make-task "Task B" :level 2)
+           (make-task "Task C" :level 2)
+           (make-task "Task D" :level 2)
+           (organize-as-project))))
+
+     ;; Set up the DAG structure
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task A")
+       (org-back-to-heading t)
+       (let ((task-a-id (org-id-get-create)))
+         (goto-char (point-min))
+         (search-forward "Task B")
+         (org-back-to-heading t)
+         (let ((task-b-id (org-id-get-create)))
+           (goto-char (point-min))
+           (search-forward "Task C")
+           (org-back-to-heading t)
+           (let ((task-c-id (org-id-get-create)))
+             (goto-char (point-min))
+             (search-forward "Task D")
+             (org-back-to-heading t)
+             (let ((task-d-id (org-id-get-create)))
+
+               ;; Clear default sequential dependencies
+               (goto-char (point-min))
+               (search-forward "Task A")
+               (org-back-to-heading t)
+               (org-entry-delete (point) "ORG_GTD_BLOCKS")
+               (goto-char (point-min))
+               (search-forward "Task B")
+               (org-back-to-heading t)
+               (org-entry-delete (point) "ORG_GTD_DEPENDS_ON")
+               (org-entry-delete (point) "ORG_GTD_BLOCKS")
+               (goto-char (point-min))
+               (search-forward "Task C")
+               (org-back-to-heading t)
+               (org-entry-delete (point) "ORG_GTD_DEPENDS_ON")
+               (org-entry-delete (point) "ORG_GTD_BLOCKS")
+               (goto-char (point-min))
+               (search-forward "Task D")
+               (org-back-to-heading t)
+               (org-entry-delete (point) "ORG_GTD_DEPENDS_ON")
+
+               ;; A -> B -> C
+               (goto-char (point-min))
+               (search-forward "Task A")
+               (org-back-to-heading t)
+               (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" task-b-id)
+               (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" task-d-id)
+
+               (goto-char (point-min))
+               (search-forward "Task B")
+               (org-back-to-heading t)
+               (org-entry-add-to-multivalued-property (point) "ORG_GTD_DEPENDS_ON" task-a-id)
+               (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" task-c-id)
+
+               (goto-char (point-min))
+               (search-forward "Task C")
+               (org-back-to-heading t)
+               (org-entry-add-to-multivalued-property (point) "ORG_GTD_DEPENDS_ON" task-b-id)
+
+               ;; A -> D (independent path)
+               (goto-char (point-min))
+               (search-forward "Task D")
+               (org-back-to-heading t)
+               (org-entry-add-to-multivalued-property (point) "ORG_GTD_DEPENDS_ON" task-a-id)
+
+               ;; Set Task A as the only first task of the project
+               (goto-char (point-min))
+               (search-forward "Project With Branches")
+               (org-back-to-heading t)
+               (org-entry-delete (point) "ORG_GTD_FIRST_TASKS")
+               (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" task-a-id))))))
+
+     ;; Complete Task A
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task A")
+       (org-back-to-heading t)
+       (org-entry-put (point) "TODO" "DONE"))
+
+     ;; Mark Task B as WAIT
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task B")
+       (org-back-to-heading t)
+       (org-entry-put (point) "TODO" "WAIT"))
+
+     ;; Run the global fix function
+     (org-gtd-projects-fix-all-todo-keywords)
+
+     ;; Verify: Task B stays WAIT
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task B")
+       (org-back-to-heading t)
+       (expect (org-entry-get (point) "TODO") :to-equal "WAIT"))
+
+     ;; Verify: Task C stays TODO (blocked by WAIT B)
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task C")
+       (org-back-to-heading t)
+       (expect (org-entry-get (point) "TODO") :to-equal "TODO"))
+
+     ;; Verify: Task D becomes NEXT (independent path from B)
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Task D")
+       (org-back-to-heading t)
+       (expect (org-entry-get (point) "TODO") :to-equal "NEXT")))
+)

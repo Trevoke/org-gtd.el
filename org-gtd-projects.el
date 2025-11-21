@@ -153,6 +153,80 @@ state in the list - all others are `org-gtd-todo'."
   (interactive)
   (org-gtd-projects-fix-todo-keywords (point-marker)))
 
+(defun org-gtd-projects-fix-all-todo-keywords ()
+  "Fix TODO keywords for all projects in agenda files.
+
+Handles multi-project tasks correctly using AND semantics:
+a task is marked NEXT only if ready in ALL projects it belongs to.
+
+Preserves user-set states (WAIT, DONE, CNCL) and only recalculates
+TODO/NEXT states based on dependency satisfaction.
+
+This is useful for:
+- Weekly reviews to ensure all project states are consistent
+- After bulk changes to tasks or dependencies
+- Recovery from manual state changes"
+  (interactive)
+  (org-gtd-core-prepare-agenda-buffers)
+
+  ;; Phase 1: Collect all project markers
+  (let ((project-markers '()))
+    (org-map-entries
+     (lambda () (push (point-marker) project-markers))
+     "+ORG_GTD=\"Projects\""
+     'agenda)
+
+    ;; Phase 2: Deduplicate and reset all tasks exactly once
+    (let ((all-tasks (make-hash-table :test 'equal)))
+      ;; Collect unique tasks across all projects
+      (dolist (project-marker project-markers)
+        (dolist (task-marker (org-gtd-projects--collect-tasks-by-graph project-marker))
+          (let ((task-id (org-with-point-at task-marker (org-id-get))))
+            (puthash task-id task-marker all-tasks))))
+
+      ;; Reset each unique task exactly once
+      (maphash (lambda (_id task-marker)
+                 (org-with-point-at task-marker
+                   (when (and (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-action)
+                              (org-gtd-todo-state-should-reset-p
+                               (org-entry-get (point) org-gtd-prop-todo)))
+                     (org-entry-put (point) org-gtd-prop-todo (org-gtd-keywords--todo)))))
+               all-tasks)
+
+      ;; Phase 3: Build readiness map for each task
+      (let ((task-readiness (make-hash-table :test 'equal)))
+        ;; Count how many projects each task is ready in
+        (dolist (project-marker project-markers)
+          (let ((ready-ids (org-gtd-project--find-ready-tasks project-marker)))
+            (dolist (ready-id ready-ids)
+              (let ((current-count (or (gethash ready-id task-readiness) 0)))
+                (puthash ready-id (1+ current-count) task-readiness)))))
+
+        ;; Phase 4: Mark tasks NEXT if ready in ALL their projects
+        (maphash (lambda (task-id task-marker)
+                   (let* ((project-ids (org-with-point-at task-marker
+                                         (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+                          (ready-count (or (gethash task-id task-readiness) 0))
+                          (current-state (org-gtd-get-task-state task-id))
+                          (should-mark-next nil))
+
+                     ;; Determine if task should be marked NEXT
+                     (if (null project-ids)
+                         ;; Single-project task (no explicit project IDs)
+                         ;; Mark NEXT if ready in its one project
+                         (setq should-mark-next (> ready-count 0))
+                       ;; Multi-project task (has explicit project IDs)
+                       ;; Mark NEXT only if ready in ALL projects (AND semantics)
+                       (let ((total-projects (length project-ids)))
+                         (setq should-mark-next (and (> total-projects 0)
+                                                     (= ready-count total-projects)))))
+
+                     ;; Apply state change if needed and not WAIT
+                     (when (and should-mark-next
+                                (not (equal current-state (org-gtd-keywords--wait))))
+                       (org-gtd-set-task-state task-id (org-gtd-keywords--next)))))
+                 all-tasks)))))
+
 (defun org-gtd-project-new ()
   "Organize, decorate and refile item as a new project."
   (interactive)
@@ -179,12 +253,11 @@ Only resets states that should be recalculated (preserves WAIT, DONE, CNCL)."
 
 (defun org-gtd-project--mark-ready-tasks (project-marker ready-task-ids)
   "Mark tasks in READY-TASK-IDS as NEXT for project at PROJECT-MARKER.
-Respects WAIT tasks - if project has any WAIT task, don't mark any as NEXT."
-  (let ((first-wait (org-with-point-at project-marker
-                      (org-gtd-projects--first-wait-task))))
-    (unless first-wait
-      (dolist (task-id ready-task-ids)
-        (org-gtd-set-task-state task-id (org-gtd-keywords--next))))))
+Respects WAIT tasks - preserves user-set WAIT states on ready tasks."
+  (dolist (task-id ready-task-ids)
+    ;; Only mark as NEXT if not currently WAIT (preserve user-set WAIT state)
+    (unless (equal (org-gtd-get-task-state task-id) (org-gtd-keywords--wait))
+      (org-gtd-set-task-state task-id (org-gtd-keywords--next)))))
 
 ;;;;; Command: Find Ready Tasks
 
@@ -502,13 +575,10 @@ Returns list of task markers in breadth-first order."
           (when (and task-location (not (gethash current-id visited-ids)))
             (puthash current-id t visited-ids)
 
-            ;; Include task if it either:
-            ;; 1. Has current project ID in ORG_GTD_PROJECT_IDS, OR
-            ;; 2. Has no ORG_GTD_PROJECT_IDS (simple task belonging only to this project)
+            ;; Include task if it has current project ID in ORG_GTD_PROJECT_IDS
             (org-with-point-at task-location
               (let ((task-project-ids (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids)))
-                (when (or (null task-project-ids)  ; No project IDs - belongs to this project
-                          (member project-id task-project-ids))  ; Has this project's ID
+                (when (member project-id task-project-ids)
                   (push task-location result-tasks)
 
                   ;; Find tasks this one blocks (children in the graph)

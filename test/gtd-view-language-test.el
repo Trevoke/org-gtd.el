@@ -262,11 +262,13 @@
 :PROPERTIES:
 :ORG_GTD: Actions
 :ID: task-1
+:ORG_GTD_PROJECT_IDS: proj-1
 :END:
 *** DONE Second task
 :PROPERTIES:
 :ORG_GTD: Actions
 :ID: task-2
+:ORG_GTD_PROJECT_IDS: proj-1
 :END:
 """)
         (basic-save-buffer)
