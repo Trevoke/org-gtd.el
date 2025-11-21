@@ -416,10 +416,14 @@ dynamic grouped views with 'group-by."
 ;;;; Public API
 
 ;;;###autoload
-(defun org-gtd-view-show (view-spec)
-  "Display an org-gtd agenda view from VIEW-SPEC.
+(defun org-gtd-view-show (view-spec-or-specs)
+  "Display an org-gtd agenda view from VIEW-SPEC-OR-SPECS.
 
-VIEW-SPEC is an alist with the following structure:
+VIEW-SPEC-OR-SPECS can be either:
+- A single view specification alist
+- A list of view specification alists
+
+A view specification is an alist with the following structure:
   ((name . \"View Name\")
    (filters . ((filter-type . filter-value) ...)))
 
@@ -428,15 +432,30 @@ Simple example - show all single-action items:
    '((name . \"All My Actions\")
      (filters . ((category . actions)))))
 
+Multiple views example - show several related views:
+  (org-gtd-view-show
+   '(((name . \"Active projects\")
+      (filters . ((category . projects))))
+     ((name . \"Next actions\")
+      (filters . ((todo . (\"NEXT\")))))))
+
 See the module commentary for complete filter documentation and more examples."
   (interactive)
   (org-gtd-core-prepare-agenda-buffers)
   (with-org-gtd-context
-    (let ((org-agenda-custom-commands
-           (org-gtd-view-lang--create-custom-commands
-            (list view-spec)
-            "g"
-            (alist-get 'name view-spec))))
+    (let* ((view-specs (if (and (listp view-spec-or-specs)
+                                (listp (car view-spec-or-specs))
+                                (symbolp (caar view-spec-or-specs)))
+                           ;; Single view-spec (first element is a cons like (name . "..."))
+                           (list view-spec-or-specs)
+                         ;; Multiple view-specs (list of alists)
+                         view-spec-or-specs))
+           (title (alist-get 'name (car view-specs)))
+           (org-agenda-custom-commands
+            (org-gtd-view-lang--create-custom-commands
+             view-specs
+             "g"
+             title)))
       (org-agenda nil "g")
       (goto-char (point-min)))))
 

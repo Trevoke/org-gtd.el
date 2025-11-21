@@ -75,17 +75,8 @@ mostly of value for testing purposes."
                       t)))
   (when (not (member area org-gtd-areas-of-focus))
     (signal 'org-gtd-invalid-area-of-focus `(,area ,org-gtd-areas-of-focus)))
-  (let ((start-date (or start-date (format-time-string "%Y-%m-%d"))))
-    (org-gtd-core-prepare-agenda-buffers)
-    (with-org-gtd-context
-        (let ((org-agenda-custom-commands
-               (org-gtd-view-lang--create-custom-commands
-                (org-gtd-review--area-of-focus-view-specs area)
-                "a"
-                (format "Area of Focus: %s" area)))
-              (org-agenda-buffer-name (format "*Org Agenda: %s*" area)))
-          (org-agenda nil "a")
-          (goto-char (point-min))))))
+  (let ((org-agenda-buffer-name (format "*Org Agenda: %s*" area)))
+    (org-gtd-view-show (org-gtd-review--area-of-focus-view-specs area))))
 
 (defconst org-gtd-review-missed-items-view-specs
   '(((name . "Missed calendar events")
@@ -108,72 +99,40 @@ are in the past.
 You can pass an optional START-DATE to tell the code what to use as the first
 day for the agenda.  It is mostly of value for testing purposes."
   (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-  (with-org-gtd-context
-      (let* ((start-date (or start-date (format-time-string "%Y-%m-%d")))
-             (org-agenda-custom-commands
-              (org-gtd-view-lang--create-custom-commands
-               org-gtd-review-missed-items-view-specs
-               "g"
-               "Missed Items")))
-        (org-agenda nil "g"))))
+  (org-gtd-view-show org-gtd-review-missed-items-view-specs))
 
 (defun org-gtd-review-stuck-calendar-items ()
   "Agenda view with all invalid Calendar actions."
   (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands
-             (org-gtd-view-lang--create-custom-commands
-              '(((name . "Stuck Calendar Items")
-                 (filters . ((category . calendar)
-                             (invalid-timestamp . t)))))
-              "g"
-              "Stuck Calendar Items")))
-        (org-agenda nil "g"))))
+  (org-gtd-view-show
+   '((name . "Stuck Calendar Items")
+     (filters . ((category . calendar)
+                 (invalid-timestamp . t))))))
 
 (defun org-gtd-review-stuck-delegated-items ()
   "Agenda view with all invalid delegated actions."
   (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands
-             (org-gtd-view-lang--create-custom-commands
-              `(((name . "Stuck Delegated Items")
-                 (filters . ((todo . (,(org-gtd-keywords--wait)))
-                             (category . delegated)
-                             (invalid-timestamp . t)))))
-              "g"
-              "Stuck Delegated Items")))
-        (org-agenda nil "g"))))
+  (org-gtd-view-show
+   `((name . "Stuck Delegated Items")
+     (filters . ((todo . (,(org-gtd-keywords--wait)))
+                 (category . delegated)
+                 (invalid-timestamp . t))))))
 
 (defun org-gtd-review-stuck-habit-items ()
   "Agenda view with all invalid habit actions."
   (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands
-             (org-gtd-view-lang--create-custom-commands
-              '(((name . "Stuck Habit Items")
-                 (filters . ((category . habit)
-                             (invalid-timestamp . t)))))
-              "g"
-              "Stuck Habit Items")))
-        (org-agenda nil "g"))))
+  (org-gtd-view-show
+   '((name . "Stuck Habit Items")
+     (filters . ((category . habit)
+                 (invalid-timestamp . t))))))
 
 (defun org-gtd-review-stuck-incubated-items ()
   "Agenda view with all invalid incubated actions."
   (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands
-             (org-gtd-view-lang--create-custom-commands
-              '(((name . "Stuck Incubated Items")
-                 (filters . ((category . incubate)
-                             (invalid-timestamp . t)))))
-              "g"
-              "Stuck Incubated Items")))
-        (org-agenda nil "g"))))
+  (org-gtd-view-show
+   '((name . "Stuck Incubated Items")
+     (filters . ((category . incubate)
+                 (invalid-timestamp . t))))))
 
 ;;;###autoload
 (defun org-gtd-review-stuck-projects ()
@@ -182,29 +141,17 @@ day for the agenda.  It is mostly of value for testing purposes."
 Stuck projects have TODO tasks (work remaining) but no NEXT or WAIT tasks,
 indicating they need attention to identify the next actionable step."
   (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands
-             (org-gtd-view-lang--create-custom-commands
-              '(((name . "Stuck Projects")
-                 (filters . ((category . stuck-projects)))))
-              "g"
-              "Stuck Projects")))
-        (org-agenda nil "g"))))
+  (org-gtd-view-show
+   '((name . "Stuck Projects")
+     (filters . ((category . stuck-projects))))))
 
 (defun org-gtd-review-stuck-single-action-items ()
   "Agenda view with all invalid single action items."
   (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands
-             (org-gtd-view-lang--create-custom-commands
-              `(((name . "Stuck Single Action Items")
-                 (filters . ((property . (("ORG_GTD" . ,org-gtd-action)))
-                             (invalid-timestamp . t)))))
-              "g"
-              "Stuck Single Action Items")))
-        (org-agenda nil "g"))))
+  (org-gtd-view-show
+   `((name . "Stuck Single Action Items")
+     (filters . ((property . (("ORG_GTD" . ,org-gtd-action)))
+                 (invalid-timestamp . t))))))
 
 ;;;###autoload
 (defun org-gtd-review-completed-items (&optional days-back)
@@ -221,16 +168,10 @@ accomplished."
                     ((= days 30) 'past-month)
                     ((= days 365) 'past-year)
                     (t 'recent))))
-    (org-gtd-core-prepare-agenda-buffers)
-    (with-org-gtd-context
-        (let ((org-agenda-custom-commands
-               (org-gtd-view-lang--create-custom-commands
-                `(((name . ,(format "Completed in Last %d Days" days))
-                   (filters . ((done . t)
-                               (closed . ,time-spec)))))
-                "g"
-                "Recently Completed Items")))
-          (org-agenda nil "g")))))
+    (org-gtd-view-show
+     `((name . ,(format "Completed in Last %d Days" days))
+       (filters . ((done . t)
+                   (closed . ,time-spec)))))))
 
 ;;;###autoload
 (defun org-gtd-review-completed-projects ()
@@ -239,15 +180,9 @@ accomplished."
 Projects are considered completed when all their tasks are done.
 This view helps identify projects ready for archiving."
   (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands
-             (org-gtd-view-lang--create-custom-commands
-              '(((name . "Completed Projects")
-                 (filters . ((category . completed-projects)))))
-              "g"
-              "Completed Projects")))
-        (org-agenda nil "g"))))
+  (org-gtd-view-show
+   '((name . "Completed Projects")
+     (filters . ((category . completed-projects))))))
 
 ;;;; Functions
 
@@ -291,48 +226,27 @@ This view helps identify projects ready for archiving."
   "Agenda view for all missed engagements using GTD view language.
 Shows delegated items needing check-ins, missed appointments, and overdue projects."
   (interactive)
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands
-             (org-gtd-view-lang--create-custom-commands
-              org-gtd-review-missed-engagements-view-specs
-              "o"
-              "GTD Missed Engagements Review")))
-        (org-agenda nil "o")
-        (goto-char (point-min)))))
+  (org-gtd-view-show org-gtd-review-missed-engagements-view-specs))
 
 ;;;###autoload
 (defun org-gtd-review-missed-delegated ()
   "Show only missed delegated items needing check-in."
   (interactive)
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands
-             (org-gtd-view-lang--create-custom-commands
-              (list (car org-gtd-review-missed-engagements-view-specs)))))
-        (org-agenda nil "o")
-        (goto-char (point-min)))))
+  (org-gtd-view-show (car org-gtd-review-missed-engagements-view-specs)))
 
 ;;;###autoload
 (defun org-gtd-review-missed-calendar ()
   "Show only missed calendar appointments."
   (interactive)
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands
-             (org-gtd-view-lang--create-custom-commands
-              (list (cadr org-gtd-review-missed-engagements-view-specs)))))
-        (org-agenda nil "o")
-        (goto-char (point-min)))))
+  (org-gtd-view-show (cadr org-gtd-review-missed-engagements-view-specs)))
 
 ;;;###autoload
 (defun org-gtd-review-missed-projects ()
   "Show only overdue projects."
   (interactive)
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands
-             (org-gtd-view-lang--create-custom-commands
-              (list (caddr org-gtd-review-missed-engagements-view-specs)
-                    (cadddr org-gtd-review-missed-engagements-view-specs)))))
-        (org-agenda nil "o")
-        (goto-char (point-min)))))
+  (org-gtd-view-show
+   (list (caddr org-gtd-review-missed-engagements-view-specs)
+         (cadddr org-gtd-review-missed-engagements-view-specs))))
 
 ;;;###autoload
 (defun org-gtd-review-upcoming-delegated ()
@@ -340,14 +254,7 @@ Shows delegated items needing check-ins, missed appointments, and overdue projec
 Displays all delegated items where ORG_GTD_TIMESTAMP is in the future.
 Useful for planning follow-ups and catching early completions."
   (interactive)
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands
-             (org-gtd-view-lang--create-custom-commands
-              (list org-gtd-review-upcoming-delegated-view-spec)
-              "o"
-              "Upcoming Delegated Check-ins")))
-        (org-agenda nil "o")
-        (goto-char (point-min)))))
+  (org-gtd-view-show org-gtd-review-upcoming-delegated-view-spec))
 
 (defcustom org-gtd-review-missed-custom-views nil
   "Additional custom missed engagement views defined by the user.
@@ -365,13 +272,9 @@ Example:
 (defun org-gtd-review-missed-with-custom ()
   "Show missed engagement reviews including user-defined custom views."
   (interactive)
-  (with-org-gtd-context
-      (let* ((all-views (append org-gtd-review-missed-engagements-view-specs
-                                org-gtd-review-missed-custom-views))
-             (org-agenda-custom-commands
-              (org-gtd-view-lang--create-custom-commands all-views)))
-        (org-agenda nil "o")
-        (goto-char (point-min)))))
+  (org-gtd-view-show
+   (append org-gtd-review-missed-engagements-view-specs
+           org-gtd-review-missed-custom-views)))
 
 ;;;; Backward Compatibility Aliases
 

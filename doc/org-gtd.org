@@ -3475,6 +3475,229 @@ Both are valuable. Missed helps you catch problems. Upcoming helps you prevent t
 |---------|-------|----------|
 | ~org-gtd-review-upcoming-delegated~ | All delegated items with future check-in dates | Weekly planning, early completion responses |
 
+*** Custom View Commands
+
+**** ~org-gtd-view-show~
+
+**What it is:** Create custom GTD agenda views using a declarative language instead of learning org-ql or org-agenda internals.
+
+**Why you'd use it:** The built-in views (engage, review-stuck-projects, etc.) cover common needs, but you have unique workflows. Maybe you only want to see work-related NEXT actions, or projects in a specific area, or items tagged "urgent". This lets you create exactly the view you need.
+
+**Who needs it:** Users who want views tailored to their specific workflow beyond the built-in commands.
+
+**Your first custom view (5 minutes):**
+
+Let's create a view showing only your NEXT actions (no calendar, no agenda).
+
+1. Add this to your config file:
+   #+begin_src emacs-lisp
+   (defun my-next-actions ()
+     "Show all NEXT actions in a simple list."
+     (interactive)
+     (org-gtd-view-show
+      '((name . "All NEXT Actions")
+        (filters . ((todo . ("NEXT")))))))
+   #+end_src
+
+2. Save and reload your config (~M-x eval-buffer~ or restart Emacs)
+
+3. Run it:
+   #+begin_example
+   M-x my-next-actions
+   #+end_example
+
+You'll see all your NEXT actions in one list. That's it—you've created a custom view!
+
+**Understanding how views work:**
+
+Think of views like filtered searches. You tell org-gtd what to show using ~filters~, and it finds matching items.
+
+The built-in ~org-gtd-engage~ command? It uses ~org-gtd-view-show~ internally. ~org-gtd-review-stuck-projects~? Same thing. You're now using the same tool the package uses to create its own views.
+
+Each view has two parts:
+- ~name~ :: What to call the view (shows in agenda header)
+- ~filters~ :: What to show (category, TODO state, tags, dates, etc.)
+
+Filters are pairs like ~(filter-type . value)~. Multiple filters combine with AND logic—all must match.
+
+**Tutorial: Common custom views**
+
+*Show only work-related NEXT actions:*
+
+#+begin_src emacs-lisp
+(defun my-work-next-actions ()
+  "Show NEXT actions for work projects only."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Work NEXT Actions")
+     (filters . ((todo . ("NEXT"))
+                 (area-of-focus . "Work"))))))
+#+end_src
+
+Two filters: must be NEXT AND must be in Work area.
+
+*Show projects that are stuck:*
+
+#+begin_src emacs-lisp
+(defun my-stuck-projects ()
+  "Show projects with no NEXT actions."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Stuck Projects")
+     (filters . ((category . stuck-projects))))))
+#+end_src
+
+One filter: category must be stuck-projects (built-in category that checks for stuck state).
+
+*Show items with past deadlines:*
+
+#+begin_src emacs-lisp
+(defun my-overdue-items ()
+  "Show all items with deadlines in the past."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Overdue Items")
+     (filters . ((deadline . past))))))
+#+end_src
+
+One filter: deadline must be in the past. (Automatically excludes DONE items.)
+
+*Show multiple related views together:*
+
+#+begin_src emacs-lisp
+(defun my-morning-review ()
+  "Show morning planning views: NEXT actions and calendar."
+  (interactive)
+  (org-gtd-view-show
+   '(((name . "Today's NEXT Actions")
+      (filters . ((todo . ("NEXT")))))
+     ((name . "Upcoming Calendar Items")
+      (filters . ((category . calendar)
+                  (timestamp . future)))))))
+#+end_src
+
+This shows TWO views in one agenda: NEXT actions first, then upcoming calendar items.
+
+**Common patterns:**
+
+*Filter by area of focus:*
+#+begin_src emacs-lisp
+(filters . ((area-of-focus . "Work")))
+#+end_src
+
+*Filter by category (item type):*
+#+begin_src emacs-lisp
+(filters . ((category . projects)))      ; All projects
+(filters . ((category . actions)))       ; Single actions
+(filters . ((category . delegated)))     ; Delegated items
+(filters . ((category . calendar)))      ; Calendar items
+(filters . ((category . stuck-projects))) ; Stuck projects only
+#+end_src
+
+*Filter by TODO state:*
+#+begin_src emacs-lisp
+(filters . ((todo . ("NEXT"))))          ; Just NEXT
+(filters . ((todo . ("TODO" "NEXT"))))   ; TODO or NEXT
+#+end_src
+
+*Filter by time:*
+#+begin_src emacs-lisp
+(filters . ((deadline . past)))          ; Overdue deadlines
+(filters . ((timestamp . past)))         ; Past timestamps
+(filters . ((timestamp . future)))       ; Future timestamps
+(filters . ((scheduled . today)))        ; Scheduled for today
+#+end_src
+
+*Combine multiple filters (AND logic):*
+#+begin_src emacs-lisp
+(filters . ((category . projects)
+            (area-of-focus . "Work")
+            (deadline . past)))
+; Shows: Projects AND Work area AND overdue
+#+end_src
+
+**When to create custom views:**
+
+Create a custom view when you find yourself:
+- Repeatedly filtering the engage view manually
+- Wanting to see specific combinations org-gtd doesn't provide
+- Needing views for specific contexts (home office, traveling, morning routine)
+- Organizing weekly reviews around specific categories
+
+Don't create views for one-time queries—just use the built-in views and navigate. Create views for repeated patterns in your workflow.
+
+**Binding to keys:**
+
+Once you've created a view you use often, bind it to a key:
+
+#+begin_src emacs-lisp
+;; Vanilla Emacs
+(global-set-key (kbd "C-c d w") 'my-work-next-actions)
+
+;; Doom Emacs (in config.el)
+(map! :leader
+      (:prefix "d"
+       :desc "Work NEXT actions" "w" #'my-work-next-actions))
+
+;; Spacemacs (in user-config)
+(spacemacs/set-leader-keys "od w" 'my-work-next-actions)
+#+end_src
+
+**Complete filter reference:**
+
+For the full list of available filters and their syntax, see [[#view-dsl-reference][View DSL Reference]].
+
+Common filters include:
+- ~category~ :: projects, actions, delegated, calendar, stuck-projects, etc.
+- ~todo~ :: List of TODO keywords to match
+- ~area-of-focus~ :: Specific area/category
+- ~deadline~, ~scheduled~, ~timestamp~ :: Time-based filters (past, future, today)
+- ~tags~ :: Match specific tags
+- ~level~ :: Heading level (2 for projects, 3+ for tasks)
+
+**Command reference:**
+
+*Function signature:*
+#+begin_src emacs-lisp
+(org-gtd-view-show VIEW-SPEC-OR-SPECS)
+#+end_src
+
+*Arguments:*
+- ~VIEW-SPEC-OR-SPECS~ :: Either a single view specification (alist) or list of view specifications
+
+*View specification structure:*
+#+begin_src emacs-lisp
+'((name . "View Name")
+  (filters . ((filter-type . value)
+              (filter-type . value)
+              ...)))
+#+end_src
+
+*Multiple views:*
+#+begin_src emacs-lisp
+'(((name . "View 1")
+   (filters . (...)))
+  ((name . "View 2")
+   (filters . (...))))
+#+end_src
+
+*Returns:* Opens org-agenda buffer with the specified view
+
+*Example:*
+#+begin_src emacs-lisp
+;; Single view
+(org-gtd-view-show
+ '((name . "Active Projects")
+   (filters . ((category . projects)))))
+
+;; Multiple views
+(org-gtd-view-show
+ '(((name . "NEXT Actions")
+    (filters . ((todo . ("NEXT")))))
+   ((name . "Stuck Projects")
+    (filters . ((category . stuck-projects))))))
+#+end_src
+
 *** Clarification Commands
 
 **** ~org-gtd-clarify-item~

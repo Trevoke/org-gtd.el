@@ -78,42 +78,20 @@ This is where the project name is displayed, on the left side."
 (defun org-gtd-engage ()
   "Display `org-agenda' customized by org-gtd."
   (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands
-             (org-gtd-view-lang--create-custom-commands
-              (list (org-gtd-engage-view-spec))
-              "g"
-              "Scheduled today and all NEXT items")))
-        (org-agenda nil "g")
-        (goto-char (point-min)))))
+  (org-gtd-view-show (org-gtd-engage-view-spec)))
 
 ;;;###autoload
 (defun org-gtd-engage-grouped-by-context ()
   "Show all `org-gtd-next' actions grouped by context (tag prefixed with @)."
   (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands
-             (org-gtd-view-lang--create-custom-commands
-              (list (org-gtd-engage-grouped-by-context-view-spec))
-              "g"
-              "actions by context")))
-        (org-agenda nil "g"))))
+  (org-gtd-view-show (org-gtd-engage-grouped-by-context-view-spec)))
 
 ;;;###autoload
 (defun org-gtd-show-all-next ()
   "Show all next actions from all agenda files in a single list.
 This assumes all GTD files are also agenda files."
   (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands
-             (org-gtd-view-lang--create-custom-commands
-              (list (org-gtd-show-all-next-view-spec))
-              "n"
-              "All Next Actions")))
-        (org-agenda nil "n"))))
+  (org-gtd-view-show (org-gtd-show-all-next-view-spec)))
 
 ;;;; Functions
 
