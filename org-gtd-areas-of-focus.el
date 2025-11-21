@@ -68,10 +68,22 @@
       (with-current-buffer buffer
         (widen)
         (goto-char pos)
-        (if (string-equal (org-entry-get nil "ORG_GTD" t)
-                          "Actions")
-            (org-up-heading-safe))
-        (org-gtd-area-of-focus-set-on-item-at-point)))))
+
+        ;; Check if this item has ORG_GTD property
+        (unless (org-entry-get nil "ORG_GTD" t)
+          (user-error "This item has no ORG_GTD property - cannot set area of focus"))
+
+        ;; Determine if this is a project task
+        (let* ((org-gtd-refile (org-entry-get nil "ORG_GTD_REFILE" t))
+               (org-gtd (org-entry-get nil "ORG_GTD" nil))
+               (is-project-task (and (string-equal org-gtd-refile "Projects")
+                                     (string-equal org-gtd "Actions"))))
+
+          (if is-project-task
+              ;; Project task: set CATEGORY on all tasks in the project
+              (org-gtd-areas-of-focus--set-on-project-tasks)
+            ;; Non-project task: set CATEGORY on this task only
+            (org-gtd-area-of-focus-set-on-item-at-point)))))))
 
 ;;;; Functions
 
@@ -80,6 +92,45 @@
 (defalias 'org-gtd-set-area-of-focus 'org-gtd-areas-of-focus--set)
 
 ;;;;; Private
+
+(defun org-gtd-areas-of-focus--set-on-project-tasks ()
+  "Set area of focus on all tasks in the project containing the task at point.
+If the task belongs to multiple projects, prompt user to choose which project."
+  (require 'org-gtd-projects)
+  ;; Get project IDs for this task
+  (let* ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS"))
+         (project-id (cond
+                      ;; No projects - shouldn't happen if caller checked properly
+                      ((null project-ids)
+                       (error "Task has no project IDs"))
+                      ;; Single project - use it
+                      ((= (length project-ids) 1)
+                       (car project-ids))
+                      ;; Multiple projects - prompt user
+                      (t
+                       (let* ((project-names
+                               (mapcar (lambda (id)
+                                         (org-with-point-at (org-id-find id t)
+                                           (cons (org-get-heading t t t t) id)))
+                                       project-ids))
+                              (chosen-name (completing-read
+                                            "Which project? "
+                                            (mapcar #'car project-names)
+                                            nil t)))
+                         (cdr (assoc chosen-name project-names))))))
+         ;; Get marker for the project
+         (project-marker (org-id-find project-id t))
+         ;; Get all tasks in this project
+         (task-markers (org-gtd-projects--collect-tasks-by-graph project-marker))
+         ;; Prompt for area of focus
+         (chosen-area (completing-read
+                       "Which area of focus does this project belong to? "
+                       org-gtd-areas-of-focus
+                       nil t)))
+    ;; Set CATEGORY on all tasks
+    (dolist (task-marker task-markers)
+      (org-with-point-at task-marker
+        (org-entry-put (point) "CATEGORY" chosen-area)))))
 
 (defun org-gtd-areas-of-focus--set ()
   "Use as a hook when decorating items after clarifying them.

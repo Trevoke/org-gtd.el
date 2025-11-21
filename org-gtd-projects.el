@@ -116,6 +116,12 @@ instead.")
       (with-current-buffer buffer
         (widen)
         (goto-char pos)
+        ;; Verify this is actually a project task before going up
+        (let ((org-gtd-refile (org-entry-get nil "ORG_GTD_REFILE" t))
+              (org-gtd (org-entry-get nil "ORG_GTD" nil)))
+          (unless (and (string-equal org-gtd-refile "Projects")
+                       (string-equal org-gtd "Actions"))
+            (user-error "This is not a project task - cannot cancel project from here")))
         (org-up-heading-safe)
         (org-gtd-project-cancel)))))
 

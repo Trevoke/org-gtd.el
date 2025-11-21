@@ -53,7 +53,20 @@
         (basic-save-buffer))
 
       (let ((archived-projects (ogt--archive-string)))
-        (expect archived-projects :to-match "project tailline"))))
+        (expect archived-projects :to-match "project tailline")))
+
+  (it "errors when called on a single action (not a project task)"
+      ;; Bug fix: calling project-cancel on a single action should error,
+      ;; not try to cancel the parent Actions heading
+      (create-single-action "not a project task")
+      (org-gtd-engage)
+      (with-current-buffer org-agenda-buffer
+        (goto-char (point-min))
+        (search-forward "not a project task")
+        ;; Should error because this is not a project task
+        (expect (org-gtd-project-cancel-from-agenda)
+                :to-throw
+                'user-error))))
 
  (describe
   "displaying the guide when the project is poorly shaped"
