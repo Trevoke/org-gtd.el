@@ -54,7 +54,8 @@
    ("T" "Trash task" org-gtd-graph-trash-task)
    ("e" "Edit in org file" org-gtd-graph-ui-jump-to-task)
    ("t" "Change TODO state" org-gtd-graph-change-state)
-   ("i" "Show relationships" org-gtd-graph-view-show-relationships)]
+   ("i" "Show relationships" org-gtd-graph-view-show-relationships)
+   ("I" "Incubate this project" org-gtd-graph-incubate-project)]
   ["Navigation"
    ("n" "Next successor" org-gtd-graph-nav-down-dependency :transient t)
    ("p" "Previous blocker" org-gtd-graph-nav-up-dependency :transient t)
@@ -1032,6 +1033,15 @@ Prompts for confirmation before trashing."
 
     (message "Changed TODO state")
     (org-gtd-graph-view-refresh)))
+
+(defun org-gtd-graph-incubate-project ()
+  "Incubate the current project being viewed in graph mode.
+
+Calls org-gtd-incubate which will detect it's on a project heading
+and incubate the entire project with all its tasks."
+  (interactive)
+  (org-with-point-at org-gtd-graph-view--project-marker
+    (call-interactively #'org-gtd-incubate)))
 
 ;;;; Footer
 
