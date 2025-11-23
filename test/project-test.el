@@ -844,4 +844,38 @@
 
         ;; Verify PREVIOUS_* properties were removed
         (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-be nil)
-        (expect (org-entry-get (point) "PREVIOUS_TODO") :to-be nil))))
+        (expect (org-entry-get (point) "PREVIOUS_TODO") :to-be nil)))
+
+  (it "collects all tasks in a project by graph traversal"
+      (create-project "Test project")
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Test project")
+        (org-back-to-heading t)
+        (let ((project-marker (point-marker))
+              (task-ids '()))
+
+          ;; Get all task IDs
+          (goto-char (point-min))
+          (search-forward "Task 1")
+          (org-back-to-heading t)
+          (push (org-id-get-create) task-ids)
+          (goto-char (point-min))
+          (search-forward "Task 2")
+          (org-back-to-heading t)
+          (push (org-id-get-create) task-ids)
+          (goto-char (point-min))
+          (search-forward "Task 3")
+          (org-back-to-heading t)
+          (push (org-id-get-create) task-ids)
+
+          (setq task-ids (nreverse task-ids))
+
+          ;; Get tasks via helper
+          (let ((task-markers (org-gtd-project--get-all-tasks project-marker)))
+            ;; Should return 3 task markers
+            (expect (length task-markers) :to-equal 3)
+            ;; Each marker should point to a task with matching ID
+            (dolist (marker task-markers)
+              (org-with-point-at marker
+                (expect (member (org-id-get) task-ids) :to-be-truthy))))))))

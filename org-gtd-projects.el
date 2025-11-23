@@ -702,6 +702,13 @@ Removes PREVIOUS_* properties."
         (org-todo previous-todo)
         (org-entry-delete (point) "PREVIOUS_TODO")))))
 
+(defun org-gtd-project--get-all-tasks (project-marker)
+  "Return list of markers for all tasks in project at PROJECT-MARKER.
+
+Uses existing org-gtd-projects--collect-tasks-by-graph to traverse
+the project's dependency graph and collect all task markers."
+  (org-gtd-projects--collect-tasks-by-graph project-marker))
+
 ;;;;; Command: Configure Single Task
 
 (defun org-gtd-project--configure-single-task ()
