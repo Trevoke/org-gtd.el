@@ -798,9 +798,7 @@ Reactivates the project by:
 1. Restoring state for project heading and all tasks
 2. Removing ORG_GTD_TIMESTAMP property
 3. Recalculating NEXT/TODO states based on dependencies
-4. Opening graph view for user review (when called interactively)
-
-Note: Graph view opening will be added in later task."
+4. Opening graph view for user review (when called interactively)"
   (interactive (list (point-marker)))
 
   (org-with-point-at project-marker
@@ -818,8 +816,10 @@ Note: Graph view opening will be added in later task."
     ;; Recalculate NEXT/TODO states based on dependencies
     (org-gtd-projects-fix-todo-keywords project-marker)
 
-    ;; TODO: Open graph view when called interactively (added in later task)
-    ))
+    ;; Open graph view when called interactively
+    (when (called-interactively-p 'any)
+      (require 'org-gtd-graph-mode)
+      (org-gtd-show-project-graph project-marker))))
 
 ;;;;; Command: Configure Single Task
 
