@@ -980,4 +980,39 @@
               (expect (length external-deps) :to-equal 1)
               (expect (org-with-point-at (car external-deps)
                         (org-id-get))
-                      :to-equal task-b1-id))))))))
+                      :to-equal task-b1-id)))))))
+
+  (it "skips multi-project tasks during incubation"
+      ;; Create project with a task that belongs to multiple projects
+      (create-project "Project A")
+      (create-project "Project B")
+
+      (with-current-buffer (org-gtd--default-file)
+        ;; Make Task 1 belong to both projects
+        (goto-char (point-min))
+        (re-search-forward "Project A")
+        (let ((project-a-id (org-id-get-create)))
+          (goto-char (point-min))
+          (re-search-forward "Project B")
+          (let ((project-b-id (org-id-get-create)))
+
+            ;; Add both project IDs to Task 1 of Project A
+            (goto-char (point-min))
+            (re-search-forward "Project A")
+            (org-next-visible-heading 1)  ; Task 1
+            (org-entry-put (point) "ORG_GTD_PROJECT_IDS" (format "%s %s" project-a-id project-b-id))
+            (let ((task-1-todo (org-entry-get (point) "TODO")))
+
+              ;; Incubate Project A
+              (goto-char (point-min))
+              (re-search-forward "Project A")
+              (org-back-to-heading t)
+              (org-gtd-project-incubate (point-marker) "2025-12-01")
+
+              ;; Verify Task 1 was NOT incubated (it belongs to multiple projects)
+              (goto-char (point-min))
+              (re-search-forward "Project A")
+              (org-next-visible-heading 1)
+              (expect (org-entry-get (point) "ORG_GTD") :not :to-equal "Incubated")
+              (expect (org-entry-get (point) "TODO") :to-equal task-1-todo))))))
+)

@@ -670,19 +670,28 @@ dependencies aren't set up properly."
 Saves current ORG_GTD value to PREVIOUS_ORG_GTD property.
 Saves current TODO keyword to PREVIOUS_TODO property.
 Sets ORG_GTD to 'Incubated'.
-Clears the TODO keyword."
+Clears the TODO keyword.
+
+Skips tasks that belong to multiple projects (identified by multiple
+IDs in ORG_GTD_PROJECT_IDS property)."
   (org-with-point-at marker
-    (let ((current-org-gtd (org-entry-get (point) "ORG_GTD"))
-          (current-todo (org-entry-get (point) "TODO")))
-      ;; Save current state
-      (when current-org-gtd
-        (org-entry-put (point) "PREVIOUS_ORG_GTD" current-org-gtd))
-      (when current-todo
-        (org-entry-put (point) "PREVIOUS_TODO" current-todo))
-      ;; Set incubated state
-      (org-entry-put (point) "ORG_GTD" "Incubated")
-      ;; Clear TODO keyword
-      (org-todo 'none))))
+    ;; Check if this is a multi-project task
+    (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+      (if (> (length project-ids) 1)
+          ;; Skip multi-project tasks
+          (message "Skipping multi-project task: %s" (org-get-heading t t t t))
+        ;; Normal incubation
+        (let ((current-org-gtd (org-entry-get (point) "ORG_GTD"))
+              (current-todo (org-entry-get (point) "TODO")))
+          ;; Save current state
+          (when current-org-gtd
+            (org-entry-put (point) "PREVIOUS_ORG_GTD" current-org-gtd))
+          (when current-todo
+            (org-entry-put (point) "PREVIOUS_TODO" current-todo))
+          ;; Set incubated state
+          (org-entry-put (point) "ORG_GTD" "Incubated")
+          ;; Clear TODO keyword
+          (org-todo 'none))))))
 
 (defun org-gtd-project--restore-state (marker)
   "Restore ORG_GTD and TODO state at MARKER from PREVIOUS_* properties.
