@@ -3853,6 +3853,68 @@ Some tasks can belong to multiple projects. This command handles them safely:
 - If your projects look correct already
 - Before making external changes (use after, not before)
 
+**** ~org-gtd-incubate~
+
+**What it is:** Smart command to pause items you're not ready to work on yet.
+
+**Why you'd use it:** You have a project or action that's a good idea, but not right now. You want to set it aside with a reminder to review it later, without losing your planning work.
+
+**Who needs it:** Anyone managing "someday/maybe" items or projects they want to defer.
+
+**Your first use (30 seconds):**
+
+1. Navigate to a project or action
+2. Run: ~M-x org-gtd-incubate~
+3. Enter review date: ~2025-12-01~
+4. Done - it disappears from your engage view until that date
+
+**What it does:**
+
+Detects what you're on:
+- Project heading → incubates entire project with all tasks
+- Project task → incubates the project it belongs to
+- Single action → incubates just that action
+
+For projects:
+- Preserves all task states and dependencies
+- Hides everything from engage/NEXT views
+- Adds review date to your agenda
+- Skips multi-project tasks (tasks shared between projects)
+
+**When to use:**
+
+- Projects you want to pursue "someday" but not now
+- Ideas that need to marinate before you're ready
+- Seasonal projects (start each year)
+- Projects blocked by external factors beyond your control
+
+**** ~org-gtd-reactivate~
+
+**What it is:** Bring back incubated projects and actions.
+
+**Why you'd use it:** The review date arrived, you're ready to work on it again.
+
+**Your first use (30 seconds):**
+
+1. When you see an incubated item in agenda (on its review date)
+2. Run: ~M-x org-gtd-reactivate~
+3. Graph view opens - review the project structure
+4. Adjust if needed and close
+
+**What it does:**
+
+- Restores original item states (project → Projects, actions → Actions, etc.)
+- Restores task TODO keywords
+- Recalculates NEXT tasks based on current dependencies
+- Opens project graph view (for projects) so you can review and adjust
+- Removes the review date
+
+**When to use:**
+
+- When an incubated item appears in your agenda on its review date
+- When you're ready to reactivate something earlier than scheduled
+- During weekly review when scanning incubated items
+
 *** Task Dependency Commands
 :PROPERTIES:
 :CUSTOM_ID: task-dependency-commands
