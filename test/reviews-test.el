@@ -73,6 +73,44 @@
           (expect agenda-contents :to-match "Overdue delegated")
           )))))
 
+ (describe
+  "Area of focus review with incubated projects"
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs)
+               (setq org-gtd-areas-of-focus '("Work" "Personal")))
+  (after-each (ogt--close-and-delete-files))
+
+  (it "shows incubated projects in area review"
+      ;; Create active and incubated projects in Work area
+      (create-project "Active work project")
+      (create-project "Incubated work project")
+
+      (with-current-buffer (org-gtd--default-file)
+        ;; Set CATEGORY property for both projects to Work area
+        (goto-char (point-min))
+        (search-forward "Active work project")
+        (org-back-to-heading t)
+        (org-entry-put (point) "CATEGORY" "Work")
+
+        (goto-char (point-min))
+        (search-forward "Incubated work project")
+        (org-back-to-heading t)
+        (org-entry-put (point) "CATEGORY" "Work")
+
+        ;; Incubate the second project
+        (org-gtd-incubate "2025-12-01"))
+
+      ;; Run area of focus review for Work
+      (org-gtd-review-area-of-focus "Work")
+
+      (with-current-buffer org-agenda-buffer
+        ;; Should show active project in Active projects section
+        (expect (buffer-string) :to-match "Active projects")
+        (expect (buffer-string) :to-match "Active work project")
+        ;; Should show incubated project in Incubated projects section
+        (expect (buffer-string) :to-match "Incubated projects")
+        (expect (buffer-string) :to-match "Incubated work project"))))
+
 
 ;; (let* ((yesterday (format-org-date -1))
 ;;        (tomorrow (format-org-date 1))

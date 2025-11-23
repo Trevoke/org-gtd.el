@@ -43,6 +43,11 @@
      (filters . ((category . projects)
                  (area-of-focus . ,area))))
 
+    ((name . "Incubated projects")
+     (filters . ((category . incubated-projects)
+                 (area-of-focus . ,area)))
+     (prefix-format . "  Incubated: "))
+
     ((name . "Next actions")
      (filters . ((todo . (,(org-gtd-keywords--next)))
                  (area-of-focus . ,area))))
