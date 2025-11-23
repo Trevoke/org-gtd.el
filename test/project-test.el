@@ -909,4 +909,37 @@
           (expect (org-entry-get (point) "ORG_GTD") :to-equal "Incubated")
           (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-equal "Actions")
           (expect (org-entry-get (point) "TODO") :to-be nil)
-          (expect (org-entry-get (point) "PREVIOUS_TODO") :to-equal "NEXT"))))))
+          (expect (org-entry-get (point) "PREVIOUS_TODO") :to-equal "NEXT"))))
+
+  (it "reactivates an incubated project"
+      (create-project "Test project")
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Test project")
+        (org-back-to-heading t)
+        (let ((project-marker (point-marker)))
+
+          ;; First incubate it
+          (org-gtd-project-incubate project-marker "2025-12-01")
+
+          ;; Verify it's incubated
+          (org-with-point-at project-marker
+            (expect (org-entry-get (point) "ORG_GTD") :to-equal "Incubated"))
+
+          ;; Now reactivate it
+          (org-gtd-project-reactivate project-marker)
+
+          ;; Verify project heading is restored
+          (org-with-point-at project-marker
+            (expect (org-entry-get (point) "ORG_GTD") :to-equal "Projects")
+            (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-be nil)
+            (expect (org-entry-get (point) "ORG_GTD_TIMESTAMP") :to-be nil))
+
+          ;; Verify tasks are restored
+          (goto-char (point-min))
+          (search-forward "Task 1")
+          (org-back-to-heading t)
+          (expect (org-entry-get (point) "ORG_GTD") :to-equal "Actions")
+          (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-be nil)
+          ;; TODO keyword should be restored (will be NEXT after recalculation)
+          (expect (org-entry-get (point) "TODO") :not :to-be nil))))))

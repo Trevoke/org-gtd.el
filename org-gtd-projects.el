@@ -739,6 +739,39 @@ Does not check for external dependencies or multi-project tasks yet
       (dolist (task-marker task-markers)
         (org-gtd-project--save-state task-marker)))))
 
+;;;###autoload
+(defun org-gtd-project-reactivate (project-marker)
+  "Reactivate incubated project at PROJECT-MARKER.
+
+PROJECT-MARKER is a marker pointing to the project heading.
+
+Reactivates the project by:
+1. Restoring state for project heading and all tasks
+2. Removing ORG_GTD_TIMESTAMP property
+3. Recalculating NEXT/TODO states based on dependencies
+4. Opening graph view for user review (when called interactively)
+
+Note: Graph view opening will be added in later task."
+  (interactive (list (point-marker)))
+
+  (org-with-point-at project-marker
+    ;; Restore project heading state
+    (org-gtd-project--restore-state project-marker)
+
+    ;; Remove review date
+    (org-entry-delete (point) "ORG_GTD_TIMESTAMP")
+
+    ;; Restore all tasks
+    (let ((task-markers (org-gtd-project--get-all-tasks project-marker)))
+      (dolist (task-marker task-markers)
+        (org-gtd-project--restore-state task-marker)))
+
+    ;; Recalculate NEXT/TODO states based on dependencies
+    (org-gtd-projects-fix-todo-keywords project-marker)
+
+    ;; TODO: Open graph view when called interactively (added in later task)
+    ))
+
 ;;;;; Command: Configure Single Task
 
 (defun org-gtd-project--configure-single-task ()
