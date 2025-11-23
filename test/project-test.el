@@ -942,4 +942,42 @@
           (expect (org-entry-get (point) "ORG_GTD") :to-equal "Actions")
           (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-be nil)
           ;; TODO keyword should be restored (will be NEXT after recalculation)
-          (expect (org-entry-get (point) "TODO") :not :to-be nil))))))
+          (expect (org-entry-get (point) "TODO") :not :to-be nil))))
+
+  (it "warns about external dependencies before incubating"
+      ;; Create two projects: Project A and Project B
+      ;; Task in Project B depends on task in Project A
+      ;; Incubating Project A should warn about Project B task
+
+      (create-project "Project A")
+      (create-project "Project B")
+
+      (with-current-buffer (org-gtd--default-file)
+        ;; Get IDs for tasks
+        (goto-char (point-min))
+        (re-search-forward "Project A")
+        (org-next-visible-heading 1)  ; Task 1 of Project A
+        (let ((task-a1-id (org-id-get-create)))
+
+          (goto-char (point-min))
+          (re-search-forward "Project B")
+          (org-next-visible-heading 1)  ; Task 1 of Project B
+          (let ((task-b1-id (org-id-get-create)))
+
+            ;; Make Task B1 depend on Task A1 (external dependency)
+            (org-entry-add-to-multivalued-property (point) "ORG_GTD_DEPENDS_ON" task-a1-id)
+            (goto-char (point-min))
+            (re-search-forward "Project A")
+            (org-next-visible-heading 1)
+            (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" task-b1-id)
+
+            ;; Check for external dependencies on Project A
+            (goto-char (point-min))
+            (re-search-forward "Project A")
+            (org-back-to-heading t)
+            (let ((external-deps (org-gtd-project--check-external-dependencies (point-marker))))
+              ;; Should find Task B1 as external dependency
+              (expect (length external-deps) :to-equal 1)
+              (expect (org-with-point-at (car external-deps)
+                        (org-id-get))
+                      :to-equal task-b1-id))))))))

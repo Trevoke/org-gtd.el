@@ -709,6 +709,33 @@ Uses existing org-gtd-projects--collect-tasks-by-graph to traverse
 the project's dependency graph and collect all task markers."
   (org-gtd-projects--collect-tasks-by-graph project-marker))
 
+(defun org-gtd-project--check-external-dependencies (project-marker)
+  "Check for external tasks depending on PROJECT-MARKER's tasks.
+
+Returns list of markers to external tasks (tasks not in this project)
+that have DEPENDS_ON pointing to tasks in this project.
+
+Used to warn user before incubating a project."
+  (let ((project-tasks (org-gtd-project--get-all-tasks project-marker))
+        (project-task-ids (mapcar (lambda (m)
+                                    (org-with-point-at m (org-id-get)))
+                                  (org-gtd-project--get-all-tasks project-marker)))
+        (external-deps '()))
+
+    ;; For each task in project, check what blocks it
+    (dolist (task-marker project-tasks)
+      (org-with-point-at task-marker
+        (let ((task-id (org-id-get))
+              (blocks-ids (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
+          ;; For each task this blocks, check if it's external
+          (dolist (blocked-id blocks-ids)
+            (unless (member blocked-id project-task-ids)
+              ;; This is an external dependency
+              (when-let ((blocked-marker (org-id-find blocked-id t)))
+                (push blocked-marker external-deps)))))))
+
+    (delete-dups external-deps)))
+
 ;;;###autoload
 (defun org-gtd-project-incubate (project-marker review-date)
   "Incubate project at PROJECT-MARKER with REVIEW-DATE.
@@ -728,6 +755,19 @@ Does not check for external dependencies or multi-project tasks yet
          (org-read-date nil nil nil "Review date: ")))
 
   (org-with-point-at project-marker
+    ;; Check for external dependencies
+    (let ((external-deps (org-gtd-project--check-external-dependencies project-marker)))
+      (when external-deps
+        (let ((dep-names (mapcar (lambda (m)
+                                   (org-with-point-at m
+                                     (org-get-heading t t t t)))
+                                 external-deps)))
+          (unless (yes-or-no-p
+                   (format "External tasks depend on this project:\n%s\n\nContinue incubating? "
+                           (mapconcat (lambda (name) (format "  - %s" name))
+                                      dep-names "\n")))
+            (user-error "Incubation cancelled")))))
+
     ;; Save and incubate project heading
     (org-gtd-project--save-state project-marker)
 
