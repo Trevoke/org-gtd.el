@@ -98,6 +98,33 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
             (org-gtd-organize--call
              (lambda () (org-gtd-incubate--apply config-override))))))))))
 
+;;;###autoload
+(defun org-gtd-reactivate ()
+  "Reactivate incubated item at point.
+
+Smart dispatcher that detects context:
+- On incubated project heading: reactivate entire project
+- On incubated single item: reactivate that item (future enhancement)"
+  (interactive)
+
+  ;; Check if item is incubated
+  (let ((org-gtd-value (org-entry-get (point) "ORG_GTD")))
+    (unless (string= org-gtd-value "Incubated")
+      (user-error "Item at point is not incubated (ORG_GTD: %s)" org-gtd-value))
+
+    ;; Detect if this is a project heading by checking PREVIOUS_ORG_GTD
+    (let ((previous-org-gtd (org-entry-get (point) "PREVIOUS_ORG_GTD")))
+      (cond
+       ;; Case 1: Was a project heading - reactivate project
+       ((string= previous-org-gtd "Projects")
+        (require 'org-gtd-projects)
+        (org-gtd-project-reactivate (point-marker)))
+
+       ;; Case 2: Was a single item - reactivate that item
+       ;; TODO: Implement single item reactivation logic (future enhancement)
+       (t
+        (user-error "Single item reactivation not yet implemented"))))))
+
 ;;;; Functions
 
 ;;;;; Public

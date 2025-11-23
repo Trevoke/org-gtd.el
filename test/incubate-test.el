@@ -82,4 +82,29 @@
         (expect (org-entry-get (point) "ORG_GTD") :not :to-equal "Projects")
         (expect (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")
                 :to-equal nil))))
+
+(describe "Smart reactivation dispatcher"
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
+  (it "detects incubated project and calls org-gtd-project-reactivate"
+      (create-project "Test project")
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Test project")
+        (org-back-to-heading t)
+
+        ;; Incubate it first
+        (org-gtd-incubate "2025-12-01")
+
+        ;; Verify it's incubated
+        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Incubated")
+
+        ;; Reactivate it
+        (org-gtd-reactivate)
+
+        ;; Verify it's reactivated
+        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Projects")
+        (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-be nil))))
 )
