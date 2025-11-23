@@ -709,6 +709,36 @@ Uses existing org-gtd-projects--collect-tasks-by-graph to traverse
 the project's dependency graph and collect all task markers."
   (org-gtd-projects--collect-tasks-by-graph project-marker))
 
+;;;###autoload
+(defun org-gtd-project-incubate (project-marker review-date)
+  "Incubate project at PROJECT-MARKER with REVIEW-DATE.
+
+PROJECT-MARKER is a marker pointing to the project heading.
+REVIEW-DATE is a string in YYYY-MM-DD format.
+
+Incubates the project by:
+1. Saving state for project heading and all tasks
+2. Setting ORG_GTD_TIMESTAMP for review date
+3. Marking everything as Incubated
+
+Does not check for external dependencies or multi-project tasks yet
+(those validations added in later tasks)."
+  (interactive
+   (list (point-marker)
+         (org-read-date nil nil nil "Review date: ")))
+
+  (org-with-point-at project-marker
+    ;; Save and incubate project heading
+    (org-gtd-project--save-state project-marker)
+
+    ;; Set review date
+    (org-entry-put (point) "ORG_GTD_TIMESTAMP" (format "<%s>" review-date))
+
+    ;; Incubate all tasks
+    (let ((task-markers (org-gtd-project--get-all-tasks project-marker)))
+      (dolist (task-marker task-markers)
+        (org-gtd-project--save-state task-marker)))))
+
 ;;;;; Command: Configure Single Task
 
 (defun org-gtd-project--configure-single-task ()

@@ -878,4 +878,35 @@
             ;; Each marker should point to a task with matching ID
             (dolist (marker task-markers)
               (org-with-point-at marker
-                (expect (member (org-id-get) task-ids) :to-be-truthy))))))))
+                (expect (member (org-id-get) task-ids) :to-be-truthy)))))))
+
+(describe "Project incubation"
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
+  (it "incubates a project with review date"
+      (create-project "Test project")
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Test project")
+        (org-back-to-heading t)
+        (let ((project-marker (point-marker)))
+
+          ;; Incubate with review date
+          (org-gtd-project-incubate project-marker "2025-12-01")
+
+          ;; Verify project heading is incubated
+          (org-with-point-at project-marker
+            (expect (org-entry-get (point) "ORG_GTD") :to-equal "Incubated")
+            (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-equal "Projects")
+            (expect (org-entry-get (point) "ORG_GTD_TIMESTAMP") :to-equal "<2025-12-01>"))
+
+          ;; Verify all tasks are incubated
+          (goto-char (point-min))
+          (search-forward "Task 1")
+          (org-back-to-heading t)
+          (expect (org-entry-get (point) "ORG_GTD") :to-equal "Incubated")
+          (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-equal "Actions")
+          (expect (org-entry-get (point) "TODO") :to-be nil)
+          (expect (org-entry-get (point) "PREVIOUS_TODO") :to-equal "NEXT"))))))
