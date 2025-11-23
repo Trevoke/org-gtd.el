@@ -3121,4 +3121,66 @@
                 (expect agenda-content :not :to-match "Task B")
                 (expect agenda-content :to-match "Task C"))))))))
 
+(describe "Incubating and reactivating projects (end-to-end)"
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
+  (it "full incubation → reactivation cycle preserves project state"
+      ;; Create a project with dependencies
+      (create-project "Future project")
+
+      (with-current-buffer (org-gtd--default-file)
+        ;; Verify initial state: Task 1 is NEXT
+        (goto-char (point-min))
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "TODO") :to-equal "NEXT")
+
+        ;; Incubate the project
+        (goto-char (point-min))
+        (search-forward "Future project")
+        (org-back-to-heading t)
+        (org-gtd-incubate "2025-12-01")
+
+        ;; Verify project is incubated
+        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Incubated")
+        (expect (org-entry-get (point) "ORG_GTD_TIMESTAMP") :to-equal "<2025-12-01>")
+
+        ;; Verify tasks are incubated (no TODO keywords)
+        (goto-char (point-min))
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Incubated")
+        (expect (org-entry-get (point) "TODO") :to-be nil)
+        (expect (org-entry-get (point) "PREVIOUS_TODO") :to-equal "NEXT"))
+
+      ;; Verify it doesn't appear in engage view
+      (org-gtd-engage)
+      (with-current-buffer org-agenda-buffer
+        (expect (buffer-string) :not :to-match "Task 1"))
+
+      ;; Reactivate the project
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Future project")
+        (org-back-to-heading t)
+        (org-gtd-reactivate)
+
+        ;; Verify project is reactivated
+        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Projects")
+        (expect (org-entry-get (point) "ORG_GTD_TIMESTAMP") :to-be nil)
+
+        ;; Verify tasks are reactivated with TODO keywords
+        (goto-char (point-min))
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Actions")
+        (expect (org-entry-get (point) "TODO") :to-equal "NEXT"))
+
+      ;; Verify it appears in engage view again
+      (org-gtd-engage)
+      (with-current-buffer org-agenda-buffer
+        (expect (buffer-string) :to-match "Task 1"))))
+
 ;;; end-to-end-test.el ends here
