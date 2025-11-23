@@ -684,6 +684,24 @@ Clears the TODO keyword."
       ;; Clear TODO keyword
       (org-todo 'none))))
 
+(defun org-gtd-project--restore-state (marker)
+  "Restore ORG_GTD and TODO state at MARKER from PREVIOUS_* properties.
+
+Restores PREVIOUS_ORG_GTD to ORG_GTD property.
+Restores PREVIOUS_TODO to TODO keyword.
+Removes PREVIOUS_* properties."
+  (org-with-point-at marker
+    (let ((previous-org-gtd (org-entry-get (point) "PREVIOUS_ORG_GTD"))
+          (previous-todo (org-entry-get (point) "PREVIOUS_TODO")))
+      ;; Restore ORG_GTD
+      (when previous-org-gtd
+        (org-entry-put (point) "ORG_GTD" previous-org-gtd)
+        (org-entry-delete (point) "PREVIOUS_ORG_GTD"))
+      ;; Restore TODO keyword
+      (when previous-todo
+        (org-todo previous-todo)
+        (org-entry-delete (point) "PREVIOUS_TODO")))))
+
 ;;;;; Command: Configure Single Task
 
 (defun org-gtd-project--configure-single-task ()

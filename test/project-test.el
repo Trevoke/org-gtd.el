@@ -820,4 +820,28 @@
         (expect (org-entry-get (point) "ORG_GTD") :to-equal "Incubated")
 
         ;; Verify TODO keyword was cleared
-        (expect (org-entry-get (point) "TODO") :to-be nil))))
+        (expect (org-entry-get (point) "TODO") :to-be nil)))
+
+  (it "restores ORG_GTD and TODO state from PREVIOUS_* properties"
+      (create-project "Test project")
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+
+        ;; Set up incubated state with saved previous values
+        (org-entry-put (point) "ORG_GTD" "Incubated")
+        (org-entry-put (point) "PREVIOUS_ORG_GTD" "Actions")
+        (org-entry-put (point) "PREVIOUS_TODO" "NEXT")
+        (org-todo 'none)  ; Clear TODO keyword
+
+        ;; Restore state
+        (org-gtd-project--restore-state (point))
+
+        ;; Verify state was restored
+        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Actions")
+        (expect (org-entry-get (point) "TODO") :to-equal "NEXT")
+
+        ;; Verify PREVIOUS_* properties were removed
+        (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-be nil)
+        (expect (org-entry-get (point) "PREVIOUS_TODO") :to-be nil))))
