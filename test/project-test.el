@@ -792,3 +792,32 @@
        (org-back-to-heading t)
        (expect (org-entry-get (point) "TODO") :to-equal "NEXT")))
 )
+
+(describe "State preservation for incubation"
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
+  (it "saves ORG_GTD and TODO state to PREVIOUS_* properties"
+      (create-project "Test project")
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+
+        ;; Set up initial state
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (org-entry-put (point) "TODO" "NEXT")
+
+        ;; Save state
+        (org-gtd-project--save-state (point))
+
+        ;; Verify state was saved
+        (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-equal "Actions")
+        (expect (org-entry-get (point) "PREVIOUS_TODO") :to-equal "NEXT")
+
+        ;; Verify ORG_GTD changed to Incubated
+        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Incubated")
+
+        ;; Verify TODO keyword was cleared
+        (expect (org-entry-get (point) "TODO") :to-be nil))))

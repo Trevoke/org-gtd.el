@@ -664,6 +664,26 @@ dependencies aren't set up properly."
   (insert " [/]")
   (org-update-statistics-cookies t))
 
+(defun org-gtd-project--save-state (marker)
+  "Save ORG_GTD and TODO state at MARKER to PREVIOUS_* properties for incubation.
+
+Saves current ORG_GTD value to PREVIOUS_ORG_GTD property.
+Saves current TODO keyword to PREVIOUS_TODO property.
+Sets ORG_GTD to 'Incubated'.
+Clears the TODO keyword."
+  (org-with-point-at marker
+    (let ((current-org-gtd (org-entry-get (point) "ORG_GTD"))
+          (current-todo (org-entry-get (point) "TODO")))
+      ;; Save current state
+      (when current-org-gtd
+        (org-entry-put (point) "PREVIOUS_ORG_GTD" current-org-gtd))
+      (when current-todo
+        (org-entry-put (point) "PREVIOUS_TODO" current-todo))
+      ;; Set incubated state
+      (org-entry-put (point) "ORG_GTD" "Incubated")
+      ;; Clear TODO keyword
+      (org-todo 'none))))
+
 ;;;;; Command: Configure Single Task
 
 (defun org-gtd-project--configure-single-task ()
