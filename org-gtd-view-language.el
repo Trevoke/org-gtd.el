@@ -43,6 +43,8 @@
 ;;   (category . completed-projects)  - Projects with all tasks done
 ;;   (category . stuck-projects)      - Projects with no NEXT/WAIT tasks
 ;;   (category . incubate)            - Incubated items (ORG_GTD="Incubated")
+;;   (category . incubated-projects)  - Incubated projects (ORG_GTD="Incubated" & PREVIOUS_ORG_GTD="Projects")
+;;   (category . incubated)           - Any incubated item (ORG_GTD="Incubated")
 ;;   (category . habit)               - Habit items (STYLE="habit")
 ;;
 ;; Time-based Filters:
@@ -251,6 +253,13 @@ GTD-VIEW-SPEC should be an alist with 'name and 'filters keys."
                 (project-is-stuck))))
    ((eq category 'incubate)
     (list `(property ,org-gtd-prop-category ,org-gtd-incubate)))
+   ((eq category 'incubated-projects)
+    ;; Match headings with ORG_GTD: Incubated AND PREVIOUS_ORG_GTD: Projects
+    (list '(and (property "ORG_GTD" "Incubated")
+                (property "PREVIOUS_ORG_GTD" "Projects"))))
+   ((eq category 'incubated)
+    ;; Match any item with ORG_GTD: Incubated
+    (list '(property "ORG_GTD" "Incubated")))
    ((eq category 'habit)
     (list `(property ,org-gtd-prop-style ,org-gtd-prop-style-value-habit)))
    (t (error "Unknown category: %s" category))))

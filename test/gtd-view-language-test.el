@@ -128,6 +128,26 @@
                       (not (done)))))))
 
  (describe
+  "Incubated category filters"
+
+  (it "can define a GTD view for incubated projects only"
+      (let ((incubated-projects-spec
+             '((name . "Incubated Projects")
+               (filters . ((category . incubated-projects))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql incubated-projects-spec)
+                :to-equal
+                '(and (and (property "ORG_GTD" "Incubated")
+                           (property "PREVIOUS_ORG_GTD" "Projects"))))))
+
+  (it "can define a GTD view for all incubated items"
+      (let ((incubated-spec
+             '((name . "All Incubated")
+               (filters . ((category . incubated))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql incubated-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Incubated"))))))
+
+ (describe
   "Agenda-Specific View Features"
 
   (it "can detect agenda view type and create agenda block instead of org-ql block"
