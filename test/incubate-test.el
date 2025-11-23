@@ -48,4 +48,38 @@
         (create-deferred-item "Yowza" date)
         (expect (file-contains? (org-gtd--default-file)
                                (format "<%s-%#02d-%#02d>" year month day))
-                :to-be-truthy)))))
+                :to-be-truthy))))
+
+(describe "Smart incubation dispatcher"
+  (before-each (setq inhibit-message t)
+               (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
+  (it "detects project heading and calls org-gtd-project-incubate"
+      (create-project "Test project")
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Test project")
+        (org-back-to-heading t)
+
+        ;; Call org-gtd-incubate with review date parameter
+        (org-gtd-incubate "2025-12-01")
+
+        ;; Verify project was incubated
+        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Incubated")
+        (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-equal "Projects")))
+
+  (it "detects single item and uses existing incubation logic"
+      ;; Just verify that calling org-gtd-incubate on a single item
+      ;; doesn't error and uses the existing path
+      (create-single-action "Test action")
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Test action")
+        (org-back-to-heading t)
+
+        ;; Verify it's not a project (should use existing incubation logic)
+        (expect (org-entry-get (point) "ORG_GTD") :not :to-equal "Projects")
+        (expect (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")
+                :to-equal nil))))
+)

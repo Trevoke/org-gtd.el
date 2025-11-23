@@ -52,13 +52,51 @@
 (defun org-gtd-incubate (&optional reminder-date)
   "Decorate, organize and refile item at point as incubated.
 
+Smart dispatcher that detects context:
+- On project heading (ORG_GTD: Projects): incubate entire project
+- On project task (has ORG_GTD_PROJECT_IDS): incubate project(s)
+- On single item: use existing single-item incubation logic
+
 If you want to call this non-interactively,
 REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
   (interactive)
-  (let ((config-override (when reminder-date
-                           `(('active-timestamp . ,(lambda (x) (format "<%s>" reminder-date)))))))
-    (org-gtd-organize--call
-     (lambda () (org-gtd-incubate--apply config-override)))))
+
+  ;; Get the actual marker - works from both org buffers and agenda buffers
+  (let* ((marker (or (org-get-at-bol 'org-marker)
+                     (point-marker))))
+    (org-with-point-at marker
+      ;; Detect context
+      (let* ((org-gtd-value (org-entry-get (point) "ORG_GTD"))
+             (project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS"))
+             (is-project-heading (string= org-gtd-value "Projects"))
+             (is-project-task (> (length project-ids) 0)))
+
+        (cond
+         ;; Case 1: On project heading - incubate the project
+         (is-project-heading
+          (require 'org-gtd-projects)
+          (let ((review-date (or reminder-date
+                                 (org-read-date nil nil nil "Review date: "))))
+            (org-gtd-project-incubate (point-marker) review-date)))
+
+         ;; Case 2: On project task - incubate the project(s)
+         ;; For now, just incubate the first project (multi-project selection added later)
+         (is-project-task
+          (require 'org-gtd-projects)
+          (let* ((project-id (car project-ids))
+                 (project-marker (org-id-find project-id t))
+                 (review-date (or reminder-date
+                                  (org-read-date nil nil nil "Review date: "))))
+            (if project-marker
+                (org-gtd-project-incubate project-marker review-date)
+              (user-error "Cannot find project with ID: %s" project-id))))
+
+         ;; Case 3: Single item - use existing logic
+         (t
+          (let ((config-override (when reminder-date
+                                   `(('active-timestamp . ,(lambda (x) (format "<%s>" reminder-date)))))))
+            (org-gtd-organize--call
+             (lambda () (org-gtd-incubate--apply config-override))))))))))
 
 ;;;; Functions
 
