@@ -207,4 +207,99 @@
           (search-forward "Task C")
           (expect (org-entry-get (point) "TODO") :to-equal "NEXT")))))
 
+  (describe "WAIT state handling"
+    (it "keeps dependent task TODO when parent changes from NEXT to WAIT"
+        ;; This tests the bug from v3:
+        ;; When user changes a NEXT task to WAIT, dependent tasks should NOT
+        ;; automatically become NEXT. They should stay TODO because the
+        ;; blocking task is not done, just waiting.
+        (with-temp-buffer
+          (org-mode)
+          (make-project "Project Test"
+                       :id "project-id"
+                       :first-tasks '("task-a"))
+          (make-task "Task A"
+                    :id "task-a"
+                    :level 2
+                    :status 'next  ;; Task A starts as NEXT
+                    :project-ids '("project-id")
+                    :blocks '("task-b"))
+          (make-task "Task B"
+                    :id "task-b"
+                    :level 2
+                    :status 'todo   ;; Task B is TODO (blocked by A)
+                    :project-ids '("project-id")
+                    :depends-on '("task-a"))
+
+          ;; User manually changes Task A from NEXT to WAIT
+          (goto-char (point-min))
+          (search-forward "Task A")
+          (org-back-to-heading t)
+          (org-entry-put (point) "TODO" "WAIT")
+
+          ;; Run fix function (simulates what happens on state change or manual fix)
+          (goto-char (point-min))
+          (org-gtd-projects-fix-todo-keywords (point-marker))
+
+          ;; Verify: Task A should be WAIT (user's explicit choice)
+          (goto-char (point-min))
+          (search-forward "Task A")
+          (org-back-to-heading t)
+          (expect (org-entry-get (point) "TODO") :to-equal "WAIT")
+
+          ;; Verify: Task B should still be TODO (not NEXT!)
+          ;; WAIT is not DONE, so B shouldn't become ready
+          (goto-char (point-min))
+          (search-forward "Task B")
+          (org-back-to-heading t)
+          (expect (org-entry-get (point) "TODO") :to-equal "TODO")))
+
+    (it "keeps child task TODO when parent is WAIT in three-task chain"
+        ;; Extended case: A→B→C, when A is WAIT, both B and C should be TODO
+        (with-temp-buffer
+          (org-mode)
+          (make-project "Project Test"
+                       :id "project-id"
+                       :first-tasks '("task-a"))
+          (make-task "Task A"
+                    :id "task-a"
+                    :level 2
+                    :status 'wait   ;; A is WAIT (user set or already waiting)
+                    :project-ids '("project-id")
+                    :blocks '("task-b"))
+          (make-task "Task B"
+                    :id "task-b"
+                    :level 2
+                    :status 'todo
+                    :project-ids '("project-id")
+                    :depends-on '("task-a")
+                    :blocks '("task-c"))
+          (make-task "Task C"
+                    :id "task-c"
+                    :level 2
+                    :status 'todo
+                    :project-ids '("project-id")
+                    :depends-on '("task-b"))
+
+          (goto-char (point-min))
+          (org-gtd-projects-fix-todo-keywords (point-marker))
+
+          ;; Task A: stays WAIT
+          (goto-char (point-min))
+          (search-forward "Task A")
+          (org-back-to-heading t)
+          (expect (org-entry-get (point) "TODO") :to-equal "WAIT")
+
+          ;; Task B: should be TODO (blocked by WAIT A)
+          (goto-char (point-min))
+          (search-forward "Task B")
+          (org-back-to-heading t)
+          (expect (org-entry-get (point) "TODO") :to-equal "TODO")
+
+          ;; Task C: should be TODO (blocked by TODO B)
+          (goto-char (point-min))
+          (search-forward "Task C")
+          (org-back-to-heading t)
+          (expect (org-entry-get (point) "TODO") :to-equal "TODO"))))
+
 ;;; projects-fix-todo-keywords-test.el ends here
