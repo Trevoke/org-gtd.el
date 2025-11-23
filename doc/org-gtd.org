@@ -5624,6 +5624,25 @@ If items aren't appearing in ~org-gtd-engage~:
 
 See [[#config-vars-reference][Configuration Variables Reference]] for all configuration options.
 
+** Tasks still showing after incubating project
+
+*Symptom*: Incubated a project but some tasks still appear in engage view.
+
+*Diagnosis*:
+- Multi-project tasks (tasks shared between projects) are not incubated
+- If task belongs to Project A and Project B, and you only incubate Project A, the task stays visible
+
+*Solution*:
+- Check task's ORG_GTD_PROJECT_IDS property to see which projects it belongs to
+- Either incubate all projects the task belongs to, or remove it from one project first
+- During incubation, watch for "Skipping multi-project task" messages
+
+*Recommended workflow*:
+1. Before incubating: review the project for multi-project tasks
+2. Decide: should this task stay active (part of other project) or be incubated too?
+3. If incubating: incubate all projects it belongs to
+4. If staying active: accept that it will remain visible
+
 ** Still stuck?
 
 If you're still having problems:
