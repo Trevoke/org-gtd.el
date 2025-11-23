@@ -2494,25 +2494,25 @@ For GTD users managing multiple projects where some need to be dormant temporari
 
 Let's incubate a project right now.
 
-***** Step 1: Find a project you're not ready for
+*Step 1: Find a project you're not ready for*
 
 Open graph view for any project: ~M-x org-gtd-show-project-graph~
 
 Or navigate to any project heading in your GTD file.
 
-***** Step 2: Incubate it
+*Step 2: Incubate it*
 
 Press ~I~ in graph view, or run ~M-x org-gtd-incubate~
 
 Enter a review date when prompted: ~2025-06-01~
 
-***** Step 3: Verify it's gone
+*Step 3: Verify it's gone*
 
 Open your engage view: ~C-c d e~
 
 The project's tasks are GONE from your NEXT list. No clutter.
 
-***** Step 4: Check your review date
+*Step 4: Check your review date*
 
 The incubated project will appear in your agenda on 2025-06-01 as a reminder to reconsider it.
 
@@ -2522,7 +2522,7 @@ The incubated project will appear in your agenda on 2025-06-01 as a reminder to 
 
 When you incubate a project, org-gtd performs several operations to make it completely invisible while preserving state:
 
-***** State Preservation
+*State Preservation*
 
 For the project heading and every task:
 - Current ~ORG_GTD~ property → saved to ~PREVIOUS_ORG_GTD~ (e.g., "Projects" → "Projects")
@@ -2532,15 +2532,15 @@ For the project heading and every task:
 
 **Why clear keywords?** This makes incubated tasks invisible to all views naturally. Your engage view shows ~(todo . "NEXT")~—tasks with no keywords don't match, so they disappear automatically.
 
-***** Review Date Storage
+*Review Date Storage*
 
 The review date is stored in the project heading's ~ORG_GTD_TIMESTAMP~ property as ~<2025-06-01>~. This makes the project appear in your org-agenda on that date, just like delegated items or calendar events.
 
-***** Dependency Preservation
+*Dependency Preservation*
 
 ALL dependency relationships (~ORG_GTD_DEPENDS_ON~, ~ORG_GTD_BLOCKS~) remain intact. They're dormant—they don't affect anything while incubated—but they're there. When you reactivate, dependencies work exactly as before.
 
-***** Multi-Project Tasks
+*Multi-Project Tasks*
 
 If a task belongs to MULTIPLE projects (has multiple IDs in ~ORG_GTD_PROJECT_IDS~), it is NOT incubated. Why? Because it's still needed by other active projects.
 
@@ -2552,7 +2552,7 @@ The task remains active with its TODO keyword intact.
 
 Let's walk through a realistic scenario: you have annual projects that you only work on during specific seasons.
 
-***** The Problem
+*The Problem*
 
 You're tracking these projects:
 - "Annual Review Process" (only relevant December-January)
@@ -2561,7 +2561,7 @@ You're tracking these projects:
 
 It's March. None of these are relevant, but they clutter your project list and NEXT tasks keep appearing in your engage view.
 
-***** The Solution: Incubate Until Needed
+*The Solution: Incubate Until Needed*
 
 In March, incubate all three:
 
@@ -2572,7 +2572,7 @@ In March, incubate all three:
 
 Your engage view is now clean—only projects you can work on THIS MONTH.
 
-***** When Review Dates Arrive
+*When Review Dates Arrive*
 
 On May 1st, "Summer Conference Planning" appears in your agenda:
 
@@ -2585,7 +2585,7 @@ Options:
 - *Ready to activate?* Press ~RET~ to jump to it, then ~M-x org-gtd-reactivate~
 - *Still not ready?* Leave it incubated, or re-incubate with a later date
 
-***** Reactivation Details
+*Reactivation Details*
 
 When you run ~org-gtd-reactivate~:
 
@@ -2606,7 +2606,7 @@ When you run ~org-gtd-reactivate~:
 
 **** Common Patterns and Scenarios
 
-***** Pattern: "Not Now, But Someday"
+*Pattern: "Not Now, But Someday"*
 
 Project ideas that might happen eventually:
 
@@ -2621,7 +2621,7 @@ Project ideas that might happen eventually:
 - Or use quarterly review dates (2025-07-01, 2025-10-01, etc.)
 - When review arrives, ask: "Is this the right time?" If no, re-incubate for next quarter
 
-***** Pattern: "Waiting for External Factor"
+*Pattern: "Waiting for External Factor"*
 
 Projects blocked by external dependencies:
 
@@ -2636,7 +2636,7 @@ Projects blocked by external dependencies:
 - Add note in project heading: "Incubated because: waiting for budget approval"
 - When reactivated, first task might be "Check if budget was approved"
 
-***** Pattern: "Quarterly Batch Projects"
+*Pattern: "Quarterly Batch Projects"*
 
 Projects you tackle in batches:
 
@@ -2651,7 +2651,7 @@ Projects you tackle in batches:
 - Review dates: 2025-04-01, 2025-07-01, 2025-10-01, 2026-01-01
 - Consistent rhythm without manual tracking
 
-***** Pattern: "Collaborative Project, Waiting for Team"
+*Pattern: "Collaborative Project, Waiting for Team"*
 
 Project requires specific people who aren't available:
 
@@ -2667,7 +2667,7 @@ Project requires specific people who aren't available:
 
 **** Advanced: External Dependencies and Warnings
 
-***** What Are External Dependencies?
+*What Are External Dependencies?*
 
 Imagine:
 - Project A has "Task A1: Research vendor options"
@@ -2675,7 +2675,7 @@ Imagine:
 
 Task B1 has an *external dependency*—it depends on a task from a different project.
 
-***** What Happens When Incubating
+*What Happens When Incubating*
 
 If you incubate Project A, org-gtd warns you:
 
@@ -2696,7 +2696,7 @@ Continue incubating? (y/n)
 
 3. *Remove the dependency*: Before incubating, use graph view to remove the B1 → A1 dependency link. Decide if B1 should proceed independently.
 
-***** Real-World Example
+*Real-World Example*
 
 You're planning a conference (Project Conference) with these tasks:
 - Book venue
@@ -2712,7 +2712,7 @@ If you incubate Project Conference (venue not booked yet, conference might not h
 
 **** Technical Details: How Incubation Works Under the Hood
 
-***** Property-Based State Management
+*Property-Based State Management*
 
 Incubation uses properties, not file movement. The project and its tasks stay in the same file, same location. Only properties change:
 
@@ -2748,7 +2748,7 @@ Note:
 - Original values saved in ~PREVIOUS_*~ properties
 - Dependencies (~ORG_GTD_BLOCKS~) preserved unchanged
 
-***** View Filtering Mechanism
+*View Filtering Mechanism*
 
 Why don't incubated tasks appear in views?
 
@@ -2760,7 +2760,7 @@ For area-of-focus reviews that show projects, we filter: ~(and (property "ORG_GT
 
 Incubated projects have ~(property "ORG_GTD" "Incubated")~ instead of "Projects", so they appear in a separate "Incubated projects" section.
 
-***** Reactivation Dependency Recalculation
+*Reactivation Dependency Recalculation*
 
 When you reactivate, here's the exact sequence:
 
@@ -2783,7 +2783,7 @@ When you reactivate, here's the exact sequence:
 
 **Why recalculate?** You might have manually edited the project while incubated—added tasks, changed dependencies, marked some DONE. Recalculation ensures consistent state.
 
-***** Multi-Project Task Detection
+*Multi-Project Task Detection*
 
 The check:
 #+begin_src elisp
@@ -2800,7 +2800,7 @@ If ~ORG_GTD_PROJECT_IDS~ contains ~"project-a project-b"~ (two IDs), the task be
 
 **** Troubleshooting Incubation
 
-***** Tasks Still Showing After Incubating Project
+*Tasks Still Showing After Incubating Project*
 
 *Symptom:* You incubated a project, but some of its tasks still appear in your engage view.
 
@@ -2815,7 +2815,7 @@ If ~ORG_GTD_PROJECT_IDS~ contains ~"project-a project-b"~ (two IDs), the task be
 - Remove the task from one of the projects first
 - Accept that the task stays visible (it's genuinely active in another project)
 
-***** Incubated Project Doesn't Appear on Review Date
+*Incubated Project Doesn't Appear on Review Date*
 
 *Symptom:* Review date arrived (e.g., June 1st), but the project doesn't show in your agenda.
 
@@ -2830,7 +2830,7 @@ If ~ORG_GTD_PROJECT_IDS~ contains ~"project-a project-b"~ (two IDs), the task be
 - If format is wrong: manually fix to ~<YYYY-MM-DD>~
 - If file not in agenda: ~M-x org-agenda-file-to-front~ while in the GTD file
 
-***** Reactivated Project Has Wrong NEXT/TODO States
+*Reactivated Project Has Wrong NEXT/TODO States*
 
 *Symptom:* After reactivating, tasks that should be NEXT are showing as TODO, or vice versa.
 
@@ -2844,7 +2844,7 @@ If ~ORG_GTD_PROJECT_IDS~ contains ~"project-a project-b"~ (two IDs), the task be
 - If recalculation doesn't fix it: dependencies might be incorrect
 - Use ~d~ to modify dependencies, then ~r~ to recalculate
 
-***** Can't Reactivate: "Not Incubated" Error
+*Can't Reactivate: "Not Incubated" Error*
 
 *Symptom:* Running ~org-gtd-reactivate~ gives error: "Item at point is not incubated"
 

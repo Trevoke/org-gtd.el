@@ -193,6 +193,9 @@ Working with Projects (Advanced)
 * Exporting Project Graphs::
 * Troubleshooting Projects with Graph View::
 * See Also::
+* Incubating Projects Pausing Work You're Not Ready For::
+* NEXT Task 1 Research options::
+* Task 1 Research options::
 * Cleaning up / archiving completed work::
 * Commands you can call on org-agenda::
 * Defining your own agenda views::
@@ -299,6 +302,7 @@ Troubleshooting
 * Projects without a NEXT item::
 * I can't create a project when clarifying an inbox item!::
 * Configuration problems::
+* Tasks still showing after incubating project::
 * Still stuck?::
 
 Configuration problems
@@ -2636,6 +2640,9 @@ You learned sequential projects in @ref{Tutorial Your First Project}. This secti
 * Exporting Project Graphs::
 * Troubleshooting Projects with Graph View::
 * See Also::
+* Incubating Projects Pausing Work You're Not Ready For::
+* NEXT Task 1 Research options::
+* Task 1 Research options::
 * Cleaning up / archiving completed work::
 * Commands you can call on org-agenda::
 * Defining your own agenda views::
@@ -4048,6 +4055,560 @@ Try @code{R} to refresh if the graph is in an inconsistent state
 @ref{Commands Reference} for all project management commands
 @item
 @ref{View DSL Filter Reference} for creating custom project views
+@end itemize
+
+@node Incubating Projects Pausing Work You're Not Ready For
+@subsection Incubating Projects: Pausing Work You're Not Ready For
+
+@itemize
+@item
+@anchor{First Contact Why Incubate Projects?}First Contact: Why Incubate Projects?
+
+
+You're managing 15 active projects. Some are ready to work on NOW@. Others are good ideas, but wrong timing—maybe you're waiting for budget approval, or team availability, or just aren't ready to commit yet.
+
+Keeping them all visible in your engage view creates noise. You scan past 10 "someday" projects to find the 5 you can actually work on today. That's cognitive load you don't need.
+
+@strong{Incubating projects solves this.} Pause a project with a review date. It disappears from your engage view, your NEXT lists, everywhere—but preserves the complete project structure (all tasks, dependencies, planning work). When the review date arrives or you're ready, reactivate it with one command. The project springs back to life exactly as you left it.
+
+For GTD users managing multiple projects where some need to be dormant temporarily.
+
+@item
+@anchor{Black Triangle Incubate Your First Project in 30 Seconds}Black Triangle: Incubate Your First Project in 30 Seconds
+
+
+Let's incubate a project right now.
+
+@strong{Step 1: Find a project you're not ready for}
+
+Open graph view for any project: @code{M-x org-gtd-show-project-graph}
+
+Or navigate to any project heading in your GTD file.
+
+@strong{Step 2: Incubate it}
+
+Press @code{I} in graph view, or run @code{M-x org-gtd-incubate}
+
+Enter a review date when prompted: @code{2025-06-01}
+
+@strong{Step 3: Verify it's gone}
+
+Open your engage view: @code{C-c d e}
+
+The project's tasks are GONE from your NEXT list. No clutter.
+
+@strong{Step 4: Check your review date}
+
+The incubated project will appear in your agenda on 2025-06-01 as a reminder to reconsider it.
+
+@strong{Success!} You've paused a project without losing any of your planning work.
+
+@item
+@anchor{Understanding Incubation What Actually Happens}Understanding Incubation: What Actually Happens
+
+
+When you incubate a project, org-gtd performs several operations to make it completely invisible while preserving state:
+
+@strong{State Preservation}
+
+For the project heading and every task:
+@itemize
+@item
+Current @code{ORG_GTD} property → saved to @code{PREVIOUS_ORG_GTD} (e.g., "Projects" → "Projects")
+@item
+Current TODO keyword → saved to @code{PREVIOUS_TODO} property (e.g., "NEXT" → "NEXT")
+@item
+@code{ORG_GTD} property → set to "Incubated"
+@item
+TODO keyword → cleared completely (becomes nil)
+@end itemize
+
+@strong{@strong{Why clear keywords?}} This makes incubated tasks invisible to all views naturally. Your engage view shows ~(todo . "NEXT")~—tasks with no keywords don't match, so they disappear automatically.
+
+@strong{Review Date Storage}
+
+The review date is stored in the project heading's @code{ORG_GTD_TIMESTAMP} property as @code{<2025-06-01>}. This makes the project appear in your org-agenda on that date, just like delegated items or calendar events.
+
+@strong{Dependency Preservation}
+
+ALL dependency relationships (@code{ORG_GTD_DEPENDS_ON}, @code{ORG_GTD_BLOCKS}) remain intact. They're dormant—they don't affect anything while incubated—but they're there. When you reactivate, dependencies work exactly as before.
+
+@strong{Multi-Project Tasks}
+
+If a task belongs to MULTIPLE projects (has multiple IDs in @code{ORG_GTD_PROJECT_IDS}), it is NOT incubated. Why? Because it's still needed by other active projects.
+
+You'll see: "Skipping multi-project task: Task Name"
+
+The task remains active with its TODO keyword intact.
+
+@item
+@anchor{Tutorial Managing Seasonal Projects}Tutorial: Managing Seasonal Projects
+
+
+Let's walk through a realistic scenario: you have annual projects that you only work on during specific seasons.
+
+@strong{The Problem}
+
+You're tracking these projects:
+@itemize
+@item
+"Annual Review Process" (only relevant December-January)
+@item
+"Summer Conference Planning" (only relevant May-August)
+@item
+"Q4 Budget Proposals" (only relevant September-November)
+@end itemize
+
+It's March. None of these are relevant, but they clutter your project list and NEXT tasks keep appearing in your engage view.
+
+@strong{The Solution: Incubate Until Needed}
+
+In March, incubate all three:
+
+@enumerate
+@item
+Navigate to "Summer Conference Planning"
+@item
+@code{M-x org-gtd-incubate}
+@item
+Review date: @code{2025-05-01}
+@item
+Repeat for other seasonal projects with appropriate dates
+@end enumerate
+
+Your engage view is now clean—only projects you can work on THIS MONTH@.
+
+@strong{When Review Dates Arrive}
+
+On May 1st, "Summer Conference Planning" appears in your agenda:
+
+@example
+Tuesday 1 May 2025
+  Summer Conference Planning (review incubated project)
+@end example
+
+Options:
+@itemize
+@item
+@strong{Ready to activate?} Press @code{RET} to jump to it, then @code{M-x org-gtd-reactivate}
+@item
+@strong{Still not ready?} Leave it incubated, or re-incubate with a later date
+@end itemize
+
+@strong{Reactivation Details}
+
+When you run @code{org-gtd-reactivate}:
+
+@enumerate
+@item
+State restoration happens automatically:
+@itemize
+@item
+@code{PREVIOUS_ORG_GTD} → @code{ORG_GTD} (Incubated → Projects)
+@item
+@code{PREVIOUS_TODO} → TODO keywords restored
+@item
+@code{ORG_GTD_TIMESTAMP} removed (no longer in agenda)
+@end itemize
+
+@item
+Dependency recalculation runs:
+@itemize
+@item
+@code{org-gtd-projects-fix-todo-keywords} examines all dependencies
+@item
+Tasks with satisfied dependencies → marked NEXT
+@item
+Tasks still blocked → remain TODO
+@end itemize
+
+@item
+Project graph opens automatically:
+@itemize
+@item
+Review the project structure
+@item
+Verify NEXT/TODO states make sense
+@item
+Make any needed adjustments (@code{a}, @code{d}, @code{r} keys)
+@end itemize
+@end enumerate
+
+@item
+@anchor{Common Patterns and Scenarios}Common Patterns and Scenarios
+
+
+@strong{Pattern: "Not Now, But Someday"}
+
+Project ideas that might happen eventually:
+
+@example
+"Rewrite legacy authentication system"
+"Migrate to new CRM platform"
+"Redesign company website"
+@end example
+
+@strong{Strategy:}
+@itemize
+@item
+Incubate with a FAR future date (2026-01-01)
+@item
+Or use quarterly review dates (2025-07-01, 2025-10-01, etc.)
+@item
+When review arrives, ask: "Is this the right time?" If no, re-incubate for next quarter
+@end itemize
+
+@strong{Pattern: "Waiting for External Factor"}
+
+Projects blocked by external dependencies:
+
+@example
+"Launch new product" (waiting for legal approval)
+"Office redesign" (waiting for budget committee meeting on May 15th)
+"Implement new API" (waiting for vendor release)
+@end example
+
+@strong{Strategy:}
+@itemize
+@item
+Incubate with review date = when you expect the blocker to clear
+@item
+Add note in project heading: "Incubated because: waiting for budget approval"
+@item
+When reactivated, first task might be "Check if budget was approved"
+@end itemize
+
+@strong{Pattern: "Quarterly Batch Projects"}
+
+Projects you tackle in batches:
+
+@example
+"Review expenses" (quarterly)
+"Update documentation" (quarterly)
+"Audit security" (quarterly)
+@end example
+
+@strong{Strategy:}
+@itemize
+@item
+After completing Q1 batch, incubate with Q2 start date
+@item
+Review dates: 2025-04-01, 2025-07-01, 2025-10-01, 2026-01-01
+@item
+Consistent rhythm without manual tracking
+@end itemize
+
+@strong{Pattern: "Collaborative Project, Waiting for Team"}
+
+Project requires specific people who aren't available:
+
+@example
+"Marketing campaign redesign" (designer on vacation until June)
+"Code refactoring sprint" (waiting for team to finish current release)
+@end example
+
+@strong{Strategy:}
+@itemize
+@item
+Incubate with return/availability date
+@item
+In project heading, note: "Incubated: waiting for Sarah (back June 10th)"
+@item
+Reactivate when team is available, project structure intact
+@end itemize
+
+@item
+@anchor{Advanced External Dependencies and Warnings}Advanced: External Dependencies and Warnings
+
+
+@strong{What Are External Dependencies?}
+
+Imagine:
+@itemize
+@item
+Project A has "Task A1: Research vendor options"
+@item
+Project B (separate project) has "Task B1: Evaluate vendors" that depends on Task A1 completing
+@end itemize
+
+Task B1 has an *external dependency*—it depends on a task from a different project.
+
+@strong{What Happens When Incubating}
+
+If you incubate Project A, org-gtd warns you:
+
+@example
+External tasks depend on this project:
+  - Task B1: Evaluate vendors (in Project B)
+
+Continue incubating? (y/n)
+@end example
+
+@strong{@strong{Why warn?}} Incubating Project A clears Task A1's TODO keyword. Task B1 is still expecting Task A1 to be NEXT or TODO@. This creates a "dangling reference"—B1 is blocked by a task that doesn't exist in active work anymore.
+
+@strong{@strong{Your options:}}
+
+@enumerate
+@item
+@strong{Cancel incubation} (@code{n}): Don't incubate Project A yet. Maybe restructure dependencies first.
+
+@item
+@strong{Continue anyway} (@code{y}): Accept that Task B1 will stay TODO/blocked until you reactivate Project A@. Make a note in Project B about this.
+
+@item
+@strong{Remove the dependency}: Before incubating, use graph view to remove the B1 → A1 dependency link. Decide if B1 should proceed independently.
+@end enumerate
+
+@strong{Real-World Example}
+
+You're planning a conference (Project Conference) with these tasks:
+@itemize
+@item
+Book venue
+@item
+Invite speakers
+@item
+Set up registration
+@end itemize
+
+A separate project (Project Marketing) has:
+@itemize
+@item
+"Design conference branding" → depends on "Book venue" (need venue details for design)
+@end itemize
+
+If you incubate Project Conference (venue not booked yet, conference might not happen), the warning shows you that Marketing's branding task will be stuck.
+
+@strong{Decision:} You might realize the branding task should just wait in Project Marketing with a note "start when conference is confirmed", rather than having a hard dependency. Remove the link before incubating.
+
+@item
+@anchor{Technical Details How Incubation Works Under the Hood}Technical Details: How Incubation Works Under the Hood
+
+
+@strong{Property-Based State Management}
+
+Incubation uses properties, not file movement. The project and its tasks stay in the same file, same location. Only properties change:
+
+Before incubation (Task 1 of a project):
+#+begin@math{_example}
+@end itemize
+
+@node NEXT Task 1 Research options
+@subsection NEXT Task 1: Research options
+
+#+end@math{_example}
+
+After incubation:
+#+begin@math{_example}
+
+@node Task 1 Research options
+@subsection Task 1: Research options
+
+#+end@math{_example}
+
+Note:
+@itemize
+@item
+TODO keyword cleared (was NEXT, now nothing)
+@item
+@code{ORG_GTD} changed to "Incubated"
+@item
+Original values saved in @code{PREVIOUS_*} properties
+@item
+Dependencies (@code{ORG_GTD_BLOCKS}) preserved unchanged
+@end itemize
+
+@strong{View Filtering Mechanism}
+
+Why don't incubated tasks appear in views?
+
+Most views filter by TODO keywords: @code{(todo . "NEXT")}, @code{(todo . "TODO|NEXT|WAIT")}, etc.
+
+Since incubated tasks have NO TODO keyword (cleared to nil), they don't match these filters. Natural exclusion.
+
+For area-of-focus reviews that show projects, we filter: @code{(and (property "ORG_GTD" "Projects") (property "CATEGORY" "Work"))}
+
+Incubated projects have @code{(property "ORG_GTD" "Incubated")} instead of "Projects", so they appear in a separate "Incubated projects" section.
+
+@strong{Reactivation Dependency Recalculation}
+
+When you reactivate, here's the exact sequence:
+
+@enumerate
+@item
+@strong{Restore properties} (for project heading + all tasks):
+@itemize
+@item
+@code{PREVIOUS_ORG_GTD} → @code{ORG_GTD}
+@item
+@code{PREVIOUS_TODO} → TODO keyword
+@item
+Delete @code{PREVIOUS_*} properties
+@item
+Delete @code{ORG_GTD_TIMESTAMP}
+@end itemize
+
+@item
+@strong{Recalculate NEXT/TODO states}:
+@itemize
+@item
+Call @code{org-gtd-projects-fix-todo-keywords}
+@item
+This traverses the dependency graph breadth-first
+@item
+For each task: if ALL dependencies are DONE/CNCL → mark NEXT
+@item
+Otherwise → mark TODO
+@end itemize
+
+@item
+@strong{Open graph view} (if interactive):
+@itemize
+@item
+Shows the reactivated project visually
+@item
+User can verify states, adjust dependencies
+@item
+Immediate feedback on project structure
+@end itemize
+@end enumerate
+
+@strong{@strong{Why recalculate?}} You might have manually edited the project while incubated—added tasks, changed dependencies, marked some DONE@. Recalculation ensures consistent state.
+
+@strong{Multi-Project Task Detection}
+
+The check:
+@lisp
+(let ((project-ids (org-entry-get-multivalued-property
+                     (point) "ORG_GTD_PROJECT_IDS")))
+  (if (> (length project-ids) 1)
+      ;; Skip this task - belongs to multiple projects
+      (message "Skipping multi-project task: %s" (org-get-heading))
+    ;; Normal incubation
+    ...))
+@end lisp
+
+If @code{ORG_GTD_PROJECT_IDS} contains @code{"project-a project-b"} (two IDs), the task belongs to both projects. Incubating one project shouldn't hide the task—it's still needed by the other project.
+
+@itemize
+@item
+@anchor{Troubleshooting Incubation}Troubleshooting Incubation
+
+
+@strong{Tasks Still Showing After Incubating Project}
+
+@strong{Symptom:} You incubated a project, but some of its tasks still appear in your engage view.
+
+@strong{Diagnosis:} Check if those tasks belong to multiple projects:
+@enumerate
+@item
+Navigate to the task
+@item
+@code{C-c C-x p} (show properties)
+@item
+Look at @code{ORG_GTD_PROJECT_IDS} value
+@item
+If it has multiple IDs (space-separated), the task is shared
+@end enumerate
+
+@strong{Solution:} This is expected behavior. Multi-project tasks remain active because other projects need them. Options:
+@itemize
+@item
+Incubate ALL projects the task belongs to (task will then be incubated)
+@item
+Remove the task from one of the projects first
+@item
+Accept that the task stays visible (it's genuinely active in another project)
+@end itemize
+
+@strong{Incubated Project Doesn't Appear on Review Date}
+
+@strong{Symptom:} Review date arrived (e.g., June 1st), but the project doesn't show in your agenda.
+
+@strong{Diagnosis:}
+@enumerate
+@item
+Navigate to the project heading
+@item
+Check for @code{ORG_GTD_TIMESTAMP} property
+@item
+Verify format is @code{<2025-06-01>} (angle brackets, YYYY-MM-DD)
+@item
+Check your org-agenda-files includes the GTD file
+@end enumerate
+
+@strong{Solution:}
+@itemize
+@item
+If property is missing: re-incubate with a date
+@item
+If format is wrong: manually fix to @code{<YYYY-MM-DD>}
+@item
+If file not in agenda: @code{M-x org-agenda-file-to-front} while in the GTD file
+@end itemize
+
+@strong{Reactivated Project Has Wrong NEXT/TODO States}
+
+@strong{Symptom:} After reactivating, tasks that should be NEXT are showing as TODO, or vice versa.
+
+@strong{Diagnosis:} Open graph view (@code{M-x org-gtd-show-project-graph}):
+@itemize
+@item
+Trace arrows (dependencies)
+@item
+Check if dependencies are actually DONE
+@item
+Look for tasks with cleared keywords that should have keywords
+@end itemize
+
+@strong{Solution:}
+@itemize
+@item
+Press @code{r} to refresh and recalculate states
+@item
+If recalculation doesn't fix it: dependencies might be incorrect
+@item
+Use @code{d} to modify dependencies, then @code{r} to recalculate
+@end itemize
+
+@strong{Can't Reactivate: "Not Incubated" Error}
+
+@strong{Symptom:} Running @code{org-gtd-reactivate} gives error: "Item at point is not incubated"
+
+@strong{Diagnosis:} Check the @code{ORG_GTD} property:
+@enumerate
+@item
+@code{C-c C-x p} to show properties
+@item
+Look for @code{ORG_GTD} value
+@item
+Should be "Incubated"
+@end enumerate
+
+@strong{Solution:}
+@itemize
+@item
+If @code{ORG_GTD} is something else (e.g., "Projects"): it's not incubated, nothing to reactivate
+@item
+If manually edited: set @code{ORG_GTD} back to "Incubated" or just manually restore the state
+@item
+If @code{PREVIOUS_*} properties are missing: you'll need to manually set states
+@end itemize
+
+@item
+@anchor{See Also (1)}See Also
+
+
+@itemize
+@item
+@ref{Commands Reference} for @code{org-gtd-incubate} and @code{org-gtd-reactivate} full command details
+@item
+@ref{Tutorial Your First Project} for project basics before incubating
+@item
+@ref{First Contact Why Visual Project Management?, , Why Visual Project Management?} for understanding project structure
+@item
+@ref{Properties Reference (Internal Implementation), , Properties Reference} for @code{PREVIOUS_ORG_GTD}, @code{PREVIOUS_TODO}, @code{ORG_GTD_TIMESTAMP} details
+@end itemize
 @end itemize
 
 @node Cleaning up / archiving completed work
@@ -6003,6 +6564,113 @@ If you only work in Emacs with org-gtd commands (automatic state management work
 If your projects look correct already
 @item
 Before making external changes (use after, not before)
+@end itemize
+
+@item
+@anchor{@code{org-gtd-incubate}}@code{org-gtd-incubate}
+
+
+@strong{@strong{What it is:}} Smart command to pause items you're not ready to work on yet.
+
+@strong{@strong{Why you'd use it:}} You have a project or action that's a good idea, but not right now. You want to set it aside with a reminder to review it later, without losing your planning work.
+
+@strong{@strong{Who needs it:}} Anyone managing "someday/maybe" items or projects they want to defer.
+
+@strong{@strong{Your first use (30 seconds):}}
+
+@enumerate
+@item
+Navigate to a project or action
+@item
+Run: @code{M-x org-gtd-incubate}
+@item
+Enter review date: @code{2025-12-01}
+@item
+Done - it disappears from your engage view until that date
+@end enumerate
+
+@strong{@strong{What it does:}}
+
+Detects what you're on:
+@itemize
+@item
+Project heading → incubates entire project with all tasks
+@item
+Project task → incubates the project it belongs to
+@item
+Single action → incubates just that action
+@end itemize
+
+For projects:
+@itemize
+@item
+Preserves all task states and dependencies
+@item
+Hides everything from engage/NEXT views
+@item
+Adds review date to your agenda
+@item
+Skips multi-project tasks (tasks shared between projects)
+@end itemize
+
+@strong{@strong{When to use:}}
+
+@itemize
+@item
+Projects you want to pursue "someday" but not now
+@item
+Ideas that need to marinate before you're ready
+@item
+Seasonal projects (start each year)
+@item
+Projects blocked by external factors beyond your control
+@end itemize
+
+@item
+@anchor{@code{org-gtd-reactivate}}@code{org-gtd-reactivate}
+
+
+@strong{@strong{What it is:}} Bring back incubated projects and actions.
+
+@strong{@strong{Why you'd use it:}} The review date arrived, you're ready to work on it again.
+
+@strong{@strong{Your first use (30 seconds):}}
+
+@enumerate
+@item
+When you see an incubated item in agenda (on its review date)
+@item
+Run: @code{M-x org-gtd-reactivate}
+@item
+Graph view opens - review the project structure
+@item
+Adjust if needed and close
+@end enumerate
+
+@strong{@strong{What it does:}}
+
+@itemize
+@item
+Restores original item states (project → Projects, actions → Actions, etc.)
+@item
+Restores task TODO keywords
+@item
+Recalculates NEXT tasks based on current dependencies
+@item
+Opens project graph view (for projects) so you can review and adjust
+@item
+Removes the review date
+@end itemize
+
+@strong{@strong{When to use:}}
+
+@itemize
+@item
+When an incubated item appears in your agenda on its review date
+@item
+When you're ready to reactivate something earlier than scheduled
+@item
+During weekly review when scanning incubated items
 @end itemize
 @end itemize
 
@@ -8241,6 +8909,7 @@ This section covers common problems and their solutions. For complete command do
 * Projects without a NEXT item::
 * I can't create a project when clarifying an inbox item!::
 * Configuration problems::
+* Tasks still showing after incubating project::
 * Still stuck?::
 @end menu
 
@@ -8402,6 +9071,41 @@ Project tasks should have @code{ORG_GTD: Actions} and be part of a project
 @end enumerate
 
 See @ref{Configuration Variables Reference} for all configuration options.
+
+@node Tasks still showing after incubating project
+@section Tasks still showing after incubating project
+
+@strong{Symptom}: Incubated a project but some tasks still appear in engage view.
+
+@strong{Diagnosis}:
+@itemize
+@item
+Multi-project tasks (tasks shared between projects) are not incubated
+@item
+If task belongs to Project A and Project B, and you only incubate Project A, the task stays visible
+@end itemize
+
+@strong{Solution}:
+@itemize
+@item
+Check task's ORG@math{_GTD}@math{_PROJECT}@math{_IDS} property to see which projects it belongs to
+@item
+Either incubate all projects the task belongs to, or remove it from one project first
+@item
+During incubation, watch for "Skipping multi-project task" messages
+@end itemize
+
+@strong{Recommended workflow}:
+@enumerate
+@item
+Before incubating: review the project for multi-project tasks
+@item
+Decide: should this task stay active (part of other project) or be incubated too?
+@item
+If incubating: incubate all projects it belongs to
+@item
+If staying active: accept that it will remain visible
+@end enumerate
 
 @node Still stuck?
 @section Still stuck?
