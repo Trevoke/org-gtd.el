@@ -122,15 +122,8 @@ https://gitlab.com/publicvoit/orgmode-link-demo/-/raw/main/link_demo.org ."
          ;; Replace all characters except alphabets, numbers and
          ;; parentheses with spaces.
          (str (replace-regexp-in-string "[^[:alnum:]()]" " " str))
-         ;; On emacs 24.5, multibyte punctuation characters like "："
-         ;; are considered as alphanumeric characters! Below evals to
-         ;; non-nil on emacs 24.5:
-         ;;   (string-match-p "[[:alnum:]]+" "：")
-         ;; So replace them with space manually..
-         (str (if (version< emacs-version "25.0")
-                  (let ((multibyte-punctuations-str "：")) ;String of multibyte punctuation chars
-                    (replace-regexp-in-string (format "[%s]" multibyte-punctuations-str) " " str))
-                str))
+         ;; Multibyte punctuation characters are handled correctly in Emacs 25+
+         (str str)
          ;; Remove leading and trailing whitespace.
          (str (replace-regexp-in-string "\\(^[[:space:]]*\\|[[:space:]]*$\\)" "" str))
          ;; Replace 2 or more spaces with a single space.
