@@ -30,21 +30,38 @@
 ;;;; Requirements
 
 (require 'org)
+
+(declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects")
 (require 'org-gtd-core)
+
+(declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects")
 (require 'org-gtd-id)
+
+(declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects")
 (require 'org-gtd-configure)
+
+(declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects")
 (require 'org-gtd-refile)
+
+(declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects")
 (require 'org-gtd-single-action)
+
+(declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects")
 (require 'org-gtd-accessors)
+
+(declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects")
 (require 'org-gtd-dependencies)
+
+(declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects")
 
 ;;;; Interactive Commands
 
 ;;;###autoload
 (defun org-gtd-task-add-blockers ()
   "Add tasks that block the current task.
-Prompts user to select multiple tasks, then creates bidirectional BLOCKS/DEPENDS_ON relationships.
-Prevents circular dependencies with clear error messages."
+Prompts user to select multiple tasks, then creates bidirectional
+BLOCKS/DEPENDS_ON relationships.  Prevents circular dependencies with
+clear error messages."
   (interactive)
   (unless (org-at-heading-p)
     (user-error "Point must be on an org heading"))
@@ -82,7 +99,8 @@ Prevents circular dependencies with clear error messages."
 ;;;###autoload
 (defun org-gtd-task-remove-blockers ()
   "Remove blocking relationships from the current task.
-Prompts user to select from current blockers, then removes bidirectional BLOCKS/DEPENDS_ON relationships."
+Prompts user to select from current blockers, then removes bidirectional
+BLOCKS/DEPENDS_ON relationships."
   (interactive)
   (unless (org-at-heading-p)
     (user-error "Point must be on an org heading"))
@@ -117,7 +135,8 @@ Prompts user to select from current blockers, then removes bidirectional BLOCKS/
 ;;;###autoload
 (defun org-gtd-task-add-dependent ()
   "Add a task that depends on the current task.
-Prompts user to select a task, then creates bidirectional BLOCKS/DEPENDS_ON relationship."
+Prompts user to select a task, then creates bidirectional
+BLOCKS/DEPENDS_ON relationship."
   (interactive)
   (unless (org-at-heading-p)
     (user-error "Point must be on an org heading"))
@@ -148,8 +167,9 @@ Prompts user to select a task, then creates bidirectional BLOCKS/DEPENDS_ON rela
 ;;;###autoload
 (defun org-gtd-task-add-dependents ()
   "Add tasks that depend on the current task.
-Prompts user to select multiple tasks, then creates bidirectional BLOCKS/DEPENDS_ON relationships.
-Prevents circular dependencies with clear error messages."
+Prompts user to select multiple tasks, then creates bidirectional
+BLOCKS/DEPENDS_ON relationships.  Prevents circular dependencies with
+clear error messages."
   (interactive)
   (unless (org-at-heading-p)
     (user-error "Point must be on an org heading"))
@@ -187,8 +207,8 @@ Prevents circular dependencies with clear error messages."
 ;;;###autoload
 (defun org-gtd-task-clear-relationships ()
   "Clear all blocking and dependency relationships for the current task.
-Removes all BLOCKS and DEPENDS_ON properties from the current task and updates
-related tasks to maintain bidirectional consistency."
+Removes all BLOCKS and DEPENDS_ON properties from the current task and
+updates related tasks to maintain bidirectional consistency."
   (interactive)
   (unless (org-at-heading-p)
     (user-error "Point must be on an org heading"))
@@ -241,7 +261,7 @@ related tasks to maintain bidirectional consistency."
 ;;;; Circular Dependency Detection (Story 13)
 
 (defun org-gtd-task-management--check-circular-dependency (dependent-id blocker-id)
-  "Check if making BLOCKER-ID block DEPENDENT-ID would create a circular dependency.
+  "Check if BLOCKER-ID blocking DEPENDENT-ID would create a circular dependency.
 Throws an error with a descriptive path if a cycle is detected."
   (org-gtd-dependencies-validate-acyclic blocker-id dependent-id))
 
@@ -253,8 +273,8 @@ Returns empty list if task not found or has no dependencies."
 
 (defun org-gtd-task-management--get-blocked-tasks-for-cycle-detection (task-id)
   "Get list of task IDs that TASK-ID blocks (its ORG_GTD_BLOCKS property).
-For circular dependency detection, we follow the ORG_GTD_BLOCKS relationship to find chains.
-Returns empty list if task not found or blocks nothing."
+For circular dependency detection, we follow the ORG_GTD_BLOCKS relationship
+to find chains.  Returns empty list if task not found or blocks nothing."
   (or (org-gtd-get-task-blockers task-id) '()))
 
 
@@ -316,7 +336,7 @@ Returns a list of selected IDs or nil if cancelled/empty."
                             (let ((id (plist-get task-info :id))
                                   (heading (plist-get task-info :heading))
                                   (project (plist-get task-info :project))
-                                  (file (plist-get task-info :file)))
+                                  (_file (plist-get task-info :file)))
                               (cons (if project
                                         (format "%s [%s] (%s)" heading project id)
                                       (format "%s (%s)" heading id))
@@ -513,8 +533,8 @@ otherwise falls back to outline hierarchy (first level heading)."
 
 (defun org-gtd-task-management--update-dependent-tasks (task-id)
   "Automatically update tasks that depend on TASK-ID when it becomes DONE.
-For Story 15: When a task is marked DONE, all tasks blocked by it should become NEXT
-if all their dependencies are satisfied."
+For Story 15: When a task is marked DONE, all tasks blocked by it should
+become NEXT if all their dependencies are satisfied."
   (let ((blocked-tasks (org-gtd-task-management--get-blocked-tasks task-id)))
     (dolist (blocked-task-id blocked-tasks)
       (when (org-gtd-task-management--all-dependencies-satisfied-p blocked-task-id)
@@ -533,7 +553,8 @@ Returns the ORG_GTD_BLOCKS property value as a list."
 
 (defun org-gtd-task-management--all-dependencies-satisfied-p (task-id)
   "Check if all dependencies for TASK-ID are satisfied (DONE).
-A task's dependencies are satisfied when all tasks in its ORG_GTD_DEPENDS_ON property are DONE."
+A task's dependencies are satisfied when all tasks in its
+ORG_GTD_DEPENDS_ON property are DONE."
   (let ((marker (org-id-find task-id t)))
     (if marker
         (with-current-buffer (marker-buffer marker)
@@ -595,13 +616,14 @@ For Story 15: Automatically update dependent tasks when a task becomes DONE."
 (defun org-gtd-task-show-relationships ()
   "Show dependency relationships for the task at point.
 When called interactively, displays relationships in minibuffer.
-Returns formatted string showing what blocks this task and what this task blocks."
+Returns formatted string showing what blocks this task and what this
+task blocks."
   (interactive)
   (unless (org-at-heading-p)
     (user-error "Point must be on an org heading"))
   
   (let* ((current-heading (nth 4 (org-heading-components)))
-         (current-id (org-entry-get (point) "ID"))
+         (_current-id (org-entry-get (point) "ID"))
          (depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON"))
          (blocks (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS"))
          (result (org-gtd-task-show-relationships--format-display
@@ -639,7 +661,8 @@ Returns formatted string showing what blocks this task and what this task blocks
 ;;;###autoload
 (defun org-gtd-validate-project-dependencies ()
   "Validate project dependencies and identify issues.
-For Story 14: Detect broken dependency references, orphaned tasks, and provide guidance."
+For Story 14: Detect broken dependency references, orphaned tasks,
+and provide guidance."
   (interactive)
   (let* ((all-existing-ids (org-gtd-validate-project-dependencies--collect-all-ids))
          (validation-results (org-gtd-validate-project-dependencies--check-all-files all-existing-ids))
@@ -761,10 +784,12 @@ Returns a cons cell (BROKEN-REFERENCES . ORPHANED-TASKS)."
   (let ((guidance-parts '()))
     
     (when broken-references
-      (push "Found broken dependency references. Remove invalid property values or create missing tasks." guidance-parts))
+      (push "Found broken dependency references.  Remove invalid property values or create missing tasks."
+            guidance-parts))
     
-    (when orphaned-tasks  
-      (push "Found orphaned tasks with dependencies. Organize these tasks into proper projects." guidance-parts))
+    (when orphaned-tasks
+      (push "Found orphaned tasks with dependencies.  Organize these tasks into proper projects."
+            guidance-parts))
     
     (if guidance-parts
         (string-join guidance-parts " ")
@@ -774,8 +799,8 @@ Returns a cons cell (BROKEN-REFERENCES . ORPHANED-TASKS)."
 (defun org-gtd-remove-task-from-project ()
   "Remove the task at point from a project.
 Removes the project ID from the task's ORG_GTD_PROJECT_IDS property.
-If the task has multiple projects, prompts user to select which project to remove from.
-Handles reconnection of dependent tasks based on user choice."
+If the task has multiple projects, prompts user to select which project
+to remove from.  Handles reconnection of dependent tasks based on user choice."
   (interactive)
   (unless (org-at-heading-p)
     (user-error "Point must be on an org heading"))
