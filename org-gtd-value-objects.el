@@ -74,7 +74,8 @@ Returns t if STATE is active, nil otherwise or if STATE is nil."
 (defun org-gtd-todo-state-is-ready-p (state)
   "Domain predicate: Can a task in STATE be worked on?
 
-Ready states are NEXT (explicitly ready to work on) or TODO (available to work on).
+Ready states are NEXT (explicitly ready to work on) or TODO (available to
+work on).
 
 STATE should be a TODO keyword string.
 Returns t if STATE is ready, nil otherwise or if STATE is nil."
@@ -137,7 +138,8 @@ Slots:
 
 TASK-ID is the ID of the task to read dependencies from.
 
-Returns org-gtd-task-deps struct with dependency lists, or nil if task not found."
+Returns org-gtd-task-deps struct with dependency lists, or nil if task
+not found."
   (when task-id
     (org-gtd-task-deps--create
      :depends-on (org-gtd-get-task-dependencies task-id)

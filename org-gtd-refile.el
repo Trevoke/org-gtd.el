@@ -84,8 +84,7 @@ from org-refile-targets."
              (org-refile-targets '((org-agenda-files :maxlevel . 9)))
              (org-refile-use-outline-path t)
              (org-outline-path-complete-in-steps nil))
-         (unwind-protect
-             (with-org-gtd-context (progn ,@body))))
+         (with-org-gtd-context (progn ,@body)))
      ;; Use standard org-refile configuration
      (with-org-gtd-context (progn ,@body))))
 
@@ -102,8 +101,7 @@ BODY... is the rest of the code."
         (org-refile-target-verify-function
          (lambda () (string-equal org-gtd-projects
                                   (org-entry-get nil "ORG_GTD" t)))))
-    (unwind-protect
-        (with-org-gtd-context (progn ,@body)))))
+    (with-org-gtd-context (progn ,@body))))
 
 ;;;; Functions
 

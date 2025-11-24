@@ -65,9 +65,9 @@ SELECTED-NODE-ID determines if this node should be highlighted."
 
 (defun org-gtd-dag-draw-translate (org-gtd-graph &optional selected-node-id)
   "Translate ORG-GTD-GRAPH to dag-draw spec format.
-Returns plist with :nodes and :edges suitable for `dag-draw-create-from-spec'.
+Returns plist with :nodes and :edges suitable for dag-draw.
 
-SELECTED-NODE-ID, if provided, determines which node gets selection highlighting."
+SELECTED-NODE-ID, if provided, determines node selection."
   (let (nodes edges)
     ;; Translate nodes
     (maphash
@@ -105,11 +105,14 @@ SELECTED-NODE-ID, if provided, determines which node gets selection highlighting
 
 (defun org-gtd-dag-draw-render (org-gtd-graph format &optional selected-node-id)
   "Render ORG-GTD-GRAPH using dag-draw in FORMAT.
-FORMAT should be 'svg or 'ascii.
+FORMAT should be \\='svg or \\='ascii.
 SELECTED-NODE-ID, if provided, highlights that node.
 
 Returns rendered string (SVG XML or ASCII art)."
   (require 'dag-draw)
+  (declare-function dag-draw-create-from-spec "dag-draw")
+  (declare-function dag-draw-layout-graph "dag-draw")
+  (declare-function dag-draw-render-graph "dag-draw")
   (let* ((spec (org-gtd-dag-draw-translate org-gtd-graph selected-node-id))
          (dd-graph (apply #'dag-draw-create-from-spec spec)))
     (dag-draw-layout-graph dd-graph)

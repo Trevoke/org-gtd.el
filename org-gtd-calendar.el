@@ -31,8 +31,9 @@
 (require 'org-gtd-clarify)
 (require 'org-gtd-configure)
 
-(declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
-(declare-function 'org-gtd-clarify-item 'org-gtd-clarify)
+(declare-function org-gtd-organize-apply-hooks "org-gtd-organize")
+(declare-function org-gtd-organize--call "org-gtd-organize")
+(declare-function org-gtd-clarify-item "org-gtd-clarify")
 
 ;;;; Constants
 
@@ -52,7 +53,7 @@ You can pass APPOINTMENT-DATE as a YYYY-MM-DD string if you want to use this
 non-interactively."
   (interactive)
   (let ((config-override (when appointment-date
-                           `(('active-timestamp . ,(lambda (x) (format "<%s>" appointment-date)))))))
+                           `(('active-timestamp . ,(lambda (_x) (format "<%s>" appointment-date)))))))
     (org-gtd-organize--call
      (lambda () (org-gtd-calendar--apply config-override)))))
 
@@ -67,7 +68,7 @@ Takes TOPIC as the string from which to make the heading to add to `org-gtd' and
 APPOINTMENT-DATE as a YYYY-MM-DD string."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
         (org-id-overriding-file-name "org-gtd")
-        (config-override `(('active-timestamp . ,(lambda (x) (format "<%s>" appointment-date))))))
+        (config-override `(('active-timestamp . ,(lambda (_x) (format "<%s>" appointment-date))))))
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
@@ -80,7 +81,8 @@ APPOINTMENT-DATE as a YYYY-MM-DD string."
 (defun org-gtd-calendar--configure (&optional config-override)
   "Configure item at point as a calendar item.
 
-CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
+CONFIG-OVERRIDE can provide input configuration to override default
+prompting behavior."
   (org-gtd-configure-item (point) :calendar nil config-override))
 
 (defun org-gtd-calendar--insert-timestamp ()
@@ -106,7 +108,8 @@ Orchestrates the calendar item organization workflow:
 2. Insert timestamp in content
 3. Finalize and refile to calendar file
 
-CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
+CONFIG-OVERRIDE can provide input configuration to override default
+prompting behavior."
   (org-gtd-calendar--configure config-override)
   (org-gtd-calendar--insert-timestamp)
   (org-gtd-calendar--finalize))

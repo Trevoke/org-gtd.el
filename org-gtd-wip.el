@@ -29,6 +29,8 @@
 (require 'org-gtd-core)
 (require 'org-gtd-id)
 
+(declare-function org-gtd-stuck-projects "org-gtd-projects")
+
 ;;;; Customizations
 
 ;;;; Constants

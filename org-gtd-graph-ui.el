@@ -269,9 +269,7 @@ Returns formatted text suitable for display in details buffer."
         (pop-to-buffer (marker-buffer marker))
         (goto-char (marker-position marker))
         (org-back-to-heading t)
-        (if (fboundp 'org-fold-show-context)
-            (org-fold-show-context)
-          (org-show-context))
+        (org-fold-show-context)
         (message "Jumped to task: %s"
                  (org-get-heading t t t t))))))
 

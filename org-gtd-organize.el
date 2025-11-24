@@ -114,17 +114,17 @@ Once you have your ground items managed, you might like to set the variable
   "Return t if the action type chosen by the user is in LIST.
 
 Valid members of LIST include:
-- 'quick-action (done in less than two minutes)
-- 'single-action (do when possible)
-- 'calendar (do at a given time)
-- 'delegated (done by someone else)
-- 'habit (a recurring action)
-- 'incubated (remind me later)
-- 'knowledge (stored as reference)
-- 'trash (self-explanatory)
-- 'project-heading (top-level project info, e.g. area of focus)
-- 'project-task (task-specific info, similar in spirit to single-action)
-- 'everything (if this is in the list, always return t)"
+- \\='quick-action (done in less than two minutes)
+- \\='single-action (do when possible)
+- \\='calendar (do at a given time)
+- \\='delegated (done by someone else)
+- \\='habit (a recurring action)
+- \\='incubated (remind me later)
+- \\='knowledge (stored as reference)
+- \\='trash (self-explanatory)
+- \\='project-heading (top-level project info, e.g. area of focus)
+- \\='project-task (task-specific info, similar in spirit to single-action)
+- \\='everything (if this is in the list, always return t)"
   (let ((list (ensure-list list)))
     (unless (seq-every-p
              (lambda (x) (member x org-gtd-organize-action-types))

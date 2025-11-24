@@ -88,10 +88,9 @@ Returns t if path exists, nil otherwise.
 
 This is used for cycle detection: if adding FROM-ID → TO-ID would
 create a cycle, then there must already be a path TO-ID → FROM-ID."
-  (when (equal from-id to-id)
-    nil)
-  (let ((visited (make-hash-table :test 'equal)))
-    (org-gtd-dependencies--dfs-path from-id to-id visited)))
+  (unless (equal from-id to-id)
+    (let ((visited (make-hash-table :test 'equal)))
+      (org-gtd-dependencies--dfs-path from-id to-id visited))))
 
 (defun org-gtd-dependencies-validate-acyclic (blocker-id dependent-id)
   "Validate that creating dependency won't create cycle.

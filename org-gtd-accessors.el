@@ -44,9 +44,9 @@
 (require 'org)
 (require 'org-gtd-core)
 
-(declare-function 'org-gtd-todo-state-is-active-p 'org-gtd-value-objects)
-(declare-function 'org-gtd-keywords--is-done-p 'org-gtd-core)
-(declare-function 'org-gtd-keywords--canceled 'org-gtd-core)
+(declare-function org-gtd-todo-state-is-active-p "org-gtd-value-objects")
+(declare-function org-gtd-keywords--is-done-p "org-gtd-core")
+(declare-function org-gtd-keywords--canceled "org-gtd-core")
 
 ;;;; Property Readers
 
@@ -73,7 +73,8 @@ Returns nil if no first tasks defined."
 
 (defun org-gtd-get-task-state (task-id)
   "Get TODO keyword state for TASK-ID.
-Returns the TODO state string (e.g., \"TODO\", \"NEXT\", \"DONE\") or nil if not found."
+Returns the TODO state string (e.g., \"TODO\", \"NEXT\", \"DONE\") or nil
+if not found."
   (when-let ((marker (org-gtd-find-task-marker task-id)))
     (org-with-point-at marker
       (org-entry-get (point) "TODO"))))

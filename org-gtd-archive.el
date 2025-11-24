@@ -33,6 +33,8 @@
 (require 'org-gtd-core)
 (require 'org-gtd-agenda)
 
+(declare-function org-gtd-projects--collect-tasks-by-graph "org-gtd-projects")
+
 ;;;; Customization
 
 (defgroup org-gtd-archive nil
@@ -143,9 +145,9 @@ Directories are expanded to their contained .org files recursively."
   (org-entry-remove-from-multivalued-property pom org-gtd-prop-project-ids project-id))
 
 (defun org-gtd--archive-task-if-no-projects (pom project-id)
-  "Remove PROJECT-ID from task at POM, and archive task if no projects remain.
-If ORG_GTD_PROJECT_IDS becomes empty after removing PROJECT-ID, archive the task.
-POM can be a marker or an integer position."
+  "Remove PROJECT-ID from task at POM, archive task if no projects remain.
+If ORG_GTD_PROJECT_IDS becomes empty after removing PROJECT-ID, archive
+the task.  POM can be a marker or an integer position."
   ;; Check if marker/position is valid before proceeding
   (when (or (numberp pom)  ; position in current buffer
             (and (markerp pom)  ; or valid marker
@@ -170,8 +172,9 @@ POM can be a marker or an integer position."
 
 (defun org-gtd--all-project-tasks-done-p ()
   "Return t if all tasks connected to current project are done.
-Uses graph traversal to find all project tasks via BLOCKS/DEPENDS_ON relationships.
-Falls back to checking immediate children if no dependency-tracked tasks exist."
+Uses graph traversal to find all project tasks via BLOCKS/DEPENDS_ON
+relationships.  Falls back to checking immediate children if no
+dependency-tracked tasks exist."
   (require 'org-gtd-projects)
   (let* ((project-marker (point-marker))
          (tasks (org-gtd-projects--collect-tasks-by-graph project-marker)))

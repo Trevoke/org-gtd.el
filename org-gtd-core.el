@@ -41,14 +41,6 @@
 
 ;;;; Essential variables for autoload compatibility
 ;; These provide fallback values when the full modules aren't loaded
-(unless (boundp 'org-gtd-archive-location)
-  (defvar org-gtd-archive-location
-    (lambda ()
-      (let* ((year (number-to-string (caddr (calendar-current-date))))
-             (full-org-gtd-path (expand-file-name org-gtd-directory))
-             (filename (format "gtd_archive_%s" year))
-             (filepath (f-join full-org-gtd-path filename)))
-        (string-join `(,filepath "::" "datetree/"))))))
 
 (unless (boundp 'org-gtd-stuck-projects)
   (defvar org-gtd-stuck-projects
@@ -79,6 +71,18 @@ your own files if you want multiple refile targets (projects, etc.)."
   :group 'org-gtd
   :package-version '(org-gtd . "0.1")
   :type 'directory)
+
+
+;; Note: org-gtd-directory must be defined above for the defvars below
+
+(unless (boundp 'org-gtd-archive-location)
+  (defvar org-gtd-archive-location
+    (lambda ()
+      (let* ((year (number-to-string (caddr (calendar-current-date))))
+             (full-org-gtd-path (expand-file-name org-gtd-directory))
+             (filename (format "gtd_archive_%s" year))
+             (filepath (f-join full-org-gtd-path filename)))
+        (string-join `(,filepath "::" "datetree/"))))))
 
 
 ;; New user option to control buffer saving behavior after organizing
@@ -221,9 +225,9 @@ This variable validates that:
 - All mapped keywords exist in `org-todo-keywords'
 - All GTD keywords are in the same sequence within `org-todo-keywords'
 
-When setting programmatically, use `setopt' (Emacs 29+) or `customize-set-variable'
-to ensure validation runs. To set manually without validation, use `setq' but ensure
-the mapping is valid."
+When setting programmatically, use `setopt' (Emacs 29+) or
+`customize-set-variable' to ensure validation runs. To set manually
+without validation, use `setq' but ensure the mapping is valid."
   :type '(alist :key-type (choice (const todo)
                                   (const next)
                                   (const wait)

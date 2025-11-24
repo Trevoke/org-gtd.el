@@ -31,8 +31,8 @@
 (require 'org-gtd-refile)
 (require 'org-gtd-configure)
 
-(declare-function 'org-gtd-organize--call 'org-gtd-organize)
-(declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
+(declare-function org-gtd-organize--call 'org-gtd-organize)
+(declare-function org-gtd-organize-apply-hooks 'org-gtd-organize)
 
 ;;;; Constants
 
@@ -94,7 +94,7 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
          ;; Case 3: Single item - use existing logic
          (t
           (let ((config-override (when reminder-date
-                                   `(('active-timestamp . ,(lambda (x) (format "<%s>" reminder-date)))))))
+                                   `(('active-timestamp . ,(lambda (_x) (format "<%s>" reminder-date)))))))
             (org-gtd-organize--call
              (lambda () (org-gtd-incubate--apply config-override))))))))))
 
@@ -136,7 +136,7 @@ TOPIC is the string you want to see in the `org-agenda' view.
 REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
         (org-id-overriding-file-name "org-gtd")
-        (config-override `(('active-timestamp . ,(lambda (x) (format "<%s>" reminder-date))))))
+        (config-override `(('active-timestamp . ,(lambda (_x) (format "<%s>" reminder-date))))))
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
@@ -149,7 +149,8 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
 (defun org-gtd-incubate--configure (&optional config-override)
   "Configure item at point as incubated.
 
-CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
+CONFIG-OVERRIDE can provide input configuration to override default
+prompting behavior."
   (org-gtd-configure-item (point) :incubate nil config-override))
 
 (defun org-gtd-incubate--insert-timestamp ()
@@ -175,7 +176,8 @@ Orchestrates the incubate organization workflow:
 2. Insert timestamp in content
 3. Finalize and refile to incubate file
 
-CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
+CONFIG-OVERRIDE can provide input configuration to override default
+prompting behavior."
   (org-gtd-incubate--configure config-override)
   (org-gtd-incubate--insert-timestamp)
   (org-gtd-incubate--finalize))

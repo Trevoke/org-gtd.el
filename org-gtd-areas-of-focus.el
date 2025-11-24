@@ -40,7 +40,7 @@
   "The current major areas in your life where you don't want to drop balls."
   :group 'org-gtd-horizons
   :package-version '(org-gtd . "3.0.0")
-  :type 'list)
+  :type '(repeat string))
 
 ;;;; Commands
 

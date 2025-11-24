@@ -30,8 +30,8 @@
 (require 'org-gtd-archive)
 (require 'org-gtd-configure)
 
-(declare-function 'org-gtd-organize--call 'org-gtd-organize)
-(declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
+(declare-function org-gtd-organize--call 'org-gtd-organize)
+(declare-function org-gtd-organize-apply-hooks 'org-gtd-organize)
 
 ;;;; Constants
 

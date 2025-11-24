@@ -118,8 +118,8 @@
 
 (defun org-gtd-view-lang--create-agenda-block (gtd-view-spec)
   "Create an agenda block from GTD-VIEW-SPEC.
-If view-type is 'agenda, creates a native agenda block.
-If view-type is 'tags-grouped, creates grouped views.
+If view-type is \\='agenda, creates a native agenda block.
+If view-type is \\='tags-grouped, creates grouped views.
 Otherwise creates an org-ql agenda block."
   (let* ((name (alist-get 'name gtd-view-spec))
          (view-type (alist-get 'view-type gtd-view-spec)))
@@ -179,7 +179,7 @@ KEY defaults to \"o\", TITLE defaults to \"GTD Views\"."
 
 (defun org-gtd-view-lang--translate-to-org-ql (gtd-view-spec)
   "Translate GTD-VIEW-SPEC to an org-ql query expression.
-GTD-VIEW-SPEC should be an alist with 'name and 'filters keys."
+GTD-VIEW-SPEC should be an alist with \\='name and \\='filters keys."
   (let* ((filters (alist-get 'filters gtd-view-spec))
          (has-future-time-filter (seq-some (lambda (filter)
                                              (and (memq (car filter) '(deadline scheduled))
@@ -350,7 +350,7 @@ malformed ORG_GTD_TIMESTAMP properties."
 (defun org-gtd-view-lang--translate-property-filter (property-spec)
   "Translate property PROPERTY-SPEC to org-ql property filter.
 PROPERTY-SPEC should be an alist with property name and value pairs,
-e.g., '((\"ORG_GTD\" . \"Actions\"))."
+e.g., \\='((\"ORG_GTD\" . \"Actions\"))."
   (mapcar (lambda (prop-pair)
             `(property ,(car prop-pair) ,(cdr prop-pair)))
           property-spec))
@@ -361,8 +361,8 @@ e.g., '((\"ORG_GTD\" . \"Actions\"))."
 
 (defun org-gtd-view-lang--create-grouped-views (gtd-view-spec)
   "Create grouped views from GTD-VIEW-SPEC.
-Handle both simple grouped views with 'group-contexts and
-dynamic grouped views with 'group-by."
+Handle both simple grouped views with \\='group-contexts and
+dynamic grouped views with \\='group-by."
   (let ((group-contexts (alist-get 'group-contexts gtd-view-spec))
         (group-by (alist-get 'group-by gtd-view-spec))
         (filters (alist-get 'filters gtd-view-spec)))
@@ -438,12 +438,12 @@ A view specification is an alist with the following structure:
 
 Simple example - show all single-action items:
   (org-gtd-view-show
-   '((name . \"All My Actions\")
+   \\='((name . \"All My Actions\")
      (filters . ((category . actions)))))
 
 Multiple views example - show several related views:
   (org-gtd-view-show
-   '(((name . \"Active projects\")
+   \\='(((name . \"Active projects\")
       (filters . ((category . projects))))
      ((name . \"Next actions\")
       (filters . ((todo . (\"NEXT\")))))))

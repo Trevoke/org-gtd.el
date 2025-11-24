@@ -39,8 +39,8 @@
 (require 'org-gtd-dependencies)
 (require 'org-gtd-task-management)
 
-(declare-function 'org-gtd-organize--call 'org-gtd-organize)
-(declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
+(declare-function org-gtd-organize--call 'org-gtd-organize)
+(declare-function org-gtd-organize-apply-hooks 'org-gtd-organize)
 
 ;;;; Constants
 
@@ -250,7 +250,7 @@ Only resets states that should be recalculated (preserves WAIT, DONE, CNCL)."
 
 ;;;;; Command: Mark Ready Tasks
 
-(defun org-gtd-project--mark-ready-tasks (project-marker ready-task-ids)
+(defun org-gtd-project--mark-ready-tasks (_project-marker ready-task-ids)
   "Mark tasks in READY-TASK-IDS as NEXT for project at PROJECT-MARKER.
 Respects WAIT tasks - preserves user-set WAIT states on ready tasks."
   (dolist (task-id ready-task-ids)
@@ -430,9 +430,9 @@ otherwise falls back to outline hierarchy (org-up-heading-safe)."
      'tree)))
 
 (defun org-gtd-projects--add-default-sequential-dependencies ()
-  "Create default sequential dependencies for tasks without ORG_GTD_DEPENDS_ON.
+  "Create dependencies for tasks without ORG_GTD_DEPENDS_ON.
 For Story 7: Create chain where Task 1 → Task 2 → Task 3, etc.
-For Story 8: Only apply to tasks that don't have ORG_GTD_DEPENDS_ON relationships."
+For Story 8: Only apply to tasks without ORG_GTD_DEPENDS_ON."
   (require 'org-gtd-task-management) ; Ensure task management functions are available
   (let ((all-tasks (org-gtd-projects--collect-all-tasks))
         (unconnected-tasks '()))
@@ -452,7 +452,7 @@ For Story 8: Only apply to tasks that don't have ORG_GTD_DEPENDS_ON relationship
                     (org-gtd-projects--create-dependency-relationship previous-task current-task))))))
 
 (defun org-gtd-projects--set-first-tasks ()
-  "Set ORG_GTD_FIRST_TASKS property on project heading with IDs of root tasks.
+  "Set ORG_GTD_FIRST_TASKS property on project with IDs of roots.
 Root tasks are tasks that have no ORG_GTD_DEPENDS_ON property.
 Works cross-file by combining graph traversal with tree search."
   (let ((root-task-ids '())
@@ -499,7 +499,7 @@ Works cross-file by combining graph traversal with tree search."
 
       ;; Add any cross-file tasks not found in tree (from graph traversal)
       (maphash
-       (lambda (task-id task-marker)
+       (lambda (_task-id task-marker)
          (unless (seq-find (lambda (m)
                             (and (equal (marker-buffer m) (marker-buffer task-marker))
                                  (equal (marker-position m) (marker-position task-marker))))
@@ -539,12 +539,13 @@ Returns list of markers pointing to task headings with ORG_GTD=Actions."
 (defun org-gtd-projects--collect-tasks-by-graph (project-marker)
   "Collect all project tasks by traversing the dependency graph.
 
-Starting from the project heading at PROJECT-MARKER, reads the ORG_GTD_FIRST_TASKS
-property to find root task IDs, then traverses the graph by following
-ORG_GTD_BLOCKS/ORG_GTD_DEPENDS_ON relationships using org-id-find.
+Starting from the project heading at PROJECT-MARKER, reads
+ORG_GTD_FIRST_TASKS property to find root task IDs, then traverses
+the graph by following ORG_GTD_BLOCKS/ORG_GTD_DEPENDS_ON
+relationships using org-id-find.
 
-Only includes tasks that have the current project's ID in their ORG_GTD_PROJECT_IDS
-property, respecting project boundaries for shared tasks.
+Only includes tasks that have the current project's ID in their
+ORG_GTD_PROJECT_IDS property, respecting project boundaries.
 
 Returns list of task markers in breadth-first order."
   (org-with-point-at project-marker
@@ -590,12 +591,12 @@ Returns list of task markers in breadth-first order."
       (nreverse result-tasks))))
 
 (defun org-gtd-projects--has-active-tasks-p (project-marker)
-  "Return t if project at PROJECT-MARKER has at least one active task.
+  "Return t if project at PROJECT-MARKER has active task.
 
-Active tasks are those with TODO states that are not in `org-done-keywords'.
-Uses early exit optimization - stops checking as soon as an active task is found.
+Active tasks are those with TODO states not in `org-done-keywords'.
+Uses early exit - stops checking as soon as active task is found.
 
-This function is intended for use in agenda views and filters to identify
+This function is for use in agenda views and filters to identify
 projects that have work remaining to be done."
   (let ((tasks (org-gtd-projects--collect-tasks-by-graph project-marker))
         (has-active nil))
@@ -664,15 +665,15 @@ dependencies aren't set up properly."
   (org-update-statistics-cookies t))
 
 (defun org-gtd-project--save-state (marker)
-  "Save ORG_GTD and TODO state at MARKER to PREVIOUS_* properties for incubation.
+  "Save ORG_GTD and TODO state at MARKER to PREVIOUS_* properties.
 
 Saves current ORG_GTD value to PREVIOUS_ORG_GTD property.
 Saves current TODO keyword to PREVIOUS_TODO property.
-Sets ORG_GTD to 'Incubated'.
+Sets ORG_GTD to \\='Incubated\\='.
 Clears the TODO keyword.
 
-Skips tasks that belong to multiple projects (identified by multiple
-IDs in ORG_GTD_PROJECT_IDS property)."
+Skips tasks belonging to multiple projects (identified by
+multiple IDs in ORG_GTD_PROJECT_IDS property)."
   (org-with-point-at marker
     ;; Check if this is a multi-project task
     (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
@@ -733,7 +734,7 @@ Used to warn user before incubating a project."
     ;; For each task in project, check what blocks it
     (dolist (task-marker project-tasks)
       (org-with-point-at task-marker
-        (let ((task-id (org-id-get))
+        (let ((_task-id (org-id-get))
               (blocks-ids (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
           ;; For each task this blocks, check if it's external
           (dolist (blocked-id blocks-ids)
@@ -895,6 +896,11 @@ Orchestrates adding a new task to an existing project:
 
 (defalias 'org-edna-action/org-gtd-update-project-task!
   'org-gtd-projects--edna-update-project-task)
+
+(defun org-gtd-projects--find-id-marker (id)
+  "Find marker for task with ID.
+Returns marker or nil if not found."
+  (org-id-find id t))
 
 (defun org-gtd-projects--edna-update-project-after-task-done (_last-entry)
   "`org-edna' action that updates blocked tasks when current task is DONE.

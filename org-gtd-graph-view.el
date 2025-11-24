@@ -46,7 +46,7 @@
 
 (defcustom org-gtd-graph-render-mode 'svg
   "Default rendering mode for project graphs.
-Can be 'svg (default) or 'ascii.
+Can be \\='svg (default) or \\='ascii.
 Users can toggle per-buffer using `org-gtd-graph-toggle-render-mode'."
   :type '(choice (const :tag "SVG (graphical)" svg)
                  (const :tag "ASCII (text-based)" ascii))
@@ -73,7 +73,7 @@ Users can toggle per-buffer using `org-gtd-graph-toggle-render-mode'."
   "Timer for debounced refresh after file changes.")
 
 (defvar-local org-gtd-graph-view--render-mode nil
-  "Current render mode for this buffer ('svg or 'ascii).
+  "Current render mode for this buffer (\\='svg or \\='ascii).
 Initialized from `org-gtd-graph-render-mode' on buffer creation.
 Can be toggled with `org-gtd-graph-toggle-render-mode'.")
 
@@ -181,7 +181,7 @@ _EVENT is the file-notify event (unused)."
         (let ((svg (org-gtd-dag-draw-render graph 'svg org-gtd-graph-ui--selected-node-id)))
           (org-gtd-graph-view--display-svg svg graph))))))
 
-(defun org-gtd-graph-view--display-svg (svg displayed-graph)
+(defun org-gtd-graph-view--display-svg (svg _displayed-graph)
   "Display SVG in the current buffer showing DISPLAYED-GRAPH."
   (let ((inhibit-read-only t)
         (image (org-gtd-svg-to-image svg)))
@@ -208,7 +208,7 @@ _EVENT is the file-notify event (unused)."
 
     (goto-char (point-min))))
 
-(defun org-gtd-graph-view--display-ascii (ascii-text displayed-graph)
+(defun org-gtd-graph-view--display-ascii (ascii-text _displayed-graph)
   "Display ASCII-TEXT in the current buffer showing DISPLAYED-GRAPH."
   (let ((inhibit-read-only t))
     (erase-buffer)
@@ -359,8 +359,13 @@ Displays which tasks block this task and which tasks this task blocks."
            (nodes (org-gtd-graph-nodes org-gtd-graph-view--graph))
            (node (gethash node-id nodes))
            (title (org-gtd-graph-node-title node))
-           (depends-on (org-gtd-get-depends-on node-id))
-           (blocks (org-gtd-get-blocks node-id)))
+           (marker (org-id-find node-id t))
+           (depends-on (when marker
+                        (org-with-point-at marker
+                          (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON"))))
+           (blocks (when marker
+                    (org-with-point-at marker
+                      (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))))
 
       (with-output-to-temp-buffer "*Org GTD Relationships*"
         (princ (format "Relationships for: %s\n" title))
@@ -386,8 +391,8 @@ Displays which tasks block this task and which tasks this task blocks."
           (princ "This task blocks no other tasks.\n"))))))
 
 (defun org-gtd-graph-view-clear-relationships ()
-  "Remove all dependency relationships from the currently selected node.
-Removes both blockers (tasks this depends on) and dependents (tasks that depend on this)."
+  "Remove all dependency relationships from selected node.
+Removes both blockers (depends on) and dependents (blocks)."
   (interactive)
   (if (not org-gtd-graph-ui--selected-node-id)
       (user-error "No node selected. Click on a node first")
@@ -395,8 +400,13 @@ Removes both blockers (tasks this depends on) and dependents (tasks that depend 
            (nodes (org-gtd-graph-nodes org-gtd-graph-view--graph))
            (node (gethash node-id nodes))
            (title (org-gtd-graph-node-title node))
-           (depends-on (org-gtd-get-depends-on node-id))
-           (blocks (org-gtd-get-blocks node-id))
+           (marker (org-id-find node-id t))
+           (depends-on (when marker
+                        (org-with-point-at marker
+                          (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON"))))
+           (blocks (when marker
+                    (org-with-point-at marker
+                      (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS"))))
            (total-relationships (+ (length depends-on) (length blocks))))
 
       (when (zerop total-relationships)

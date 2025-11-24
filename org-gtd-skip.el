@@ -137,7 +137,8 @@
       subtree-end)))
 
 (defun org-gtd-skip-unless-habit-invalid ()
-  "Return non-nil if the current headline's ORG_GTD_TIMESTAMP property is not set, null, or not a date."
+  "Return non-nil if headline's ORG_GTD_TIMESTAMP property is not set or invalid.
+Property is invalid if null or not a date."
   (let ((subtree-end (save-excursion (org-end-of-subtree t)))
         (style (or (org-entry-get nil org-gtd-prop-style) ""))
         (timestamp (or (org-entry-get nil "SCHEDULED") "")))
@@ -159,7 +160,8 @@
       subtree-end)))
 
 (defun org-gtd-skip-unless-timestamp-empty-or-invalid ()
-  "Return non-nil if the current headline's ORG_GTD_TIMESTAMP property is not set, null, or not a date."
+  "Return non-nil if headline's ORG_GTD_TIMESTAMP property is not set or invalid.
+Property is invalid if null or not a date."
   (let ((subtree-end (save-excursion (org-end-of-subtree t)))
         (prop (org-entry-get nil org-gtd-timestamp)))
     (if (and prop

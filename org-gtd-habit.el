@@ -31,8 +31,8 @@
 (require 'org-gtd-refile)
 (require 'org-gtd-configure)
 
-(declare-function 'org-gtd-organize--call 'org-gtd-organize)
-(declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
+(declare-function org-gtd-organize--call "org-gtd-organize")
+(declare-function org-gtd-organize-apply-hooks "org-gtd-organize")
 
 ;;;; Constants
 
@@ -56,7 +56,7 @@ REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
 determine how often you'll be reminded of this habit."
   (interactive)
   (let ((config-override (when repeater
-                           `(('active-timestamp-with-repeater . ,(lambda (x) (format "<%s %s>" (format-time-string "%Y-%m-%d") repeater)))))))
+                           `(('active-timestamp-with-repeater . ,(lambda (_x) (format "<%s %s>" (format-time-string "%Y-%m-%d") repeater)))))))
     (org-gtd-organize--call
      (lambda () (org-gtd-habit--apply config-override)))))
 
@@ -72,7 +72,7 @@ REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
 determine how often you'll be reminded of this habit."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
         (org-id-overriding-file-name "org-gtd")
-        (config-override `(('active-timestamp-with-repeater . ,(lambda (x) (format "<%s %s>" (format-time-string "%Y-%m-%d") repeater))))))
+        (config-override `(('active-timestamp-with-repeater . ,(lambda (_x) (format "<%s %s>" (format-time-string "%Y-%m-%d") repeater))))))
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
@@ -85,7 +85,8 @@ determine how often you'll be reminded of this habit."
 (defun org-gtd-habit--configure (&optional config-override)
   "Configure item at point as a habit.
 
-CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
+CONFIG-OVERRIDE can provide input configuration to override default
+prompting behavior."
   (org-gtd-configure-item (point) :habit nil config-override))
 
 (defun org-gtd-habit--finalize ()
@@ -101,7 +102,8 @@ Orchestrates the habit organization workflow:
 1. Configure with habit settings
 2. Finalize and refile to habits file
 
-CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
+CONFIG-OVERRIDE can provide input configuration to override default
+prompting behavior."
   (org-gtd-habit--configure config-override)
   (org-gtd-habit--finalize))
 

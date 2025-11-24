@@ -157,7 +157,7 @@ Removes TODO keywords and statistics cookies."
 ;;;;; Private - Overlay Management
 
 (defun org-gtd-id-overlay--create-overlays ()
-  "Create overlays for all ID, BLOCKED_BY, and BLOCKS properties in the current buffer."
+  "Create overlays for all ID/BLOCKED_BY/BLOCKS in current buffer."
   (save-excursion
     (goto-char (point-min))
     (while (re-search-forward "^[ \t]*:\\(ID\\|BLOCKED_BY\\|BLOCKS\\):[ \t]+\\(.+\\)$" nil t)

@@ -132,7 +132,7 @@ Excludes project headings (ORG_GTD=Projects)."
         (error nil)))
     (nreverse tasks)))
 
-(defun org-gtd-graph--select-or-create-task-prioritizing-current (prompt project-marker)
+(defun org-gtd-graph--select-or-create-task-prioritizing-current (_prompt project-marker)
   "Select task or create new one, with current project tasks prioritized.
 PROMPT is displayed to the user.
 PROJECT-MARKER identifies the current project.
@@ -160,7 +160,7 @@ Returns list of (display . id) cons cells with current project tasks first."
                       (plist-get task :id)))
               prioritized-tasks))))
 
-(defun org-gtd-graph--select-or-create-task-excluding-current (prompt project-marker)
+(defun org-gtd-graph--select-or-create-task-excluding-current (_prompt project-marker)
   "Select task or create new one, excluding tasks already in current project.
 PROMPT is displayed to the user.
 PROJECT-MARKER identifies the current project.

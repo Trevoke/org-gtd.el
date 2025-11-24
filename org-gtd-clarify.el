@@ -318,7 +318,7 @@ TASK-INFO is a list of (heading id depends-on blocks) for each task."
     ;; Process each task and build relationship strings
     (dolist (task-data task-info)
       (let* ((heading (nth 0 task-data))
-             (id (nth 1 task-data))
+             (_id (nth 1 task-data))
              (depends-on (nth 2 task-data))
              (blocks (nth 3 task-data)))
         (if (or depends-on blocks)

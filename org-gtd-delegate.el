@@ -34,8 +34,8 @@
 (require 'org-gtd-refile)
 (require 'org-gtd-configure)
 
-(declare-function 'org-gtd-organize--call 'org-gtd-organize)
-(declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
+(declare-function org-gtd-organize--call "org-gtd-organize")
+(declare-function org-gtd-organize-apply-hooks "org-gtd-organize")
 
 ;;;; Customization
 
@@ -56,8 +56,8 @@ and CHECKIN-DATE as the YYYY-MM-DD string of when you want `org-gtd' to remind
 you if you want to call this non-interactively."
   (interactive)
   (let ((config-override (when (or delegated-to checkin-date)
-                           `(,@(when delegated-to `(('text . ,(lambda (x) delegated-to))))
-                             ,@(when checkin-date `(('active-timestamp . ,(lambda (x) (format "<%s>" checkin-date)))))))))
+                           `(,@(when delegated-to `(('text . ,(lambda (_x) delegated-to))))
+                             ,@(when checkin-date `(('active-timestamp . ,(lambda (_x) (format "<%s>" checkin-date)))))))))
     (org-gtd-organize--call
      (lambda () (org-gtd-delegate--apply config-override)))))
 
@@ -86,8 +86,8 @@ If you call this interactively, the function will prompt for the person's name."
   (interactive)
   (let ((org-inhibit-logging 'note)
         (config-override (when (or delegated-to checkin-date)
-                           `(,@(when delegated-to `(('text . ,(lambda (x) delegated-to))))
-                             ,@(when checkin-date `(('active-timestamp . ,(lambda (x) (format "<%s>" checkin-date)))))))))
+                           `(,@(when delegated-to `(('text . ,(lambda (_x) delegated-to))))
+                             ,@(when checkin-date `(('active-timestamp . ,(lambda (_x) (format "<%s>" checkin-date)))))))))
     (org-gtd-delegate--configure config-override)
     (org-gtd-delegate--insert-timestamp)
     (org-gtd-delegate--add-delegation-note)))
@@ -105,8 +105,8 @@ CHECKIN-DATE is the YYYY-MM-DD string of when you want `org-gtd' to remind
 you."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
         (org-id-overriding-file-name "org-gtd")
-        (config-override `(('text . ,(lambda (x) delegated-to))
-                           ('active-timestamp . ,(lambda (x) (format "<%s>" checkin-date))))))
+        (config-override `(('text . ,(lambda (_x) delegated-to))
+                           ('active-timestamp . ,(lambda (_x) (format "<%s>" checkin-date))))))
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
@@ -119,7 +119,8 @@ you."
 (defun org-gtd-delegate--configure (&optional config-override)
   "Configure item at point as a delegated item.
 
-CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
+CONFIG-OVERRIDE can provide input configuration to override default
+prompting behavior."
   (org-gtd-configure-item (point) :delegated nil config-override))
 
 (defun org-gtd-delegate--insert-timestamp ()
@@ -154,7 +155,8 @@ Orchestrates the delegation workflow:
 3. Add delegation note
 4. Finalize and refile to actions file
 
-CONFIG-OVERRIDE can provide input configuration to override default prompting behavior."
+CONFIG-OVERRIDE can provide input configuration to override default
+prompting behavior."
   (org-gtd-delegate--configure config-override)
   (org-gtd-delegate--insert-timestamp)
   (org-gtd-delegate--add-delegation-note)

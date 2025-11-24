@@ -39,9 +39,10 @@
 (require 'org-gtd-ql)
 
 ;;;; Forward declarations
-(defvar org-gtd-items)
 (defvar org-gtd-user-item-config)
 (defvar org-gtd-default-input-config)
+
+(declare-function org-gtd-items "org-gtd")
 
 (defun org-gtd-prompt-for-active-date (prompt)
   "Prompt the user for a date and return it formatted as an active timestamp."
@@ -117,11 +118,11 @@
     ('text . (lambda (x) (read-string (format "%s: " x))))))
 
 (defun org-gtd--build-prompt-form (value user-entry-config)
-  "Build a function that will prompt for input based on VALUE config and USER-ENTRY-CONFIG overrides.
+  "Build input prompt function from VALUE config and USER-ENTRY-CONFIG overrides.
 
 This function avoids using `eval' for code clarity and robustness.
-Instead of returning a quoted form with a closure embedded,
-we return an actual function that will do the lookup and call at runtime."
+Instead of returning a quoted form with a closure embedded, we return an
+actual function that will do the lookup and call at runtime."
   (let-alist value
     (let ((prompt .prompt)
           (type .type))

@@ -72,8 +72,7 @@ This is the inbox. Everything goes in here when you capture it.
   "Wrap BODY... with let-bound `org-gtd' variables for capture purposes."
   (declare (debug t) (indent 2))
   `(let ((org-capture-templates org-gtd-capture-templates))
-     (unwind-protect
-         (progn ,@body))))
+     ,@body))
 
 ;;;; Commands
 

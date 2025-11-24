@@ -31,6 +31,7 @@
 
 (declare-function org-gtd-projects--has-active-tasks-p "org-gtd-projects")
 (declare-function org-gtd-projects--is-stuck-p "org-gtd-projects")
+(declare-function org-ql--normalize-query "org-ql")
 
 (org-ql-defpred property-ts< (property greater-ts)
   "Checks whether a timestamp is earlier than a given date."
@@ -88,7 +89,7 @@ A property is considered invalid if:
 - Its value is empty or whitespace-only
 - Its value doesn't match org-mode's timestamp format
 
-This is useful for finding 'stuck' items in GTD workflows where timestamps
+This is useful for finding \\='stuck\\=' items in GTD workflows where timestamps
 are required but missing or malformed."
   :body (let ((prop-value (org-entry-get nil property)))
           (or (not prop-value)
