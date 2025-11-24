@@ -13,3 +13,4 @@ dist/
 org-gtd-autoloads.el
 .idea
 *.elc
+.claude/settings.local.json
