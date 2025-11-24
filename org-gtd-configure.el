@@ -119,9 +119,8 @@
 (defun org-gtd--build-prompt-form (value user-entry-config)
   "Build a function that will prompt for input based on VALUE config and USER-ENTRY-CONFIG overrides.
 
-This function avoids using `eval' to ensure compatibility with Emacs 27.2,
-where evaluating closures in quoted forms causes `void-function closure' errors.
-Instead of returning a quoted form with a closure embedded (which fails on 27.2),
+This function avoids using `eval' for code clarity and robustness.
+Instead of returning a quoted form with a closure embedded,
 we return an actual function that will do the lookup and call at runtime."
   (let-alist value
     (let ((prompt .prompt)
