@@ -614,8 +614,10 @@ For Story 15: Automatically update dependent tasks when a task becomes DONE."
 
 ;;;###autoload
 (defun org-gtd-task-show-relationships ()
-  "Show dependency relationships for the task at point.
-When called interactively, displays relationships in minibuffer.
+  "Display what blocks this task and what it blocks.
+Shows the dependency relationships for the task at point in a formatted
+summary.
+
 Returns formatted string showing what blocks this task and what this
 task blocks."
   (interactive)
@@ -660,9 +662,9 @@ task blocks."
 
 ;;;###autoload
 (defun org-gtd-validate-project-dependencies ()
-  "Validate project dependencies and identify issues.
-For Story 14: Detect broken dependency references, orphaned tasks,
-and provide guidance."
+  "Check project dependencies for broken references and issues.
+Scans all projects to detect broken dependency references, orphaned tasks,
+and provides guidance for fixing them."
   (interactive)
   (let* ((all-existing-ids (org-gtd-validate-project-dependencies--collect-all-ids))
          (validation-results (org-gtd-validate-project-dependencies--check-all-files all-existing-ids))
@@ -797,10 +799,13 @@ Returns a cons cell (BROKEN-REFERENCES . ORPHANED-TASKS)."
 
 ;;;###autoload
 (defun org-gtd-remove-task-from-project ()
-  "Remove the task at point from a project.
+  "Extract the task at point from its project.
+Removes the project association while optionally reconnecting dependent
+tasks to maintain project structure.
+
 Removes the project ID from the task's ORG_GTD_PROJECT_IDS property.
 If the task has multiple projects, prompts user to select which project
-to remove from.  Handles reconnection of dependent tasks based on user choice."
+to remove from."
   (interactive)
   (unless (org-at-heading-p)
     (user-error "Point must be on an org heading"))

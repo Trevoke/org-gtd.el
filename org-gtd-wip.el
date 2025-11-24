@@ -43,10 +43,9 @@
 
 ;;;###autoload
 (define-derived-mode org-gtd-wip-mode org-mode "GTD-WIP"
-  "Inherits from `org-mode'.
-
-Allow for an org buffer that isn't connected to a file without
-breaking users' setups.
+  "Major mode for GTD work-in-progress clarification buffers.
+Derived from `org-mode' but designed for temporary buffers used during
+the clarification phase of GTD processing.
 
 \\[org-gtd-wip-mode-map]"
   (setq-local org-gtd--loading-p t)

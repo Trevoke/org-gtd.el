@@ -100,7 +100,8 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
 
 ;;;###autoload
 (defun org-gtd-reactivate ()
-  "Reactivate incubated item at point.
+  "Reactivate an incubated GTD item or project at point.
+Restores the item to active status, returning it to your GTD workflow.
 
 Smart dispatcher that detects context:
 - On incubated project heading: reactivate entire project

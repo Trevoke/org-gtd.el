@@ -37,7 +37,9 @@
 
 ;;;###autoload
 (defun org-gtd-process-inbox ()
-  "Start the inbox processing item, one heading at a time."
+  "Process all items in the GTD inbox one by one.
+Walks through each inbox item sequentially, opening the clarification
+interface for decision-making and organization."
   (interactive)
   (let ((buffer (find-file-noselect (org-gtd-inbox-path))))
     (set-buffer buffer)

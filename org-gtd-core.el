@@ -179,7 +179,9 @@ Only sets the value if validation passes."
 
 ;;;###autoload
 (defun org-gtd-setup-keywords-wizard ()
-  "Interactive wizard to configure GTD keyword mapping."
+  "Configure GTD keyword mapping interactively.
+Walks you through mapping your org TODO keywords to GTD concepts
+like TODO, NEXT, WAIT, and CANCELED."
   (interactive)
   (let ((available-keywords org-todo-keywords-1))
     (unless available-keywords

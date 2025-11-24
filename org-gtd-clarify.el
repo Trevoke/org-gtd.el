@@ -105,7 +105,9 @@ there are multiple tasks in the WIP buffer."
 
 ;;;###autoload
 (define-minor-mode org-gtd-clarify-mode
-  "Minor mode for org-gtd."
+  "Enable GTD clarification features in the current buffer.
+Provides keybindings and interface for clarifying GTD items before
+organizing them."
   :lighter " GPM"
   :keymap org-gtd-clarify-map
   :group 'org-gtd-clarify
@@ -130,7 +132,9 @@ there are multiple tasks in the WIP buffer."
 
 ;;;###autoload
 (defun org-gtd-clarify-item (&optional marker window-config)
-  "Process item at point through org-gtd.
+  "Clarify the GTD item at point for decision-making.
+Opens a dedicated clarification buffer where you can refine the item's
+details before organizing it.
 
 MARKER must be a marker pointing to an org heading.
 WINDOW-CONFIG is the window config to set after clarification finishes."

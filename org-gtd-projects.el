@@ -77,7 +77,9 @@ instead.")
 
 ;;;###autoload
 (defun org-gtd-stuck-projects ()
-  "Return the stuck projects configuration for the current GTD setup."
+  "Get org-agenda configuration for finding stuck projects.
+Returns a list suitable for `org-stuck-projects' that defines what
+constitutes a stuck project in the GTD system."
   `(,org-gtd-project-headings
     (,(org-gtd-keywords--next) ,(org-gtd-keywords--wait))
     nil
@@ -101,7 +103,8 @@ instead.")
 
 ;;;###autoload
 (defun org-gtd-project-cancel-from-agenda ()
-  "Cancel the project that has the highlighted task."
+  "Cancel the project containing the current agenda item.
+Marks all incomplete tasks in the project as canceled."
   (interactive)
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)

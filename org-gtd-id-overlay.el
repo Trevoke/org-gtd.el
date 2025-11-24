@@ -82,7 +82,9 @@
 
 ;;;###autoload
 (define-minor-mode org-gtd-id-overlay-mode
-  "Minor mode to display ID properties as heading text overlays."
+  "Display task IDs as visual overlays next to headings.
+Shows the ID property of each org heading as inline text overlay,
+making task relationships and dependencies easier to track."
   :lighter " ID-Overlay"
   :keymap org-gtd-id-overlay-mode-map
   :group 'org-gtd-id-overlay
@@ -92,7 +94,9 @@
 
 ;;;###autoload
 (defun org-gtd-id-overlay-refresh-buffer ()
-  "Refresh all ID overlays in the current buffer."
+  "Update all ID overlays in the current buffer.
+Recreates all ID overlays to reflect current heading structure and
+ID properties."
   (interactive)
   (when org-gtd-id-overlay-mode
     (org-gtd-id-overlay--remove-overlays)
@@ -100,7 +104,8 @@
 
 ;;;###autoload
 (defun org-gtd-id-overlay-clear-buffer ()
-  "Remove all ID overlays from the current buffer."
+  "Clear all ID overlays from the current buffer.
+Removes all visual ID overlays without disabling the mode."
   (interactive)
   (org-gtd-id-overlay--remove-overlays))
 

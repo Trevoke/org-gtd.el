@@ -105,7 +105,8 @@ The graph auto-updates when you refresh (\\[org-gtd-graph-view-refresh])."
 
 ;;;###autoload
 (defun org-gtd-show-project-graph (&optional project-marker)
-  "Show interactive dependency graph for project.
+  "Display an interactive visual graph of project task dependencies.
+Shows tasks as nodes and dependencies as edges in an SVG visualization.
 If PROJECT-MARKER is nil, use the project at point or prompt for one."
   (interactive)
   (let ((marker (or project-marker
