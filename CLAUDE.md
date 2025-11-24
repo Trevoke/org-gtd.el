@@ -170,7 +170,7 @@ Key testing dependencies: `with-simulated-input`, `dash`
 
 ### Dependencies
 
-- **Emacs 27.2+**: Minimum version
+- **Emacs 28.1+**: Minimum version
 - **org 9.6**: Core org-mode functionality
 - **org-edna 1.1.2**: Task dependencies
 - **org-agenda-property 1.3.1**: Agenda enhancements

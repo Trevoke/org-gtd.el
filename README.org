@@ -34,7 +34,7 @@ Get org-gtd working end-to-end: capture an item, organize it, and see it in your
 
 ** Prerequisites
 
-- Emacs 27.2 or higher
+- Emacs 28.1 or higher
 - org-mode (included with Emacs)
 
 ** Installation

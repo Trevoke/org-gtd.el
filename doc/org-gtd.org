@@ -270,7 +270,7 @@ If you were using ~org-gtd-mode~, simply remove it and add these lines to your c
 :DESCRIPTION: Get Org GTD in your emacs
 :CUSTOM_ID: Installing
 :END:
-This package requires emacs 27.2 or higher.
+This package requires Emacs 28.1 or higher.
 
 This package is on MELPA and MELPA stable under the name ~org-gtd~.
 *** use-package
