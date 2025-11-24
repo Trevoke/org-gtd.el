@@ -45,7 +45,6 @@
 ;;;; Commands
 
 (defun org-gtd-area-of-focus-set-on-item-at-point ()
-  (declare (modes org-mode)) ;; for 27.2 compatibility
   (interactive)
   (let ((chosen-area (completing-read
                       "Which area of focus does this belong to? "
@@ -55,7 +54,6 @@
     (org-entry-put (point) "CATEGORY" chosen-area)))
 
 (defun org-gtd-area-of-focus-set-on-agenda-item ()
-  (declare (modes org-agenda-mode)) ;; for 27.2 compatibility
   (interactive)
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)

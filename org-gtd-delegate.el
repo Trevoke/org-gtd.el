@@ -64,7 +64,6 @@ you if you want to call this non-interactively."
 ;;;###autoload
 (defun org-gtd-delegate-agenda-item ()
   "Delegate item at point on agenda view."
-  (declare (modes org-agenda-mode)) ;; for 27.2 compatibility
   (interactive)
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)
@@ -84,7 +83,6 @@ You can pass DELEGATED-TO as the name of the person to whom this was delegated
 and CHECKIN-DATE as the YYYY-MM-DD string of when you want `org-gtd' to remind
 you if you want to call this non-interactively.
 If you call this interactively, the function will prompt for the person's name."
-  (declare (modes org-mode)) ;; for 27.2 compatibility
   (interactive)
   (let ((org-inhibit-logging 'note)
         (config-override (when (or delegated-to checkin-date)

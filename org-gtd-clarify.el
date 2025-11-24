@@ -120,7 +120,6 @@ there are multiple tasks in the WIP buffer."
 
 (defun org-gtd-clarify-agenda-item ()
   "Process item at point on agenda view."
-  (declare (modes org-agenda-mode)) ;; for 27.2 compatibility
   (interactive nil)
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)
@@ -135,7 +134,6 @@ there are multiple tasks in the WIP buffer."
 
 MARKER must be a marker pointing to an org heading.
 WINDOW-CONFIG is the window config to set after clarification finishes."
-  (declare (modes org-mode)) ;; for 27.2 compatibility
   (interactive)
   (let* ((window-config (or window-config (current-window-configuration)))
          (source-heading-marker (or marker (point-marker)))
@@ -151,7 +149,6 @@ WINDOW-CONFIG is the window config to set after clarification finishes."
 
 (defun org-gtd-clarify-switch-to-buffer ()
   "Prompt the user to choose one of the existing WIP buffers."
-  (declare (modes org-gtd-clarify-mode)) ;; for 27.2 compatibility
   (interactive)
   (let ((buf-names (mapcar #'buffer-name (org-gtd-wip--get-buffers))))
     (if buf-names
