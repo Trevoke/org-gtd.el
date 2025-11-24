@@ -47,7 +47,7 @@
                      (string-match-p "Agenda" (buffer-name buffer))
                      (string-match-p "gtd_archive" (buffer-name buffer))
                      (string-match-p "Calendar" (buffer-name buffer))
-                     (string-match-p org-gtd-wip--prefix (buffer-name buffer))
+                     (string-search org-gtd-wip--prefix (buffer-name buffer))
                      ;; Kill some transient-related buffers but not all
                      (string-match-p "\\*Help\\*" (buffer-name buffer))
                      (string-match-p "\\*Warnings\\*" (buffer-name buffer))

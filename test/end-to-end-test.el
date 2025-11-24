@@ -57,7 +57,7 @@
 
        ;; 3. ORGANIZE (project with tasks)
        (let ((wip-buffers (seq-filter (lambda (buf)
-                                        (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                        (string-search org-gtd-wip--prefix (buffer-name buf)))
                                       (buffer-list))))
          (when wip-buffers
            (with-current-buffer (car wip-buffers)
@@ -181,7 +181,7 @@
 
        ;; 3. ORGANIZE (knowledge) - ensure we're in WIP buffer
        (let ((wip-buffers (seq-filter (lambda (buf)
-                                        (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                        (string-search org-gtd-wip--prefix (buffer-name buf)))
                                       (buffer-list))))
          (when wip-buffers
            (with-current-buffer (car wip-buffers)
@@ -217,7 +217,7 @@
 
        ;; Project with subtasks
        (let ((wip-buffers (seq-filter (lambda (buf)
-                                        (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                        (string-search org-gtd-wip--prefix (buffer-name buf)))
                                       (buffer-list))))
          (when wip-buffers
            (with-current-buffer (car wip-buffers)
@@ -265,7 +265,7 @@
 
        ;; Project with multiple tasks
        (let ((wip-buffers (seq-filter (lambda (buf)
-                                        (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                        (string-search org-gtd-wip--prefix (buffer-name buf)))
                                       (buffer-list))))
          (when wip-buffers
            (with-current-buffer (car wip-buffers)
@@ -452,7 +452,7 @@
 
         ;; 3. ORGANIZE (project with tasks)
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -514,7 +514,7 @@
 
         ;; 3. ORGANIZE (project with multiple tasks in same file)
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -653,7 +653,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -691,7 +691,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -771,7 +771,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -974,7 +974,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -1051,7 +1051,7 @@
       (org-gtd-process-inbox)
 
       (let ((wip-buffers (seq-filter (lambda (buf)
-                                       (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                       (string-search org-gtd-wip--prefix (buffer-name buf)))
                                      (buffer-list))))
         (when wip-buffers
           (with-current-buffer (car wip-buffers)
@@ -1126,7 +1126,7 @@
       (org-gtd-process-inbox)
 
       (let ((wip-buffers (seq-filter (lambda (buf)
-                                       (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                       (string-search org-gtd-wip--prefix (buffer-name buf)))
                                      (buffer-list))))
         (when wip-buffers
           (with-current-buffer (car wip-buffers)
@@ -1197,7 +1197,7 @@
               (org-gtd-process-inbox)
 
               (let ((wip-buffers (seq-filter (lambda (buf)
-                                               (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                               (string-search org-gtd-wip--prefix (buffer-name buf)))
                                              (buffer-list))))
                 (when wip-buffers
                   (with-current-buffer (car wip-buffers)
@@ -1252,7 +1252,7 @@
         (capture-inbox-item "Website redesign")
         (org-gtd-process-inbox)
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -1302,7 +1302,7 @@
         (capture-inbox-item "Product launch")
         (org-gtd-process-inbox)
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -1356,7 +1356,7 @@
         (capture-inbox-item "Marketing campaign")
         (org-gtd-process-inbox)
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -1441,7 +1441,7 @@
         (capture-inbox-item "Project Alpha")
         (org-gtd-process-inbox)
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -1452,7 +1452,7 @@
         (capture-inbox-item "Project Beta")
         (org-gtd-process-inbox)
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -1491,7 +1491,7 @@
         (capture-inbox-item "Project Alpha")
         (org-gtd-process-inbox)
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -1503,7 +1503,7 @@
         (capture-inbox-item "Project Beta")
         (org-gtd-process-inbox)
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -1566,7 +1566,7 @@
 
         ;; 3. ORGANIZE (project with tasks)
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -1631,7 +1631,7 @@
 
         ;; 3. ORGANIZE (project with multiple tasks in same file)
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -1698,7 +1698,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -1778,7 +1778,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -1793,7 +1793,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -1887,7 +1887,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -1902,7 +1902,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -2004,7 +2004,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -2097,7 +2097,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -2151,7 +2151,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -2219,7 +2219,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -2271,7 +2271,7 @@
 
             ;; Simulate org-gtd-project-extend by refiling Task B under Project Alpha
             (let ((wip-buffers (seq-filter (lambda (buf)
-                                             (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                             (string-search org-gtd-wip--prefix (buffer-name buf)))
                                            (buffer-list))))
               (when wip-buffers
                 (with-current-buffer (car wip-buffers)
@@ -2403,7 +2403,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -2441,7 +2441,7 @@
 
             ;; Refile Task C to project
             (let ((wip-buffers (seq-filter (lambda (buf)
-                                             (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                             (string-search org-gtd-wip--prefix (buffer-name buf)))
                                            (buffer-list))))
               (when wip-buffers
                 (with-current-buffer (car wip-buffers)
@@ -2512,7 +2512,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -2532,7 +2532,7 @@
           (let ((project-point (point-marker)))
 
             (let ((wip-buffers (seq-filter (lambda (buf)
-                                             (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                             (string-search org-gtd-wip--prefix (buffer-name buf)))
                                            (buffer-list))))
               (when wip-buffers
                 (with-current-buffer (car wip-buffers)
@@ -2557,7 +2557,7 @@
           (let ((project-point (point-marker)))
 
             (let ((wip-buffers (seq-filter (lambda (buf)
-                                             (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                             (string-search org-gtd-wip--prefix (buffer-name buf)))
                                            (buffer-list))))
               (when wip-buffers
                 (with-current-buffer (car wip-buffers)
@@ -2668,7 +2668,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -2688,7 +2688,7 @@
           (let ((project-point (point-marker)))
 
             (let ((wip-buffers (seq-filter (lambda (buf)
-                                             (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                             (string-search org-gtd-wip--prefix (buffer-name buf)))
                                            (buffer-list))))
               (when wip-buffers
                 (with-current-buffer (car wip-buffers)
@@ -2820,7 +2820,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -2840,7 +2840,7 @@
           (let ((project-point (point-marker)))
 
             (let ((wip-buffers (seq-filter (lambda (buf)
-                                             (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                             (string-search org-gtd-wip--prefix (buffer-name buf)))
                                            (buffer-list))))
               (when wip-buffers
                 (with-current-buffer (car wip-buffers)
@@ -2865,7 +2865,7 @@
           (let ((project-point (point-marker)))
 
             (let ((wip-buffers (seq-filter (lambda (buf)
-                                             (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                             (string-search org-gtd-wip--prefix (buffer-name buf)))
                                            (buffer-list))))
               (when wip-buffers
                 (with-current-buffer (car wip-buffers)
@@ -2974,7 +2974,7 @@
         (org-gtd-process-inbox)
 
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)
@@ -2994,7 +2994,7 @@
           (let ((project-point (point-marker)))
 
             (let ((wip-buffers (seq-filter (lambda (buf)
-                                             (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                             (string-search org-gtd-wip--prefix (buffer-name buf)))
                                            (buffer-list))))
               (when wip-buffers
                 (with-current-buffer (car wip-buffers)

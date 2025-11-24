@@ -38,7 +38,7 @@
 
      ;; Items we captured in this test - create project using builder
      (let ((wip-buffers (seq-filter (lambda (buf)
-                                       (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                       (string-search org-gtd-wip--prefix (buffer-name buf)))
                                      (buffer-list))))
        (when wip-buffers
          (with-current-buffer (car wip-buffers)
@@ -94,7 +94,7 @@
       (org-gtd-process-inbox)
       ;; Add tasks to make it a valid project
       (let ((wip-buffers (seq-filter (lambda (buf)
-                                       (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                       (string-search org-gtd-wip--prefix (buffer-name buf)))
                                      (buffer-list))))
         (when wip-buffers
           (with-current-buffer (car wip-buffers)

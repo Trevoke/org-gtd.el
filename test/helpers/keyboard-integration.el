@@ -19,7 +19,7 @@ This uses the critical org-gtd-process-inbox command while checking keyboard acc
 
     ;; 3. VERIFY keyboard integration points
     (let ((wip-buffers (seq-filter (lambda (buf)
-                                     (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                     (string-search org-gtd-wip--prefix (buffer-name buf)))
                                    (buffer-list))))
       (when wip-buffers
         (with-current-buffer (car wip-buffers)
@@ -53,7 +53,7 @@ PROJECT-TASKS should be a string with the project structure to add."
 
   ;; Add project structure (this is what users do in WIP buffer)
   (let ((wip-buffers (seq-filter (lambda (buf)
-                                   (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                   (string-search org-gtd-wip--prefix (buffer-name buf)))
                                  (buffer-list))))
     (when wip-buffers
       (with-current-buffer (car wip-buffers)
@@ -90,7 +90,7 @@ PROJECT-TASKS should be a string with the project structure to add."
   (ogt-capture-and-process-with-keyboard-verification item-text)
   ;; Knowledge requires WIP buffer interaction
   (let ((wip-buffers (seq-filter (lambda (buf)
-                                   (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                   (string-search org-gtd-wip--prefix (buffer-name buf)))
                                  (buffer-list))))
     (when wip-buffers
       (with-current-buffer (car wip-buffers)
@@ -119,7 +119,7 @@ ITEMS-AND-TYPES should be a list of (text . type) pairs where type is a symbol."
             (type (cdr item)))
         ;; Verify keyboard integration for each item
         (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
                                        (buffer-list))))
           (when wip-buffers
             (with-current-buffer (car wip-buffers)

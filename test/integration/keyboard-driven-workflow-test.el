@@ -29,7 +29,7 @@
        
        ;; 3. ORGANIZE via keyboard (C-c c opens transient, 's' selects single action)
        (let ((wip-buffers (seq-filter (lambda (buf) 
-                                        (string-match-p org-gtd-wip--prefix (buffer-name buf))) 
+                                        (string-search org-gtd-wip--prefix (buffer-name buf))) 
                                       (buffer-list))))
          (when wip-buffers
            (with-current-buffer (car wip-buffers)
@@ -64,7 +64,7 @@
        
        ;; 3. Add project structure and organize via keyboard
        (let ((wip-buffers (seq-filter (lambda (buf) 
-                                        (string-match-p org-gtd-wip--prefix (buffer-name buf))) 
+                                        (string-search org-gtd-wip--prefix (buffer-name buf))) 
                                       (buffer-list))))
          (when wip-buffers
            (with-current-buffer (car wip-buffers)
@@ -107,7 +107,7 @@
        
        ;; 3. ORGANIZE via keyboard - simulate delegation workflow
        (let ((wip-buffers (seq-filter (lambda (buf) 
-                                        (string-match-p org-gtd-wip--prefix (buffer-name buf))) 
+                                        (string-search org-gtd-wip--prefix (buffer-name buf))) 
                                       (buffer-list))))
          (when wip-buffers
            (with-current-buffer (car wip-buffers)
@@ -145,7 +145,7 @@
        
        ;; 3. ORGANIZE via keyboard - calendar organization with date
        (let ((wip-buffers (seq-filter (lambda (buf) 
-                                        (string-match-p org-gtd-wip--prefix (buffer-name buf))) 
+                                        (string-search org-gtd-wip--prefix (buffer-name buf))) 
                                       (buffer-list))))
          (when wip-buffers
            (with-current-buffer (car wip-buffers)
@@ -181,7 +181,7 @@
        
        ;; 3. ORGANIZE via keyboard as knowledge
        (let ((wip-buffers (seq-filter (lambda (buf) 
-                                        (string-match-p org-gtd-wip--prefix (buffer-name buf))) 
+                                        (string-search org-gtd-wip--prefix (buffer-name buf))) 
                                       (buffer-list))))
          (when wip-buffers
            (with-current-buffer (car wip-buffers)
@@ -221,7 +221,7 @@
        
        ;; First item: single action
        (let ((wip-buffers (seq-filter (lambda (buf) 
-                                        (string-match-p org-gtd-wip--prefix (buffer-name buf))) 
+                                        (string-search org-gtd-wip--prefix (buffer-name buf))) 
                                       (buffer-list))))
          (when wip-buffers
            (with-current-buffer (car wip-buffers)
@@ -232,7 +232,7 @@
        
        ;; Second item: project  
        (let ((wip-buffers (seq-filter (lambda (buf) 
-                                        (string-match-p org-gtd-wip--prefix (buffer-name buf))) 
+                                        (string-search org-gtd-wip--prefix (buffer-name buf))) 
                                       (buffer-list))))
          (when wip-buffers
            (with-current-buffer (car wip-buffers)
@@ -247,7 +247,7 @@
        
        ;; Third item: knowledge
        (let ((wip-buffers (seq-filter (lambda (buf) 
-                                        (string-match-p org-gtd-wip--prefix (buffer-name buf))) 
+                                        (string-search org-gtd-wip--prefix (buffer-name buf))) 
                                       (buffer-list))))
          (when wip-buffers
            (with-current-buffer (car wip-buffers)

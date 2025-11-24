@@ -75,7 +75,7 @@
       (org-gtd-process-inbox)
 
       (let ((wip-buffers (seq-filter (lambda (buf)
-                                       (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                       (string-search org-gtd-wip--prefix (buffer-name buf)))
                                      (buffer-list))))
         (when wip-buffers
           (with-current-buffer (car wip-buffers)
@@ -377,7 +377,7 @@
      (capture-inbox-item "Project Alpha")
      (org-gtd-process-inbox)
      (let ((wip-buffers (seq-filter (lambda (buf)
-                                      (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                      (string-search org-gtd-wip--prefix (buffer-name buf)))
                                     (buffer-list))))
        (when wip-buffers
          (with-current-buffer (car wip-buffers)
@@ -391,7 +391,7 @@
      (capture-inbox-item "Project Beta")
      (org-gtd-process-inbox)
      (let ((wip-buffers (seq-filter (lambda (buf)
-                                      (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                      (string-search org-gtd-wip--prefix (buffer-name buf)))
                                     (buffer-list))))
        (when wip-buffers
          (with-current-buffer (car wip-buffers)
@@ -460,7 +460,7 @@
      (capture-inbox-item "Project Delta")
      (org-gtd-process-inbox)
      (let ((wip-buffers (seq-filter (lambda (buf)
-                                      (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                      (string-search org-gtd-wip--prefix (buffer-name buf)))
                                     (buffer-list))))
        (when wip-buffers
          (with-current-buffer (car wip-buffers)
@@ -672,7 +672,7 @@
      (capture-inbox-item "Project With Branches")
      (org-gtd-process-inbox)
      (let ((wip-buffers (seq-filter (lambda (buf)
-                                      (string-match-p org-gtd-wip--prefix (buffer-name buf)))
+                                      (string-search org-gtd-wip--prefix (buffer-name buf)))
                                     (buffer-list))))
        (when wip-buffers
          (with-current-buffer (car wip-buffers)
