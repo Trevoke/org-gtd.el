@@ -666,7 +666,7 @@ File: org-gtd.info,  Node: Installing,  Next: Configuring,  Prev: Upgrading,  Up
 3.2 Installing
 ==============
 
-This package requires emacs 27.2 or higher.
+This package requires Emacs 28.1 or higher.
 
    This package is on MELPA and MELPA stable under the name ‘org-gtd’.
 
