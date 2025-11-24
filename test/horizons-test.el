@@ -49,7 +49,7 @@
        (expect (get-buffer-window (car (org-gtd-wip--get-buffers)))
                :not :to-be
                nil)
-       (expect (file-raw-text "horizons.org")
+       (expect (file-raw-text (expand-file-name "horizons.org" org-gtd-directory))
                :to-match
                "We are the champions"))
 

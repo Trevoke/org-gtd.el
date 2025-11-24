@@ -164,7 +164,7 @@ This handles the internal bits of `org-gtd'."
             (with-temp-message ""
               (org-cut-subtree))))))
     (when task-id
-      (kill-buffer (org-gtd-wip--buffer-name task-id)))
+      (org-gtd-wip--cleanup-temp-file task-id))
     (when window-config
       (set-window-configuration window-config))
     (if loop-p (org-gtd-process-inbox))

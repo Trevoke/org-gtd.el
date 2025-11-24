@@ -39,20 +39,24 @@
 
 ;;;; Variables
 
+(defvar org-gtd-wip--temp-files (make-hash-table :test 'equal)
+  "Hash table mapping buffer IDs to temporary file paths.")
+
 ;;;; Modes
 
 ;;;###autoload
 (define-derived-mode org-gtd-wip-mode org-mode "GTD-WIP"
   "Major mode for GTD work-in-progress clarification buffers.
-Derived from `org-mode' but designed for temporary buffers used during
-the clarification phase of GTD processing.
+Derived from `org-mode' and uses temporary files for content persistence.
 
 \\[org-gtd-wip-mode-map]"
   (setq-local org-gtd--loading-p t)
   (setq-local
    header-line-format
    (substitute-command-keys
-    "\\<org-gtd-wip-mode-map>Clarify item.  Use `\\[org-gtd-organize]' to file it appropriately when finished.")))
+    "\\<org-gtd-wip-mode-map>Clarify item.  Use `\\[org-gtd-organize]' to file it appropriately when finished."))
+  ;; Enable auto-save for crash protection
+  (auto-save-mode 1))
 
 ;;;; Macros
 
@@ -69,13 +73,36 @@ the clarification phase of GTD processing.
   (format "*%s: %s*" org-gtd-wip--prefix id))
 
 (defun org-gtd-wip--get-buffer (org-id)
-  "Get or create a WIP buffer with name based on ORG-ID."
-  (let* ((buffer (get-buffer-create
-                  (org-gtd-wip--buffer-name org-id))))
-    (with-current-buffer buffer
-      (unless (eq major-mode #'org-gtd-wip-mode)
-        (with-org-gtd-context (org-gtd-wip-mode)))
-      buffer)))
+  "Get or create a WIP buffer with temp file for ORG-ID."
+  ;; Check if we already have a temp file for this ID
+  (let ((existing-file (gethash org-id org-gtd-wip--temp-files)))
+    (if (and existing-file (file-exists-p existing-file))
+        ;; Reuse existing temp file
+        (let ((buffer (find-file-noselect existing-file)))
+          (with-current-buffer buffer
+            (unless (eq major-mode #'org-gtd-wip-mode)
+              (with-org-gtd-context (org-gtd-wip-mode)))
+            ;; Ensure buffer has the correct name
+            (rename-buffer (org-gtd-wip--buffer-name org-id) t))
+          buffer)
+      ;; Create new temp file
+      (let* ((temp-dir (expand-file-name "org-gtd" temporary-file-directory))
+             (_ (unless (file-exists-p temp-dir)
+                  (make-directory temp-dir t)))
+             (temp-file (make-temp-file
+                         (expand-file-name
+                          (format "wip-%s-" org-id)
+                          temp-dir)
+                         nil ".org"))
+             (buffer (find-file-noselect temp-file)))
+        ;; Track temp file for cleanup
+        (puthash org-id temp-file org-gtd-wip--temp-files)
+        (with-current-buffer buffer
+          (unless (eq major-mode #'org-gtd-wip-mode)
+            (with-org-gtd-context (org-gtd-wip-mode)))
+          ;; Set a more user-friendly buffer name
+          (rename-buffer (org-gtd-wip--buffer-name org-id) t)
+          buffer)))))
 
 (defun org-gtd-wip--get-buffers ()
   "Retrieve a list of Org GTD WIP buffers."
@@ -100,6 +127,32 @@ If BUFFER is empty, then copy org heading at MARKER and paste inside
         (org-entry-delete (point) org-gtd-delegate-property)
         (org-entry-delete (point) org-gtd-prop-style)
         (org-entry-delete (point) org-gtd-prop-project)))))
+
+(defun org-gtd-wip--cleanup-temp-file (org-id)
+  "Clean up temp file for ORG-ID."
+  (let ((temp-file (gethash org-id org-gtd-wip--temp-files)))
+    (when temp-file
+      ;; Kill buffer if open
+      (let ((buffer (get-file-buffer temp-file)))
+        (when buffer
+          (with-current-buffer buffer
+            (set-buffer-modified-p nil)) ; Don't prompt for save
+          (kill-buffer buffer)))
+      ;; Delete temp file
+      (when (file-exists-p temp-file)
+        (delete-file temp-file))
+      ;; Remove from tracking
+      (remhash org-id org-gtd-wip--temp-files))))
+
+(defun org-gtd-wip--cleanup-all-temp-files ()
+  "Clean up all temp files (for emergency cleanup or exit)."
+  (maphash
+   (lambda (id _file)
+     (org-gtd-wip--cleanup-temp-file id))
+   org-gtd-wip--temp-files))
+
+;; Clean up on Emacs exit
+(add-hook 'kill-emacs-hook #'org-gtd-wip--cleanup-all-temp-files)
 
 ;;;; Footer
 

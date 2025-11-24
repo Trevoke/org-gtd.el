@@ -172,15 +172,15 @@ WINDOW-CONFIG is the window config to set after clarification finishes."
 (defun org-gtd-clarify-stop ()
   "Stop clarifying the current item and restore previous state.
 Closes the horizons view, restores the window configuration,
-and kills the WIP buffer without organizing the item."
+cleans up temp file, and kills the WIP buffer without organizing the item."
   (interactive)
   (let ((window-config org-gtd-clarify--window-config)
         (task-id org-gtd-clarify--clarify-id))
     ;; Clean up horizons view
     (org-gtd-clarify--cleanup-horizons-view)
-    ;; Kill the WIP buffer
+    ;; Clean up temp file and kill buffer
     (when task-id
-      (kill-buffer (org-gtd-wip--buffer-name task-id)))
+      (org-gtd-wip--cleanup-temp-file task-id))
     ;; Restore window configuration
     (when window-config
       (set-window-configuration window-config))
