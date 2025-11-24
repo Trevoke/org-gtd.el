@@ -102,7 +102,6 @@ instead.")
 ;;;###autoload
 (defun org-gtd-project-cancel-from-agenda ()
   "Cancel the project that has the highlighted task."
-  (declare (modes org-agenda-mode)) ;; for 27.2 compatibility
   (interactive)
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)
@@ -963,10 +962,7 @@ Return nil if there isn't one."
   (let ((resize-mini-windows t)
         (max-mini-window-height 0))
     (display-message-or-buffer org-gtd-projects--malformed))
-  ;; read-key changed in emacs 28
-  (if (version< emacs-version "28")
-      (read-key "Waiting for a keypress to return to clarifying... ")
-    (read-key "Waiting for a keypress to return to clarifying... " t))
+  (read-key "Waiting for a keypress to return to clarifying... " t)
   (message ""))
 
 ;;;; Footer
