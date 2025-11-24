@@ -81,8 +81,8 @@ breaking users' setups.
 (defun org-gtd-wip--get-buffers ()
   "Retrieve a list of Org GTD WIP buffers."
   (seq-filter (lambda (buf)
-                (string-match-p org-gtd-wip--prefix
-                                (buffer-name buf)))
+                (string-search org-gtd-wip--prefix
+                               (buffer-name buf)))
               (buffer-list)))
 
 (defun org-gtd-wip--maybe-initialize-buffer-contents (marker buffer)
