@@ -168,12 +168,16 @@ If NO-HISTORY is non-nil, don't add to navigation history."
 
 (defun org-gtd-graph-ui-update-details ()
   "Update details panel with info from selected node.
-Shows: heading, TODO state, scheduled/deadline, properties, body text."
+Shows: heading, TODO state, scheduled/deadline, properties, body text.
+When viewing in context of a project graph, separates same-project
+and cross-project dependencies."
   (when (and org-gtd-graph-ui--selected-node-id
              org-gtd-graph-ui--details-buffer
              (buffer-live-p org-gtd-graph-ui--details-buffer))
     (let ((details-text (org-gtd-graph-ui--format-task-details
-                         org-gtd-graph-ui--selected-node-id)))
+                         org-gtd-graph-ui--selected-node-id
+                         (when (boundp 'org-gtd-graph-view--graph)
+                           org-gtd-graph-view--graph))))
       (with-current-buffer org-gtd-graph-ui--details-buffer
         (let ((inhibit-read-only t))
           (erase-buffer)
@@ -187,8 +191,10 @@ Shows: heading, TODO state, scheduled/deadline, properties, body text."
             (use-local-map map))
           (setq buffer-read-only t))))))
 
-(defun org-gtd-graph-ui--format-task-details (node-id)
+(defun org-gtd-graph-ui--format-task-details (node-id &optional graph)
   "Format task details for NODE-ID as a string.
+When GRAPH is provided, separates dependencies into same-project
+and cross-project sections based on whether IDs exist in the graph nodes.
 Returns formatted text suitable for display in details buffer."
   (let ((marker (org-id-find node-id t)))
     (if (not marker)
@@ -202,7 +208,32 @@ Returns formatted text suitable for display in details buffer."
                (depends-on (org-entry-get-multivalued-property nil "ORG_GTD_DEPENDS_ON"))
                (blocks (org-entry-get-multivalued-property nil "ORG_GTD_BLOCKS"))
                (first-tasks (org-entry-get-multivalued-property nil "ORG_GTD_FIRST_TASKS"))
-               (body (org-gtd-graph-ui--get-body-text)))
+               (body (org-gtd-graph-ui--get-body-text))
+               ;; Partition dependencies into same-project and cross-project
+               (nodes (when graph (org-gtd-graph-nodes graph)))
+               (depends-same-project nil)
+               (depends-other-projects nil)
+               (blocks-same-project nil)
+               (blocks-other-projects nil))
+          ;; Partition depends-on
+          (if nodes
+              (dolist (id depends-on)
+                (if (gethash id nodes)
+                    (push id depends-same-project)
+                  (push id depends-other-projects)))
+            (setq depends-same-project depends-on))
+          (setq depends-same-project (nreverse depends-same-project))
+          (setq depends-other-projects (nreverse depends-other-projects))
+          ;; Partition blocks
+          (if nodes
+              (dolist (id blocks)
+                (if (gethash id nodes)
+                    (push id blocks-same-project)
+                  (push id blocks-other-projects)))
+            (setq blocks-same-project blocks))
+          (setq blocks-same-project (nreverse blocks-same-project))
+          (setq blocks-other-projects (nreverse blocks-other-projects))
+
           (concat
            (format "* %s" heading)
            (when todo-state (format " [%s]" todo-state))
@@ -219,20 +250,36 @@ Returns formatted text suitable for display in details buffer."
                                 first-tasks
                                 "\n")
                      "\n\n"))
-           (when depends-on
+           (when depends-same-project
              (concat "Blocked by:\n"
                      (mapconcat (lambda (id)
                                   (format "  - %s"
                                           (org-gtd-task-management--get-heading-for-id id)))
-                                depends-on
+                                depends-same-project
                                 "\n")
                      "\n\n"))
-           (when blocks
+           (when depends-other-projects
+             (concat "Blocked by (other projects):\n"
+                     (mapconcat (lambda (id)
+                                  (format "  - %s"
+                                          (org-gtd-task-management--get-heading-for-id id)))
+                                depends-other-projects
+                                "\n")
+                     "\n\n"))
+           (when blocks-same-project
              (concat "Blocks:\n"
                      (mapconcat (lambda (id)
                                   (format "  - %s"
                                           (org-gtd-task-management--get-heading-for-id id)))
-                                blocks
+                                blocks-same-project
+                                "\n")
+                     "\n\n"))
+           (when blocks-other-projects
+             (concat "Blocks (other projects):\n"
+                     (mapconcat (lambda (id)
+                                  (format "  - %s"
+                                          (org-gtd-task-management--get-heading-for-id id)))
+                                blocks-other-projects
                                 "\n")
                      "\n\n"))
            (when (and body (not (string-empty-p (string-trim body))))
