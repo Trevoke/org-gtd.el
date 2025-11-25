@@ -29,7 +29,7 @@
 
 (require 'cl-lib)
 (require 'f)
-(require 'org-agenda-property)
+(require 'org-gtd-agenda-property)
 
 (require 'org-gtd-backward-compatibility)
 
@@ -372,7 +372,7 @@ This property also controls the prefix displayed in agenda views.")
           (org-stuck-projects (org-gtd-stuck-projects))
           (org-odd-levels-only nil)
           (org-agenda-files (org-gtd-core--agenda-files))
-          (org-agenda-property-list `(,org-gtd-delegate-property)))
+          (org-gtd-agenda-property-list `(,org-gtd-delegate-property)))
      (unwind-protect
          (progn
            (advice-add 'org-agenda-files :filter-return #'org-gtd-core--uniq)
