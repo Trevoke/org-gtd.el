@@ -208,6 +208,133 @@
         (when (get-buffer "*Test Graph Export*")
           (kill-buffer "*Test Graph Export*"))))))
 
+;;;; Buffer naming tests
+
+(describe "org-gtd-graph-view buffer naming"
+
+  (before-each (org-gtd-graph-view-test--setup))
+  (after-each (org-gtd-graph-view-test--teardown))
+
+  (it "uses project name in buffer name instead of UUID"
+    (let* ((tasks-file (f-join org-gtd-directory "org-gtd-tasks.org"))
+           project-id)
+      (with-current-buffer (find-file-noselect tasks-file)
+        (erase-buffer)
+        (insert "* Build the spaceship\n")
+        (insert ":PROPERTIES:\n")
+        (insert ":ORG_GTD: Projects\n")
+        (insert ":END:\n")
+        (org-back-to-heading)
+        (setq project-id (org-id-get-create))
+        (save-buffer))
+
+      (let ((buffer-name (org-gtd-graph-view--buffer-name "Build the spaceship")))
+        (expect buffer-name :to-equal "*Org GTD Graph: Build the spaceship*")
+        (expect buffer-name :not :to-match project-id)))))
+
+;;;; Project node positioning tests
+
+(describe "org-gtd-graph project node positioning"
+
+  (before-each (org-gtd-graph-view-test--setup))
+  (after-each (org-gtd-graph-view-test--teardown))
+
+  (it "places project node at the bottom (receives edges, not a root)"
+    (let* ((tasks-file (f-join org-gtd-directory "org-gtd-tasks.org"))
+           project-id task-a-id task-b-id)
+      (with-current-buffer (find-file-noselect tasks-file)
+        (erase-buffer)
+        (insert "* Build the spaceship\n")
+        (insert ":PROPERTIES:\n")
+        (insert ":ORG_GTD: Projects\n")
+        (insert ":END:\n")
+        (org-back-to-heading)
+        (setq project-id (org-id-get-create))
+        (goto-char (point-max))
+        (insert "** TODO Design hull\n")
+        (org-back-to-heading)
+        (setq task-a-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+        (goto-char (point-max))
+        (insert "** TODO Build engine\n")
+        (org-back-to-heading)
+        (setq task-b-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+
+        ;; Set first tasks and create dependency chain
+        (goto-char (point-min))
+        (org-back-to-heading)
+        (org-entry-put (point) "ORG_GTD_FIRST_TASKS" task-a-id)
+        (org-gtd-dependencies-create task-a-id task-b-id)
+        (save-buffer))
+
+      (let* ((project-marker (org-id-find project-id t))
+             (graph (org-gtd-graph-data--extract-from-project project-marker))
+             (root-ids (org-gtd-graph-root-ids graph))
+             (edges (org-gtd-graph-edges graph))
+             ;; Count edges TO project (project receives edges from leaf tasks)
+             (incoming-to-project (seq-filter
+                                   (lambda (e)
+                                     (equal (org-gtd-graph-edge-to-id e) project-id))
+                                   edges))
+             ;; Count edges FROM project (should be none now)
+             (outgoing-from-project (seq-filter
+                                     (lambda (e)
+                                       (equal (org-gtd-graph-edge-from-id e) project-id))
+                                     edges)))
+        ;; Project should NOT be a root (it's the sink/finish line)
+        (expect (member project-id root-ids) :to-be nil)
+        ;; First task should be a root
+        (expect (member task-a-id root-ids) :to-be-truthy)
+        ;; Project should have incoming edges (from leaf tasks)
+        (expect (length incoming-to-project) :to-be-greater-than 0)
+        ;; Project should NOT have outgoing edges
+        (expect (length outgoing-from-project) :to-equal 0))))
+
+  (it "connects leaf tasks to project node (tasks block outcome)"
+    (let* ((tasks-file (f-join org-gtd-directory "org-gtd-tasks.org"))
+           project-id task-a-id task-b-id)
+      (with-current-buffer (find-file-noselect tasks-file)
+        (erase-buffer)
+        (insert "* Build the spaceship\n")
+        (insert ":PROPERTIES:\n")
+        (insert ":ORG_GTD: Projects\n")
+        (insert ":END:\n")
+        (org-back-to-heading)
+        (setq project-id (org-id-get-create))
+        (goto-char (point-max))
+        (insert "** TODO Design hull\n")
+        (org-back-to-heading)
+        (setq task-a-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+        (goto-char (point-max))
+        (insert "** TODO Build engine\n")
+        (org-back-to-heading)
+        (setq task-b-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+
+        ;; Set first tasks and create dependency: A -> B
+        (goto-char (point-min))
+        (org-back-to-heading)
+        (org-entry-put (point) "ORG_GTD_FIRST_TASKS" task-a-id)
+        (org-gtd-dependencies-create task-a-id task-b-id)
+        (save-buffer))
+
+      (let* ((project-marker (org-id-find project-id t))
+             (graph (org-gtd-graph-data--extract-from-project project-marker))
+             (edges (org-gtd-graph-edges graph))
+             ;; Find edge TO the project (leaf task -> project)
+             (edges-to-project (seq-filter
+                                (lambda (e)
+                                  (equal (org-gtd-graph-edge-to-id e) project-id))
+                                edges)))
+        ;; Task B is the leaf (no dependents), should point to project
+        (expect (length edges-to-project) :to-be-greater-than 0)
+        (expect (seq-some (lambda (e)
+                            (equal (org-gtd-graph-edge-from-id e) task-b-id))
+                          edges-to-project)
+                :to-be-truthy)))))
+
 (provide 'org-gtd-graph-view-test)
 
 ;;; org-gtd-graph-view-test.el ends here

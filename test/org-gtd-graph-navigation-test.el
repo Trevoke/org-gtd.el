@@ -315,42 +315,47 @@ Returns a graph with the following structure:
         (expect project-node :not :to-be nil)
         (expect (org-gtd-graph-node-title project-node) :to-equal "My Project"))))
 
-  (it "project heading should have edges to first tasks"
+  (it "project heading receives edges from leaf tasks (project at bottom)"
     (let* ((tasks-file (f-join org-gtd-directory "org-gtd-tasks.org"))
-           project-marker)
-      ;; Create a project with multiple first tasks
+           project-marker project-id task-1-id task-2-id)
+      ;; Create a project with multiple first tasks (which are also leaves)
       (with-current-buffer (find-file-noselect tasks-file)
         (erase-buffer)
         (insert "* My Project\n")
         (insert ":PROPERTIES:\n")
         (insert ":ORG_GTD: Projects\n")
-        (insert ":ID: my-project\n")
-        (insert ":ORG_GTD_FIRST_TASKS: task-1 task-2\n")
         (insert ":END:\n")
-        (insert "** Task 1\n")
-        (insert ":PROPERTIES:\n")
-        (insert ":ID: task-1\n")
-        (insert ":ORG_GTD_PROJECT_IDS: my-project\n")
-        (insert ":END:\n")
-        (insert "** Task 2\n")
-        (insert ":PROPERTIES:\n")
-        (insert ":ID: task-2\n")
-        (insert ":ORG_GTD_PROJECT_IDS: my-project\n")
-        (insert ":END:\n")
+        (org-back-to-heading t)
+        (setq project-id (org-id-get-create))
+        (goto-char (point-max))
+        (insert "** TODO Task 1\n")
+        (org-back-to-heading t)
+        (setq task-1-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+        (goto-char (point-max))
+        (insert "** TODO Task 2\n")
+        (org-back-to-heading t)
+        (setq task-2-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+        ;; Set first tasks
         (goto-char (point-min))
         (org-back-to-heading t)
+        (org-entry-put (point) "ORG_GTD_FIRST_TASKS" (concat task-1-id " " task-2-id))
         (setq project-marker (point-marker))
         (save-buffer))
 
       ;; Extract graph and check edges
       (let* ((graph (org-gtd-graph-data--extract-from-project project-marker))
-             (project-id (org-gtd-graph-project-id graph))
+             ;; Project should have incoming edges (predecessors), not outgoing
+             (predecessors (org-gtd-graph-data-get-predecessors graph project-id))
              (successors (org-gtd-graph-data-get-successors graph project-id)))
 
-        ;; Project should have edges to task-1 and task-2
-        (expect (length successors) :to-equal 2)
-        (expect (member "task-1" successors) :to-be-truthy)
-        (expect (member "task-2" successors) :to-be-truthy)))))
+        ;; Project should receive edges from leaf tasks
+        (expect (length predecessors) :to-equal 2)
+        (expect (member task-1-id predecessors) :to-be-truthy)
+        (expect (member task-2-id predecessors) :to-be-truthy)
+        ;; Project should NOT have outgoing edges
+        (expect (length successors) :to-equal 0)))))
 
 (describe "Initial node selection in graph view"
 
@@ -358,36 +363,39 @@ Returns a graph with the following structure:
                (ogt--configure-emacs))
   (after-each (ogt--close-and-delete-files))
 
-  (it "initial selected node should be the project heading"
+  (it "initial selected node should be the first task (project at bottom)"
     (let* ((tasks-file (f-join org-gtd-directory "org-gtd-tasks.org"))
-           project-marker
-           project-id)
+           project-marker project-id task-1-id)
       ;; Create a simple project
       (with-current-buffer (find-file-noselect tasks-file)
         (erase-buffer)
         (insert "* My Project\n")
         (insert ":PROPERTIES:\n")
         (insert ":ORG_GTD: Projects\n")
-        (insert ":ORG_GTD_FIRST_TASKS: task-1\n")
         (insert ":END:\n")
-        (insert "** Task 1\n")
-        (insert ":PROPERTIES:\n")
-        (insert ":ID: task-1\n")
-        (insert ":END:\n")
-        (goto-char (point-min))
         (org-back-to-heading t)
         (setq project-id (org-id-get-create))
+        (goto-char (point-max))
+        (insert "** TODO Task 1\n")
+        (org-back-to-heading t)
+        (setq task-1-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+        ;; Set first tasks
+        (goto-char (point-min))
+        (org-back-to-heading t)
+        (org-entry-put (point) "ORG_GTD_FIRST_TASKS" task-1-id)
         (setq project-marker (point-marker))
         (save-buffer))
 
       ;; Extract graph and test root node
       (let* ((graph (org-gtd-graph-data--extract-from-project project-marker))
-             (root-ids (org-gtd-graph-root-ids graph))
-             (first-root (car root-ids)))
+             (root-ids (org-gtd-graph-root-ids graph)))
 
-        ;; The first (and only) root should be the project heading
+        ;; The root should be the first task, not the project
         (expect (length root-ids) :to-equal 1)
-        (expect first-root :to-equal project-id)))))
+        (expect (car root-ids) :to-equal task-1-id)
+        ;; Project should NOT be a root
+        (expect (member project-id root-ids) :to-be nil)))))
 
 (describe "DAG-based navigation with 'n' key"
 
@@ -397,38 +405,39 @@ Returns a graph with the following structure:
 
   (it "'n' navigates to first child (successor) in DAG, not BFS order"
     (let* ((tasks-file (f-join org-gtd-directory "org-gtd-tasks.org"))
-           project-marker
-           project-id)
-      ;; Create a project with specific structure:
-      ;; Project -> task-1 -> task-2
-      ;;         -> task-3
+           project-marker project-id task-1-id task-2-id task-3-id)
+      ;; Create a project with specific structure (project at bottom):
+      ;; task-1 (root) -> task-2 (leaf) -> Project
+      ;; task-3 (root, also leaf) -> Project
       (with-current-buffer (find-file-noselect tasks-file)
         (erase-buffer)
         (insert "* My Project\n")
         (insert ":PROPERTIES:\n")
         (insert ":ORG_GTD: Projects\n")
-        (insert ":ID: my-project-nav\n")
-        (insert ":ORG_GTD_FIRST_TASKS: task-1 task-3\n")
         (insert ":END:\n")
-        (insert "** Task 1\n")
-        (insert ":PROPERTIES:\n")
-        (insert ":ID: task-1\n")
-        (insert ":ORG_GTD_PROJECT_IDS: my-project-nav\n")
-        (insert ":ORG_GTD_BLOCKS: task-2\n")
-        (insert ":END:\n")
-        (insert "** Task 2\n")
-        (insert ":PROPERTIES:\n")
-        (insert ":ID: task-2\n")
-        (insert ":ORG_GTD_PROJECT_IDS: my-project-nav\n")
-        (insert ":END:\n")
-        (insert "** Task 3\n")
-        (insert ":PROPERTIES:\n")
-        (insert ":ID: task-3\n")
-        (insert ":ORG_GTD_PROJECT_IDS: my-project-nav\n")
-        (insert ":END:\n")
+        (org-back-to-heading t)
+        (setq project-id (org-id-get-create))
+        (goto-char (point-max))
+        (insert "** TODO Task 1\n")
+        (org-back-to-heading t)
+        (setq task-1-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+        (goto-char (point-max))
+        (insert "** TODO Task 2\n")
+        (org-back-to-heading t)
+        (setq task-2-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+        (goto-char (point-max))
+        (insert "** TODO Task 3\n")
+        (org-back-to-heading t)
+        (setq task-3-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+        ;; Set first tasks
         (goto-char (point-min))
         (org-back-to-heading t)
-        (setq project-id "my-project-nav")
+        (org-entry-put (point) "ORG_GTD_FIRST_TASKS" (concat task-1-id " " task-3-id))
+        ;; Create dependency: task-1 blocks task-2
+        (org-gtd-dependencies-create task-1-id task-2-id)
         (setq project-marker (point-marker))
         (save-buffer))
 
@@ -439,55 +448,63 @@ Returns a graph with the following structure:
           (org-gtd-graph-view-mode)
           (setq org-gtd-graph-view--graph graph)
 
-          ;; Start at project node
-          (setq org-gtd-graph-ui--selected-node-id project-id)
+          ;; Root nodes should be task-1 and task-3
+          (expect (org-gtd-graph-root-ids graph) :to-contain task-1-id)
+          (expect (org-gtd-graph-root-ids graph) :to-contain task-3-id)
 
-          ;; Get successors of project - should be task-1 and task-3
-          (let ((project-successors (org-gtd-graph-data-get-successors graph project-id)))
-            (expect (length project-successors) :to-equal 2)
-            (expect (car project-successors) :to-equal "task-1"))
+          ;; Start at task-1 (a root node)
+          (setq org-gtd-graph-ui--selected-node-id task-1-id)
 
           ;; Get successors of task-1 - should be task-2
-          (let ((task1-successors (org-gtd-graph-data-get-successors graph "task-1")))
+          (let ((task1-successors (org-gtd-graph-data-get-successors graph task-1-id)))
             (expect (length task1-successors) :to-equal 1)
-            (expect (car task1-successors) :to-equal "task-2")))))))
+            (expect (car task1-successors) :to-equal task-2-id))
 
-(describe "'p' navigation prefers task parents over project heading"
+          ;; Get successors of task-2 (leaf) - should be the project
+          (let ((task2-successors (org-gtd-graph-data-get-successors graph task-2-id)))
+            (expect (length task2-successors) :to-equal 1)
+            (expect (car task2-successors) :to-equal project-id))
+
+          ;; Project should have NO successors (it's the sink)
+          (let ((project-successors (org-gtd-graph-data-get-successors graph project-id)))
+            (expect (length project-successors) :to-equal 0)))))))
+
+(describe "'p' navigation moves up dependency chain"
 
   (before-each (setq inhibit-message t)
                (ogt--configure-emacs))
   (after-each (ogt--close-and-delete-files))
 
-  (it "'p' navigates to task parent, not project heading"
+  (it "'p' navigates to blocking task (predecessor)"
     (let* ((tasks-file (f-join org-gtd-directory "org-gtd-tasks.org"))
-           project-marker
-           project-id)
-      ;; Create structure: Project -> task-1 -> task-2
-      ;;                           -> task-2 (also in FIRST_TASKS)
-      ;; So task-2 has TWO predecessors: project and task-1
-      ;; Pressing 'p' from task-2 should go to task-1, not project
+           project-marker project-id task-1-id task-2-id)
+      ;; Create structure (project at bottom):
+      ;; task-1 (root) -> task-2 (leaf) -> Project
+      ;; task-2 also a first task but blocked by task-1
       (with-current-buffer (find-file-noselect tasks-file)
         (erase-buffer)
         (insert "* My Project\n")
         (insert ":PROPERTIES:\n")
         (insert ":ORG_GTD: Projects\n")
-        (insert ":ID: my-project-p-nav\n")
-        (insert ":ORG_GTD_FIRST_TASKS: task-1 task-2\n")
         (insert ":END:\n")
-        (insert "** Task 1\n")
-        (insert ":PROPERTIES:\n")
-        (insert ":ID: task-1\n")
-        (insert ":ORG_GTD_PROJECT_IDS: my-project-p-nav\n")
-        (insert ":ORG_GTD_BLOCKS: task-2\n")
-        (insert ":END:\n")
-        (insert "** Task 2\n")
-        (insert ":PROPERTIES:\n")
-        (insert ":ID: task-2\n")
-        (insert ":ORG_GTD_PROJECT_IDS: my-project-p-nav\n")
-        (insert ":END:\n")
+        (org-back-to-heading t)
+        (setq project-id (org-id-get-create))
+        (goto-char (point-max))
+        (insert "** TODO Task 1\n")
+        (org-back-to-heading t)
+        (setq task-1-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+        (goto-char (point-max))
+        (insert "** TODO Task 2\n")
+        (org-back-to-heading t)
+        (setq task-2-id (org-id-get-create))
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+        ;; Set first tasks
         (goto-char (point-min))
         (org-back-to-heading t)
-        (setq project-id "my-project-p-nav")
+        (org-entry-put (point) "ORG_GTD_FIRST_TASKS" (concat task-1-id " " task-2-id))
+        ;; Create dependency: task-1 blocks task-2
+        (org-gtd-dependencies-create task-1-id task-2-id)
         (setq project-marker (point-marker))
         (save-buffer))
 
@@ -497,11 +514,11 @@ Returns a graph with the following structure:
         (with-current-buffer buffer
           (org-gtd-graph-view-mode)
           (setq org-gtd-graph-view--graph graph
-                org-gtd-graph-ui--selected-node-id "task-2")
+                org-gtd-graph-ui--selected-node-id task-2-id)
 
-          ;; Navigate up - should go to task-1, not project
+          ;; Navigate up - should go to task-1 (the blocker)
           (org-gtd-graph-nav-previous)
-          (expect org-gtd-graph-ui--selected-node-id :to-equal "task-1"))))))
+          (expect org-gtd-graph-ui--selected-node-id :to-equal task-1-id))))))
 
 (provide 'org-gtd-graph-navigation-test)
 

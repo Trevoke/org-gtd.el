@@ -144,7 +144,7 @@ extracted from the project's task tree and dependency relationships."
     (setf (org-gtd-graph-project-id graph) project-id
           (org-gtd-graph-project-name graph) project-name)
 
-    ;; Add project heading itself as a node
+    ;; Add project heading itself as a node (layer will be set after finding leaves)
     (let ((project-node (org-gtd-graph-node-create
                          :id project-id
                          :title project-name
@@ -154,28 +154,47 @@ extracted from the project's task tree and dependency relationships."
                          :priority project-priority
                          :tags project-tags
                          :scheduled project-scheduled
-                         :deadline project-deadline
-                         :layer 0)))  ; Project is always at layer 0
+                         :deadline project-deadline)))
       (puthash project-id project-node (org-gtd-graph-nodes graph)))
 
     ;; Extract nodes and edges from tasks
     (org-gtd-graph-data--process-tasks graph tasks project-id)
 
-    ;; Add edges from project heading to first tasks (preserve order)
-    (let ((project-edges nil))
-      (dolist (first-task-id first-task-ids)
-        (when (gethash first-task-id (org-gtd-graph-nodes graph))
-          (push (org-gtd-graph-edge-create
-                 :from-id project-id
-                 :to-id first-task-id
-                 :type :blocks)
-                project-edges)))
-      ;; Reverse to preserve order, then prepend to existing edges
+    ;; Find leaf tasks (tasks with no outgoing edges to other tasks in graph)
+    ;; and connect them TO the project node (project is the "finish line")
+    (let ((nodes (org-gtd-graph-nodes graph))
+          (edges (org-gtd-graph-edges graph))
+          (tasks-with-outgoing (make-hash-table :test 'equal))
+          (leaf-edges nil))
+      ;; Mark all tasks that have outgoing edges to other tasks (not project)
+      (dolist (edge edges)
+        (let ((from-id (org-gtd-graph-edge-from-id edge))
+              (to-id (org-gtd-graph-edge-to-id edge)))
+          (when (and (not (equal from-id project-id))
+                     (not (equal to-id project-id))
+                     (gethash to-id nodes))
+            (puthash from-id t tasks-with-outgoing))))
+      ;; Find leaf tasks and create edges to project
+      (maphash (lambda (task-id _node)
+                 (when (and (not (equal task-id project-id))
+                            (not (gethash task-id tasks-with-outgoing)))
+                   (push (org-gtd-graph-edge-create
+                          :from-id task-id
+                          :to-id project-id
+                          :type :blocks)
+                         leaf-edges)))
+               nodes)
       (setf (org-gtd-graph-edges graph)
-            (append (nreverse project-edges) (org-gtd-graph-edges graph))))
+            (append (org-gtd-graph-edges graph) leaf-edges)))
 
-    ;; Set project heading as THE root node
-    (setf (org-gtd-graph-root-ids graph) (list project-id))
+    ;; Set first tasks as root nodes (they are the starting points)
+    (let ((valid-roots (seq-filter (lambda (id)
+                                     (gethash id (org-gtd-graph-nodes graph)))
+                                   first-task-ids)))
+      (setf (org-gtd-graph-root-ids graph)
+            (or valid-roots
+                ;; Fallback: find tasks with no incoming edges
+                (org-gtd-graph-data--find-root-tasks graph project-id))))
 
     ;; Deduplicate edges (BLOCKS and DEPENDS_ON create the same edge)
     (org-gtd-graph-data--deduplicate-edges graph)
@@ -214,30 +233,54 @@ PROJECT-ID is the ID of the parent project."
         (puthash task-id node nodes)
 
         ;; Create edges from BLOCKS relationships (preserve order)
+        ;; Skip edges that point to the project (handled separately as leaf->project)
         (let ((task-edges nil))
           (dolist (blocked-id blocks)
-            (push (org-gtd-graph-edge-create
-                   :from-id task-id
-                   :to-id blocked-id
-                   :type :blocks)
-                  task-edges))
+            (unless (equal blocked-id project-id)
+              (push (org-gtd-graph-edge-create
+                     :from-id task-id
+                     :to-id blocked-id
+                     :type :blocks)
+                    task-edges)))
           ;; Reverse to preserve BLOCKS property order, then append
           (setq edges (append edges (nreverse task-edges))))
 
         ;; Create edges from DEPENDS_ON relationships (preserve order)
         ;; These create edges FROM the dependency TO this task
+        ;; Skip edges from the project (project->task would create cycles)
         (let ((depends-edges nil))
           (dolist (dependency-id depends-on)
-            (push (org-gtd-graph-edge-create
-                   :from-id dependency-id
-                   :to-id task-id
-                   :type :depends-on)
-                  depends-edges))
+            (unless (equal dependency-id project-id)
+              (push (org-gtd-graph-edge-create
+                     :from-id dependency-id
+                     :to-id task-id
+                     :type :depends-on)
+                    depends-edges)))
           ;; Reverse to preserve DEPENDS_ON property order, then append
           (setq edges (append edges (nreverse depends-edges))))))
 
     ;; Update edges in graph
     (setf (org-gtd-graph-edges graph) edges)))
+
+(defun org-gtd-graph-data--find-root-tasks (graph project-id)
+  "Find root tasks in GRAPH, excluding PROJECT-ID.
+Root tasks are those with no incoming edges from other tasks."
+  (let ((nodes (org-gtd-graph-nodes graph))
+        (edges (org-gtd-graph-edges graph))
+        (has-dependencies (make-hash-table :test 'equal))
+        (roots nil))
+    ;; Mark all tasks that have incoming edges (dependencies)
+    (dolist (edge edges)
+      (let ((to-id (org-gtd-graph-edge-to-id edge)))
+        (unless (equal to-id project-id)
+          (puthash to-id t has-dependencies))))
+    ;; Find tasks without incoming edges, excluding project
+    (maphash (lambda (task-id _node)
+               (when (and (not (equal task-id project-id))
+                          (not (gethash task-id has-dependencies)))
+                 (push task-id roots)))
+             nodes)
+    (nreverse roots)))
 
 (defun org-gtd-graph-data--deduplicate-edges (graph)
   "Remove duplicate edges from GRAPH.

@@ -79,15 +79,17 @@ Can be toggled with `org-gtd-graph-toggle-render-mode'.")
 
 ;;;; Buffer Management
 
-(defun org-gtd-graph-view--buffer-name (project-id)
-  "Generate buffer name for PROJECT-ID graph view."
-  (format "*Org GTD Graph: %s*" project-id))
+(defun org-gtd-graph-view--buffer-name (project-name)
+  "Generate buffer name for PROJECT-NAME graph view."
+  (format "*Org GTD Graph: %s*" project-name))
 
 (defun org-gtd-graph-view-create (project-marker)
   "Create or update graph view for project at PROJECT-MARKER."
   (let* ((project-id (org-with-point-at project-marker
                        (org-gtd-id-get-create)))
-         (buffer-name (org-gtd-graph-view--buffer-name project-id))
+         (project-name (org-with-point-at project-marker
+                         (org-get-heading t t t t)))
+         (buffer-name (org-gtd-graph-view--buffer-name project-name))
          (buffer (get-buffer-create buffer-name)))
 
     (with-current-buffer buffer
