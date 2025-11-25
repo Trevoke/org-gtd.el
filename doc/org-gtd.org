@@ -2865,6 +2865,139 @@ If ~ORG_GTD_PROJECT_IDS~ contains ~"project-a project-b"~ (two IDs), the task be
 - [[#graph-first-contact][Why Visual Project Management?]] for understanding project structure
 - [[#properties-reference][Properties Reference]] for ~PREVIOUS_ORG_GTD~, ~PREVIOUS_TODO~, ~ORG_GTD_TIMESTAMP~ details
 
+*** Project Progress Cookies: See Your Progress at a Glance
+:PROPERTIES:
+:CUSTOM_ID: project-progress-cookies
+:END:
+
+**** First Contact: What Are Progress Cookies?
+
+Progress cookies show how far along your project is: ~[3/7][42%]~ means 3 of 7 tasks done.
+
+They appear directly on project headings, so you can scan your project list and instantly know which projects are nearly complete, which are just starting, and which might need attention.
+
+*Who needs this?* Anyone managing multiple projects who wants quick visual feedback without opening each project to count tasks.
+
+**** Black Triangle: See Progress in 30 Seconds
+
+Your projects already have progress cookies—they're enabled by default.
+
+1. Open your engage view: ~C-c d e~
+2. Find any project task
+3. Press ~RET~ to jump to the project heading
+
+You'll see something like:
+
+#+begin_example
+,* PROJ Buy a house [0/5][0%]                      :home:
+#+end_example
+
+That's it. The ~[0/5][0%]~ shows 0 of 5 tasks completed.
+
+**** Tutorial: Watch Cookies Update Automatically
+
+Let's see progress cookies in action:
+
+1. *Find a project with tasks:*
+   - Open engage view: ~C-c d e~
+   - Navigate to a project task, press ~RET~ to go to the project heading
+   - Note the current cookie: ~[0/3][0%]~ (or similar)
+
+2. *Complete a task:*
+   - Find a NEXT task in that project
+   - Mark it done: ~C-c C-t DONE~ (or cycle to DONE)
+
+3. *Check the project heading:*
+   - Scroll up to the project heading
+   - The cookie updated: ~[1/3][33%]~
+
+No manual refresh needed. Complete tasks, cookies update automatically.
+
+**** Understanding How Cookies Work
+
+**What gets counted?**
+
+Progress cookies count all tasks linked to the project via ~ORG_GTD_PROJECT_IDS~. This is different from org-mode's built-in ~[/]~ cookies which only count direct children.
+
+Why does this matter? In org-gtd v4, projects are DAGs (directed acyclic graphs)—tasks can live anywhere in your GTD files and link to projects by ID. The cookie counts ALL linked tasks, regardless of where they're located in your files.
+
+**When do cookies update?**
+
+- *Task state changes:* Complete a task → cookie updates immediately
+- *Project creation:* New projects get cookies automatically
+- *Manual refresh:* ~M-x org-gtd-project-update-all-cookies~ refreshes everything
+- *Fix TODO keywords:* ~M-x org-gtd-projects-fix-all-todo-keywords~ also refreshes cookies
+
+**** Configuring Cookie Position
+
+Control where cookies appear with ~org-gtd-project-progress-cookie-position~:
+
+#+begin_src emacs-lisp
+;; At end of heading, before tags (default)
+(setq org-gtd-project-progress-cookie-position 'end)
+
+;; After TODO keyword, before title
+(setq org-gtd-project-progress-cookie-position 'start)
+
+;; Disable cookies entirely
+(setq org-gtd-project-progress-cookie-position nil)
+#+end_src
+
+Visual comparison:
+
+#+begin_example
+;; 'end (default):
+,* PROJ Buy a house [3/7][42%]                    :home:
+
+;; 'start:
+,* PROJ [3/7][42%] Buy a house                    :home:
+
+;; nil:
+,* PROJ Buy a house                               :home:
+#+end_example
+
+**** Common Scenarios
+
+**Cookies look wrong after external edits**
+
+You edited tasks outside org-gtd (mobile app, manual edit) and cookies don't match reality.
+
+*Fix:* ~M-x org-gtd-project-update-all-cookies~
+
+This scans all projects and recalculates from scratch.
+
+**Want to disable cookies for performance**
+
+If you have hundreds of projects and notice slowness:
+
+#+begin_src emacs-lisp
+(setq org-gtd-project-progress-cookie-position nil)
+#+end_src
+
+Cookies won't update or display.
+
+**Cookies showing 0/0**
+
+This means no tasks are linked to the project. Either:
+- The project has no tasks yet (add some)
+- Tasks don't have ~ORG_GTD_PROJECT_IDS~ pointing to this project (check properties)
+
+**** Technical Reference
+
+**Format:** ~[completed/total][percent%]~
+
+**Calculation:** Scans all headings with ~ORG_GTD_PROJECT_IDS~ matching the project's ID. Counts tasks with TODO keyword in ~org-done-keywords~ as completed.
+
+**Storage:** Actual text on the heading (not computed at display time). This means cookies persist and are visible even in non-Emacs editors.
+
+**Hook:** ~org-after-todo-state-change-hook~ triggers recalculation when task states change.
+
+**Related commands:**
+- ~org-gtd-project-update-all-cookies~ :: Refresh all project cookies
+- ~org-gtd-projects-fix-all-todo-keywords~ :: Fixes keywords AND refreshes cookies
+
+*See also:* [[#org-gtd-project-progress-cookie-position][~org-gtd-project-progress-cookie-position~]] in Configuration Variables Reference.
+
 *** Cleaning up / archiving completed work
 :PROPERTIES:
 :CUSTOM_ID: cleaning-up-the-system
@@ -3425,6 +3558,60 @@ For BBDB integration, adapt the function to use ~bbdb-records~ and ~bbdb-record-
 #+end_src
 
 This same pattern can be used to integrate other completion sources (org-contacts, your own custom databases, etc.) with any org-gtd input prompt that uses the ~'text~ type.
+
+*** Projects Configuration
+
+**** ~org-gtd-project-progress-cookie-position~
+:PROPERTIES:
+:CUSTOM_ID: org-gtd-project-progress-cookie-position
+:END:
+
+*Type*: Symbol or nil
+
+*Default*: ~'end~
+
+*Description*: Controls where progress cookies are displayed on project headings.
+
+Values:
+- ~nil~ :: Disabled (no cookies shown)
+- ~'start~ :: After TODO keyword, before title
+- ~'end~ :: After heading text, before tags (default)
+
+Progress cookies show project completion as ~[completed/total][percent%]~ format, for example ~[3/7][42%]~.
+
+Unlike org-mode's built-in statistics cookies (~[/]~ or ~[%]~) which count direct children, org-gtd's progress cookies correctly count all tasks linked to the project via ~ORG_GTD_PROJECT_IDS~, making them accurate for the DAG-based project structure.
+
+*Example*:
+#+begin_src emacs-lisp
+;; Show cookies at end of heading (default)
+(setq org-gtd-project-progress-cookie-position 'end)
+
+;; Show cookies at start of heading
+(setq org-gtd-project-progress-cookie-position 'start)
+
+;; Disable progress cookies
+(setq org-gtd-project-progress-cookie-position nil)
+#+end_src
+
+*What it looks like*:
+#+begin_example
+;; With 'end (default):
+,* PROJ Buy a house [3/7][42%]                    :home:
+
+;; With 'start:
+,* PROJ [3/7][42%] Buy a house                    :home:
+
+;; With nil:
+,* PROJ Buy a house                               :home:
+#+end_example
+
+*Automatic updates*: Cookies are automatically recalculated when:
+- Task TODO states change (via hook)
+- Project is created
+- ~org-gtd-projects-fix-all-todo-keywords~ is run
+- ~org-gtd-project-update-all-cookies~ is called manually
+
+*See also*: [[#project-progress-cookies][Project Progress Cookies]] for detailed usage, [[#org-gtd-project-update-all-cookies][~org-gtd-project-update-all-cookies~]] for manual refresh.
 
 *** Obsolete Variables (Do Not Use)
 
@@ -4241,6 +4428,42 @@ Some tasks can belong to multiple projects. This command handles them safely:
 - If you only work in Emacs with org-gtd commands (automatic state management works)
 - If your projects look correct already
 - Before making external changes (use after, not before)
+
+**** ~org-gtd-project-update-all-cookies~
+:PROPERTIES:
+:CUSTOM_ID: org-gtd-project-update-all-cookies
+:END:
+
+**What it is:** Refreshes progress cookies on ALL project headings at once.
+
+**Why you'd use it:** Progress cookies show ~[3/7][42%]~ on project headings. While these update automatically when you change task states, sometimes you want to refresh everything—for example, after bulk changes or data migration.
+
+**Your first use (30 seconds):**
+
+1. Run: ~M-x org-gtd-project-update-all-cookies~
+2. Done - all project headings now show accurate progress
+
+**What it does:**
+
+- Scans all projects in agenda files
+- Counts completed vs total tasks for each project
+- Updates the ~[completed/total][percent%]~ display on each project heading
+
+**When to use:**
+
+- After bulk task changes outside of org-gtd
+- After data migration or import
+- During weekly review for visual refresh
+- If progress cookies look outdated
+
+**Configuration:**
+
+Progress cookies are controlled by ~org-gtd-project-progress-cookie-position~:
+- ~'end~ (default) - cookies appear at end of heading before tags
+- ~'start~ - cookies appear after TODO keyword
+- ~nil~ - cookies disabled entirely
+
+*See also*: [[#project-progress-cookies][Project Progress Cookies]] for detailed usage guide.
 
 **** ~org-gtd-incubate~
 

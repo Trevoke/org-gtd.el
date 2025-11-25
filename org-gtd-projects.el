@@ -75,6 +75,10 @@ instead.")
 :END:
 " org-gtd-prop-refile org-gtd-projects))
 
+(defconst org-gtd-project--cookie-regexp
+  "\\s-*\\[\\([0-9]+\\)/\\([0-9]+\\)\\]\\[\\([0-9]+\\)%\\]\\s-*"
+  "Regexp matching progress cookies [N/M][P%].")
+
 ;;;###autoload
 (defun org-gtd-stuck-projects ()
   "Get org-agenda configuration for finding stuck projects.
@@ -227,7 +231,10 @@ This is useful for:
                      (when (and should-mark-next
                                 (not (equal current-state (org-gtd-keywords--wait))))
                        (org-gtd-set-task-state task-id (org-gtd-keywords--next)))))
-                 all-tasks)))))
+                 all-tasks))))
+
+  ;; Phase 5: Update all project cookies
+  (org-gtd-project-update-all-cookies))
 
 (defun org-gtd-project-new ()
   "Organize, decorate and refile item as a new project."
@@ -351,7 +358,9 @@ Uses dependency service to determine which tasks are ready to work on."
 (defun org-gtd-project--decorate (project-marker)
   "Add project decorations like progress cookies at PROJECT-MARKER."
   (org-with-point-at project-marker
-    (org-gtd-projects--add-progress-cookie)))
+    (let ((project-id (org-entry-get (point) "ID")))
+      (when project-id
+        (org-gtd-project-update-cookies project-id)))))
 
 ;;;;; Main Command: Create Project
 
@@ -661,11 +670,120 @@ dependencies aren't set up properly."
       (org-entry-add-to-multivalued-property (point) "ORG_GTD_DEPENDS_ON" blocker-id))))
 
 (defun org-gtd-projects--add-progress-cookie ()
-  "Add progress tracking cookie to the project heading."
-  (let ((org-special-ctrl-a t))
-    (org-end-of-line))
-  (insert " [/]")
-  (org-update-statistics-cookies t))
+  "Add progress tracking cookie to the project heading.
+Uses custom progress cookies if `org-gtd-project-progress-cookie-position' is set,
+otherwise uses org-mode's built-in statistics cookies."
+  (if org-gtd-project-progress-cookie-position
+      ;; Use new custom cookie system
+      (let ((project-id (org-entry-get (point) "ID")))
+        (when project-id
+          (org-gtd-project-update-cookies project-id)))
+    ;; Use old org-mode statistics cookies
+    (let ((org-special-ctrl-a t))
+      (org-end-of-line))
+    (insert " [/]")
+    (org-update-statistics-cookies t)))
+
+(make-obsolete 'org-gtd-projects--add-progress-cookie
+               'org-gtd-project-update-cookies
+               "4.0")
+
+(defun org-gtd-project--count-tasks (project-id)
+  "Count completed and total tasks for project with PROJECT-ID.
+Returns cons cell (COMPLETED . TOTAL)."
+  (let ((completed 0)
+        (total 0)
+        (project-marker (org-id-find project-id t)))
+    (when project-marker
+      (let ((task-markers (org-gtd-projects--collect-tasks-by-graph project-marker)))
+        (dolist (task-marker task-markers)
+          (org-with-point-at task-marker
+            (setq total (1+ total))
+            (when (member (org-entry-get (point) "TODO") org-done-keywords)
+              (setq completed (1+ completed)))))))
+    (cons completed total)))
+
+(defun org-gtd-project--format-cookies (completed total)
+  "Format progress cookies as [COMPLETED/TOTAL][PERCENT%]."
+  (let ((percent (if (zerop total) 0 (/ (* 100 completed) total))))
+    (format "[%d/%d][%d%%]" completed total percent)))
+
+(defun org-gtd-project--remove-cookies ()
+  "Remove progress cookies from current heading."
+  (save-excursion
+    (org-back-to-heading t)
+    (let ((case-fold-search nil))
+      (when (re-search-forward org-gtd-project--cookie-regexp (line-end-position) t)
+        (replace-match " " nil nil)
+        ;; Clean up extra spaces
+        (org-back-to-heading t)
+        (when (re-search-forward "  +" (line-end-position) t)
+          (replace-match " " nil nil))))))
+
+(defun org-gtd-project--set-cookies (completed total)
+  "Set progress cookies on current project heading.
+COMPLETED is number of done tasks, TOTAL is total tasks.
+Position determined by `org-gtd-project-progress-cookie-position'."
+  (when org-gtd-project-progress-cookie-position
+    (save-excursion
+      (org-back-to-heading t)
+      ;; First remove any existing cookies
+      (org-gtd-project--remove-cookies)
+      (let ((cookies (org-gtd-project--format-cookies completed total)))
+        (pcase org-gtd-project-progress-cookie-position
+          ('end
+           ;; Insert before tags or at end of line
+           (let ((tags-start (save-excursion
+                               (when (re-search-forward "\\s-+:\\S-+:" (line-end-position) t)
+                                 (match-beginning 0)))))
+             (if tags-start
+                 (progn
+                   (goto-char tags-start)
+                   (insert " " cookies))
+               (end-of-line)
+               (insert " " cookies))))
+          ('start
+           ;; Insert after TODO keyword (or after first word if no TODO keyword)
+           (looking-at org-complex-heading-regexp)
+           (if (match-end 2)
+               ;; Has TODO keyword - insert after it
+               (goto-char (match-end 2))
+             ;; No TODO keyword - insert after first word of heading
+             (goto-char (match-end 1))  ; After stars
+             (skip-chars-forward " \t")  ; Skip whitespace
+             (skip-chars-forward "^ \t\n"))  ; Skip first word
+           (insert " " cookies)))))))
+
+(defun org-gtd-project-update-cookies (project-id)
+  "Update progress cookies for project with PROJECT-ID."
+  (when-let ((project-marker (org-id-find project-id t)))
+    (org-with-point-at project-marker
+      (let* ((counts (org-gtd-project--count-tasks project-id))
+             (completed (car counts))
+             (total (cdr counts)))
+        (org-gtd-project--set-cookies completed total)))))
+
+(defun org-gtd-project--maybe-update-cookies ()
+  "Update project cookies if current heading is a project task.
+Intended to be called from `org-after-todo-state-change-hook'."
+  (when org-gtd-project-progress-cookie-position
+    (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+      (dolist (project-id project-ids)
+        (org-gtd-project-update-cookies project-id)))))
+
+(defun org-gtd-project-update-all-cookies ()
+  "Update progress cookies for all projects in agenda files.
+Useful for weekly reviews or after bulk changes."
+  (interactive)
+  (when org-gtd-project-progress-cookie-position
+    (org-gtd-core-prepare-agenda-buffers)
+    (org-map-entries
+     (lambda ()
+       (let ((project-id (org-entry-get (point) "ID")))
+         (when project-id
+           (org-gtd-project-update-cookies project-id))))
+     "+ORG_GTD=\"Projects\""
+     'agenda)))
 
 (defun org-gtd-project--save-state (marker)
   "Save ORG_GTD and TODO state at MARKER to PREVIOUS_* properties.
@@ -975,6 +1093,8 @@ Return nil if there isn't one."
   (message ""))
 
 ;;;; Footer
+
+(add-hook 'org-after-todo-state-change-hook #'org-gtd-project--maybe-update-cookies)
 
 (provide 'org-gtd-projects)
 

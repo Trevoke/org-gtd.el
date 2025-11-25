@@ -1016,3 +1016,319 @@
               (expect (org-entry-get (point) "ORG_GTD") :not :to-equal "Incubated")
               (expect (org-entry-get (point) "TODO") :to-equal task-1-todo))))))
 )
+
+(describe "org-gtd-project--count-tasks"
+  (before-each
+    (setq inhibit-message t)
+    (ogt--configure-emacs))
+  (after-each
+    (ogt--close-and-delete-files))
+
+  (it "returns (completed . total) for project tasks"
+    (create-project "Count test")
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Count test")
+      (org-back-to-heading t)
+      (let* ((project-id (org-entry-get (point) "ID"))
+             (counts (org-gtd-project--count-tasks project-id)))
+        ;; Initially all tasks are TODO/NEXT, none completed
+        (expect (car counts) :to-equal 0)
+        (expect (cdr counts) :to-equal 3))))
+
+  (it "counts completed tasks correctly"
+    (create-project "Done test")
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Done test")
+      (org-back-to-heading t)
+      (let ((project-id (org-entry-get (point) "ID")))
+        ;; Mark first task as DONE
+        (search-forward "Task 1")
+        (org-todo "DONE")
+        (goto-char (point-min))
+        (search-forward "Done test")
+        (let ((counts (org-gtd-project--count-tasks project-id)))
+          (expect (car counts) :to-equal 1)
+          (expect (cdr counts) :to-equal 3))))))
+
+(describe "org-gtd-project--format-cookies"
+  (it "formats cookies as [completed/total][percent%]"
+    (expect (org-gtd-project--format-cookies 3 7) :to-equal "[3/7][42%]"))
+
+  (it "handles zero total gracefully"
+    (expect (org-gtd-project--format-cookies 0 0) :to-equal "[0/0][0%]"))
+
+  (it "handles 100% completion"
+    (expect (org-gtd-project--format-cookies 5 5) :to-equal "[5/5][100%]")))
+
+(describe "org-gtd-project--set-cookies"
+  (before-each
+    (setq inhibit-message t)
+    (ogt--configure-emacs))
+  (after-each
+    (ogt--close-and-delete-files))
+
+  (describe "with position 'end"
+    (before-each
+      (setq org-gtd-project-progress-cookie-position 'end))
+
+    (it "inserts cookies at end of heading"
+      (with-temp-buffer
+        (org-mode)
+        (insert "* PROJ Buy a house\n")
+        (goto-char (point-min))
+        (org-gtd-project--set-cookies 3 7)
+        (expect (buffer-substring-no-properties (point-min) (line-end-position))
+                :to-match "Buy a house \\[3/7\\]\\[42%\\]")))
+
+    (it "inserts cookies before tags"
+      (with-temp-buffer
+        (org-mode)
+        (insert "* PROJ Buy a house  :home:\n")
+        (goto-char (point-min))
+        (org-gtd-project--set-cookies 3 7)
+        (let ((line (buffer-substring-no-properties (point-min) (line-end-position))))
+          (expect line :to-match "\\[3/7\\]\\[42%\\].*:home:")))))
+
+  (describe "with position 'start"
+    (before-each
+      (setq org-gtd-project-progress-cookie-position 'start))
+
+    (it "inserts cookies at start of heading"
+      (with-temp-buffer
+        (org-mode)
+        (insert "* PROJ Buy a house\n")
+        (goto-char (point-min))
+        (org-gtd-project--set-cookies 3 7)
+        (expect (buffer-substring-no-properties (point-min) (line-end-position))
+                :to-match "PROJ \\[3/7\\]\\[42%\\] Buy a house"))))
+
+  (describe "with position nil"
+    (before-each
+      (setq org-gtd-project-progress-cookie-position nil))
+
+    (it "does nothing when disabled"
+      (with-temp-buffer
+        (org-mode)
+        (insert "* PROJ Buy a house\n")
+        (goto-char (point-min))
+        (org-gtd-project--set-cookies 3 7)
+        (expect (buffer-substring-no-properties (point-min) (line-end-position))
+                :to-equal "* PROJ Buy a house")))))
+
+(describe "org-gtd-project--remove-cookies"
+  (before-each
+    (setq inhibit-message t)
+    (ogt--configure-emacs))
+  (after-each
+    (ogt--close-and-delete-files))
+
+  (it "removes cookies from end of heading"
+    (with-temp-buffer
+      (org-mode)
+      (insert "* PROJ Buy a house [3/7][42%]\n")
+      (goto-char (point-min))
+      (org-gtd-project--remove-cookies)
+      (expect (org-get-heading t t t t) :to-equal "PROJ Buy a house")))
+
+  (it "removes cookies from start of heading"
+    (with-temp-buffer
+      (org-mode)
+      (insert "* PROJ [3/7][42%] Buy a house\n")
+      (goto-char (point-min))
+      (org-gtd-project--remove-cookies)
+      (expect (org-get-heading t t t t) :to-equal "PROJ Buy a house")))
+
+  (it "handles heading with no cookies"
+    (with-temp-buffer
+      (org-mode)
+      (insert "* PROJ Buy a house\n")
+      (goto-char (point-min))
+      (org-gtd-project--remove-cookies)
+      (expect (org-get-heading t t t t) :to-equal "PROJ Buy a house")))
+
+  (it "preserves tags when removing cookies"
+    (with-temp-buffer
+      (org-mode)
+      (insert "* PROJ Buy a house [3/7][42%]  :home:finance:\n")
+      (goto-char (point-min))
+      (org-gtd-project--remove-cookies)
+      (expect (buffer-substring-no-properties (point-min) (point-max))
+              :to-match ":home:finance:"))))
+
+(describe "org-gtd-project-update-cookies"
+  (before-each
+    (setq inhibit-message t)
+    (ogt--configure-emacs)
+    (setq org-gtd-project-progress-cookie-position 'end))
+  (after-each
+    (ogt--close-and-delete-files))
+
+  (it "updates cookies on project heading"
+    (create-project "Cookie test")
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Cookie test")
+      (org-back-to-heading t)
+      (let ((project-id (org-entry-get (point) "ID")))
+        (org-gtd-project-update-cookies project-id)
+        (expect (buffer-substring-no-properties (point) (line-end-position))
+                :to-match "\\[0/3\\]\\[0%\\]")))))
+
+(describe "org-gtd-project--maybe-update-cookies"
+  (before-each
+    (setq inhibit-message t)
+    (ogt--configure-emacs)
+    (setq org-gtd-project-progress-cookie-position 'end))
+  (after-each
+    (ogt--close-and-delete-files))
+
+  (it "updates cookies when task state changes"
+    (create-project "Auto cookie")
+    (with-current-buffer (org-gtd--default-file)
+      ;; Get project ID
+      (goto-char (point-min))
+      (search-forward "Auto cookie")
+      (org-back-to-heading t)
+      (let ((project-id (org-entry-get (point) "ID")))
+        ;; Set initial cookies manually
+        (org-gtd-project-update-cookies project-id)
+        (goto-char (point-min))
+        (search-forward "Auto cookie")
+        (org-back-to-heading t)
+        ;; Verify initial state - 0 tasks done
+        (expect (buffer-substring-no-properties (point) (line-end-position))
+                :to-match "\\[0/3\\]\\[0%\\]")
+
+        ;; Mark first task DONE - this SHOULD trigger hook and update cookies
+        (goto-char (point-min))
+        (re-search-forward "^\\*+ \\(NEXT\\|TODO\\) ")
+        (org-back-to-heading t)
+        (org-todo "DONE")
+
+        ;; With hook, cookies SHOULD update to show 1 task done
+        (goto-char (point-min))
+        (search-forward "Auto cookie")
+        (org-back-to-heading t)
+        (expect (buffer-substring-no-properties (point) (line-end-position))
+                :to-match "\\[1/3\\]\\[33%\\]")
+
+        ;; Mark another task DONE
+        (goto-char (point-min))
+        (re-search-forward "^\\*+ \\(NEXT\\|TODO\\) ")
+        (org-back-to-heading t)
+        (org-todo "DONE")
+
+        ;; Cookies should now show 2 tasks done
+        (goto-char (point-min))
+        (search-forward "Auto cookie")
+        (org-back-to-heading t)
+        (expect (buffer-substring-no-properties (point) (line-end-position))
+                :to-match "\\[2/3\\]\\[66%\\]")))))
+
+(describe "org-gtd-project-update-all-cookies"
+  (before-each
+    (setq inhibit-message t)
+    (ogt--configure-emacs)
+    (setq org-gtd-project-progress-cookie-position 'end))
+  (after-each
+    (ogt--close-and-delete-files))
+
+  (it "updates cookies for all projects"
+    (create-project "Project A")
+    (create-project "Project B")
+    (org-gtd-project-update-all-cookies)
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Project A")
+      (expect (buffer-substring-no-properties (point) (line-end-position))
+              :to-match "\\[[0-9]+/[0-9]+\\]")
+      (goto-char (point-min))
+      (search-forward "Project B")
+      (expect (buffer-substring-no-properties (point) (line-end-position))
+              :to-match "\\[[0-9]+/[0-9]+\\]"))))
+
+(describe "fix todo keywords updates cookies"
+  (before-each
+    (setq inhibit-message t)
+    (ogt--configure-emacs)
+    (setq org-gtd-project-progress-cookie-position 'end))
+  (after-each
+    (ogt--close-and-delete-files))
+
+  (it "updates cookies after fixing keywords"
+    ;; Create project - it should have cookies initially
+    (create-project "Fix keywords test")
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Fix keywords test")
+      (org-back-to-heading t)
+      (let ((line-after-creation (buffer-substring-no-properties (point) (line-end-position))))
+        ;; Project should have cookies from creation
+        (expect line-after-creation :to-match "\\[[0-9]+/[0-9]+\\]")))
+    ;; Now call fix-all-todo-keywords - cookies should still be there
+    (org-gtd-projects-fix-all-todo-keywords)
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Fix keywords test")
+      (org-back-to-heading t)
+      (let ((line-after-fix (buffer-substring-no-properties (point) (line-end-position))))
+        ;; Cookies should still be present after fix
+        (expect line-after-fix :to-match "\\[[0-9]+/[0-9]+\\]")))))
+
+(describe "project progress cookies integration"
+  (before-each
+    (setq inhibit-message t)
+    (ogt--configure-emacs)
+    (setq org-gtd-project-progress-cookie-position 'end))
+  (after-each
+    (ogt--close-and-delete-files))
+
+  (it "full lifecycle: create, complete tasks, verify cookies"
+    ;; Create project
+    (create-project "Lifecycle test")
+
+    (with-current-buffer (org-gtd--default-file)
+      ;; Count how many tasks the project has
+      (goto-char (point-min))
+      (search-forward "Lifecycle test")
+      (org-back-to-heading t)
+      (let* ((project-id (org-entry-get (point) "ID"))
+             (initial-counts (org-gtd-project--count-tasks project-id))
+             (total-tasks (cdr initial-counts)))
+        ;; Verify initial cookies show 0 completed
+        (expect (buffer-substring-no-properties (point) (line-end-position))
+                :to-match (format "\\[0/%d\\]\\[0%%\\]" total-tasks))
+
+        ;; Find and complete first task
+        (goto-char (point-min))
+        (re-search-forward "^\\*+ \\(NEXT\\|TODO\\) ")
+        (org-back-to-heading t)
+        ;; Make sure we're on a task belonging to this project
+        (when (member project-id (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS"))
+          (org-todo "DONE"))
+
+        ;; Verify cookies updated to show 1 completed
+        (goto-char (point-min))
+        (search-forward "Lifecycle test")
+        (org-back-to-heading t)
+        (expect (buffer-substring-no-properties (point) (line-end-position))
+                :to-match (format "\\[1/%d\\]" total-tasks))
+
+        ;; Complete all remaining tasks
+        (let ((completed 1))
+          (while (< completed total-tasks)
+            (goto-char (point-min))
+            (when (re-search-forward "^\\*+ \\(NEXT\\|TODO\\) " nil t)
+              (org-back-to-heading t)
+              (when (member project-id (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS"))
+                (org-todo "DONE")
+                (setq completed (1+ completed))))))
+
+        ;; Verify 100% completion
+        (goto-char (point-min))
+        (search-forward "Lifecycle test")
+        (org-back-to-heading t)
+        (expect (buffer-substring-no-properties (point) (line-end-position))
+                :to-match (format "\\[%d/%d\\]\\[100%%\\]" total-tasks total-tasks))))))

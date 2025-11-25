@@ -92,6 +92,18 @@ your own files if you want multiple refile targets (projects, etc.)."
   :type 'boolean
   :package-version '(org-gtd . "3.1"))
 
+(defcustom org-gtd-project-progress-cookie-position 'end
+  "Where to display progress cookies on project headings.
+
+- nil: Disabled (no cookies)
+- `start': After TODO keyword, before title
+- `end': After heading text, before tags (default)"
+  :group 'org-gtd
+  :type '(choice (const :tag "Disabled" nil)
+                 (const :tag "Start (after keyword)" start)
+                 (const :tag "End (before tags)" end))
+  :package-version '(org-gtd . "4.0"))
+
 ;;;; GTD Semantic Keyword Mapping
 
 (defun org-gtd--validate-and-set-keyword-mapping (symbol value)

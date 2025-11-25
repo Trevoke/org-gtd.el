@@ -46,3 +46,16 @@
                    :to-have-same-items-as
                    `(,org-gtd-directory)))))
 )
+
+(describe "org-gtd-project-progress-cookie-position"
+  (it "defaults to 'end"
+    (expect org-gtd-project-progress-cookie-position :to-equal 'end))
+
+  (it "accepts nil, 'start, or 'end"
+    (let ((org-gtd-project-progress-cookie-position nil))
+      (expect org-gtd-project-progress-cookie-position :to-be nil))
+    (let ((org-gtd-project-progress-cookie-position 'start))
+      (expect org-gtd-project-progress-cookie-position :to-equal 'start))
+    (let ((org-gtd-project-progress-cookie-position 'end))
+      (expect org-gtd-project-progress-cookie-position :to-equal 'end))))
+
