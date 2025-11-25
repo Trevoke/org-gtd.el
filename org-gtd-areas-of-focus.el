@@ -68,7 +68,8 @@
         (goto-char pos)
 
         ;; Check if this item has ORG_GTD property
-        (unless (org-entry-get nil "ORG_GTD" t)
+        ;; v4: Items have direct ORG_GTD property, no inheritance needed
+        (unless (org-entry-get nil "ORG_GTD")
           (user-error "This item has no ORG_GTD property - cannot set area of focus"))
 
         ;; Determine if this is a project task by checking for project IDs

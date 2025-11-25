@@ -113,23 +113,23 @@ If task is newly created, TASK-ID will be nil and only TITLE is set."
   "Get all tasks with ORG_GTD property from agenda files.
 Returns list of plists with :id, :title, :category.
 Excludes project headings (ORG_GTD=Projects)."
+  ;; v4: Users configure org-agenda-files directly, no need for with-org-gtd-context
   (let ((tasks '()))
-    (with-org-gtd-context
-      (condition-case nil
-          (org-map-entries
-           (lambda ()
-             (when-let ((category (org-entry-get (point) "ORG_GTD"))
-                        (id (org-entry-get (point) "ID"))
-                        (title (org-get-heading t t t t)))
-               ;; Exclude project headings - we only want tasks
-               (unless (string= category "Projects")
-                 (push (list :id id
-                            :title title
-                            :category category)
-                       tasks))))
-           nil
-           'agenda)
-        (error nil)))
+    (condition-case nil
+        (org-map-entries
+         (lambda ()
+           (when-let ((category (org-entry-get (point) "ORG_GTD"))
+                      (id (org-entry-get (point) "ID"))
+                      (title (org-get-heading t t t t)))
+             ;; Exclude project headings - we only want tasks
+             (unless (string= category "Projects")
+               (push (list :id id
+                          :title title
+                          :category category)
+                     tasks))))
+         nil
+         'agenda)
+      (error nil))
     (nreverse tasks)))
 
 (defun org-gtd-graph--select-or-create-task-prioritizing-current (_prompt project-marker)

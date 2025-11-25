@@ -145,6 +145,7 @@
 
 ** DONE write a nice test
 :PROPERTIES:
+:ORG_GTD: Calendar
 :ORG_GTD_TIMESTAMP: <2021-11-20 Sat>
 :CATEGORY: Home
 :END:

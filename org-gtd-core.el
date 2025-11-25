@@ -373,24 +373,38 @@ This property also controls the prefix displayed in agenda views.")
 
 ;;;###autoload
 (defmacro with-org-gtd-context (&rest body)
-  "Wrap BODY... in this macro to inherit the org-gtd settings for your logic."
+  "DEPRECATED: This macro is no longer necessary in org-gtd v4.
+
+In v4, configure org-mode directly instead:
+- Add `org-gtd-directory' to `org-agenda-files'
+- Configure `org-archive-location' as needed
+
+This macro is kept for backward compatibility and will be removed
+in a future version.
+
+Previously: Wrap BODY... in this macro to inherit org-gtd settings."
   (declare (debug t) (indent 2))
-  `(let* ((org-use-property-inheritance "ORG_GTD")
-          ;; (org-log-done 'time)
-          ;; (org-log-done-with-time t)
-          ;; (org-log-refile 'time)
-          (org-archive-location (funcall org-gtd-archive-location))
-                                        ;(org-refile-use-outline-path nil)
-          (org-stuck-projects (org-gtd-stuck-projects))
-          (org-odd-levels-only nil)
-          (org-agenda-files (org-gtd-core--agenda-files))
-          (org-gtd-agenda-property-list `(,org-gtd-delegate-property)))
-     (unwind-protect
+  `(progn
+     (display-warning 'org-gtd
+                      "with-org-gtd-context is deprecated and will be removed.
+Configure org-agenda-files and other settings directly instead."
+                      :warning)
+     (let* ((org-use-property-inheritance "ORG_GTD")
+            (org-archive-location (funcall org-gtd-archive-location))
+            (org-stuck-projects (org-gtd-stuck-projects))
+            (org-odd-levels-only nil)
+            (org-agenda-files (org-gtd-core--agenda-files))
+            (org-gtd-agenda-property-list `(,org-gtd-delegate-property)))
+       (unwind-protect
+           (progn
+             (advice-add 'org-agenda-files :filter-return #'org-gtd-core--uniq)
+             ,@body)
          (progn
-           (advice-add 'org-agenda-files :filter-return #'org-gtd-core--uniq)
-           ,@body)
-       (progn
-         (advice-remove 'org-agenda-files #'org-gtd-core--uniq)))))
+           (advice-remove 'org-agenda-files #'org-gtd-core--uniq))))))
+
+(make-obsolete 'with-org-gtd-context
+               "Configure org-agenda-files and other settings directly."
+               "4.0")
 
 ;;;; Functions
 
@@ -483,9 +497,9 @@ If BUFFER is nil, use current buffer."
   (with-current-buffer (or buffer (current-buffer))
     (unless (bound-and-true-p org-gtd--loading-p)
       (setq-local org-gtd--loading-p t)
-      (with-org-gtd-context
-          (with-temp-message ""
-            (org-mode-restart)))
+      ;; v4: No need for with-org-gtd-context - just restarting org-mode
+      (with-temp-message ""
+        (org-mode-restart))
       (setq-local org-gtd--loading-p t))))
 
 ;;;;; Private

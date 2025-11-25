@@ -96,13 +96,13 @@ constitutes a stuck project in the GTD system."
   "With point on topmost project heading, mark all undone tasks canceled."
   (interactive)
   (org-edna-mode -1)
-  (with-org-gtd-context
-      (let ((task-markers (org-gtd-projects--collect-tasks-by-graph (point-marker))))
-        (dolist (task-marker task-markers)
-          (org-with-point-at task-marker
-            (when (org-gtd-projects--incomplete-task-p)
-              (let ((org-inhibit-logging 'note))
-                (org-todo (org-gtd-keywords--canceled))))))))
+  ;; v4: No need for with-org-gtd-context - operation doesn't need macro bindings
+  (let ((task-markers (org-gtd-projects--collect-tasks-by-graph (point-marker))))
+    (dolist (task-marker task-markers)
+      (org-with-point-at task-marker
+        (when (org-gtd-projects--incomplete-task-p)
+          (let ((org-inhibit-logging 'note))
+            (org-todo (org-gtd-keywords--canceled)))))))
   (org-edna-mode 1))
 
 ;;;###autoload
@@ -1012,8 +1012,8 @@ Orchestrates adding a new task to an existing project:
 
 (defun org-gtd-projects--edna-update-project-task (_last-entry)
   "`org-edna' extension to change the todo state to `org-gtd-next'."
-  (with-org-gtd-context
-      (org-todo (org-gtd-keywords--next))))
+  ;; v4: No need for with-org-gtd-context - just setting todo state
+  (org-todo (org-gtd-keywords--next)))
 
 (defalias 'org-edna-action/org-gtd-update-project-task!
   'org-gtd-projects--edna-update-project-task)

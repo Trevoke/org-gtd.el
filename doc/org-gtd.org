@@ -3017,14 +3017,15 @@ Here are the actions available to you:
 - ~M-x org-gtd-clarify-agenda-item~ :: If you would like to clarify and organize an item through the agenda view, for whatever reason, this is your entry point.
 
 *** Defining your own agenda views
-You can define your own agenda views by defining your own functions like shown below, where =x= is whatever your defined key is.
+You can define your own agenda views by defining functions with custom agenda commands. As long as you have ~org-gtd-directory~ in your ~org-agenda-files~ (required for org-gtd to work), your views will include GTD items automatically.
 
 #+begin_src elisp
   (defun my-agenda ()
-    (with-org-gtd-context
-        (let ((org-agenda-custom-commands '(your-definition-here)))
-          (org-agenda nil "x"))))
+    (let ((org-agenda-custom-commands '(your-definition-here)))
+      (org-agenda nil "x")))
 #+end_src
+
+Where =x= is whatever your defined key is.
 
 *See also*: For a much easier way to create custom views, see [[#view-dsl-reference][View DSL Filter Reference]], which provides a declarative language for defining views without writing skip functions.
 *** Adding your own hooks when organizing

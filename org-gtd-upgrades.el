@@ -51,64 +51,81 @@ planning keyword in `org-mode'."
 
 (defun org-gtd-upgrades-calendar-items-to-v3 ()
   "Change calendar items away from SCHEDULED to using a custom property."
-  (with-org-gtd-context
-      (org-map-entries
-       (lambda ()
-         (when (org-gtd-upgrades--scheduled-item-p)
-           (let ((date (org-entry-get (point) "SCHEDULED")))
-             (org-schedule '(4)) ;; pretend I am a universal argument
-             (org-entry-put (point) org-gtd-timestamp date)
-             (org-end-of-meta-data t)
-             (open-line 1)
-             (insert date))))
-       "+ORG_GTD=\"Calendar\"+LEVEL=2"
-       'agenda)))
+  ;; v4: Explicitly bind settings for upgrade - users may not have
+  ;; configured them yet. Property inheritance needed for v3-style data where
+  ;; ORG_GTD is on parent headings.
+  (org-gtd-core-prepare-agenda-buffers)
+  (let ((org-agenda-files (org-gtd-core--agenda-files))
+        (org-use-property-inheritance "ORG_GTD"))
+    (org-map-entries
+     (lambda ()
+       (when (org-gtd-upgrades--scheduled-item-p)
+         (let ((date (org-entry-get (point) "SCHEDULED")))
+           (org-schedule '(4)) ;; pretend I am a universal argument
+           (org-entry-put (point) org-gtd-timestamp date)
+           (org-end-of-meta-data t)
+           (open-line 1)
+           (insert date))))
+     "+ORG_GTD=\"Calendar\"+LEVEL=2"
+     'agenda)))
 
 (defun org-gtd-upgrades-delegated-items-to-v3 ()
   "Change delegated items away from SCHEDULED to using a custom property."
-  (with-org-gtd-context
-      (org-map-entries
-       (lambda ()
-         (when (org-gtd-upgrades--delegated-item-p)
-           (let ((date (org-entry-get (point) "SCHEDULED")))
-             (org-schedule '(4)) ;; pretend I am a universal argument
-             (org-entry-put (point) org-gtd-timestamp date)
-             (org-end-of-meta-data t)
-             (open-line 1)
-             (insert date))))
-       "+ORG_GTD=\"Actions\"+LEVEL=2"
-       'agenda)))
+  ;; v4: Explicitly bind settings for upgrade. Property inheritance needed
+  ;; for v3-style data where ORG_GTD is on parent headings.
+  (org-gtd-core-prepare-agenda-buffers)
+  (let ((org-agenda-files (org-gtd-core--agenda-files))
+        (org-use-property-inheritance "ORG_GTD"))
+    (org-map-entries
+     (lambda ()
+       (when (org-gtd-upgrades--delegated-item-p)
+         (let ((date (org-entry-get (point) "SCHEDULED")))
+           (org-schedule '(4)) ;; pretend I am a universal argument
+           (org-entry-put (point) org-gtd-timestamp date)
+           (org-end-of-meta-data t)
+           (open-line 1)
+           (insert date))))
+     "+ORG_GTD=\"Actions\"+LEVEL=2"
+     'agenda)))
 
 (defun org-gtd-upgrades-habits-to-v3 ()
   "Move habits from wherever they may be to their own subtree."
-  (with-org-gtd-context
-      (org-gtd-refile--add-target org-gtd-habit-template)
+  ;; v4: Explicitly bind settings for upgrade. Property inheritance needed
+  ;; for v3-style data where ORG_GTD is on parent headings.
+  (org-gtd-core-prepare-agenda-buffers)
+  (let ((org-agenda-files (org-gtd-core--agenda-files))
+        (org-use-property-inheritance "ORG_GTD"))
+    (org-gtd-refile--add-target org-gtd-habit-template)
 
-      (let ((org-gtd-refile-to-any-target t))
-        (org-map-entries #'org-gtd-upgrades--organize-habits-v3
-                         "+LEVEL=2&+ORG_GTD=\"Actions\""
-                         'agenda)
-        (org-map-entries #'org-gtd-upgrades--organize-habits-v3
-                         "+LEVEL=2&+ORG_GTD=\"Incubated\""
-                         'agenda)
-        (org-map-entries #'org-gtd-upgrades--organize-habits-v3
-                         "+LEVEL=2&+ORG_GTD=\"Calendar\""
-                         'agenda))))
+    (let ((org-gtd-refile-to-any-target t))
+      (org-map-entries #'org-gtd-upgrades--organize-habits-v3
+                       "+LEVEL=2&+ORG_GTD=\"Actions\""
+                       'agenda)
+      (org-map-entries #'org-gtd-upgrades--organize-habits-v3
+                       "+LEVEL=2&+ORG_GTD=\"Incubated\""
+                       'agenda)
+      (org-map-entries #'org-gtd-upgrades--organize-habits-v3
+                       "+LEVEL=2&+ORG_GTD=\"Calendar\""
+                       'agenda))))
 
 (defun org-gtd-upgrades-incubated-items-to-v3 ()
   "Change incubated items away from SCHEDULED to using a custom property."
-  (with-org-gtd-context
-      (org-map-entries
-       (lambda ()
-         (when (org-gtd-upgrades--scheduled-item-p)
-           (let ((date (org-entry-get (point) "SCHEDULED")))
-             (org-schedule '(4)) ;; pretend I am a universal argument
-             (org-entry-put (point) org-gtd-timestamp date)
-             (org-end-of-meta-data t)
-             (open-line 1)
-             (insert date))))
-       "+ORG_GTD=\"Incubated\"+LEVEL=2"
-       'agenda)))
+  ;; v4: Explicitly bind settings for upgrade. Property inheritance needed
+  ;; for v3-style data where ORG_GTD is on parent headings.
+  (org-gtd-core-prepare-agenda-buffers)
+  (let ((org-agenda-files (org-gtd-core--agenda-files))
+        (org-use-property-inheritance "ORG_GTD"))
+    (org-map-entries
+     (lambda ()
+       (when (org-gtd-upgrades--scheduled-item-p)
+         (let ((date (org-entry-get (point) "SCHEDULED")))
+           (org-schedule '(4)) ;; pretend I am a universal argument
+           (org-entry-put (point) org-gtd-timestamp date)
+           (org-end-of-meta-data t)
+           (open-line 1)
+           (insert date))))
+     "+ORG_GTD=\"Incubated\"+LEVEL=2"
+     'agenda)))
 
 ;;;;; Private
 
@@ -180,45 +197,49 @@ Make a backup before running! Safe to run multiple times."
 
 (defun org-gtd-upgrade--add-org-gtd-properties ()
   "Add ORG_GTD properties to existing items (Step 1 of migration)."
-  (with-org-gtd-context
-      ;; Find ALL level 1 category headings with ORG_GTD property
-      ;; For each: save category type, remove from level 1, add to level 2 children
-      (org-map-entries
-       (lambda ()
-         (let ((category-type (org-entry-get (point) "ORG_GTD"))
-               (category-level (org-current-level)))
-           (when category-type
-             ;; Rename ORG_GTD to ORG_GTD_REFILE on level 1 category heading
-             ;; This preserves the heading as a refile target in v4
-             (org-entry-put (point) "ORG_GTD_REFILE" category-type)
-             (org-entry-delete (point) "ORG_GTD")
+  ;; v4: Explicitly bind settings for upgrade. Property inheritance needed
+  ;; for v3-style data where ORG_GTD is on parent headings.
+  (org-gtd-core-prepare-agenda-buffers)
+  (let ((org-agenda-files (org-gtd-core--agenda-files))
+        (org-use-property-inheritance "ORG_GTD"))
+    ;; Find ALL level 1 category headings with ORG_GTD property
+    ;; For each: save category type, remove from level 1, add to level 2 children
+    (org-map-entries
+     (lambda ()
+       (let ((category-type (org-entry-get (point) "ORG_GTD"))
+             (category-level (org-current-level)))
+         (when category-type
+           ;; Rename ORG_GTD to ORG_GTD_REFILE on level 1 category heading
+           ;; This preserves the heading as a refile target in v4
+           (org-entry-put (point) "ORG_GTD_REFILE" category-type)
+           (org-entry-delete (point) "ORG_GTD")
 
-             ;; Add category type to all level 2 children
-             (outline-next-heading)
-             (while (and (not (eobp))
-                         (> (org-current-level) category-level))
-               (when (= (org-current-level) (1+ category-level))
-                 ;; This is a level 2 item under category - add the category type
-                 (unless (org-entry-get (point) "ORG_GTD")
-                   (org-entry-put (point) "ORG_GTD" category-type)))
-               (outline-next-heading)))))
-       "LEVEL=1"
-       'agenda)
-
-      ;; Find all project headings and process their children as project tasks
-      (org-map-entries
-       (lambda ()
-         (let ((project-level (org-current-level)))
+           ;; Add category type to all level 2 children
            (outline-next-heading)
            (while (and (not (eobp))
-                       (> (org-current-level) project-level))
-             (when (> (org-current-level) project-level)
-               ;; This is any descendant (level 3+) under project heading - it's a project task
+                       (> (org-current-level) category-level))
+             (when (= (org-current-level) (1+ category-level))
+               ;; This is a level 2 item under category - add the category type
                (unless (org-entry-get (point) "ORG_GTD")
-                 (org-entry-put (point) "ORG_GTD" "Actions")))
-             (outline-next-heading))))
-       "+ORG_GTD=\"Projects\"+LEVEL=2"
-       'agenda)))
+                 (org-entry-put (point) "ORG_GTD" category-type)))
+             (outline-next-heading)))))
+     "LEVEL=1"
+     'agenda)
+
+    ;; Find all project headings and process their children as project tasks
+    (org-map-entries
+     (lambda ()
+       (let ((project-level (org-current-level)))
+         (outline-next-heading)
+         (while (and (not (eobp))
+                     (> (org-current-level) project-level))
+           (when (> (org-current-level) project-level)
+             ;; This is any descendant (level 3+) under project heading - it's a project task
+             (unless (org-entry-get (point) "ORG_GTD")
+               (org-entry-put (point) "ORG_GTD" "Actions")))
+           (outline-next-heading))))
+     "+ORG_GTD=\"Projects\"+LEVEL=2"
+     'agenda)))
 
 (defun org-gtd-upgrade--set-project-ids-on-tasks (project-marker)
   "Set ORG_GTD_PROJECT_IDS and TRIGGER on tasks under PROJECT-MARKER.
@@ -243,20 +264,24 @@ Sets TRIGGER to org-gtd-update-project-after-task-done! on all."
 (defun org-gtd-upgrade--add-project-dependencies ()
   "Add dependency properties to existing projects (Step 2 of migration)."
   (require 'org-gtd-projects)
-  (with-org-gtd-context
-      ;; Find all project headings and add dependencies
-      (org-map-entries
-       (lambda ()
-         (let ((project-marker (point-marker)))
-           (message "Processing project: %s" (org-get-heading t t t t))
-           ;; Add ORG_GTD_PROJECT_IDS to all tasks under this project
-           (org-gtd-upgrade--set-project-ids-on-tasks project-marker)
-           ;; Setup sequential dependencies for this project
-           (org-gtd-project--setup-dependencies project-marker)
-           ;; Recalculate task states based on new dependencies
-           (org-gtd-projects-fix-todo-keywords project-marker)))
-       "+ORG_GTD=\"Projects\""
-       'agenda)))
+  ;; v4: Explicitly bind settings for upgrade. Property inheritance needed
+  ;; for v3-style data where ORG_GTD is on parent headings.
+  (org-gtd-core-prepare-agenda-buffers)
+  (let ((org-agenda-files (org-gtd-core--agenda-files))
+        (org-use-property-inheritance "ORG_GTD"))
+    ;; Find all project headings and add dependencies
+    (org-map-entries
+     (lambda ()
+       (let ((project-marker (point-marker)))
+         (message "Processing project: %s" (org-get-heading t t t t))
+         ;; Add ORG_GTD_PROJECT_IDS to all tasks under this project
+         (org-gtd-upgrade--set-project-ids-on-tasks project-marker)
+         ;; Setup sequential dependencies for this project
+         (org-gtd-project--setup-dependencies project-marker)
+         ;; Recalculate task states based on new dependencies
+         (org-gtd-projects-fix-todo-keywords project-marker)))
+     "+ORG_GTD=\"Projects\""
+     'agenda)))
 
 ;;;; Footer
 

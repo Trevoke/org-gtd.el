@@ -70,17 +70,19 @@ into a datetree."
 (defun org-gtd-archive-completed-items ()
   "Archive everything that needs to be archived in your org-gtd."
   (interactive)
-  (with-org-gtd-context
-      ;; Prepare all agenda buffers first
-      (org-gtd-core-prepare-agenda-buffers)
+  ;; v4: Users configure org-agenda-files directly.
+  ;; Bind org-archive-location locally for all archive operations in this function.
+  (let ((org-archive-location (funcall org-gtd-archive-location)))
+    ;; Prepare all agenda buffers first
+    (org-gtd-core-prepare-agenda-buffers)
 
-      ;; Update org-id locations to ensure graph traversal can find all tasks
-      ;; Expand directories and filter to get only .org files
-      (org-id-update-id-locations
-       (org-gtd--expand-agenda-files-to-org-files (org-gtd-core--agenda-files)))
+    ;; Update org-id locations to ensure graph traversal can find all tasks
+    ;; Expand directories and filter to get only .org files
+    (org-id-update-id-locations
+     (org-gtd--expand-agenda-files-to-org-files org-agenda-files))
 
-      ;; Archive projects
-      (org-gtd--archive-complete-projects)
+    ;; Archive projects
+    (org-gtd--archive-complete-projects)
 
     ;; Archive actions, calendar items, and incubated items
     ;; Exclude project tasks (those with ORG_GTD_PROJECT or ORG_GTD_PROJECT_IDS properties)
@@ -100,13 +102,15 @@ into a datetree."
   (with-temp-message ""
     (let* ((last-command nil)
            (temp-file (make-temp-file org-gtd-directory nil ".org"))
-           (buffer (find-file-noselect temp-file)))
+           (buffer (find-file-noselect temp-file))
+           ;; v4: Bind org-archive-location locally instead of using with-org-gtd-context
+           (org-archive-location (funcall org-gtd-archive-location)))
       (org-copy-subtree)
       (org-gtd-core-prepare-buffer buffer)
       (with-current-buffer buffer
         (org-paste-subtree)
         (goto-char (point-min))
-        (with-org-gtd-context (org-archive-subtree))
+        (org-archive-subtree)
         (basic-save-buffer)
         (kill-buffer))
       (delete-file temp-file))))
@@ -165,10 +169,11 @@ the task.  POM can be a marker or an integer position."
             (setq should-archive t))))
 
       ;; Only archive if no projects remain
+      ;; v4: Bind org-archive-location locally instead of using with-org-gtd-context
       (when should-archive
-        (with-org-gtd-context
-            (org-with-point-at pom
-              (org-archive-subtree-default)))))))
+        (let ((org-archive-location (funcall org-gtd-archive-location)))
+          (org-with-point-at pom
+            (org-archive-subtree-default)))))))
 
 (defun org-gtd--all-project-tasks-done-p ()
   "Return t if all tasks connected to current project are done.

@@ -12,10 +12,10 @@
 (defun ogt--archive ()
   "Create or return the buffer to the archive file."
   (with-current-buffer (ogt-inbox-buffer)
-    (find-file-noselect
-     (car (with-org-gtd-context
-              (org-archive--compute-location
-               (funcall org-gtd-archive-location)))))))
+    ;; v4: Bind org-archive-location locally instead of using with-org-gtd-context
+    (let ((org-archive-location (funcall org-gtd-archive-location)))
+      (find-file-noselect
+       (car (org-archive--compute-location org-archive-location))))))
 
 (defun ogt--archive-string ()
   "return string of items archived from actionable file"

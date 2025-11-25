@@ -97,8 +97,9 @@
 
 (defun org-gtd-skip-unless-calendar ()
   "Skip-function: only keep this if it's an org-gtd calendar entry."
+  ;; v4: Items have direct ORG_GTD property, no inheritance needed
   (let ((subtree-end (save-excursion (org-end-of-subtree t))))
-    (if (and (string-equal (org-entry-get (point) org-gtd-prop-category t)
+    (if (and (string-equal (org-entry-get (point) org-gtd-prop-category)
                            org-gtd-calendar)
              (org-entry-get (point) org-gtd-timestamp))
         nil

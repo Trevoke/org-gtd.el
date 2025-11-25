@@ -142,10 +142,10 @@ This handles the internal bits of `org-gtd'."
   (goto-char (point-min))
   (when (org-before-first-heading-p)
     (org-next-visible-heading 1))
+  ;; v4: Users configure org-agenda-files directly, no need for with-org-gtd-context
   (let ((error-caught
          (catch 'org-gtd-error
-           (with-org-gtd-context
-               (save-excursion (funcall func)))
+           (save-excursion (funcall func))
            nil))) ;; Return nil when no error was thrown
     (unless error-caught
       ;; Only run cleanup if no error was thrown

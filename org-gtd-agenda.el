@@ -110,10 +110,22 @@ This assumes all GTD files are also agenda files."
   "Truncates the string to the width indicated by org-gtd-engage-prefix-width."
   (truncate-string-to-width (string-trim st) org-gtd-engage-prefix-width nil ?\s  "…"))
 
+(defun org-gtd-agenda--get-category-for-task ()
+  "Get CATEGORY for task at point, looking up project if needed.
+In v4, project tasks may not have a direct CATEGORY property.
+This function looks up the project heading's CATEGORY via ORG_GTD_PROJECT_IDS."
+  (or (org-entry-get (point) "CATEGORY")
+      (when-let* ((project-ids (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids))
+                  (first-id (car project-ids))
+                  (project-marker (org-id-find first-id 'marker)))
+        (org-with-point-at project-marker
+          (org-entry-get (point) "CATEGORY")))))
+
 (defun org-gtd-agenda--prefix-format ()
   "Format prefix for items in agenda buffer."
+  ;; v4: Use explicit CATEGORY lookup instead of inheritance
   (let* ((project-name (org-entry-get (point) org-gtd-prop-project))
-         (category (org-entry-get (point) org-gtd-prop-area-of-focus t))
+         (category (org-gtd-agenda--get-category-for-task))
          (tally-cookie-regexp "\[[[:digit:]]+/[[:digit:]]+\][[:space:]]*"))
     (org-gtd--truncate-project-to-width
      ;; if has ORG_GTD_PROJECT, use it
@@ -123,8 +135,7 @@ This assumes all GTD files are also agenda files."
       (cond
        (project-name (replace-regexp-in-string tally-cookie-regexp "" project-name))
        (category     category)
-       (t  "no project")
-       )))))
+       (t  "no project"))))))
 
 ;;;; Footer
 

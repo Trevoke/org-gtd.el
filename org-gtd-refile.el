@@ -77,6 +77,7 @@ ORG_GTD_REFILE property matching TYPE at any level in org-agenda-files.
 If org-gtd-use-refile-system is nil, uses standard org-refile configuration
 from org-refile-targets."
   (declare (debug t) (indent 1))
+  ;; v4: Users configure org-agenda-files directly, no need for with-org-gtd-context
   `(if org-gtd-use-refile-system
        ;; Use org-gtd's ORG_GTD_REFILE property-based refile system
        (let ((org-refile-target-verify-function
@@ -84,24 +85,26 @@ from org-refile-targets."
              (org-refile-targets '((org-agenda-files :maxlevel . 9)))
              (org-refile-use-outline-path t)
              (org-outline-path-complete-in-steps nil))
-         (with-org-gtd-context (progn ,@body)))
+         (progn ,@body))
      ;; Use standard org-refile configuration
-     (with-org-gtd-context (progn ,@body))))
+     (progn ,@body)))
 
 (defmacro with-org-gtd-refile-project-task (&rest body)
   "Refile specifically into an existing project.
 
 BODY... is the rest of the code."
   (declare (debug t) (indent 1))
+  ;; v4: Users configure org-agenda-files directly, no need for with-org-gtd-context
   `(let ((org-gtd-refile-to-any-target nil)
         (org-refile-use-outline-path t)
         (org-outline-path-complete-in-steps nil)
         (org-refile-allow-creating-parent-nodes nil)
         (org-refile-targets '((org-agenda-files :level . 2)))
+        ;; v4: Project headings have direct ORG_GTD property, no inheritance needed
         (org-refile-target-verify-function
          (lambda () (string-equal org-gtd-projects
-                                  (org-entry-get nil "ORG_GTD" t)))))
-    (with-org-gtd-context (progn ,@body))))
+                                  (org-entry-get nil "ORG_GTD")))))
+    (progn ,@body)))
 
 ;;;; Functions
 

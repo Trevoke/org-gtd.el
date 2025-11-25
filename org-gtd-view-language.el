@@ -451,22 +451,22 @@ Multiple views example - show several related views:
 See the module commentary for complete filter documentation and more examples."
   (interactive)
   (org-gtd-core-prepare-agenda-buffers)
-  (with-org-gtd-context
-    (let* ((view-specs (if (and (listp view-spec-or-specs)
-                                (listp (car view-spec-or-specs))
-                                (symbolp (caar view-spec-or-specs)))
-                           ;; Single view-spec (first element is a cons like (name . "..."))
-                           (list view-spec-or-specs)
-                         ;; Multiple view-specs (list of alists)
-                         view-spec-or-specs))
-           (title (alist-get 'name (car view-specs)))
-           (org-agenda-custom-commands
-            (org-gtd-view-lang--create-custom-commands
-             view-specs
-             "g"
-             title)))
-      (org-agenda nil "g")
-      (goto-char (point-min)))))
+  ;; v4: Users configure org-agenda-files directly, no need for with-org-gtd-context
+  (let* ((view-specs (if (and (listp view-spec-or-specs)
+                              (listp (car view-spec-or-specs))
+                              (symbolp (caar view-spec-or-specs)))
+                         ;; Single view-spec (first element is a cons like (name . "..."))
+                         (list view-spec-or-specs)
+                       ;; Multiple view-specs (list of alists)
+                       view-spec-or-specs))
+         (title (alist-get 'name (car view-specs)))
+         (org-agenda-custom-commands
+          (org-gtd-view-lang--create-custom-commands
+           view-specs
+           "g"
+           title)))
+    (org-agenda nil "g")
+    (goto-char (point-min))))
 
 ;;;; Footer
 

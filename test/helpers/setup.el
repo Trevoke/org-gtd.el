@@ -26,6 +26,9 @@
                                   (wait . "WAIT")
                                   (done . "DONE")
                                   (canceled . "CNCL")))
+  ;; v4: Users must configure org-agenda-files to include GTD directory
+  ;; This mirrors the required user configuration
+  (setq org-agenda-files (list org-gtd-directory))
   (org-edna-mode 1)
   (define-key org-gtd-clarify-map (kbd "C-c c") #'org-gtd-organize))
 

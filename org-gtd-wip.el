@@ -81,7 +81,8 @@ Derived from `org-mode' and uses temporary files for content persistence.
         (let ((buffer (find-file-noselect existing-file)))
           (with-current-buffer buffer
             (unless (eq major-mode #'org-gtd-wip-mode)
-              (with-org-gtd-context (org-gtd-wip-mode)))
+              ;; v4: Mode doesn't need macro bindings, just call directly
+              (org-gtd-wip-mode))
             ;; Ensure buffer has the correct name
             (rename-buffer (org-gtd-wip--buffer-name org-id) t))
           buffer)
@@ -99,7 +100,8 @@ Derived from `org-mode' and uses temporary files for content persistence.
         (puthash org-id temp-file org-gtd-wip--temp-files)
         (with-current-buffer buffer
           (unless (eq major-mode #'org-gtd-wip-mode)
-            (with-org-gtd-context (org-gtd-wip-mode)))
+            ;; v4: Mode doesn't need macro bindings, just call directly
+            (org-gtd-wip-mode))
           ;; Set a more user-friendly buffer name
           (rename-buffer (org-gtd-wip--buffer-name org-id) t)
           buffer)))))

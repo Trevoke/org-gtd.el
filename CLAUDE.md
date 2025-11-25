@@ -124,7 +124,7 @@ org-gtd.el implements David Allen's Getting Things Done (GTD) methodology as an 
 
 ### Key Design Patterns
 
-**Context Management**: `with-org-gtd-context` macro ensures proper org-mode settings across all operations
+**Direct Configuration (v4)**: Users configure `org-agenda-files` and other org-mode settings directly. The old `with-org-gtd-context` macro is deprecated - org-gtd no longer needs to temporarily reconfigure org-mode for each operation.
 
 **Transient UI**: Modern menu interface for organization choices using transient.el
 

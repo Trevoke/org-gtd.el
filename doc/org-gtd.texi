@@ -4826,14 +4826,15 @@ If you would like to clarify and organize an item through the agenda view, for w
 @node Defining your own agenda views
 @subsection Defining your own agenda views
 
-You can define your own agenda views by defining your own functions like shown below, where @samp{x} is whatever your defined key is.
+You can define your own agenda views by defining functions with custom agenda commands. As long as you have @code{org-gtd-directory} in your @code{org-agenda-files} (required for org-gtd to work), your views will include GTD items automatically.
 
 @lisp
 (defun my-agenda ()
-  (with-org-gtd-context
-      (let ((org-agenda-custom-commands '(your-definition-here)))
-        (org-agenda nil "x"))))
+  (let ((org-agenda-custom-commands '(your-definition-here)))
+    (org-agenda nil "x")))
 @end lisp
+
+Where @samp{x} is whatever your defined key is.
 
 @strong{See also}: For a much easier way to create custom views, see @ref{View DSL Filter Reference}, which provides a declarative language for defining views without writing skip functions.
 

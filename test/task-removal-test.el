@@ -147,10 +147,13 @@
                   (expect (member task1-id task3-depends) :to-be-truthy)
                   (expect (member task2-id task3-depends) :not :to-be-truthy))))))))))
 
- (describe
-  "remove task from multi-project task"
+(describe
+ "remove task from multi-project task"
 
-  (it "removes project ID while preserving task in other projects"
+ (before-each (setq inhibit-message t) (ogt--configure-emacs))
+ (after-each (ogt--close-and-delete-files))
+
+ (it "removes project ID while preserving task in other projects"
       ;; Scenario 5: Task T1 belongs to both Project A and Project B
       ;; Remove T1 from Project A: T1 should still exist in Project B
       (capture-inbox-item "Project A")
@@ -191,10 +194,13 @@
           (goto-char (point-min))
           (expect (search-forward "Shared Task" nil t) :to-be-truthy)))))
 
- (describe
-  "extract task from project - Story 1: multi-project task"
+(describe
+ "extract task from project - Story 1: multi-project task"
 
-  (it "removes only the specified project ID and keeps task in place with ORG_GTD='Actions'"
+ (before-each (setq inhibit-message t) (ogt--configure-emacs))
+ (after-each (ogt--close-and-delete-files))
+
+ (it "removes only the specified project ID and keeps task in place with ORG_GTD='Actions'"
       ;; Given: A task belongs to multiple projects (has multiple IDs in ORG_GTD_PROJECT_IDS)
       ;; When: I extract/remove from one project
       ;; Then: Task should remove only that project ID, stay in place, keep ORG_GTD="Actions"
@@ -248,10 +254,13 @@
             (goto-char (point-min))
             (expect (search-forward "Multi-project Task" nil t) :to-be-truthy))))))
 
- (describe
-  "extract task from project - Story 2: single-project task (last project)"
+(describe
+ "extract task from project - Story 2: single-project task (last project)"
 
-  (it "converts task to single action when removing from last/only project"
+ (before-each (setq inhibit-message t) (ogt--configure-emacs))
+ (after-each (ogt--close-and-delete-files))
+
+ (it "converts task to single action when removing from last/only project"
       ;; Given: A task belongs to only one project (has single ID in ORG_GTD_PROJECT_IDS)
       ;; When: I extract/remove from that project
       ;; Then: Task should keep ORG_GTD as "Actions", change TODO to NEXT, stay in place
