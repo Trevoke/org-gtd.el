@@ -168,9 +168,8 @@ This handles the internal bits of `org-gtd'."
     (when window-config
       (set-window-configuration window-config))
     (if loop-p (org-gtd-process-inbox))
-    ;; Save buffers if the user has set the option
-    (when org-gtd-save-after-organize
-      (save-some-buffers t))
+    ;; Save GTD buffers after organizing
+    (org-gtd-save-buffers)
         ;; Clean up horizons view for one-off clarification
         (unless loop-p
           (org-gtd-clarify--cleanup-horizons-view))))))

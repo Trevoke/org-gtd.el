@@ -60,7 +60,9 @@ interface for decision-making and organization."
 (defun org-gtd-process--stop ()
   "Stop processing the inbox."
   (org-gtd-clarify--cleanup-horizons-view)
-  (whitespace-cleanup))
+  (whitespace-cleanup)
+  ;; Save GTD buffers after inbox processing completes
+  (org-gtd-save-buffers))
 
 ;;;; Footer
 

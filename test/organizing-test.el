@@ -110,7 +110,7 @@
          (insert "* Test heading\n")
          (goto-char (point-min))
          (org-gtd-organize--call (lambda () (insert "Test"))))
-       (expect 'save-some-buffers :to-have-been-called-with t)
+       (expect 'save-some-buffers :to-have-been-called-with t #'org-gtd-buffer-p)
        (kill-buffer test-buffer)))
 
  (it "does not save buffers if org-gtd-save-after-organize is nil"

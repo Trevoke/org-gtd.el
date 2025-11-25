@@ -437,6 +437,20 @@ This property also controls the prefix displayed in agenda views.")
 
 ;;;;; Core Functions
 
+(defun org-gtd-buffer-p (&optional buffer)
+  "Return t if BUFFER (or current buffer if nil) is an org-gtd managed buffer.
+A buffer is considered org-gtd managed if its file is within `org-gtd-directory'."
+  (let ((file (buffer-file-name (or buffer (current-buffer)))))
+    (and file
+         (string-prefix-p (expand-file-name org-gtd-directory)
+                          (expand-file-name file)))))
+
+(defun org-gtd-save-buffers ()
+  "Save all modified org-gtd buffers.
+Only saves buffers that are in `org-gtd-directory'."
+  (when org-gtd-save-after-organize
+    (save-some-buffers t #'org-gtd-buffer-p)))
+
 (defun org-gtd-core-prepare-agenda-buffers ()
   "Ensure `org-mode' uses org-gtd settings in the relevant agenda buffers."
   (org-gtd-core--agenda-files)
