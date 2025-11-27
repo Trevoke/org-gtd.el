@@ -86,6 +86,11 @@ there are multiple tasks in the WIP buffer."
   "When non-nil, update item in place instead of refiling.
 Set via C-u prefix to clarify commands or transient toggle.")
 
+;;;;; External variables (defined in org-gtd-process.el)
+
+(defvar org-gtd-process--session-active)
+(defvar org-gtd-process--pending-inboxes)
+
 ;;;;; Keymaps
 
 (defvar org-gtd-clarify-map (make-sparse-keymap))
@@ -187,12 +192,17 @@ Closes the horizons view, restores the window configuration,
 cleans up temp file, and kills the WIP buffer without organizing the item."
   (interactive)
   (let ((window-config org-gtd-clarify--window-config)
-        (task-id org-gtd-clarify--clarify-id))
+        (task-id org-gtd-clarify--clarify-id)
+        (inbox-p org-gtd-clarify--inbox-p))
     ;; Clean up horizons view
     (org-gtd-clarify--cleanup-horizons-view)
     ;; Clean up temp file and kill buffer
     (when task-id
       (org-gtd-wip--cleanup-temp-file task-id))
+    ;; Clear inbox processing session state if we were processing inbox
+    (when inbox-p
+      (setq org-gtd-process--session-active nil
+            org-gtd-process--pending-inboxes nil))
     ;; Restore window configuration
     (when window-config
       (set-window-configuration window-config))

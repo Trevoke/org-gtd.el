@@ -2083,6 +2083,8 @@ Processing the inbox means taking everything in the inbox, one at a time, and re
 
 You can start processing the inbox with @code{org-gtd-process-inbox}. This starts a looping behavior of clarifying each item in the inbox.
 
+If you capture items from multiple sources (mobile app, email, different contexts), you can configure additional inbox files. After the main inbox is empty, processing continues through each additional file in order. See @code{org-gtd-additional-inbox-files} in @ref{Configuration Variables Reference}.
+
 @node Clarifying each item
 @subsection Clarifying each item
 
@@ -5103,6 +5105,37 @@ org-gtd will look for all its files in this directory:
 @end lisp
 
 @item
+@anchor{@code{org-gtd-additional-inbox-files}}@code{org-gtd-additional-inbox-files}
+
+
+@strong{Type}: List of file paths
+
+@strong{Default}: @code{nil}
+
+@strong{Description}: Additional inbox files to process after the main inbox.
+
+When you call @code{org-gtd-process-inbox}, it first processes all items in the main inbox (@code{inbox.org}). After the main inbox is empty, it continues processing items from these additional files in order.
+
+This is useful when you capture items from multiple sources:
+@itemize
+@item
+Mobile apps that sync to a separate file
+@item
+Email-to-org workflows
+@item
+Context-specific inboxes (work, personal)
+@end itemize
+
+@strong{Example}:
+@lisp
+(setq org-gtd-additional-inbox-files
+      '("~/gtd/mobile-inbox.org"
+        "~/gtd/email-inbox.org"))
+@end lisp
+
+@strong{Note}: Each file should contain org headings at the top level, just like the main inbox.
+
+@item
 @anchor{@code{org-gtd-horizons-file}}@code{org-gtd-horizons-file}
 
 
@@ -5739,6 +5772,8 @@ Starts processing loop through inbox items
 Opens each item in a clarify buffer (WIP mode)
 @item
 Continues until inbox is empty or you quit
+@item
+If @code{org-gtd-additional-inbox-files} is configured, continues through those files after main inbox
 @end itemize
 
 @strong{How to use}:
