@@ -183,25 +183,27 @@ This handles the internal bits of `org-gtd'."
       ;; Only run cleanup if no error was thrown
       (let ((loop-p org-gtd-clarify--inbox-p)
             (task-id org-gtd-clarify--clarify-id)
-            (window-config org-gtd-clarify--window-config))
-    ;; Only proceed with cleanup if we have a valid marker
-    (when (and (boundp 'org-gtd-clarify--source-heading-marker)
-               org-gtd-clarify--source-heading-marker
-               (markerp org-gtd-clarify--source-heading-marker))
-      (let ((buffer (marker-buffer org-gtd-clarify--source-heading-marker))
-            (position (marker-position org-gtd-clarify--source-heading-marker)))
-        (when (and buffer position)
-          (with-current-buffer buffer
-            (goto-char position)
-            (with-temp-message ""
-              (org-cut-subtree))))))
-    (when task-id
-      (org-gtd-wip--cleanup-temp-file task-id))
-    (when window-config
-      (set-window-configuration window-config))
-    (if loop-p (org-gtd-process-inbox))
-    ;; Save GTD buffers after organizing
-    (org-gtd-save-buffers)
+            (window-config org-gtd-clarify--window-config)
+            (skip-refile org-gtd-clarify--skip-refile))
+        ;; Only cut original if we refiled (not updated in place)
+        (unless skip-refile
+          (when (and (boundp 'org-gtd-clarify--source-heading-marker)
+                     org-gtd-clarify--source-heading-marker
+                     (markerp org-gtd-clarify--source-heading-marker))
+            (let ((buffer (marker-buffer org-gtd-clarify--source-heading-marker))
+                  (position (marker-position org-gtd-clarify--source-heading-marker)))
+              (when (and buffer position)
+                (with-current-buffer buffer
+                  (goto-char position)
+                  (with-temp-message ""
+                    (org-cut-subtree)))))))
+        (when task-id
+          (org-gtd-wip--cleanup-temp-file task-id))
+        (when window-config
+          (set-window-configuration window-config))
+        (if loop-p (org-gtd-process-inbox))
+        ;; Save GTD buffers after organizing
+        (org-gtd-save-buffers)
         ;; Clean up horizons view for one-off clarification
         (unless loop-p
           (org-gtd-clarify--cleanup-horizons-view))))))
