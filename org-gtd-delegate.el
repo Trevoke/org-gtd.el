@@ -37,6 +37,7 @@
 (declare-function org-gtd-organize--call "org-gtd-organize")
 (declare-function org-gtd-organize-apply-hooks "org-gtd-organize")
 (declare-function org-gtd-organize--update-in-place "org-gtd-organize")
+(declare-function org-gtd-wip--get-buffers "org-gtd-wip")
 
 ;;;; Customization
 
@@ -74,23 +75,12 @@ you if you want to call this non-interactively."
          (heading-position (marker-position heading-marker)))
     (with-current-buffer heading-buffer
       (goto-char heading-position)
-      (org-gtd-delegate-item-at-point))))
+      (let ((current-prefix-arg '(4)))  ; Force skip-refile for agenda delegation
+        (org-gtd-clarify-item heading-marker (current-window-configuration)))
+      ;; Now delegate via the organize menu
+      (with-current-buffer (car (org-gtd-wip--get-buffers))
+        (org-gtd-delegate)))))
 
-;;;###autoload
-(defun org-gtd-delegate-item-at-point (&optional delegated-to checkin-date)
-  "Delegate item at point.  Use this if you do not want to refile the item.
-
-You can pass DELEGATED-TO as the name of the person to whom this was delegated
-and CHECKIN-DATE as the YYYY-MM-DD string of when you want `org-gtd' to remind
-you if you want to call this non-interactively.
-If you call this interactively, the function will prompt for the person's name."
-  (interactive)
-  (let ((org-inhibit-logging 'note)
-        (config-override (when (or delegated-to checkin-date)
-                           `(,@(when delegated-to `(('text . ,(lambda (_x) delegated-to))))
-                             ,@(when checkin-date `(('active-timestamp . ,(lambda (_x) (format "<%s>" checkin-date)))))))))
-    (org-gtd-delegate--configure config-override)
-    (org-gtd-delegate--add-delegation-note)))
 
 ;;;; Functions
 

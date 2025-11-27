@@ -63,22 +63,24 @@
  (before-each (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
 
- (it "allows users to provide custom input functions for person name"
+ (it "allows delegation without refiling via skip-refile"
      (let ((topic "Custom delegate test")
-           (checkin-date (format-time-string "%Y-%m-%d"))
-           (buffer (generate-new-buffer "Test custom delegate"))
-           (org-id-overriding-file-name "org-gtd"))
-
-       (with-current-buffer buffer
-         (org-mode)
-         (insert (format "* %s" topic))
-         (org-gtd-clarify-item)
-
-         ;; Use org-gtd-delegate-item-at-point with parameters to show it works non-interactively
-         (org-gtd-delegate-item-at-point "Custom Person" checkin-date)
-
-         ;; Verify the delegation was set up correctly
-         (expect (task-delegated-to (current-task)) :to-equal "Custom Person")
-         (expect (task-timestamp (current-task)) :to-equal (format "<%s>" checkin-date)))
-
-       (kill-buffer buffer))))
+           (checkin-date (format-time-string "%Y-%m-%d")))
+       (create-single-action topic)
+       (with-current-buffer (org-gtd--default-file)
+         (goto-char (point-min))
+         (search-forward topic)
+         (org-back-to-heading t)
+         (let ((original-pos (point-marker)))
+           ;; Clarify with skip-refile
+           (let ((current-prefix-arg '(4)))
+             (org-gtd-clarify-item))
+           ;; Delegate via organize menu
+           (with-current-buffer (car (org-gtd-wip--get-buffers))
+             (with-simulated-input "Custom SPC Person RET RET"
+               (org-gtd-delegate)))
+           ;; Verify delegation was set up and item wasn't refiled
+           (goto-char (point-min))
+           (search-forward topic)
+           (expect (org-entry-get (point) "ORG_GTD") :to-equal "Actions")
+           (expect (org-entry-get (point) "DELEGATED_TO") :to-equal "Custom Person"))))))
