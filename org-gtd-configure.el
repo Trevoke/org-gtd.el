@@ -37,12 +37,13 @@
 ;;; Code:
 (require 'org-gtd-id)
 (require 'org-gtd-ql)
+(require 'org-gtd-types)
 
 ;;;; Forward declarations
-(defvar org-gtd-user-item-config)
-(defvar org-gtd-default-input-config)
-
-(declare-function org-gtd-items "org-gtd")
+(declare-function org-gtd-keywords--next "org-gtd-core")
+(declare-function org-gtd-keywords--wait "org-gtd-core")
+(declare-function org-gtd-keywords--done "org-gtd-core")
+(declare-function org-gtd-keywords--canceled "org-gtd-core")
 
 (defun org-gtd-prompt-for-active-date (prompt)
   "Prompt the user for a date and return it formatted as an active timestamp."
@@ -66,74 +67,71 @@
           (let ((repeater (read-from-minibuffer "How do you want this to repeat? ")))
             (format "<%s %s>" date repeater)))))))
 
-(defun org-gtd-configure-item (pos item-type &optional user-config input-config)
-  "Configure item at POS according to ITEM-TYPE."
-  (let* ((items (org-gtd-items))
-         (item-data (alist-get item-type items))
-         (item-config item-data)
-         (input-config (or input-config '()))
-         (user-config (or user-config org-gtd-user-item-config))
-         (user-item-config (when user-config (alist-get item-type user-config)))
-         (config (if user-item-config
-                     (map-merge 'alist item-config user-item-config)
-                   item-config)))
-    (when config
-      (dolist (definition config)
-        (pcase-let ((`(,key . ,value) definition))
-          (let* ((key (symbol-name key))
-                 (value (if (and (consp value)
-                                 (not (functionp value)))
-                            (org-gtd--build-prompt-form value input-config)
-                          value))
-                 (computed-value (pcase value
-                                   ((pred functionp) (funcall value))
-                                   ((and (pred symbolp)
-                                         (pred fboundp))
-                                    (funcall value))
-                                   ((and (pred symbolp)
-                                         (pred boundp))
-                                    (symbol-value value))
-                                   ((pred listp) (eval value))
-                                   (_ value))))
+;;;; Type-based configuration
 
-            ;; Special handling for TODO keyword vs properties
-            (if (string-equal key org-gtd-prop-todo)
-                (org-with-point-at pos (org-todo computed-value))
-              (org-entry-put pos (upcase key) (format "%s" computed-value)))))))))
+(defun org-gtd-configure-as-type (type-name &optional values)
+  "Configure item at point as TYPE-NAME using the GTD type system.
 
-(defun org-gtd--merge-inputs (&optional user-config)
-  (let ((user-config (or user-config '())))
-    (map-merge 'alist
-               org-gtd-default-input-config
-               user-config
-               '((_ . (lambda (x) (read-string (format "%s: " x))))))))
+TYPE-NAME must be a symbol from `org-gtd-types' (e.g., \\='next-action,
+\\='delegated, \\='calendar, \\='project).  This function:
 
-(defun org-gtd--pcase-inputs (&optional user-config)
-  (mapcar (lambda (x) `(,(car x) ,(cdr x)))
-          (org-gtd--merge-inputs user-config)))
+1. Sets the ORG_GTD property to the type's defined value
+2. Sets the TODO state based on the type's :state semantic
+3. Sets all required semantic properties (prompted or from VALUES)
 
-(defconst org-gtd-default-input-config
-  '(('active-timestamp . (lambda (x) (org-gtd-prompt-for-active-date x)))
-    ('active-timestamp-with-repeater . (lambda (x) (org-gtd-prompt-for-active-date-with-repeater x)))
-    ('text . (lambda (x) (read-string (format "%s: " x))))))
+VALUES is an optional alist mapping semantic property keywords to values,
+for non-interactive use.  Example: \\='((:who . \"John\") (:when . \"<2025-01-15>\"))
 
-(defun org-gtd--build-prompt-form (value user-entry-config)
-  "Build input prompt function from VALUE config and USER-ENTRY-CONFIG overrides.
+When VALUES is provided, properties are set directly without prompting.
+When VALUES is nil, required properties are prompted interactively.
+Properties with :default values are set automatically without prompting."
+  (let ((type-def (org-gtd-type-get type-name)))
+    (unless type-def
+      (user-error "Unknown GTD type: %s" type-name))
+    (let ((org-gtd-val (plist-get (cdr type-def) :org-gtd))
+          (state (plist-get (cdr type-def) :state))
+          (props (plist-get (cdr type-def) :properties)))
+      ;; Set ORG_GTD property
+      (org-entry-put nil "ORG_GTD" org-gtd-val)
+      ;; Set TODO state if defined
+      (when state
+        (org-todo (org-gtd--state-to-keyword state)))
+      ;; Set each required property (from VALUES, default, or by prompting)
+      (dolist (prop props)
+        (when (plist-get (cdr prop) :required)
+          (let* ((semantic-name (car prop))
+                 (prompt (plist-get (cdr prop) :prompt))
+                 (prop-type (plist-get (cdr prop) :type))
+                 (org-prop (plist-get (cdr prop) :org-property))
+                 (default-val (plist-get (cdr prop) :default))
+                 ;; Look up value: VALUES > default > prompt
+                 (value (or (alist-get semantic-name values)
+                            default-val
+                            (org-gtd--prompt-for-property-type prop-type prompt))))
+            (if (string-equal org-prop "SCHEDULED")
+                (org-schedule nil value)
+              (org-entry-put nil org-prop value)))))
+      ;; Ensure ID exists
+      (org-gtd-id-get-create))))
 
-This function avoids using `eval' for code clarity and robustness.
-Instead of returning a quoted form with a closure embedded, we return an
-actual function that will do the lookup and call at runtime."
-  (let-alist value
-    (let ((prompt .prompt)
-          (type .type))
-      ;; Return a lambda that will look up and call the input function
-      ;; This works on all Emacs versions because the closure is called directly,
-      ;; not embedded in a form to be evaluated later
-      (lambda ()
-        (let* ((input-funcs (org-gtd--merge-inputs user-entry-config))
-               (input-func (or (cdr (assoc type input-funcs))
-                              (cdr (assoc '_ input-funcs)))))
-          (funcall input-func prompt))))))
+(defun org-gtd--state-to-keyword (state)
+  "Convert STATE semantic keyword to actual org TODO keyword.
+STATE is one of :next, :wait, :done, or :canceled."
+  (pcase state
+    (:next (org-gtd-keywords--next))
+    (:wait (org-gtd-keywords--wait))
+    (:done (org-gtd-keywords--done))
+    (:canceled (org-gtd-keywords--canceled))
+    (_ nil)))
+
+(defun org-gtd--prompt-for-property-type (prop-type prompt)
+  "Prompt for a value of PROP-TYPE using PROMPT.
+PROP-TYPE is one of: text, timestamp, repeating-timestamp."
+  (pcase prop-type
+    ('text (read-string (format "%s " prompt)))
+    ('timestamp (org-gtd-prompt-for-active-date prompt))
+    ('repeating-timestamp (org-gtd-prompt-for-active-date-with-repeater prompt))
+    (_ (read-string (format "%s " prompt)))))
 
 (provide 'org-gtd-configure)
 ;;; org-gtd-configure.el ends here

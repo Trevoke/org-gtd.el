@@ -84,7 +84,9 @@ APPOINTMENT-DATE as a YYYY-MM-DD string."
 
 CONFIG-OVERRIDE can provide input configuration to override default
 prompting behavior."
-  (org-gtd-configure-item (point) :calendar nil config-override))
+  (org-gtd-configure-as-type 'calendar
+                             (when config-override
+                               `((:when . ,(funcall (alist-get '(quote active-timestamp) config-override nil nil #'equal) nil))))))
 
 (defun org-gtd-calendar--finalize ()
   "Finalize calendar item organization and refile."

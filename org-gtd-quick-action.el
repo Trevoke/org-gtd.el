@@ -51,7 +51,7 @@
 
 (defun org-gtd-quick-action--configure ()
   "Configure item at point as a quick action."
-  (org-gtd-configure-item (point) :quick-action))
+  (org-gtd-configure-as-type 'quick-action))
 
 (defun org-gtd-quick-action--finalize ()
   "Finalize quick action organization and archive."

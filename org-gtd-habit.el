@@ -88,7 +88,9 @@ determine how often you'll be reminded of this habit."
 
 CONFIG-OVERRIDE can provide input configuration to override default
 prompting behavior."
-  (org-gtd-configure-item (point) :habit nil config-override))
+  (org-gtd-configure-as-type 'habit
+                             (when config-override
+                               `((:when . ,(funcall (alist-get '(quote active-timestamp-with-repeater) config-override nil nil #'equal) nil))))))
 
 (defun org-gtd-habit--finalize ()
   "Finalize habit organization and refile."

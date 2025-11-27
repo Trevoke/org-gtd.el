@@ -92,3 +92,19 @@
                '((todo . "TODO") (next . "NEXT") (wait . "WAIT") (done . "DONE") (canceled . "CNCL")))
               :to-throw 'user-error))))
 
+(describe "ORG_GTD category constants"
+
+  (it "defines org-gtd-delegated constant"
+    (expect org-gtd-delegated :to-equal "Delegated"))
+
+  (it "defines org-gtd-quick constant"
+    (expect org-gtd-quick :to-equal "Quick"))
+
+  (it "has all existing constants defined"
+    (expect org-gtd-action :to-equal "Actions")
+    (expect org-gtd-projects :to-equal "Projects")
+    (expect org-gtd-calendar :to-equal "Calendar")
+    (expect org-gtd-incubate :to-equal "Incubated")
+    (expect org-gtd-knowledge :to-equal "Reference")
+    (expect org-gtd-trash :to-equal "Trash")))
+

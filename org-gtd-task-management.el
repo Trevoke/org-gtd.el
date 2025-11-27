@@ -862,7 +862,7 @@ to remove from."
       (let ((remaining-projects (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids)))
         (when (or (null remaining-projects) (equal remaining-projects '("")))
           ;; This was the last project - convert task to single action (property only, stay in place)
-          (org-gtd-configure-item (point) :next)))
+          (org-gtd-configure-as-type 'next-action)))
 
       (message "Removed task from project %s" project-id))))
 

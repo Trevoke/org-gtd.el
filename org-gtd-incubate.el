@@ -153,7 +153,9 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
 
 CONFIG-OVERRIDE can provide input configuration to override default
 prompting behavior."
-  (org-gtd-configure-item (point) :incubate nil config-override))
+  (org-gtd-configure-as-type 'incubated
+                             (when config-override
+                               `((:when . ,(funcall (alist-get '(quote active-timestamp) config-override nil nil #'equal) nil))))))
 
 (defun org-gtd-incubate--finalize ()
   "Finalize incubated item organization and refile."

@@ -219,13 +219,17 @@ M-x org-gtd-upgrade-v3-to-v4
 
 *What the migration does:*
 
-The migration performs two steps automatically:
+The migration performs three steps automatically:
 
 1. *Adds ORG_GTD properties* to identify items:
    - Adds ~ORG_GTD="Projects"~ to project headings
    - Adds ~ORG_GTD="Actions"~ to project tasks
 
-2. *Converts projects to dependency-based system*:
+2. *Migrates delegated items* to use their own type:
+   - Changes ~ORG_GTD~ from "Actions" to "Delegated" for items with ~DELEGATED_TO~ property
+   - This separates delegated items from regular single actions
+
+3. *Converts projects to dependency-based system*:
    - Adds ~ORG_GTD_DEPENDS_ON~ and ~ORG_GTD_BLOCKS~ properties to create sequential task chains
    - Adds ~ORG_GTD_FIRST_TASKS~ property to project headings
    - Updates task states (NEXT/TODO) based on the new dependency graph

@@ -75,7 +75,7 @@ TOPIC is what you want to see in the agenda view."
 
 (defun org-gtd-single-action--configure ()
   "Configure item at point as a single action."
-  (org-gtd-configure-item (point) :next))
+  (org-gtd-configure-as-type 'next-action))
 
 (defun org-gtd-single-action--finalize ()
   "Finalize single action organization and refile."

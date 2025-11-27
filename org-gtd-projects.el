@@ -323,7 +323,7 @@ Throws user-error with helpful message if invalid."
 (defun org-gtd-project--transform-heading ()
   "Transform current heading into project structure.
 Returns marker to project heading."
-  (org-gtd-configure-item (point) :project-heading)
+  (org-gtd-configure-as-type 'project)
   (setq-local org-gtd--organize-type 'project-heading)
   (org-gtd-organize-apply-hooks)
   (point-marker))
@@ -436,7 +436,8 @@ otherwise falls back to outline hierarchy (org-up-heading-safe)."
     (org-map-entries
      (lambda ()
        (unless (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-projects)
-         (org-gtd-configure-item (point) :project-task)
+         (org-gtd-configure-as-type 'next-action)
+         (org-entry-put (point) "TRIGGER" "org-gtd-update-project-after-task-done!")
          (org-entry-add-to-multivalued-property (point) org-gtd-prop-project-ids project-id)
          ;; Only set ORG_GTD_PROJECT if not already set (preserves first project for multi-project tasks)
          (unless (org-entry-get (point) org-gtd-prop-project)
@@ -950,7 +951,8 @@ Reactivates the project by:
 (defun org-gtd-project--configure-single-task ()
   "Configure current task for addition to a project.
 Returns marker to configured task."
-  (org-gtd-configure-item (point) :project-task)
+  (org-gtd-configure-as-type 'next-action)
+  (org-entry-put (point) "TRIGGER" "org-gtd-update-project-after-task-done!")
   (setq-local org-gtd--organize-type 'project-task)
   (org-gtd-organize-apply-hooks)
   (point-marker))

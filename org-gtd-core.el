@@ -320,6 +320,12 @@ without validation, use `setq' but ensure the mapping is valid."
 (defconst org-gtd-trash "Trash"
   "GTD category for discarded items.")
 
+(defconst org-gtd-delegated "Delegated"
+  "GTD category for delegated/waiting-for items.")
+
+(defconst org-gtd-quick "Quick"
+  "GTD category for quick actions (2-minute rule).")
+
 ;;;;; Org-mode Special Property Names
 
 (defconst org-gtd-prop-todo "TODO"

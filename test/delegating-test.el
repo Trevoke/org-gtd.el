@@ -82,5 +82,5 @@
            ;; Verify delegation was set up and item wasn't refiled
            (goto-char (point-min))
            (search-forward topic)
-           (expect (org-entry-get (point) "ORG_GTD") :to-equal "Actions")
+           (expect (org-entry-get (point) "ORG_GTD") :to-equal "Delegated")
            (expect (org-entry-get (point) "DELEGATED_TO") :to-equal "Custom Person"))))))

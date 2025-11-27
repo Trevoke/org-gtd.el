@@ -57,7 +57,7 @@ clarify step, before you call `org-gtd-organize').")
 
 (defun org-gtd-knowledge--configure ()
   "Configure item at point as knowledge."
-  (org-gtd-configure-item (point) :knowledge))
+  (org-gtd-configure-as-type 'reference))
 
 (defun org-gtd-knowledge--finalize ()
   "Finalize knowledge organization and archive."

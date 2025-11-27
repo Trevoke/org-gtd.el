@@ -69,7 +69,7 @@
         (goto-char (point-min))
         (search-forward "Test delegate")
         ;; WITHOUT inheritance (no t argument)
-        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Actions")))
+        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Delegated")))
 
     (it "habits have direct ORG_GTD property"
       (create-habit "Test habit" ".+1d")

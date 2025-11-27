@@ -115,6 +115,7 @@
 (require 'org-gtd-core)
 (require 'org-gtd-ql)
 (require 'org-gtd-skip)
+(require 'org-gtd-types)
 
 (defun org-gtd-view-lang--create-agenda-block (gtd-view-spec)
   "Create an agenda block from GTD-VIEW-SPEC.
@@ -177,21 +178,6 @@ KEY defaults to \"o\", TITLE defaults to \"GTD Views\"."
                         view-specs)))
     `((,command-key ,command-title ,blocks))))
 
-(defun org-gtd-view-lang--translate-to-org-ql (gtd-view-spec)
-  "Translate GTD-VIEW-SPEC to an org-ql query expression.
-GTD-VIEW-SPEC should be an alist with \\='name and \\='filters keys."
-  (let* ((filters (alist-get 'filters gtd-view-spec))
-         (has-future-time-filter (seq-some (lambda (filter)
-                                             (and (memq (car filter) '(deadline scheduled))
-                                                  (eq (cdr filter) 'future)))
-                                           filters))
-         (all-conditions (apply #'append (mapcar #'org-gtd-view-lang--translate-filter filters)))
-         (not-done-conditions (seq-filter (lambda (cond) (equal cond '(not (done)))) all-conditions))
-         (other-conditions (seq-remove (lambda (cond) (equal cond '(not (done)))) all-conditions)))
-    (if has-future-time-filter
-        `(and ,@other-conditions)
-      `(and ,@other-conditions ,@not-done-conditions))))
-
 (defun org-gtd-view-lang--translate-filter (filter)
   "Translate a single FILTER specification to org-ql syntax."
   (let ((filter-type (car filter))
@@ -227,13 +213,19 @@ GTD-VIEW-SPEC should be an alist with \\='name and \\='filters keys."
       (org-gtd-view-lang--translate-property-filter filter-value))
      ((eq filter-type 'level)
       (org-gtd-view-lang--translate-level-filter filter-value))
+     ((eq filter-type 'type)
+      (org-gtd-view-lang--translate-type-filter filter-value))
+     ((eq filter-type 'previous-type)
+      (org-gtd-view-lang--translate-previous-type-filter filter-value))
+     ((keywordp filter-type)
+      (org-gtd-view-lang--translate-semantic-property-filter filter-type filter-value))
      (t (error "Unknown GTD filter: %s" filter-type)))))
 
 (defun org-gtd-view-lang--translate-category-filter (category)
   "Translate category CATEGORY to org-ql property filter."
   (cond
    ((eq category 'delegated)
-    (list '(property "DELEGATED_TO")))
+    (list `(property ,org-gtd-prop-category ,org-gtd-delegated)))
    ((eq category 'calendar)
     (list `(property ,org-gtd-prop-category ,org-gtd-calendar)))
    ((eq category 'actions)
@@ -358,6 +350,62 @@ e.g., \\='((\"ORG_GTD\" . \"Actions\"))."
 (defun org-gtd-view-lang--translate-level-filter (level-num)
   "Translate level LEVEL-NUM to org-ql level filter."
   (list `(level ,level-num)))
+
+(defun org-gtd-view-lang--translate-type-filter (type-name)
+  "Translate TYPE-NAME to org-ql property filter using org-gtd-types.
+TYPE-NAME should be a symbol like \\='next-action, \\='delegated, \\='calendar, etc."
+  (let ((org-gtd-val (org-gtd-type-org-gtd-value type-name)))
+    (unless org-gtd-val
+      (user-error "Unknown GTD type: %s" type-name))
+    (list `(property "ORG_GTD" ,org-gtd-val))))
+
+(defun org-gtd-view-lang--translate-previous-type-filter (type-name)
+  "Translate previous-type TYPE-NAME to PREVIOUS_ORG_GTD property filter.
+TYPE-NAME should be a symbol like \\='delegated, \\='next-action, \\='project, etc.
+This is used for incubated items to filter by their original type."
+  (let ((org-gtd-val (org-gtd-type-org-gtd-value type-name)))
+    (unless org-gtd-val
+      (user-error "Unknown GTD type: %s" type-name))
+    (list `(property "PREVIOUS_ORG_GTD" ,org-gtd-val))))
+
+(defvar org-gtd-view-lang--current-type nil
+  "Track the current type filter for semantic property resolution.")
+
+(defun org-gtd-view-lang--translate-to-org-ql (gtd-view-spec)
+  "Translate GTD-VIEW-SPEC to an org-ql query expression.
+GTD-VIEW-SPEC should be an alist with \\='name and \\='filters keys."
+  (let* ((filters (alist-get 'filters gtd-view-spec))
+         ;; Extract type filter for semantic property resolution
+         (type-filter (seq-find (lambda (f) (eq (car f) 'type)) filters))
+         (org-gtd-view-lang--current-type (when type-filter (cdr type-filter)))
+         (has-future-time-filter (seq-some (lambda (filter)
+                                             (and (memq (car filter) '(deadline scheduled))
+                                                  (eq (cdr filter) 'future)))
+                                           filters))
+         (all-conditions (apply #'append (mapcar #'org-gtd-view-lang--translate-filter filters)))
+         (not-done-conditions (seq-filter (lambda (cond) (equal cond '(not (done)))) all-conditions))
+         (other-conditions (seq-remove (lambda (cond) (equal cond '(not (done)))) all-conditions)))
+    (if has-future-time-filter
+        `(and ,@other-conditions)
+      `(and ,@other-conditions ,@not-done-conditions))))
+
+(defun org-gtd-view-lang--translate-semantic-property-filter (semantic-name time-spec)
+  "Translate SEMANTIC-NAME (like :when) with TIME-SPEC for current type.
+Uses org-gtd-types to resolve the semantic property to the actual org property."
+  (unless org-gtd-view-lang--current-type
+    (user-error "Semantic property filter %s requires a type filter" semantic-name))
+  (let ((org-prop (org-gtd-type-property org-gtd-view-lang--current-type semantic-name)))
+    (unless org-prop
+      (user-error "Type %s does not have semantic property %s"
+                  org-gtd-view-lang--current-type semantic-name))
+    (cond
+     ((eq time-spec 'past)
+      (list `(property-ts< ,org-prop "today") '(not (done))))
+     ((eq time-spec 'future)
+      (list `(property-ts> ,org-prop "today")))
+     ((eq time-spec 'within-week)
+      (list `(property-ts< ,org-prop "+1w")))
+     (t (user-error "Unknown time spec: %s" time-spec)))))
 
 (defun org-gtd-view-lang--create-grouped-views (gtd-view-spec)
   "Create grouped views from GTD-VIEW-SPEC.

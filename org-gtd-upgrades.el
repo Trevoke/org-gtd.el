@@ -152,7 +152,7 @@ planning keyword in `org-mode'."
 (defun org-gtd-upgrade-v3-to-v4 ()
   "Migrate from org-gtd v3 to v4 property-based and dependency system.
 
-This migration performs TWO required steps:
+This migration performs THREE required steps:
 
 STEP 1: Migrate ORG_GTD properties
   - Level 1 category headings: Renames ORG_GTD → ORG_GTD_REFILE
@@ -160,7 +160,11 @@ STEP 1: Migrate ORG_GTD properties
   - Level 2+ items: Adds ORG_GTD property to mark item type
   - Project tasks: Adds ORG_GTD=\"Actions\" property
 
-STEP 2: Add dependency properties to projects
+STEP 2: Migrate delegated items to new type
+  - Items with DELEGATED_TO property: Changes ORG_GTD from \"Actions\" to \"Delegated\"
+  - This separates delegated items from regular single actions
+
+STEP 3: Add dependency properties to projects
   - Adds ORG_GTD_DEPENDS_ON and ORG_GTD_BLOCKS for sequential dependencies
   - Adds ORG_GTD_FIRST_TASKS to project headings
   - Sets correct NEXT/TODO states based on dependencies
@@ -186,14 +190,45 @@ Make a backup before running! Safe to run multiple times."
     (message "Migrating to org-gtd v4...")
 
     ;; Step 1: Add ORG_GTD properties
-    (message "Step 1/2: Adding ORG_GTD properties...")
+    (message "Step 1/3: Adding ORG_GTD properties...")
     (org-gtd-upgrade--add-org-gtd-properties)
 
-    ;; Step 2: Add dependency properties
-    (message "Step 2/2: Adding project dependencies...")
+    ;; Step 2: Migrate delegated items to new ORG_GTD value
+    (message "Step 2/3: Migrating delegated items...")
+    (org-gtd-upgrade--migrate-delegated-items)
+
+    ;; Step 3: Add dependency properties
+    (message "Step 3/3: Adding project dependencies...")
     (org-gtd-upgrade--add-project-dependencies)
 
     (message "Migration complete! Your projects now use the dependency system.")))
+
+(defun org-gtd-upgrade--migrate-delegated-items ()
+  "Migrate delegated items to use ORG_GTD=Delegated (Step 2 of migration).
+
+In v3, delegated items had ORG_GTD=\"Actions\" with a DELEGATED_TO property.
+In v4, delegated items have ORG_GTD=\"Delegated\" with DELEGATED_TO property.
+
+This function finds all items with DELEGATED_TO property and changes their
+ORG_GTD value from \"Actions\" to \"Delegated\".
+
+Safe to run multiple times - only updates items still marked as \"Actions\"."
+  (org-gtd-core-prepare-agenda-buffers)
+  (let ((org-agenda-files (org-gtd-core--agenda-files))
+        (migrated-count 0))
+    (org-map-entries
+     (lambda ()
+       (let ((org-gtd-value (org-entry-get (point) "ORG_GTD"))
+             (delegated-to (org-entry-get (point) "DELEGATED_TO")))
+         ;; Only migrate if: has DELEGATED_TO AND ORG_GTD is "Actions"
+         (when (and delegated-to
+                    (string= org-gtd-value "Actions"))
+           (org-entry-put (point) "ORG_GTD" "Delegated")
+           (setq migrated-count (1+ migrated-count))
+           (message "  Migrated: %s" (org-get-heading t t t t)))))
+     "+DELEGATED_TO={.+}"
+     'agenda)
+    (message "Migrated %d delegated items to ORG_GTD=\"Delegated\"" migrated-count)))
 
 (defun org-gtd-upgrade--add-org-gtd-properties ()
   "Add ORG_GTD properties to existing items (Step 1 of migration)."

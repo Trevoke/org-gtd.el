@@ -27,7 +27,7 @@
                            (timestamp . past))))))
         (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
                 :to-equal
-                '(and (property "DELEGATED_TO")
+                '(and (property "ORG_GTD" "Delegated")
                       (property-ts< "ORG_GTD_TIMESTAMP" "today")
                       (not (done))))))
 
@@ -120,10 +120,10 @@
                (filters . ((category . delegated)
                            (timestamp . past))))))
         ;; The translated query should be functionally equivalent to:
-        ;; tags "+DELEGATED_TO={.+}" with skip function for past timestamps
+        ;; items with ORG_GTD = "Delegated" and past timestamp
         (expect (org-gtd-view-lang--translate-to-org-ql delegated-oops-spec)
                 :to-equal
-                '(and (property "DELEGATED_TO")
+                '(and (property "ORG_GTD" "Delegated")
                       (property-ts< "ORG_GTD_TIMESTAMP" "today")
                       (not (done)))))))
 
@@ -532,3 +532,183 @@
     (let ((agenda-buffer (get-buffer org-agenda-buffer-name)))
       (with-current-buffer agenda-buffer
         (expect (point) :to-equal (point-min))))))
+
+(describe
+ "Type-based filters using org-gtd-types"
+
+ (before-each
+  (setq inhibit-message t)
+  (ogt--configure-emacs))
+ (after-each (ogt--close-and-delete-files))
+
+ (describe
+  "type filter"
+
+  (it "translates (type . next-action) to ORG_GTD=Actions query"
+      (let ((view-spec
+             '((name . "Next Actions")
+               (filters . ((type . next-action))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Actions")))))
+
+  (it "translates (type . delegated) to ORG_GTD=Delegated query"
+      (let ((view-spec
+             '((name . "Delegated Items")
+               (filters . ((type . delegated))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Delegated")))))
+
+  (it "translates (type . calendar) to ORG_GTD=Calendar query"
+      (let ((view-spec
+             '((name . "Calendar Items")
+               (filters . ((type . calendar))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Calendar")))))
+
+  (it "translates (type . incubated) to ORG_GTD=Incubated query"
+      (let ((view-spec
+             '((name . "Incubated Items")
+               (filters . ((type . incubated))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Incubated")))))
+
+  (it "translates (type . project) to ORG_GTD=Projects query"
+      (let ((view-spec
+             '((name . "Projects")
+               (filters . ((type . project))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Projects")))))
+
+  (it "translates (type . reference) to ORG_GTD=Reference query"
+      (let ((view-spec
+             '((name . "Reference Items")
+               (filters . ((type . reference))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Reference")))))
+
+  (it "translates (type . trash) to ORG_GTD=Trash query"
+      (let ((view-spec
+             '((name . "Trash")
+               (filters . ((type . trash))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Trash")))))
+
+  (it "translates (type . quick-action) to ORG_GTD=Quick query"
+      (let ((view-spec
+             '((name . "Quick Actions")
+               (filters . ((type . quick-action))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Quick")))))
+
+  (it "translates (type . habit) to ORG_GTD=Habit query"
+      (let ((view-spec
+             '((name . "Habits")
+               (filters . ((type . habit))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Habit")))))
+
+  (it "signals error for unknown type"
+      (let ((view-spec
+             '((name . "Unknown")
+               (filters . ((type . nonexistent-type))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-throw 'user-error))))
+
+ (describe
+  "semantic :when property filter"
+
+  (it "translates (:when . past) with delegated type to ORG_GTD_TIMESTAMP"
+      (let ((view-spec
+             '((name . "Missed Delegated")
+               (filters . ((type . delegated)
+                           (:when . past))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Delegated")
+                      (property-ts< "ORG_GTD_TIMESTAMP" "today")
+                      (not (done))))))
+
+  (it "translates (:when . past) with calendar type to ORG_GTD_TIMESTAMP"
+      (let ((view-spec
+             '((name . "Missed Calendar")
+               (filters . ((type . calendar)
+                           (:when . past))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Calendar")
+                      (property-ts< "ORG_GTD_TIMESTAMP" "today")
+                      (not (done))))))
+
+  (it "translates (:when . past) with incubated type to ORG_GTD_TIMESTAMP"
+      (let ((view-spec
+             '((name . "Past Incubated")
+               (filters . ((type . incubated)
+                           (:when . past))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Incubated")
+                      (property-ts< "ORG_GTD_TIMESTAMP" "today")
+                      (not (done))))))
+
+  (it "translates (:when . past) with habit type to SCHEDULED"
+      (let ((view-spec
+             '((name . "Past Habits")
+               (filters . ((type . habit)
+                           (:when . past))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Habit")
+                      (property-ts< "SCHEDULED" "today")
+                      (not (done))))))
+
+  (it "translates (:when . future) with calendar type"
+      (let ((view-spec
+             '((name . "Future Calendar")
+               (filters . ((type . calendar)
+                           (:when . future))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Calendar")
+                      (property-ts> "ORG_GTD_TIMESTAMP" "today"))))))
+
+ (describe
+  "previous-type filter for incubated items"
+
+  (it "translates (previous-type . delegated) to PREVIOUS_ORG_GTD=Delegated"
+      (let ((view-spec
+             '((name . "Incubated Delegated")
+               (filters . ((type . incubated)
+                           (previous-type . delegated))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Incubated")
+                      (property "PREVIOUS_ORG_GTD" "Delegated")))))
+
+  (it "translates (previous-type . next-action) to PREVIOUS_ORG_GTD=Actions"
+      (let ((view-spec
+             '((name . "Incubated Actions")
+               (filters . ((type . incubated)
+                           (previous-type . next-action))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Incubated")
+                      (property "PREVIOUS_ORG_GTD" "Actions")))))
+
+  (it "translates (previous-type . project) to PREVIOUS_ORG_GTD=Projects"
+      (let ((view-spec
+             '((name . "Incubated Projects")
+               (filters . ((type . incubated)
+                           (previous-type . project))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Incubated")
+                      (property "PREVIOUS_ORG_GTD" "Projects")))))))

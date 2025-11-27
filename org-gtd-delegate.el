@@ -111,7 +111,12 @@ you."
 
 CONFIG-OVERRIDE can provide input configuration to override default
 prompting behavior."
-  (org-gtd-configure-item (point) :delegated nil config-override))
+  (org-gtd-configure-as-type 'delegated
+                             (when config-override
+                               (let ((who-fn (alist-get '(quote text) config-override nil nil #'equal))
+                                     (when-fn (alist-get '(quote active-timestamp) config-override nil nil #'equal)))
+                                 `(,@(when who-fn `((:who . ,(funcall who-fn nil))))
+                                   ,@(when when-fn `((:when . ,(funcall when-fn nil)))))))))
 
 (defun org-gtd-delegate--add-delegation-note ()
   "Add delegation note with person's name from DELEGATED_TO property."
