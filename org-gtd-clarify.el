@@ -140,10 +140,13 @@ organizing them."
 Opens a dedicated clarification buffer where you can refine the item's
 details before organizing it.
 
+With prefix argument (C-u), mark item for in-place update instead of refile.
+
 MARKER must be a marker pointing to an org heading.
 WINDOW-CONFIG is the window config to set after clarification finishes."
   (interactive)
-  (let* ((window-config (or window-config (current-window-configuration)))
+  (let* ((skip-refile current-prefix-arg)
+         (window-config (or window-config (current-window-configuration)))
          (source-heading-marker (or marker (point-marker)))
          (clarify-id (org-gtd-id-get-create source-heading-marker))
          (processing-buffer (org-gtd-wip--get-buffer clarify-id)))
@@ -152,7 +155,8 @@ WINDOW-CONFIG is the window config to set after clarification finishes."
       (org-gtd-clarify-mode 1)
       (setq-local org-gtd-clarify--window-config window-config
                   org-gtd-clarify--source-heading-marker source-heading-marker
-                  org-gtd-clarify--clarify-id clarify-id))
+                  org-gtd-clarify--clarify-id clarify-id
+                  org-gtd-clarify--skip-refile (when skip-refile t)))
     (org-gtd-clarify-setup-windows processing-buffer)))
 
 (defun org-gtd-clarify-switch-to-buffer ()

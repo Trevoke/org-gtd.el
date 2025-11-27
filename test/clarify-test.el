@@ -28,6 +28,20 @@
          (with-current-buffer wip-buffer
            (expect (org-entry-get org-gtd-clarify--source-heading-marker "ID")
                    :to-equal task-id)))))
+ (it "sets skip-refile flag when called with prefix arg"
+     (create-single-action "Test item")
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Test item")
+       (org-back-to-heading t)
+       (let ((current-prefix-arg '(4)))
+         (org-gtd-clarify-item))
+       ;; Find the WIP buffer and check the flag
+       (let ((wip-buffers (org-gtd-wip--get-buffers)))
+         (expect wip-buffers :not :to-be nil)
+         (with-current-buffer (car wip-buffers)
+           (expect org-gtd-clarify--skip-refile :to-be t)))))
+
  (describe
   "through the agenda view"
 
