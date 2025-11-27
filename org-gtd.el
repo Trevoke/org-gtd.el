@@ -74,7 +74,7 @@
 (require 'org-gtd-organize)
 (require 'org-gtd-process)
 (require 'org-gtd-mode)
-(require 'org-gtd-review)
+(require 'org-gtd-reflect)
 (require 'org-gtd-view-language)
 (require 'org-gtd-upgrades)
 (require 'org-gtd-id-overlay)
