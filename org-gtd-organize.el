@@ -82,8 +82,18 @@ Once you have your ground items managed, you might like to set the variable
 
 ;;;; Macros
 
+(transient-define-infix org-gtd-organize--skip-refile-infix ()
+  "Transient infix for skip-refile toggle."
+  :class 'transient-lisp-variable
+  :variable 'org-gtd-clarify--skip-refile
+  :reader (lambda (&rest _) (if org-gtd-clarify--skip-refile nil t))
+  :description "Update in place (no refile)")
+
 (transient-define-prefix org-gtd-organize ()
   "Choose how to categorize the current item."
+  [:if (lambda () (not org-gtd-clarify--inbox-p))
+   "Options"
+   ("-n" org-gtd-organize--skip-refile-infix)]
   ["Actionable"
    [("q" "Quick action" org-gtd-quick-action)
     ("s" "Single action" org-gtd-single-action)]

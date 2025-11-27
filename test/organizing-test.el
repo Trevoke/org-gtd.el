@@ -154,3 +154,14 @@
          (expect (search-forward "Modified title" nil t) :to-be-truthy)
          (goto-char (point-min))
          (expect (search-forward "Original title" nil t) :to-be nil)))))
+
+(describe
+ "org-gtd-organize transient"
+ (before-each
+   (setq inhibit-message t)
+   (ogt--configure-emacs))
+ (after-each (ogt--close-and-delete-files))
+
+ (it "has skip-refile toggle infix command defined"
+     ;; Simply verify the infix command is defined
+     (expect (fboundp 'org-gtd-organize--skip-refile-infix) :to-be-truthy)))
