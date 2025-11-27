@@ -59,3 +59,36 @@
     (let ((org-gtd-project-progress-cookie-position 'end))
       (expect org-gtd-project-progress-cookie-position :to-equal 'end))))
 
+(describe "org-gtd--extract-keyword-name"
+  (it "returns plain keyword unchanged"
+    (expect (org-gtd--extract-keyword-name "NEXT") :to-equal "NEXT"))
+
+  (it "strips single-char shortcut"
+    (expect (org-gtd--extract-keyword-name "NEXT(n)") :to-equal "NEXT"))
+
+  (it "strips shortcut with logging config"
+    (expect (org-gtd--extract-keyword-name "NEXT(n/@)") :to-equal "NEXT")
+    (expect (org-gtd--extract-keyword-name "DONE(d/!)") :to-equal "DONE"))
+
+  (it "handles complex logging syntax"
+    (expect (org-gtd--extract-keyword-name "WAIT(w@/!)") :to-equal "WAIT")))
+
+(describe "org-gtd-keyword-mapping validation"
+  (it "validates keywords with DSL syntax in org-todo-keywords"
+    (let ((org-todo-keywords '((sequence "TODO(t)" "NEXT(n/@)" "WAIT(w@/!)" "|" "DONE(d/!)" "CNCL(c@)")))
+          (org-gtd-keyword-mapping nil))
+      ;; Should not error - the mapping uses plain keywords while org-todo-keywords uses DSL
+      (expect (org-gtd--validate-and-set-keyword-mapping
+               'org-gtd-keyword-mapping
+               '((todo . "TODO") (next . "NEXT") (wait . "WAIT") (done . "DONE") (canceled . "CNCL")))
+              :not :to-throw)))
+
+  (it "still rejects keywords not in org-todo-keywords"
+    (let ((org-todo-keywords '((sequence "TODO" "NEXT" "|" "DONE")))
+          (org-gtd-keyword-mapping nil))
+      ;; Should error - WAIT and CNCL don't exist
+      (expect (org-gtd--validate-and-set-keyword-mapping
+               'org-gtd-keyword-mapping
+               '((todo . "TODO") (next . "NEXT") (wait . "WAIT") (done . "DONE") (canceled . "CNCL")))
+              :to-throw 'user-error))))
+

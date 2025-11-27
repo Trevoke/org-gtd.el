@@ -106,6 +106,14 @@ your own files if you want multiple refile targets (projects, etc.)."
 
 ;;;; GTD Semantic Keyword Mapping
 
+(defun org-gtd--extract-keyword-name (keyword-string)
+  "Extract base keyword name from org-todo-keywords DSL syntax.
+Handles formats like \"NEXT\", \"NEXT(n)\", \"NEXT(n/@)\", \"NEXT(n/!)\".
+Returns just the keyword name without shortcut or logging configuration."
+  (if (string-match "^\\([^(]+\\)" keyword-string)
+      (match-string 1 keyword-string)
+    keyword-string))
+
 (defun org-gtd--validate-and-set-keyword-mapping (symbol value)
   "Validate and set the org-gtd keyword mapping.
 SYMBOL should be `org-gtd-keyword-mapping' and VALUE should be the new mapping.
@@ -154,12 +162,14 @@ Only sets the value if validation passes."
             (found-sequence nil))
 
         ;; Check that all keywords exist somewhere in org-todo-keywords
-        (let ((all-keywords (if (listp (car org-todo-keywords))
-                                ;; Extract keywords from sequences, removing "|" separators
-                                (cl-remove-if (lambda (kw) (string-match-p "^|" kw))
-                                              (apply #'append (mapcar #'cdr org-todo-keywords)))
-                              ;; Simple list format
-                              org-todo-keywords)))
+        ;; Use org-gtd--extract-keyword-name to handle DSL syntax like "NEXT(n/@)"
+        (let ((all-keywords (mapcar #'org-gtd--extract-keyword-name
+                                    (if (listp (car org-todo-keywords))
+                                        ;; Extract keywords from sequences, removing "|" separators
+                                        (cl-remove-if (lambda (kw) (string-match-p "^|" kw))
+                                                      (apply #'append (mapcar #'cdr org-todo-keywords)))
+                                      ;; Simple list format
+                                      org-todo-keywords))))
           (dolist (keyword gtd-keywords)
             (unless (member keyword all-keywords)
               (push (format "GTD keyword '%s' not found in org-todo-keywords" keyword) errors))))
@@ -168,8 +178,9 @@ Only sets the value if validation passes."
         (when (not errors)  ; Only check sequences if all keywords exist
           (catch 'found
             (dolist (sequence all-sequences)
-              (let ((seq-keywords (cl-remove-if (lambda (kw) (string-match-p "^|" kw))
-                                                (if (listp sequence) (cdr sequence) sequence))))
+              (let ((seq-keywords (mapcar #'org-gtd--extract-keyword-name
+                                          (cl-remove-if (lambda (kw) (string-match-p "^|" kw))
+                                                        (if (listp sequence) (cdr sequence) sequence)))))
                 (when (cl-every (lambda (kw) (member kw seq-keywords)) gtd-keywords)
                   (setq found-sequence sequence)
                   (throw 'found t))))
