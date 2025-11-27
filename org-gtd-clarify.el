@@ -82,6 +82,10 @@ there are multiple tasks in the WIP buffer."
 (defvar-local org-gtd-clarify--window-config nil
   "Store window configuration prior to clarifying task.")
 
+(defvar-local org-gtd-clarify--skip-refile nil
+  "When non-nil, update item in place instead of refiling.
+Set via C-u prefix to clarify commands or transient toggle.")
+
 ;;;;; Keymaps
 
 (defvar org-gtd-clarify-map (make-sparse-keymap))
