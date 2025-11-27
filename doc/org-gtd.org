@@ -144,7 +144,7 @@ Creating custom agenda views is now much easier with a declarative syntax:
 - *Better stuck project detection* - Improved identification of projects that need attention
 
 ** Simplified configuration
-- *org-gtd-mode is obsolete* - No need for a special mode anymore. Just configure ~org-agenda-files~ and ~org-edna~ directly in your init file. The old mode was wrapping all agenda commands unnecessarily and had org-edna configured incorrectly.
+- *org-gtd-mode has a new purpose* - The mode is no longer about wrapping agenda commands. It now provides a mode-line indicator showing your inbox count (e.g., =GTD[5]=), giving you at-a-glance visibility into how many items need processing.
 
 ** What you need to do
 If you're upgrading from 3.x, see the [[#upgrading][Upgrading section]] for complete step-by-step instructions. The required changes are:
@@ -250,16 +250,21 @@ The migration performs two steps automatically:
 - More flexible: Enables features like multi-project tasks
 - Better performance: Faster queries using org-ql
 
-**** org-gtd-mode is obsolete
+**** org-gtd-mode has a new purpose
 
-The ~org-gtd-mode~ minor mode is obsolete in version 4.0. It previously wrapped all org-agenda commands with org-gtd context, but this is no longer necessary because:
+The ~org-gtd-mode~ minor mode has been redesigned in version 4.0. It no longer wraps org-agenda commands—instead, it provides useful mode-line feedback.
 
-1. All org-gtd commands (like ~org-gtd-engage~) already have the right context
-2. Users should configure ~org-agenda-files~ directly
-3. Users should configure org-edna directly (the old mode had it configured incorrectly)
+*What it does now:*
+- Displays inbox count in your mode-line (e.g., =GTD[5]=)
+- Includes items from both main inbox and additional inbox files
+- Refreshes periodically to catch external file changes
 
-If you were using ~org-gtd-mode~, simply remove it and add these lines to your config:
+*To enable:*
+#+begin_src emacs-lisp
+(org-gtd-mode 1)
+#+end_src
 
+*Note*: You still need to configure ~org-agenda-files~ and ~org-edna~ separately:
 #+begin_src emacs-lisp
 (setq org-agenda-files (list org-gtd-directory))
 (org-edna-mode 1)
@@ -300,7 +305,7 @@ You need to configure three things for org-gtd to work:
 
 See the configuration sections below for details.
 
-Note: ~org-gtd-mode~ is obsolete as of version 4.0. Just configure org-agenda-files and org-edna directly.
+*Optional*: Enable ~org-gtd-mode~ if you want to see your inbox count in the mode-line (e.g., =GTD[5]=).
 
 *** Complete Configuration Examples
 
@@ -3355,6 +3360,32 @@ Useful if you want automatic saves during inbox processing.
 (setq org-gtd-refile-to-any-target nil)
 #+end_src
 
+*** Mode-Line Configuration
+
+**** ~org-gtd-mode-update-interval~
+
+*Type*: Integer (seconds) or nil
+
+*Default*: ~60~
+
+*Description*: Seconds between automatic inbox count refreshes when ~org-gtd-mode~ is enabled.
+
+The mode-line lighter (e.g., =GTD[5]=) updates automatically when Emacs redraws the mode-line. This setting controls an additional periodic refresh to catch external file changes (like mobile app syncs).
+
+Values:
+- Integer :: Refresh every N seconds
+- ~nil~ :: Disable periodic refresh (count still updates on mode-line redraw)
+
+*Example*: Refresh every 30 seconds:
+#+begin_src emacs-lisp
+(setq org-gtd-mode-update-interval 30)
+#+end_src
+
+*Example*: Disable periodic refresh:
+#+begin_src emacs-lisp
+(setq org-gtd-mode-update-interval nil)
+#+end_src
+
 *** Clarification Configuration
 
 **** ~org-gtd-clarify-show-horizons~
@@ -4957,17 +4988,36 @@ These commands create GTD items programmatically (useful for automation and Emac
 - Safe to run multiple times
 - See [[#upgrading][Upgrading section]] for complete details
 
-*** Obsolete Commands
+*** Mode-Line Integration
 
-**** ~org-gtd-mode~ (obsolete since 4.0)
+**** ~org-gtd-mode~
 
-*Use instead*:
+*Type*: Global minor mode
+
+*What it does*:
+- Displays inbox count in mode-line (e.g., =GTD[5]=)
+- Counts items across main inbox and additional inbox files
+- Refreshes periodically to catch external file changes
+- Enables org-edna for task dependencies
+
+*How to enable*:
 #+begin_src emacs-lisp
-(setq org-agenda-files (list org-gtd-directory))
-(org-edna-mode 1)
+(org-gtd-mode 1)
 #+end_src
 
-This minor mode is no longer needed and will be removed in a future version.
+*Related*: ~org-gtd-mode-update-interval~ to control refresh frequency
+
+**** ~org-gtd-inbox-count~
+
+*Returns*: Integer count of items across all inbox files
+
+*Use case*: Programmatic access to inbox count for custom displays or automation.
+
+#+begin_src emacs-lisp
+(message "You have %d items to process" (org-gtd-inbox-count))
+#+end_src
+
+*** Obsolete Commands
 
 **** ~org-gtd-delegate-item-at-point~ (removed in 4.0)
 

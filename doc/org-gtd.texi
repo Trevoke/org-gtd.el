@@ -218,6 +218,7 @@ Configuration Variables Reference
 * Directory and File Configuration::
 * Capture Configuration::
 * Organize and Process Configuration::
+* Mode-Line Configuration::
 * Clarification Configuration::
 * Areas of Focus Configuration::
 * Engage View Configuration::
@@ -247,6 +248,7 @@ Commands Reference
 * Utility Commands::
 * ID Overlay Commands::
 * Migration and Upgrade Commands::
+* Mode-Line Integration::
 * Obsolete Commands::
 
 
@@ -479,7 +481,7 @@ Creating custom agenda views is now much easier with a declarative syntax:
 
 @itemize
 @item
-@strong{org-gtd-mode is obsolete} - No need for a special mode anymore. Just configure @code{org-agenda-files} and @code{org-edna} directly in your init file. The old mode was wrapping all agenda commands unnecessarily and had org-edna configured incorrectly.
+@strong{org-gtd-mode has a new purpose} - The mode is no longer about wrapping agenda commands. It now provides a mode-line indicator showing your inbox count (e.g., @samp{GTD[5]}), giving you at-a-glance visibility into how many items need processing.
 @end itemize
 
 @node What you need to do
@@ -655,22 +657,27 @@ Better performance: Faster queries using org-ql
 @end itemize
 
 @item
-@anchor{org-gtd-mode is obsolete}org-gtd-mode is obsolete
+@anchor{org-gtd-mode has a new purpose}org-gtd-mode has a new purpose
 
 
-The @code{org-gtd-mode} minor mode is obsolete in version 4.0. It previously wrapped all org-agenda commands with org-gtd context, but this is no longer necessary because:
+The @code{org-gtd-mode} minor mode has been redesigned in version 4.0. It no longer wraps org-agenda commands—instead, it provides useful mode-line feedback.
 
-@enumerate
+@strong{What it does now:}
+@itemize
 @item
-All org-gtd commands (like @code{org-gtd-engage}) already have the right context
+Displays inbox count in your mode-line (e.g., @samp{GTD[5]})
 @item
-Users should configure @code{org-agenda-files} directly
+Includes items from both main inbox and additional inbox files
 @item
-Users should configure org-edna directly (the old mode had it configured incorrectly)
-@end enumerate
+Refreshes periodically to catch external file changes
+@end itemize
 
-If you were using @code{org-gtd-mode}, simply remove it and add these lines to your config:
+@strong{To enable:}
+@lisp
+(org-gtd-mode 1)
+@end lisp
 
+@strong{Note}: You still need to configure @code{org-agenda-files} and @code{org-edna} separately:
 @lisp
 (setq org-agenda-files (list org-gtd-directory))
 (org-edna-mode 1)
@@ -737,7 +744,7 @@ You need to configure three things for org-gtd to work:
 
 See the configuration sections below for details.
 
-Note: @code{org-gtd-mode} is obsolete as of version 4.0. Just configure org-agenda-files and org-edna directly.
+@strong{Optional}: Enable @code{org-gtd-mode} if you want to see your inbox count in the mode-line (e.g., @samp{GTD[5]}).
 
 @node Complete Configuration Examples
 @subsection Complete Configuration Examples
@@ -4991,6 +4998,7 @@ These variables control how org-gtd behaves. All can be customized via @code{M-x
 * Directory and File Configuration::
 * Capture Configuration::
 * Organize and Process Configuration::
+* Mode-Line Configuration::
 * Clarification Configuration::
 * Areas of Focus Configuration::
 * Engage View Configuration::
@@ -5283,6 +5291,41 @@ When @code{nil}: org-gtd will ask for confirmation regardless of number of optio
 @strong{Example}: Require manual refile target selection:
 @lisp
 (setq org-gtd-refile-to-any-target nil)
+@end lisp
+@end itemize
+
+@node Mode-Line Configuration
+@subsection Mode-Line Configuration
+
+@itemize
+@item
+@anchor{@code{org-gtd-mode-update-interval}}@code{org-gtd-mode-update-interval}
+
+
+@strong{Type}: Integer (seconds) or nil
+
+@strong{Default}: @code{60}
+
+@strong{Description}: Seconds between automatic inbox count refreshes when @code{org-gtd-mode} is enabled.
+
+The mode-line lighter (e.g., @samp{GTD[5]}) updates automatically when Emacs redraws the mode-line. This setting controls an additional periodic refresh to catch external file changes (like mobile app syncs).
+
+Values:
+@table @asis
+@item Integer
+Refresh every N seconds
+@item @code{nil}
+Disable periodic refresh (count still updates on mode-line redraw)
+@end table
+
+@strong{Example}: Refresh every 30 seconds:
+@lisp
+(setq org-gtd-mode-update-interval 30)
+@end lisp
+
+@strong{Example}: Disable periodic refresh:
+@lisp
+(setq org-gtd-mode-update-interval nil)
 @end lisp
 @end itemize
 
@@ -5722,6 +5765,7 @@ This section lists all interactive commands available in org-gtd, organized by w
 * Utility Commands::
 * ID Overlay Commands::
 * Migration and Upgrade Commands::
+* Mode-Line Integration::
 * Obsolete Commands::
 @end menu
 
@@ -7650,22 +7694,52 @@ See @ref{Upgrading, , Upgrading section} for complete details
 @end itemize
 @end itemize
 
+@node Mode-Line Integration
+@subsection Mode-Line Integration
+
+@itemize
+@item
+@anchor{@code{org-gtd-mode}}@code{org-gtd-mode}
+
+
+@strong{Type}: Global minor mode
+
+@strong{What it does}:
+@itemize
+@item
+Displays inbox count in mode-line (e.g., @samp{GTD[5]})
+@item
+Counts items across main inbox and additional inbox files
+@item
+Refreshes periodically to catch external file changes
+@item
+Enables org-edna for task dependencies
+@end itemize
+
+@strong{How to enable}:
+@lisp
+(org-gtd-mode 1)
+@end lisp
+
+@strong{Related}: @code{org-gtd-mode-update-interval} to control refresh frequency
+
+@item
+@anchor{@code{org-gtd-inbox-count}}@code{org-gtd-inbox-count}
+
+
+@strong{Returns}: Integer count of items across all inbox files
+
+@strong{Use case}: Programmatic access to inbox count for custom displays or automation.
+
+@lisp
+(message "You have %d items to process" (org-gtd-inbox-count))
+@end lisp
+@end itemize
+
 @node Obsolete Commands
 @subsection Obsolete Commands
 
 @itemize
-@item
-@anchor{@code{org-gtd-mode} (obsolete since 40)}@code{org-gtd-mode} (obsolete since 4.0)
-
-
-@strong{Use instead}:
-@lisp
-(setq org-agenda-files (list org-gtd-directory))
-(org-edna-mode 1)
-@end lisp
-
-This minor mode is no longer needed and will be removed in a future version.
-
 @item
 @anchor{@code{org-gtd-delegate-item-at-point} (removed in 40)}@code{org-gtd-delegate-item-at-point} (removed in 4.0)
 
