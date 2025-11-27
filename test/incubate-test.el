@@ -34,21 +34,7 @@
      (org-gtd-incubate-create "Dentist appointment"
                               (format-time-string "%Y-%m-%d"))
      (org-gtd-engage)
-     (expect (agenda-contains? "Dentist appointment") :to-be-truthy))
-
-
- (describe
-  "compatibility with orgzly"
-
-  (it "has a copy of the active timestamp in the body"
-      (let* ((date (calendar-current-date))
-             (year (nth 2 date))
-             (month (nth 0 date))
-             (day (nth 1 date)))
-        (create-deferred-item "Yowza" date)
-        (expect (file-contains? (org-gtd--default-file)
-                               (format "<%s-%#02d-%#02d>" year month day))
-                :to-be-truthy))))
+     (expect (agenda-contains? "Dentist appointment") :to-be-truthy)))
 
 (describe "Smart incubation dispatcher"
   (before-each (setq inhibit-message t)
@@ -107,4 +93,3 @@
         ;; Verify it's reactivated
         (expect (org-entry-get (point) "ORG_GTD") :to-equal "Projects")
         (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-be nil))))
-)

@@ -154,15 +154,6 @@ CONFIG-OVERRIDE can provide input configuration to override default
 prompting behavior."
   (org-gtd-configure-item (point) :incubate nil config-override))
 
-(defun org-gtd-incubate--insert-timestamp ()
-  "Insert timestamp from ORG_GTD_TIMESTAMP property into item content."
-  (let ((timestamp (org-entry-get (point) org-gtd-timestamp)))
-    (when timestamp
-      (save-excursion
-        (org-end-of-meta-data t)
-        (open-line 1)
-        (insert timestamp)))))
-
 (defun org-gtd-incubate--finalize ()
   "Finalize incubated item organization and refile."
   (setq-local org-gtd--organize-type 'incubated)
@@ -174,13 +165,11 @@ prompting behavior."
 
 Orchestrates the incubate organization workflow:
 1. Configure with incubate settings
-2. Insert timestamp in content
-3. Finalize and refile to incubate file
+2. Finalize and refile to incubate file
 
 CONFIG-OVERRIDE can provide input configuration to override default
 prompting behavior."
   (org-gtd-incubate--configure config-override)
-  (org-gtd-incubate--insert-timestamp)
   (org-gtd-incubate--finalize))
 
 ;;;; Footer

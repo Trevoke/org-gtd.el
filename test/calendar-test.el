@@ -62,16 +62,4 @@
          ;; Verify that a properly created calendar item appears in agenda
          (org-gtd-engage)
          ;; The calendar creation should have worked despite conflicting source state
-         (expect (agenda-contains? topic) :to-be-truthy))))
-
- (describe
-  "compatibility with orgzly"
-  (it "has a copy of the active timestamp in the body"
-      (let* ((date (calendar-current-date))
-             (year (nth 2 date))
-             (month (nth 0 date))
-             (day (nth 1 date)))
-        (create-calendar-item "Yowza" date)
-        (expect (file-contains? (org-gtd--default-file)
-                               (format "<%s-%#02d-%#02d>" year month day))
-                :to-be-truthy)))))
+         (expect (agenda-contains? topic) :to-be-truthy)))))

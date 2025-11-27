@@ -85,15 +85,6 @@ CONFIG-OVERRIDE can provide input configuration to override default
 prompting behavior."
   (org-gtd-configure-item (point) :calendar nil config-override))
 
-(defun org-gtd-calendar--insert-timestamp ()
-  "Insert timestamp from ORG_GTD_TIMESTAMP property into item content."
-  (let ((timestamp (org-entry-get (point) org-gtd-timestamp)))
-    (when timestamp
-      (save-excursion
-        (org-end-of-meta-data t)
-        (open-line 1)
-        (insert timestamp)))))
-
 (defun org-gtd-calendar--finalize ()
   "Finalize calendar item organization and refile."
   (setq-local org-gtd--organize-type 'calendar)
@@ -105,13 +96,11 @@ prompting behavior."
 
 Orchestrates the calendar item organization workflow:
 1. Configure with calendar settings
-2. Insert timestamp in content
-3. Finalize and refile to calendar file
+2. Finalize and refile to calendar file
 
 CONFIG-OVERRIDE can provide input configuration to override default
 prompting behavior."
   (org-gtd-calendar--configure config-override)
-  (org-gtd-calendar--insert-timestamp)
   (org-gtd-calendar--finalize))
 
 ;;;; Footer

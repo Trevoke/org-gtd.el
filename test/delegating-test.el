@@ -55,19 +55,7 @@
          (goto-char (point-min))
          (search-forward "TASK DESC")
          (let ((timestamp (task-timestamp (current-task))))
-           (expect timestamp :to-match (format "%s-%#02d-%#02d" year month day))))))
-
- (describe
-  "compatibility with orgzly"
-  (it "has a copy of the active timestamp in the body"
-      (let* ((date (calendar-current-date))
-             (year (nth 2 date))
-             (month (nth 0 date))
-             (day (nth 1 date)))
-        (create-delegated-item "TASK DESC" "Someone" date)
-        (expect (file-contains? (org-gtd--default-file)
-                               (format "<%s-%#02d-%#02d>" year month day))
-                :to-be-truthy)))))
+           (expect timestamp :to-match (format "%s-%#02d-%#02d" year month day)))))))
 
 (describe
  "Customizing delegation input"
