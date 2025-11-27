@@ -125,14 +125,18 @@ organizing them."
 ;;;; Commands
 
 (defun org-gtd-clarify-agenda-item ()
-  "Process item at point on agenda view."
-  (interactive nil)
+  "Process item at point on agenda view.
+With prefix argument (C-u), mark item for in-place update instead of refile."
+  (interactive)
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)
   (let ((heading-marker (or (org-get-at-bol 'org-marker)
-                            (org-agenda-error))))
-    (org-gtd-clarify-item heading-marker
-                          (current-window-configuration))))
+                            (org-agenda-error)))
+        (prefix-arg current-prefix-arg))
+    ;; Rebind current-prefix-arg so org-gtd-clarify-item sees it
+    (let ((current-prefix-arg prefix-arg))
+      (org-gtd-clarify-item heading-marker
+                            (current-window-configuration)))))
 
 ;;;###autoload
 (defun org-gtd-clarify-item (&optional marker window-config)

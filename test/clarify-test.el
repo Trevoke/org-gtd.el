@@ -77,4 +77,21 @@
         (expect (current-buffer-raw-text)
                 :to-match
                 "projectify")
-        (widen)))))
+        (widen)))
+
+  (it "sets skip-refile flag when called with prefix arg"
+      (create-single-action "Agenda test item")
+      (ogt--save-all-buffers)
+      (org-gtd-engage)
+      (with-current-buffer org-agenda-buffer
+        (goto-char (point-min))
+        (search-forward "Agenda test item")
+        ;; Simulate interactive call: in real usage, current-prefix-arg
+        ;; is set by the command loop before the function is called
+        (let ((current-prefix-arg '(4)))
+          (org-gtd-clarify-agenda-item))
+        ;; Find the WIP buffer and check the flag
+        (let ((wip-buffers (org-gtd-wip--get-buffers)))
+          (expect wip-buffers :not :to-be nil)
+          (with-current-buffer (car wip-buffers)
+            (expect org-gtd-clarify--skip-refile :to-be t)))))))
