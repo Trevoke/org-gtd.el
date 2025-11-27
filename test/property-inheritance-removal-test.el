@@ -130,7 +130,7 @@
           ;; Verify the task has project IDs
           (expect project-ids :not :to-be nil)
           ;; Look up project's CATEGORY via the new helper function
-          (let ((category (org-gtd-agenda--get-category-for-task)))
+          (let ((category (org-gtd-agenda-get-category-for-task)))
             (expect category :to-equal "Work")))))))
 
 ;;; property-inheritance-removal-test.el ends here

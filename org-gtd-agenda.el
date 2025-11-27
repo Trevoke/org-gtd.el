@@ -1,4 +1,4 @@
-;;; org-gtd-agenda.el --- Manage the agenda view -*- lexical-binding: t; coding: utf-8 -*-
+;;; org-gtd-agenda.el --- Agenda utilities for org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
@@ -20,7 +20,8 @@
 
 ;;; Commentary:
 ;;
-;; Agenda management for org-gtd.
+;; Shared agenda utilities for org-gtd.
+;; For the engage views, see org-gtd-engage.el.
 ;;
 ;;; Code:
 
@@ -30,87 +31,16 @@
 (require 'org-agenda)
 
 (require 'org-gtd-core)
-(require 'org-gtd-backward-compatibility)
-(require 'org-gtd-view-language)
-
-(defgroup org-gtd-engage nil
-  "Customize the engage views in the org-gtd package."
-  :group 'org-gtd
-  :package-version '(org-gtd . "3.1"))
-
-(defcustom org-gtd-engage-prefix-width 12
-  "How many characters to dedicate to the agenda prefix in the engage view.
-
-This is where the project name is displayed, on the left side."
-  :group 'org-gtd-engage
-  :package-version '(org-gtd . "3.1")
-  :type 'integer)
-
-;;;; GTD View Specifications
-
-(defun org-gtd-engage-view-spec ()
-  "Return GTD view specification for the engage view."
-  (let ((project-format-prefix
-         (format " %%i %%-%d:(org-gtd-agenda--prefix-format) "
-                 org-gtd-engage-prefix-width)))
-    `((name . "GTD Engage View")
-      (view-type . agenda)
-      (agenda-span . 1)
-      (additional-blocks . ((todo . ,(org-gtd-keywords--next))))
-      (prefix-format . ,project-format-prefix))))
-
-(defun org-gtd-engage-grouped-by-context-view-spec ()
-  "Return GTD view specification for the grouped by context engage view."
-  `((name . "Actions by Context")
-    (view-type . tags-grouped)
-    (group-by . context)
-    (filters . ((tags-match . "{^@}")
-                (todo . (,(org-gtd-keywords--next)))))))
-
-(defun org-gtd-show-all-next-view-spec ()
-  "Return GTD view specification for showing all next actions."
-  `((name . "All Next Actions")
-    (filters . ((todo . (,(org-gtd-keywords--next)))))))
-
-;;;; Commands
-
-;;;###autoload
-(defun org-gtd-engage ()
-  "Display `org-agenda' customized by org-gtd."
-  (interactive)
-  (org-gtd-view-show (org-gtd-engage-view-spec)))
-
-;;;###autoload
-(defun org-gtd-engage-grouped-by-context ()
-  "Show all `org-gtd-next' actions grouped by context (tag prefixed with @)."
-  (interactive)
-  (org-gtd-view-show (org-gtd-engage-grouped-by-context-view-spec)))
-
-;;;###autoload
-(defun org-gtd-show-all-next ()
-  "Show all next actions from all agenda files in a single list.
-This assumes all GTD files are also agenda files."
-  (interactive)
-  (org-gtd-view-show (org-gtd-show-all-next-view-spec)))
 
 ;;;; Functions
 
-;;;;; Private
+;;;;; Public
 
-(defun org-gtd--replace-link-with-description (text)
-  "Replace all org-mode links in the given text with their descriptions."
-    (replace-regexp-in-string org-link-bracket-re "\\2" text))
+(defun org-gtd-agenda-replace-link-with-description (text)
+  "Replace all org-mode links in TEXT with their descriptions."
+  (replace-regexp-in-string org-link-bracket-re "\\2" text))
 
-  ;; (while (string-match org-link-bracket-re text)
-  ;;   (let ((description (match-string 3 text)))
-  ;;     (setq text (replace-match description nil t text))))
-  ;; text)
-
-(defun org-gtd--truncate-project-to-width (st)
-  "Truncates the string to the width indicated by org-gtd-engage-prefix-width."
-  (truncate-string-to-width (string-trim st) org-gtd-engage-prefix-width nil ?\s  "…"))
-
-(defun org-gtd-agenda--get-category-for-task ()
+(defun org-gtd-agenda-get-category-for-task ()
   "Get CATEGORY for task at point, looking up project if needed.
 In v4, project tasks may not have a direct CATEGORY property.
 This function looks up the project heading's CATEGORY via ORG_GTD_PROJECT_IDS."
@@ -121,21 +51,20 @@ This function looks up the project heading's CATEGORY via ORG_GTD_PROJECT_IDS."
         (org-with-point-at project-marker
           (org-entry-get (point) "CATEGORY")))))
 
-(defun org-gtd-agenda--prefix-format ()
-  "Format prefix for items in agenda buffer."
-  ;; v4: Use explicit CATEGORY lookup instead of inheritance
+(defun org-gtd-agenda--prefix-format (width)
+  "Format prefix for items in agenda buffer, truncated to WIDTH.
+Uses project name if available, otherwise CATEGORY, otherwise \"no project\"."
   (let* ((project-name (org-entry-get (point) org-gtd-prop-project))
-         (category (org-gtd-agenda--get-category-for-task))
+         (category (org-gtd-agenda-get-category-for-task))
          (tally-cookie-regexp "\[[[:digit:]]+/[[:digit:]]+\][[:space:]]*"))
-    (org-gtd--truncate-project-to-width
-     ;; if has ORG_GTD_PROJECT, use it
-     ;; otherwise if it has category, use category
-     ;; else "no project" so we avoid failing
-     (org-gtd--replace-link-with-description
-      (cond
-       (project-name (replace-regexp-in-string tally-cookie-regexp "" project-name))
-       (category     category)
-       (t  "no project"))))))
+    (truncate-string-to-width
+     (string-trim
+      (org-gtd-agenda-replace-link-with-description
+       (cond
+        (project-name (replace-regexp-in-string tally-cookie-regexp "" project-name))
+        (category     category)
+        (t  "no project"))))
+     width nil ?\s "…")))
 
 ;;;; Footer
 

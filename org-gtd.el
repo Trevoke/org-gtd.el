@@ -69,6 +69,7 @@
 (require 'org-gtd-graph-mode)
 (require 'org-gtd-dag-draw)
 (require 'org-gtd-agenda)
+(require 'org-gtd-engage)
 (require 'org-gtd-agenda-property)
 (require 'org-gtd-organize)
 (require 'org-gtd-process)
