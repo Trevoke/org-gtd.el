@@ -49,84 +49,85 @@ setting as part of following the instructions to add your own refile targets."
   :package-version '(org-gtd . "2.0.0")
   :type 'boolean)
 
-(defcustom org-gtd-use-refile-system t
-  "Whether to use org-gtd's refile system or standard org-refile.
-
-When t (default), org-gtd uses ORG_GTD_REFILE properties to find refile
-targets. This provides GTD-specific organization.
-
-When nil, org-gtd respects your existing org-refile-targets configuration.
-Items can be refiled anywhere you've configured org-mode refile targets.
-
-In V4, items can exist anywhere in org-agenda-files regardless of refile
-organization. This setting only affects the refile operation after clarifying."
-  :group 'org-gtd-organize
-  :package-version '(org-gtd . "4.0.0")
-  :type 'boolean)
-
-;;;; Macros
-
-(defmacro with-org-gtd-refile (type &rest body)
-  "Macro to refile specifically within org-gtd context.
-
-TYPE is the org-gtd action type. BODY... is the rest of the code.
-
-If org-gtd-use-refile-system is t (default), searches for headings with
-ORG_GTD_REFILE property matching TYPE at any level in org-agenda-files.
-
-If org-gtd-use-refile-system is nil, uses standard org-refile configuration
-from org-refile-targets."
-  (declare (debug t) (indent 1))
-  ;; v4: Users configure org-agenda-files directly, no need for with-org-gtd-context
-  `(if org-gtd-use-refile-system
-       ;; Use org-gtd's ORG_GTD_REFILE property-based refile system
-       (let ((org-refile-target-verify-function
-              (lambda () (org-gtd-refile--group-p ,type)))
-             (org-refile-targets '((org-agenda-files :maxlevel . 9)))
-             (org-refile-use-outline-path t)
-             (org-outline-path-complete-in-steps nil))
-         (progn ,@body))
-     ;; Use standard org-refile configuration
-     (progn ,@body)))
-
-(defmacro with-org-gtd-refile-project-task (&rest body)
-  "Refile specifically into an existing project.
-
-BODY... is the rest of the code."
-  (declare (debug t) (indent 1))
-  ;; v4: Users configure org-agenda-files directly, no need for with-org-gtd-context
-  `(let ((org-gtd-refile-to-any-target nil)
-        (org-refile-use-outline-path t)
-        (org-outline-path-complete-in-steps nil)
-        (org-refile-allow-creating-parent-nodes nil)
-        (org-refile-targets '((org-agenda-files :level . 2)))
-        ;; v4: Project headings have direct ORG_GTD property, no inheritance needed
-        (org-refile-target-verify-function
-         (lambda () (string-equal org-gtd-projects
-                                  (org-entry-get nil "ORG_GTD")))))
-    (progn ,@body)))
 
 ;;;; Functions
 
 ;;;;; Private
 
 (defun org-gtd-refile--do (type refile-target-element)
-  "Refile an item to the single action file.
+  "Refile an item to an appropriate GTD location.
 
-TYPE is one of the org-gtd action types.
-REFILE-TARGET-ELEMENT is a string version of a valid org-heading target."
+TYPE is one of the org-gtd action types (e.g., `org-gtd-projects').
+REFILE-TARGET-ELEMENT is a string template for creating a new target if needed.
 
-  (with-org-gtd-refile type
-    (unless (org-refile-get-targets)
-      (org-gtd-refile--add-target refile-target-element))
-
+Merges user's `org-refile-targets' with org-gtd's ORG_GTD_REFILE targets.
+User's targets appear first, then org-gtd's property-based targets.
+Files in `org-gtd-directory' are filtered by ORG_GTD_REFILE property;
+files outside are accepted without filtering."
+  (unless (org-gtd-refile--get-targets type)
+    (org-gtd-refile--add-target refile-target-element))
+  (let ((org-refile-target-verify-function
+         (lambda ()
+           (let* ((file (buffer-file-name))
+                  (gtd-dir (expand-file-name org-gtd-directory))
+                  (in-gtd-dir (and file (string-prefix-p gtd-dir (expand-file-name file))))
+                  (refile-prop (org-element-property :ORG_GTD_REFILE (org-element-at-point))))
+             (if in-gtd-dir
+                 (string-equal type refile-prop)
+               t))))
+        (org-refile-targets (append org-refile-targets
+                                    '((org-agenda-files :maxlevel . 9))))
+        (org-refile-use-outline-path t)
+        (org-outline-path-complete-in-steps nil))
     (if org-gtd-refile-to-any-target
         (org-refile nil nil (car (org-refile-get-targets)))
       (org-refile nil nil nil "Finish organizing task under: "))))
 
 (defun org-gtd-refile--do-project-task ()
-  (with-org-gtd-refile-project-task
-      (org-refile 3 nil nil "Which project should this task go to? ")))
+  "Refile a task into an existing project.
+
+Merges user's `org-refile-targets' with org-gtd's project targets.
+User's targets appear first, then level-2 headings with ORG_GTD=Projects.
+Files in `org-gtd-directory' are filtered for project headings;
+files outside are accepted without filtering."
+  (let ((org-gtd-refile-to-any-target nil)
+        (org-refile-use-outline-path t)
+        (org-outline-path-complete-in-steps nil)
+        (org-refile-allow-creating-parent-nodes nil)
+        ;; MERGE: user's targets first, then org-gtd's project targets
+        (org-refile-targets (append org-refile-targets
+                                    '((org-agenda-files :level . 2))))
+        (org-refile-target-verify-function
+         (lambda ()
+           (let* ((file (buffer-file-name))
+                  (gtd-dir (expand-file-name org-gtd-directory))
+                  (in-gtd-dir (and file (string-prefix-p gtd-dir (expand-file-name file)))))
+             (if in-gtd-dir
+                 ;; GTD files: require ORG_GTD=Projects
+                 (string-equal org-gtd-projects (org-entry-get nil "ORG_GTD"))
+               ;; Non-GTD files: allow all (user's targets)
+               t)))))
+    (org-refile 3 nil nil "Which project should this task go to? ")))
+
+(defun org-gtd-refile--get-targets (type)
+  "Get refile targets for TYPE, merging user's targets with org-gtd's.
+
+Returns the list of refile targets that would be available when refiling
+an item of TYPE (e.g., `org-gtd-projects', `org-gtd-incubate')."
+  (let ((org-refile-target-verify-function
+         (lambda ()
+           (let* ((file (buffer-file-name))
+                  (gtd-dir (expand-file-name org-gtd-directory))
+                  (in-gtd-dir (and file (string-prefix-p gtd-dir (expand-file-name file))))
+                  (refile-prop (org-element-property :ORG_GTD_REFILE (org-element-at-point))))
+             (if in-gtd-dir
+                 (string-equal type refile-prop)
+               t))))
+        (org-refile-targets (append org-refile-targets
+                                    '((org-agenda-files :maxlevel . 9))))
+        (org-refile-use-outline-path t)
+        (org-outline-path-complete-in-steps nil))
+    (org-refile-get-targets)))
 
 (defun org-gtd-refile--add-target (refile-target-element)
   "Create a missing org-gtd refile target in the default GTD file.

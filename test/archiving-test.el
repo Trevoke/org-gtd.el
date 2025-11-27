@@ -179,4 +179,54 @@
        ;; Verify nothing was archived for this project
        (with-current-buffer (find-file-noselect archive-file-path)
          (let ((content (current-buffer-raw-text)))
-           (expect content :not :to-match "Partial Project"))))))
+           (expect content :not :to-match "Partial Project")))))
+
+ (describe
+  "org-gtd-archive-location nil behavior"
+
+  (it "uses org-archive-location when org-gtd-archive-location is nil"
+      ;; Setup: nil org-gtd-archive-location should use org-archive-location
+      (let* ((custom-archive-file (f-join org-gtd-directory "custom-archive.org"))
+             (org-gtd-archive-location nil)
+             (org-archive-location (concat custom-archive-file "::")))
+
+        ;; Create a completed single action
+        (create-single-action "archive-me")
+        (ogt--save-all-buffers)
+        (with-current-buffer (org-gtd--default-file)
+          (goto-char (point-min))
+          (search-forward "NEXT archive-me")
+          (org-todo "DONE"))
+        (ogt--save-all-buffers)
+
+        ;; Archive completed items
+        (org-gtd-archive-completed-items)
+        (ogt--save-all-buffers)
+
+        ;; Verify item went to the custom archive location
+        (expect (file-exists-p custom-archive-file) :to-be-truthy)
+        (with-current-buffer (find-file-noselect custom-archive-file)
+          (expect (current-buffer-raw-text) :to-match "archive-me"))))
+
+  (it "uses org-gtd-archive-location when set to a function"
+      ;; This confirms existing behavior still works
+      (let ((org-gtd-archive-location #'org-gtd-archive-location-func))
+
+        ;; Create a completed single action
+        (create-single-action "gtd-archive-me")
+        (ogt--save-all-buffers)
+        (with-current-buffer (org-gtd--default-file)
+          (goto-char (point-min))
+          (search-forward "NEXT gtd-archive-me")
+          (org-todo "DONE"))
+        (ogt--save-all-buffers)
+
+        ;; Archive completed items
+        (org-gtd-archive-completed-items)
+        (ogt--save-all-buffers)
+
+        ;; Verify item went to org-gtd's datetree archive
+        (let ((archive-file-path (car (split-string (funcall org-gtd-archive-location) "::"))))
+          (expect (file-exists-p archive-file-path) :to-be-truthy)
+          (with-current-buffer (find-file-noselect archive-file-path)
+            (expect (current-buffer-raw-text) :to-match "gtd-archive-me")))))))

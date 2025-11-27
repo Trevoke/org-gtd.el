@@ -171,11 +171,11 @@ Your level 1 category headings now use ORG_GTD_REFILE property and can
 serve as refile targets. You can:
   - Move these headings anywhere in org-agenda-files (any level)
   - Create new refile targets by adding ORG_GTD_REFILE property
-  - Disable org-gtd refile: (setq org-gtd-use-refile-system nil)
-  - Use your own org-refile-targets configuration instead
+  - Configure org-refile-targets - org-gtd merges your targets with its own
 
 Items can now exist anywhere in org-agenda-files - ORG_GTD_REFILE markers
-are purely for organizational convenience with org-gtd's refile system.
+are purely for organizational convenience. Your org-refile-targets appear
+first in completion, followed by org-gtd's property-based targets.
 
 This is REQUIRED for org-gtd v4 to work correctly. The old TRIGGER-based
 project system no longer works - v4 uses dependency properties instead.

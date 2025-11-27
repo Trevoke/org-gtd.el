@@ -1276,9 +1276,16 @@ In org-gtd v4, refiling is *optional organizational preference*, not a structura
 
 By default, org-gtd uses ~ORG_GTD_REFILE~ properties to mark refile target headings. These can be at *any level* in *any file* in ~org-agenda-files~.
 
-***** Default Refile System
+***** Refile Target System
 
-When ~org-gtd-use-refile-system~ is t (default), org-gtd finds refile targets by searching for ~ORG_GTD_REFILE~ property:
+Org-gtd *merges* your ~org-refile-targets~ configuration with its own ~ORG_GTD_REFILE~ property-based targets:
+
+1. Your configured ~org-refile-targets~ appear first
+2. Org-gtd's ~ORG_GTD_REFILE~ targets appear after
+
+This means you can use both org-mode's standard refile configuration AND org-gtd's property-based system together.
+
+Org-gtd finds refile targets by searching for ~ORG_GTD_REFILE~ property:
 
 #+begin_example
 ,* Projects         <-- Can be anywhere, any level
@@ -1293,7 +1300,7 @@ When ~org-gtd-use-refile-system~ is t (default), org-gtd finds refile targets by
 :END:
 #+end_example
 
-When you organize an item as a Project, org-gtd finds *all* headings with ~ORG_GTD_REFILE: Projects~ and lets you choose where to refile.
+When you organize an item as a Project, org-gtd finds *all* headings with ~ORG_GTD_REFILE: Projects~ (plus any targets from your ~org-refile-targets~) and lets you choose where to refile.
 
 ***** Creating New Refile Targets
 
@@ -1316,15 +1323,17 @@ For other types, use the appropriate template constant value:
 
 If no refile target exists when organizing, org-gtd automatically creates one in your default GTD file.
 
-***** Using Your Own Refile Configuration
+***** Using Your Own Refile Targets
 
-If you prefer your own refile organization:
+If you have existing ~org-refile-targets~ configuration, org-gtd automatically merges your targets with its own:
 
 #+begin_src elisp
-(setq org-gtd-use-refile-system nil)
+;; Your refile configuration is respected and merged
+(setq org-refile-targets '(("~/org/notes.org" :maxlevel . 2)
+                           ("~/org/work.org" :maxlevel . 3)))
 #+end_src
 
-Now org-gtd respects your ~org-refile-targets~ configuration. You can refile anywhere you've configured.
+Your targets appear *first* in the refile completion list, followed by org-gtd's ~ORG_GTD_REFILE~ targets. Files inside ~org-gtd-directory~ are filtered by the ~ORG_GTD_REFILE~ property; files outside are available as-is.
 
 ***** Migration from V3
 
@@ -3287,30 +3296,6 @@ Useful if you want automatic saves during inbox processing.
 (setq org-gtd-refile-to-any-target nil)
 #+end_src
 
-**** ~org-gtd-use-refile-system~
-
-*Type*: Boolean
-
-*Default*: ~t~
-
-*Description*: Whether to use org-gtd's refile system or standard org-refile.
-
-- When ~t~ (default): org-gtd uses ~ORG_GTD_REFILE~ properties to find refile targets. This provides GTD-specific organization with flexible target placement.
-- When ~nil~: org-gtd respects your existing ~org-refile-targets~ configuration. Items can be refiled anywhere you've configured org-mode refile targets.
-
-*Important*: In V4, items can exist anywhere in ~org-agenda-files~ regardless of refile organization. This setting only affects the refile operation after clarifying items during inbox processing.
-
-*Example*: Use your own refile configuration:
-#+begin_src emacs-lisp
-;; Disable org-gtd's refile system
-(setq org-gtd-use-refile-system nil)
-
-;; Configure standard org-refile targets
-(setq org-refile-targets '((org-agenda-files :maxlevel . 3)))
-#+end_src
-
-*See also*: [[#refiling-after-organizing][Refiling section]] for complete documentation on creating refile targets and understanding the refile system.
-
 *** Clarification Configuration
 
 **** ~org-gtd-clarify-show-horizons~
@@ -3417,15 +3402,25 @@ The prefix shows the project name on the left side of each task.
 
 **** ~org-gtd-archive-location~
 
-*Type*: Function (zero arguments, returns string)
+*Type*: Function (zero arguments, returns string) or ~nil~
 
 *Default*: ~#'org-gtd-archive-location-func~
 
-*Description*: Function that generates the archive location string for completed items.
+*Description*: Archive location for org-gtd, or ~nil~ to use ~org-archive-location~.
 
-The returned string must match ~org-archive-location~ format.
+When ~nil~, org-gtd uses org-mode's standard ~org-archive-location~ variable. This allows you to use your existing org-mode archive configuration with org-gtd.
 
-Default function generates: =archive-YYYY.org::datetree/= (year-based archive files).
+When a function, calls it to get the archive location string. The returned string must match ~org-archive-location~ format.
+
+Default function generates: =gtd_archive_YYYY.org::datetree/= (year-based archive files in ~org-gtd-directory~).
+
+*Example*: Use org-mode's standard archive location:
+#+begin_src emacs-lisp
+;; Respect your org-archive-location setting
+(setq org-gtd-archive-location nil)
+;; Configure org-mode's archive as usual
+(setq org-archive-location "archive.org::* Archived")
+#+end_src
 
 *Example*: Archive to a single file:
 #+begin_src emacs-lisp
@@ -4891,10 +4886,10 @@ If you find yourself manually editing properties, that indicates a missing featu
 - Via ~org-entry-put~ in elisp: ~(org-entry-put nil "ORG_GTD_REFILE" "Projects")~
 
 *Important notes*:
-- This property is OPTIONAL - only used if ~org-gtd-use-refile-system~ is ~t~ (default)
+- Org-gtd merges these targets with your ~org-refile-targets~ configuration
 - Can exist at ANY level in ANY file in ~org-agenda-files~
 - You can have multiple refile targets for the same category type
-- Set ~org-gtd-use-refile-system~ to ~nil~ to use standard org-refile instead
+- Your ~org-refile-targets~ appear first, then ~ORG_GTD_REFILE~ targets
 
 *** Project Properties
 

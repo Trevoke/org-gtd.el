@@ -18,6 +18,50 @@
  (after-each (ogt--close-and-delete-files))
 
  (describe
+  "merging user's refile targets"
+
+  (it "includes user's org-refile-targets in the target list"
+      (create-project "project headline")
+      (with-current-buffer (org-gtd--default-file)
+        (basic-save-buffer))
+      ;; Create a user refile target file OUTSIDE the GTD directory
+      (let* ((user-file (make-temp-file "user-targets" nil ".org"))
+             (user-buffer (find-file-noselect user-file)))
+        (with-current-buffer user-buffer
+          (erase-buffer)
+          (insert "* User Custom Target\n")
+          (basic-save-buffer))
+        ;; Set user's org-refile-targets to include their file
+        (let* ((org-refile-targets `((,user-file :maxlevel . 1)))
+               (target-names (mapcar 'car (org-gtd-refile--get-targets org-gtd-projects))))
+          ;; Should include both user's targets and org-gtd's
+          (expect target-names :to-contain "User Custom Target")
+          (expect target-names :to-contain "Projects"))
+        (kill-buffer user-buffer)
+        (delete-file user-file)))
+
+  (it "places user's targets before org-gtd targets"
+      (create-project "project headline")
+      (with-current-buffer (org-gtd--default-file)
+        (basic-save-buffer))
+      ;; Create a user refile target file OUTSIDE the GTD directory
+      (let* ((user-file (make-temp-file "user-targets" nil ".org"))
+             (user-buffer (find-file-noselect user-file)))
+        (with-current-buffer user-buffer
+          (erase-buffer)
+          (insert "* User Target First\n")
+          (basic-save-buffer))
+        ;; Set user's org-refile-targets
+        (let* ((org-refile-targets `((,user-file :maxlevel . 1)))
+               (target-names (mapcar 'car (org-gtd-refile--get-targets org-gtd-projects))))
+          ;; User's target should appear before org-gtd's
+          (expect (seq-position target-names "User Target First")
+                  :to-be-less-than
+                  (seq-position target-names "Projects")))
+        (kill-buffer user-buffer)
+        (delete-file user-file))))
+
+ (describe
   "A project"
 
   (before-each
@@ -51,13 +95,11 @@
 :ORG_GTD_REFILE: Projects
 :END:")
          (save-buffer))
-       (let ((targets (mapcar 'car (with-org-gtd-refile org-gtd-projects
-                                     (org-refile-get-targets)))))
+       (let ((targets (mapcar 'car (org-gtd-refile--get-targets org-gtd-projects))))
          (expect targets :to-contain "Work Projects")))
 
    (it "finds the Project target"
-       (let ((targets (caar (with-org-gtd-refile org-gtd-projects
-                              (org-refile-get-targets)))))
+       (let ((targets (caar (org-gtd-refile--get-targets org-gtd-projects))))
          (expect targets :to-equal "Projects")))
 
    (it "finds the Incubate headings in the incubate file"
@@ -72,11 +114,10 @@
 :ORG_GTD_REFILE: Incubated
 :END:")
          (save-buffer))
-       (with-org-gtd-refile org-gtd-incubate
-         (let ((ogt-target-names (mapcar 'car (org-refile-get-targets))))
-           (expect ogt-target-names
-                   :to-have-same-items-as
-                   '("To Eat" "To Read"))))))
+       (let ((ogt-target-names (mapcar 'car (org-gtd-refile--get-targets org-gtd-incubate))))
+         (expect ogt-target-names
+                 :to-have-same-items-as
+                 '("To Eat" "To Read")))))
 
   (describe
    "And I have multiple files as possible targets"
