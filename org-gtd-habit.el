@@ -33,6 +33,7 @@
 
 (declare-function org-gtd-organize--call "org-gtd-organize")
 (declare-function org-gtd-organize-apply-hooks "org-gtd-organize")
+(declare-function org-gtd-organize--update-in-place "org-gtd-organize")
 
 ;;;; Constants
 
@@ -93,7 +94,9 @@ prompting behavior."
   "Finalize habit organization and refile."
   (setq-local org-gtd--organize-type 'habit)
   (org-gtd-organize-apply-hooks)
-  (org-gtd-refile--do org-gtd-habit org-gtd-habit-template))
+  (if org-gtd-clarify--skip-refile
+      (org-gtd-organize--update-in-place)
+    (org-gtd-refile--do org-gtd-habit org-gtd-habit-template)))
 
 (defun org-gtd-habit--apply (&optional config-override)
   "Process GTD inbox item by transforming it into a habit.

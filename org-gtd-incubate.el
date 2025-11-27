@@ -33,6 +33,7 @@
 
 (declare-function org-gtd-organize--call 'org-gtd-organize)
 (declare-function org-gtd-organize-apply-hooks 'org-gtd-organize)
+(declare-function org-gtd-organize--update-in-place 'org-gtd-organize)
 
 ;;;; Constants
 
@@ -158,7 +159,9 @@ prompting behavior."
   "Finalize incubated item organization and refile."
   (setq-local org-gtd--organize-type 'incubated)
   (org-gtd-organize-apply-hooks)
-  (org-gtd-refile--do org-gtd-incubate org-gtd-incubate-template))
+  (if org-gtd-clarify--skip-refile
+      (org-gtd-organize--update-in-place)
+    (org-gtd-refile--do org-gtd-incubate org-gtd-incubate-template)))
 
 (defun org-gtd-incubate--apply (&optional config-override)
   "Process GTD inbox item by transforming it into an incubated item.

@@ -33,6 +33,7 @@
 
 (declare-function org-gtd-organize--call "org-gtd-organize")
 (declare-function org-gtd-organize-apply-hooks "org-gtd-organize")
+(declare-function org-gtd-organize--update-in-place "org-gtd-organize")
 
 ;;;; Constants
 
@@ -80,7 +81,9 @@ TOPIC is what you want to see in the agenda view."
   "Finalize single action organization and refile."
   (setq-local org-gtd--organize-type 'single-action)
   (org-gtd-organize-apply-hooks)
-  (org-gtd-refile--do org-gtd-action org-gtd-action-template))
+  (if org-gtd-clarify--skip-refile
+      (org-gtd-organize--update-in-place)
+    (org-gtd-refile--do org-gtd-action org-gtd-action-template)))
 
 (defun org-gtd-single-action--apply ()
   "Process GTD inbox item by transforming it into a single action.

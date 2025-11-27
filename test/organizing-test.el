@@ -165,3 +165,39 @@
  (it "has skip-refile toggle infix command defined"
      ;; Simply verify the infix command is defined
      (expect (fboundp 'org-gtd-organize--skip-refile-infix) :to-be-truthy)))
+
+(describe
+ "skip-refile behavior"
+ (before-each
+   (setq inhibit-message t)
+   (ogt--configure-emacs))
+ (after-each (ogt--close-and-delete-files))
+
+ (it "updates single-action in place when skip-refile is set"
+     (create-single-action "Update me")
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Update me")
+       (org-back-to-heading t)
+       ;; Clarify with skip-refile (C-u prefix)
+       (let ((current-prefix-arg '(4)))
+         (org-gtd-clarify-item))
+       ;; Spy on org-refile to ensure it's NOT called when skip-refile is set
+       (spy-on 'org-refile)
+       ;; Modify in WIP buffer and re-organize
+       (with-current-buffer (car (org-gtd-wip--get-buffers))
+         (goto-char (point-min))
+         (search-forward "Update me")
+         (replace-match "Updated item")
+         ;; With skip-refile, this should call update-in-place, not refile
+         (org-gtd-single-action))
+       ;; Verify org-refile was NOT called (skip-refile should use update-in-place)
+       (expect 'org-refile :not :to-have-been-called)
+       ;; Verify item was updated in place in the default file
+       (with-current-buffer (org-gtd--default-file)
+         (goto-char (point-min))
+         ;; Should find "Updated item" exactly once (updated in place)
+         (expect (how-many "Updated item" (point-min) (point-max)) :to-equal 1)
+         ;; Original should be gone
+         (goto-char (point-min))
+         (expect (search-forward "Update me" nil t) :to-be nil)))))

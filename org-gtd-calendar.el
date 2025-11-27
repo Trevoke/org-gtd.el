@@ -33,6 +33,7 @@
 
 (declare-function org-gtd-organize-apply-hooks "org-gtd-organize")
 (declare-function org-gtd-organize--call "org-gtd-organize")
+(declare-function org-gtd-organize--update-in-place "org-gtd-organize")
 (declare-function org-gtd-clarify-item "org-gtd-clarify")
 
 ;;;; Constants
@@ -89,7 +90,9 @@ prompting behavior."
   "Finalize calendar item organization and refile."
   (setq-local org-gtd--organize-type 'calendar)
   (org-gtd-organize-apply-hooks)
-  (org-gtd-refile--do org-gtd-calendar org-gtd-calendar-template))
+  (if org-gtd-clarify--skip-refile
+      (org-gtd-organize--update-in-place)
+    (org-gtd-refile--do org-gtd-calendar org-gtd-calendar-template)))
 
 (defun org-gtd-calendar--apply (&optional config-override)
   "Process GTD inbox item by transforming it into a calendar item.

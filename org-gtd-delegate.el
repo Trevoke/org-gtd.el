@@ -36,6 +36,7 @@
 
 (declare-function org-gtd-organize--call "org-gtd-organize")
 (declare-function org-gtd-organize-apply-hooks "org-gtd-organize")
+(declare-function org-gtd-organize--update-in-place "org-gtd-organize")
 
 ;;;; Customization
 
@@ -134,7 +135,9 @@ prompting behavior."
   "Finalize delegated item organization and refile."
   (setq-local org-gtd--organize-type 'delegated)
   (org-gtd-organize-apply-hooks)
-  (org-gtd-refile--do org-gtd-action org-gtd-action-template))
+  (if org-gtd-clarify--skip-refile
+      (org-gtd-organize--update-in-place)
+    (org-gtd-refile--do org-gtd-action org-gtd-action-template)))
 
 (defun org-gtd-delegate--apply (&optional config-override)
   "Process GTD inbox item by transforming it into a delegated item.
