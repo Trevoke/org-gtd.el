@@ -41,6 +41,7 @@
 
 (declare-function org-gtd-organize--call 'org-gtd-organize)
 (declare-function org-gtd-organize-apply-hooks 'org-gtd-organize)
+(declare-function org-gtd-organize--update-in-place 'org-gtd-organize)
 
 ;;;; Constants
 
@@ -387,7 +388,9 @@ Refile to `org-gtd-actionable-file-basename'."
     (org-gtd-project--calculate-task-states project-marker)
     (org-gtd-project--decorate project-marker)
 
-    (org-gtd-refile--do org-gtd-projects org-gtd-projects-template)))
+    (if org-gtd-clarify--skip-refile
+        (org-gtd-organize--update-in-place)
+      (org-gtd-refile--do org-gtd-projects org-gtd-projects-template))))
 
 (defun org-gtd-projects--set-project-name-on-task ()
   "Set ORG_GTD_PROJECT property on current task to its project heading name.
@@ -977,20 +980,24 @@ Orchestrates adding a new task to an existing project:
 3. Update project metadata
 4. Recalculate task states"
   (org-gtd-project--configure-single-task)
-  (org-gtd-refile--do-project-task)
 
-  ;; Find the project marker using ORG_GTD_PROJECT_IDS if available (multi-file DAG)
-  ;; otherwise use outline hierarchy (same-file refile)
-  (let ((project-marker (save-excursion
-                          (org-refile-goto-last-stored)
-                          (let ((project-ids (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids)))
-                            (if project-ids
-                                ;; Use first project ID to find project (multi-file DAG)
-                                (org-id-find (car project-ids) t)
-                              ;; Fallback: task is outline child of project (standard refile)
-                              (org-up-heading-safe)
-                              (point-marker))))))
-    (org-gtd-project--update-after-task-addition project-marker)))
+  (if org-gtd-clarify--skip-refile
+      (org-gtd-organize--update-in-place)
+    (progn
+      (org-gtd-refile--do-project-task)
+
+      ;; Find the project marker using ORG_GTD_PROJECT_IDS if available (multi-file DAG)
+      ;; otherwise use outline hierarchy (same-file refile)
+      (let ((project-marker (save-excursion
+                              (org-refile-goto-last-stored)
+                              (let ((project-ids (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids)))
+                                (if project-ids
+                                    ;; Use first project ID to find project (multi-file DAG)
+                                    (org-id-find (car project-ids) t)
+                                  ;; Fallback: task is outline child of project (standard refile)
+                                  (org-up-heading-safe)
+                                  (point-marker))))))
+        (org-gtd-project--update-after-task-addition project-marker)))))
 
 (defun org-gtd-projects--apply-organize-hooks-to-tasks ()
   "Decorate tasks for project at point."
