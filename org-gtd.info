@@ -5771,6 +5771,128 @@ File: org-gtd.info,  Node: Clarification Commands,  Next: Archive Commands,  Pre
         • Prompts for template from ‘org-gtd-clarify-project-templates’
         • Inserts template tasks into current project
 
+   • Updating Items Without Refiling
+
+     **What this is:** A way to reconfigure existing GTD items (change
+     their category, properties, or details) without moving them to a
+     different location in your files.
+
+     **Who needs it:** Anyone who wants to change how an item is
+     organized while keeping it where it is - perfect for items already
+     in projects, or when you like your current file organization.
+
+     **Your first use (30 seconds):**
+
+     You're looking at your agenda and see a single action that should
+     actually be delegated.  But it's already in a specific project file
+     and you want it to stay there:
+
+       1. In agenda view, put point on the item
+       2. Type: ‘C-u M-x org-gtd-clarify-agenda-item’
+       3. Make your changes in the clarify buffer
+       4. Type: ‘M-x org-gtd-organize’
+       5. Type: ‘-n’ to toggle "Update in place (no refile)"
+       6. Choose: ‘d’ for Delegate
+       7. Fill in delegation details
+       8. Done - item is updated but stays in its current location
+
+     **How it works:**
+
+     Normally when you organize an item, org-gtd moves (refiles) it to
+     the appropriate GTD category location.  But sometimes you want to
+     change the configuration without moving the item.
+
+     There are two ways to trigger this:
+
+     *Via prefix argument:*
+        • ‘C-u M-x org-gtd-clarify-item’ - Clarify item at point without
+          refiling
+        • ‘C-u M-x org-gtd-clarify-agenda-item’ - Clarify agenda item
+          without refiling
+
+     *Via transient toggle:*
+        • During organization, press ‘-n’ in the ‘org-gtd-organize’ menu
+          to toggle "Update in place (no refile)"
+        • The toggle is only available when NOT processing the inbox
+          (inbox items must be refiled)
+
+     When the skip-refile flag is set, organizing the item will:
+        • Apply all the same configuration (properties, tags, hooks)
+        • Update the item in its current location
+        • NOT move it to a different file or heading
+
+     **Common scenarios:**
+
+     *Reconfiguring project tasks:*
+        • Task is already in the right project file
+        • You want to change it from single action to delegated
+        • Use skip-refile to update without moving
+
+     *Adjusting agenda items:*
+        • Item appears in your daily agenda
+        • You realize it needs different properties (change deadline,
+          add delegation, etc.)
+        • Use skip-refile to update configuration in place
+
+     *Organizing items in custom locations:*
+        • You've organized items in a specific way outside
+          ‘org-gtd-directory’
+        • You want to apply GTD categories but preserve your file
+          structure
+        • Use skip-refile to maintain your organization
+
+     **What stays the same vs what changes:**
+
+     *Changes applied:*
+        • GTD category (ORG_GTD property)
+        • TODO keyword state
+        • Properties (delegation info, dates, etc.)
+        • Tags
+        • All organize hooks
+
+     *Preserved:*
+        • File location
+        • Position within file
+        • Parent heading (for tasks in projects)
+        • Sibling relationships
+
+     **Technical details:**
+
+     When you set the skip-refile flag (via ‘C-u’ prefix or ‘-n’
+     toggle):
+        • The flag is stored in the clarify buffer as
+          ‘org-gtd-clarify--skip-refile’
+        • Category finalize functions check this flag
+        • If set, they call ‘org-gtd-organize--update-in-place’ instead
+          of refiling
+        • The original heading is replaced with the configured content
+          from the WIP buffer
+        • Archive categories (quick-action, knowledge, trash) always
+          archive regardless of this flag
+
+     **Migration note:**
+
+     In previous versions, there was a special command
+     ‘org-gtd-delegate-item-at-point’ for delegating items without
+     moving them.  This command has been removed in favor of the more
+     general skip-refile mechanism:
+
+     *OLD way (no longer available):*
+          M-x org-gtd-delegate-item-at-point
+
+     *NEW way (version 4.0+):*
+          ;; From agenda or file:
+          C-u M-x org-gtd-clarify-item
+          ;; or
+          C-u M-x org-gtd-clarify-agenda-item
+          ;; Then organize and press -n toggle
+          M-x org-gtd-organize
+          ;; Press -n to enable skip-refile
+          ;; Choose delegation
+
+     The new approach is more flexible - it works for ANY GTD category,
+     not just delegation.
+
 
 File: org-gtd.info,  Node: Archive Commands,  Next: Agenda-Specific Commands,  Prev: Clarification Commands,  Up: Commands Reference
 
@@ -6332,6 +6454,27 @@ File: org-gtd.info,  Node: Obsolete Commands,  Prev: Migration and Upgrade Comma
 
      This minor mode is no longer needed and will be removed in a future
      version.
+
+   • ‘org-gtd-delegate-item-at-point’ (removed in 4.0)
+
+     *Use instead*: Skip-refile feature with clarify commands
+
+     This command was removed because it only solved one specific case
+     (delegating without moving).  The new skip-refile feature is more
+     general and works for any GTD category.
+
+     *Migration*:
+          ;; OLD (no longer available):
+          M-x org-gtd-delegate-item-at-point
+
+          ;; NEW (works from agenda or file):
+          C-u M-x org-gtd-clarify-agenda-item
+          ;; or
+          C-u M-x org-gtd-clarify-item
+          ;; Then in organize menu: press -n to toggle skip-refile, choose delegation
+
+     See *note Clarification Options: Options and commands related to
+     clarification. for full documentation on the skip-refile feature.
 
 
 File: org-gtd.info,  Node: Properties Reference (Internal Implementation),  Next: Troubleshooting Projects,  Prev: Commands Reference,  Up: Reference
@@ -8323,157 +8466,159 @@ Ref: org-gtd-clarify-item207628
 Ref: org-gtd-clarify-agenda-item208064
 Ref: org-gtd-clarify-toggle-horizons-window208322
 Ref: org-gtd-clarify-project-insert-template208653
-Node: Archive Commands208944
-Ref: org-gtd-archive-completed-items209134
-Node: Agenda-Specific Commands209602
-Ref: org-gtd-delegate-agenda-item209872
-Ref: org-gtd-project-cancel-from-agenda210195
-Node: Project Management Commands210481
-Ref: org-gtd-projects-fix-todo-keywords-for-project-at-point210708
-Ref: org-gtd-projects-fix-all-todo-keywords211298
-Ref: org-gtd-project-update-all-cookies214019
-Ref: org-gtd-incubate215490
-Ref: org-gtd-reactivate216903
-Node: Task Dependency Commands217958
-Ref: org-gtd-task-add-blockers218847
-Ref: org-gtd-task-remove-blockers219573
-Ref: org-gtd-task-add-dependent219839
-Ref: org-gtd-task-add-dependents220482
-Ref: org-gtd-task-clear-relationships220724
-Ref: org-gtd-task-show-relationships221047
-Ref: org-gtd-validate-project-dependencies221392
-Ref: org-gtd-remove-task-from-project221821
-Node: Area of Focus Commands222158
-Ref: org-gtd-area-of-focus-set-on-item-at-point222376
-Ref: org-gtd-area-of-focus-set-on-agenda-item222743
-Node: Programmatic Creation Commands223081
-Ref: org-gtd-habit-create223402
-Ref: org-gtd-calendar-create223638
-Ref: org-gtd-delegate-create223877
-Ref: org-gtd-incubate-create224531
-Ref: org-gtd-single-action-create224769
-Node: Utility Commands224963
-Ref: org-gtd-setup-keywords-wizard225158
-Ref: org-gtd-inbox-path225470
-Node: ID Overlay Commands225827
-Ref: org-gtd-id-overlay-mode226028
-Ref: org-gtd-id-overlay-refresh-buffer226376
-Ref: org-gtd-id-overlay-clear-buffer226632
-Node: Migration and Upgrade Commands226834
-Ref: org-gtd-upgrade-v3-to-v4227058
-Node: Obsolete Commands227583
-Ref: org-gtd-mode (obsolete since 40)227753
-Node: Properties Reference (Internal Implementation)227990
-Node: Core GTD Properties229109
-Ref: ORG_GTD229299
-Ref: ORG_GTD_REFILE230130
-Node: Project Properties231710
-Ref: ORG_GTD_FIRST_TASKS231933
-Node: Task Dependency Properties232759
-Ref: ORG_GTD_DEPENDS_ON233007
-Ref: ORG_GTD_BLOCKS234714
-Ref: ORG_GTD_PROJECT_IDS235466
-Node: Calendar and Time Properties235779
-Ref: ORG_GTD_TIMESTAMP236034
-Node: Delegation Properties236874
-Ref: DELEGATED_TO237105
-Node: Habit Properties237930
-Ref: STYLE238147
-Node: Area of Focus Properties238546
-Ref: CATEGORY238797
-Node: Standard Org Properties Used by org-gtd239545
-Ref: ID239801
-Ref: keyword240048
-Ref: SCHEDULED (org-mode standard)240638
-Ref: DEADLINE (org-mode standard)240888
-Node: Troubleshooting Projects241111
-Node: Fixing Broken Dependencies241739
-Node: When Manual Property Editing is Needed243107
-Node: Common Problems and Solutions244936
-Ref: Project Shows No NEXT Tasks (Stuck Project)245154
-Ref: Too Many NEXT Tasks245916
-Ref: Task Won't Advance to NEXT246330
-Ref: Task States Inconsistent After External Edits246931
-Node: View DSL Filter Reference248034
-Node: View Structure248675
-Node: Category Filters248996
-Ref: (category delegated)249209
-Ref: (category calendar)249444
-Ref: (category projects)249691
-Ref: (category active-projects)249926
-Ref: (category completed-projects)250199
-Ref: (category stuck-projects)250494
-Ref: (category incubate)250788
-Ref: (category habit)251041
-Node: Time-based Filters251245
-Ref: (timestamp past)251488
-Ref: (timestamp future)251812
-Ref: (deadline past)252109
-Ref: (scheduled past)252338
-Ref: (scheduled future)252593
-Ref: (scheduled today)252819
-Ref: (closed recent)253062
-Ref: (closed past-day)253291
-Ref: (closed past-week)253367
-Ref: (closed past-month)253445
-Ref: (closed past-year)253525
-Ref: (closed today)253603
-Node: Keyword Filters253799
-Ref: (todo ("KEYWORD1" "KEYWORD2"))254023
-Ref: (done t)254430
-Node: Area of Focus Filters254675
-Ref: (area-of-focus "AREA")254889
-Node: Tag Filters255299
-Ref: (tags ("TAG1" "TAG2"))255493
-Ref: (tags-match "PATTERN")255804
-Node: Property Filters256286
-Ref: (property (("PROP" "VALUE")))256503
-Node: Structural Filters256955
-Ref: (level N)257177
-Node: Special Filters257561
-Ref: (not-habit t)257753
-Ref: (invalid-timestamp t)258020
-Node: View Configuration Options258333
-Ref: (view-type agenda)258603
-Ref: (agenda-span N)258911
-Ref: (show-habits t) or (show-habits nil)259188
-Ref: (additional-blocks BLOCK-SPECS)259529
-Ref: (prefix-format FORMAT-STRING)259845
-Node: Complete View Examples260128
-Ref: Weekly Review View260346
-Ref: Context-Based View261276
-Ref: Morning Planning View261468
-Node: Creating Custom Views261847
-Node: Hooks Framework Reference262523
-Node: What Are Organize Hooks?262961
-Node: Your First Hook in 2 Minutes263623
-Node: The org-gtd-organize-hooks Variable264758
-Node: Built-in Hooks265257
-Ref: org-set-tags-command265457
-Ref: org-gtd-set-area-of-focus265700
-Node: Writing Custom Hooks266219
-Ref: Basic Hook Structure266611
-Ref: Using org-gtd-organize-type-member-p266945
-Node: Example Custom Hooks268018
-Ref: Selective Tagging with Unless268221
-Ref: Add Effort Estimation268938
-Ref: Add Priority269271
-Ref: Auto-Set Property Based on Keywords269567
-Ref: Add Custom Property270035
-Ref: Integration with Org-Roam270466
-Ref: Set Effort from Keywords270829
-Node: Hook Execution Order271549
-Node: Best Practices272059
-Node: Complete Example Comprehensive Hook Setup273042
-Node: Troubleshooting275171
-Node: Finding lost tasks275628
-Node: Projects without a NEXT item276630
-Node: I can't create a project when clarifying an inbox item!277886
-Node: Configuration problems278844
-Node: Keywords not working279163
-Node: Items not showing in engage view279977
-Node: Tasks still showing after incubating project280725
-Node: Still stuck?281841
+Ref: Updating Items Without Refiling208951
+Node: Archive Commands213542
+Ref: org-gtd-archive-completed-items213732
+Node: Agenda-Specific Commands214200
+Ref: org-gtd-delegate-agenda-item214470
+Ref: org-gtd-project-cancel-from-agenda214793
+Node: Project Management Commands215079
+Ref: org-gtd-projects-fix-todo-keywords-for-project-at-point215306
+Ref: org-gtd-projects-fix-all-todo-keywords215896
+Ref: org-gtd-project-update-all-cookies218617
+Ref: org-gtd-incubate220088
+Ref: org-gtd-reactivate221501
+Node: Task Dependency Commands222556
+Ref: org-gtd-task-add-blockers223445
+Ref: org-gtd-task-remove-blockers224171
+Ref: org-gtd-task-add-dependent224437
+Ref: org-gtd-task-add-dependents225080
+Ref: org-gtd-task-clear-relationships225322
+Ref: org-gtd-task-show-relationships225645
+Ref: org-gtd-validate-project-dependencies225990
+Ref: org-gtd-remove-task-from-project226419
+Node: Area of Focus Commands226756
+Ref: org-gtd-area-of-focus-set-on-item-at-point226974
+Ref: org-gtd-area-of-focus-set-on-agenda-item227341
+Node: Programmatic Creation Commands227679
+Ref: org-gtd-habit-create228000
+Ref: org-gtd-calendar-create228236
+Ref: org-gtd-delegate-create228475
+Ref: org-gtd-incubate-create229129
+Ref: org-gtd-single-action-create229367
+Node: Utility Commands229561
+Ref: org-gtd-setup-keywords-wizard229756
+Ref: org-gtd-inbox-path230068
+Node: ID Overlay Commands230425
+Ref: org-gtd-id-overlay-mode230626
+Ref: org-gtd-id-overlay-refresh-buffer230974
+Ref: org-gtd-id-overlay-clear-buffer231230
+Node: Migration and Upgrade Commands231432
+Ref: org-gtd-upgrade-v3-to-v4231656
+Node: Obsolete Commands232181
+Ref: org-gtd-mode (obsolete since 40)232351
+Ref: org-gtd-delegate-item-at-point (removed in 40)232595
+Node: Properties Reference (Internal Implementation)233381
+Node: Core GTD Properties234500
+Ref: ORG_GTD234690
+Ref: ORG_GTD_REFILE235521
+Node: Project Properties237101
+Ref: ORG_GTD_FIRST_TASKS237324
+Node: Task Dependency Properties238150
+Ref: ORG_GTD_DEPENDS_ON238398
+Ref: ORG_GTD_BLOCKS240105
+Ref: ORG_GTD_PROJECT_IDS240857
+Node: Calendar and Time Properties241170
+Ref: ORG_GTD_TIMESTAMP241425
+Node: Delegation Properties242265
+Ref: DELEGATED_TO242496
+Node: Habit Properties243321
+Ref: STYLE243538
+Node: Area of Focus Properties243937
+Ref: CATEGORY244188
+Node: Standard Org Properties Used by org-gtd244936
+Ref: ID245192
+Ref: keyword245439
+Ref: SCHEDULED (org-mode standard)246029
+Ref: DEADLINE (org-mode standard)246279
+Node: Troubleshooting Projects246502
+Node: Fixing Broken Dependencies247130
+Node: When Manual Property Editing is Needed248498
+Node: Common Problems and Solutions250327
+Ref: Project Shows No NEXT Tasks (Stuck Project)250545
+Ref: Too Many NEXT Tasks251307
+Ref: Task Won't Advance to NEXT251721
+Ref: Task States Inconsistent After External Edits252322
+Node: View DSL Filter Reference253425
+Node: View Structure254066
+Node: Category Filters254387
+Ref: (category delegated)254600
+Ref: (category calendar)254835
+Ref: (category projects)255082
+Ref: (category active-projects)255317
+Ref: (category completed-projects)255590
+Ref: (category stuck-projects)255885
+Ref: (category incubate)256179
+Ref: (category habit)256432
+Node: Time-based Filters256636
+Ref: (timestamp past)256879
+Ref: (timestamp future)257203
+Ref: (deadline past)257500
+Ref: (scheduled past)257729
+Ref: (scheduled future)257984
+Ref: (scheduled today)258210
+Ref: (closed recent)258453
+Ref: (closed past-day)258682
+Ref: (closed past-week)258758
+Ref: (closed past-month)258836
+Ref: (closed past-year)258916
+Ref: (closed today)258994
+Node: Keyword Filters259190
+Ref: (todo ("KEYWORD1" "KEYWORD2"))259414
+Ref: (done t)259821
+Node: Area of Focus Filters260066
+Ref: (area-of-focus "AREA")260280
+Node: Tag Filters260690
+Ref: (tags ("TAG1" "TAG2"))260884
+Ref: (tags-match "PATTERN")261195
+Node: Property Filters261677
+Ref: (property (("PROP" "VALUE")))261894
+Node: Structural Filters262346
+Ref: (level N)262568
+Node: Special Filters262952
+Ref: (not-habit t)263144
+Ref: (invalid-timestamp t)263411
+Node: View Configuration Options263724
+Ref: (view-type agenda)263994
+Ref: (agenda-span N)264302
+Ref: (show-habits t) or (show-habits nil)264579
+Ref: (additional-blocks BLOCK-SPECS)264920
+Ref: (prefix-format FORMAT-STRING)265236
+Node: Complete View Examples265519
+Ref: Weekly Review View265737
+Ref: Context-Based View266667
+Ref: Morning Planning View266859
+Node: Creating Custom Views267238
+Node: Hooks Framework Reference267914
+Node: What Are Organize Hooks?268352
+Node: Your First Hook in 2 Minutes269014
+Node: The org-gtd-organize-hooks Variable270149
+Node: Built-in Hooks270648
+Ref: org-set-tags-command270848
+Ref: org-gtd-set-area-of-focus271091
+Node: Writing Custom Hooks271610
+Ref: Basic Hook Structure272002
+Ref: Using org-gtd-organize-type-member-p272336
+Node: Example Custom Hooks273409
+Ref: Selective Tagging with Unless273612
+Ref: Add Effort Estimation274329
+Ref: Add Priority274662
+Ref: Auto-Set Property Based on Keywords274958
+Ref: Add Custom Property275426
+Ref: Integration with Org-Roam275857
+Ref: Set Effort from Keywords276220
+Node: Hook Execution Order276940
+Node: Best Practices277450
+Node: Complete Example Comprehensive Hook Setup278433
+Node: Troubleshooting280562
+Node: Finding lost tasks281019
+Node: Projects without a NEXT item282021
+Node: I can't create a project when clarifying an inbox item!283277
+Node: Configuration problems284235
+Node: Keywords not working284554
+Node: Items not showing in engage view285368
+Node: Tasks still showing after incubating project286116
+Node: Still stuck?287232
 
 End Tag Table
 

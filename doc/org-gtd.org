@@ -4342,6 +4342,108 @@ Common filters include:
 - Prompts for template from ~org-gtd-clarify-project-templates~
 - Inserts template tasks into current project
 
+**** Updating Items Without Refiling
+
+**What this is:** A way to reconfigure existing GTD items (change their category, properties, or details) without moving them to a different location in your files.
+
+**Who needs it:** Anyone who wants to change how an item is organized while keeping it where it is - perfect for items already in projects, or when you like your current file organization.
+
+**Your first use (30 seconds):**
+
+You're looking at your agenda and see a single action that should actually be delegated. But it's already in a specific project file and you want it to stay there:
+
+1. In agenda view, put point on the item
+2. Type: ~C-u M-x org-gtd-clarify-agenda-item~
+3. Make your changes in the clarify buffer
+4. Type: ~M-x org-gtd-organize~
+5. Type: ~-n~ to toggle "Update in place (no refile)"
+6. Choose: ~d~ for Delegate
+7. Fill in delegation details
+8. Done - item is updated but stays in its current location
+
+**How it works:**
+
+Normally when you organize an item, org-gtd moves (refiles) it to the appropriate GTD category location. But sometimes you want to change the configuration without moving the item.
+
+There are two ways to trigger this:
+
+*Via prefix argument:*
+- ~C-u M-x org-gtd-clarify-item~ - Clarify item at point without refiling
+- ~C-u M-x org-gtd-clarify-agenda-item~ - Clarify agenda item without refiling
+
+*Via transient toggle:*
+- During organization, press ~-n~ in the ~org-gtd-organize~ menu to toggle "Update in place (no refile)"
+- The toggle is only available when NOT processing the inbox (inbox items must be refiled)
+
+When the skip-refile flag is set, organizing the item will:
+- Apply all the same configuration (properties, tags, hooks)
+- Update the item in its current location
+- NOT move it to a different file or heading
+
+**Common scenarios:**
+
+*Reconfiguring project tasks:*
+- Task is already in the right project file
+- You want to change it from single action to delegated
+- Use skip-refile to update without moving
+
+*Adjusting agenda items:*
+- Item appears in your daily agenda
+- You realize it needs different properties (change deadline, add delegation, etc.)
+- Use skip-refile to update configuration in place
+
+*Organizing items in custom locations:*
+- You've organized items in a specific way outside ~org-gtd-directory~
+- You want to apply GTD categories but preserve your file structure
+- Use skip-refile to maintain your organization
+
+**What stays the same vs what changes:**
+
+*Changes applied:*
+- GTD category (ORG_GTD property)
+- TODO keyword state
+- Properties (delegation info, dates, etc.)
+- Tags
+- All organize hooks
+
+*Preserved:*
+- File location
+- Position within file
+- Parent heading (for tasks in projects)
+- Sibling relationships
+
+**Technical details:**
+
+When you set the skip-refile flag (via ~C-u~ prefix or ~-n~ toggle):
+- The flag is stored in the clarify buffer as ~org-gtd-clarify--skip-refile~
+- Category finalize functions check this flag
+- If set, they call ~org-gtd-organize--update-in-place~ instead of refiling
+- The original heading is replaced with the configured content from the WIP buffer
+- Archive categories (quick-action, knowledge, trash) always archive regardless of this flag
+
+**Migration note:**
+
+In previous versions, there was a special command ~org-gtd-delegate-item-at-point~ for delegating items without moving them. This command has been removed in favor of the more general skip-refile mechanism:
+
+*OLD way (no longer available):*
+#+begin_src emacs-lisp
+M-x org-gtd-delegate-item-at-point
+#+end_src
+
+*NEW way (version 4.0+):*
+#+begin_src emacs-lisp
+;; From agenda or file:
+C-u M-x org-gtd-clarify-item
+;; or
+C-u M-x org-gtd-clarify-agenda-item
+;; Then organize and press -n toggle
+M-x org-gtd-organize
+;; Press -n to enable skip-refile
+;; Choose delegation
+#+end_src
+
+The new approach is more flexible - it works for ANY GTD category, not just delegation.
+
 *** Archive Commands
 
 **** ~org-gtd-archive-completed-items~
@@ -4839,6 +4941,26 @@ These commands create GTD items programmatically (useful for automation and Emac
 #+end_src
 
 This minor mode is no longer needed and will be removed in a future version.
+
+**** ~org-gtd-delegate-item-at-point~ (removed in 4.0)
+
+*Use instead*: Skip-refile feature with clarify commands
+
+This command was removed because it only solved one specific case (delegating without moving). The new skip-refile feature is more general and works for any GTD category.
+
+*Migration*:
+#+begin_src emacs-lisp
+;; OLD (no longer available):
+M-x org-gtd-delegate-item-at-point
+
+;; NEW (works from agenda or file):
+C-u M-x org-gtd-clarify-agenda-item
+;; or
+C-u M-x org-gtd-clarify-item
+;; Then in organize menu: press -n to toggle skip-refile, choose delegation
+#+end_src
+
+See [[#options-and-behaviors-related-to-clarification-step][Clarification Options]] for full documentation on the skip-refile feature.
 
 ** Properties Reference (Internal Implementation)
 :PROPERTIES:

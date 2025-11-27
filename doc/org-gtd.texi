@@ -6665,6 +6665,168 @@ Prompts for template from @code{org-gtd-clarify-project-templates}
 @item
 Inserts template tasks into current project
 @end itemize
+
+@item
+@anchor{Updating Items Without Refiling}Updating Items Without Refiling
+
+
+@strong{@strong{What this is:}} A way to reconfigure existing GTD items (change their category, properties, or details) without moving them to a different location in your files.
+
+@strong{@strong{Who needs it:}} Anyone who wants to change how an item is organized while keeping it where it is - perfect for items already in projects, or when you like your current file organization.
+
+@strong{@strong{Your first use (30 seconds):}}
+
+You're looking at your agenda and see a single action that should actually be delegated. But it's already in a specific project file and you want it to stay there:
+
+@enumerate
+@item
+In agenda view, put point on the item
+@item
+Type: @code{C-u M-x org-gtd-clarify-agenda-item}
+@item
+Make your changes in the clarify buffer
+@item
+Type: @code{M-x org-gtd-organize}
+@item
+Type: @code{-n} to toggle "Update in place (no refile)"
+@item
+Choose: @code{d} for Delegate
+@item
+Fill in delegation details
+@item
+Done - item is updated but stays in its current location
+@end enumerate
+
+@strong{@strong{How it works:}}
+
+Normally when you organize an item, org-gtd moves (refiles) it to the appropriate GTD category location. But sometimes you want to change the configuration without moving the item.
+
+There are two ways to trigger this:
+
+@strong{Via prefix argument:}
+@itemize
+@item
+@code{C-u M-x org-gtd-clarify-item} - Clarify item at point without refiling
+@item
+@code{C-u M-x org-gtd-clarify-agenda-item} - Clarify agenda item without refiling
+@end itemize
+
+@strong{Via transient toggle:}
+@itemize
+@item
+During organization, press @code{-n} in the @code{org-gtd-organize} menu to toggle "Update in place (no refile)"
+@item
+The toggle is only available when NOT processing the inbox (inbox items must be refiled)
+@end itemize
+
+When the skip-refile flag is set, organizing the item will:
+@itemize
+@item
+Apply all the same configuration (properties, tags, hooks)
+@item
+Update the item in its current location
+@item
+NOT move it to a different file or heading
+@end itemize
+
+@strong{@strong{Common scenarios:}}
+
+@strong{Reconfiguring project tasks:}
+@itemize
+@item
+Task is already in the right project file
+@item
+You want to change it from single action to delegated
+@item
+Use skip-refile to update without moving
+@end itemize
+
+@strong{Adjusting agenda items:}
+@itemize
+@item
+Item appears in your daily agenda
+@item
+You realize it needs different properties (change deadline, add delegation, etc.)
+@item
+Use skip-refile to update configuration in place
+@end itemize
+
+@strong{Organizing items in custom locations:}
+@itemize
+@item
+You've organized items in a specific way outside @code{org-gtd-directory}
+@item
+You want to apply GTD categories but preserve your file structure
+@item
+Use skip-refile to maintain your organization
+@end itemize
+
+@strong{@strong{What stays the same vs what changes:}}
+
+@strong{Changes applied:}
+@itemize
+@item
+GTD category (ORG@math{_GTD} property)
+@item
+TODO keyword state
+@item
+Properties (delegation info, dates, etc.)
+@item
+Tags
+@item
+All organize hooks
+@end itemize
+
+@strong{Preserved:}
+@itemize
+@item
+File location
+@item
+Position within file
+@item
+Parent heading (for tasks in projects)
+@item
+Sibling relationships
+@end itemize
+
+@strong{@strong{Technical details:}}
+
+When you set the skip-refile flag (via @code{C-u} prefix or @code{-n} toggle):
+@itemize
+@item
+The flag is stored in the clarify buffer as @code{org-gtd-clarify--skip-refile}
+@item
+Category finalize functions check this flag
+@item
+If set, they call @code{org-gtd-organize--update-in-place} instead of refiling
+@item
+The original heading is replaced with the configured content from the WIP buffer
+@item
+Archive categories (quick-action, knowledge, trash) always archive regardless of this flag
+@end itemize
+
+@strong{@strong{Migration note:}}
+
+In previous versions, there was a special command @code{org-gtd-delegate-item-at-point} for delegating items without moving them. This command has been removed in favor of the more general skip-refile mechanism:
+
+@strong{OLD way (no longer available):}
+@lisp
+M-x org-gtd-delegate-item-at-point
+@end lisp
+
+@strong{NEW way (version 4.0+):}
+@lisp
+;; From agenda or file:
+C-u M-x org-gtd-clarify-item
+;; or
+C-u M-x org-gtd-clarify-agenda-item
+;; Then organize and press -n toggle
+M-x org-gtd-organize
+;; Press -n to enable skip-refile
+;; Choose delegation
+@end lisp
+
+The new approach is more flexible - it works for ANY GTD category, not just delegation.
 @end itemize
 
 @node Archive Commands
@@ -7468,6 +7630,28 @@ See @ref{Upgrading, , Upgrading section} for complete details
 @end lisp
 
 This minor mode is no longer needed and will be removed in a future version.
+
+@item
+@anchor{@code{org-gtd-delegate-item-at-point} (removed in 40)}@code{org-gtd-delegate-item-at-point} (removed in 4.0)
+
+
+@strong{Use instead}: Skip-refile feature with clarify commands
+
+This command was removed because it only solved one specific case (delegating without moving). The new skip-refile feature is more general and works for any GTD category.
+
+@strong{Migration}:
+@lisp
+;; OLD (no longer available):
+M-x org-gtd-delegate-item-at-point
+
+;; NEW (works from agenda or file):
+C-u M-x org-gtd-clarify-agenda-item
+;; or
+C-u M-x org-gtd-clarify-item
+;; Then in organize menu: press -n to toggle skip-refile, choose delegation
+@end lisp
+
+See @ref{Options and commands related to clarification, , Clarification Options} for full documentation on the skip-refile feature.
 @end itemize
 
 @node Properties Reference (Internal Implementation)
