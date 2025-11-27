@@ -124,3 +124,33 @@
          (org-gtd-organize--call (lambda () (insert "Test"))))
        (expect 'save-some-buffers :not :to-have-been-called)
        (kill-buffer test-buffer))))
+
+(describe
+ "org-gtd-organize--update-in-place"
+ (before-each
+   (setq inhibit-message t)
+   (ogt--configure-emacs))
+ (after-each (ogt--close-and-delete-files))
+
+ (it "replaces original heading with WIP buffer content"
+     (create-single-action "Original title")
+     (with-current-buffer (org-gtd--default-file)
+       (goto-char (point-min))
+       (search-forward "Original title")
+       (org-back-to-heading t)
+       ;; Clarify the item (this sets org-gtd-clarify--source-heading-marker)
+       (org-gtd-clarify-item)
+       ;; Get the WIP buffer and modify content
+       (let ((wip-buffer (car (org-gtd-wip--get-buffers))))
+         (with-current-buffer wip-buffer
+           (goto-char (point-min))
+           (search-forward "Original title")
+           (replace-match "Modified title")
+           ;; Call update-in-place
+           (org-gtd-organize--update-in-place)))
+       ;; Verify original location has new content
+       (with-current-buffer (org-gtd--default-file)
+         (goto-char (point-min))
+         (expect (search-forward "Modified title" nil t) :to-be-truthy)
+         (goto-char (point-min))
+         (expect (search-forward "Original title" nil t) :to-be nil)))))

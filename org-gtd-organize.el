@@ -136,6 +136,28 @@ Valid members of LIST include:
 
 ;;;;; Private
 
+(defun org-gtd-organize--update-in-place ()
+  "Replace original heading with configured content from WIP buffer.
+Uses `org-gtd-clarify--source-heading-marker' to find the original location."
+  (let ((new-content (save-excursion
+                       (goto-char (point-min))
+                       (when (org-before-first-heading-p)
+                         (org-next-visible-heading 1))
+                       (org-copy-subtree)
+                       (current-kill 0)))
+        ;; Capture marker value while still in WIP buffer
+        (source-marker org-gtd-clarify--source-heading-marker))
+    (when (and (boundp 'org-gtd-clarify--source-heading-marker)
+               source-marker
+               (markerp source-marker)
+               (marker-buffer source-marker))
+      (with-current-buffer (marker-buffer source-marker)
+        (goto-char source-marker)
+        (org-back-to-heading t)
+        (org-cut-subtree)
+        (insert new-content)
+        (save-buffer)))))
+
 (defun org-gtd-organize--call (func)
   "Wrap FUNC, which does the real work, to keep Emacs clean.
 This handles the internal bits of `org-gtd'."
