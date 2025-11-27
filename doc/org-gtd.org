@@ -573,6 +573,39 @@ The clarify binding (~C-c c~) *only works in clarify buffers* - you must run ~M-
 
 See the complete configuration for your environment to copy the correct keybinding syntax.
 
+**** Working with Your Existing Org Setup
+
+Already have org-mode configured with your own refile targets and archive location? Org-gtd is designed to work *alongside* your existing setup, not replace it.
+
+*Quick answers:*
+
+- *Will org-gtd break my ~org-refile-targets~?* No. Org-gtd merges its targets with yours. Your targets appear first in completion.
+
+- *Will org-gtd ignore my ~org-archive-location~?* By default, yes—org-gtd uses year-based archive files. But you can make it respect yours with one line:
+  #+begin_src emacs-lisp
+  (setq org-gtd-archive-location nil)  ; Use your org-archive-location
+  #+end_src
+
+*How the merge works:*
+
+When you organize an item (say, as a Project), org-gtd builds a combined refile target list:
+
+1. Your ~org-refile-targets~ (appears first)
+2. Any heading with ~ORG_GTD_REFILE: Projects~ property (org-gtd's system)
+
+So if you have ~org-refile-targets~ pointing to =~/org/projects.org=, that file's headings appear first. Org-gtd's property-marked targets appear after.
+
+*When to use which:*
+
+| Scenario | What to do |
+|----------|------------|
+| New to org-mode | Use org-gtd defaults. It creates targets automatically. |
+| Have existing refile setup | Keep it! Org-gtd adds to it, doesn't replace it. |
+| Want single archive file | Set ~org-gtd-archive-location~ to ~nil~, configure ~org-archive-location~ |
+| Want year-based GTD archives | Use org-gtd default (nothing to configure) |
+
+*See also:* [[#refiling-after-organizing][Refiling to the appropriate area]] for details on ~ORG_GTD_REFILE~ properties, [[#cleaning-up-the-system][Cleaning up / archiving]] for archive details.
+
 *** Understanding Keybindings
 
 org-gtd uses two types of keybindings, and understanding the difference is important:

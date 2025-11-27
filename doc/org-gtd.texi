@@ -1067,6 +1067,55 @@ Or if using @code{use-package} / @code{use-package!}:
 The clarify binding (@code{C-c c}) @strong{only works in clarify buffers} - you must run @code{M-x org-gtd-process-inbox} first.
 
 See the complete configuration for your environment to copy the correct keybinding syntax.
+
+@item
+@anchor{Working with Your Existing Org Setup}Working with Your Existing Org Setup
+
+
+Already have org-mode configured with your own refile targets and archive location? Org-gtd is designed to work @strong{alongside} your existing setup, not replace it.
+
+@strong{Quick answers:}
+
+@itemize
+@item
+@strong{Will org-gtd break my @code{org-refile-targets}?} No. Org-gtd merges its targets with yours. Your targets appear first in completion.
+
+@item
+@strong{Will org-gtd ignore my @code{org-archive-location}?} By default, yes—org-gtd uses year-based archive files. But you can make it respect yours with one line:
+@lisp
+(setq org-gtd-archive-location nil)  ; Use your org-archive-location
+@end lisp
+@end itemize
+
+@strong{How the merge works:}
+
+When you organize an item (say, as a Project), org-gtd builds a combined refile target list:
+
+@enumerate
+@item
+Your @code{org-refile-targets} (appears first)
+@item
+Any heading with @code{ORG_GTD_REFILE: Projects} property (org-gtd's system)
+@end enumerate
+
+So if you have @code{org-refile-targets} pointing to @samp{~/org/projects.org}, that file's headings appear first. Org-gtd's property-marked targets appear after.
+
+@strong{When to use which:}
+
+@multitable {aaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Scenario
+@tab What to do
+@item New to org-mode
+@tab Use org-gtd defaults. It creates targets automatically.
+@item Have existing refile setup
+@tab Keep it! Org-gtd adds to it, doesn't replace it.
+@item Want single archive file
+@tab Set @code{org-gtd-archive-location} to @code{nil}, configure @code{org-archive-location}
+@item Want year-based GTD archives
+@tab Use org-gtd default (nothing to configure)
+@end multitable
+
+@strong{See also:} @ref{Refiling to the appropriate area} for details on @code{ORG_GTD_REFILE} properties, @ref{Cleaning up / archiving completed work, , Cleaning up / archiving} for archive details.
 @end itemize
 
 @node Understanding Keybindings
