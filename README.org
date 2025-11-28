@@ -81,7 +81,7 @@ If you use ~use-package~, copy this entire block into your init file - it includ
    ("C-c d e" . org-gtd-engage)
    ("C-c d p" . org-gtd-process-inbox)
    ("C-c d n" . org-gtd-show-all-next)
-   ("C-c d s" . org-gtd-review-stuck-projects)
+   ("C-c d s" . org-gtd-reflect-stuck-projects)
 
    ;; Keybinding for organizing items (only works in clarify buffers)
    :map org-gtd-clarify-map
@@ -119,7 +119,7 @@ If you don't use ~use-package~, copy this into your init file and restart Emacs:
 (global-set-key (kbd "C-c d e") 'org-gtd-engage)
 (global-set-key (kbd "C-c d p") 'org-gtd-process-inbox)
 (global-set-key (kbd "C-c d n") 'org-gtd-show-all-next)
-(global-set-key (kbd "C-c d s") 'org-gtd-review-stuck-projects)
+(global-set-key (kbd "C-c d s") 'org-gtd-reflect-stuck-projects)
 
 ;; Keybinding for organizing items (only works in clarify buffers)
 (with-eval-after-load 'org-gtd
@@ -201,7 +201,7 @@ You just completed the core GTD cycle:
 
 The two remaining GTD steps:
 - *Process* - Loop through your inbox (we did this with ~org-gtd-process-inbox~)
-- *Review* - Regularly check your system (commands like ~org-gtd-review-stuck-projects~)
+- *Review* - Regularly check your system (commands like ~org-gtd-reflect-stuck-projects~)
 
 * What's Next
 

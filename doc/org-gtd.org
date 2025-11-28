@@ -139,8 +139,16 @@ Creating custom agenda views is now much easier with a declarative syntax:
 - *Add tasks to projects anywhere* - You can now add tasks to projects even if the project file is outside ~org-gtd-directory~
 - *Modify project structure* - Commands to create task dependencies and manage complex projects
 
-** Enhanced review capabilities
-- *Find missed items* - New ~org-gtd-review-missed-items~ command to catch things that slipped through
+** Updated terminology: Review → Reflect
+Following David Allen's updated terminology from his more recent books, all "review" and "oops" commands are now named "reflect":
+
+- ~org-gtd-review-*~ → ~org-gtd-reflect-*~
+- ~org-gtd-oops-*~ → ~org-gtd-reflect-*~
+
+The old names still work as aliases but are marked obsolete.
+
+** Enhanced reflect capabilities
+- *Find missed items* - New ~org-gtd-reflect-missed-items~ command to catch things that slipped through
 - *Better stuck project detection* - Improved identification of projects that need attention
 
 ** Simplified configuration
@@ -351,7 +359,7 @@ This is the simplest possible configuration for org-gtd. Copy this entire block 
 (global-set-key (kbd "C-c d e") 'org-gtd-engage)
 (global-set-key (kbd "C-c d p") 'org-gtd-process-inbox)
 (global-set-key (kbd "C-c d n") 'org-gtd-show-all-next)
-(global-set-key (kbd "C-c d s") 'org-gtd-review-stuck-projects)
+(global-set-key (kbd "C-c d s") 'org-gtd-reflect-stuck-projects)
 
 ;; Keybinding for clarify map
 ;; This only works when you're in a clarify buffer
@@ -393,7 +401,7 @@ Then add this to your ~config.el~:
          :desc "Engage"         "e"  #'org-gtd-engage
          :desc "Process inbox"  "p"  #'org-gtd-process-inbox
          :desc "Show all next"  "n"  #'org-gtd-show-all-next
-         :desc "Stuck projects" "s"  #'org-gtd-review-stuck-projects))
+         :desc "Stuck projects" "s"  #'org-gtd-reflect-stuck-projects))
   ;; Clarify map binding
   (map! :map org-gtd-clarify-map
         :desc "Organize this item" "C-c c" #'org-gtd-organize))
@@ -435,7 +443,7 @@ If you use Spacemacs, add this to your ~dotspacemacs/user-config~ function:
     "od e" 'org-gtd-engage
     "od p" 'org-gtd-process-inbox
     "od n" 'org-gtd-show-all-next
-    "od s" 'org-gtd-review-stuck-projects)
+    "od s" 'org-gtd-reflect-stuck-projects)
   ;; Clarify map binding
   (with-eval-after-load 'org-gtd
     (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize)))
@@ -795,7 +803,7 @@ If you are a Doom Emacs user, then your configuration may look something like th
            :desc "Engage"         "e"  #'org-gtd-engage
            :desc "Process inbox"  "p"  #'org-gtd-process-inbox
            :desc "Show all next"  "n"  #'org-gtd-show-all-next
-           :desc "Stuck projects" "s"  #'org-gtd-review-stuck-projects))
+           :desc "Stuck projects" "s"  #'org-gtd-reflect-stuck-projects))
     (map! :map org-gtd-clarify-map
           :desc "Organize this item" "C-c c" #'org-gtd-organize))
 #+END_SRC
@@ -1205,7 +1213,7 @@ These are the commands you'll use most:
 | ~org-gtd-organize~ | Organize current item | During processing (in clarify buffer) |
 | ~org-gtd-engage~ | See actionable items | Daily (your "work from" view) |
 | ~org-gtd-show-all-next~ | See only NEXT actions | When you want to focus on actions |
-| ~org-gtd-review-stuck-projects~ | Find stuck projects | Weekly review |
+| ~org-gtd-reflect-stuck-projects~ | Find stuck projects | Weekly review |
 | ~org-gtd-projects-fix-all-todo-keywords~ | Fix task states after external edits | After mobile/web edits |
 | ~org-gtd-archive-completed-items~ | Archive finished items | Weekly/monthly cleanup |
 
@@ -1405,7 +1413,7 @@ You can see a list of all NEXT actions, and scheduled actions, with ~M-x org-gtd
 
 You can call ~org-gtd-show-all-next~ to only see NEXT actions, nothing scheduled.
 
-You can use ~M-x org-gtd-review-missed-engagements~ to find appointments you missed, delegated items needing check-ins, and late projects. This is your safety net for catching things that slipped through the cracks.
+You can use ~M-x org-gtd-reflect-missed-engagements~ to find appointments you missed, delegated items needing check-ins, and late projects. This is your safety net for catching things that slipped through the cracks.
 
 The weekly review is not yet implemented.
 
@@ -1626,7 +1634,7 @@ Horizon 2 is now handled by a variable and a hook you can add to ~org-gtd-organi
 - ~org-gtd-areas-of-focus~ is a list of strings, each representing one of your areas of focus.
 - ~org-gtd-set-area-of-focus~ is the hook you would add, e.g. ~(setq org-gtd-organize-hooks '(org-gtd-set-area-of-focus))~, it ensures each item you clarify will need to be part of a horizon.
 
-You can then use the function ~org-gtd-review-area-of-focus~ to generate an agenda view to review a specific area of focus.
+You can then use the function ~org-gtd-reflect-area-of-focus~ to generate an agenda view to review a specific area of focus.
 
 In order to add areas of focus to pre-existing items in your system, without going through the clarifying flow, we provide two functions:
 - ~org-gtd-area-of-focus-set-on-item-at-point~, when you are on a org heading
@@ -2328,7 +2336,7 @@ To undo changes:
 - *Start sequential, add parallel only when needed*: Don't over-engineer.
 - *Use graph view to understand before modifying*: Visualize first.
 - *Keep task names clear and specific*: "Research venues" not "Research"
-- *Review stuck projects weekly*: ~M-x org-gtd-review-stuck-projects~
+- *Review stuck projects weekly*: ~M-x org-gtd-reflect-stuck-projects~
 
 **** Growing Projects Over Time
 
@@ -2448,7 +2456,7 @@ All commands prompt for a filename. The file is created immediately.
 
 **** Project is Stuck (has TODO tasks but no NEXT)
 
-Run ~M-x org-gtd-review-stuck-projects~ to find stuck projects.
+Run ~M-x org-gtd-reflect-stuck-projects~ to find stuck projects.
 
 Open the stuck project in graph view: ~M-x org-gtd-show-project-graph~
 
@@ -3467,7 +3475,7 @@ Use ~org-gtd-clarify-project-insert-template~ during clarification to insert a t
 
 Used when:
 - Adding area of focus to items (via ~org-gtd-set-area-of-focus~ hook)
-- Reviewing specific areas with ~org-gtd-review-area-of-focus~
+- Reviewing specific areas with ~org-gtd-reflect-area-of-focus~
 
 *Example*:
 #+begin_src emacs-lisp
@@ -3537,7 +3545,7 @@ Default function generates: =gtd_archive_YYYY.org::datetree/= (year-based archiv
 
 *** Missed Engagements Review Configuration
 
-**** ~org-gtd-review-missed-custom-views~
+**** ~org-gtd-reflect-missed-custom-views~
 
 *Type*: List of GTD view specifications
 
@@ -3551,7 +3559,7 @@ Think of this like creating saved searches. Instead of seeing ALL missed items, 
 
 *Example - Area-Specific Reviews*:
 #+begin_src emacs-lisp
-(setq org-gtd-review-missed-custom-views
+(setq org-gtd-reflect-missed-custom-views
       '(((name . "Overdue Work Items")
          (filters . ((area-of-focus . "Work")
                      (deadline . past))))
@@ -3561,7 +3569,7 @@ Think of this like creating saved searches. Instead of seeing ALL missed items, 
                      (timestamp . past))))))
 #+end_src
 
-After configuring, run ~M-x org-gtd-review-missed-with-custom~ to see all standard views plus your custom ones.
+After configuring, run ~M-x org-gtd-reflect-missed-with-custom~ to see all standard views plus your custom ones.
 
 *Backward compatibility*: The old variable name ~org-gtd-oops-custom-views~ still works but will be removed in a future version.
 
@@ -3597,57 +3605,75 @@ When ~org-gtd-id-overlay-mode~ is enabled, task IDs are replaced with truncated 
 
 *** Advanced Item Configuration
 
-**** ~org-gtd-user-item-config~
+**** ~org-gtd-user-types~
 
 *Type*: Alist
 
 *Default*: ~'()~
 
-*Description*: Override default behavior for GTD item types.
+*Description*: Customize property prompts and input methods for built-in GTD types.
 
-This is an advanced feature for customizing how org-gtd handles different item types. If org-gtd finds an item type in this alist, it uses your configuration instead of the built-in one.
+This alist allows you to override how org-gtd prompts for properties when organizing items. You can customize existing types but cannot add new ones.
+
+Each entry is ~(TYPE-NAME . PLIST)~ where TYPE-NAME must be one of: ~next-action~, ~delegated~, ~calendar~, ~incubated~, ~project~, ~habit~, ~reference~, ~trash~, ~quick-action~.
+
+*Property attributes you can set:*
+
+| Attribute       | Description                                           |
+|-----------------+-------------------------------------------------------|
+| ~:prompt~       | The prompt string shown to the user                   |
+| ~:input-fn~     | Custom function for input (overrides default prompt)  |
+| ~:default~      | Default value (skips prompting if set)                |
+| ~:type~         | Input type: ~text~, ~timestamp~, ~repeating-timestamp~|
+| ~:required~     | Whether the property is required (~t~ or ~nil~)       |
+| ~:org-property~ | The org-mode property name (string)                   |
 
 *Example: Integrating Contact Managers with Delegation*
 
-BBDB (Insidious Big Brother Database) and its modern successor EBDB are Emacs contact management packages that store information about people (names, emails, addresses, phone numbers, etc.). They integrate with mail clients and other Emacs packages. If you use BBDB or EBDB to manage your contacts, you can configure org-gtd to use completion from your contacts database when delegating tasks.
+BBDB and EBDB are Emacs contact management packages. You can configure org-gtd to use completion from your contacts database when delegating tasks.
 
 For EBDB integration:
 #+begin_src emacs-lisp
-;; Define function to fetch EBDB contacts
-(defun my/ebdb-contacts ()
-  "Return alist of (name . uuid) from EBDB contacts."
-  (mapcar (lambda (rec)
-            (let* ((name (ebdb-record-name-string rec))
-                   (uuid (ebdb-record-uuid rec)))
-              (cons name uuid)))
-          (ebdb-records)))
+;; Define function to complete from EBDB contacts
+(defun my/ebdb-completing-read (prompt)
+  "Read a contact name from EBDB with completion."
+  (completing-read prompt
+                   (mapcar (lambda (rec) (ebdb-record-name-string rec))
+                           (ebdb-records))
+                   nil t))
 
-;; Create custom input type for delegation that uses EBDB
-(setq org-gtd-default-input-config
-      (append org-gtd-default-input-config
-              '(('delegate-person . (lambda (prompt)
-                                     (completing-read (format "%s: " prompt)
-                                                     (mapcar 'car (my/ebdb-contacts))
-                                                     nil t))))))
-
-;; Configure delegation to use the custom input type
-(setq org-gtd-user-item-config
-      '((:delegated
-         . ((DELEGATED_TO . ((type . 'delegate-person)
-                             (prompt . "Delegate to")))))))
+;; Configure delegation to use EBDB completion
+(setq org-gtd-user-types
+      '((delegated
+         :properties
+         ((:who :org-property "DELEGATED_TO" :type text :required t
+                :prompt "Delegate to"
+                :input-fn my/ebdb-completing-read)))))
 #+end_src
 
-For BBDB integration, adapt the function to use ~bbdb-records~ and ~bbdb-record-name~ instead:
+For BBDB integration, use ~bbdb-records~ and ~bbdb-record-name~ instead:
 #+begin_src emacs-lisp
-(defun my/bbdb-contacts ()
-  "Return alist of (name . uuid) from BBDB contacts."
-  (mapcar (lambda (rec)
-            (cons (bbdb-record-name rec)
-                  (bbdb-record-uuid rec)))
-          (bbdb-records)))
+(defun my/bbdb-completing-read (prompt)
+  "Read a contact name from BBDB with completion."
+  (completing-read prompt
+                   (mapcar #'bbdb-record-name (bbdb-records))
+                   nil t))
 #+end_src
 
-This same pattern can be used to integrate other completion sources (org-contacts, your own custom databases, etc.) with any org-gtd input prompt that uses the ~'text~ type.
+This pattern works for any completion source (org-contacts, custom databases, etc.).
+
+*Example: Custom prompt text*
+
+Change the default prompts without changing input behavior:
+#+begin_src emacs-lisp
+(setq org-gtd-user-types
+      '((delegated
+         :properties
+         ((:who :org-property "DELEGATED_TO" :type text :required t
+                :prompt "Assign to team member")
+          (:when :org-property "ORG_GTD_TIMESTAMP" :type timestamp :required t
+                 :prompt "Follow-up date")))))
+#+end_src
 
 *** Projects Configuration
 
@@ -3825,9 +3851,9 @@ C-c C-c to save
 - Simpler than engage view (no agenda section)
 - Useful for "get things done" focus mode
 
-*** Review Commands
+*** Reflect Commands
 
-**** ~org-gtd-review-stuck-projects~
+**** ~org-gtd-reflect-stuck-projects~
 
 *Binding*: Typically ~C-c d s~
 
@@ -3842,7 +3868,7 @@ C-c C-c to save
 2. Run ~org-gtd-projects-fix-todo-keywords-for-project-at-point~
 3. If still stuck, check dependencies
 
-**** ~org-gtd-review-area-of-focus~
+**** ~org-gtd-reflect-area-of-focus~
 
 *Arguments*: Optional AREA and START-DATE
 
@@ -3855,12 +3881,12 @@ C-c C-c to save
 
 *Example*:
 #+begin_example
-M-x org-gtd-review-area-of-focus
+M-x org-gtd-reflect-area-of-focus
 Area: Work
 Shows: All Work-related items
 #+end_example
 
-**** ~org-gtd-review-completed-items~
+**** ~org-gtd-reflect-completed-items~
 
 *Arguments*: Optional DAYS-BACK (default 7)
 
@@ -3872,14 +3898,14 @@ Shows: All Work-related items
 
 *Example*:
 #+begin_example
-M-x org-gtd-review-completed-items
+M-x org-gtd-reflect-completed-items
 Shows: Items completed in last 7 days
 
-C-u 30 M-x org-gtd-review-completed-items
+C-u 30 M-x org-gtd-reflect-completed-items
 Shows: Items completed in last 30 days
 #+end_example
 
-**** ~org-gtd-review-completed-projects~
+**** ~org-gtd-reflect-completed-projects~
 
 *When to use*: Weekly/monthly review to see finished projects
 
@@ -3887,7 +3913,7 @@ Shows: Items completed in last 30 days
 - Shows all projects where all tasks are DONE
 - Ready to archive
 
-**** ~org-gtd-review-missed-items~
+**** ~org-gtd-reflect-missed-items~
 
 *When to use*: When you suspect items have fallen through the cracks
 
@@ -3899,27 +3925,27 @@ Shows: Items completed in last 30 days
 
 Each of these commands finds items with problems in a specific category:
 
-**** ~org-gtd-review-stuck-calendar-items~
+**** ~org-gtd-reflect-stuck-calendar-items~
 
 Finds calendar items with invalid or missing timestamps.
 
-**** ~org-gtd-review-stuck-incubated-items~
+**** ~org-gtd-reflect-stuck-incubated-items~
 
 Finds incubated items with invalid or missing review dates.
 
-**** ~org-gtd-review-stuck-habit-items~
+**** ~org-gtd-reflect-stuck-habit-items~
 
 Finds habit items with incorrect configuration.
 
-**** ~org-gtd-review-stuck-delegated-items~
+**** ~org-gtd-reflect-stuck-delegated-items~
 
 Finds delegated items with missing delegate or date information.
 
-**** ~org-gtd-review-stuck-single-action-items~
+**** ~org-gtd-reflect-stuck-single-action-items~
 
 Finds single actions that aren't marked as NEXT.
 
-*** Review Commands (Missed Engagements)
+*** Reflect Commands (Missed Engagements)
 
 **** What Are Missed Engagements?
 
@@ -3936,7 +3962,7 @@ This is your safety net. Run it daily or weekly to ensure nothing falls through 
 
 Try this right now:
 
-1. Run ~M-x org-gtd-review-missed-engagements~
+1. Run ~M-x org-gtd-reflect-missed-engagements~
 2. Look at what appears in the agenda view
 3. Press ~TAB~ on any item to see its details
 
@@ -3966,7 +3992,7 @@ Here's how to use this in your daily routine:
 
 *Morning Review* (2 minutes):
 #+begin_example
-M-x org-gtd-review-missed-engagements
+M-x org-gtd-reflect-missed-engagements
 
 Look at each item:
 - Missed appointment? Reschedule or apologize
@@ -3978,17 +4004,17 @@ Look at each item:
 
 If you just want to see missed appointments:
 #+begin_example
-M-x org-gtd-review-missed-calendar
+M-x org-gtd-reflect-missed-calendar
 #+end_example
 
 Or just delegated items needing check-ins:
 #+begin_example
-M-x org-gtd-review-missed-delegated
+M-x org-gtd-reflect-missed-delegated
 #+end_example
 
 Or just late projects:
 #+begin_example
-M-x org-gtd-review-missed-projects
+M-x org-gtd-reflect-missed-projects
 #+end_example
 
 Each command shows only that type, making it easier to focus.
@@ -4008,24 +4034,24 @@ Use custom views to see missed items by area of focus (see configuration below).
 
 | Command | Shows | Use When |
 |---------|-------|----------|
-| ~org-gtd-review-missed-engagements~ | All missed items | Daily/weekly review |
-| ~org-gtd-review-missed-calendar~ | Missed appointments only | Checking calendar |
-| ~org-gtd-review-missed-delegated~ | Delegations needing check-in | Following up on delegated work |
-| ~org-gtd-review-missed-projects~ | Late projects only | Project review |
-| ~org-gtd-review-missed-with-custom~ | All missed + custom views | Using custom filters |
+| ~org-gtd-reflect-missed-engagements~ | All missed items | Daily/weekly review |
+| ~org-gtd-reflect-missed-calendar~ | Missed appointments only | Checking calendar |
+| ~org-gtd-reflect-missed-delegated~ | Delegations needing check-in | Following up on delegated work |
+| ~org-gtd-reflect-missed-projects~ | Late projects only | Project review |
+| ~org-gtd-reflect-missed-with-custom~ | All missed + custom views | Using custom filters |
 
 **** Backward Compatibility Note
 
 The old command names still work:
-- ~org-gtd-oops~ → ~org-gtd-review-missed-engagements~
-- ~org-gtd-oops-calendar~ → ~org-gtd-review-missed-calendar~
-- ~org-gtd-oops-delegated~ → ~org-gtd-review-missed-delegated~
-- ~org-gtd-oops-projects~ → ~org-gtd-review-missed-projects~
-- ~org-gtd-oops-with-custom~ → ~org-gtd-review-missed-with-custom~
+- ~org-gtd-oops~ → ~org-gtd-reflect-missed-engagements~
+- ~org-gtd-oops-calendar~ → ~org-gtd-reflect-missed-calendar~
+- ~org-gtd-oops-delegated~ → ~org-gtd-reflect-missed-delegated~
+- ~org-gtd-oops-projects~ → ~org-gtd-reflect-missed-projects~
+- ~org-gtd-oops-with-custom~ → ~org-gtd-reflect-missed-with-custom~
 
 Update to the new names when convenient. The old names will be removed in a future version.
 
-*** Review Commands (Upcoming Delegated)
+*** Reflect Commands (Upcoming Delegated)
 
 **** What Are Upcoming Delegated Check-ins?
 
@@ -4042,7 +4068,7 @@ This is your planning tool. Use it weekly to prepare your delegation check-ins, 
 
 Try this right now:
 
-1. Run ~M-x org-gtd-review-upcoming-delegated~
+1. Run ~M-x org-gtd-reflect-upcoming-delegated~
 2. Look at the delegated items with future check-in dates
 3. Press ~TAB~ on any item to see when the check-in is scheduled
 
@@ -4072,7 +4098,7 @@ Here's how to use this in your weekly planning:
 
 *Sunday Planning* (5 minutes):
 #+begin_example
-M-x org-gtd-review-upcoming-delegated
+M-x org-gtd-reflect-upcoming-delegated
 
 For each item:
 - Check-in this week? Prepare questions or schedule call
@@ -4082,7 +4108,7 @@ For each item:
 
 *When Someone Reports Early Completion*:
 #+begin_example
-M-x org-gtd-review-upcoming-delegated
+M-x org-gtd-reflect-upcoming-delegated
 
 Find their item in the list
 Press TAB to jump to the item
@@ -4093,8 +4119,8 @@ Check if this unblocks other work in the project
 *Combined with Missed Review*:
 #+begin_example
 # Morning routine
-M-x org-gtd-review-missed-delegated    # Catch up on late check-ins
-M-x org-gtd-review-upcoming-delegated  # Plan upcoming check-ins
+M-x org-gtd-reflect-missed-delegated    # Catch up on late check-ins
+M-x org-gtd-reflect-upcoming-delegated  # Plan upcoming check-ins
 #+end_example
 
 The first shows what you missed. The second shows what's coming. Together they give complete delegation visibility.
@@ -4140,7 +4166,7 @@ Both are valuable. Missed helps you catch problems. Upcoming helps you prevent t
 
 | Command | Shows | Use When |
 |---------|-------|----------|
-| ~org-gtd-review-upcoming-delegated~ | All delegated items with future check-in dates | Weekly planning, early completion responses |
+| ~org-gtd-reflect-upcoming-delegated~ | All delegated items with future check-in dates | Weekly planning, early completion responses |
 
 *** Custom View Commands
 
@@ -4179,7 +4205,7 @@ You'll see all your NEXT actions in one list. That's it—you've created a custo
 
 Think of views like filtered searches. You tell org-gtd what to show using ~filters~, and it finds matching items.
 
-The built-in ~org-gtd-engage~ command? It uses ~org-gtd-view-show~ internally. ~org-gtd-review-stuck-projects~? Same thing. You're now using the same tool the package uses to create its own views.
+The built-in ~org-gtd-engage~ command? It uses ~org-gtd-view-show~ internally. ~org-gtd-reflect-stuck-projects~? Same thing. You're now using the same tool the package uses to create its own views.
 
 Each view has two parts:
 - ~name~ :: What to call the view (shows in agenda header)
@@ -5336,7 +5362,7 @@ SCHEDULED: <2025-10-11 Fri .+1d>
 - Manually with ~org-gtd-area-of-focus-set-on-item-at-point~
 - From agenda with ~org-gtd-area-of-focus-set-on-agenda-item~
 
-*Use*: Filter views by area with ~org-gtd-review-area-of-focus~ or custom views.
+*Use*: Filter views by area with ~org-gtd-reflect-area-of-focus~ or custom views.
 
 *** Standard Org Properties Used by org-gtd
 
@@ -6369,13 +6395,13 @@ This section covers common problems and their solutions. For complete command do
 
 Sometimes items get stuck or fall through the cracks. org-gtd provides several commands to find problematic items:
 
-- ~org-gtd-review-stuck-calendar-items~ :: Calendar items with invalid or missing timestamps
-- ~org-gtd-review-stuck-incubated-items~ :: Incubated items with invalid or missing review dates
-- ~org-gtd-review-stuck-habit-items~ :: Habits with incorrect configuration
-- ~org-gtd-review-stuck-delegated-items~ :: Delegated items missing delegate or date information
-- ~org-gtd-review-stuck-single-action-items~ :: Single actions that aren't marked as NEXT
-- ~org-gtd-review-stuck-projects~ :: Projects that have tasks but no NEXT actions
-- ~org-gtd-review-missed-items~ :: Items that should have been processed but weren't
+- ~org-gtd-reflect-stuck-calendar-items~ :: Calendar items with invalid or missing timestamps
+- ~org-gtd-reflect-stuck-incubated-items~ :: Incubated items with invalid or missing review dates
+- ~org-gtd-reflect-stuck-habit-items~ :: Habits with incorrect configuration
+- ~org-gtd-reflect-stuck-delegated-items~ :: Delegated items missing delegate or date information
+- ~org-gtd-reflect-stuck-single-action-items~ :: Single actions that aren't marked as NEXT
+- ~org-gtd-reflect-stuck-projects~ :: Projects that have tasks but no NEXT actions
+- ~org-gtd-reflect-missed-items~ :: Items that should have been processed but weren't
 
 See [[#commands-reference][Commands Reference]] for detailed documentation of these commands.
 

@@ -195,6 +195,38 @@ Execute BODY in this buffer."
                                   '((:when . "<2025-01-01 +1d>")))
        (expect (org-entry-get nil "ORG_GTD") :to-equal "Habit")
        ;; SCHEDULED is set via org-schedule
-       (expect (org-get-scheduled-time (point)) :not :to-be nil)))))
+       (expect (org-get-scheduled-time (point)) :not :to-be nil))))
+
+  (describe "with :input-fn in user-types"
+
+    (it "calls custom input function instead of default prompt"
+      (let ((org-gtd-user-types
+             '((delegated
+                :properties
+                ((:who :org-property "DELEGATED_TO" :type text :required t
+                       :prompt "Delegate to"
+                       :input-fn (lambda (_prompt) "Custom Person")))))))
+        (ogt--with-temp-org-buffer
+         "* Test task"
+         ;; Only need to provide :when since :who uses input-fn
+         (with-simulated-input "2025-01-15 RET"
+           (org-gtd-configure-as-type 'delegated))
+         (expect (org-entry-get nil "DELEGATED_TO") :to-equal "Custom Person"))))
+
+    (it "input-fn receives the prompt as argument"
+      (let* ((received-prompt nil)
+             (org-gtd-user-types
+              `((delegated
+                 :properties
+                 ((:who :org-property "DELEGATED_TO" :type text :required t
+                        :prompt "Test prompt here"
+                        :input-fn ,(lambda (prompt)
+                                     (setq received-prompt prompt)
+                                     "Result")))))))
+        (ogt--with-temp-org-buffer
+         "* Test task"
+         (with-simulated-input "2025-01-15 RET"
+           (org-gtd-configure-as-type 'delegated))
+         (expect received-prompt :to-equal "Test prompt here"))))))
 
 ;;; configure-test.el ends here

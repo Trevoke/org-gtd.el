@@ -96,7 +96,7 @@ Properties with :default values are set automatically without prompting."
       ;; Set TODO state if defined
       (when state
         (org-todo (org-gtd--state-to-keyword state)))
-      ;; Set each required property (from VALUES, default, or by prompting)
+      ;; Set each required property (from VALUES, default, input-fn, or by prompting)
       (dolist (prop props)
         (when (plist-get (cdr prop) :required)
           (let* ((semantic-name (car prop))
@@ -104,10 +104,13 @@ Properties with :default values are set automatically without prompting."
                  (prop-type (plist-get (cdr prop) :type))
                  (org-prop (plist-get (cdr prop) :org-property))
                  (default-val (plist-get (cdr prop) :default))
-                 ;; Look up value: VALUES > default > prompt
+                 (input-fn (plist-get (cdr prop) :input-fn))
+                 ;; Look up value: VALUES > default > input-fn > default prompt
                  (value (or (alist-get semantic-name values)
                             default-val
-                            (org-gtd--prompt-for-property-type prop-type prompt))))
+                            (if input-fn
+                                (funcall input-fn prompt)
+                              (org-gtd--prompt-for-property-type prop-type prompt)))))
             (if (string-equal org-prop "SCHEDULED")
                 (org-schedule nil value)
               (org-entry-put nil org-prop value)))))

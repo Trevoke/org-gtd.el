@@ -90,12 +90,92 @@ Each type is a cons of (TYPE-NAME . PLIST) where PLIST contains:
 - :state - The semantic TODO state (:next, :wait, :done, :canceled, or nil)
 - :properties - List of semantic property definitions")
 
+(defcustom org-gtd-user-types '()
+  "User customizations for built-in GTD types.
+
+This alist allows overriding properties of existing types defined in
+`org-gtd-types'.  You cannot add new types, only customize existing ones.
+
+Each entry is (TYPE-NAME . PLIST) where TYPE-NAME must be one of the
+built-in types: next-action, delegated, calendar, incubated, project,
+habit, reference, trash, quick-action.
+
+PLIST can contain:
+- :properties - List of property definitions to merge/override
+- :state - Override the TODO state semantic (rarely needed)
+
+Property definitions support these attributes:
+- :org-property - The org-mode property name (string)
+- :type - Input type: text, timestamp, repeating-timestamp
+- :required - Whether property is required (t or nil)
+- :prompt - Prompt string for interactive input
+- :default - Default value (skips prompting)
+- :input-fn - Custom function for input (receives prompt, returns value)
+
+Example: Use EBDB contacts for delegation:
+
+  (setq org-gtd-user-types
+        \\='((delegated
+           :properties
+           ((:who :org-property \"DELEGATED_TO\" :type text :required t
+                  :prompt \"Delegate to\"
+                  :input-fn my/ebdb-completing-read)))))"
+  :group 'org-gtd
+  :type '(alist :key-type symbol :value-type plist))
+
+;;;; Merge Helpers
+
+(defun org-gtd--merge-properties (builtin-props user-props)
+  "Merge USER-PROPS into BUILTIN-PROPS by semantic name.
+User properties with same semantic name replace builtin ones."
+  (if (null user-props)
+      builtin-props
+    (let ((result (copy-sequence builtin-props)))
+      (dolist (user-prop user-props)
+        (let* ((semantic-name (car user-prop))
+               (existing (seq-find (lambda (p) (eq (car p) semantic-name)) result)))
+          (if existing
+              ;; Replace existing property
+              (setq result (mapcar (lambda (p)
+                                     (if (eq (car p) semantic-name)
+                                         user-prop
+                                       p))
+                                   result))
+            ;; Add new property
+            (push user-prop result))))
+      result)))
+
+(defun org-gtd--merge-type-definitions (builtin user)
+  "Merge USER type definition into BUILTIN.
+Properties are merged by semantic name.  User properties override builtin.
+:org-gtd is never overridden from user config."
+  (let* ((builtin-plist (cdr builtin))
+         (user-plist (cdr user))
+         (type-name (car builtin))
+         ;; Never allow overriding :org-gtd
+         (org-gtd-val (plist-get builtin-plist :org-gtd))
+         ;; Allow overriding :state
+         (state (or (plist-get user-plist :state)
+                    (plist-get builtin-plist :state)))
+         ;; Merge properties
+         (builtin-props (plist-get builtin-plist :properties))
+         (user-props (plist-get user-plist :properties))
+         (merged-props (org-gtd--merge-properties builtin-props user-props)))
+    (cons type-name
+          (list :org-gtd org-gtd-val
+                :state state
+                :properties merged-props))))
+
 ;;;; Accessor Functions
 
 (defun org-gtd-type-get (type-name)
-  "Get type definition for TYPE-NAME.
+  "Get type definition for TYPE-NAME with user overrides merged.
 Returns the full type entry (TYPE-NAME . PLIST) or nil if not found."
-  (assq type-name org-gtd-types))
+  (when-let ((builtin (assq type-name org-gtd-types)))
+    (let ((user-override (assq type-name org-gtd-user-types)))
+      (if user-override
+          (org-gtd--merge-type-definitions builtin user-override)
+        builtin))))
 
 (defun org-gtd-type-org-gtd-value (type-name)
   "Get the ORG_GTD property value for TYPE-NAME.

@@ -67,7 +67,8 @@ What's new in 4.0
 * Data-driven configuration::
 * Declarative view language::
 * Better project modification::
-* Enhanced review capabilities::
+* Updated terminology Review → Reflect::
+* Enhanced reflect capabilities::
 * Simplified configuration::
 * What you need to do::
 * Previous versions::
@@ -233,10 +234,10 @@ Configuration Variables Reference
 Commands Reference
 
 * Core GTD Workflow Commands::
-* Review Commands::
+* Reflect Commands::
 * Stuck Item Review Commands::
-* Review Commands (Missed Engagements)::
-* Review Commands (Upcoming Delegated)::
+* Reflect Commands (Missed Engagements)::
+* Reflect Commands (Upcoming Delegated)::
 * Custom View Commands::
 * Clarification Commands::
 * Archive Commands::
@@ -384,7 +385,8 @@ Version 4.0 is a major release that transforms how Org GTD handles projects and 
 * Data-driven configuration::
 * Declarative view language::
 * Better project modification::
-* Enhanced review capabilities::
+* Updated terminology Review → Reflect::
+* Enhanced reflect capabilities::
 * Simplified configuration::
 * What you need to do::
 * Previous versions::
@@ -466,12 +468,26 @@ Creating custom agenda views is now much easier with a declarative syntax:
 @strong{Modify project structure} - Commands to create task dependencies and manage complex projects
 @end itemize
 
-@node Enhanced review capabilities
-@section Enhanced review capabilities
+@node Updated terminology Review → Reflect
+@section Updated terminology: Review → Reflect
+
+Following David Allen's updated terminology from his more recent books, all "review" and "oops" commands are now named "reflect":
 
 @itemize
 @item
-@strong{Find missed items} - New @code{org-gtd-review-missed-items} command to catch things that slipped through
+@code{org-gtd-review-*} → @code{org-gtd-reflect-*}
+@item
+@code{org-gtd-oops-*} → @code{org-gtd-reflect-*}
+@end itemize
+
+The old names still work as aliases but are marked obsolete.
+
+@node Enhanced reflect capabilities
+@section Enhanced reflect capabilities
+
+@itemize
+@item
+@strong{Find missed items} - New @code{org-gtd-reflect-missed-items} command to catch things that slipped through
 @item
 @strong{Better stuck project detection} - Improved identification of projects that need attention
 @end itemize
@@ -593,7 +609,7 @@ M-x org-gtd-upgrade-v3-to-v4
 
 @strong{What the migration does:}
 
-The migration performs two steps automatically:
+The migration performs three steps automatically:
 
 @enumerate
 @item
@@ -603,6 +619,15 @@ The migration performs two steps automatically:
 Adds @code{ORG_GTD="Projects"} to project headings
 @item
 Adds @code{ORG_GTD="Actions"} to project tasks
+@end itemize
+
+@item
+@strong{Migrates delegated items} to use their own type:
+@itemize
+@item
+Changes @code{ORG_GTD} from "Actions" to "Delegated" for items with @code{DELEGATED_TO} property
+@item
+This separates delegated items from regular single actions
 @end itemize
 
 @item
@@ -787,7 +812,7 @@ This is the simplest possible configuration for org-gtd. Copy this entire block 
 (global-set-key (kbd "C-c d e") 'org-gtd-engage)
 (global-set-key (kbd "C-c d p") 'org-gtd-process-inbox)
 (global-set-key (kbd "C-c d n") 'org-gtd-show-all-next)
-(global-set-key (kbd "C-c d s") 'org-gtd-review-stuck-projects)
+(global-set-key (kbd "C-c d s") 'org-gtd-reflect-stuck-projects)
 
 ;; Keybinding for clarify map
 ;; This only works when you're in a clarify buffer
@@ -828,7 +853,7 @@ Then add this to your @code{config.el}:
          :desc "Engage"         "e"  #'org-gtd-engage
          :desc "Process inbox"  "p"  #'org-gtd-process-inbox
          :desc "Show all next"  "n"  #'org-gtd-show-all-next
-         :desc "Stuck projects" "s"  #'org-gtd-review-stuck-projects))
+         :desc "Stuck projects" "s"  #'org-gtd-reflect-stuck-projects))
   ;; Clarify map binding
   (map! :map org-gtd-clarify-map
         :desc "Organize this item" "C-c c" #'org-gtd-organize))
@@ -869,7 +894,7 @@ If you use Spacemacs, add this to your @code{dotspacemacs/user-config} function:
     "od e" 'org-gtd-engage
     "od p" 'org-gtd-process-inbox
     "od n" 'org-gtd-show-all-next
-    "od s" 'org-gtd-review-stuck-projects)
+    "od s" 'org-gtd-reflect-stuck-projects)
   ;; Clarify map binding
   (with-eval-after-load 'org-gtd
     (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize)))
@@ -1374,7 +1399,7 @@ If you are a Doom Emacs user, then your configuration may look something like th
          :desc "Engage"         "e"  #'org-gtd-engage
          :desc "Process inbox"  "p"  #'org-gtd-process-inbox
          :desc "Show all next"  "n"  #'org-gtd-show-all-next
-         :desc "Stuck projects" "s"  #'org-gtd-review-stuck-projects))
+         :desc "Stuck projects" "s"  #'org-gtd-reflect-stuck-projects))
   (map! :map org-gtd-clarify-map
         :desc "Organize this item" "C-c c" #'org-gtd-organize))
 @end lisp
@@ -2031,7 +2056,7 @@ These are the commands you'll use most:
 @item @code{org-gtd-show-all-next}
 @tab See only NEXT actions
 @tab When you want to focus on actions
-@item @code{org-gtd-review-stuck-projects}
+@item @code{org-gtd-reflect-stuck-projects}
 @tab Find stuck projects
 @tab Weekly review
 @item @code{org-gtd-projects-fix-all-todo-keywords}
@@ -2292,7 +2317,7 @@ You can see a list of all NEXT actions, and scheduled actions, with @code{M-x or
 
 You can call @code{org-gtd-show-all-next} to only see NEXT actions, nothing scheduled.
 
-You can use @code{M-x org-gtd-review-missed-engagements} to find appointments you missed, delegated items needing check-ins, and late projects. This is your safety net for catching things that slipped through the cracks.
+You can use @code{M-x org-gtd-reflect-missed-engagements} to find appointments you missed, delegated items needing check-ins, and late projects. This is your safety net for catching things that slipped through the cracks.
 
 The weekly review is not yet implemented.
 
@@ -2654,7 +2679,7 @@ Horizon 2 is now handled by a variable and a hook you can add to @code{org-gtd-o
 @code{org-gtd-set-area-of-focus} is the hook you would add, e.g. @code{(setq org-gtd-organize-hooks '(org-gtd-set-area-of-focus))}, it ensures each item you clarify will need to be part of a horizon.
 @end itemize
 
-You can then use the function @code{org-gtd-review-area-of-focus} to generate an agenda view to review a specific area of focus.
+You can then use the function @code{org-gtd-reflect-area-of-focus} to generate an agenda view to review a specific area of focus.
 
 In order to add areas of focus to pre-existing items in your system, without going through the clarifying flow, we provide two functions:
 @itemize
@@ -3786,7 +3811,7 @@ You know all tasks upfront
 @item
 @strong{Keep task names clear and specific}: "Research venues" not "Research"
 @item
-@strong{Review stuck projects weekly}: @code{M-x org-gtd-review-stuck-projects}
+@strong{Review stuck projects weekly}: @code{M-x org-gtd-reflect-stuck-projects}
 @end itemize
 
 @item
@@ -3980,7 +4005,7 @@ Try exporting to a different location with write permissions
 @anchor{Project is Stuck (has TODO tasks but no NEXT)}Project is Stuck (has TODO tasks but no NEXT)
 
 
-Run @code{M-x org-gtd-review-stuck-projects} to find stuck projects.
+Run @code{M-x org-gtd-reflect-stuck-projects} to find stuck projects.
 
 Open the stuck project in graph view: @code{M-x org-gtd-show-project-graph}
 
@@ -5434,7 +5459,7 @@ Used when:
 @item
 Adding area of focus to items (via @code{org-gtd-set-area-of-focus} hook)
 @item
-Reviewing specific areas with @code{org-gtd-review-area-of-focus}
+Reviewing specific areas with @code{org-gtd-reflect-area-of-focus}
 @end itemize
 
 @strong{Example}:
@@ -5519,7 +5544,7 @@ Default function generates: @samp{gtd_archive_YYYY.org::datetree/} (year-based a
 
 @itemize
 @item
-@anchor{@code{org-gtd-review-missed-custom-views}}@code{org-gtd-review-missed-custom-views}
+@anchor{@code{org-gtd-reflect-missed-custom-views}}@code{org-gtd-reflect-missed-custom-views}
 
 
 @strong{Type}: List of GTD view specifications
@@ -5534,7 +5559,7 @@ Think of this like creating saved searches. Instead of seeing ALL missed items, 
 
 @strong{Example - Area-Specific Reviews}:
 @lisp
-(setq org-gtd-review-missed-custom-views
+(setq org-gtd-reflect-missed-custom-views
       '(((name . "Overdue Work Items")
          (filters . ((area-of-focus . "Work")
                      (deadline . past))))
@@ -5544,7 +5569,7 @@ Think of this like creating saved searches. Instead of seeing ALL missed items, 
                      (timestamp . past))))))
 @end lisp
 
-After configuring, run @code{M-x org-gtd-review-missed-with-custom} to see all standard views plus your custom ones.
+After configuring, run @code{M-x org-gtd-reflect-missed-with-custom} to see all standard views plus your custom ones.
 
 @strong{Backward compatibility}: The old variable name @code{org-gtd-oops-custom-views} still works but will be removed in a future version.
 @end itemize
@@ -5591,58 +5616,84 @@ When @code{org-gtd-id-overlay-mode} is enabled, task IDs are replaced with trunc
 
 @itemize
 @item
-@anchor{@code{org-gtd-user-item-config}}@code{org-gtd-user-item-config}
+@anchor{@code{org-gtd-user-types}}@code{org-gtd-user-types}
 
 
 @strong{Type}: Alist
 
 @strong{Default}: @code{'()}
 
-@strong{Description}: Override default behavior for GTD item types.
+@strong{Description}: Customize property prompts and input methods for built-in GTD types.
 
-This is an advanced feature for customizing how org-gtd handles different item types. If org-gtd finds an item type in this alist, it uses your configuration instead of the built-in one.
+This alist allows you to override how org-gtd prompts for properties when organizing items. You can customize existing types but cannot add new ones.
+
+Each entry is @code{(TYPE-NAME . PLIST)} where TYPE-NAME must be one of: @code{next-action}, @code{delegated}, @code{calendar}, @code{incubated}, @code{project}, @code{habit}, @code{reference}, @code{trash}, @code{quick-action}.
+
+@strong{Property attributes you can set:}
+
+@multitable {aaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Attribute
+@tab Description
+@item @code{:prompt}
+@tab The prompt string shown to the user
+@item @code{:input-fn}
+@tab Custom function for input (overrides default prompt)
+@item @code{:default}
+@tab Default value (skips prompting if set)
+@item @code{:type}
+@tab Input type: @code{text}, @code{timestamp}, @code{repeating-timestamp}
+@item @code{:required}
+@tab Whether the property is required (@code{t} or @code{nil})
+@item @code{:org-property}
+@tab The org-mode property name (string)
+@end multitable
 
 @strong{Example: Integrating Contact Managers with Delegation}
 
-BBDB (Insidious Big Brother Database) and its modern successor EBDB are Emacs contact management packages that store information about people (names, emails, addresses, phone numbers, etc.). They integrate with mail clients and other Emacs packages. If you use BBDB or EBDB to manage your contacts, you can configure org-gtd to use completion from your contacts database when delegating tasks.
+BBDB and EBDB are Emacs contact management packages. You can configure org-gtd to use completion from your contacts database when delegating tasks.
 
 For EBDB integration:
 @lisp
-;; Define function to fetch EBDB contacts
-(defun my/ebdb-contacts ()
-  "Return alist of (name . uuid) from EBDB contacts."
-  (mapcar (lambda (rec)
-            (let* ((name (ebdb-record-name-string rec))
-                   (uuid (ebdb-record-uuid rec)))
-              (cons name uuid)))
-          (ebdb-records)))
+;; Define function to complete from EBDB contacts
+(defun my/ebdb-completing-read (prompt)
+  "Read a contact name from EBDB with completion."
+  (completing-read prompt
+                   (mapcar (lambda (rec) (ebdb-record-name-string rec))
+                           (ebdb-records))
+                   nil t))
 
-;; Create custom input type for delegation that uses EBDB
-(setq org-gtd-default-input-config
-      (append org-gtd-default-input-config
-              '(('delegate-person . (lambda (prompt)
-                                     (completing-read (format "%s: " prompt)
-                                                     (mapcar 'car (my/ebdb-contacts))
-                                                     nil t))))))
-
-;; Configure delegation to use the custom input type
-(setq org-gtd-user-item-config
-      '((:delegated
-         . ((DELEGATED_TO . ((type . 'delegate-person)
-                             (prompt . "Delegate to")))))))
+;; Configure delegation to use EBDB completion
+(setq org-gtd-user-types
+      '((delegated
+         :properties
+         ((:who :org-property "DELEGATED_TO" :type text :required t
+                :prompt "Delegate to"
+                :input-fn my/ebdb-completing-read)))))
 @end lisp
 
-For BBDB integration, adapt the function to use @code{bbdb-records} and @code{bbdb-record-name} instead:
+For BBDB integration, use @code{bbdb-records} and @code{bbdb-record-name} instead:
 @lisp
-(defun my/bbdb-contacts ()
-  "Return alist of (name . uuid) from BBDB contacts."
-  (mapcar (lambda (rec)
-            (cons (bbdb-record-name rec)
-                  (bbdb-record-uuid rec)))
-          (bbdb-records)))
+(defun my/bbdb-completing-read (prompt)
+  "Read a contact name from BBDB with completion."
+  (completing-read prompt
+                   (mapcar #'bbdb-record-name (bbdb-records))
+                   nil t))
 @end lisp
 
-This same pattern can be used to integrate other completion sources (org-contacts, your own custom databases, etc.) with any org-gtd input prompt that uses the @code{'text} type.
+This pattern works for any completion source (org-contacts, custom databases, etc.).
+
+@strong{Example: Custom prompt text}
+
+Change the default prompts without changing input behavior:
+@lisp
+(setq org-gtd-user-types
+      '((delegated
+         :properties
+         ((:who :org-property "DELEGATED_TO" :type text :required t
+                :prompt "Assign to team member")
+          (:when :org-property "ORG_GTD_TIMESTAMP" :type timestamp :required t
+                 :prompt "Follow-up date")))))
+@end lisp
 @end itemize
 
 @node Projects Configuration
@@ -5750,10 +5801,10 @@ This section lists all interactive commands available in org-gtd, organized by w
 
 @menu
 * Core GTD Workflow Commands::
-* Review Commands::
+* Reflect Commands::
 * Stuck Item Review Commands::
-* Review Commands (Missed Engagements)::
-* Review Commands (Upcoming Delegated)::
+* Reflect Commands (Missed Engagements)::
+* Reflect Commands (Upcoming Delegated)::
 * Custom View Commands::
 * Clarification Commands::
 * Archive Commands::
@@ -5935,12 +5986,12 @@ Useful for "get things done" focus mode
 @end itemize
 @end itemize
 
-@node Review Commands
-@subsection Review Commands
+@node Reflect Commands
+@subsection Reflect Commands
 
 @itemize
 @item
-@anchor{@code{org-gtd-review-stuck-projects}}@code{org-gtd-review-stuck-projects}
+@anchor{@code{org-gtd-reflect-stuck-projects}}@code{org-gtd-reflect-stuck-projects}
 
 
 @strong{Binding}: Typically @code{C-c d s}
@@ -5966,7 +6017,7 @@ If still stuck, check dependencies
 @end enumerate
 
 @item
-@anchor{@code{org-gtd-review-area-of-focus}}@code{org-gtd-review-area-of-focus}
+@anchor{@code{org-gtd-reflect-area-of-focus}}@code{org-gtd-reflect-area-of-focus}
 
 
 @strong{Arguments}: Optional AREA and START-DATE
@@ -5985,13 +6036,13 @@ Shows all items (projects, actions, calendar) for that area
 
 @strong{Example}:
 @example
-M-x org-gtd-review-area-of-focus
+M-x org-gtd-reflect-area-of-focus
 Area: Work
 Shows: All Work-related items
 @end example
 
 @item
-@anchor{@code{org-gtd-review-completed-items}}@code{org-gtd-review-completed-items}
+@anchor{@code{org-gtd-reflect-completed-items}}@code{org-gtd-reflect-completed-items}
 
 
 @strong{Arguments}: Optional DAYS-BACK (default 7)
@@ -6008,15 +6059,15 @@ Good for weekly review reflection
 
 @strong{Example}:
 @example
-M-x org-gtd-review-completed-items
+M-x org-gtd-reflect-completed-items
 Shows: Items completed in last 7 days
 
-C-u 30 M-x org-gtd-review-completed-items
+C-u 30 M-x org-gtd-reflect-completed-items
 Shows: Items completed in last 30 days
 @end example
 
 @item
-@anchor{@code{org-gtd-review-completed-projects}}@code{org-gtd-review-completed-projects}
+@anchor{@code{org-gtd-reflect-completed-projects}}@code{org-gtd-reflect-completed-projects}
 
 
 @strong{When to use}: Weekly/monthly review to see finished projects
@@ -6030,7 +6081,7 @@ Ready to archive
 @end itemize
 
 @item
-@anchor{@code{org-gtd-review-missed-items}}@code{org-gtd-review-missed-items}
+@anchor{@code{org-gtd-reflect-missed-items}}@code{org-gtd-reflect-missed-items}
 
 
 @strong{When to use}: When you suspect items have fallen through the cracks
@@ -6051,38 +6102,38 @@ Each of these commands finds items with problems in a specific category:
 
 @itemize
 @item
-@anchor{@code{org-gtd-review-stuck-calendar-items}}@code{org-gtd-review-stuck-calendar-items}
+@anchor{@code{org-gtd-reflect-stuck-calendar-items}}@code{org-gtd-reflect-stuck-calendar-items}
 
 
 Finds calendar items with invalid or missing timestamps.
 
 @item
-@anchor{@code{org-gtd-review-stuck-incubated-items}}@code{org-gtd-review-stuck-incubated-items}
+@anchor{@code{org-gtd-reflect-stuck-incubated-items}}@code{org-gtd-reflect-stuck-incubated-items}
 
 
 Finds incubated items with invalid or missing review dates.
 
 @item
-@anchor{@code{org-gtd-review-stuck-habit-items}}@code{org-gtd-review-stuck-habit-items}
+@anchor{@code{org-gtd-reflect-stuck-habit-items}}@code{org-gtd-reflect-stuck-habit-items}
 
 
 Finds habit items with incorrect configuration.
 
 @item
-@anchor{@code{org-gtd-review-stuck-delegated-items}}@code{org-gtd-review-stuck-delegated-items}
+@anchor{@code{org-gtd-reflect-stuck-delegated-items}}@code{org-gtd-reflect-stuck-delegated-items}
 
 
 Finds delegated items with missing delegate or date information.
 
 @item
-@anchor{@code{org-gtd-review-stuck-single-action-items}}@code{org-gtd-review-stuck-single-action-items}
+@anchor{@code{org-gtd-reflect-stuck-single-action-items}}@code{org-gtd-reflect-stuck-single-action-items}
 
 
 Finds single actions that aren't marked as NEXT@.
 @end itemize
 
-@node Review Commands (Missed Engagements)
-@subsection Review Commands (Missed Engagements)
+@node Reflect Commands (Missed Engagements)
+@subsection Reflect Commands (Missed Engagements)
 
 @itemize
 @item
@@ -6111,7 +6162,7 @@ Try this right now:
 
 @enumerate
 @item
-Run @code{M-x org-gtd-review-missed-engagements}
+Run @code{M-x org-gtd-reflect-missed-engagements}
 @item
 Look at what appears in the agenda view
 @item
@@ -6158,7 +6209,7 @@ Here's how to use this in your daily routine:
 
 @strong{Morning Review} (2 minutes):
 @example
-M-x org-gtd-review-missed-engagements
+M-x org-gtd-reflect-missed-engagements
 
 Look at each item:
 - Missed appointment? Reschedule or apologize
@@ -6170,17 +6221,17 @@ Look at each item:
 
 If you just want to see missed appointments:
 @example
-M-x org-gtd-review-missed-calendar
+M-x org-gtd-reflect-missed-calendar
 @end example
 
 Or just delegated items needing check-ins:
 @example
-M-x org-gtd-review-missed-delegated
+M-x org-gtd-reflect-missed-delegated
 @end example
 
 Or just late projects:
 @example
-M-x org-gtd-review-missed-projects
+M-x org-gtd-reflect-missed-projects
 @end example
 
 Each command shows only that type, making it easier to focus.
@@ -6202,23 +6253,23 @@ Use custom views to see missed items by area of focus (see configuration below).
 @anchor{Command Reference}Command Reference
 
 
-@multitable {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@multitable {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 @headitem Command
 @tab Shows
 @tab Use When
-@item @code{org-gtd-review-missed-engagements}
+@item @code{org-gtd-reflect-missed-engagements}
 @tab All missed items
 @tab Daily/weekly review
-@item @code{org-gtd-review-missed-calendar}
+@item @code{org-gtd-reflect-missed-calendar}
 @tab Missed appointments only
 @tab Checking calendar
-@item @code{org-gtd-review-missed-delegated}
+@item @code{org-gtd-reflect-missed-delegated}
 @tab Delegations needing check-in
 @tab Following up on delegated work
-@item @code{org-gtd-review-missed-projects}
+@item @code{org-gtd-reflect-missed-projects}
 @tab Late projects only
 @tab Project review
-@item @code{org-gtd-review-missed-with-custom}
+@item @code{org-gtd-reflect-missed-with-custom}
 @tab All missed + custom views
 @tab Using custom filters
 @end multitable
@@ -6230,22 +6281,22 @@ Use custom views to see missed items by area of focus (see configuration below).
 The old command names still work:
 @itemize
 @item
-@code{org-gtd-oops} → @code{org-gtd-review-missed-engagements}
+@code{org-gtd-oops} → @code{org-gtd-reflect-missed-engagements}
 @item
-@code{org-gtd-oops-calendar} → @code{org-gtd-review-missed-calendar}
+@code{org-gtd-oops-calendar} → @code{org-gtd-reflect-missed-calendar}
 @item
-@code{org-gtd-oops-delegated} → @code{org-gtd-review-missed-delegated}
+@code{org-gtd-oops-delegated} → @code{org-gtd-reflect-missed-delegated}
 @item
-@code{org-gtd-oops-projects} → @code{org-gtd-review-missed-projects}
+@code{org-gtd-oops-projects} → @code{org-gtd-reflect-missed-projects}
 @item
-@code{org-gtd-oops-with-custom} → @code{org-gtd-review-missed-with-custom}
+@code{org-gtd-oops-with-custom} → @code{org-gtd-reflect-missed-with-custom}
 @end itemize
 
 Update to the new names when convenient. The old names will be removed in a future version.
 @end itemize
 
-@node Review Commands (Upcoming Delegated)
-@subsection Review Commands (Upcoming Delegated)
+@node Reflect Commands (Upcoming Delegated)
+@subsection Reflect Commands (Upcoming Delegated)
 
 @itemize
 @item
@@ -6274,7 +6325,7 @@ Try this right now:
 
 @enumerate
 @item
-Run @code{M-x org-gtd-review-upcoming-delegated}
+Run @code{M-x org-gtd-reflect-upcoming-delegated}
 @item
 Look at the delegated items with future check-in dates
 @item
@@ -6321,7 +6372,7 @@ Here's how to use this in your weekly planning:
 
 @strong{Sunday Planning} (5 minutes):
 @example
-M-x org-gtd-review-upcoming-delegated
+M-x org-gtd-reflect-upcoming-delegated
 
 For each item:
 - Check-in this week? Prepare questions or schedule call
@@ -6331,7 +6382,7 @@ For each item:
 
 @strong{When Someone Reports Early Completion}:
 @example
-M-x org-gtd-review-upcoming-delegated
+M-x org-gtd-reflect-upcoming-delegated
 
 Find their item in the list
 Press TAB to jump to the item
@@ -6342,8 +6393,8 @@ Check if this unblocks other work in the project
 @strong{Combined with Missed Review}:
 @example
 # Morning routine
-M-x org-gtd-review-missed-delegated    # Catch up on late check-ins
-M-x org-gtd-review-upcoming-delegated  # Plan upcoming check-ins
+M-x org-gtd-reflect-missed-delegated    # Catch up on late check-ins
+M-x org-gtd-reflect-upcoming-delegated  # Plan upcoming check-ins
 @end example
 
 The first shows what you missed. The second shows what's coming. Together they give complete delegation visibility.
@@ -6415,11 +6466,11 @@ Both are valuable. Missed helps you catch problems. Upcoming helps you prevent t
 @anchor{Command Reference (1)}Command Reference
 
 
-@multitable {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@multitable {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 @headitem Command
 @tab Shows
 @tab Use When
-@item @code{org-gtd-review-upcoming-delegated}
+@item @code{org-gtd-reflect-upcoming-delegated}
 @tab All delegated items with future check-in dates
 @tab Weekly planning, early completion responses
 @end multitable
@@ -6471,7 +6522,7 @@ You'll see all your NEXT actions in one list. That's it—you've created a custo
 
 Think of views like filtered searches. You tell org-gtd what to show using @code{filters}, and it finds matching items.
 
-The built-in @code{org-gtd-engage} command? It uses @code{org-gtd-view-show} internally. @code{org-gtd-review-stuck-projects}? Same thing. You're now using the same tool the package uses to create its own views.
+The built-in @code{org-gtd-engage} command? It uses @code{org-gtd-view-show} internally. @code{org-gtd-reflect-stuck-projects}? Same thing. You're now using the same tool the package uses to create its own views.
 
 Each view has two parts:
 @table @asis
@@ -8172,7 +8223,7 @@ Manually with @code{org-gtd-area-of-focus-set-on-item-at-point}
 From agenda with @code{org-gtd-area-of-focus-set-on-agenda-item}
 @end itemize
 
-@strong{Use}: Filter views by area with @code{org-gtd-review-area-of-focus} or custom views.
+@strong{Use}: Filter views by area with @code{org-gtd-reflect-area-of-focus} or custom views.
 @end itemize
 
 @node Standard Org Properties Used by org-gtd
@@ -9565,19 +9616,19 @@ This section covers common problems and their solutions. For complete command do
 Sometimes items get stuck or fall through the cracks. org-gtd provides several commands to find problematic items:
 
 @table @asis
-@item @code{org-gtd-review-stuck-calendar-items}
+@item @code{org-gtd-reflect-stuck-calendar-items}
 Calendar items with invalid or missing timestamps
-@item @code{org-gtd-review-stuck-incubated-items}
+@item @code{org-gtd-reflect-stuck-incubated-items}
 Incubated items with invalid or missing review dates
-@item @code{org-gtd-review-stuck-habit-items}
+@item @code{org-gtd-reflect-stuck-habit-items}
 Habits with incorrect configuration
-@item @code{org-gtd-review-stuck-delegated-items}
+@item @code{org-gtd-reflect-stuck-delegated-items}
 Delegated items missing delegate or date information
-@item @code{org-gtd-review-stuck-single-action-items}
+@item @code{org-gtd-reflect-stuck-single-action-items}
 Single actions that aren't marked as NEXT
-@item @code{org-gtd-review-stuck-projects}
+@item @code{org-gtd-reflect-stuck-projects}
 Projects that have tasks but no NEXT actions
-@item @code{org-gtd-review-missed-items}
+@item @code{org-gtd-reflect-missed-items}
 Items that should have been processed but weren't
 @end table
 
