@@ -38,10 +38,9 @@
 
          ;; After main inbox empty, should continue to additional inbox
          ;; We should now be clarifying the additional inbox item
-         (let ((wip-buffers (org-gtd-wip--get-buffers)))
-           (expect wip-buffers :not :to-be nil)
-           (with-current-buffer (car wip-buffers)
-             (expect (buffer-string) :to-match "Additional inbox item")))
+         (expect (ogt-get-wip-buffer) :not :to-be nil)
+         (with-wip-buffer
+           (expect (buffer-string) :to-match "Additional inbox item"))
 
          ;; Organize the additional inbox item
          (organize-as-single-action)
@@ -92,19 +91,17 @@
          (org-gtd-process-inbox)
 
          ;; Should be processing item from inbox1
-         (let ((wip-buffers (org-gtd-wip--get-buffers)))
-           (expect wip-buffers :not :to-be nil)
-           (with-current-buffer (car wip-buffers)
-             (expect (buffer-string) :to-match "Item from inbox 1")))
+         (expect (ogt-get-wip-buffer) :not :to-be nil)
+         (with-wip-buffer
+           (expect (buffer-string) :to-match "Item from inbox 1"))
 
          ;; Organize first item
          (organize-as-single-action)
 
          ;; Should now be processing item from inbox2
-         (let ((wip-buffers (org-gtd-wip--get-buffers)))
-           (expect wip-buffers :not :to-be nil)
-           (with-current-buffer (car wip-buffers)
-             (expect (buffer-string) :to-match "Item from inbox 2")))
+         (expect (ogt-get-wip-buffer) :not :to-be nil)
+         (with-wip-buffer
+           (expect (buffer-string) :to-match "Item from inbox 2"))
 
          ;; Organize second item
          (organize-as-single-action)

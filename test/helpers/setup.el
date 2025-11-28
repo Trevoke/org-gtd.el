@@ -10,9 +10,10 @@
 
 ;; Load helpers using require for idempotent loading
 (require 'org-gtd-test-helper-clarifying (file-name-concat default-directory "test/helpers/clarifying.el"))
-(require 'org-gtd-test-helper-project-fixtures (file-name-concat default-directory "test/helpers/project-fixtures.el"))  
+(require 'org-gtd-test-helper-project-fixtures (file-name-concat default-directory "test/helpers/project-fixtures.el"))
 (require 'org-gtd-test-helper-processing (file-name-concat default-directory "test/helpers/processing.el"))
 (require 'org-gtd-test-helper-utils (file-name-concat default-directory "test/helpers/utils.el"))
+(require 'org-gtd-test-helper-wip (file-name-concat default-directory "test/helpers/wip.el"))
 
 (defun ogt--configure-emacs ()
   (setq last-command nil

@@ -54,15 +54,11 @@
      (org-gtd-process-inbox)  ; Critical command in multi-session context!
      
      ;; Verify keyboard integration in WIP buffer
-     (let ((wip-buffers (seq-filter (lambda (buf) 
-                                      (string-search org-gtd-wip--prefix (buffer-name buf))) 
-                                    (buffer-list))))
-       (when wip-buffers
-         (with-current-buffer (car wip-buffers)
-           (expect (lookup-key org-gtd-clarify-map (kbd "C-c c"))
-                   :to-equal #'org-gtd-organize)
-           (expect org-gtd-clarify-mode :to-be-truthy)
-           (organize-as-single-action))))
+     (with-wip-buffer
+       (expect (lookup-key org-gtd-clarify-map (kbd "C-c c"))
+               :to-equal #'org-gtd-organize)
+       (expect org-gtd-clarify-mode :to-be-truthy)
+       (organize-as-single-action))
      
      ;; Verify both sessions worked
      (with-current-buffer (org-gtd--default-file)

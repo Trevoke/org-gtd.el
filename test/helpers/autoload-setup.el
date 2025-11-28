@@ -25,4 +25,11 @@ before running BODY."
 
 (defun ogt--clear-gtd-directory ()
   "Clean up after `ogt--prepare-gtd-directory'."
+  ;; Kill any WIP buffers created during the test
+  (dolist (buf (buffer-list))
+    (when (and (buffer-live-p buf)
+               (string-match-p "Org-GTD WIP" (buffer-name buf)))
+      (with-current-buffer buf
+        (set-buffer-modified-p nil))
+      (kill-buffer buf)))
   (delete-directory org-gtd-directory t))

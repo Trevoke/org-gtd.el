@@ -66,12 +66,8 @@
     ;; Create a delegated item
     (capture-inbox-item "Test delegated item")
     (org-gtd-process-inbox)
-    (let ((wip-buffers (seq-filter (lambda (buf)
-                                     (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                   (buffer-list))))
-      (when wip-buffers
-        (with-current-buffer (car wip-buffers)
-          (org-gtd-delegate "Test Person" "2025-12-01"))))
+    (with-wip-buffer
+      (org-gtd-delegate "Test Person" "2025-12-01"))
 
     ;; Now generate an agenda to trigger org-gtd-agenda-property-add-properties
     (let ((org-agenda-files (list (f-join org-gtd-directory "org-gtd-tasks.org")))
@@ -124,12 +120,8 @@
     ;; Create a delegated item
     (capture-inbox-item "Delegated task to check on")
     (org-gtd-process-inbox)
-    (let ((wip-buffers (seq-filter (lambda (buf)
-                                     (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                   (buffer-list))))
-      (when wip-buffers
-        (with-current-buffer (car wip-buffers)
-          (org-gtd-delegate "Alice" "2025-12-15"))))
+    (with-wip-buffer
+      (org-gtd-delegate "Alice" "2025-12-15"))
 
     ;; Generate agenda - this should not hang
     ;; We use a timeout approach: if the function takes too long, it's looping

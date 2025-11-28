@@ -125,28 +125,20 @@
       ;; Create two projects sharing a task
       (capture-inbox-item "Project Alpha")
       (org-gtd-process-inbox)
-      (let ((wip-buffers (seq-filter (lambda (buf)
-                                       (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                     (buffer-list))))
-        (when wip-buffers
-          (with-current-buffer (car wip-buffers)
-            (goto-char (point-max))
-            (newline)
-            (make-task "Shared task" :level 2)
-            (make-task "Alpha unique" :level 2)
-            (organize-as-project))))
+      (with-wip-buffer
+        (goto-char (point-max))
+        (newline)
+        (make-task "Shared task" :level 2)
+        (make-task "Alpha unique" :level 2)
+        (organize-as-project))
 
       (capture-inbox-item "Project Beta")
       (org-gtd-process-inbox)
-      (let ((wip-buffers (seq-filter (lambda (buf)
-                                       (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                     (buffer-list))))
-        (when wip-buffers
-          (with-current-buffer (car wip-buffers)
-            (goto-char (point-max))
-            (newline)
-            (make-task "Beta unique" :level 2)
-            (organize-as-project))))
+      (with-wip-buffer
+        (goto-char (point-max))
+        (newline)
+        (make-task "Beta unique" :level 2)
+        (organize-as-project))
 
       ;; Share "Shared task" with Project Beta
       (with-current-buffer (org-gtd--default-file)

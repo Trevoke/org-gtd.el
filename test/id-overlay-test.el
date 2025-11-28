@@ -227,29 +227,25 @@ HEADING-TEXT is the heading content, ID is optional custom ID."
       (message "DEBUG: Process inbox completed")
       
       ;; Work in the WIP buffer where IDs will be created
-      (let ((wip-buffers (seq-filter (lambda (buf) 
-                                       (string-search org-gtd-wip--prefix (buffer-name buf))) 
-                                     (buffer-list))))
-        (when wip-buffers
-          (with-current-buffer (car wip-buffers)
-            ;; Add subtasks and create IDs for task dependencies
-            (goto-char (point-max))
-            (newline)
-            (insert "** TODO Buy standing desk")
-            (org-gtd-id-get-create)  ; Create ID for this task
-            (let ((desk-id (org-gtd-id-get-create)))
-              (insert "\n** TODO Install accessories")
-              (org-gtd-id-get-create)
-              (end-of-line)
-              (insert (format "\n:PROPERTIES:\n:BLOCKED_BY: %s\n:END:" desk-id))
-              
-              ;; Enable overlay mode and test that overlays work
-              (message "DEBUG: About to enable overlay mode")
-              (org-gtd-id-overlay-mode 1)
-              (message "DEBUG: Overlay mode enabled")
-              (let ((overlay-count (ogt-count-overlays-in-buffer)))
-                (message "DEBUG: Found %d overlays in WIP buffer" overlay-count)
-                (expect (> overlay-count 0) :to-be t))))))))
+      (with-wip-buffer
+        ;; Add subtasks and create IDs for task dependencies
+        (goto-char (point-max))
+        (newline)
+        (insert "** TODO Buy standing desk")
+        (org-gtd-id-get-create)  ; Create ID for this task
+        (let ((desk-id (org-gtd-id-get-create)))
+          (insert "\n** TODO Install accessories")
+          (org-gtd-id-get-create)
+          (end-of-line)
+          (insert (format "\n:PROPERTIES:\n:BLOCKED_BY: %s\n:END:" desk-id))
+
+          ;; Enable overlay mode and test that overlays work
+          (message "DEBUG: About to enable overlay mode")
+          (org-gtd-id-overlay-mode 1)
+          (message "DEBUG: Overlay mode enabled")
+          (let ((overlay-count (ogt-count-overlays-in-buffer)))
+            (message "DEBUG: Found %d overlays in WIP buffer" overlay-count)
+            (expect (> overlay-count 0) :to-be t))))))
 
   (describe "dynamic overlay updates"
     

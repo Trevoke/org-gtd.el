@@ -37,17 +37,13 @@
      (organize-as-single-action)
 
      ;; Items we captured in this test - create project using builder
-     (let ((wip-buffers (seq-filter (lambda (buf)
-                                       (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                     (buffer-list))))
-       (when wip-buffers
-         (with-current-buffer (car wip-buffers)
-           (goto-char (point-max))
-           (newline)
-           (make-task "Task 1" :level 2)
-           (make-task "Task 2" :level 2)
-           (make-task "Task 3" :level 2)
-           (organize-as-project))))
+     (with-wip-buffer
+       (goto-char (point-max))
+       (newline)
+       (make-task "Task 1" :level 2)
+       (make-task "Task 2" :level 2)
+       (make-task "Task 3" :level 2)
+       (organize-as-project))
 
      (schedule-item (calendar-current-date))
      (delegate-item "Someone" (calendar-current-date))
@@ -93,15 +89,11 @@
       ;; This test verifies the happy path works
       (org-gtd-process-inbox)
       ;; Add tasks to make it a valid project
-      (let ((wip-buffers (seq-filter (lambda (buf)
-                                       (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                     (buffer-list))))
-        (when wip-buffers
-          (with-current-buffer (car wip-buffers)
-            (goto-char (point-max))
-            (newline)
-            (make-task "First task" :level 2)
-            (make-task "Second task" :level 2))))
+      (with-wip-buffer
+        (goto-char (point-max))
+        (newline)
+        (make-task "First task" :level 2)
+        (make-task "Second task" :level 2))
       (organize-as-project)
       ;; Should succeed and not be in WIP buffer
       (expect (buffer-name) :not :to-match org-gtd-wip--prefix))

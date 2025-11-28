@@ -28,17 +28,12 @@
        (org-gtd-process-inbox)
        
        ;; 3. ORGANIZE via keyboard (C-c c opens transient, 's' selects single action)
-       (let ((wip-buffers (seq-filter (lambda (buf) 
-                                        (string-search org-gtd-wip--prefix (buffer-name buf))) 
-                                      (buffer-list))))
-         (when wip-buffers
-           (with-current-buffer (car wip-buffers)
-             (goto-char (point-min))
-             (when (org-before-first-heading-p)
-               (org-next-visible-heading 1))
-             
-             ;; Use direct function call instead of keyboard simulation on transient
-             (org-gtd-single-action))))
+       (with-wip-buffer
+         (goto-char (point-min))
+         (when (org-before-first-heading-p)
+           (org-next-visible-heading 1))
+         ;; Use direct function call instead of keyboard simulation on transient
+         (org-gtd-single-action))
        
        ;; 4. VERIFY in agenda
        (org-gtd-engage)
@@ -63,22 +58,16 @@
        (org-gtd-process-inbox)
        
        ;; 3. Add project structure and organize via keyboard
-       (let ((wip-buffers (seq-filter (lambda (buf) 
-                                        (string-search org-gtd-wip--prefix (buffer-name buf))) 
-                                      (buffer-list))))
-         (when wip-buffers
-           (with-current-buffer (car wip-buffers)
-             ;; Add project tasks
-             (goto-char (point-max))
-             (newline)
-             (insert "** Research destinations\n** Book flights\n** Reserve hotel")
-             
-             ;; Use direct function call instead of keyboard simulation on transient
-             (goto-char (point-min))
-             (when (org-before-first-heading-p)
-               (org-next-visible-heading 1))
-             
-             (org-gtd-project-new))))
+       (with-wip-buffer
+         ;; Add project tasks
+         (goto-char (point-max))
+         (newline)
+         (insert "** Research destinations\n** Book flights\n** Reserve hotel")
+         ;; Use direct function call instead of keyboard simulation on transient
+         (goto-char (point-min))
+         (when (org-before-first-heading-p)
+           (org-next-visible-heading 1))
+         (org-gtd-project-new))
        
        ;; 4. VERIFY project structure
        (with-current-buffer (org-gtd--default-file)
@@ -106,18 +95,13 @@
        (org-gtd-process-inbox)
        
        ;; 3. ORGANIZE via keyboard - simulate delegation workflow
-       (let ((wip-buffers (seq-filter (lambda (buf) 
-                                        (string-search org-gtd-wip--prefix (buffer-name buf))) 
-                                      (buffer-list))))
-         (when wip-buffers
-           (with-current-buffer (car wip-buffers)
-             (goto-char (point-min))
-             (when (org-before-first-heading-p)
-               (org-next-visible-heading 1))
-             
-             ;; Use direct function call and set properties manually
-             (with-simulated-input "John RET 2025-12-31 RET"
-               (org-gtd-delegate)))))
+       (with-wip-buffer
+         (goto-char (point-min))
+         (when (org-before-first-heading-p)
+           (org-next-visible-heading 1))
+         ;; Use direct function call and set properties manually
+         (with-simulated-input "John RET 2025-12-31 RET"
+           (org-gtd-delegate)))
        
        ;; 4. VERIFY delegation properties
        (with-current-buffer (org-gtd--default-file)
@@ -144,18 +128,13 @@
        (org-gtd-process-inbox)
        
        ;; 3. ORGANIZE via keyboard - calendar organization with date
-       (let ((wip-buffers (seq-filter (lambda (buf) 
-                                        (string-search org-gtd-wip--prefix (buffer-name buf))) 
-                                      (buffer-list))))
-         (when wip-buffers
-           (with-current-buffer (car wip-buffers)
-             (goto-char (point-min))
-             (when (org-before-first-heading-p)
-               (org-next-visible-heading 1))
-             
-             ;; Use direct function call with date input
-             (with-simulated-input "2025-06-20 RET"
-               (org-gtd-calendar)))))
+       (with-wip-buffer
+         (goto-char (point-min))
+         (when (org-before-first-heading-p)
+           (org-next-visible-heading 1))
+         ;; Use direct function call with date input
+         (with-simulated-input "2025-06-20 RET"
+           (org-gtd-calendar)))
        
        ;; 4. VERIFY calendar properties
        (with-current-buffer (org-gtd--default-file)
@@ -180,16 +159,11 @@
        (org-gtd-process-inbox)
        
        ;; 3. ORGANIZE via keyboard as knowledge
-       (let ((wip-buffers (seq-filter (lambda (buf) 
-                                        (string-search org-gtd-wip--prefix (buffer-name buf))) 
-                                      (buffer-list))))
-         (when wip-buffers
-           (with-current-buffer (car wip-buffers)
-             (goto-char (point-min))
-             (when (org-before-first-heading-p)
-               (org-next-visible-heading 1))
-             
-             (org-gtd-knowledge))))
+       (with-wip-buffer
+         (goto-char (point-min))
+         (when (org-before-first-heading-p)
+           (org-next-visible-heading 1))
+         (org-gtd-knowledge))
        
        ;; 4. VERIFY knowledge is archived immediately
        (with-current-buffer (org-gtd--default-file)
@@ -220,42 +194,28 @@
        (org-gtd-process-inbox)
        
        ;; First item: single action
-       (let ((wip-buffers (seq-filter (lambda (buf) 
-                                        (string-search org-gtd-wip--prefix (buffer-name buf))) 
-                                      (buffer-list))))
-         (when wip-buffers
-           (with-current-buffer (car wip-buffers)
-             (goto-char (point-min))
-             (when (org-before-first-heading-p)
-               (org-next-visible-heading 1))
-             (org-gtd-single-action))))
-       
-       ;; Second item: project  
-       (let ((wip-buffers (seq-filter (lambda (buf) 
-                                        (string-search org-gtd-wip--prefix (buffer-name buf))) 
-                                      (buffer-list))))
-         (when wip-buffers
-           (with-current-buffer (car wip-buffers)
-             (goto-char (point-max))
-             (newline)
-             (insert "** Research destinations\n** Book accommodation")
-             (goto-char (point-min))
-             (when (org-before-first-heading-p)
-               (org-next-visible-heading 1))
-             
-             (org-gtd-project-new))))
-       
+       (with-wip-buffer
+         (goto-char (point-min))
+         (when (org-before-first-heading-p)
+           (org-next-visible-heading 1))
+         (org-gtd-single-action))
+
+       ;; Second item: project
+       (with-wip-buffer
+         (goto-char (point-max))
+         (newline)
+         (insert "** Research destinations\n** Book accommodation")
+         (goto-char (point-min))
+         (when (org-before-first-heading-p)
+           (org-next-visible-heading 1))
+         (org-gtd-project-new))
+
        ;; Third item: knowledge
-       (let ((wip-buffers (seq-filter (lambda (buf) 
-                                        (string-search org-gtd-wip--prefix (buffer-name buf))) 
-                                      (buffer-list))))
-         (when wip-buffers
-           (with-current-buffer (car wip-buffers)
-             (goto-char (point-min))
-             (when (org-before-first-heading-p)
-               (org-next-visible-heading 1))
-             
-             (org-gtd-knowledge))))
+       (with-wip-buffer
+         (goto-char (point-min))
+         (when (org-before-first-heading-p)
+           (org-next-visible-heading 1))
+         (org-gtd-knowledge))
        
        ;; Verify all items processed correctly
        (org-gtd-engage)

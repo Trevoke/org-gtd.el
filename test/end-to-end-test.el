@@ -56,17 +56,13 @@
        (org-gtd-process-inbox)
 
        ;; 3. ORGANIZE (project with tasks)
-       (let ((wip-buffers (seq-filter (lambda (buf)
-                                        (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                      (buffer-list))))
-         (when wip-buffers
-           (with-current-buffer (car wip-buffers)
-             (goto-char (point-max))
-             (newline)
-             (make-task "Research destinations" :level 2)
-             (make-task "Book flights" :level 2)
-             (make-task "Reserve hotel" :level 2)
-             (organize-as-project))))
+       (with-wip-buffer
+         (goto-char (point-max))
+         (newline)
+         (make-task "Research destinations" :level 2)
+         (make-task "Book flights" :level 2)
+         (make-task "Reserve hotel" :level 2)
+         (organize-as-project))
 
        ;; 4. VERIFY in agenda
        (org-gtd-engage)
@@ -180,14 +176,8 @@
        (org-gtd-process-inbox)
 
        ;; 3. ORGANIZE (knowledge) - ensure we're in WIP buffer
-       (let ((wip-buffers (seq-filter (lambda (buf)
-                                        (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                      (buffer-list))))
-         (when wip-buffers
-           (with-current-buffer (car wip-buffers)
-             (archive-as-reference)))
-         (unless wip-buffers
-           (archive-as-reference)))  ; Fallback
+       (with-wip-buffer
+         (archive-as-reference))
 
        ;; 4. VERIFY that knowledge items are archived immediately
        ;; (they don't stay in the main GTD file)
@@ -216,17 +206,13 @@
        (schedule-item (calendar-current-date)) ; Team meeting
 
        ;; Project with subtasks
-       (let ((wip-buffers (seq-filter (lambda (buf)
-                                        (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                      (buffer-list))))
-         (when wip-buffers
-           (with-current-buffer (car wip-buffers)
-             (goto-char (point-max))
-             (newline)
-             (make-task "Sort items" :level 2)
-             (make-task "Donate old items" :level 2)
-             (make-task "Clean floor" :level 2)
-             (organize-as-project))))
+       (with-wip-buffer
+         (goto-char (point-max))
+         (newline)
+         (make-task "Sort items" :level 2)
+         (make-task "Donate old items" :level 2)
+         (make-task "Clean floor" :level 2)
+         (organize-as-project))
 
        (archive-as-reference)               ; Wine recipe
 
@@ -264,17 +250,13 @@
        (organize-as-single-action)  ; Review budget
 
        ;; Project with multiple tasks
-       (let ((wip-buffers (seq-filter (lambda (buf)
-                                        (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                      (buffer-list))))
-         (when wip-buffers
-           (with-current-buffer (car wip-buffers)
-             (goto-char (point-max))
-             (newline)
-             (make-task "Choose venue" :level 2)
-             (make-task "Send invitations" :level 2)
-             (make-task "Order cake" :level 2)
-             (organize-as-project))))
+       (with-wip-buffer
+         (goto-char (point-max))
+         (newline)
+         (make-task "Choose venue" :level 2)
+         (make-task "Send invitations" :level 2)
+         (make-task "Order cake" :level 2)
+         (organize-as-project))
 
        (archive-as-reference)  ; Emacs manual
 
@@ -451,17 +433,13 @@
         (org-gtd-process-inbox)
 
         ;; 3. ORGANIZE (project with tasks)
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Book venue" :level 2)
-              (make-task "Prepare materials" :level 2)
-              (make-task "Send invitations" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Book venue" :level 2)
+          (make-task "Prepare materials" :level 2)
+          (make-task "Send invitations" :level 2)
+          (organize-as-project))
 
         ;; 4. VERIFY all tasks in agenda
         (org-gtd-engage)
@@ -513,17 +491,13 @@
         (org-gtd-process-inbox)
 
         ;; 3. ORGANIZE (project with multiple tasks in same file)
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Buy lumber" :level 2)
-              (make-task "Purchase tools" :level 2)
-              (make-task "Build foundation" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Buy lumber" :level 2)
+          (make-task "Purchase tools" :level 2)
+          (make-task "Build foundation" :level 2)
+          (organize-as-project))
 
         ;; 4. VERIFY all tasks appear in engage before cancellation
         (org-gtd-engage)
@@ -652,17 +626,13 @@
         (capture-inbox-item "Launch new website")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Design mockups" :level 2)
-              (make-task "Write content" :level 2)
-              (make-task "Deploy site" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Design mockups" :level 2)
+          (make-task "Write content" :level 2)
+          (make-task "Deploy site" :level 2)
+          (organize-as-project))
 
         ;; 2. Make project stuck by transitioning NEXT tasks back to TODO
         ;; This creates a project with tasks but no next actions available
@@ -690,17 +660,13 @@
         (capture-inbox-item "Finished Campaign")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Research audience" :level 2)
-              (make-task "Create content" :level 2)
-              (make-task "Launch campaign" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Research audience" :level 2)
+          (make-task "Create content" :level 2)
+          (make-task "Launch campaign" :level 2)
+          (organize-as-project))
 
         ;; 2. Complete all tasks (mark as DONE)
         (with-current-buffer (org-gtd--default-file)
@@ -770,15 +736,11 @@
         (capture-inbox-item "Multi-file project review")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Task in main file" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Task in main file" :level 2)
+          (organize-as-project))
 
         ;; 2. Create second file with NEXT task
         (let ((second-file (org-gtd--path "review-secondary")))
@@ -973,15 +935,11 @@
         (capture-inbox-item "Multi-file project")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Task in main file" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Task in main file" :level 2)
+          (organize-as-project))
 
         ;; 2. Create second file with related task
         (let ((second-file (org-gtd--path "secondary-tasks")))
@@ -1050,16 +1008,12 @@
       (capture-inbox-item "Distributed project")
       (org-gtd-process-inbox)
 
-      (let ((wip-buffers (seq-filter (lambda (buf)
-                                       (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                     (buffer-list))))
-        (when wip-buffers
-          (with-current-buffer (car wip-buffers)
-            (goto-char (point-max))
-            (newline)
-            (make-task "Local task one" :level 2)
-            (make-task "Local task two" :level 2)
-            (organize-as-project))))
+      (with-wip-buffer
+        (goto-char (point-max))
+        (newline)
+        (make-task "Local task one" :level 2)
+        (make-task "Local task two" :level 2)
+        (organize-as-project))
 
       ;; 2. Create second file with task
       (let ((second-file (org-gtd--path "other-tasks")))
@@ -1125,15 +1079,11 @@
       (capture-inbox-item "Expandable project")
       (org-gtd-process-inbox)
 
-      (let ((wip-buffers (seq-filter (lambda (buf)
-                                       (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                     (buffer-list))))
-        (when wip-buffers
-          (with-current-buffer (car wip-buffers)
-            (goto-char (point-max))
-            (newline)
-            (make-task "Initial task" :level 2)
-            (organize-as-project))))
+      (with-wip-buffer
+        (goto-char (point-max))
+        (newline)
+        (make-task "Initial task" :level 2)
+        (organize-as-project))
 
       ;; 2. Create second file with another task
       (let ((second-file (org-gtd--path "additional-tasks")))
@@ -1196,15 +1146,11 @@
               (capture-inbox-item "New multi-file project")
               (org-gtd-process-inbox)
 
-              (let ((wip-buffers (seq-filter (lambda (buf)
-                                               (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                             (buffer-list))))
-                (when wip-buffers
-                  (with-current-buffer (car wip-buffers)
-                    (goto-char (point-max))
-                    (newline)
-                    (make-task "Another new task" :level 2)
-                    (organize-as-project))))
+              (with-wip-buffer
+                (goto-char (point-max))
+                (newline)
+                (make-task "Another new task" :level 2)
+                (organize-as-project))
 
               ;; 8. Link the extension task from third file
               (with-current-buffer (org-gtd--default-file)
@@ -1251,17 +1197,13 @@
     (it "creates dependency between existing tasks"
         (capture-inbox-item "Website redesign")
         (org-gtd-process-inbox)
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Design wireframes" :level 2)
-              (make-task "Get client approval" :level 2)
-              (make-task "Build prototype" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Design wireframes" :level 2)
+          (make-task "Get client approval" :level 2)
+          (make-task "Build prototype" :level 2)
+          (organize-as-project))
         (with-current-buffer (org-gtd--default-file)
           (goto-char (point-min))
           (search-forward "Build prototype")
@@ -1301,16 +1243,12 @@
     (it "removes existing dependency between tasks"
         (capture-inbox-item "Product launch")
         (org-gtd-process-inbox)
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Write documentation" :level 2)
-              (make-task "Record demo video" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Write documentation" :level 2)
+          (make-task "Record demo video" :level 2)
+          (organize-as-project))
         (with-current-buffer (org-gtd--default-file)
           (goto-char (point-min))
           (search-forward "Record demo video")
@@ -1355,15 +1293,11 @@
     (it "adds new task to ORG_GTD_FIRST_TASKS of existing project"
         (capture-inbox-item "Marketing campaign")
         (org-gtd-process-inbox)
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Create content calendar" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Create content calendar" :level 2)
+          (organize-as-project))
         (with-current-buffer (org-gtd--default-file)
           (goto-char (point-min))
           (search-forward "Marketing campaign")
@@ -1440,26 +1374,18 @@
     (it "creates two projects with same task ID in both ORG_GTD_FIRST_TASKS"
         (capture-inbox-item "Project Alpha")
         (org-gtd-process-inbox)
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Design database schema" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Design database schema" :level 2)
+          (organize-as-project))
         (capture-inbox-item "Project Beta")
         (org-gtd-process-inbox)
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Implement API" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Implement API" :level 2)
+          (organize-as-project))
         (with-current-buffer (org-gtd--default-file)
           (goto-char (point-min))
           (search-forward "Design database schema")
@@ -1490,27 +1416,19 @@
         ;; Create two projects and share a task between them via ORG_GTD_FIRST_TASKS
         (capture-inbox-item "Project Alpha")
         (org-gtd-process-inbox)
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Shared Task" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Shared Task" :level 2)
+          (organize-as-project))
 
         (capture-inbox-item "Project Beta")
         (org-gtd-process-inbox)
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Another Task" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Another Task" :level 2)
+          (organize-as-project))
 
         ;; Share "Shared Task" with Project Beta
         (with-current-buffer (org-gtd--default-file)
@@ -1565,17 +1483,13 @@
         (org-gtd-process-inbox)
 
         ;; 3. ORGANIZE (project with tasks)
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Book conference room" :level 2)
-              (make-task "Send speaker invites" :level 2)
-              (make-task "Order catering" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Book conference room" :level 2)
+          (make-task "Send speaker invites" :level 2)
+          (make-task "Order catering" :level 2)
+          (organize-as-project))
 
         ;; 4. VERIFY all tasks appear in engage before cancellation
         (org-gtd-engage)
@@ -1630,17 +1544,13 @@
         (org-gtd-process-inbox)
 
         ;; 3. ORGANIZE (project with multiple tasks in same file)
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Research market" :level 2)
-              (make-task "Build prototype" :level 2)
-              (make-task "Pitch to investors" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Research market" :level 2)
+          (make-task "Build prototype" :level 2)
+          (make-task "Pitch to investors" :level 2)
+          (organize-as-project))
 
         ;; 4. VERIFY all tasks appear in engage before cancellation
         (org-gtd-engage)
@@ -1697,15 +1607,11 @@
         (capture-inbox-item "Cross-file abandoned project")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Main file task" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Main file task" :level 2)
+          (organize-as-project))
 
         ;; 2. Create second file with related task
         (let ((second-file (org-gtd--path "abandoned-secondary")))
@@ -1777,30 +1683,22 @@
         (capture-inbox-item "Project Alpha")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Alpha task 1" :level 2)
-              (make-task "Shared task" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Alpha task 1" :level 2)
+          (make-task "Shared task" :level 2)
+          (organize-as-project))
 
         ;; 2. CAPTURE and ORGANIZE second project
         (capture-inbox-item "Project Beta")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Beta task 1" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Beta task 1" :level 2)
+          (organize-as-project))
 
         ;; 3. Share "Shared task" with Project Beta
         (with-current-buffer (org-gtd--default-file)
@@ -1886,30 +1784,22 @@
         (capture-inbox-item "Project Gamma")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Gamma unique task" :level 2)
-              (make-task "Shared infrastructure task" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Gamma unique task" :level 2)
+          (make-task "Shared infrastructure task" :level 2)
+          (organize-as-project))
 
         ;; 2. CAPTURE and ORGANIZE second project
         (capture-inbox-item "Project Delta")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Delta unique task" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Delta unique task" :level 2)
+          (organize-as-project))
 
         ;; 3. Share "Shared infrastructure task" with Project Delta
         (with-current-buffer (org-gtd--default-file)
@@ -2003,17 +1893,13 @@
         (capture-inbox-item "Marketing Campaign")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Research target audience" :level 2)
-              (make-task "Create content" :level 2)
-              (make-task "Launch campaign" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Research target audience" :level 2)
+          (make-task "Create content" :level 2)
+          (make-task "Launch campaign" :level 2)
+          (organize-as-project))
 
         ;; 2. Make project STUCK by ensuring all tasks are TODO (not NEXT or WAIT)
         (with-current-buffer (org-gtd--default-file)
@@ -2096,15 +1982,11 @@
         (capture-inbox-item "Multi-file stuck project")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Task in main file" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Task in main file" :level 2)
+          (organize-as-project))
 
         ;; 2. Create second file with task
         (let ((second-file (org-gtd--path "stuck-secondary")))
@@ -2150,15 +2032,11 @@
         (capture-inbox-item "Multi-file validation test")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Main file task" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Main file task" :level 2)
+          (organize-as-project))
 
         ;; 2. Create second file with task that has broken reference
         (let ((second-file (org-gtd--path "validation-secondary")))
@@ -2218,16 +2096,12 @@
         (capture-inbox-item "Project Alpha")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Task A" :level 2)
-              (make-task "Task C" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Task A" :level 2)
+          (make-task "Task C" :level 2)
+          (organize-as-project))
 
         ;; 2. Manually create A→C dependency in initial setup
         (with-current-buffer (org-gtd--default-file)
@@ -2270,20 +2144,16 @@
                 (project-point (point-marker)))
 
             ;; Simulate org-gtd-project-extend by refiling Task B under Project Alpha
-            (let ((wip-buffers (seq-filter (lambda (buf)
-                                             (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                           (buffer-list))))
-              (when wip-buffers
-                (with-current-buffer (car wip-buffers)
-                  (goto-char (point-min))
-                  (search-forward "Task B")
-                  (org-back-to-heading t)
-                  (spy-on 'org-refile-get-location
-                          :and-return-value (list "Project Alpha"
-                                                  (buffer-file-name (marker-buffer project-point))
-                                                  nil
-                                                  (marker-position project-point)))
-                  (org-gtd-project-extend))))))
+            (with-wip-buffer
+              (goto-char (point-min))
+              (search-forward "Task B")
+              (org-back-to-heading t)
+              (spy-on 'org-refile-get-location
+                      :and-return-value (list "Project Alpha"
+                                              (buffer-file-name (marker-buffer project-point))
+                                              nil
+                                              (marker-position project-point)))
+              (org-gtd-project-extend))))
 
         ;; 5. Get IDs for all tasks
         (let ((task-a-id nil)
@@ -2402,16 +2272,12 @@
         (capture-inbox-item "Project Beta")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Task A" :level 2)
-              (make-task "Task B" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Task A" :level 2)
+          (make-task "Task B" :level 2)
+          (organize-as-project))
 
         ;; 2. Create A→B dependency
         (with-current-buffer (org-gtd--default-file)
@@ -2440,20 +2306,16 @@
           (let ((project-point (point-marker)))
 
             ;; Refile Task C to project
-            (let ((wip-buffers (seq-filter (lambda (buf)
-                                             (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                           (buffer-list))))
-              (when wip-buffers
-                (with-current-buffer (car wip-buffers)
-                  (goto-char (point-min))
-                  (search-forward "Task C")
-                  (org-back-to-heading t)
-                  (spy-on 'org-refile-get-location
-                          :and-return-value (list "Project Beta"
-                                                  (buffer-file-name (marker-buffer project-point))
-                                                  nil
-                                                  (marker-position project-point)))
-                  (org-gtd-project-extend))))))
+            (with-wip-buffer
+              (goto-char (point-min))
+              (search-forward "Task C")
+              (org-back-to-heading t)
+              (spy-on 'org-refile-get-location
+                      :and-return-value (list "Project Beta"
+                                              (buffer-file-name (marker-buffer project-point))
+                                              nil
+                                              (marker-position project-point)))
+              (org-gtd-project-extend))))
 
         ;; 4. SIMULATE MANUAL WORKFLOW: Add B as blocker of C
         (let ((task-b-id nil)
@@ -2511,15 +2373,11 @@
         (capture-inbox-item "Project Gamma")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Task A" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Task A" :level 2)
+          (organize-as-project))
 
         ;; 2. Add Task B using project-extend
         (capture-inbox-item "Task B")
@@ -2530,21 +2388,16 @@
           (search-forward "Project Gamma")
           (org-back-to-heading t)
           (let ((project-point (point-marker)))
-
-            (let ((wip-buffers (seq-filter (lambda (buf)
-                                             (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                           (buffer-list))))
-              (when wip-buffers
-                (with-current-buffer (car wip-buffers)
-                  (goto-char (point-min))
-                  (search-forward "Task B")
-                  (org-back-to-heading t)
-                  (spy-on 'org-refile-get-location
-                          :and-return-value (list "Project Gamma"
-                                                  (buffer-file-name (marker-buffer project-point))
-                                                  nil
-                                                  (marker-position project-point)))
-                  (org-gtd-project-extend))))))
+            (with-wip-buffer
+              (goto-char (point-min))
+              (search-forward "Task B")
+              (org-back-to-heading t)
+              (spy-on 'org-refile-get-location
+                      :and-return-value (list "Project Gamma"
+                                              (buffer-file-name (marker-buffer project-point))
+                                              nil
+                                              (marker-position project-point)))
+              (org-gtd-project-extend))))
 
         ;; 3. Add Task C using project-extend
         (capture-inbox-item "Task C")
@@ -2555,21 +2408,16 @@
           (search-forward "Project Gamma")
           (org-back-to-heading t)
           (let ((project-point (point-marker)))
-
-            (let ((wip-buffers (seq-filter (lambda (buf)
-                                             (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                           (buffer-list))))
-              (when wip-buffers
-                (with-current-buffer (car wip-buffers)
-                  (goto-char (point-min))
-                  (search-forward "Task C")
-                  (org-back-to-heading t)
-                  (spy-on 'org-refile-get-location
-                          :and-return-value (list "Project Gamma"
-                                                  (buffer-file-name (marker-buffer project-point))
-                                                  nil
-                                                  (marker-position project-point)))
-                  (org-gtd-project-extend))))))
+            (with-wip-buffer
+              (goto-char (point-min))
+              (search-forward "Task C")
+              (org-back-to-heading t)
+              (spy-on 'org-refile-get-location
+                      :and-return-value (list "Project Gamma"
+                                              (buffer-file-name (marker-buffer project-point))
+                                              nil
+                                              (marker-position project-point)))
+              (org-gtd-project-extend))))
 
         ;; 4. SIMULATE MANUAL WORKFLOW: Make A parent of both B and C (using ORG_GTD_ properties)
         (let ((task-a-id nil)
@@ -2667,15 +2515,11 @@
         (capture-inbox-item "Project Delta")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Task A" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Task A" :level 2)
+          (organize-as-project))
 
         ;; 2. Add Task B using project-extend (same file)
         (capture-inbox-item "Task B")
@@ -2686,21 +2530,16 @@
           (search-forward "Project Delta")
           (org-back-to-heading t)
           (let ((project-point (point-marker)))
-
-            (let ((wip-buffers (seq-filter (lambda (buf)
-                                             (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                           (buffer-list))))
-              (when wip-buffers
-                (with-current-buffer (car wip-buffers)
-                  (goto-char (point-min))
-                  (search-forward "Task B")
-                  (org-back-to-heading t)
-                  (spy-on 'org-refile-get-location
-                          :and-return-value (list "Project Delta"
-                                                  (buffer-file-name (marker-buffer project-point))
-                                                  nil
-                                                  (marker-position project-point)))
-                  (org-gtd-project-extend))))))
+            (with-wip-buffer
+              (goto-char (point-min))
+              (search-forward "Task B")
+              (org-back-to-heading t)
+              (spy-on 'org-refile-get-location
+                      :and-return-value (list "Project Delta"
+                                              (buffer-file-name (marker-buffer project-point))
+                                              nil
+                                              (marker-position project-point)))
+              (org-gtd-project-extend))))
 
         ;; 3. Create Task C in secondary file
         (let ((second-file (org-gtd--path "delta-secondary")))
@@ -2819,15 +2658,11 @@
         (capture-inbox-item "Project Epsilon")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Task A" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Task A" :level 2)
+          (organize-as-project))
 
         ;; 2. Add Task B using project-extend
         (capture-inbox-item "Task B")
@@ -2838,21 +2673,16 @@
           (search-forward "Project Epsilon")
           (org-back-to-heading t)
           (let ((project-point (point-marker)))
-
-            (let ((wip-buffers (seq-filter (lambda (buf)
-                                             (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                           (buffer-list))))
-              (when wip-buffers
-                (with-current-buffer (car wip-buffers)
-                  (goto-char (point-min))
-                  (search-forward "Task B")
-                  (org-back-to-heading t)
-                  (spy-on 'org-refile-get-location
-                          :and-return-value (list "Project Epsilon"
-                                                  (buffer-file-name (marker-buffer project-point))
-                                                  nil
-                                                  (marker-position project-point)))
-                  (org-gtd-project-extend))))))
+            (with-wip-buffer
+              (goto-char (point-min))
+              (search-forward "Task B")
+              (org-back-to-heading t)
+              (spy-on 'org-refile-get-location
+                      :and-return-value (list "Project Epsilon"
+                                              (buffer-file-name (marker-buffer project-point))
+                                              nil
+                                              (marker-position project-point)))
+              (org-gtd-project-extend))))
 
         ;; 3. Add Task C using project-extend
         (capture-inbox-item "Task C")
@@ -2863,21 +2693,16 @@
           (search-forward "Project Epsilon")
           (org-back-to-heading t)
           (let ((project-point (point-marker)))
-
-            (let ((wip-buffers (seq-filter (lambda (buf)
-                                             (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                           (buffer-list))))
-              (when wip-buffers
-                (with-current-buffer (car wip-buffers)
-                  (goto-char (point-min))
-                  (search-forward "Task C")
-                  (org-back-to-heading t)
-                  (spy-on 'org-refile-get-location
-                          :and-return-value (list "Project Epsilon"
-                                                  (buffer-file-name (marker-buffer project-point))
-                                                  nil
-                                                  (marker-position project-point)))
-                  (org-gtd-project-extend))))))
+            (with-wip-buffer
+              (goto-char (point-min))
+              (search-forward "Task C")
+              (org-back-to-heading t)
+              (spy-on 'org-refile-get-location
+                      :and-return-value (list "Project Epsilon"
+                                              (buffer-file-name (marker-buffer project-point))
+                                              nil
+                                              (marker-position project-point)))
+              (org-gtd-project-extend))))
 
         ;; 4. SIMULATE MANUAL WORKFLOW: Create A→B→C chain
         (let ((task-a-id nil)
@@ -2973,15 +2798,11 @@
         (capture-inbox-item "Project Zeta")
         (org-gtd-process-inbox)
 
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Task A" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Task A" :level 2)
+          (organize-as-project))
 
         ;; 2. Add Task B using project-extend (same file)
         (capture-inbox-item "Task B")
@@ -2992,21 +2813,16 @@
           (search-forward "Project Zeta")
           (org-back-to-heading t)
           (let ((project-point (point-marker)))
-
-            (let ((wip-buffers (seq-filter (lambda (buf)
-                                             (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                           (buffer-list))))
-              (when wip-buffers
-                (with-current-buffer (car wip-buffers)
-                  (goto-char (point-min))
-                  (search-forward "Task B")
-                  (org-back-to-heading t)
-                  (spy-on 'org-refile-get-location
-                          :and-return-value (list "Project Zeta"
-                                                  (buffer-file-name (marker-buffer project-point))
-                                                  nil
-                                                  (marker-position project-point)))
-                  (org-gtd-project-extend))))))
+            (with-wip-buffer
+              (goto-char (point-min))
+              (search-forward "Task B")
+              (org-back-to-heading t)
+              (spy-on 'org-refile-get-location
+                      :and-return-value (list "Project Zeta"
+                                              (buffer-file-name (marker-buffer project-point))
+                                              nil
+                                              (marker-position project-point)))
+              (org-gtd-project-extend))))
 
         ;; 3. Create Task C in secondary file
         (let ((second-file (org-gtd--path "zeta-secondary")))

@@ -37,10 +37,9 @@
        (let ((current-prefix-arg '(4)))
          (org-gtd-clarify-item))
        ;; Find the WIP buffer and check the flag
-       (let ((wip-buffers (org-gtd-wip--get-buffers)))
-         (expect wip-buffers :not :to-be nil)
-         (with-current-buffer (car wip-buffers)
-           (expect org-gtd-clarify--skip-refile :to-be t)))))
+       (expect (ogt-get-wip-buffer) :not :to-be nil)
+       (with-wip-buffer
+         (expect org-gtd-clarify--skip-refile :to-be t))))
 
  (describe
   "through the agenda view"
@@ -91,7 +90,6 @@
         (let ((current-prefix-arg '(4)))
           (org-gtd-clarify-agenda-item))
         ;; Find the WIP buffer and check the flag
-        (let ((wip-buffers (org-gtd-wip--get-buffers)))
-          (expect wip-buffers :not :to-be nil)
-          (with-current-buffer (car wip-buffers)
-            (expect org-gtd-clarify--skip-refile :to-be t)))))))
+        (expect (ogt-get-wip-buffer) :not :to-be nil)
+        (with-wip-buffer
+          (expect org-gtd-clarify--skip-refile :to-be t))))))

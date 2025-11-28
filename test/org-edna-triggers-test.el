@@ -45,16 +45,12 @@
 
         (capture-inbox-item "Project with dependency")
         (org-gtd-process-inbox)
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              (goto-char (point-max))
-              (newline)
-              (make-task "Task A" :level 2)
-              (make-task "Task B" :level 2)
-              (organize-as-project))))
+        (with-wip-buffer
+          (goto-char (point-max))
+          (newline)
+          (make-task "Task A" :level 2)
+          (make-task "Task B" :level 2)
+          (organize-as-project))
 
         ;; Set up dependency: Task A blocks Task B
         (with-current-buffer (org-gtd--default-file)

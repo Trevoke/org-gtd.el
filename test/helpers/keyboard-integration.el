@@ -18,27 +18,23 @@ This uses the critical org-gtd-process-inbox command while checking keyboard acc
     (org-gtd-process-inbox)
 
     ;; 3. VERIFY keyboard integration points
-    (let ((wip-buffers (seq-filter (lambda (buf)
-                                     (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                   (buffer-list))))
-      (when wip-buffers
-        (with-current-buffer (car wip-buffers)
-          ;; Verify WIP buffer is in correct mode
-          (unless org-gtd-clarify-mode
-            (error "WIP buffer not in org-gtd-clarify-mode"))
+    (with-wip-buffer
+      ;; Verify WIP buffer is in correct mode
+      (unless org-gtd-clarify-mode
+        (error "WIP buffer not in org-gtd-clarify-mode"))
 
-          ;; Verify keyboard binding exists
-          (unless (eq (lookup-key org-gtd-clarify-map (kbd "C-c c")) #'org-gtd-organize)
-            (error "C-c c not bound to org-gtd-organize in WIP buffer"))
+      ;; Verify keyboard binding exists
+      (unless (eq (lookup-key org-gtd-clarify-map (kbd "C-c c")) #'org-gtd-organize)
+        (error "C-c c not bound to org-gtd-organize in WIP buffer"))
 
-          ;; Verify org-mode integration
-          (unless (derived-mode-p 'org-mode)
-            (error "WIP buffer not derived from org-mode"))
+      ;; Verify org-mode integration
+      (unless (derived-mode-p 'org-mode)
+        (error "WIP buffer not derived from org-mode"))
 
-          ;; Navigate to the item (critical for organization)
-          (goto-char (point-min))
-          (when (org-before-first-heading-p)
-            (org-next-visible-heading 1)))))))
+      ;; Navigate to the item (critical for organization)
+      (goto-char (point-min))
+      (when (org-before-first-heading-p)
+        (org-next-visible-heading 1)))))
 
 (defun ogt-verify-keyboard-and-organize-as-single-action (item-text)
   "Full end-to-end: capture ITEM-TEXT, process, verify keyboard, organize as single action."
@@ -52,17 +48,13 @@ PROJECT-TASKS should be a string with the project structure to add."
   (ogt-capture-and-process-with-keyboard-verification item-text)
 
   ;; Add project structure (this is what users do in WIP buffer)
-  (let ((wip-buffers (seq-filter (lambda (buf)
-                                   (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                 (buffer-list))))
-    (when wip-buffers
-      (with-current-buffer (car wip-buffers)
-        (goto-char (point-max))
-        (newline)
-        (insert project-tasks)
-        (goto-char (point-min))
-        (when (org-before-first-heading-p)
-          (org-next-visible-heading 1)))))
+  (with-wip-buffer
+    (goto-char (point-max))
+    (newline)
+    (insert project-tasks)
+    (goto-char (point-min))
+    (when (org-before-first-heading-p)
+      (org-next-visible-heading 1)))
 
   ;; Use the proven organization pattern
   (organize-as-project))
@@ -89,16 +81,12 @@ PROJECT-TASKS should be a string with the project structure to add."
   "Full end-to-end: capture ITEM-TEXT, process, verify keyboard, organize as knowledge."
   (ogt-capture-and-process-with-keyboard-verification item-text)
   ;; Knowledge requires WIP buffer interaction
-  (let ((wip-buffers (seq-filter (lambda (buf)
-                                   (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                 (buffer-list))))
-    (when wip-buffers
-      (with-current-buffer (car wip-buffers)
-        (goto-char (point-min))
-        (when (org-before-first-heading-p)
-          (org-next-visible-heading 1))
-        ;; Use direct function call, not keyboard simulation
-        (org-gtd-knowledge)))))
+  (with-wip-buffer
+    (goto-char (point-min))
+    (when (org-before-first-heading-p)
+      (org-next-visible-heading 1))
+    ;; Use direct function call, not keyboard simulation
+    (org-gtd-knowledge)))
 
 (defun ogt-multiple-items-with-keyboard-verification (items-and-types)
   "Process multiple items with keyboard verification.
@@ -118,36 +106,32 @@ ITEMS-AND-TYPES should be a list of (text . type) pairs where type is a symbol."
       (let ((text (car item))
             (type (cdr item)))
         ;; Verify keyboard integration for each item
-        (let ((wip-buffers (seq-filter (lambda (buf)
-                                         (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                       (buffer-list))))
-          (when wip-buffers
-            (with-current-buffer (car wip-buffers)
-              ;; Verify keyboard binding exists for each organization step
-              (unless (eq (lookup-key org-gtd-clarify-map (kbd "C-c c")) #'org-gtd-organize)
-                (error "Keyboard binding missing during multi-item processing"))
+        (with-wip-buffer
+          ;; Verify keyboard binding exists for each organization step
+          (unless (eq (lookup-key org-gtd-clarify-map (kbd "C-c c")) #'org-gtd-organize)
+            (error "Keyboard binding missing during multi-item processing"))
 
-              ;; Navigate to current item
-              (goto-char (point-min))
-              (when (org-before-first-heading-p)
-                (org-next-visible-heading 1))
+          ;; Navigate to current item
+          (goto-char (point-min))
+          (when (org-before-first-heading-p)
+            (org-next-visible-heading 1))
 
-              ;; Organize based on type using proven patterns
-              (cond
-               ((eq type 'single-action) (organize-as-single-action))
-               ((eq type 'project)
-                ;; Add project structure for projects
-                (goto-char (point-max))
-                (newline)
-                (insert "** First task\n** Second task")
-                (goto-char (point-min))
-                (when (org-before-first-heading-p)
-                  (org-next-visible-heading 1))
-                (organize-as-project))
-               ((eq type 'calendar) (schedule-item (calendar-current-date)))
-               ((eq type 'delegate) (delegate-item "Someone" (calendar-current-date)))
-               ((eq type 'tickler) (defer-item (calendar-current-date)))
-               ((eq type 'knowledge) (org-gtd-knowledge))
-               (t (error "Unknown organization type: %s" type))))))))))
+          ;; Organize based on type using proven patterns
+          (cond
+           ((eq type 'single-action) (organize-as-single-action))
+           ((eq type 'project)
+            ;; Add project structure for projects
+            (goto-char (point-max))
+            (newline)
+            (insert "** First task\n** Second task")
+            (goto-char (point-min))
+            (when (org-before-first-heading-p)
+              (org-next-visible-heading 1))
+            (organize-as-project))
+           ((eq type 'calendar) (schedule-item (calendar-current-date)))
+           ((eq type 'delegate) (delegate-item "Someone" (calendar-current-date)))
+           ((eq type 'tickler) (defer-item (calendar-current-date)))
+           ((eq type 'knowledge) (org-gtd-knowledge))
+           (t (error "Unknown organization type: %s" type))))))))
 
 (provide 'keyboard-integration)

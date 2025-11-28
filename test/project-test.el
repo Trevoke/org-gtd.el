@@ -74,15 +74,11 @@
       (capture-inbox-item "Multi-file project")
       (org-gtd-process-inbox)
 
-      (let ((wip-buffers (seq-filter (lambda (buf)
-                                       (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                     (buffer-list))))
-        (when wip-buffers
-          (with-current-buffer (car wip-buffers)
-            (goto-char (point-max))
-            (newline)
-            (make-task "Task in main file" :level 2)
-            (organize-as-project))))
+      (with-wip-buffer
+        (goto-char (point-max))
+        (newline)
+        (make-task "Task in main file" :level 2)
+        (organize-as-project))
 
       ;; Create task in different file
       (let ((second-file (org-gtd--path "other-file")))
@@ -376,29 +372,21 @@
      ;; Create Project A with shared task
      (capture-inbox-item "Project Alpha")
      (org-gtd-process-inbox)
-     (let ((wip-buffers (seq-filter (lambda (buf)
-                                      (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                    (buffer-list))))
-       (when wip-buffers
-         (with-current-buffer (car wip-buffers)
-           (goto-char (point-max))
-           (newline)
-           (make-task "Shared Task" :level 2)
-           (make-task "Alpha Task" :level 2)
-           (organize-as-project))))
+     (with-wip-buffer
+       (goto-char (point-max))
+       (newline)
+       (make-task "Shared Task" :level 2)
+       (make-task "Alpha Task" :level 2)
+       (organize-as-project))
 
      ;; Create Project Beta with shared task
      (capture-inbox-item "Project Beta")
      (org-gtd-process-inbox)
-     (let ((wip-buffers (seq-filter (lambda (buf)
-                                      (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                    (buffer-list))))
-       (when wip-buffers
-         (with-current-buffer (car wip-buffers)
-           (goto-char (point-max))
-           (newline)
-           (make-task "Beta Task" :level 2)
-           (organize-as-project))))
+     (with-wip-buffer
+       (goto-char (point-max))
+       (newline)
+       (make-task "Beta Task" :level 2)
+       (organize-as-project))
 
      ;; Share "Shared Task" with Project Beta
      (with-current-buffer (org-gtd--default-file)
@@ -459,14 +447,10 @@
      ;; Create Project Delta empty
      (capture-inbox-item "Project Delta")
      (org-gtd-process-inbox)
-     (let ((wip-buffers (seq-filter (lambda (buf)
-                                      (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                    (buffer-list))))
-       (when wip-buffers
-         (with-current-buffer (car wip-buffers)
-           (goto-char (point-max))
-           (newline)
-           (organize-as-project))))
+     (with-wip-buffer
+       (goto-char (point-max))
+       (newline)
+       (organize-as-project))
 
      ;; Share Task 2 with Project Delta
      (with-current-buffer (org-gtd--default-file)
@@ -671,18 +655,14 @@
 
      (capture-inbox-item "Project With Branches")
      (org-gtd-process-inbox)
-     (let ((wip-buffers (seq-filter (lambda (buf)
-                                      (string-search org-gtd-wip--prefix (buffer-name buf)))
-                                    (buffer-list))))
-       (when wip-buffers
-         (with-current-buffer (car wip-buffers)
-           (goto-char (point-max))
-           (newline)
-           (make-task "Task A" :level 2)
-           (make-task "Task B" :level 2)
-           (make-task "Task C" :level 2)
-           (make-task "Task D" :level 2)
-           (organize-as-project))))
+     (with-wip-buffer
+       (goto-char (point-max))
+       (newline)
+       (make-task "Task A" :level 2)
+       (make-task "Task B" :level 2)
+       (make-task "Task C" :level 2)
+       (make-task "Task D" :level 2)
+       (organize-as-project))
 
      ;; Set up the DAG structure
      (with-current-buffer (org-gtd--default-file)
