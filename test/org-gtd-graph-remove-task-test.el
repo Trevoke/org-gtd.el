@@ -34,114 +34,31 @@
 (require 'org-gtd-core)
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 (require 'org-gtd-test-helper-utils (file-name-concat default-directory "test/helpers/utils.el"))
+(require 'org-gtd-test-helper-builders (file-name-concat default-directory "test/helpers/builders.el"))
 
 ;;;; Test Setup
-;; Uses standard infrastructure directly - no custom wrappers
+;; Uses graph topology builders for clean project creation
 
 (defun org-gtd-graph-remove-test--create-project-with-diamond (project-title)
   "Create a test project with diamond structure: A → C ← B, C → D.
 Task C has two parents (A and B) and one successor (D).
 Returns alist with keys: project-marker, project-id, task-a-id, task-b-id, task-c-id, task-d-id."
-  (with-current-buffer (org-gtd--default-file)
-    (goto-char (point-max))
-    (insert (format "* %s\n:PROPERTIES:\n:ORG_GTD: Projects\n" project-title))
-    (let ((project-id (org-id-get-create)))
-      (insert (format ":ID: %s\n:END:\n" project-id))
-      (insert "** TODO Task A\n:PROPERTIES:\n")
-      (let ((task-a-id (org-id-get-create)))
-        (insert (format ":ID: %s\n:ORG_GTD: Actions\n:ORG_GTD_PROJECT_IDS: %s\n:END:\n" task-a-id project-id))
-        (insert "** TODO Task B\n:PROPERTIES:\n")
-        (let ((task-b-id (org-id-get-create)))
-          (insert (format ":ID: %s\n:ORG_GTD: Actions\n:ORG_GTD_PROJECT_IDS: %s\n:END:\n" task-b-id project-id))
-          (insert "** TODO Task C\n:PROPERTIES:\n")
-          (let ((task-c-id (org-id-get-create)))
-            (insert (format ":ID: %s\n:ORG_GTD: Actions\n:ORG_GTD_PROJECT_IDS: %s\n:END:\n" task-c-id project-id))
-            (insert "** TODO Task D\n:PROPERTIES:\n")
-            (let ((task-d-id (org-id-get-create)))
-              (insert (format ":ID: %s\n:ORG_GTD: Actions\n:ORG_GTD_PROJECT_IDS: %s\n:END:\n" task-d-id project-id))
-              (org-gtd-dependencies-create task-a-id task-c-id)
-              (org-gtd-dependencies-create task-b-id task-c-id)
-              (org-gtd-dependencies-create task-c-id task-d-id)
-              (org-gtd-add-to-multivalued-property task-a-id org-gtd-prop-project-ids project-id)
-              (org-gtd-add-to-multivalued-property task-b-id org-gtd-prop-project-ids project-id)
-              (org-gtd-add-to-multivalued-property task-c-id org-gtd-prop-project-ids project-id)
-              (org-gtd-add-to-multivalued-property task-d-id org-gtd-prop-project-ids project-id)
-              (goto-char (point-min))
-              (search-forward project-title)
-              (org-back-to-heading t)
-              (org-entry-put (point) "ORG_GTD_FIRST_TASKS" (format "%s %s" task-a-id task-b-id))
-              (let ((project-marker (point-marker)))
-                (basic-save-buffer)
-                `((project-marker . ,project-marker)
-                  (project-id . ,project-id)
-                  (task-a-id . ,task-a-id)
-                  (task-b-id . ,task-b-id)
-                  (task-c-id . ,task-c-id)
-                  (task-d-id . ,task-d-id))))))))))
+  (make-diamond-project project-title
+                        :root-tasks '("Task A" "Task B")
+                        :middle-task "Task C"
+                        :leaf-task "Task D"))
 
 (defun org-gtd-graph-remove-test--create-project-with-chain (project-title)
   "Create a test project with chain A → B → C.
 Returns alist with keys: project-marker, project-id, task-a-id, task-b-id, task-c-id."
-  (with-current-buffer (org-gtd--default-file)
-    (goto-char (point-max))
-
-    ;; Create project heading
-    (insert (format "* %s\n" project-title))
-    (insert ":PROPERTIES:\n")
-    (insert ":ORG_GTD: Projects\n")
-    (let ((project-id (org-id-get-create)))
-      (insert (format ":ID: %s\n" project-id))
-      (insert ":END:\n")
-
-      ;; Create Task A (root)
-      (insert "** TODO Task A\n")
-      (insert ":PROPERTIES:\n")
-      (let ((task-a-id (org-id-get-create)))
-        (insert (format ":ID: %s\n" task-a-id))
-        (insert ":ORG_GTD: Actions\n")
-        (insert (format ":ORG_GTD_PROJECT_IDS: %s\n" project-id))
-        (insert ":END:\n")
-
-        ;; Create Task B (middle)
-        (insert "** TODO Task B\n")
-        (insert ":PROPERTIES:\n")
-        (let ((task-b-id (org-id-get-create)))
-          (insert (format ":ID: %s\n" task-b-id))
-          (insert ":ORG_GTD: Actions\n")
-          (insert (format ":ORG_GTD_PROJECT_IDS: %s\n" project-id))
-          (insert ":END:\n")
-
-          ;; Create Task C (leaf)
-          (insert "** TODO Task C\n")
-          (insert ":PROPERTIES:\n")
-          (let ((task-c-id (org-id-get-create)))
-            (insert (format ":ID: %s\n" task-c-id))
-            (insert ":ORG_GTD: Actions\n")
-            (insert (format ":ORG_GTD_PROJECT_IDS: %s\n" project-id))
-            (insert ":END:\n")
-
-            ;; Create dependencies using the proper function
-            (org-gtd-dependencies-create task-a-id task-b-id)
-            (org-gtd-dependencies-create task-b-id task-c-id)
-
-            ;; Set project membership using proper function (not just text insertion)
-            (org-gtd-add-to-multivalued-property task-a-id org-gtd-prop-project-ids project-id)
-            (org-gtd-add-to-multivalued-property task-b-id org-gtd-prop-project-ids project-id)
-            (org-gtd-add-to-multivalued-property task-c-id org-gtd-prop-project-ids project-id)
-
-            ;; Set FIRST_TASKS
-            (goto-char (point-min))
-            (search-forward project-title)
-            (org-back-to-heading t)
-            (org-entry-put (point) "ORG_GTD_FIRST_TASKS" task-a-id)
-
-            (let ((project-marker (point-marker)))
-              (basic-save-buffer)
-              `((project-marker . ,project-marker)
-                (project-id . ,project-id)
-                (task-a-id . ,task-a-id)
-                (task-b-id . ,task-b-id)
-                (task-c-id . ,task-c-id)))))))))
+  (let ((data (make-chain-project project-title
+                                  :tasks '("Task A" "Task B" "Task C"))))
+    ;; Rename numbered keys to named keys for backwards compatibility
+    `((project-marker . ,(cdr (assoc 'project-marker data)))
+      (project-id . ,(cdr (assoc 'project-id data)))
+      (task-a-id . ,(nth 0 (cdr (assoc 'task-ids data))))
+      (task-b-id . ,(nth 1 (cdr (assoc 'task-ids data))))
+      (task-c-id . ,(nth 2 (cdr (assoc 'task-ids data)))))))
 
 ;;;; Test 1: Remove from Simple Chain
 

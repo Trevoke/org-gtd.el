@@ -34,65 +34,16 @@
 (require 'org-gtd-core)
 (require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 (require 'org-gtd-test-helper-utils (file-name-concat default-directory "test/helpers/utils.el"))
+(require 'org-gtd-test-helper-builders (file-name-concat default-directory "test/helpers/builders.el"))
 
 ;;;; Test Setup
-;; Uses standard infrastructure directly - no custom wrappers
+;; Uses graph topology builders for clean project creation
 
 (defun org-gtd-graph-modify-test--create-simple-project ()
   "Create a test project with three independent tasks A, B, C.
 Returns alist with keys: project-marker, project-id, task-a-id, task-b-id, task-c-id."
-  (with-current-buffer (org-gtd--default-file)
-    (goto-char (point-max))
-
-    ;; Create project heading
-    (insert "* Simple Project\n")
-    (insert ":PROPERTIES:\n")
-    (insert ":ORG_GTD: Projects\n")
-    (let ((project-id (org-id-get-create)))
-      (insert (format ":ID: %s\n" project-id))
-      (insert ":END:\n")
-
-      ;; Create Task A
-      (insert "** TODO Task A\n")
-      (insert ":PROPERTIES:\n")
-      (let ((task-a-id (org-id-get-create)))
-        (insert (format ":ID: %s\n" task-a-id))
-        (insert ":ORG_GTD: Actions\n")
-        (insert (format ":ORG_GTD_PROJECT_IDS: %s\n" project-id))
-        (insert ":END:\n")
-
-        ;; Create Task B
-        (insert "** TODO Task B\n")
-        (insert ":PROPERTIES:\n")
-        (let ((task-b-id (org-id-get-create)))
-          (insert (format ":ID: %s\n" task-b-id))
-          (insert ":ORG_GTD: Actions\n")
-          (insert (format ":ORG_GTD_PROJECT_IDS: %s\n" project-id))
-          (insert ":END:\n")
-
-          ;; Create Task C
-          (insert "** TODO Task C\n")
-          (insert ":PROPERTIES:\n")
-          (let ((task-c-id (org-id-get-create)))
-            (insert (format ":ID: %s\n" task-c-id))
-            (insert ":ORG_GTD: Actions\n")
-            (insert (format ":ORG_GTD_PROJECT_IDS: %s\n" project-id))
-            (insert ":END:\n")
-
-            ;; Set all three as root tasks (independent)
-            (goto-char (point-min))
-            (search-forward "Simple Project")
-            (org-back-to-heading t)
-            (org-entry-put (point) "ORG_GTD_FIRST_TASKS"
-                           (mapconcat 'identity (list task-a-id task-b-id task-c-id) " "))
-
-            (let ((project-marker (point-marker)))
-              (basic-save-buffer)
-              `((project-marker . ,project-marker)
-                (project-id . ,project-id)
-                (task-a-id . ,task-a-id)
-                (task-b-id . ,task-b-id)
-                (task-c-id . ,task-c-id)))))))))
+  (make-parallel-project "Simple Project"
+                         :tasks '("Task A" "Task B" "Task C")))
 
 ;;;; Test 1: Add single blocker to task with no blockers
 

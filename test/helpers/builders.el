@@ -47,6 +47,8 @@
 
 (require 'org)
 (require 'org-gtd-core)
+(require 'org-gtd-files)
+(require 'org-gtd-dependencies)
 (require 'f)
 
 ;;;; ID Generation
@@ -408,6 +410,259 @@ Returns same plist as make-project."
                   :tasks canceled-tasks
                   :level level
                   :tags tags)))
+
+;;;; Graph Topology Builders
+;;
+;; These builders create projects with specific dependency topologies and return
+;; alists with named IDs for easy test assertions. They use org-gtd-dependencies-create
+;; for proper bidirectional dependency linking.
+
+(cl-defun make-chain-project (name &key
+                                    id
+                                    tasks
+                                    (level 1))
+  "Create a project with linear dependency chain: A → B → C → ...
+
+NAME is the project name.
+TASKS is a list of task descriptions (required).
+
+Returns alist with keys:
+  project-marker - Marker to project heading
+  project-id     - Project ID
+  task-ids       - List of task IDs in order (first to last)
+  task-markers   - List of task markers in order
+
+Each task blocks the next task in the list."
+  (unless tasks
+    (error "make-chain-project requires :tasks argument"))
+
+  (let* ((project-id (or id (ogt-builder--generate-id "chain-project")))
+         (task-ids '())
+         (task-markers '())
+         (stars (make-string level ?*))
+         project-marker
+         prev-id)
+
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-max))
+
+      ;; Create project heading
+      (setq project-marker (point-marker))
+      (insert (format "%s %s\n" stars name))
+      (insert ":PROPERTIES:\n")
+      (insert (format ":ID: %s\n" project-id))
+      (insert ":ORG_GTD: Projects\n")
+      (insert ":END:\n")
+
+      ;; Create tasks
+      (dolist (task-desc tasks)
+        (let ((task-id (ogt-builder--generate-id "chain-task")))
+          (insert (format "%s TODO %s\n" (make-string (1+ level) ?*) task-desc))
+          (insert ":PROPERTIES:\n")
+          (insert (format ":ID: %s\n" task-id))
+          (insert ":ORG_GTD: Actions\n")
+          (insert (format ":ORG_GTD_PROJECT_IDS: %s\n" project-id))
+          (insert ":END:\n")
+
+          (push task-id task-ids)
+          (push (save-excursion
+                  (forward-line -1)
+                  (while (not (looking-at "^\\*"))
+                    (forward-line -1))
+                  (point-marker))
+                task-markers)
+
+          (setq prev-id task-id)))
+
+      ;; Reverse to get correct order
+      (setq task-ids (nreverse task-ids))
+      (setq task-markers (nreverse task-markers))
+
+      ;; Create dependencies: each task blocks the next
+      (let ((prev-task-id nil))
+        (dolist (task-id task-ids)
+          (when prev-task-id
+            (org-gtd-dependencies-create prev-task-id task-id))
+          (setq prev-task-id task-id)))
+
+      ;; Set first task
+      (goto-char (marker-position project-marker))
+      (org-entry-put (point) "ORG_GTD_FIRST_TASKS" (car task-ids))
+
+      (basic-save-buffer)
+
+      ;; Return alist with named IDs
+      `((project-marker . ,project-marker)
+        (project-id . ,project-id)
+        (task-ids . ,task-ids)
+        (task-markers . ,task-markers)
+        ;; Also provide individual task IDs for convenience
+        ,@(cl-loop for id in task-ids
+                   for idx from 0
+                   collect (cons (intern (format "task-%d-id" (1+ idx))) id))))))
+
+(cl-defun make-diamond-project (name &key
+                                      id
+                                      root-tasks
+                                      (middle-task "Middle Task")
+                                      (leaf-task "Leaf Task")
+                                      (level 1))
+  "Create a project with diamond topology: roots → middle → leaf.
+
+NAME is the project name.
+ROOT-TASKS is a list of task descriptions for root tasks (default: 2 tasks).
+MIDDLE-TASK is the description of the convergence point.
+LEAF-TASK is the description of the final task.
+
+Diamond structure:
+  Task A ─┐
+          ├─→ Task C ─→ Task D
+  Task B ─┘
+
+Returns alist with keys:
+  project-marker - Marker to project heading
+  project-id     - Project ID
+  root-ids       - List of root task IDs
+  middle-id      - ID of middle (convergence) task
+  leaf-id        - ID of leaf task
+  ;; Convenience aliases
+  task-a-id, task-b-id - Root task IDs
+  task-c-id            - Middle task ID
+  task-d-id            - Leaf task ID"
+  (let* ((project-id (or id (ogt-builder--generate-id "diamond-project")))
+         (root-descs (or root-tasks '("Task A" "Task B")))
+         (root-ids '())
+         (stars (make-string level ?*))
+         project-marker
+         middle-id
+         leaf-id)
+
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-max))
+
+      ;; Create project heading
+      (setq project-marker (point-marker))
+      (insert (format "%s %s\n" stars name))
+      (insert ":PROPERTIES:\n")
+      (insert (format ":ID: %s\n" project-id))
+      (insert ":ORG_GTD: Projects\n")
+      (insert ":END:\n")
+
+      ;; Create root tasks
+      (dolist (desc root-descs)
+        (let ((task-id (ogt-builder--generate-id "diamond-root")))
+          (insert (format "%s TODO %s\n" (make-string (1+ level) ?*) desc))
+          (insert ":PROPERTIES:\n")
+          (insert (format ":ID: %s\n" task-id))
+          (insert ":ORG_GTD: Actions\n")
+          (insert (format ":ORG_GTD_PROJECT_IDS: %s\n" project-id))
+          (insert ":END:\n")
+          (push task-id root-ids)))
+      (setq root-ids (nreverse root-ids))
+
+      ;; Create middle task
+      (setq middle-id (ogt-builder--generate-id "diamond-middle"))
+      (insert (format "%s TODO %s\n" (make-string (1+ level) ?*) middle-task))
+      (insert ":PROPERTIES:\n")
+      (insert (format ":ID: %s\n" middle-id))
+      (insert ":ORG_GTD: Actions\n")
+      (insert (format ":ORG_GTD_PROJECT_IDS: %s\n" project-id))
+      (insert ":END:\n")
+
+      ;; Create leaf task
+      (setq leaf-id (ogt-builder--generate-id "diamond-leaf"))
+      (insert (format "%s TODO %s\n" (make-string (1+ level) ?*) leaf-task))
+      (insert ":PROPERTIES:\n")
+      (insert (format ":ID: %s\n" leaf-id))
+      (insert ":ORG_GTD: Actions\n")
+      (insert (format ":ORG_GTD_PROJECT_IDS: %s\n" project-id))
+      (insert ":END:\n")
+
+      ;; Create dependencies: roots → middle → leaf
+      (dolist (root-id root-ids)
+        (org-gtd-dependencies-create root-id middle-id))
+      (org-gtd-dependencies-create middle-id leaf-id)
+
+      ;; Set first tasks (all roots)
+      (goto-char (marker-position project-marker))
+      (org-entry-put (point) "ORG_GTD_FIRST_TASKS" (string-join root-ids " "))
+
+      (basic-save-buffer)
+
+      ;; Return alist with named IDs
+      `((project-marker . ,project-marker)
+        (project-id . ,project-id)
+        (root-ids . ,root-ids)
+        (middle-id . ,middle-id)
+        (leaf-id . ,leaf-id)
+        ;; Convenience aliases matching test naming conventions
+        (task-a-id . ,(nth 0 root-ids))
+        (task-b-id . ,(nth 1 root-ids))
+        (task-c-id . ,middle-id)
+        (task-d-id . ,leaf-id)))))
+
+(cl-defun make-parallel-project (name &key
+                                       id
+                                       tasks
+                                       (level 1))
+  "Create a project with independent parallel tasks.
+
+NAME is the project name.
+TASKS is a list of task descriptions (required).
+
+All tasks are independent (no dependencies between them) and are all first tasks.
+
+Returns alist with keys:
+  project-marker - Marker to project heading
+  project-id     - Project ID
+  task-ids       - List of all task IDs
+  ;; Convenience aliases
+  task-a-id, task-b-id, task-c-id - Individual task IDs"
+  (unless tasks
+    (error "make-parallel-project requires :tasks argument"))
+
+  (let* ((project-id (or id (ogt-builder--generate-id "parallel-project")))
+         (task-ids '())
+         (stars (make-string level ?*))
+         project-marker)
+
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-max))
+
+      ;; Create project heading
+      (setq project-marker (point-marker))
+      (insert (format "%s %s\n" stars name))
+      (insert ":PROPERTIES:\n")
+      (insert (format ":ID: %s\n" project-id))
+      (insert ":ORG_GTD: Projects\n")
+      (insert ":END:\n")
+
+      ;; Create tasks (all independent)
+      (dolist (desc tasks)
+        (let ((task-id (ogt-builder--generate-id "parallel-task")))
+          (insert (format "%s TODO %s\n" (make-string (1+ level) ?*) desc))
+          (insert ":PROPERTIES:\n")
+          (insert (format ":ID: %s\n" task-id))
+          (insert ":ORG_GTD: Actions\n")
+          (insert (format ":ORG_GTD_PROJECT_IDS: %s\n" project-id))
+          (insert ":END:\n")
+          (push task-id task-ids)))
+      (setq task-ids (nreverse task-ids))
+
+      ;; Set all tasks as first tasks
+      (goto-char (marker-position project-marker))
+      (org-entry-put (point) "ORG_GTD_FIRST_TASKS" (string-join task-ids " "))
+
+      (basic-save-buffer)
+
+      ;; Return alist with named IDs
+      `((project-marker . ,project-marker)
+        (project-id . ,project-id)
+        (task-ids . ,task-ids)
+        ;; Convenience aliases
+        (task-a-id . ,(nth 0 task-ids))
+        (task-b-id . ,(nth 1 task-ids))
+        (task-c-id . ,(nth 2 task-ids))))))
 
 (provide 'org-gtd-test-helper-builders)
 
