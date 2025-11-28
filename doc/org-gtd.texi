@@ -849,6 +849,10 @@ This is the simplest possible configuration for org-gtd. Copy this entire block 
 ;; This only works when you're in a clarify buffer
 (with-eval-after-load 'org-gtd
   (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize))
+
+;; Quick task actions in agenda view
+(with-eval-after-load 'org-agenda
+  (define-key org-agenda-mode-map (kbd "C-c .") 'org-gtd-agenda-transient))
 @end lisp
 
 @item
@@ -887,7 +891,10 @@ Then add this to your @code{config.el}:
          :desc "Stuck projects" "s"  #'org-gtd-reflect-stuck-projects))
   ;; Clarify map binding
   (map! :map org-gtd-clarify-map
-        :desc "Organize this item" "C-c c" #'org-gtd-organize))
+        :desc "Organize this item" "C-c c" #'org-gtd-organize)
+  ;; Quick task actions in agenda view
+  (map! :map org-agenda-mode-map
+        :desc "GTD quick actions" "C-c ." #'org-gtd-agenda-transient))
 @end lisp
 
 @item
@@ -928,7 +935,10 @@ If you use Spacemacs, add this to your @code{dotspacemacs/user-config} function:
     "od s" 'org-gtd-reflect-stuck-projects)
   ;; Clarify map binding
   (with-eval-after-load 'org-gtd
-    (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize)))
+    (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize))
+  ;; Quick task actions in agenda view
+  (with-eval-after-load 'org-agenda
+    (define-key org-agenda-mode-map (kbd "C-c .") 'org-gtd-agenda-transient)))
 @end lisp
 
 @item
@@ -972,12 +982,14 @@ All GTD keywords must be in a single sequence
 @strong{@code{org-edna-mode}} - REQUIRED for projects to work
 
 @item
-@strong{Keybindings} - Two types:
+@strong{Keybindings} - Three types:
 @itemize
 @item
 @strong{Global bindings}: Work anywhere in Emacs (capture, engage, process, etc.)
 @item
 @strong{Clarify map binding}: Only works when organizing items in clarify buffers
+@item
+@strong{Agenda map binding}: Quick task actions in agenda views (@code{C-c .} for @code{org-gtd-agenda-transient})
 @end itemize
 @end enumerate
 
@@ -2353,6 +2365,213 @@ You can call @code{org-gtd-show-all-next} to only see NEXT actions, nothing sche
 You can use @code{M-x org-gtd-reflect-missed-engagements} to find appointments you missed, delegated items needing check-ins, and late projects. This is your safety net for catching things that slipped through the cracks.
 
 The weekly review is not yet implemented.
+
+@itemize
+@item
+@anchor{Quick Task Actions from the Agenda}Quick Task Actions from the Agenda
+
+
+@itemize
+@item
+@anchor{First Contact Why This Feature?}First Contact: Why This Feature?
+
+
+When you're working from @code{org-gtd-engage}, you see your NEXT actions and scheduled items. You want to mark things done, defer something to tomorrow, or clock in on a task - but you don't want to navigate away from your list.
+
+@code{org-gtd-agenda-transient} gives you quick access to common task operations right from the agenda view. One keypress, pick an action, and you're back to your list.
+
+@strong{For GTD users} who spend time in their daily agenda and want to execute tasks efficiently without context-switching.
+
+@item
+@anchor{Black Triangle Your First Quick Action}Black Triangle: Your First Quick Action
+
+
+@enumerate
+@item
+Open your engage view: @code{C-c d e} (or @code{M-x org-gtd-engage})
+@item
+Move point to any task
+@item
+Press @code{C-c .} (you'll need to set up the keybinding first - see below)
+@item
+Press @code{d} to mark the task DONE
+@end enumerate
+
+That's it. The task is done, and you're still in your agenda.
+
+@strong{Setup:} Add this keybinding to your config:
+
+@lisp
+(define-key org-agenda-mode-map (kbd "C-c .") #'org-gtd-agenda-transient)
+@end lisp
+
+For @code{use-package}, add this to your @code{:bind} section:
+
+@lisp
+:bind
+(:map org-agenda-mode-map
+ ("C-c ." . org-gtd-agenda-transient))
+@end lisp
+
+@item
+@anchor{Understanding the Actions}Understanding the Actions
+
+
+The transient menu is organized into groups based on what you're trying to do:
+
+@itemize
+@item
+@anchor{State Changes}State Changes
+
+
+Change the TODO state of a task. These are the most common actions:
+
+@itemize
+@item
+@strong{Mark DONE} (@code{d}) - You finished it
+@item
+@strong{Set WAITING} (@code{w}) - You're blocked on something/someone
+@item
+@strong{Set NEXT} (@code{n}) - It's ready to work on
+@item
+@strong{Cancel} (@code{x}) - It's no longer relevant
+@item
+@strong{Cycle TODO} (@code{t}) - Cycle through all states
+@end itemize
+
+@item
+@anchor{Time Adjustments (Conditional)}Time Adjustments (Conditional)
+
+
+For Calendar, Delegated, and Tickler items only - these have GTD timestamps that determine when they appear.
+
+@itemize
+@item
+@strong{Defer 1 day} (@code{+}) - Push it to tomorrow (quick snooze)
+@item
+@strong{Set date} (@code{s}) - Pick a new date
+@end itemize
+
+Why only these types? Calendar items have appointment dates. Delegated items have follow-up dates. Tickler items have "remind me on" dates. Habits are excluded because deferring a habit has different semantics (you'd break the streak).
+
+@item
+@anchor{Clocking}Clocking
+
+
+Track time spent on tasks:
+
+@itemize
+@item
+@strong{Clock in} (@code{I}) - Start the clock
+@item
+@strong{Clock out} (@code{O}) - Stop the clock
+@end itemize
+
+@item
+@anchor{Metadata}Metadata
+
+
+Add context to tasks:
+
+@itemize
+@item
+@strong{Set effort} (@code{e}) - Estimate how long it'll take
+@item
+@strong{Set priority} (@code{,}) - A/B/C priority
+@item
+@strong{Set tags} (@code{:}) - Add tags for filtering
+@item
+@strong{Add note} (@code{z}) - Append a note (logged with timestamp)
+@item
+@strong{Area of focus} (@code{a}) - Set which life area this belongs to
+@end itemize
+
+@item
+@anchor{Clarify}Clarify
+
+
+Sometimes you need to rethink a task:
+
+@itemize
+@item
+@strong{Clarify (refile)} (@code{c}) - Open the clarify workflow, refile when done
+@item
+@strong{Clarify (in place)} (@code{C}) - Open the clarify workflow, keep in same GTD location
+@end itemize
+@end itemize
+
+@item
+@anchor{Command Reference}Command Reference
+
+
+@multitable {aaa} {aaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Key
+@tab Action
+@tab Description
+@item @code{d}
+@tab Mark DONE
+@tab Complete the task
+@item @code{w}
+@tab Set WAITING
+@tab Mark as blocked/waiting
+@item @code{n}
+@tab Set NEXT
+@tab Mark as ready to work on
+@item @code{x}
+@tab Cancel
+@tab Cancel the task
+@item @code{t}
+@tab Cycle TODO
+@tab Cycle through TODO states
+@item @code{+}
+@tab Defer 1 day
+@tab Push to tomorrow (time-based items only)
+@item @code{s}
+@tab Set date
+@tab Pick new date (time-based items only)
+@item @code{I}
+@tab Clock in
+@tab Start time tracking
+@item @code{O}
+@tab Clock out
+@tab Stop time tracking
+@item @code{e}
+@tab Set effort
+@tab Estimate duration
+@item @code{,}
+@tab Set priority
+@tab Set A/B/C priority
+@item @code{:}
+@tab Set tags
+@tab Add/modify tags
+@item @code{z}
+@tab Add note
+@tab Append timestamped note
+@item @code{a}
+@tab Area of focus
+@tab Set life area
+@item @code{c}
+@tab Clarify (refile)
+@tab Re-clarify and refile
+@item @code{C}
+@tab Clarify (in place)
+@tab Re-clarify, keep location
+@item @code{q}
+@tab Quit
+@tab Close the menu
+@end multitable
+
+@item
+@anchor{Suggested Keybinding}Suggested Keybinding
+
+
+The command isn't bound by default because org-agenda-mode already has many keybindings. The suggested binding is @code{C-c .} which follows the @code{C-c} prefix convention for user bindings:
+
+@lisp
+(define-key org-agenda-mode-map (kbd "C-c .") #'org-gtd-agenda-transient)
+@end lisp
+@end itemize
+@end itemize
 
 @node Understanding GTD Item Types
 @section Understanding GTD Item Types
@@ -6327,7 +6546,7 @@ During weekly review, run the full missed engagements view. This catches anythin
 Use custom views to see missed items by area of focus (see configuration below).
 
 @item
-@anchor{Command Reference}Command Reference
+@anchor{Command Reference (1)}Command Reference
 
 
 @multitable {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
@@ -6540,7 +6759,7 @@ Use custom views with area-of-focus filters
 Both are valuable. Missed helps you catch problems. Upcoming helps you prevent them.
 
 @item
-@anchor{Command Reference (1)}Command Reference
+@anchor{Command Reference (2)}Command Reference
 
 
 @multitable {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}

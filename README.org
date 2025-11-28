@@ -85,7 +85,11 @@ If you use ~use-package~, copy this entire block into your init file - it includ
 
    ;; Keybinding for organizing items (only works in clarify buffers)
    :map org-gtd-clarify-map
-   ("C-c c" . org-gtd-organize)))
+   ("C-c c" . org-gtd-organize)
+
+   ;; Quick actions on tasks in agenda views (optional but recommended)
+   :map org-agenda-mode-map
+   ("C-c ." . org-gtd-agenda-transient)))
 #+end_src
 
 ** Alternative: Manual Configuration
@@ -124,6 +128,10 @@ If you don't use ~use-package~, copy this into your init file and restart Emacs:
 ;; Keybinding for organizing items (only works in clarify buffers)
 (with-eval-after-load 'org-gtd
   (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize))
+
+;; Quick actions on tasks in agenda views (optional but recommended)
+(with-eval-after-load 'org-agenda
+  (define-key org-agenda-mode-map (kbd "C-c .") 'org-gtd-agenda-transient))
 #+end_src
 
 ** Performance

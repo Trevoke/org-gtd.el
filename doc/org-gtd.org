@@ -381,6 +381,10 @@ This is the simplest possible configuration for org-gtd. Copy this entire block 
 ;; This only works when you're in a clarify buffer
 (with-eval-after-load 'org-gtd
   (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize))
+
+;; Quick task actions in agenda view
+(with-eval-after-load 'org-agenda
+  (define-key org-agenda-mode-map (kbd "C-c .") 'org-gtd-agenda-transient))
 #+end_src
 
 **** Example 2: Doom Emacs Configuration
@@ -420,7 +424,10 @@ Then add this to your ~config.el~:
          :desc "Stuck projects" "s"  #'org-gtd-reflect-stuck-projects))
   ;; Clarify map binding
   (map! :map org-gtd-clarify-map
-        :desc "Organize this item" "C-c c" #'org-gtd-organize))
+        :desc "Organize this item" "C-c c" #'org-gtd-organize)
+  ;; Quick task actions in agenda view
+  (map! :map org-agenda-mode-map
+        :desc "GTD quick actions" "C-c ." #'org-gtd-agenda-transient))
 #+end_src
 
 **** Example 3: Spacemacs Configuration
@@ -462,7 +469,10 @@ If you use Spacemacs, add this to your ~dotspacemacs/user-config~ function:
     "od s" 'org-gtd-reflect-stuck-projects)
   ;; Clarify map binding
   (with-eval-after-load 'org-gtd
-    (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize)))
+    (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize))
+  ;; Quick task actions in agenda view
+  (with-eval-after-load 'org-agenda
+    (define-key org-agenda-mode-map (kbd "C-c .") 'org-gtd-agenda-transient)))
 #+end_src
 
 **** What These Configurations Do
@@ -486,9 +496,10 @@ All three examples configure the same essential pieces:
 
 5. *~org-edna-mode~* - REQUIRED for projects to work
 
-6. *Keybindings* - Two types:
+6. *Keybindings* - Three types:
    - *Global bindings*: Work anywhere in Emacs (capture, engage, process, etc.)
    - *Clarify map binding*: Only works when organizing items in clarify buffers
+   - *Agenda map binding*: Quick task actions in agenda views (~C-c .~ for ~org-gtd-agenda-transient~)
 
 **** Testing Your Configuration
 
@@ -1433,6 +1444,120 @@ You can call ~org-gtd-show-all-next~ to only see NEXT actions, nothing scheduled
 You can use ~M-x org-gtd-reflect-missed-engagements~ to find appointments you missed, delegated items needing check-ins, and late projects. This is your safety net for catching things that slipped through the cracks.
 
 The weekly review is not yet implemented.
+
+**** Quick Task Actions from the Agenda
+:PROPERTIES:
+:DESCRIPTION: Work on tasks without leaving the agenda view
+:CUSTOM_ID: agenda-transient
+:END:
+
+***** First Contact: Why This Feature?
+
+When you're working from ~org-gtd-engage~, you see your NEXT actions and scheduled items. You want to mark things done, defer something to tomorrow, or clock in on a task - but you don't want to navigate away from your list.
+
+~org-gtd-agenda-transient~ gives you quick access to common task operations right from the agenda view. One keypress, pick an action, and you're back to your list.
+
+*For GTD users* who spend time in their daily agenda and want to execute tasks efficiently without context-switching.
+
+***** Black Triangle: Your First Quick Action
+
+1. Open your engage view: ~C-c d e~ (or ~M-x org-gtd-engage~)
+2. Move point to any task
+3. Press ~C-c .~ (you'll need to set up the keybinding first - see below)
+4. Press ~d~ to mark the task DONE
+
+That's it. The task is done, and you're still in your agenda.
+
+*Setup:* Add this keybinding to your config:
+
+#+begin_src emacs-lisp
+(define-key org-agenda-mode-map (kbd "C-c .") #'org-gtd-agenda-transient)
+#+end_src
+
+For ~use-package~, add this to your ~:bind~ section:
+
+#+begin_src emacs-lisp
+:bind
+(:map org-agenda-mode-map
+ ("C-c ." . org-gtd-agenda-transient))
+#+end_src
+
+***** Understanding the Actions
+
+The transient menu is organized into groups based on what you're trying to do:
+
+****** State Changes
+
+Change the TODO state of a task. These are the most common actions:
+
+- *Mark DONE* (~d~) - You finished it
+- *Set WAITING* (~w~) - You're blocked on something/someone
+- *Set NEXT* (~n~) - It's ready to work on
+- *Cancel* (~x~) - It's no longer relevant
+- *Cycle TODO* (~t~) - Cycle through all states
+
+****** Time Adjustments (Conditional)
+
+For Calendar, Delegated, and Tickler items only - these have GTD timestamps that determine when they appear.
+
+- *Defer 1 day* (~+~) - Push it to tomorrow (quick snooze)
+- *Set date* (~s~) - Pick a new date
+
+Why only these types? Calendar items have appointment dates. Delegated items have follow-up dates. Tickler items have "remind me on" dates. Habits are excluded because deferring a habit has different semantics (you'd break the streak).
+
+****** Clocking
+
+Track time spent on tasks:
+
+- *Clock in* (~I~) - Start the clock
+- *Clock out* (~O~) - Stop the clock
+
+****** Metadata
+
+Add context to tasks:
+
+- *Set effort* (~e~) - Estimate how long it'll take
+- *Set priority* (~,~) - A/B/C priority
+- *Set tags* (~:~) - Add tags for filtering
+- *Add note* (~z~) - Append a note (logged with timestamp)
+- *Area of focus* (~a~) - Set which life area this belongs to
+
+****** Clarify
+
+Sometimes you need to rethink a task:
+
+- *Clarify (refile)* (~c~) - Open the clarify workflow, refile when done
+- *Clarify (in place)* (~C~) - Open the clarify workflow, keep in same GTD location
+
+***** Command Reference
+
+| Key | Action | Description |
+|-----+--------+-------------|
+| ~d~ | Mark DONE | Complete the task |
+| ~w~ | Set WAITING | Mark as blocked/waiting |
+| ~n~ | Set NEXT | Mark as ready to work on |
+| ~x~ | Cancel | Cancel the task |
+| ~t~ | Cycle TODO | Cycle through TODO states |
+| ~+~ | Defer 1 day | Push to tomorrow (time-based items only) |
+| ~s~ | Set date | Pick new date (time-based items only) |
+| ~I~ | Clock in | Start time tracking |
+| ~O~ | Clock out | Stop time tracking |
+| ~e~ | Set effort | Estimate duration |
+| ~,~ | Set priority | Set A/B/C priority |
+| ~:~ | Set tags | Add/modify tags |
+| ~z~ | Add note | Append timestamped note |
+| ~a~ | Area of focus | Set life area |
+| ~c~ | Clarify (refile) | Re-clarify and refile |
+| ~C~ | Clarify (in place) | Re-clarify, keep location |
+| ~q~ | Quit | Close the menu |
+
+***** Suggested Keybinding
+
+The command isn't bound by default because org-agenda-mode already has many keybindings. The suggested binding is ~C-c .~ which follows the ~C-c~ prefix convention for user bindings:
+
+#+begin_src emacs-lisp
+(define-key org-agenda-mode-map (kbd "C-c .") #'org-gtd-agenda-transient)
+#+end_src
 
 ** Understanding GTD Item Types
 :PROPERTIES:
