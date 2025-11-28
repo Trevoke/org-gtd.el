@@ -34,6 +34,46 @@
          (expect org-gtd-clarify--skip-refile :to-be t))))
 
  (describe
+  "organize help buffer"
+
+  (it "has a content constant with all GTD organize types"
+      (expect (boundp 'org-gtd-clarify-organize-help-content) :to-be t)
+      (expect org-gtd-clarify-organize-help-content :to-match "Quick Action")
+      (expect org-gtd-clarify-organize-help-content :to-match "Single Action")
+      (expect org-gtd-clarify-organize-help-content :to-match "Project")
+      (expect org-gtd-clarify-organize-help-content :to-match "Calendar")
+      (expect org-gtd-clarify-organize-help-content :to-match "Delegate")
+      (expect org-gtd-clarify-organize-help-content :to-match "Habit")
+      (expect org-gtd-clarify-organize-help-content :to-match "Tickler")
+      (expect org-gtd-clarify-organize-help-content :to-match "Someday")
+      (expect org-gtd-clarify-organize-help-content :to-match "Knowledge")
+      (expect org-gtd-clarify-organize-help-content :to-match "Trash"))
+
+  (it "creates a buffer with help content in org-mode and read-only"
+      (let ((buffer (org-gtd-clarify--get-or-create-organize-help-buffer)))
+        (expect buffer :not :to-be nil)
+        (expect (buffer-name buffer) :to-equal "*Org GTD Organize Help*")
+        (with-current-buffer buffer
+          (expect (buffer-string) :to-match "Quick Action")
+          (expect major-mode :to-equal 'org-mode)
+          (expect buffer-read-only :to-be t))
+        (kill-buffer buffer)))
+
+  (it "toggles the organize help window on and off"
+      (let ((org-gtd-clarify-show-organize-help 'right))
+        ;; Initially no window
+        (expect (get-buffer-window "*Org GTD Organize Help*") :to-be nil)
+        ;; Toggle on
+        (org-gtd-clarify-toggle-organize-help)
+        (expect (get-buffer-window "*Org GTD Organize Help*") :not :to-be nil)
+        ;; Toggle off
+        (org-gtd-clarify-toggle-organize-help)
+        (expect (get-buffer-window "*Org GTD Organize Help*") :to-be nil)
+        ;; Cleanup
+        (when-let ((buf (get-buffer "*Org GTD Organize Help*")))
+          (kill-buffer buf)))))
+
+ (describe
   "through the agenda view"
 
   (it "converts tickler item to project with tasks via clarify-agenda-item"

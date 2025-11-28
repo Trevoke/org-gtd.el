@@ -787,6 +787,7 @@ These settings are *required* for Org GTD to work properly:
 - ~org-gtd-delegate-read-func~ :: function that is used to prompt for a person a task is delegated to. Must return a string. By default this is set to ~read-string~.
 - ~org-gtd-areas-of-focus~ :: list of strings representing your areas of focus (horizon 2 in GTD).
 - ~org-gtd-clarify-show-horizons~ :: When clarifying, do you want the horizons buffer to be shown by default, or do you prefer it hidden?
+- ~org-gtd-clarify-show-organize-help~ :: When clarifying, show a help buffer with GTD item type descriptions and keyboard shortcuts.
 - ~org-gtd-clarify-project-templates~ :: Alist of strings: ~project template name . project template~ where there template is a series of tasks you may want to insert automatically, if you have a generic type of project that comes up a lot.
 - ~org-gtd-horizons-file~ :: Name of the file, in ~org-gtd-directory~, that will be displayed when the horizons buffer is displayed when clarifying.
 - ~org-gtd-engage-prefix-width~ :: how many characters to dedicate to the prefix, on the left side of the TODO items, so the project name, if any, can show clearly.
@@ -1324,6 +1325,12 @@ The clarify buffers are ~org-mode~ buffers that use the minor mode ~org-gtd-clar
 While clarifying, you may find it useful to see your GTD horizons. You can use:
 - ~org-gtd-clarify-toggle-horizons-window~ :: a function that toggles the display of the horizons buffer
 - ~org-gtd-clarify-show-horizons~ :: a boolean variable defining whether the horizons window should be shown (t) or hidden (nil) by default when clarifying an item. See  [[#working-with-horizons][Working with the GTD Horizons]] for more details.
+
+If you're unsure which GTD category to choose when organizing, the *organize help buffer* shows a quick reference of all item types with their keyboard shortcuts and key properties:
+- ~org-gtd-clarify-toggle-organize-help~ :: toggles a side window showing all GTD item types (Quick Action, Single Action, Project, Calendar, etc.) with brief descriptions
+- ~org-gtd-clarify-show-organize-help~ :: set to ~'right~, ~'left~, ~'top~, or ~'bottom~ to configure the window position
+
+Try it now: while clarifying an item, run ~M-x org-gtd-clarify-toggle-organize-help~. You'll see each type's purpose and what happens when you choose it.
 
 If you are clarifying a project, you may be interested in project templates:
 - ~org-gtd-clarify-project-insert-template~ :: a function that will ask you to choose a template to insert.
@@ -3591,6 +3598,30 @@ Values:
 
 *Related command*: ~org-gtd-clarify-toggle-horizons-window~ to toggle visibility during clarification.
 
+**** ~org-gtd-clarify-show-organize-help~
+
+*Type*: Symbol or nil
+
+*Default*: ~nil~
+
+*Description*: Whether to show the organize types help buffer during clarification. This buffer displays all GTD item types with their keyboard shortcuts and brief descriptions, helping you decide how to categorize an item.
+
+Values:
+- ~nil~ :: Don't show by default (toggle with command)
+- ~'top~ :: Show help window at top
+- ~'bottom~ :: Show help window at bottom
+- ~'left~ :: Show help window on left
+- ~'right~ :: Show help window on right
+
+*Example*:
+#+begin_src emacs-lisp
+(setq org-gtd-clarify-show-organize-help 'right)
+#+end_src
+
+*Related command*: ~org-gtd-clarify-toggle-organize-help~ to toggle visibility during clarification.
+
+*Note*: If both this and ~org-gtd-clarify-show-horizons~ are set to the same side, Emacs will stack the windows vertically in that side area.
+
 **** ~org-gtd-clarify-display-helper-buffer~
 
 *Type*: Boolean
@@ -4597,6 +4628,15 @@ Common filters include:
 *What it does*:
 - Toggles display of horizons file in side window
 - Position determined by ~org-gtd-clarify-show-horizons~ (or right side if variable is nil)
+
+**** ~org-gtd-clarify-toggle-organize-help~
+
+*When to use*: During clarification, when you're unsure which GTD category to choose
+
+*What it does*:
+- Toggles display of organize types help buffer in side window
+- Shows all GTD item types (Quick Action, Single Action, Project, etc.) with keyboard shortcuts and brief descriptions
+- Position determined by ~org-gtd-clarify-show-organize-help~ (or right side if variable is nil)
 
 **** ~org-gtd-clarify-project-insert-template~
 
