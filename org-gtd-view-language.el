@@ -169,16 +169,23 @@ Returns a list of additional blocks like TODO lists."
 
 (defun org-gtd-view-lang--create-custom-commands (view-specs &optional key title)
   "Create org-agenda-custom-commands from VIEW-SPECS list.
-KEY defaults to \"o\", TITLE defaults to \"GTD Views\"."
+KEY defaults to \"o\", TITLE defaults to \"GTD Views\".
+Supports both single-block and multi-block view specs.
+Multi-block specs have a \\='blocks key containing a list of block specs."
   (let* ((command-key (or key "o"))
          (command-title (or title "GTD Views"))
          (blocks (mapcan (lambda (view-spec)
-                          (let ((main-block (org-gtd-view-lang--create-agenda-block view-spec))
-                                (additional-blocks (org-gtd-view-lang--create-additional-blocks view-spec)))
-                            (if additional-blocks
-                                (cons main-block additional-blocks)
-                              (list main-block))))
-                        view-specs)))
+                           (let ((blocks-list (alist-get 'blocks view-spec)))
+                             (if blocks-list
+                                 ;; Multi-block spec: process each block
+                                 (mapcar #'org-gtd-view-lang--create-agenda-block blocks-list)
+                               ;; Single-block spec: process as-is
+                               (let ((main-block (org-gtd-view-lang--create-agenda-block view-spec))
+                                     (additional-blocks (org-gtd-view-lang--create-additional-blocks view-spec)))
+                                 (if additional-blocks
+                                     (cons main-block additional-blocks)
+                                   (list main-block))))))
+                         view-specs)))
     `((,command-key ,command-title ,blocks))))
 
 (defun org-gtd-view-lang--translate-filter (filter)

@@ -828,4 +828,40 @@
         (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
                 :to-equal
                 '(and (property "ORG_GTD" "Incubated")
-                      (property "PREVIOUS_ORG_GTD" "Projects")))))))
+                      (property "PREVIOUS_ORG_GTD" "Projects"))))))
+
+ (describe
+  "Multi-block view support"
+
+  (it "creates agenda blocks from multi-block view spec"
+      (let ((multi-block-spec
+             '((name . "Multi View")
+               (blocks . (((name . "Block 1")
+                           (type . next-action))
+                          ((name . "Block 2")
+                           (type . delegated)))))))
+        (let ((commands (org-gtd-view-lang--create-custom-commands (list multi-block-spec))))
+          (expect (length (caddr (car commands))) :to-equal 2))))
+
+  (it "processes each block separately in multi-block spec"
+      (let ((multi-block-spec
+             '((name . "Multi View")
+               (blocks . (((name . "Next Actions Block")
+                           (type . next-action))
+                          ((name . "Delegated Block")
+                           (type . delegated)))))))
+        (let* ((commands (org-gtd-view-lang--create-custom-commands (list multi-block-spec)))
+               (blocks (caddr (car commands))))
+          ;; First block should be for next-action
+          (expect (caddr (car blocks)) :to-equal
+                  '((org-ql-block-header "Next Actions Block")))
+          ;; Second block should be for delegated
+          (expect (caddr (cadr blocks)) :to-equal
+                  '((org-ql-block-header "Delegated Block"))))))
+
+  (it "still supports single-block specs without blocks key"
+      (let ((single-block-spec
+             '((name . "Single View")
+               (type . next-action))))
+        (let ((commands (org-gtd-view-lang--create-custom-commands (list single-block-spec))))
+          (expect (length (caddr (car commands))) :to-equal 1))))))
