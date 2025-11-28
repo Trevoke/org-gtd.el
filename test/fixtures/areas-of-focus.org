@@ -161,6 +161,7 @@ SCHEDULED: <2021-11-20 Sat>
 ** Sweep the floor
 SCHEDULED: <2021-11-20 9:00-9:15 .+1d>
 :PROPERTIES:
+:ORG_GTD:  Habit
 :STYLE:    habit
 :CATEGORY: Home
 :END:

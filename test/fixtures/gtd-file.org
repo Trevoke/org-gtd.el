@@ -160,6 +160,7 @@
 ** repeating item
 SCHEDULED: <2021-12-04 Sat .+1d>
 :PROPERTIES:
+:ORG_GTD:  Habit
 :STYLE:    habit
 :LAST_REPEAT: [2021-11-20 Sat 16:52]
 :END:

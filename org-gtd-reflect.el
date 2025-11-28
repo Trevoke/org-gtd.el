@@ -40,11 +40,11 @@
 (defun org-gtd-reflect--area-of-focus-view-specs (area)
   "Create GTD view specifications for reflecting on AREA of focus."
   `(((name . "Active projects")
-     (filters . ((category . projects)
+     (filters . ((type . project)
                  (area-of-focus . ,area))))
 
     ((name . "Incubated projects")
-     (filters . ((category . incubated-projects)
+     (filters . ((type . incubated-project)
                  (area-of-focus . ,area)))
      (prefix-format . "  Incubated: "))
 
@@ -53,15 +53,15 @@
                  (area-of-focus . ,area))))
 
     ((name . "Reminders")
-     (filters . ((category . calendar)
+     (filters . ((type . calendar)
                  (area-of-focus . ,area))))
 
     ((name . "Routines")
-     (filters . ((category . habit)
+     (filters . ((type . habit)
                  (area-of-focus . ,area))))
 
     ((name . "Incubated items")
-     (filters . ((category . incubate)
+     (filters . ((type . incubated)
                  (timestamp . future)
                  (area-of-focus . ,area))))))
 
@@ -85,15 +85,15 @@ mostly of value for testing purposes."
 
 (defconst org-gtd-reflect-missed-items-view-specs
   '(((name . "Missed calendar events")
-     (filters . ((category . calendar)
+     (filters . ((type . calendar)
                  (timestamp . past))))
 
     ((name . "Incubated events to review")
-     (filters . ((category . incubate)
+     (filters . ((type . incubated)
                  (timestamp . past))))
 
     ((name . "Missed delegated events")
-     (filters . ((category . delegated)
+     (filters . ((type . delegated)
                  (timestamp . past)))))
   "GTD view specifications for reflecting on missed items.")
 
@@ -111,7 +111,7 @@ day for the agenda.  It is mostly of value for testing purposes."
   (interactive)
   (org-gtd-view-show
    '((name . "Stuck Calendar Items")
-     (filters . ((category . calendar)
+     (filters . ((type . calendar)
                  (invalid-timestamp . t))))))
 
 (defun org-gtd-reflect-stuck-delegated-items ()
@@ -120,7 +120,7 @@ day for the agenda.  It is mostly of value for testing purposes."
   (org-gtd-view-show
    `((name . "Stuck Delegated Items")
      (filters . ((todo . (,(org-gtd-keywords--wait)))
-                 (category . delegated)
+                 (type . delegated)
                  (invalid-timestamp . t))))))
 
 (defun org-gtd-reflect-stuck-habit-items ()
@@ -128,7 +128,7 @@ day for the agenda.  It is mostly of value for testing purposes."
   (interactive)
   (org-gtd-view-show
    '((name . "Stuck Habit Items")
-     (filters . ((category . habit)
+     (filters . ((type . habit)
                  (invalid-timestamp . t))))))
 
 (defun org-gtd-reflect-stuck-incubated-items ()
@@ -136,7 +136,7 @@ day for the agenda.  It is mostly of value for testing purposes."
   (interactive)
   (org-gtd-view-show
    '((name . "Stuck Incubated Items")
-     (filters . ((category . incubate)
+     (filters . ((type . incubated)
                  (invalid-timestamp . t))))))
 
 ;;;###autoload
@@ -148,14 +148,14 @@ indicating they need attention to identify the next actionable step."
   (interactive)
   (org-gtd-view-show
    '((name . "Stuck Projects")
-     (filters . ((category . stuck-projects))))))
+     (filters . ((type . stuck-project))))))
 
 (defun org-gtd-reflect-stuck-single-action-items ()
   "Agenda view with all invalid single action items."
   (interactive)
   (org-gtd-view-show
-   `((name . "Stuck Single Action Items")
-     (filters . ((property . (("ORG_GTD" . ,org-gtd-action)))
+   '((name . "Stuck Single Action Items")
+     (filters . ((type . next-action)
                  (invalid-timestamp . t))))))
 
 ;;;###autoload
@@ -187,7 +187,7 @@ This view helps identify projects ready for archiving."
   (interactive)
   (org-gtd-view-show
    '((name . "Completed Projects")
-     (filters . ((category . completed-projects))))))
+     (filters . ((type . completed-project))))))
 
 ;;;; Functions
 
@@ -202,26 +202,26 @@ This view helps identify projects ready for archiving."
 
 (defconst org-gtd-reflect-missed-engagements-view-specs
   '(((name . "Missed check-ins on delegated items")
-     (filters . ((category . delegated)
+     (filters . ((type . delegated)
                  (timestamp . past))))
 
     ((name . "Missed appointments")
-     (filters . ((category . calendar)
+     (filters . ((type . calendar)
                  (timestamp . past))))
 
     ((name . "Projects that should have finished")
-     (filters . ((category . projects)
+     (filters . ((type . project)
                  (deadline . past))))
 
     ((name . "Projects that should have started")
-     (filters . ((category . projects)
+     (filters . ((type . project)
                  (scheduled . past)
                  (not-habit . t)))))
   "GTD view specifications for missed engagement reflections.")
 
 (defconst org-gtd-reflect-upcoming-delegated-view-spec
   '((name . "Upcoming check-ins on delegated items")
-    (filters . ((category . delegated)
+    (filters . ((type . delegated)
                 (timestamp . future)
                 (not-done . t))))
   "GTD view specification for upcoming delegated item check-ins.")
@@ -268,7 +268,7 @@ and \\='filters keys.
 
 Example:
 \\='(((name . \"My Custom View\")
-   (filters . ((category . delegated)
+   (filters . ((type . delegated)
                (area-of-focus . \"Work\")))))"
   :group 'org-gtd
   :type '(repeat (alist :key-type symbol :value-type sexp))

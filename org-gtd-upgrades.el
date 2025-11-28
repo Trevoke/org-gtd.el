@@ -152,7 +152,7 @@ planning keyword in `org-mode'."
 (defun org-gtd-upgrade-v3-to-v4 ()
   "Migrate from org-gtd v3 to v4 property-based and dependency system.
 
-This migration performs THREE required steps:
+This migration performs FOUR required steps:
 
 STEP 1: Migrate ORG_GTD properties
   - Level 1 category headings: Renames ORG_GTD → ORG_GTD_REFILE
@@ -164,7 +164,11 @@ STEP 2: Migrate delegated items to new type
   - Items with DELEGATED_TO property: Changes ORG_GTD from \"Actions\" to \"Delegated\"
   - This separates delegated items from regular single actions
 
-STEP 3: Add dependency properties to projects
+STEP 3: Migrate habits to have ORG_GTD property
+  - Items with STYLE=\"habit\": Adds ORG_GTD=\"Habit\"
+  - This ensures habits are discoverable via the unified type system
+
+STEP 4: Add dependency properties to projects
   - Adds ORG_GTD_DEPENDS_ON and ORG_GTD_BLOCKS for sequential dependencies
   - Adds ORG_GTD_FIRST_TASKS to project headings
   - Sets correct NEXT/TODO states based on dependencies
@@ -190,15 +194,19 @@ Make a backup before running! Safe to run multiple times."
     (message "Migrating to org-gtd v4...")
 
     ;; Step 1: Add ORG_GTD properties
-    (message "Step 1/3: Adding ORG_GTD properties...")
+    (message "Step 1/4: Adding ORG_GTD properties...")
     (org-gtd-upgrade--add-org-gtd-properties)
 
     ;; Step 2: Migrate delegated items to new ORG_GTD value
-    (message "Step 2/3: Migrating delegated items...")
+    (message "Step 2/4: Migrating delegated items...")
     (org-gtd-upgrade--migrate-delegated-items)
 
-    ;; Step 3: Add dependency properties
-    (message "Step 3/3: Adding project dependencies...")
+    ;; Step 3: Migrate habits to have ORG_GTD property
+    (message "Step 3/4: Migrating habits...")
+    (org-gtd-upgrade--migrate-habits)
+
+    ;; Step 4: Add dependency properties
+    (message "Step 4/4: Adding project dependencies...")
     (org-gtd-upgrade--add-project-dependencies)
 
     (message "Migration complete! Your projects now use the dependency system.")))
@@ -229,6 +237,33 @@ Safe to run multiple times - only updates items still marked as \"Actions\"."
      "+DELEGATED_TO={.+}"
      'agenda)
     (message "Migrated %d delegated items to ORG_GTD=\"Delegated\"" migrated-count)))
+
+(defun org-gtd-upgrade--migrate-habits ()
+  "Add ORG_GTD=Habit to items with STYLE=habit (Step 3 of migration).
+
+In v3, habits were identified solely by STYLE=\"habit\" property.
+In v4, habits also have ORG_GTD=\"Habit\" for unified type discovery.
+
+This function finds all items with STYLE=\"habit\" and adds ORG_GTD=\"Habit\"
+if not already present.
+
+Safe to run multiple times - only updates items missing ORG_GTD property."
+  (org-gtd-core-prepare-agenda-buffers)
+  (let ((org-agenda-files (org-gtd-core--agenda-files))
+        (migrated-count 0))
+    (org-map-entries
+     (lambda ()
+       (let ((org-gtd-value (org-entry-get (point) "ORG_GTD"))
+             (style (org-entry-get (point) "STYLE")))
+         ;; Only migrate if: has STYLE="habit" AND no ORG_GTD property
+         (when (and (string= style "habit")
+                    (not org-gtd-value))
+           (org-entry-put (point) "ORG_GTD" "Habit")
+           (setq migrated-count (1+ migrated-count))
+           (message "  Migrated habit: %s" (org-get-heading t t t t)))))
+     "+STYLE=\"habit\""
+     'agenda)
+    (message "Migrated %d habits to ORG_GTD=\"Habit\"" migrated-count)))
 
 (defun org-gtd-upgrade--add-org-gtd-properties ()
   "Add ORG_GTD properties to existing items (Step 1 of migration)."

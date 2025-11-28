@@ -34,18 +34,22 @@
 ;;
 ;; Available Filter Types:
 ;;
-;; Category Filters:
-;;   (category . actions)             - Single-action items (ORG_GTD="Actions")
-;;   (category . delegated)           - Items with DELEGATED_TO property
-;;   (category . calendar)            - Calendar items (ORG_GTD="Calendar")
-;;   (category . projects)            - Project items (ORG_GTD="Projects")
-;;   (category . active-projects)     - Projects with at least one active task
-;;   (category . completed-projects)  - Projects with all tasks done
-;;   (category . stuck-projects)      - Projects with no NEXT/WAIT tasks
-;;   (category . incubate)            - Incubated items (ORG_GTD="Incubated")
-;;   (category . incubated-projects)  - Incubated projects (ORG_GTD="Incubated" & PREVIOUS_ORG_GTD="Projects")
-;;   (category . incubated)           - Any incubated item (ORG_GTD="Incubated")
-;;   (category . habit)               - Habit items (STYLE="habit")
+;; GTD Type Filters (PRIMARY - use these for filtering by GTD item type):
+;;   (type . next-action)      - Single actions ready to do
+;;   (type . delegated)        - Items delegated to others
+;;   (type . calendar)         - Time-specific appointments/reminders
+;;   (type . incubated)        - Someday/maybe items
+;;   (type . project)          - Multi-step outcomes
+;;   (type . habit)            - Recurring routines
+;;   (type . reference)        - Reference/knowledge items
+;;   (type . trash)            - Discarded items
+;;   (type . quick-action)     - 2-minute actions (done immediately)
+;;
+;; Computed Project Types (special project state queries):
+;;   (type . stuck-project)     - Projects with no NEXT/WAIT tasks
+;;   (type . active-project)    - Projects with at least one active task
+;;   (type . completed-project) - Projects with all tasks done
+;;   (type . incubated-project) - Projects moved to someday/maybe
 ;;
 ;; Time-based Filters:
 ;;   (timestamp . past)       - ORG_GTD_TIMESTAMP in the past
@@ -86,30 +90,29 @@
 ;;
 ;; Examples:
 ;;
-;; Simple Example - Show all actions:
+;; Simple Example - Show all next actions:
 ;;
-;; '((name . "All My Actions")
-;;   (filters . ((category . actions))))
+;; '((name . "All My Next Actions")
+;;   (filters . ((type . next-action))))
 ;;
 ;; This is the simplest possible view - just show all single-action items.
-;; It translates to org-ql query:
-;; '(and (property "ORG_GTD" "Actions"))
 ;;
 ;; Complex Example - Show overdue work projects:
 ;;
 ;; '((name . "Overdue Work Projects")
-;;   (filters . ((category . projects)
-;;               (level . 2)
+;;   (filters . ((type . project)
 ;;               (deadline . past)
 ;;               (area-of-focus . "Work"))))
 ;;
 ;; This combines multiple filters to narrow down to specific items.
-;; It translates to org-ql query:
-;; '(and (property "ORG_GTD" "Projects")
-;;       (level 2)
-;;       (deadline :to "today")
-;;       (property "CATEGORY" "Work")
-;;       (not (done)))
+;;
+;; Computed Type Example - Show stuck projects:
+;;
+;; '((name . "Stuck Projects")
+;;   (filters . ((type . stuck-project))))
+;;
+;; Computed types handle complex queries like finding projects without
+;; next actions.
 ;;
 ;;; Code:
 (require 'org-gtd-core)
@@ -353,11 +356,34 @@ e.g., \\='((\"ORG_GTD\" . \"Actions\"))."
 
 (defun org-gtd-view-lang--translate-type-filter (type-name)
   "Translate TYPE-NAME to org-ql property filter using org-gtd-types.
-TYPE-NAME should be a symbol like \\='next-action, \\='delegated, \\='calendar, etc."
-  (let ((org-gtd-val (org-gtd-type-org-gtd-value type-name)))
-    (unless org-gtd-val
-      (user-error "Unknown GTD type: %s" type-name))
-    (list `(property "ORG_GTD" ,org-gtd-val))))
+TYPE-NAME should be a symbol like \\='next-action, \\='delegated, \\='calendar, etc.
+Also supports computed types:
+  - \\='stuck-project - Projects with no NEXT/WAIT tasks
+  - \\='active-project - Projects with at least one active task
+  - \\='completed-project - Projects with all tasks done
+  - \\='incubated-project - Incubated items that were projects"
+  (cond
+   ;; Computed project types
+   ((eq type-name 'stuck-project)
+    (list `(and (property ,org-gtd-prop-category ,org-gtd-projects)
+                (level 2)
+                (project-is-stuck))))
+   ((eq type-name 'active-project)
+    (list `(and (property ,org-gtd-prop-category ,org-gtd-projects)
+                (project-has-active-tasks))))
+   ((eq type-name 'completed-project)
+    (list `(and (property ,org-gtd-prop-category ,org-gtd-projects)
+                (level 2)
+                (not (project-has-active-tasks)))))
+   ((eq type-name 'incubated-project)
+    (list `(and (property ,org-gtd-prop-category ,org-gtd-incubate)
+                (property ,org-gtd-prop-previous-category ,org-gtd-projects))))
+   ;; Standard types from org-gtd-types
+   (t
+    (let ((org-gtd-val (org-gtd-type-org-gtd-value type-name)))
+      (unless org-gtd-val
+        (user-error "Unknown GTD type: %s" type-name))
+      (list `(property "ORG_GTD" ,org-gtd-val))))))
 
 (defun org-gtd-view-lang--translate-previous-type-filter (type-name)
   "Translate previous-type TYPE-NAME to PREVIOUS_ORG_GTD property filter.
@@ -484,17 +510,17 @@ A view specification is an alist with the following structure:
   ((name . \"View Name\")
    (filters . ((filter-type . filter-value) ...)))
 
-Simple example - show all single-action items:
+Simple example - show all next actions:
   (org-gtd-view-show
-   \\='((name . \"All My Actions\")
-     (filters . ((category . actions)))))
+   \\='((name . \"All My Next Actions\")
+     (filters . ((type . next-action)))))
 
 Multiple views example - show several related views:
   (org-gtd-view-show
    \\='(((name . \"Active projects\")
-      (filters . ((category . projects))))
-     ((name . \"Next actions\")
-      (filters . ((todo . (\"NEXT\")))))))
+      (filters . ((type . project))))
+     ((name . \"Stuck projects\")
+      (filters . ((type . stuck-project))))))
 
 See the module commentary for complete filter documentation and more examples."
   (interactive)

@@ -275,7 +275,7 @@ Troubleshooting Projects
 View DSL Filter Reference
 
 * View Structure::
-* Category Filters::
+* Type Filters::
 * Time-based Filters::
 * Keyword Filters::
 * Area of Focus Filters::
@@ -1748,7 +1748,7 @@ Here's the view we'll create:
 
 @lisp
 '((name . "My Active Projects")
-  (filters . ((category . projects)
+  (filters . ((type . project)
               (has-active-tasks . t))))
 @end lisp
 
@@ -1760,7 +1760,7 @@ What displays in the view header
 @item @code{filters}
 What to include.
 @table @asis
-@item @code{category . projects}
+@item @code{type . project}
 Only show project headings (not single actions)
 @item @code{has-active-tasks . t}
 Only projects with work remaining
@@ -1781,7 +1781,7 @@ Add this to your init file (after your org-gtd configuration):
     (interactive)
     (org-gtd-view-show
      '((name . "My Active Projects")
-       (filters . ((category . projects)
+       (filters . ((type . project)
                    (has-active-tasks . t)))))))
 @end lisp
 
@@ -1854,7 +1854,7 @@ Try these variations to see how the View DSL works:
   (interactive)
   (org-gtd-view-show
    '((name . "All Projects")
-     (filters . ((category . projects))))))
+     (filters . ((type . project))))))
      ;; Note: removed has-active-tasks filter
 @end lisp
 
@@ -1866,7 +1866,7 @@ Try these variations to see how the View DSL works:
   (interactive)
   (org-gtd-view-show
    '((name . "Stuck Projects")
-     (filters . ((category . projects)
+     (filters . ((type . project)
                  (is-stuck . t))))))
 @end lisp
 
@@ -1878,7 +1878,7 @@ Try these variations to see how the View DSL works:
   (interactive)
   (org-gtd-view-show
    '((name . "Work Projects")
-     (filters . ((category . projects)
+     (filters . ((type . project)
                  (has-active-tasks . t)
                  (area-of-focus . "Work"))))))
 @end lisp
@@ -1889,8 +1889,8 @@ Try these variations to see how the View DSL works:
 Here are common filters you can use in your views:
 
 @table @asis
-@item @code{category}
-Filter by GTD category: @code{projects}, @code{actions}, @code{calendar}, @code{incubate}, @code{habits}
+@item @code{type}
+Filter by GTD type: @code{project}, @code{next-action}, @code{calendar}, @code{incubated}, @code{habit}
 @item @code{todo}
 Filter by keyword: @code{"NEXT"}, @code{"TODO"}, @code{"WAIT"}, @code{"DONE"}, @code{"CNCL"}
 @item @code{has-active-tasks}
@@ -5565,7 +5565,7 @@ Think of this like creating saved searches. Instead of seeing ALL missed items, 
                      (deadline . past))))
         ((name . "Missed Home Appointments")
          (filters . ((area-of-focus . "Home")
-                     (category . calendar)
+                     (type . calendar)
                      (timestamp . past))))))
 @end lisp
 
@@ -6529,7 +6529,7 @@ Each view has two parts:
 @item @code{name}
 What to call the view (shows in agenda header)
 @item @code{filters}
-What to show (category, TODO state, tags, dates, etc.)
+What to show (type, TODO state, tags, dates, etc.)
 @end table
 
 Filters are pairs like @code{(filter-type . value)}. Multiple filters combine with AND logic—all must match.
@@ -6558,10 +6558,10 @@ Two filters: must be NEXT AND must be in Work area.
   (interactive)
   (org-gtd-view-show
    '((name . "Stuck Projects")
-     (filters . ((category . stuck-projects))))))
+     (filters . ((type . stuck-project))))))
 @end lisp
 
-One filter: category must be stuck-projects (built-in category that checks for stuck state).
+One filter: type must be stuck-project (built-in type that checks for stuck state).
 
 @strong{Show items with past deadlines:}
 
@@ -6586,7 +6586,7 @@ One filter: deadline must be in the past. (Automatically excludes DONE items.)
    '(((name . "Today's NEXT Actions")
       (filters . ((todo . ("NEXT")))))
      ((name . "Upcoming Calendar Items")
-      (filters . ((category . calendar)
+      (filters . ((type . calendar)
                   (timestamp . future)))))))
 @end lisp
 
@@ -6599,13 +6599,13 @@ This shows TWO views in one agenda: NEXT actions first, then upcoming calendar i
 (filters . ((area-of-focus . "Work")))
 @end lisp
 
-@strong{Filter by category (item type):}
+@strong{Filter by type (item type):}
 @lisp
-(filters . ((category . projects)))      ; All projects
-(filters . ((category . actions)))       ; Single actions
-(filters . ((category . delegated)))     ; Delegated items
-(filters . ((category . calendar)))      ; Calendar items
-(filters . ((category . stuck-projects))) ; Stuck projects only
+(filters . ((type . project)))      ; All projects
+(filters . ((type . next-action)))       ; Single actions
+(filters . ((type . delegated)))     ; Delegated items
+(filters . ((type . calendar)))      ; Calendar items
+(filters . ((type . stuck-project))) ; Stuck projects only
 @end lisp
 
 @strong{Filter by TODO state:}
@@ -6624,7 +6624,7 @@ This shows TWO views in one agenda: NEXT actions first, then upcoming calendar i
 
 @strong{Combine multiple filters (AND logic):}
 @lisp
-(filters . ((category . projects)
+(filters . ((type . project)
             (area-of-focus . "Work")
             (deadline . past)))
 ; Shows: Projects AND Work area AND overdue
@@ -6719,14 +6719,14 @@ Either a single view specification (alist) or list of view specifications
 ;; Single view
 (org-gtd-view-show
  '((name . "Active Projects")
-   (filters . ((category . projects)))))
+   (filters . ((type . project)))))
 
 ;; Multiple views
 (org-gtd-view-show
  '(((name . "NEXT Actions")
     (filters . ((todo . ("NEXT")))))
    ((name . "Stuck Projects")
-    (filters . ((category . stuck-projects))))))
+    (filters . ((type . stuck-project))))))
 @end lisp
 @end itemize
 
@@ -6829,7 +6829,7 @@ Done - item is updated but stays in its current location
 
 @strong{@strong{How it works:}}
 
-Normally when you organize an item, org-gtd moves (refiles) it to the appropriate GTD category location. But sometimes you want to change the configuration without moving the item.
+Normally when you organize an item, org-gtd moves (refiles) it to the appropriate GTD type location. But sometimes you want to change the configuration without moving the item.
 
 There are two ways to trigger this:
 
@@ -6886,7 +6886,7 @@ Use skip-refile to update configuration in place
 @item
 You've organized items in a specific way outside @code{org-gtd-directory}
 @item
-You want to apply GTD categories but preserve your file structure
+You want to apply GTD types but preserve your file structure
 @item
 Use skip-refile to maintain your organization
 @end itemize
@@ -6896,7 +6896,7 @@ Use skip-refile to maintain your organization
 @strong{Changes applied:}
 @itemize
 @item
-GTD category (ORG@math{_GTD} property)
+GTD type (ORG@math{_GTD} property)
 @item
 TODO keyword state
 @item
@@ -6956,7 +6956,7 @@ M-x org-gtd-organize
 ;; Choose delegation
 @end lisp
 
-The new approach is more flexible - it works for ANY GTD category, not just delegation.
+The new approach is more flexible - it works for ANY GTD type, not just delegation.
 @end itemize
 
 @node Archive Commands
@@ -7797,7 +7797,7 @@ Enables org-edna for task dependencies
 
 @strong{Use instead}: Skip-refile feature with clarify commands
 
-This command was removed because it only solved one specific case (delegating without moving). The new skip-refile feature is more general and works for any GTD category.
+This command was removed because it only solved one specific case (delegating without moving). The new skip-refile feature is more general and works for any GTD type.
 
 @strong{Migration}:
 @lisp
@@ -8532,7 +8532,7 @@ The View DSL (Domain-Specific Language) lets you create custom agenda views usin
 
 @menu
 * View Structure::
-* Category Filters::
+* Type Filters::
 * Time-based Filters::
 * Keyword Filters::
 * Area of Focus Filters::
@@ -8557,28 +8557,28 @@ A GTD view is defined as an alist:
 
 Multiple filters create AND logic (all must match).
 
-@node Category Filters
-@subsection Category Filters
+@node Type Filters
+@subsection Type Filters
 
-Filter by GTD item category:
+Filter by GTD item type:
 
 @itemize
 @item
-@anchor{@code{(category delegated)}}@code{(category . delegated)}
+@anchor{@code{(type delegated)}}@code{(type . delegated)}
 
 
-@strong{Matches}: Items with DELEGATED@math{_TO} property
+@strong{Matches}: Items with @code{ORG_GTD="Delegated"}
 
 @strong{Use case}: See all delegated tasks
 
 @strong{Example}:
 @lisp
 '((name . "All Delegations")
-  (filters . ((category . delegated))))
+  (filters . ((type . delegated))))
 @end lisp
 
 @item
-@anchor{@code{(category calendar)}}@code{(category . calendar)}
+@anchor{@code{(type calendar)}}@code{(type . calendar)}
 
 
 @strong{Matches}: Items with @code{ORG_GTD="Calendar"}
@@ -8588,11 +8588,11 @@ Filter by GTD item category:
 @strong{Example}:
 @lisp
 '((name . "Calendar Items")
-  (filters . ((category . calendar))))
+  (filters . ((type . calendar))))
 @end lisp
 
 @item
-@anchor{@code{(category projects)}}@code{(category . projects)}
+@anchor{@code{(type project)}}@code{(type . project)}
 
 
 @strong{Matches}: Project headings (@code{ORG_GTD="Projects"})
@@ -8602,11 +8602,11 @@ Filter by GTD item category:
 @strong{Example}:
 @lisp
 '((name . "All Projects")
-  (filters . ((category . projects))))
+  (filters . ((type . project))))
 @end lisp
 
 @item
-@anchor{@code{(category active-projects)}}@code{(category . active-projects)}
+@anchor{@code{(type active-project)}}@code{(type . active-project)}
 
 
 @strong{Matches}: Projects with at least one active (non-done) task
@@ -8616,11 +8616,11 @@ Filter by GTD item category:
 @strong{Example}:
 @lisp
 '((name . "Active Projects")
-  (filters . ((category . active-projects))))
+  (filters . ((type . active-project))))
 @end lisp
 
 @item
-@anchor{@code{(category completed-projects)}}@code{(category . completed-projects)}
+@anchor{@code{(type completed-project)}}@code{(type . completed-project)}
 
 
 @strong{Matches}: Projects where all tasks are DONE
@@ -8630,11 +8630,11 @@ Filter by GTD item category:
 @strong{Example}:
 @lisp
 '((name . "Completed Projects")
-  (filters . ((category . completed-projects))))
+  (filters . ((type . completed-project))))
 @end lisp
 
 @item
-@anchor{@code{(category stuck-projects)}}@code{(category . stuck-projects)}
+@anchor{@code{(type stuck-project)}}@code{(type . stuck-project)}
 
 
 @strong{Matches}: Projects with active tasks but no NEXT or WAIT tasks
@@ -8644,11 +8644,11 @@ Filter by GTD item category:
 @strong{Example}:
 @lisp
 '((name . "Stuck Projects")
-  (filters . ((category . stuck-projects))))
+  (filters . ((type . stuck-project))))
 @end lisp
 
 @item
-@anchor{@code{(category incubate)}}@code{(category . incubate)}
+@anchor{@code{(type incubated)}}@code{(type . incubated)}
 
 
 @strong{Matches}: Items with @code{ORG_GTD="Incubated"} (someday/maybe)
@@ -8658,21 +8658,49 @@ Filter by GTD item category:
 @strong{Example}:
 @lisp
 '((name . "Someday/Maybe")
-  (filters . ((category . incubate))))
+  (filters . ((type . incubated))))
 @end lisp
 
 @item
-@anchor{@code{(category habit)}}@code{(category . habit)}
+@anchor{@code{(type habit)}}@code{(type . habit)}
 
 
-@strong{Matches}: Items with @code{STYLE="habit"}
+@strong{Matches}: Items with @code{ORG_GTD="Habit"}
 
 @strong{Use case}: See all habits
 
 @strong{Example}:
 @lisp
 '((name . "All Habits")
-  (filters . ((category . habit))))
+  (filters . ((type . habit))))
+@end lisp
+
+@item
+@anchor{@code{(type next-action)}}@code{(type . next-action)}
+
+
+@strong{Matches}: Single action items (@code{ORG_GTD="Actions"})
+
+@strong{Use case}: See all single actions (not project tasks)
+
+@strong{Example}:
+@lisp
+'((name . "Single Actions")
+  (filters . ((type . next-action))))
+@end lisp
+
+@item
+@anchor{@code{(type incubated-project)}}@code{(type . incubated-project)}
+
+
+@strong{Matches}: Projects that were moved to someday/maybe
+
+@strong{Use case}: Review incubated projects during weekly review
+
+@strong{Example}:
+@lisp
+'((name . "Incubated Projects")
+  (filters . ((type . incubated-project))))
 @end lisp
 @end itemize
 
@@ -8693,7 +8721,7 @@ Filter by timestamps, deadlines, and scheduled dates:
 @strong{Example}:
 @lisp
 '((name . "Missed Appointments")
-  (filters . ((category . calendar)
+  (filters . ((type . calendar)
               (timestamp . past))))
 @end lisp
 
@@ -8708,7 +8736,7 @@ Filter by timestamps, deadlines, and scheduled dates:
 @strong{Example}:
 @lisp
 '((name . "Upcoming Appointments")
-  (filters . ((category . calendar)
+  (filters . ((type . calendar)
               (timestamp . future))))
 @end lisp
 
@@ -8885,7 +8913,7 @@ Filter by life area:
 @strong{Example}: Work projects only:
 @lisp
 '((name . "Work Projects")
-  (filters . ((category . active-projects)
+  (filters . ((type . active-project)
               (area-of-focus . "Work"))))
 @end lisp
 @end itemize
@@ -8981,7 +9009,7 @@ Filter by org heading structure:
 @strong{Example}: Top-level projects only:
 @lisp
 '((name . "Top-Level Projects")
-  (filters . ((category . projects)
+  (filters . ((type . project)
               (level . 2))))
 @end lisp
 
