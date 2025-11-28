@@ -808,6 +808,25 @@ For other keybindings, do what you need. My bindings use ~C-c d~ as a prefix, i.
 - ~C-c d e~ :: ~org-gtd-engage~
 
 etc.
+
+**** Command Center
+
+Alternatively, you can bind a single key to ~org-gtd-command-center~, which provides a transient menu with access to all major org-gtd commands:
+
+#+begin_src elisp
+(global-set-key (kbd "C-c d") #'org-gtd-command-center)
+#+end_src
+
+The command center is organized for both discovery and quick access:
+
+- *Engage* (~e~, ~@~, ~n~) :: What to work on now
+- *Capture & Process* (~c~, ~p~, ~k~) :: Add items and process inbox
+- *Reflect* (~a~, ~y~, ~d~, ~r~, ~R~) :: Review areas, someday items, completed work
+- *Review System* (~S~, ~M~) :: Sub-menus for stuck and missed items
+- *Archive* (~A~) :: Archive completed items
+
+Try it: ~M-x org-gtd-command-center~
+
 *** Sample Doom Emacs Config
 If you are a Doom Emacs user, then your configuration may look something like this:
 
@@ -3954,6 +3973,39 @@ These variables are obsolete as of version 4.0. They are listed here for referen
 This section lists all interactive commands available in org-gtd, organized by workflow step.
 
 *** Core GTD Workflow Commands
+
+**** ~org-gtd-command-center~
+
+*Binding*: Typically ~C-c d~ (user-configurable)
+
+*When to use*: Anytime you want to access org-gtd functionality
+
+*What it does*:
+- Opens a transient menu with all major GTD operations
+- Provides quick access to common workflows
+- Serves as a discovery hub for new users
+
+*Menu structure*:
+| Key | Command                           |
+|-----+-----------------------------------|
+| e   | Engage (daily view)               |
+| @   | Engage by context                 |
+| n   | Show all next actions             |
+| c   | Capture to inbox                  |
+| p   | Process inbox                     |
+| k   | Clarify item at point             |
+| a   | Reflect: area of focus            |
+| y   | Reflect: someday/maybe            |
+| d   | Reflect: upcoming delegated       |
+| r   | Reflect: completed items          |
+| R   | Reflect: completed projects       |
+| A   | Archive completed items           |
+| S   | Stuck items sub-menu              |
+| M   | Missed items sub-menu             |
+
+*Sub-menus*:
+- ~S~ opens stuck items menu: projects, calendar, delegated, habits, tickler, single actions
+- ~M~ opens missed items menu: all missed, calendar, delegated, projects
 
 **** ~org-gtd-capture~
 

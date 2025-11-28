@@ -1419,6 +1419,35 @@ For other keybindings, do what you need. My bindings use @code{C-c d} as a prefi
 
 etc.
 
+@itemize
+@item
+@anchor{Command Center}Command Center
+
+
+Alternatively, you can bind a single key to @code{org-gtd-command-center}, which provides a transient menu with access to all major org-gtd commands:
+
+@lisp
+(global-set-key (kbd "C-c d") #'org-gtd-command-center)
+@end lisp
+
+The command center is organized for both discovery and quick access:
+
+@table @asis
+@item @strong{Engage} (@code{e}, @code{@@}, @code{n})
+What to work on now
+@item @strong{Capture & Process} (@code{c}, @code{p}, @code{k})
+Add items and process inbox
+@item @strong{Reflect} (@code{a}, @code{y}, @code{d}, @code{r}, @code{R})
+Review areas, someday items, completed work
+@item @strong{Review System} (@code{S}, @code{M})
+Sub-menus for stuck and missed items
+@item @strong{Archive} (@code{A})
+Archive completed items
+@end table
+
+Try it: @code{M-x org-gtd-command-center}
+@end itemize
+
 @node Sample Doom Emacs Config
 @subsection Sample Doom Emacs Config
 
@@ -6163,6 +6192,66 @@ This section lists all interactive commands available in org-gtd, organized by w
 @subsection Core GTD Workflow Commands
 
 @itemize
+@item
+@anchor{@code{org-gtd-command-center}}@code{org-gtd-command-center}
+
+
+@strong{Binding}: Typically @code{C-c d} (user-configurable)
+
+@strong{When to use}: Anytime you want to access org-gtd functionality
+
+@strong{What it does}:
+@itemize
+@item
+Opens a transient menu with all major GTD operations
+@item
+Provides quick access to common workflows
+@item
+Serves as a discovery hub for new users
+@end itemize
+
+@strong{Menu structure}:
+@multitable {aaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Key
+@tab Command
+@item e
+@tab Engage (daily view)
+@item @@
+@tab Engage by context
+@item n
+@tab Show all next actions
+@item c
+@tab Capture to inbox
+@item p
+@tab Process inbox
+@item k
+@tab Clarify item at point
+@item a
+@tab Reflect: area of focus
+@item y
+@tab Reflect: someday/maybe
+@item d
+@tab Reflect: upcoming delegated
+@item r
+@tab Reflect: completed items
+@item R
+@tab Reflect: completed projects
+@item A
+@tab Archive completed items
+@item S
+@tab Stuck items sub-menu
+@item M
+@tab Missed items sub-menu
+@end multitable
+
+@strong{Sub-menus}:
+@itemize
+@item
+@code{S} opens stuck items menu: projects, calendar, delegated, habits, tickler, single actions
+@item
+@code{M} opens missed items menu: all missed, calendar, delegated, projects
+@end itemize
+
 @item
 @anchor{@code{org-gtd-capture}}@code{org-gtd-capture}
 
