@@ -423,6 +423,27 @@
                       (closed :from "-1w"))))))
 
  (describe
+  "Project type filters without level constraints"
+
+  (it "translates stuck-project type without level constraint"
+      (let ((gtd-view-spec
+             '((name . "Stuck Projects")
+               (filters . ((type . stuck-project))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
+                :to-equal
+                `(and (and (property "ORG_GTD" "Projects")
+                           (project-is-stuck))))))
+
+  (it "translates completed-project type without level constraint"
+      (let ((gtd-view-spec
+             '((name . "Completed Projects")
+               (filters . ((type . completed-project))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
+                :to-equal
+                `(and (and (property "ORG_GTD" "Projects")
+                           (not (project-has-active-tasks))))))))
+
+ (describe
   "Invalid Timestamp and Stuck Item Detection"
 
   (it "can define a view for items with invalid timestamps"
@@ -554,21 +575,23 @@
  (describe
   "type filter"
 
-  (it "translates (type . next-action) to ORG_GTD=Actions query"
+  (it "translates (type . next-action) to include NEXT keyword"
       (let ((view-spec
              '((name . "Next Actions")
                (filters . ((type . next-action))))))
         (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
                 :to-equal
-                '(and (property "ORG_GTD" "Actions")))))
+                `(and (property "ORG_GTD" "Actions")
+                      (todo ,(org-gtd-keywords--next))))))
 
-  (it "translates (type . delegated) to ORG_GTD=Delegated query"
+  (it "translates (type . delegated) to include WAIT keyword"
       (let ((view-spec
              '((name . "Delegated Items")
                (filters . ((type . delegated))))))
         (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
                 :to-equal
-                '(and (property "ORG_GTD" "Delegated")))))
+                `(and (property "ORG_GTD" "Delegated")
+                      (todo ,(org-gtd-keywords--wait))))))
 
   (it "translates (type . calendar) to ORG_GTD=Calendar query"
       (let ((view-spec
@@ -643,7 +666,8 @@
                            (:when . past))))))
         (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
                 :to-equal
-                '(and (property "ORG_GTD" "Delegated")
+                `(and (property "ORG_GTD" "Delegated")
+                      (todo ,(org-gtd-keywords--wait))
                       (property-ts< "ORG_GTD_TIMESTAMP" "today")
                       (not (done))))))
 

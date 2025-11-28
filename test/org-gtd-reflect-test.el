@@ -15,7 +15,8 @@
     (it "can translate delegated view specification to org-ql"
       (let* ((delegated-spec (car org-gtd-reflect-missed-engagements-view-specs))
              (query (org-gtd-view-lang--translate-to-org-ql delegated-spec)))
-        (expect query :to-equal '(and (property "ORG_GTD" "Delegated")
+        (expect query :to-equal `(and (property "ORG_GTD" "Delegated")
+                                      (todo ,(org-gtd-keywords--wait))
                                       (property-ts< "ORG_GTD_TIMESTAMP" "today")
                                       (not (done))))))
 
@@ -110,7 +111,8 @@
     (it "can translate upcoming delegated view specification to org-ql"
       (let* ((upcoming-spec org-gtd-reflect-upcoming-delegated-view-spec)
              (query (org-gtd-view-lang--translate-to-org-ql upcoming-spec)))
-        (expect query :to-equal '(and (property "ORG_GTD" "Delegated")
+        (expect query :to-equal `(and (property "ORG_GTD" "Delegated")
+                                      (todo ,(org-gtd-keywords--wait))
                                       (property-ts> "ORG_GTD_TIMESTAMP" "today")
                                       (not (done)))))))
 

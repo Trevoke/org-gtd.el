@@ -368,18 +368,23 @@ Also supports computed types:
    ;; Computed project types
    ((eq type-name 'stuck-project)
     (list `(and (property ,org-gtd-prop-category ,org-gtd-projects)
-                (level 2)
                 (project-is-stuck))))
    ((eq type-name 'active-project)
     (list `(and (property ,org-gtd-prop-category ,org-gtd-projects)
                 (project-has-active-tasks))))
    ((eq type-name 'completed-project)
     (list `(and (property ,org-gtd-prop-category ,org-gtd-projects)
-                (level 2)
                 (not (project-has-active-tasks)))))
    ((eq type-name 'incubated-project)
     (list `(and (property ,org-gtd-prop-category ,org-gtd-incubate)
                 (property ,org-gtd-prop-previous-category ,org-gtd-projects))))
+   ;; Types with implied TODO keywords
+   ((eq type-name 'next-action)
+    (list `(property "ORG_GTD" ,(org-gtd-type-org-gtd-value 'next-action))
+          `(todo ,(org-gtd-keywords--next))))
+   ((eq type-name 'delegated)
+    (list `(property "ORG_GTD" ,(org-gtd-type-org-gtd-value 'delegated))
+          `(todo ,(org-gtd-keywords--wait))))
    ;; Standard types from org-gtd-types
    (t
     (let ((org-gtd-val (org-gtd-type-org-gtd-value type-name)))
