@@ -406,8 +406,19 @@ This is used for incubated items to filter by their original type."
 
 (defun org-gtd-view-lang--translate-to-org-ql (gtd-view-spec)
   "Translate GTD-VIEW-SPEC to an org-ql query expression.
-GTD-VIEW-SPEC should be an alist with \\='name and \\='filters keys."
-  (let* ((filters (alist-get 'filters gtd-view-spec))
+GTD-VIEW-SPEC should be an alist with \\='name and either:
+- \\='filters key containing filter alist (legacy format)
+- Filter keys directly at top level (new flat format)"
+  (let* ((explicit-filters (alist-get 'filters gtd-view-spec))
+         ;; Reserved keys that are not filters
+         (reserved-keys '(name blocks block-type prefix-format view-type
+                          agenda-span show-habits additional-blocks
+                          group-contexts group-by tags-match))
+         ;; Extract filters: either from 'filters key or from top-level keys
+         (filters (or explicit-filters
+                      (seq-filter (lambda (pair)
+                                    (not (memq (car pair) reserved-keys)))
+                                  gtd-view-spec)))
          ;; Extract type filter for semantic property resolution
          (type-filter (seq-find (lambda (f) (eq (car f) 'type)) filters))
          (org-gtd-view-lang--current-type (when type-filter (cdr type-filter)))

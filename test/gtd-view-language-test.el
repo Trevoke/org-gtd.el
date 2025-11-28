@@ -444,6 +444,38 @@
                            (not (project-has-active-tasks))))))))
 
  (describe
+  "Flat filter structure support"
+
+  (it "supports flat filter structure without filters wrapper"
+      (let ((gtd-view-spec
+             '((name . "Stuck Projects")
+               (type . stuck-project))))
+        (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
+                :to-equal
+                `(and (and (property "ORG_GTD" "Projects")
+                           (project-is-stuck))))))
+
+  (it "supports flat filter structure with multiple filters"
+      (let ((gtd-view-spec
+             '((name . "Next Actions in Work")
+               (type . next-action)
+               (area-of-focus . "Work"))))
+        (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
+                :to-equal
+                `(and (property "ORG_GTD" "Actions")
+                      (todo ,(org-gtd-keywords--next))
+                      (property "CATEGORY" "Work")))))
+
+  (it "still supports legacy filters wrapper format"
+      (let ((gtd-view-spec
+             '((name . "Stuck Projects")
+               (filters . ((type . stuck-project))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
+                :to-equal
+                `(and (and (property "ORG_GTD" "Projects")
+                           (project-is-stuck)))))))
+
+ (describe
   "Invalid Timestamp and Stuck Item Detection"
 
   (it "can define a view for items with invalid timestamps"
