@@ -309,8 +309,11 @@ without validation, use `setq' but ensure the mapping is valid."
 (defconst org-gtd-habit "Habits"
   "GTD category for recurring habits.")
 
-(defconst org-gtd-incubate "Incubated"
-  "GTD category for someday/maybe items.")
+(defconst org-gtd-tickler "Tickler"
+  "GTD category for tickler items (time-based reminders).")
+
+(defconst org-gtd-someday "Someday"
+  "GTD category for someday/maybe items (no specific timeframe).")
 
 (defconst org-gtd-knowledge "Reference"
   "GTD category for reference materials/knowledge.")
@@ -363,7 +366,7 @@ This property also controls the prefix displayed in agenda views.")
   "Property storing the refile target category.")
 
 (defconst org-gtd-prop-previous-category "PREVIOUS_ORG_GTD"
-  "Property storing the original ORG_GTD value for incubated items.")
+  "Property storing the original ORG_GTD value for tickler items.")
 
 ;;;; Variables
 
@@ -543,6 +546,11 @@ If BUFFER is nil, use current buffer."
 ;; org-entry-add-to-multivalued-property
 ;; org-entry-remove-from-multivalued-property
 ;; These are part of org-mode's Property API
+
+;;;; Backward Compatibility Aliases
+
+;; Incubate → Tickler rename (v4.0)
+(define-obsolete-variable-alias 'org-gtd-incubate 'org-gtd-tickler "4.0")
 
 ;;;; Footer
 

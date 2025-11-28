@@ -134,11 +134,11 @@ Execute BODY in this buffer."
          (expect timestamp :to-be-truthy)
          (expect (string-match "2025-03-20" timestamp) :to-be-truthy))))
 
-    (it "sets ORG_GTD_TIMESTAMP from :when property for incubated type"
+    (it "sets ORG_GTD_TIMESTAMP from :when property for tickler type"
       (ogt--with-temp-org-buffer
        "* Test item"
        (with-simulated-input "2025-12-01 RET"
-         (org-gtd-configure-as-type 'incubated))
+         (org-gtd-configure-as-type 'tickler))
        (let ((timestamp (org-entry-get nil "ORG_GTD_TIMESTAMP")))
          (expect timestamp :to-be-truthy)
          (expect (string-match "2025-12-01" timestamp) :to-be-truthy))))
@@ -180,12 +180,12 @@ Execute BODY in this buffer."
        (expect (org-entry-get nil "ORG_GTD") :to-equal "Calendar")
        (expect (org-entry-get nil "ORG_GTD_TIMESTAMP") :to-equal "<2025-06-15>")))
 
-    (it "uses provided values for incubated type"
+    (it "uses provided values for tickler type"
       (ogt--with-temp-org-buffer
        "* Test task"
-       (org-gtd-configure-as-type 'incubated
+       (org-gtd-configure-as-type 'tickler
                                   '((:when . "<2025-03-01>")))
-       (expect (org-entry-get nil "ORG_GTD") :to-equal "Incubated")
+       (expect (org-entry-get nil "ORG_GTD") :to-equal "Tickler")
        (expect (org-entry-get nil "ORG_GTD_TIMESTAMP") :to-equal "<2025-03-01>")))
 
     (it "uses provided values for habit type"

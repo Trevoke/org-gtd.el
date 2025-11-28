@@ -55,13 +55,13 @@
         ;; WITHOUT inheritance (no t argument)
         (expect (org-entry-get (point) "ORG_GTD") :to-equal "Actions")))
 
-    (it "incubated items have direct ORG_GTD property"
-      (create-deferred-item "Test incubate" (calendar-current-date))
+    (it "tickler items have direct ORG_GTD property"
+      (create-deferred-item "Test tickler" (calendar-current-date))
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-min))
-        (search-forward "Test incubate")
+        (search-forward "Test tickler")
         ;; WITHOUT inheritance (no t argument)
-        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Incubated")))
+        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Tickler")))
 
     (it "delegated items have direct ORG_GTD property"
       (create-delegated-item "Test delegate" "John Doe" (calendar-current-date))

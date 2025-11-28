@@ -14,7 +14,8 @@
     (expect (assq 'next-action org-gtd-types) :to-be-truthy)
     (expect (assq 'delegated org-gtd-types) :to-be-truthy)
     (expect (assq 'calendar org-gtd-types) :to-be-truthy)
-    (expect (assq 'incubated org-gtd-types) :to-be-truthy)
+    (expect (assq 'tickler org-gtd-types) :to-be-truthy)
+    (expect (assq 'someday org-gtd-types) :to-be-truthy)
     (expect (assq 'project org-gtd-types) :to-be-truthy)
     (expect (assq 'habit org-gtd-types) :to-be-truthy)
     (expect (assq 'reference org-gtd-types) :to-be-truthy)
@@ -28,8 +29,10 @@
             :to-equal "Delegated")
     (expect (plist-get (cdr (assq 'calendar org-gtd-types)) :org-gtd)
             :to-equal "Calendar")
-    (expect (plist-get (cdr (assq 'incubated org-gtd-types)) :org-gtd)
-            :to-equal "Incubated")
+    (expect (plist-get (cdr (assq 'tickler org-gtd-types)) :org-gtd)
+            :to-equal "Tickler")
+    (expect (plist-get (cdr (assq 'someday org-gtd-types)) :org-gtd)
+            :to-equal "Someday")
     (expect (plist-get (cdr (assq 'project org-gtd-types)) :org-gtd)
             :to-equal "Projects")
     (expect (plist-get (cdr (assq 'habit org-gtd-types)) :org-gtd)
@@ -108,6 +111,8 @@
     (expect (org-gtd-type-from-org-gtd-value "Delegated") :to-equal 'delegated)
     (expect (org-gtd-type-from-org-gtd-value "Actions") :to-equal 'next-action)
     (expect (org-gtd-type-from-org-gtd-value "Calendar") :to-equal 'calendar)
+    (expect (org-gtd-type-from-org-gtd-value "Tickler") :to-equal 'tickler)
+    (expect (org-gtd-type-from-org-gtd-value "Someday") :to-equal 'someday)
     (expect (org-gtd-type-from-org-gtd-value "Projects") :to-equal 'project))
 
   (it "returns nil for unknown ORG_GTD value"
@@ -127,7 +132,10 @@
         (expect (plist-get (cdr who-prop) :required) :to-be-truthy))))
 
   (it "returns nil for type without properties"
-    (expect (org-gtd-type-properties 'next-action) :to-be nil)))
+    (expect (org-gtd-type-properties 'next-action) :to-be nil))
+
+  (it "someday type has no properties (no timestamp required)"
+    (expect (org-gtd-type-properties 'someday) :to-be nil)))
 
 (describe "org-gtd-user-types"
 

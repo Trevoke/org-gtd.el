@@ -102,19 +102,19 @@
        (let ((targets (caar (org-gtd-refile--get-targets org-gtd-projects))))
          (expect targets :to-equal "Projects")))
 
-   (it "finds the Incubate headings in the incubate file"
+   (it "finds the Tickler headings in the tickler file"
        (with-current-buffer (org-gtd--default-file)
          (goto-char (point-max))
          (insert "* To Read
 :PROPERTIES:
-:ORG_GTD_REFILE: Incubated
+:ORG_GTD_REFILE: Tickler
 :END:
 * To Eat
 :PROPERTIES:
-:ORG_GTD_REFILE: Incubated
+:ORG_GTD_REFILE: Tickler
 :END:")
          (save-buffer))
-       (let ((ogt-target-names (mapcar 'car (org-gtd-refile--get-targets org-gtd-incubate))))
+       (let ((ogt-target-names (mapcar 'car (org-gtd-refile--get-targets org-gtd-tickler))))
          (expect ogt-target-names
                  :to-have-same-items-as
                  '("To Eat" "To Read")))))

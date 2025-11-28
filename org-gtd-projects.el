@@ -794,7 +794,7 @@ Useful for weekly reviews or after bulk changes."
 
 Saves current ORG_GTD value to PREVIOUS_ORG_GTD property.
 Saves current TODO keyword to PREVIOUS_TODO property.
-Sets ORG_GTD to \\='Incubated\\='.
+Sets ORG_GTD to \\='Tickler\\='.
 Clears the TODO keyword.
 
 Skips tasks belonging to multiple projects (identified by
@@ -805,7 +805,7 @@ multiple IDs in ORG_GTD_PROJECT_IDS property)."
       (if (> (length project-ids) 1)
           ;; Skip multi-project tasks
           (message "Skipping multi-project task: %s" (org-get-heading t t t t))
-        ;; Normal incubation
+        ;; Normal tickler state
         (let ((current-org-gtd (org-entry-get (point) "ORG_GTD"))
               (current-todo (org-entry-get (point) "TODO")))
           ;; Save current state
@@ -813,8 +813,8 @@ multiple IDs in ORG_GTD_PROJECT_IDS property)."
             (org-entry-put (point) "PREVIOUS_ORG_GTD" current-org-gtd))
           (when current-todo
             (org-entry-put (point) "PREVIOUS_TODO" current-todo))
-          ;; Set incubated state
-          (org-entry-put (point) "ORG_GTD" "Incubated")
+          ;; Set tickler state
+          (org-entry-put (point) "ORG_GTD" org-gtd-tickler)
           ;; Clear TODO keyword
           (org-todo 'none))))))
 
@@ -849,7 +849,7 @@ the project's dependency graph and collect all task markers."
 Returns list of markers to external tasks (tasks not in this project)
 that have DEPENDS_ON pointing to tasks in this project.
 
-Used to warn user before incubating a project."
+Used to warn user before ticklering a project."
   (let ((project-tasks (org-gtd-project--get-all-tasks project-marker))
         (project-task-ids (mapcar (lambda (m)
                                     (org-with-point-at m (org-id-get)))
@@ -872,15 +872,15 @@ Used to warn user before incubating a project."
 
 ;;;###autoload
 (defun org-gtd-project-incubate (project-marker review-date)
-  "Incubate project at PROJECT-MARKER with REVIEW-DATE.
+  "Tickler project at PROJECT-MARKER with REVIEW-DATE.
 
 PROJECT-MARKER is a marker pointing to the project heading.
 REVIEW-DATE is a string in YYYY-MM-DD format.
 
-Incubates the project by:
+Ticklers the project by:
 1. Saving state for project heading and all tasks
 2. Setting ORG_GTD_TIMESTAMP for review date
-3. Marking everything as Incubated
+3. Marking everything as Tickler
 
 Does not check for external dependencies or multi-project tasks yet
 (those validations added in later tasks)."
@@ -897,25 +897,25 @@ Does not check for external dependencies or multi-project tasks yet
                                      (org-get-heading t t t t)))
                                  external-deps)))
           (unless (yes-or-no-p
-                   (format "External tasks depend on this project:\n%s\n\nContinue incubating? "
+                   (format "External tasks depend on this project:\n%s\n\nContinue ticklering? "
                            (mapconcat (lambda (name) (format "  - %s" name))
                                       dep-names "\n")))
-            (user-error "Incubation cancelled")))))
+            (user-error "Tickler cancelled")))))
 
-    ;; Save and incubate project heading
+    ;; Save and tickler project heading
     (org-gtd-project--save-state project-marker)
 
     ;; Set review date
     (org-entry-put (point) org-gtd-timestamp (format "<%s>" review-date))
 
-    ;; Incubate all tasks
+    ;; Tickler all tasks
     (let ((task-markers (org-gtd-project--get-all-tasks project-marker)))
       (dolist (task-marker task-markers)
         (org-gtd-project--save-state task-marker)))))
 
 ;;;###autoload
 (defun org-gtd-project-reactivate (project-marker)
-  "Reactivate incubated project at PROJECT-MARKER.
+  "Reactivate tickler project at PROJECT-MARKER.
 
 PROJECT-MARKER is a marker pointing to the project heading.
 

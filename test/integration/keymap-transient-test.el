@@ -32,7 +32,7 @@
        (expect (fboundp 'org-gtd-habit) :to-be-truthy)
        (expect (fboundp 'org-gtd-project-new) :to-be-truthy)
        (expect (fboundp 'org-gtd-project-extend) :to-be-truthy)
-       (expect (fboundp 'org-gtd-incubate) :to-be-truthy)
+       (expect (fboundp 'org-gtd-tickler) :to-be-truthy)
        (expect (fboundp 'org-gtd-knowledge) :to-be-truthy)
        (expect (fboundp 'org-gtd-trash) :to-be-truthy)
        

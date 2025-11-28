@@ -43,10 +43,10 @@
      (type . project)
      (area-of-focus . ,area))
 
-    ((name . "Incubated projects")
-     (type . incubated-project)
+    ((name . "Tickler projects")
+     (type . tickler-project)
      (area-of-focus . ,area)
-     (prefix-format . "  Incubated: "))
+     (prefix-format . "  Tickler: "))
 
     ((name . "Next actions")
      (type . next-action)
@@ -60,8 +60,8 @@
      (type . habit)
      (area-of-focus . ,area))
 
-    ((name . "Incubated items")
-     (type . incubated)
+    ((name . "Tickler items")
+     (type . tickler)
      (when . future)
      (area-of-focus . ,area))))
 
@@ -88,8 +88,8 @@ mostly of value for testing purposes."
      (type . calendar)
      (when . past))
 
-    ((name . "Incubated events to review")
-     (type . incubated)
+    ((name . "Tickler events to review")
+     (type . tickler)
      (when . past))
 
     ((name . "Missed delegated events")
@@ -98,7 +98,7 @@ mostly of value for testing purposes."
   "GTD view specifications for reflecting on missed items.")
 
 (defun org-gtd-reflect-missed-items (&optional _start-date)
-  "Agenda view with all incubated, delegated, or calendar items whose dates
+  "Agenda view with all tickler, delegated, or calendar items whose dates
 are in the past.
 
 You can pass an optional START-DATE to tell the code what to use as the first
@@ -130,13 +130,25 @@ day for the agenda.  It is mostly of value for testing purposes."
      (type . habit)
      (invalid-timestamp . t))))
 
-(defun org-gtd-reflect-stuck-incubated-items ()
-  "Agenda view with all invalid incubated actions."
+(defun org-gtd-reflect-stuck-tickler-items ()
+  "Agenda view with all invalid tickler actions."
   (interactive)
   (org-gtd-view-show
-   '((name . "Stuck Incubated Items")
-     (type . incubated)
+   '((name . "Stuck Tickler Items")
+     (type . tickler)
      (invalid-timestamp . t))))
+
+;;;###autoload
+(defun org-gtd-reflect-someday-maybe ()
+  "Show all someday/maybe items.
+
+These are items you might want to do eventually, but with no specific
+timeframe. Use this view during your weekly or monthly reviews to
+decide if any items should be activated."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Someday/Maybe Items")
+     (type . someday))))
 
 ;;;###autoload
 (defun org-gtd-reflect-stuck-projects ()
@@ -332,7 +344,7 @@ Example:
 
 ;;;###autoload
 (define-obsolete-function-alias 'org-gtd-review-stuck-incubated-items
-  'org-gtd-reflect-stuck-incubated-items "4.0")
+  'org-gtd-reflect-stuck-tickler-items "4.0")
 
 ;;;###autoload
 (define-obsolete-function-alias 'org-gtd-review-stuck-projects

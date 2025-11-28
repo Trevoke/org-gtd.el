@@ -45,7 +45,7 @@
  (describe
   "through the agenda view"
 
-  (it "converts incubated item to project with tasks via clarify-agenda-item"
+  (it "converts tickler item to project with tasks via clarify-agenda-item"
       (create-deferred-item "projectify-me" (calendar-current-date))
       (org-gtd-engage)
       (set-buffer org-agenda-buffer)
@@ -66,7 +66,7 @@
                 "Task 1"))
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-min))
-        (search-forward ":ORG_GTD_REFILE: Incubated")
+        (search-forward ":ORG_GTD_REFILE: Tickler")
         (org-narrow-to-subtree)
         (expect (current-buffer-raw-text)
                 :not :to-match

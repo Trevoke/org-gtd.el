@@ -117,6 +117,8 @@ planning keyword in `org-mode'."
         (org-use-property-inheritance "ORG_GTD"))
     (org-map-entries
      (lambda ()
+       ;; Rename Incubated to Tickler
+       (org-entry-put (point) "ORG_GTD" org-gtd-tickler)
        (when (org-gtd-upgrades--scheduled-item-p)
          (let ((date (org-entry-get (point) "SCHEDULED")))
            (org-schedule '(4)) ;; pretend I am a universal argument

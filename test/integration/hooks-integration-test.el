@@ -84,7 +84,7 @@
        (expect (fboundp 'org-gtd-project-new) :to-be-truthy)
        (expect (fboundp 'org-gtd-calendar) :to-be-truthy)
        (expect (fboundp 'org-gtd-delegate) :to-be-truthy)
-       (expect (fboundp 'org-gtd-incubate) :to-be-truthy)
+       (expect (fboundp 'org-gtd-tickler) :to-be-truthy)
        
        ;; Test that hooks can be configured for all types
        (let ((org-gtd-organize-hooks '(universal-test-hook)))
@@ -149,7 +149,7 @@
                               org-gtd-project-extend
                               org-gtd-delegate
                               org-gtd-calendar
-                              org-gtd-incubate
+                              org-gtd-tickler
                               org-gtd-knowledge
                               org-gtd-habit
                               org-gtd-quick-action

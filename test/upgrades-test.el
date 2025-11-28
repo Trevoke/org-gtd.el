@@ -118,10 +118,10 @@ Do that thing.
         (expect (org-entry-get (point) org-gtd-timestamp)
                 :to-be nil)
         (expect (org-entry-get (point) "ORG_GTD" t)
-                :to-equal org-gtd-incubate)
+                :to-equal org-gtd-tickler)
         (search-forward "memories")
         (expect (org-entry-get (point) "ORG_GTD" t)
-                :to-equal org-gtd-incubate)
+                :to-equal org-gtd-tickler)
         (expect (org-entry-get (point) org-gtd-timestamp)
                 :to-equal "<2023-04-03>")))
 

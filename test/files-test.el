@@ -46,8 +46,8 @@
        (ogt--save-all-buffers)
        (expect (ogt--org-dir-buffer-string) :to-match "org-gtd-tasks\\.org"))
 
-   (it "for a incubated item"
-       (create-deferred-item "incubated headline")
+   (it "for a tickler item"
+       (create-deferred-item "tickler headline")
        (ogt--save-all-buffers)
        (expect (ogt--org-dir-buffer-string) :to-match "org-gtd-tasks\\.org"))
 

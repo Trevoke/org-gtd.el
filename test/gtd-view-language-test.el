@@ -138,24 +138,24 @@
                       (not (done)))))))
 
  (describe
-  "Incubated category filters"
+  "Tickler category filters"
 
-  (it "can define a GTD view for incubated projects only"
-      (let ((incubated-projects-spec
-             '((name . "Incubated Projects")
-               (filters . ((category . incubated-projects))))))
-        (expect (org-gtd-view-lang--translate-to-org-ql incubated-projects-spec)
+  (it "can define a GTD view for tickler projects only"
+      (let ((tickler-projects-spec
+             '((name . "Tickler Projects")
+               (filters . ((category . tickler-projects))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql tickler-projects-spec)
                 :to-equal
-                '(and (and (property "ORG_GTD" "Incubated")
+                '(and (and (property "ORG_GTD" "Tickler")
                            (property "PREVIOUS_ORG_GTD" "Projects"))))))
 
-  (it "can define a GTD view for all incubated items"
-      (let ((incubated-spec
-             '((name . "All Incubated")
-               (filters . ((category . incubated))))))
-        (expect (org-gtd-view-lang--translate-to-org-ql incubated-spec)
+  (it "can define a GTD view for all tickler items"
+      (let ((tickler-spec
+             '((name . "All Tickler")
+               (filters . ((category . tickler))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql tickler-spec)
                 :to-equal
-                '(and (property "ORG_GTD" "Incubated"))))))
+                '(and (property "ORG_GTD" "Tickler"))))))
 
  (describe
   "Agenda-Specific View Features"
@@ -633,13 +633,13 @@
                 :to-equal
                 '(and (property "ORG_GTD" "Calendar")))))
 
-  (it "translates (type . incubated) to ORG_GTD=Incubated query"
+  (it "translates (type . tickler) to ORG_GTD=Tickler query"
       (let ((view-spec
-             '((name . "Incubated Items")
-               (filters . ((type . incubated))))))
+             '((name . "Tickler Items")
+               (filters . ((type . tickler))))))
         (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
                 :to-equal
-                '(and (property "ORG_GTD" "Incubated")))))
+                '(and (property "ORG_GTD" "Tickler")))))
 
   (it "translates (type . project) to ORG_GTD=Projects query"
       (let ((view-spec
@@ -714,14 +714,14 @@
                       (property-ts< "ORG_GTD_TIMESTAMP" "today")
                       (not (done))))))
 
-  (it "translates (:when . past) with incubated type to ORG_GTD_TIMESTAMP"
+  (it "translates (:when . past) with tickler type to ORG_GTD_TIMESTAMP"
       (let ((view-spec
-             '((name . "Past Incubated")
-               (filters . ((type . incubated)
+             '((name . "Past Tickler")
+               (filters . ((type . tickler)
                            (:when . past))))))
         (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
                 :to-equal
-                '(and (property "ORG_GTD" "Incubated")
+                '(and (property "ORG_GTD" "Tickler")
                       (property-ts< "ORG_GTD_TIMESTAMP" "today")
                       (not (done))))))
 
@@ -772,14 +772,14 @@
                       (property-ts< "ORG_GTD_TIMESTAMP" "today")
                       (not (done))))))
 
-  (it "translates (when . future) with incubated type"
+  (it "translates (when . future) with tickler type"
       (let ((gtd-view-spec
-             '((name . "Future Incubated")
-               (type . incubated)
+             '((name . "Future Tickler")
+               (type . tickler)
                (when . future))))
         (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
                 :to-equal
-                '(and (property "ORG_GTD" "Incubated")
+                '(and (property "ORG_GTD" "Tickler")
                       (property-ts> "ORG_GTD_TIMESTAMP" "today")))))
 
   (it "requires type filter to be present"
@@ -798,36 +798,36 @@
                 :to-throw 'user-error))))
 
  (describe
-  "previous-type filter for incubated items"
+  "previous-type filter for tickler items"
 
   (it "translates (previous-type . delegated) to PREVIOUS_ORG_GTD=Delegated"
       (let ((view-spec
-             '((name . "Incubated Delegated")
-               (filters . ((type . incubated)
+             '((name . "Tickler Delegated")
+               (filters . ((type . tickler)
                            (previous-type . delegated))))))
         (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
                 :to-equal
-                '(and (property "ORG_GTD" "Incubated")
+                '(and (property "ORG_GTD" "Tickler")
                       (property "PREVIOUS_ORG_GTD" "Delegated")))))
 
   (it "translates (previous-type . next-action) to PREVIOUS_ORG_GTD=Actions"
       (let ((view-spec
-             '((name . "Incubated Actions")
-               (filters . ((type . incubated)
+             '((name . "Tickler Actions")
+               (filters . ((type . tickler)
                            (previous-type . next-action))))))
         (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
                 :to-equal
-                '(and (property "ORG_GTD" "Incubated")
+                '(and (property "ORG_GTD" "Tickler")
                       (property "PREVIOUS_ORG_GTD" "Actions")))))
 
   (it "translates (previous-type . project) to PREVIOUS_ORG_GTD=Projects"
       (let ((view-spec
-             '((name . "Incubated Projects")
-               (filters . ((type . incubated)
+             '((name . "Tickler Projects")
+               (filters . ((type . tickler)
                            (previous-type . project))))))
         (expect (org-gtd-view-lang--translate-to-org-ql view-spec)
                 :to-equal
-                '(and (property "ORG_GTD" "Incubated")
+                '(and (property "ORG_GTD" "Tickler")
                       (property "PREVIOUS_ORG_GTD" "Projects"))))))
 
  (describe

@@ -65,7 +65,7 @@
        (expect (file-contains? gtd-file "repeating item") :to-be-truthy)
        (expect (file-contains? gtd-file "write a nice test") :to-be nil)))
 
- (it "does not archive undone incubated items"
+ (it "does not archive undone tickler items"
      (let* ((temporary-file-directory org-gtd-directory)
             (gtd-file (make-temp-file "foo" nil ".org" (org-file-contents "test/fixtures/gtd-file.org"))))
        (org-gtd-archive-completed-items)

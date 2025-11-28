@@ -1,4 +1,4 @@
-;;; org-gtd-incubate.el --- Define incubated items in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
+;;; org-gtd-tickler.el --- Define tickler items in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 ;;
-;; Incubated items have their own logic, defined here
+;; Tickler items have their own logic, defined here
 ;;
 ;;; Code:
 
@@ -37,26 +37,26 @@
 
 ;;;; Constants
 
-(defconst org-gtd-incubate-func #'org-gtd-incubate--apply
-  "Function called when organizing item as incubated.")
+(defconst org-gtd-tickler-func #'org-gtd-tickler--apply
+  "Function called when organizing item as tickler.")
 
-(defconst org-gtd-incubate-template
-  (format "* Incubate
+(defconst org-gtd-tickler-template
+  (format "* Tickler
 :PROPERTIES:
 :%s: %s
 :END:
-" org-gtd-prop-refile org-gtd-incubate)
-  "Template for the GTD someday/maybe list.")
+" org-gtd-prop-refile org-gtd-tickler)
+  "Template for the GTD tickler list.")
 
 ;;;; Commands
 
-(defun org-gtd-incubate (&optional reminder-date)
-  "Decorate, organize and refile item at point as incubated.
+(defun org-gtd-tickler (&optional reminder-date)
+  "Decorate, organize and refile item at point as tickler.
 
 Smart dispatcher that detects context:
-- On project heading (ORG_GTD: Projects): incubate entire project
-- On project task (has ORG_GTD_PROJECT_IDS): incubate project(s)
-- On single item: use existing single-item incubation logic
+- On project heading (ORG_GTD: Projects): tickler entire project
+- On project task (has ORG_GTD_PROJECT_IDS): tickler project(s)
+- On single item: use existing single-item tickler logic
 
 If you want to call this non-interactively,
 REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
@@ -73,15 +73,15 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
              (is-project-task (> (length project-ids) 0)))
 
         (cond
-         ;; Case 1: On project heading - incubate the project
+         ;; Case 1: On project heading - tickler the project
          (is-project-heading
           (require 'org-gtd-projects)
           (let ((review-date (or reminder-date
                                  (org-read-date nil nil nil "Review date: "))))
             (org-gtd-project-incubate (point-marker) review-date)))
 
-         ;; Case 2: On project task - incubate the project(s)
-         ;; For now, just incubate the first project (multi-project selection added later)
+         ;; Case 2: On project task - tickler the project(s)
+         ;; For now, just tickler the first project (multi-project selection added later)
          (is-project-task
           (require 'org-gtd-projects)
           (let* ((project-id (car project-ids))
@@ -97,22 +97,22 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
           (let ((config-override (when reminder-date
                                    `(('active-timestamp . ,(lambda (_x) (format "<%s>" reminder-date)))))))
             (org-gtd-organize--call
-             (lambda () (org-gtd-incubate--apply config-override))))))))))
+             (lambda () (org-gtd-tickler--apply config-override))))))))))
 
 ;;;###autoload
 (defun org-gtd-reactivate ()
-  "Reactivate an incubated GTD item or project at point.
+  "Reactivate a tickler GTD item or project at point.
 Restores the item to active status, returning it to your GTD workflow.
 
 Smart dispatcher that detects context:
-- On incubated project heading: reactivate entire project
-- On incubated single item: reactivate that item (future enhancement)"
+- On tickler project heading: reactivate entire project
+- On tickler single item: reactivate that item (future enhancement)"
   (interactive)
 
-  ;; Check if item is incubated
+  ;; Check if item is tickler'd
   (let ((org-gtd-value (org-entry-get (point) "ORG_GTD")))
-    (unless (string= org-gtd-value "Incubated")
-      (user-error "Item at point is not incubated (ORG_GTD: %s)" org-gtd-value))
+    (unless (string= org-gtd-value "Tickler")
+      (user-error "Item at point is not tickler'd (ORG_GTD: %s)" org-gtd-value))
 
     ;; Detect if this is a project heading by checking PREVIOUS_ORG_GTD
     (let ((previous-org-gtd (org-entry-get (point) "PREVIOUS_ORG_GTD")))
@@ -131,8 +131,8 @@ Smart dispatcher that detects context:
 
 ;;;;; Public
 
-(defun org-gtd-incubate-create (topic reminder-date)
-  "Automatically create a delegated task in the GTD flow.
+(defun org-gtd-tickler-create (topic reminder-date)
+  "Automatically create a tickler task in the GTD flow.
 
 TOPIC is the string you want to see in the `org-agenda' view.
 REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
@@ -143,42 +143,53 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
       (org-mode)
       (insert (format "* %s" topic))
       (org-gtd-clarify-item)
-      (org-gtd-incubate--apply config-override))
+      (org-gtd-tickler--apply config-override))
     (kill-buffer buffer)))
 
 ;;;;; Private
 
-(defun org-gtd-incubate--configure (&optional config-override)
-  "Configure item at point as incubated.
+(defun org-gtd-tickler--configure (&optional config-override)
+  "Configure item at point as tickler.
 
 CONFIG-OVERRIDE can provide input configuration to override default
 prompting behavior."
-  (org-gtd-configure-as-type 'incubated
+  (org-gtd-configure-as-type 'tickler
                              (when config-override
                                `((:when . ,(funcall (alist-get '(quote active-timestamp) config-override nil nil #'equal) nil))))))
 
-(defun org-gtd-incubate--finalize ()
-  "Finalize incubated item organization and refile."
-  (setq-local org-gtd--organize-type 'incubated)
+(defun org-gtd-tickler--finalize ()
+  "Finalize tickler item organization and refile."
+  (setq-local org-gtd--organize-type 'tickler)
   (org-gtd-organize-apply-hooks)
   (if org-gtd-clarify--skip-refile
       (org-gtd-organize--update-in-place)
-    (org-gtd-refile--do org-gtd-incubate org-gtd-incubate-template)))
+    (org-gtd-refile--do org-gtd-tickler org-gtd-tickler-template)))
 
-(defun org-gtd-incubate--apply (&optional config-override)
-  "Process GTD inbox item by transforming it into an incubated item.
+(defun org-gtd-tickler--apply (&optional config-override)
+  "Process GTD inbox item by transforming it into a tickler item.
 
-Orchestrates the incubate organization workflow:
-1. Configure with incubate settings
-2. Finalize and refile to incubate file
+Orchestrates the tickler organization workflow:
+1. Configure with tickler settings
+2. Finalize and refile to tickler file
 
 CONFIG-OVERRIDE can provide input configuration to override default
 prompting behavior."
-  (org-gtd-incubate--configure config-override)
-  (org-gtd-incubate--finalize))
+  (org-gtd-tickler--configure config-override)
+  (org-gtd-tickler--finalize))
+
+;;;; Backward Compatibility Aliases
+
+;; Incubate → Tickler rename (v4.0)
+;;;###autoload
+(define-obsolete-function-alias 'org-gtd-incubate
+  'org-gtd-tickler "4.0")
+
+;;;###autoload
+(define-obsolete-function-alias 'org-gtd-incubate-create
+  'org-gtd-tickler-create "4.0")
 
 ;;;; Footer
 
-(provide 'org-gtd-incubate)
+(provide 'org-gtd-tickler)
 
-;;; org-gtd-incubate.el ends here
+;;; org-gtd-tickler.el ends here

@@ -41,7 +41,7 @@
        ;; Test other organization functions
        (expect (fboundp 'org-gtd-delegate) :to-be-truthy)
        (expect (fboundp 'org-gtd-calendar) :to-be-truthy)
-       (expect (fboundp 'org-gtd-incubate) :to-be-truthy)
+       (expect (fboundp 'org-gtd-tickler) :to-be-truthy)
        (expect (fboundp 'org-gtd-knowledge) :to-be-truthy)
        (expect (fboundp 'org-gtd-habit) :to-be-truthy)
        (expect (fboundp 'org-gtd-quick-action) :to-be-truthy)
@@ -99,7 +99,7 @@
        (expect (commandp 'org-gtd-project-new) :to-be-truthy)
        (expect (commandp 'org-gtd-delegate) :to-be-truthy)
        (expect (commandp 'org-gtd-calendar) :to-be-truthy)
-       (expect (commandp 'org-gtd-incubate) :to-be-truthy)
+       (expect (commandp 'org-gtd-tickler) :to-be-truthy)
        (expect (commandp 'org-gtd-knowledge) :to-be-truthy)
        (expect (commandp 'org-gtd-habit) :to-be-truthy)
        (expect (commandp 'org-gtd-quick-action) :to-be-truthy)

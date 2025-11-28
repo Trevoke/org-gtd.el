@@ -68,6 +68,7 @@ What's new in 4.0
 * Declarative view language::
 * Better project modification::
 * Updated terminology Review → Reflect::
+* Updated terminology Incubate → Tickler + Someday/Maybe::
 * Enhanced reflect capabilities::
 * Simplified configuration::
 * What you need to do::
@@ -169,7 +170,8 @@ Understanding GTD Item Types
 * Calendar [C]::
 * Delegate [D]::
 * Quick Action [Q]::
-* Incubate [I]::
+* Tickler [I]::
+* Someday/Maybe [y]::
 * Habit [H]::
 * Knowledge [K]::
 * Trash [T]::
@@ -194,7 +196,7 @@ Working with Projects (Advanced)
 * Exporting Project Graphs::
 * Troubleshooting Projects with Graph View::
 * See Also::
-* Incubating Projects Pausing Work You're Not Ready For::
+* Tickler Projects Pausing Work You're Not Ready For::
 * NEXT Task 1 Research options::
 * Task 1 Research options::
 * Project Progress Cookies See Your Progress at a Glance::
@@ -307,7 +309,7 @@ Troubleshooting
 * Projects without a NEXT item::
 * I can't create a project when clarifying an inbox item!::
 * Configuration problems::
-* Tasks still showing after incubating project::
+* Tasks still showing after tickler'ing project::
 * Still stuck?::
 
 Configuration problems
@@ -386,6 +388,7 @@ Version 4.0 is a major release that transforms how Org GTD handles projects and 
 * Declarative view language::
 * Better project modification::
 * Updated terminology Review → Reflect::
+* Updated terminology Incubate → Tickler + Someday/Maybe::
 * Enhanced reflect capabilities::
 * Simplified configuration::
 * What you need to do::
@@ -481,6 +484,34 @@ Following David Allen's updated terminology from his more recent books, all "rev
 @end itemize
 
 The old names still work as aliases but are marked obsolete.
+
+@node Updated terminology Incubate → Tickler + Someday/Maybe
+@section Updated terminology: Incubate → Tickler + Someday/Maybe
+
+The "Incubate" category has been split into two distinct types to better align with GTD concepts:
+
+@itemize
+@item
+@strong{Tickler} - Items with a specific review date (formerly "Incubated"). Use this for time-based reminders and paused projects with a date to revisit.
+@item
+@strong{Someday/Maybe} - Items with no specific timeframe. Use this for ideas and possibilities you might pursue eventually.
+@end itemize
+
+This clarifies the distinction between "remind me on a specific date" (Tickler) and "maybe someday with no commitment" (Someday/Maybe).
+
+Changes:
+@itemize
+@item
+@code{org-gtd-incubate} → @code{org-gtd-tickler} (creates tickler items with timestamps)
+@item
+New @code{org-gtd-someday} command (creates someday items without timestamps)
+@item
+New @code{org-gtd-reflect-someday-maybe} command for reviewing someday items
+@item
+Property value: @code{ORG_GTD: Incubated} → @code{ORG_GTD: Tickler} or @code{ORG_GTD: Someday}
+@end itemize
+
+The old @code{org-gtd-incubate} command still works as an alias to @code{org-gtd-tickler} but is marked obsolete.
 
 @node Enhanced reflect capabilities
 @section Enhanced reflect capabilities
@@ -1890,7 +1921,7 @@ Here are common filters you can use in your views:
 
 @table @asis
 @item @code{type}
-Filter by GTD type: @code{project}, @code{next-action}, @code{calendar}, @code{incubated}, @code{habit}
+Filter by GTD type: @code{project}, @code{next-action}, @code{calendar}, @code{tickler}, @code{someday}, @code{habit}
 @item @code{todo}
 Filter by keyword: @code{"NEXT"}, @code{"TODO"}, @code{"WAIT"}, @code{"DONE"}, @code{"CNCL"}
 @item @code{has-active-tasks}
@@ -1956,7 +1987,7 @@ How to create custom views (Tutorial 2)
 This is enough to be productive with org-gtd! The next section, "Using Org GTD", goes deep into:
 @itemize
 @item
-All GTD item types (calendar, delegate, incubate, etc.)
+All GTD item types (calendar, delegate, tickler, someday/maybe, etc.)
 @item
 Advanced project features (parallel tasks, custom dependencies)
 @item
@@ -2265,7 +2296,9 @@ Actions: @code{ORG_GTD_REFILE: Actions}
 @item
 Calendar: @code{ORG_GTD_REFILE: Calendar}
 @item
-Incubated: @code{ORG_GTD_REFILE: Incubated}
+Tickler: @code{ORG_GTD_REFILE: Tickler}
+@item
+Someday: @code{ORG_GTD_REFILE: Someday}
 @item
 Habits: @code{ORG_GTD_REFILE: Habits}
 @end itemize
@@ -2335,7 +2368,8 @@ You already saw @strong{Projects} and @strong{Single actions} in the tutorials. 
 * Calendar [C]::
 * Delegate [D]::
 * Quick Action [Q]::
-* Incubate [I]::
+* Tickler [I]::
+* Someday/Maybe [y]::
 * Habit [H]::
 * Knowledge [K]::
 * Trash [T]::
@@ -2526,12 +2560,47 @@ Assumes you just did it
 
 @strong{GTD principle}: If it takes less than 2 minutes, do it now. Don't organize it - just do it and mark it done.
 
-@node Incubate [I]
-@subsection Incubate [I]
+@node Tickler [I]
+@subsection Tickler [I]
 
-@strong{What it is}: Ideas or potential actions you're not ready to commit to yet (someday/maybe).
+@strong{What it is}: Items with a specific review date - things you want to be reminded about at a future time.
 
-@strong{When to use it}: For things you want to think about later but don't want to act on now.
+@strong{When to use it}: For ideas, projects, or actions you're not ready for NOW but want to reconsider on a specific date.
+
+@strong{Examples}:
+@itemize
+@item
+Project paused until Q2 starts (review on April 1st)
+@item
+Check if new API is released (review monthly)
+@item
+Consider kitchen remodel when bonus arrives (review in June)
+@item
+Revisit proposal after team meeting (review next week)
+@end itemize
+
+@strong{What org-gtd does}:
+@itemize
+@item
+Prompts for review date
+@item
+Sets @code{ORG_GTD_TIMESTAMP} property with the date
+@item
+Refiles to tickler file
+@item
+Will remind you in agenda on that date to reconsider
+@end itemize
+
+@strong{Use case - Paused projects}: You can tickler entire projects to temporarily hide them from your active views while preserving all structure and dependencies. See @ref{Tickler Projects Pausing Work You're Not Ready For, , Tickler Projects} for details.
+
+@strong{GTD principle}: The tickler file is a time-based reminder system. Items appear when the date arrives, prompting you to decide if you're ready to act.
+
+@node Someday/Maybe [y]
+@subsection Someday/Maybe [y]
+
+@strong{What it is}: Ideas or possibilities with no specific timeframe - things you might do eventually but have no commitment to.
+
+@strong{When to use it}: For ideas you want to keep but aren't ready to commit time or energy to, and don't need a specific review date.
 
 @strong{Examples}:
 @itemize
@@ -2540,22 +2609,26 @@ Learn Spanish (someday)
 @item
 Write a book (maybe)
 @item
-Remodel kitchen (not yet)
+Build a woodworking shop (no timeline)
 @item
-Take photography class (when I have time)
+Take photography class (when life permits)
 @end itemize
 
 @strong{What org-gtd does}:
 @itemize
 @item
-Prompts for review date
+Sets @code{ORG_GTD: Someday} property (no timestamp)
 @item
-Refiles to incubate file
+Refiles to a someday/maybe category
 @item
-Will remind you on that date to reconsider
+Stays out of active views until you explicitly review it
 @end itemize
 
-@strong{GTD principle}: Keep these out of your active system. Review periodically (weekly/monthly) to decide if they're ready to become real projects or actions.
+@strong{How to review}: Use @code{org-gtd-reflect-someday-maybe} to periodically review all someday items and decide if any are ready to become active projects or actions.
+
+@strong{Key difference from Tickler}: Someday items have NO review date. They don't appear in your agenda automatically. You choose when to review them (typically during weekly/monthly reviews).
+
+@strong{GTD principle}: Someday/maybe items acknowledge possibilities without cluttering your active system. They're safe to ignore until you're ready.
 
 @node Habit [H]
 @subsection Habit [H]
@@ -2738,7 +2811,7 @@ You learned sequential projects in @ref{Tutorial Your First Project}. This secti
 * Exporting Project Graphs::
 * Troubleshooting Projects with Graph View::
 * See Also::
-* Incubating Projects Pausing Work You're Not Ready For::
+* Tickler Projects Pausing Work You're Not Ready For::
 * NEXT Task 1 Research options::
 * Task 1 Research options::
 * Project Progress Cookies See Your Progress at a Glance::
@@ -4156,27 +4229,27 @@ Try @code{R} to refresh if the graph is in an inconsistent state
 @ref{View DSL Filter Reference} for creating custom project views
 @end itemize
 
-@node Incubating Projects Pausing Work You're Not Ready For
-@subsection Incubating Projects: Pausing Work You're Not Ready For
+@node Tickler Projects Pausing Work You're Not Ready For
+@subsection Tickler Projects: Pausing Work You're Not Ready For
 
 @itemize
 @item
-@anchor{First Contact Why Incubate Projects?}First Contact: Why Incubate Projects?
+@anchor{First Contact Why Tickler Projects?}First Contact: Why Tickler Projects?
 
 
 You're managing 15 active projects. Some are ready to work on NOW@. Others are good ideas, but wrong timing—maybe you're waiting for budget approval, or team availability, or just aren't ready to commit yet.
 
 Keeping them all visible in your engage view creates noise. You scan past 10 "someday" projects to find the 5 you can actually work on today. That's cognitive load you don't need.
 
-@strong{Incubating projects solves this.} Pause a project with a review date. It disappears from your engage view, your NEXT lists, everywhere—but preserves the complete project structure (all tasks, dependencies, planning work). When the review date arrives or you're ready, reactivate it with one command. The project springs back to life exactly as you left it.
+@strong{Tickler projects solve this.} Pause a project with a review date. It disappears from your engage view, your NEXT lists, everywhere—but preserves the complete project structure (all tasks, dependencies, planning work). When the review date arrives or you're ready, reactivate it with one command. The project springs back to life exactly as you left it.
 
-For GTD users managing multiple projects where some need to be dormant temporarily.
+For GTD users managing multiple projects where some need to be dormant temporarily with a specific return date.
 
 @item
-@anchor{Black Triangle Incubate Your First Project in 30 Seconds}Black Triangle: Incubate Your First Project in 30 Seconds
+@anchor{Black Triangle Tickler Your First Project in 30 Seconds}Black Triangle: Tickler Your First Project in 30 Seconds
 
 
-Let's incubate a project right now.
+Let's tickler a project right now.
 
 @strong{Step 1: Find a project you're not ready for}
 
@@ -4184,9 +4257,9 @@ Open graph view for any project: @code{M-x org-gtd-show-project-graph}
 
 Or navigate to any project heading in your GTD file.
 
-@strong{Step 2: Incubate it}
+@strong{Step 2: Tickler it}
 
-Press @code{I} in graph view, or run @code{M-x org-gtd-incubate}
+Press @code{I} in graph view, or run @code{M-x org-gtd-tickler}
 
 Enter a review date when prompted: @code{2025-06-01}
 
@@ -4198,15 +4271,15 @@ The project's tasks are GONE from your NEXT list. No clutter.
 
 @strong{Step 4: Check your review date}
 
-The incubated project will appear in your agenda on 2025-06-01 as a reminder to reconsider it.
+The tickler project will appear in your agenda on 2025-06-01 as a reminder to reconsider it.
 
 @strong{Success!} You've paused a project without losing any of your planning work.
 
 @item
-@anchor{Understanding Incubation What Actually Happens}Understanding Incubation: What Actually Happens
+@anchor{Understanding Tickler What Actually Happens}Understanding Tickler: What Actually Happens
 
 
-When you incubate a project, org-gtd performs several operations to make it completely invisible while preserving state:
+When you tickler a project, org-gtd performs several operations to make it completely invisible while preserving state:
 
 @strong{State Preservation}
 
@@ -4217,12 +4290,12 @@ Current @code{ORG_GTD} property → saved to @code{PREVIOUS_ORG_GTD} (e.g., "Pro
 @item
 Current TODO keyword → saved to @code{PREVIOUS_TODO} property (e.g., "NEXT" → "NEXT")
 @item
-@code{ORG_GTD} property → set to "Incubated"
+@code{ORG_GTD} property → set to "Tickler"
 @item
 TODO keyword → cleared completely (becomes nil)
 @end itemize
 
-@strong{@strong{Why clear keywords?}} This makes incubated tasks invisible to all views naturally. Your engage view shows ~(todo . "NEXT")~—tasks with no keywords don't match, so they disappear automatically.
+@strong{@strong{Why clear keywords?}} This makes tickler tasks invisible to all views naturally. Your engage view shows ~(todo . "NEXT")~—tasks with no keywords don't match, so they disappear automatically.
 
 @strong{Review Date Storage}
 
@@ -4230,11 +4303,11 @@ The review date is stored in the project heading's @code{ORG_GTD_TIMESTAMP} prop
 
 @strong{Dependency Preservation}
 
-ALL dependency relationships (@code{ORG_GTD_DEPENDS_ON}, @code{ORG_GTD_BLOCKS}) remain intact. They're dormant—they don't affect anything while incubated—but they're there. When you reactivate, dependencies work exactly as before.
+ALL dependency relationships (@code{ORG_GTD_DEPENDS_ON}, @code{ORG_GTD_BLOCKS}) remain intact. They're dormant—they don't affect anything while in tickler—but they're there. When you reactivate, dependencies work exactly as before.
 
 @strong{Multi-Project Tasks}
 
-If a task belongs to MULTIPLE projects (has multiple IDs in @code{ORG_GTD_PROJECT_IDS}), it is NOT incubated. Why? Because it's still needed by other active projects.
+If a task belongs to MULTIPLE projects (has multiple IDs in @code{ORG_GTD_PROJECT_IDS}), it is NOT tickler'd. Why? Because it's still needed by other active projects.
 
 You'll see: "Skipping multi-project task: Task Name"
 
@@ -4260,15 +4333,15 @@ You're tracking these projects:
 
 It's March. None of these are relevant, but they clutter your project list and NEXT tasks keep appearing in your engage view.
 
-@strong{The Solution: Incubate Until Needed}
+@strong{The Solution: Tickler Until Needed}
 
-In March, incubate all three:
+In March, tickler all three:
 
 @enumerate
 @item
 Navigate to "Summer Conference Planning"
 @item
-@code{M-x org-gtd-incubate}
+@code{M-x org-gtd-tickler}
 @item
 Review date: @code{2025-05-01}
 @item
@@ -4283,7 +4356,7 @@ On May 1st, "Summer Conference Planning" appears in your agenda:
 
 @example
 Tuesday 1 May 2025
-  Summer Conference Planning (review incubated project)
+  Summer Conference Planning (review tickler project)
 @end example
 
 Options:
@@ -4291,7 +4364,7 @@ Options:
 @item
 @strong{Ready to activate?} Press @code{RET} to jump to it, then @code{M-x org-gtd-reactivate}
 @item
-@strong{Still not ready?} Leave it incubated, or re-incubate with a later date
+@strong{Still not ready?} Leave it in tickler, or run @code{org-gtd-tickler} again with a later date
 @end itemize
 
 @strong{Reactivation Details}
@@ -4303,7 +4376,7 @@ When you run @code{org-gtd-reactivate}:
 State restoration happens automatically:
 @itemize
 @item
-@code{PREVIOUS_ORG_GTD} → @code{ORG_GTD} (Incubated → Projects)
+@code{PREVIOUS_ORG_GTD} → @code{ORG_GTD} (Tickler → Projects)
 @item
 @code{PREVIOUS_TODO} → TODO keywords restored
 @item
@@ -4350,11 +4423,11 @@ Project ideas that might happen eventually:
 @strong{Strategy:}
 @itemize
 @item
-Incubate with a FAR future date (2026-01-01)
+Tickler with a FAR future date (2026-01-01)
 @item
 Or use quarterly review dates (2025-07-01, 2025-10-01, etc.)
 @item
-When review arrives, ask: "Is this the right time?" If no, re-incubate for next quarter
+When review arrives, ask: "Is this the right time?" If no, tickler again for next quarter
 @end itemize
 
 @strong{Pattern: "Waiting for External Factor"}
@@ -4370,9 +4443,9 @@ Projects blocked by external dependencies:
 @strong{Strategy:}
 @itemize
 @item
-Incubate with review date = when you expect the blocker to clear
+Tickler with review date = when you expect the blocker to clear
 @item
-Add note in project heading: "Incubated because: waiting for budget approval"
+Add note in project heading: "Tickler because: waiting for budget approval"
 @item
 When reactivated, first task might be "Check if budget was approved"
 @end itemize
@@ -4390,7 +4463,7 @@ Projects you tackle in batches:
 @strong{Strategy:}
 @itemize
 @item
-After completing Q1 batch, incubate with Q2 start date
+After completing Q1 batch, tickler with Q2 start date
 @item
 Review dates: 2025-04-01, 2025-07-01, 2025-10-01, 2026-01-01
 @item
@@ -4409,9 +4482,9 @@ Project requires specific people who aren't available:
 @strong{Strategy:}
 @itemize
 @item
-Incubate with return/availability date
+Tickler with return/availability date
 @item
-In project heading, note: "Incubated: waiting for Sarah (back June 10th)"
+In project heading, note: "Tickler: waiting for Sarah (back June 10th)"
 @item
 Reactivate when team is available, project structure intact
 @end itemize
@@ -4432,30 +4505,30 @@ Project B (separate project) has "Task B1: Evaluate vendors" that depends on Tas
 
 Task B1 has an *external dependency*—it depends on a task from a different project.
 
-@strong{What Happens When Incubating}
+@strong{What Happens When Tickler'ing}
 
-If you incubate Project A, org-gtd warns you:
+If you tickler Project A, org-gtd warns you:
 
 @example
 External tasks depend on this project:
   - Task B1: Evaluate vendors (in Project B)
 
-Continue incubating? (y/n)
+Continue tickler? (y/n)
 @end example
 
-@strong{@strong{Why warn?}} Incubating Project A clears Task A1's TODO keyword. Task B1 is still expecting Task A1 to be NEXT or TODO@. This creates a "dangling reference"—B1 is blocked by a task that doesn't exist in active work anymore.
+@strong{@strong{Why warn?}} Tickler'ing Project A clears Task A1's TODO keyword. Task B1 is still expecting Task A1 to be NEXT or TODO@. This creates a "dangling reference"—B1 is blocked by a task that doesn't exist in active work anymore.
 
 @strong{@strong{Your options:}}
 
 @enumerate
 @item
-@strong{Cancel incubation} (@code{n}): Don't incubate Project A yet. Maybe restructure dependencies first.
+@strong{Cancel tickler} (@code{n}): Don't tickler Project A yet. Maybe restructure dependencies first.
 
 @item
 @strong{Continue anyway} (@code{y}): Accept that Task B1 will stay TODO/blocked until you reactivate Project A@. Make a note in Project B about this.
 
 @item
-@strong{Remove the dependency}: Before incubating, use graph view to remove the B1 → A1 dependency link. Decide if B1 should proceed independently.
+@strong{Remove the dependency}: Before tickler'ing, use graph view to remove the B1 → A1 dependency link. Decide if B1 should proceed independently.
 @end enumerate
 
 @strong{Real-World Example}
@@ -4476,19 +4549,19 @@ A separate project (Project Marketing) has:
 "Design conference branding" → depends on "Book venue" (need venue details for design)
 @end itemize
 
-If you incubate Project Conference (venue not booked yet, conference might not happen), the warning shows you that Marketing's branding task will be stuck.
+If you tickler Project Conference (venue not booked yet, conference might not happen), the warning shows you that Marketing's branding task will be stuck.
 
-@strong{Decision:} You might realize the branding task should just wait in Project Marketing with a note "start when conference is confirmed", rather than having a hard dependency. Remove the link before incubating.
+@strong{Decision:} You might realize the branding task should just wait in Project Marketing with a note "start when conference is confirmed", rather than having a hard dependency. Remove the link before tickler'ing.
 
 @item
-@anchor{Technical Details How Incubation Works Under the Hood}Technical Details: How Incubation Works Under the Hood
+@anchor{Technical Details How Tickler Works Under the Hood}Technical Details: How Tickler Works Under the Hood
 
 
 @strong{Property-Based State Management}
 
-Incubation uses properties, not file movement. The project and its tasks stay in the same file, same location. Only properties change:
+Tickler uses properties, not file movement. The project and its tasks stay in the same file, same location. Only properties change:
 
-Before incubation (Task 1 of a project):
+Before tickler (Task 1 of a project):
 #+begin@math{_example}
 @end itemize
 
@@ -4497,7 +4570,7 @@ Before incubation (Task 1 of a project):
 
 #+end@math{_example}
 
-After incubation:
+After tickler:
 #+begin@math{_example}
 
 @node Task 1 Research options
@@ -4510,7 +4583,7 @@ Note:
 @item
 TODO keyword cleared (was NEXT, now nothing)
 @item
-@code{ORG_GTD} changed to "Incubated"
+@code{ORG_GTD} changed to "Tickler"
 @item
 Original values saved in @code{PREVIOUS_*} properties
 @item
@@ -4519,15 +4592,15 @@ Dependencies (@code{ORG_GTD_BLOCKS}) preserved unchanged
 
 @strong{View Filtering Mechanism}
 
-Why don't incubated tasks appear in views?
+Why don't tickler tasks appear in views?
 
 Most views filter by TODO keywords: @code{(todo . "NEXT")}, @code{(todo . "TODO|NEXT|WAIT")}, etc.
 
-Since incubated tasks have NO TODO keyword (cleared to nil), they don't match these filters. Natural exclusion.
+Since tickler tasks have NO TODO keyword (cleared to nil), they don't match these filters. Natural exclusion.
 
 For area-of-focus reviews that show projects, we filter: @code{(and (property "ORG_GTD" "Projects") (property "CATEGORY" "Work"))}
 
-Incubated projects have @code{(property "ORG_GTD" "Incubated")} instead of "Projects", so they appear in a separate "Incubated projects" section.
+Tickler projects have @code{(property "ORG_GTD" "Tickler")} instead of "Projects", so they appear in a separate "Tickler projects" section.
 
 @strong{Reactivation Dependency Recalculation}
 
@@ -4572,7 +4645,7 @@ Immediate feedback on project structure
 @end itemize
 @end enumerate
 
-@strong{@strong{Why recalculate?}} You might have manually edited the project while incubated—added tasks, changed dependencies, marked some DONE@. Recalculation ensures consistent state.
+@strong{@strong{Why recalculate?}} You might have manually edited the project while in tickler—added tasks, changed dependencies, marked some DONE@. Recalculation ensures consistent state.
 
 @strong{Multi-Project Task Detection}
 
@@ -4583,20 +4656,20 @@ The check:
   (if (> (length project-ids) 1)
       ;; Skip this task - belongs to multiple projects
       (message "Skipping multi-project task: %s" (org-get-heading))
-    ;; Normal incubation
+    ;; Normal tickler
     ...))
 @end lisp
 
-If @code{ORG_GTD_PROJECT_IDS} contains @code{"project-a project-b"} (two IDs), the task belongs to both projects. Incubating one project shouldn't hide the task—it's still needed by the other project.
+If @code{ORG_GTD_PROJECT_IDS} contains @code{"project-a project-b"} (two IDs), the task belongs to both projects. Tickler'ing one project shouldn't hide the task—it's still needed by the other project.
 
 @itemize
 @item
-@anchor{Troubleshooting Incubation}Troubleshooting Incubation
+@anchor{Troubleshooting Tickler}Troubleshooting Tickler
 
 
-@strong{Tasks Still Showing After Incubating Project}
+@strong{Tasks Still Showing After Tickler'ing Project}
 
-@strong{Symptom:} You incubated a project, but some of its tasks still appear in your engage view.
+@strong{Symptom:} You tickler'd a project, but some of its tasks still appear in your engage view.
 
 @strong{Diagnosis:} Check if those tasks belong to multiple projects:
 @enumerate
@@ -4613,14 +4686,14 @@ If it has multiple IDs (space-separated), the task is shared
 @strong{Solution:} This is expected behavior. Multi-project tasks remain active because other projects need them. Options:
 @itemize
 @item
-Incubate ALL projects the task belongs to (task will then be incubated)
+Tickler ALL projects the task belongs to (task will then be tickler'd)
 @item
 Remove the task from one of the projects first
 @item
 Accept that the task stays visible (it's genuinely active in another project)
 @end itemize
 
-@strong{Incubated Project Doesn't Appear on Review Date}
+@strong{Tickler Project Doesn't Appear on Review Date}
 
 @strong{Symptom:} Review date arrived (e.g., June 1st), but the project doesn't show in your agenda.
 
@@ -4639,7 +4712,7 @@ Check your org-agenda-files includes the GTD file
 @strong{Solution:}
 @itemize
 @item
-If property is missing: re-incubate with a date
+If property is missing: tickler again with a date
 @item
 If format is wrong: manually fix to @code{<YYYY-MM-DD>}
 @item
@@ -4670,9 +4743,9 @@ If recalculation doesn't fix it: dependencies might be incorrect
 Use @code{d} to modify dependencies, then @code{r} to recalculate
 @end itemize
 
-@strong{Can't Reactivate: "Not Incubated" Error}
+@strong{Can't Reactivate: "Not Tickler" Error}
 
-@strong{Symptom:} Running @code{org-gtd-reactivate} gives error: "Item at point is not incubated"
+@strong{Symptom:} Running @code{org-gtd-reactivate} gives error: "Item at point is not tickler"
 
 @strong{Diagnosis:} Check the @code{ORG_GTD} property:
 @enumerate
@@ -4681,15 +4754,15 @@ Use @code{d} to modify dependencies, then @code{r} to recalculate
 @item
 Look for @code{ORG_GTD} value
 @item
-Should be "Incubated"
+Should be "Tickler"
 @end enumerate
 
 @strong{Solution:}
 @itemize
 @item
-If @code{ORG_GTD} is something else (e.g., "Projects"): it's not incubated, nothing to reactivate
+If @code{ORG_GTD} is something else (e.g., "Projects"): it's not in tickler, nothing to reactivate
 @item
-If manually edited: set @code{ORG_GTD} back to "Incubated" or just manually restore the state
+If manually edited: set @code{ORG_GTD} back to "Tickler" or just manually restore the state
 @item
 If @code{PREVIOUS_*} properties are missing: you'll need to manually set states
 @end itemize
@@ -4700,9 +4773,9 @@ If @code{PREVIOUS_*} properties are missing: you'll need to manually set states
 
 @itemize
 @item
-@ref{Commands Reference} for @code{org-gtd-incubate} and @code{org-gtd-reactivate} full command details
+@ref{Commands Reference} for @code{org-gtd-tickler} and @code{org-gtd-reactivate} full command details
 @item
-@ref{Tutorial Your First Project} for project basics before incubating
+@ref{Tutorial Your First Project} for project basics before tickler'ing
 @item
 @ref{First Contact Why Visual Project Management?, , Why Visual Project Management?} for understanding project structure
 @item
@@ -4960,7 +5033,9 @@ There's now a few functions you can use when you are doing work within emacs and
 @item
 @code{org-gtd-delegate-create}
 @item
-@code{org-gtd-incubate-create}
+@code{org-gtd-tickler-create}
+@item
+@code{org-gtd-someday-create}
 @item
 @code{org-gtd-single-action-create}
 @end itemize
@@ -5122,7 +5197,7 @@ org-gtd will look for all its files in this directory:
 @item
 @code{org-gtd-tasks.org} - Main GTD file
 @item
-@code{org-gtd-incubate.org} - Someday/maybe items
+@code{org-gtd-incubate.org} - Tickler items (time-based reminders) and someday/maybe items
 @item
 @code{org-gtd-calendar.org} - Calendar items
 @end itemize
@@ -5276,7 +5351,7 @@ Takes a list of item types to check against
 @item
 Returns t if current item matches one of the types
 @item
-Available types: @code{action}, @code{project}, @code{project-task}, @code{calendar}, @code{delegate}, @code{incubate}, @code{habit}, @code{knowledge}, @code{quick}, @code{trash}
+Available types: @code{action}, @code{project}, @code{project-task}, @code{calendar}, @code{delegate}, @code{tickler}, @code{someday}, @code{habit}, @code{knowledge}, @code{quick}, @code{trash}
 @end itemize
 
 @item
@@ -5627,7 +5702,7 @@ When @code{org-gtd-id-overlay-mode} is enabled, task IDs are replaced with trunc
 
 This alist allows you to override how org-gtd prompts for properties when organizing items. You can customize existing types but cannot add new ones.
 
-Each entry is @code{(TYPE-NAME . PLIST)} where TYPE-NAME must be one of: @code{next-action}, @code{delegated}, @code{calendar}, @code{incubated}, @code{project}, @code{habit}, @code{reference}, @code{trash}, @code{quick-action}.
+Each entry is @code{(TYPE-NAME . PLIST)} where TYPE-NAME must be one of: @code{next-action}, @code{delegated}, @code{calendar}, @code{tickler}, @code{someday}, @code{project}, @code{habit}, @code{reference}, @code{trash}, @code{quick-action}.
 
 @strong{Property attributes you can set:}
 
@@ -5922,7 +5997,9 @@ Refiles item to appropriate location
 @item
 [H] Habit
 @item
-[I] Incubate
+[I] Tickler
+@item
+[y] Someday/Maybe
 @item
 [K] Knowledge
 @item
@@ -6108,10 +6185,10 @@ Each of these commands finds items with problems in a specific category:
 Finds calendar items with invalid or missing timestamps.
 
 @item
-@anchor{@code{org-gtd-reflect-stuck-incubated-items}}@code{org-gtd-reflect-stuck-incubated-items}
+@anchor{@code{org-gtd-reflect-stuck-tickler-items}}@code{org-gtd-reflect-stuck-tickler-items}
 
 
-Finds incubated items with invalid or missing review dates.
+Finds tickler items with invalid or missing review dates.
 
 @item
 @anchor{@code{org-gtd-reflect-stuck-habit-items}}@code{org-gtd-reflect-stuck-habit-items}
@@ -6532,7 +6609,7 @@ View specs are simple: give it a @code{name} and add filters. Filters are pairs 
   (type . delegated))
 @end lisp
 
-The most common filter is @code{type}, which matches GTD item types: @code{project}, @code{next-action}, @code{calendar}, @code{delegated}, @code{incubated}, @code{habit}, @code{stuck-project}, @code{completed-project}.
+The most common filter is @code{type}, which matches GTD item types: @code{project}, @code{next-action}, @code{calendar}, @code{delegated}, @code{tickler}, @code{someday}, @code{habit}, @code{stuck-project}, @code{completed-project}.
 
 @strong{@strong{Tutorial: Common custom views}}
 
@@ -6601,7 +6678,8 @@ This shows TWO views in one agenda: NEXT actions first, then delegated items due
 (type . next-action)      ; Single actions (with NEXT keyword)
 (type . delegated)        ; Delegated items (with WAIT keyword)
 (type . calendar)         ; Calendar items
-(type . incubated)        ; Someday/maybe items
+(type . tickler)          ; Tickler items (time-based reminders)
+(type . someday)          ; Someday/maybe items
 (type . habit)            ; Habits
 (type . stuck-project)    ; Projects needing attention
 (type . completed-project) ; Projects ready to archive
@@ -6619,7 +6697,7 @@ The @code{when} filter automatically uses the right timestamp property for each 
 @item
 For @code{delegated} and @code{calendar}: checks @code{ORG_GTD_TIMESTAMP}
 @item
-For @code{incubated}: checks the incubation review date
+For @code{tickler}: checks the tickler review date
 @end itemize
 
 @strong{Filter by area of focus:}
@@ -7216,14 +7294,14 @@ Progress cookies are controlled by @code{org-gtd-project-progress-cookie-positio
 @strong{See also}: @ref{Project Progress Cookies See Your Progress at a Glance, , Project Progress Cookies} for detailed usage guide.
 
 @item
-@anchor{@code{org-gtd-incubate}}@code{org-gtd-incubate}
+@anchor{@code{org-gtd-tickler}}@code{org-gtd-tickler}
 
 
-@strong{@strong{What it is:}} Smart command to pause items you're not ready to work on yet.
+@strong{@strong{What it is:}} Smart command to pause items with a specific review date (time-based reminder).
 
-@strong{@strong{Why you'd use it:}} You have a project or action that's a good idea, but not right now. You want to set it aside with a reminder to review it later, without losing your planning work.
+@strong{@strong{Why you'd use it:}} You have a project or action that's a good idea, but not ready NOW@. You want to set it aside with a specific date to review it later, without losing your planning work.
 
-@strong{@strong{Who needs it:}} Anyone managing "someday/maybe" items or projects they want to defer.
+@strong{@strong{Who needs it:}} Anyone managing items that need to be deferred until a specific time or date.
 
 @strong{@strong{Your first use (30 seconds):}}
 
@@ -7231,7 +7309,7 @@ Progress cookies are controlled by @code{org-gtd-project-progress-cookie-positio
 @item
 Navigate to a project or action
 @item
-Run: @code{M-x org-gtd-incubate}
+Run: @code{M-x org-gtd-tickler}
 @item
 Enter review date: @code{2025-12-01}
 @item
@@ -7243,11 +7321,11 @@ Done - it disappears from your engage view until that date
 Detects what you're on:
 @itemize
 @item
-Project heading → incubates entire project with all tasks
+Project heading → ticklers entire project with all tasks
 @item
-Project task → incubates the project it belongs to
+Project task → ticklers the project it belongs to
 @item
-Single action → incubates just that action
+Single action → ticklers just that action
 @end itemize
 
 For projects:
@@ -7266,20 +7344,22 @@ Skips multi-project tasks (tasks shared between projects)
 
 @itemize
 @item
-Projects you want to pursue "someday" but not now
+Projects you want to start on a specific future date
 @item
-Ideas that need to marinate before you're ready
+Seasonal projects (start each year at a certain time)
 @item
-Seasonal projects (start each year)
+Projects blocked by external factors with an expected resolution date
 @item
-Projects blocked by external factors beyond your control
+Items you want to reconsider after a specific event or milestone
 @end itemize
+
+@strong{@strong{Note:}} For items with NO specific timeframe ("maybe someday"), use @code{org-gtd-someday} instead.
 
 @item
 @anchor{@code{org-gtd-reactivate}}@code{org-gtd-reactivate}
 
 
-@strong{@strong{What it is:}} Bring back incubated projects and actions.
+@strong{@strong{What it is:}} Bring back tickler projects and actions.
 
 @strong{@strong{Why you'd use it:}} The review date arrived, you're ready to work on it again.
 
@@ -7287,7 +7367,7 @@ Projects blocked by external factors beyond your control
 
 @enumerate
 @item
-When you see an incubated item in agenda (on its review date)
+When you see a tickler item in agenda (on its review date)
 @item
 Run: @code{M-x org-gtd-reactivate}
 @item
@@ -7300,7 +7380,7 @@ Adjust if needed and close
 
 @itemize
 @item
-Restores original item states (project → Projects, actions → Actions, etc.)
+Restores original item states (tickler → Projects, actions → Actions, etc.)
 @item
 Restores task TODO keywords
 @item
@@ -7315,11 +7395,11 @@ Removes the review date
 
 @itemize
 @item
-When an incubated item appears in your agenda on its review date
+When a tickler item appears in your agenda on its review date
 @item
 When you're ready to reactivate something earlier than scheduled
 @item
-During weekly review when scanning incubated items
+During weekly review when scanning tickler items
 @end itemize
 @end itemize
 
@@ -7600,16 +7680,29 @@ These commands create GTD items programmatically (useful for automation and Emac
 @end lisp
 
 @item
-@anchor{@code{org-gtd-incubate-create}}@code{org-gtd-incubate-create}
+@anchor{@code{org-gtd-tickler-create}}@code{org-gtd-tickler-create}
 
 
 @strong{Arguments}: STRING and REVIEW-DATE
 
-@strong{Use case}: Programmatically adding someday/maybe items
+@strong{Use case}: Programmatically adding tickler items (time-based reminders)
 
 @strong{Example}:
 @lisp
-(org-gtd-incubate-create "Learn Rust" (org-read-date nil nil "+6m"))
+(org-gtd-tickler-create "Review Q2 goals" (org-read-date nil nil "+3m"))
+@end lisp
+
+@item
+@anchor{@code{org-gtd-someday-create}}@code{org-gtd-someday-create}
+
+
+@strong{Arguments}: STRING
+
+@strong{Use case}: Programmatically adding someday/maybe items (no specific timeframe)
+
+@strong{Example}:
+@lisp
+(org-gtd-someday-create "Learn Rust")
 @end lisp
 
 @item
@@ -7858,7 +7951,7 @@ If you find yourself manually editing properties, that indicates a missing featu
 @anchor{ORG@math{_GTD}}ORG@math{_GTD}
 
 
-@strong{Used on}: All GTD items (projects, actions, calendar items, incubated items, etc.)
+@strong{Used on}: All GTD items (projects, actions, calendar items, tickler items, etc.)
 
 @strong{Purpose}: Identifies the type of GTD item
 
@@ -7870,8 +7963,10 @@ Project heading
 Project tasks and single actions
 @item @code{"Calendar"}
 Calendar items (appointments, deadlines)
-@item @code{"Incubated"}
-Someday/maybe items
+@item @code{"Tickler"}
+Items with specific review dates (time-based reminders)
+@item @code{"Someday"}
+Someday/maybe items (no specific timeframe)
 @item @code{"Delegated"}
 Delegated tasks (set in combination with DELEGATED@math{_TO})
 @end table
@@ -7906,8 +8001,10 @@ Target for refiling projects
 Target for refiling single actions
 @item @code{"Calendar"}
 Target for refiling calendar items
-@item @code{"Incubated"}
-Target for refiling incubated items
+@item @code{"Tickler"}
+Target for refiling tickler items (time-based reminders)
+@item @code{"Someday"}
+Target for refiling someday/maybe items
 @item @code{"Habits"}
 Target for refiling habits
 @end table
@@ -8690,17 +8787,31 @@ Filter by GTD item type:
 @end lisp
 
 @item
-@anchor{@code{(type incubated)}}@code{(type . incubated)}
+@anchor{@code{(type tickler)}}@code{(type . tickler)}
 
 
-@strong{Matches}: Items with @code{ORG_GTD="Incubated"} (someday/maybe)
+@strong{Matches}: Items with @code{ORG_GTD="Tickler"} (time-based reminders with review dates)
+
+@strong{Use case}: Review tickler items
+
+@strong{Example}:
+@lisp
+'((name . "Tickler Items")
+  (type . tickler))
+@end lisp
+
+@item
+@anchor{@code{(type someday)}}@code{(type . someday)}
+
+
+@strong{Matches}: Items with @code{ORG_GTD="Someday"} (someday/maybe with no specific timeframe)
 
 @strong{Use case}: Review someday/maybe list
 
 @strong{Example}:
 @lisp
 '((name . "Someday/Maybe")
-  (type . incubated))
+  (type . someday))
 @end lisp
 
 @item
@@ -8732,17 +8843,17 @@ Filter by GTD item type:
 @end lisp
 
 @item
-@anchor{@code{(type incubated-project)}}@code{(type . incubated-project)}
+@anchor{@code{(type tickler-project)}}@code{(type . tickler-project)}
 
 
-@strong{Matches}: Projects that were moved to someday/maybe
+@strong{Matches}: Projects that were moved to tickler (paused with review dates)
 
-@strong{Use case}: Review incubated projects during weekly review
+@strong{Use case}: Review tickler projects during weekly review
 
 @strong{Example}:
 @lisp
-'((name . "Incubated Projects")
-  (type . incubated-project))
+'((name . "Tickler Projects")
+  (type . tickler-project))
 @end lisp
 @end itemize
 
@@ -8762,7 +8873,7 @@ The @code{when} filter provides semantic time filtering that automatically uses 
 @item
 For @code{delegated} and @code{calendar} types: checks @code{ORG_GTD_TIMESTAMP}
 @item
-For @code{incubated} type: checks the incubation review date
+For @code{tickler} type: checks the tickler review date
 @end itemize
 
 Values: @code{today}, @code{past}, @code{future}
@@ -9392,7 +9503,9 @@ Tasks within projects
 Calendar items
 @item @code{'delegate}
 Delegated items
-@item @code{'incubate}
+@item @code{'tickler}
+Tickler items (time-based reminders)
+@item @code{'someday}
 Someday/maybe items
 @item @code{'habit}
 Habits
@@ -9633,7 +9746,7 @@ This section covers common problems and their solutions. For complete command do
 * Projects without a NEXT item::
 * I can't create a project when clarifying an inbox item!::
 * Configuration problems::
-* Tasks still showing after incubating project::
+* Tasks still showing after tickler'ing project::
 * Still stuck?::
 @end menu
 
@@ -9645,8 +9758,8 @@ Sometimes items get stuck or fall through the cracks. org-gtd provides several c
 @table @asis
 @item @code{org-gtd-reflect-stuck-calendar-items}
 Calendar items with invalid or missing timestamps
-@item @code{org-gtd-reflect-stuck-incubated-items}
-Incubated items with invalid or missing review dates
+@item @code{org-gtd-reflect-stuck-tickler-items}
+Tickler items with invalid or missing review dates
 @item @code{org-gtd-reflect-stuck-habit-items}
 Habits with incorrect configuration
 @item @code{org-gtd-reflect-stuck-delegated-items}
@@ -9796,17 +9909,17 @@ Project tasks should have @code{ORG_GTD: Actions} and be part of a project
 
 See @ref{Configuration Variables Reference} for all configuration options.
 
-@node Tasks still showing after incubating project
-@section Tasks still showing after incubating project
+@node Tasks still showing after tickler'ing project
+@section Tasks still showing after tickler'ing project
 
-@strong{Symptom}: Incubated a project but some tasks still appear in engage view.
+@strong{Symptom}: Tickler'd a project but some tasks still appear in engage view.
 
 @strong{Diagnosis}:
 @itemize
 @item
-Multi-project tasks (tasks shared between projects) are not incubated
+Multi-project tasks (tasks shared between projects) are not tickler'd
 @item
-If task belongs to Project A and Project B, and you only incubate Project A, the task stays visible
+If task belongs to Project A and Project B, and you only tickler Project A, the task stays visible
 @end itemize
 
 @strong{Solution}:
@@ -9814,19 +9927,19 @@ If task belongs to Project A and Project B, and you only incubate Project A, the
 @item
 Check task's ORG@math{_GTD}@math{_PROJECT}@math{_IDS} property to see which projects it belongs to
 @item
-Either incubate all projects the task belongs to, or remove it from one project first
+Either tickler all projects the task belongs to, or remove it from one project first
 @item
-During incubation, watch for "Skipping multi-project task" messages
+During tickler, watch for "Skipping multi-project task" messages
 @end itemize
 
 @strong{Recommended workflow}:
 @enumerate
 @item
-Before incubating: review the project for multi-project tasks
+Before tickler'ing: review the project for multi-project tasks
 @item
-Decide: should this task stay active (part of other project) or be incubated too?
+Decide: should this task stay active (part of other project) or be tickler'd too?
 @item
-If incubating: incubate all projects it belongs to
+If tickler'ing: tickler all projects it belongs to
 @item
 If staying active: accept that it will remain visible
 @end enumerate

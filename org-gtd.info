@@ -48,6 +48,7 @@ What's new in 4.0
 * Declarative view language::
 * Better project modification::
 * Updated terminology Review → Reflect::
+* Updated terminology Incubate → Tickler + Someday/Maybe::
 * Enhanced reflect capabilities::
 * Simplified configuration::
 * What you need to do::
@@ -149,7 +150,8 @@ Understanding GTD Item Types
 * Calendar [C]::
 * Delegate [D]::
 * Quick Action [Q]::
-* Incubate [I]::
+* Tickler [I]::
+* Someday/Maybe [y]::
 * Habit [H]::
 * Knowledge [K]::
 * Trash [T]::
@@ -174,7 +176,7 @@ Working with Projects (Advanced)
 * Exporting Project Graphs::
 * Troubleshooting Projects with Graph View::
 * See Also::
-* Incubating Projects Pausing Work You're Not Ready For::
+* Tickler Projects Pausing Work You're Not Ready For::
 * NEXT Task 1 Research options::
 * Task 1 Research options::
 * Project Progress Cookies See Your Progress at a Glance::
@@ -287,7 +289,7 @@ Troubleshooting
 * Projects without a NEXT item::
 * I can't create a project when clarifying an inbox item!::
 * Configuration problems::
-* Tasks still showing after incubating project::
+* Tasks still showing after tickler'ing project::
 * Still stuck?::
 
 Configuration problems
@@ -379,6 +381,7 @@ existing GTD data.
 * Declarative view language::
 * Better project modification::
 * Updated terminology Review → Reflect::
+* Updated terminology Incubate → Tickler + Someday/Maybe::
 * Enhanced reflect capabilities::
 * Simplified configuration::
 * What you need to do::
@@ -474,7 +477,7 @@ File: org-gtd.info,  Node: Better project modification,  Next: Updated terminolo
      and manage complex projects
 
 
-File: org-gtd.info,  Node: Updated terminology Review → Reflect,  Next: Enhanced reflect capabilities,  Prev: Better project modification,  Up: What's new in 40
+File: org-gtd.info,  Node: Updated terminology Review → Reflect,  Next: Updated terminology Incubate → Tickler + Someday/Maybe,  Prev: Better project modification,  Up: What's new in 40
 
 2.6 Updated terminology: Review → Reflect
 =========================================
@@ -488,9 +491,40 @@ all "review" and "oops" commands are now named "reflect":
    The old names still work as aliases but are marked obsolete.
 
 
-File: org-gtd.info,  Node: Enhanced reflect capabilities,  Next: Simplified configuration,  Prev: Updated terminology Review → Reflect,  Up: What's new in 40
+File: org-gtd.info,  Node: Updated terminology Incubate → Tickler + Someday/Maybe,  Next: Enhanced reflect capabilities,  Prev: Updated terminology Review → Reflect,  Up: What's new in 40
 
-2.7 Enhanced reflect capabilities
+2.7 Updated terminology: Incubate → Tickler + Someday/Maybe
+===========================================================
+
+The "Incubate" category has been split into two distinct types to better
+align with GTD concepts:
+
+   • *Tickler* - Items with a specific review date (formerly
+     "Incubated").  Use this for time-based reminders and paused
+     projects with a date to revisit.
+   • *Someday/Maybe* - Items with no specific timeframe.  Use this for
+     ideas and possibilities you might pursue eventually.
+
+   This clarifies the distinction between "remind me on a specific date"
+(Tickler) and "maybe someday with no commitment" (Someday/Maybe).
+
+   Changes:
+   • ‘org-gtd-incubate’ → ‘org-gtd-tickler’ (creates tickler items with
+     timestamps)
+   • New ‘org-gtd-someday’ command (creates someday items without
+     timestamps)
+   • New ‘org-gtd-reflect-someday-maybe’ command for reviewing someday
+     items
+   • Property value: ‘ORG_GTD: Incubated’ → ‘ORG_GTD: Tickler’ or
+     ‘ORG_GTD: Someday’
+
+   The old ‘org-gtd-incubate’ command still works as an alias to
+‘org-gtd-tickler’ but is marked obsolete.
+
+
+File: org-gtd.info,  Node: Enhanced reflect capabilities,  Next: Simplified configuration,  Prev: Updated terminology Incubate → Tickler + Someday/Maybe,  Up: What's new in 40
+
+2.8 Enhanced reflect capabilities
 =================================
 
    • *Find missed items* - New ‘org-gtd-reflect-missed-items’ command to
@@ -501,7 +535,7 @@ File: org-gtd.info,  Node: Enhanced reflect capabilities,  Next: Simplified conf
 
 File: org-gtd.info,  Node: Simplified configuration,  Next: What you need to do,  Prev: Enhanced reflect capabilities,  Up: What's new in 40
 
-2.8 Simplified configuration
+2.9 Simplified configuration
 ============================
 
    • *org-gtd-mode has a new purpose* - The mode is no longer about
@@ -512,8 +546,8 @@ File: org-gtd.info,  Node: Simplified configuration,  Next: What you need to do,
 
 File: org-gtd.info,  Node: What you need to do,  Next: Previous versions,  Prev: Simplified configuration,  Up: What's new in 40
 
-2.9 What you need to do
-=======================
+2.10 What you need to do
+========================
 
 If you're upgrading from 3.x, see the *note Upgrading section:
 Upgrading. for complete step-by-step instructions.  The required changes
@@ -530,7 +564,7 @@ are:
 
 File: org-gtd.info,  Node: Previous versions,  Prev: What you need to do,  Up: What's new in 40
 
-2.10 Previous versions
+2.11 Previous versions
 ======================
 
 For changes in earlier versions, see:
@@ -1823,7 +1857,7 @@ Here are common filters you can use in your views:
 
 ‘type’
      Filter by GTD type: ‘project’, ‘next-action’, ‘calendar’,
-     ‘incubated’, ‘habit’
+     ‘tickler’, ‘someday’, ‘habit’
 ‘todo’
      Filter by keyword: ‘"NEXT"’, ‘"TODO"’, ‘"WAIT"’, ‘"DONE"’, ‘"CNCL"’
 ‘has-active-tasks’
@@ -1882,7 +1916,8 @@ You now know:
 
    This is enough to be productive with org-gtd!  The next section,
 "Using Org GTD", goes deep into:
-   • All GTD item types (calendar, delegate, incubate, etc.)
+   • All GTD item types (calendar, delegate, tickler, someday/maybe,
+     etc.)
    • Advanced project features (parallel tasks, custom dependencies)
    • Hooks and customization
    • Integration with email and other tools
@@ -2190,7 +2225,8 @@ command and all organization-related commands.
              • Projects: ‘ORG_GTD_REFILE: Projects’
              • Actions: ‘ORG_GTD_REFILE: Actions’
              • Calendar: ‘ORG_GTD_REFILE: Calendar’
-             • Incubated: ‘ORG_GTD_REFILE: Incubated’
+             • Tickler: ‘ORG_GTD_REFILE: Tickler’
+             • Someday: ‘ORG_GTD_REFILE: Someday’
              • Habits: ‘ORG_GTD_REFILE: Habits’
 
           If no refile target exists when organizing, org-gtd
@@ -2268,7 +2304,8 @@ Here's the complete reference for all item types:
 * Calendar [C]::
 * Delegate [D]::
 * Quick Action [Q]::
-* Incubate [I]::
+* Tickler [I]::
+* Someday/Maybe [y]::
 * Habit [H]::
 * Knowledge [K]::
 * Trash [T]::
@@ -2401,7 +2438,7 @@ something and you need to check back.
 for names.
 
 
-File: org-gtd.info,  Node: Quick Action [Q],  Next: Incubate [I],  Prev: Delegate [D],  Up: Understanding GTD Item Types
+File: org-gtd.info,  Node: Quick Action [Q],  Next: Tickler [I],  Prev: Delegate [D],  Up: Understanding GTD Item Types
 
 5.3.6 Quick Action [Q]
 ----------------------
@@ -2425,36 +2462,77 @@ File: org-gtd.info,  Node: Quick Action [Q],  Next: Incubate [I],  Prev: Delegat
 organize it - just do it and mark it done.
 
 
-File: org-gtd.info,  Node: Incubate [I],  Next: Habit [H],  Prev: Quick Action [Q],  Up: Understanding GTD Item Types
+File: org-gtd.info,  Node: Tickler [I],  Next: Someday/Maybe [y],  Prev: Quick Action [Q],  Up: Understanding GTD Item Types
 
-5.3.7 Incubate [I]
-------------------
+5.3.7 Tickler [I]
+-----------------
 
-*What it is*: Ideas or potential actions you're not ready to commit to
-yet (someday/maybe).
+*What it is*: Items with a specific review date - things you want to be
+reminded about at a future time.
 
-   *When to use it*: For things you want to think about later but don't
-want to act on now.
+   *When to use it*: For ideas, projects, or actions you're not ready
+for NOW but want to reconsider on a specific date.
+
+   *Examples*:
+   • Project paused until Q2 starts (review on April 1st)
+   • Check if new API is released (review monthly)
+   • Consider kitchen remodel when bonus arrives (review in June)
+   • Revisit proposal after team meeting (review next week)
+
+   *What org-gtd does*:
+   • Prompts for review date
+   • Sets ‘ORG_GTD_TIMESTAMP’ property with the date
+   • Refiles to tickler file
+   • Will remind you in agenda on that date to reconsider
+
+   *Use case - Paused projects*: You can tickler entire projects to
+temporarily hide them from your active views while preserving all
+structure and dependencies.  See *note Tickler Projects: Tickler
+Projects Pausing Work You're Not Ready For. for details.
+
+   *GTD principle*: The tickler file is a time-based reminder system.
+Items appear when the date arrives, prompting you to decide if you're
+ready to act.
+
+
+File: org-gtd.info,  Node: Someday/Maybe [y],  Next: Habit [H],  Prev: Tickler [I],  Up: Understanding GTD Item Types
+
+5.3.8 Someday/Maybe [y]
+-----------------------
+
+*What it is*: Ideas or possibilities with no specific timeframe - things
+you might do eventually but have no commitment to.
+
+   *When to use it*: For ideas you want to keep but aren't ready to
+commit time or energy to, and don't need a specific review date.
 
    *Examples*:
    • Learn Spanish (someday)
    • Write a book (maybe)
-   • Remodel kitchen (not yet)
-   • Take photography class (when I have time)
+   • Build a woodworking shop (no timeline)
+   • Take photography class (when life permits)
 
    *What org-gtd does*:
-   • Prompts for review date
-   • Refiles to incubate file
-   • Will remind you on that date to reconsider
+   • Sets ‘ORG_GTD: Someday’ property (no timestamp)
+   • Refiles to a someday/maybe category
+   • Stays out of active views until you explicitly review it
 
-   *GTD principle*: Keep these out of your active system.  Review
-periodically (weekly/monthly) to decide if they're ready to become real
+   *How to review*: Use ‘org-gtd-reflect-someday-maybe’ to periodically
+review all someday items and decide if any are ready to become active
 projects or actions.
 
-
-File: org-gtd.info,  Node: Habit [H],  Next: Knowledge [K],  Prev: Incubate [I],  Up: Understanding GTD Item Types
+   *Key difference from Tickler*: Someday items have NO review date.
+They don't appear in your agenda automatically.  You choose when to
+review them (typically during weekly/monthly reviews).
 
-5.3.8 Habit [H]
+   *GTD principle*: Someday/maybe items acknowledge possibilities
+without cluttering your active system.  They're safe to ignore until
+you're ready.
+
+
+File: org-gtd.info,  Node: Habit [H],  Next: Knowledge [K],  Prev: Someday/Maybe [y],  Up: Understanding GTD Item Types
+
+5.3.9 Habit [H]
 ---------------
 
 *What it is*: Recurring tasks you want to track consistently (org-mode
@@ -2479,8 +2557,8 @@ tracking.
 
 File: org-gtd.info,  Node: Knowledge [K],  Next: Trash [T],  Prev: Habit [H],  Up: Understanding GTD Item Types
 
-5.3.9 Knowledge [K]
--------------------
+5.3.10 Knowledge [K]
+--------------------
 
 *What it is*: Reference information to store for later.
 
@@ -2503,7 +2581,7 @@ Knowledge goes in your reference system, not your action lists.
 
 File: org-gtd.info,  Node: Trash [T],  Next: Working with the GTD Horizons,  Prev: Knowledge [K],  Up: Understanding GTD Item Types
 
-5.3.10 Trash [T]
+5.3.11 Trash [T]
 ----------------
 
 *What it is*: Not actionable, not worth keeping.
@@ -2531,7 +2609,7 @@ Implementation).
 
 File: org-gtd.info,  Node: Working with the GTD Horizons,  Prev: Trash [T],  Up: Understanding GTD Item Types
 
-5.3.11 Working with the GTD Horizons
+5.3.12 Working with the GTD Horizons
 ------------------------------------
 
 In GTD, the horizons are defined as such:
@@ -2640,7 +2718,7 @@ structures—all using visual project management.
 * Exporting Project Graphs::
 * Troubleshooting Projects with Graph View::
 * See Also::
-* Incubating Projects Pausing Work You're Not Ready For::
+* Tickler Projects Pausing Work You're Not Ready For::
 * NEXT Task 1 Research options::
 * Task 1 Research options::
 * Project Progress Cookies See Your Progress at a Glance::
@@ -3643,7 +3721,7 @@ File: org-gtd.info,  Node: Troubleshooting Projects with Graph View,  Next: See 
         • Try ‘R’ to refresh if the graph is in an inconsistent state
 
 
-File: org-gtd.info,  Node: See Also,  Next: Incubating Projects Pausing Work You're Not Ready For,  Prev: Troubleshooting Projects with Graph View,  Up: Working with Projects (Advanced)
+File: org-gtd.info,  Node: See Also,  Next: Tickler Projects Pausing Work You're Not Ready For,  Prev: Troubleshooting Projects with Graph View,  Up: Working with Projects (Advanced)
 
 5.4.16 See Also
 ---------------
@@ -3656,12 +3734,12 @@ File: org-gtd.info,  Node: See Also,  Next: Incubating Projects Pausing Work You
    • *note View DSL Filter Reference:: for creating custom project views
 
 
-File: org-gtd.info,  Node: Incubating Projects Pausing Work You're Not Ready For,  Next: NEXT Task 1 Research options,  Prev: See Also,  Up: Working with Projects (Advanced)
+File: org-gtd.info,  Node: Tickler Projects Pausing Work You're Not Ready For,  Next: NEXT Task 1 Research options,  Prev: See Also,  Up: Working with Projects (Advanced)
 
-5.4.17 Incubating Projects: Pausing Work You're Not Ready For
--------------------------------------------------------------
+5.4.17 Tickler Projects: Pausing Work You're Not Ready For
+----------------------------------------------------------
 
-   • First Contact: Why Incubate Projects?
+   • First Contact: Why Tickler Projects?
 
      You're managing 15 active projects.  Some are ready to work on NOW.
      Others are good ideas, but wrong timing—maybe you're waiting for
@@ -3672,19 +3750,19 @@ File: org-gtd.info,  Node: Incubating Projects Pausing Work You're Not Ready For
      scan past 10 "someday" projects to find the 5 you can actually work
      on today.  That's cognitive load you don't need.
 
-     *Incubating projects solves this.*  Pause a project with a review
-     date.  It disappears from your engage view, your NEXT lists,
+     *Tickler projects solve this.*  Pause a project with a review date.
+     It disappears from your engage view, your NEXT lists,
      everywhere—but preserves the complete project structure (all tasks,
      dependencies, planning work).  When the review date arrives or
      you're ready, reactivate it with one command.  The project springs
      back to life exactly as you left it.
 
      For GTD users managing multiple projects where some need to be
-     dormant temporarily.
+     dormant temporarily with a specific return date.
 
-   • Black Triangle: Incubate Your First Project in 30 Seconds
+   • Black Triangle: Tickler Your First Project in 30 Seconds
 
-     Let's incubate a project right now.
+     Let's tickler a project right now.
 
      *Step 1: Find a project you're not ready for*
 
@@ -3692,9 +3770,9 @@ File: org-gtd.info,  Node: Incubating Projects Pausing Work You're Not Ready For
 
      Or navigate to any project heading in your GTD file.
 
-     *Step 2: Incubate it*
+     *Step 2: Tickler it*
 
-     Press ‘I’ in graph view, or run ‘M-x org-gtd-incubate’
+     Press ‘I’ in graph view, or run ‘M-x org-gtd-tickler’
 
      Enter a review date when prompted: ‘2025-06-01’
 
@@ -3706,15 +3784,15 @@ File: org-gtd.info,  Node: Incubating Projects Pausing Work You're Not Ready For
 
      *Step 4: Check your review date*
 
-     The incubated project will appear in your agenda on 2025-06-01 as a
+     The tickler project will appear in your agenda on 2025-06-01 as a
      reminder to reconsider it.
 
      *Success!*  You've paused a project without losing any of your
      planning work.
 
-   • Understanding Incubation: What Actually Happens
+   • Understanding Tickler: What Actually Happens
 
-     When you incubate a project, org-gtd performs several operations to
+     When you tickler a project, org-gtd performs several operations to
      make it completely invisible while preserving state:
 
      *State Preservation*
@@ -3724,13 +3802,12 @@ File: org-gtd.info,  Node: Incubating Projects Pausing Work You're Not Ready For
           (e.g., "Projects" → "Projects")
         • Current TODO keyword → saved to ‘PREVIOUS_TODO’ property
           (e.g., "NEXT" → "NEXT")
-        • ‘ORG_GTD’ property → set to "Incubated"
+        • ‘ORG_GTD’ property → set to "Tickler"
         • TODO keyword → cleared completely (becomes nil)
 
-     **Why clear keywords?**  This makes incubated tasks invisible to
-     all views naturally.  Your engage view shows ~(todo .
-     "NEXT")~—tasks with no keywords don't match, so they disappear
-     automatically.
+     **Why clear keywords?**  This makes tickler tasks invisible to all
+     views naturally.  Your engage view shows ~(todo .  "NEXT")~—tasks
+     with no keywords don't match, so they disappear automatically.
 
      *Review Date Storage*
 
@@ -3743,13 +3820,13 @@ File: org-gtd.info,  Node: Incubating Projects Pausing Work You're Not Ready For
 
      ALL dependency relationships (‘ORG_GTD_DEPENDS_ON’,
      ‘ORG_GTD_BLOCKS’) remain intact.  They're dormant—they don't affect
-     anything while incubated—but they're there.  When you reactivate,
+     anything while in tickler—but they're there.  When you reactivate,
      dependencies work exactly as before.
 
      *Multi-Project Tasks*
 
      If a task belongs to MULTIPLE projects (has multiple IDs in
-     ‘ORG_GTD_PROJECT_IDS’), it is NOT incubated.  Why?  Because it's
+     ‘ORG_GTD_PROJECT_IDS’), it is NOT tickler'd.  Why?  Because it's
      still needed by other active projects.
 
      You'll see: "Skipping multi-project task: Task Name"
@@ -3771,12 +3848,12 @@ File: org-gtd.info,  Node: Incubating Projects Pausing Work You're Not Ready For
      It's March.  None of these are relevant, but they clutter your
      project list and NEXT tasks keep appearing in your engage view.
 
-     *The Solution: Incubate Until Needed*
+     *The Solution: Tickler Until Needed*
 
-     In March, incubate all three:
+     In March, tickler all three:
 
        1. Navigate to "Summer Conference Planning"
-       2. ‘M-x org-gtd-incubate’
+       2. ‘M-x org-gtd-tickler’
        3. Review date: ‘2025-05-01’
        4. Repeat for other seasonal projects with appropriate dates
 
@@ -3788,20 +3865,20 @@ File: org-gtd.info,  Node: Incubating Projects Pausing Work You're Not Ready For
      On May 1st, "Summer Conference Planning" appears in your agenda:
 
           Tuesday 1 May 2025
-            Summer Conference Planning (review incubated project)
+            Summer Conference Planning (review tickler project)
 
      Options:
         • *Ready to activate?*  Press ‘RET’ to jump to it, then ‘M-x
           org-gtd-reactivate’
-        • *Still not ready?*  Leave it incubated, or re-incubate with a
-          later date
+        • *Still not ready?*  Leave it in tickler, or run
+          ‘org-gtd-tickler’ again with a later date
 
      *Reactivation Details*
 
      When you run ‘org-gtd-reactivate’:
 
        1. State restoration happens automatically:
-             • ‘PREVIOUS_ORG_GTD’ → ‘ORG_GTD’ (Incubated → Projects)
+             • ‘PREVIOUS_ORG_GTD’ → ‘ORG_GTD’ (Tickler → Projects)
              • ‘PREVIOUS_TODO’ → TODO keywords restored
              • ‘ORG_GTD_TIMESTAMP’ removed (no longer in agenda)
 
@@ -3827,10 +3904,10 @@ File: org-gtd.info,  Node: Incubating Projects Pausing Work You're Not Ready For
           "Redesign company website"
 
      *Strategy:*
-        • Incubate with a FAR future date (2026-01-01)
+        • Tickler with a FAR future date (2026-01-01)
         • Or use quarterly review dates (2025-07-01, 2025-10-01, etc.)
         • When review arrives, ask: "Is this the right time?"  If no,
-          re-incubate for next quarter
+          tickler again for next quarter
 
      *Pattern: "Waiting for External Factor"*
 
@@ -3841,9 +3918,9 @@ File: org-gtd.info,  Node: Incubating Projects Pausing Work You're Not Ready For
           "Implement new API" (waiting for vendor release)
 
      *Strategy:*
-        • Incubate with review date = when you expect the blocker to
+        • Tickler with review date = when you expect the blocker to
           clear
-        • Add note in project heading: "Incubated because: waiting for
+        • Add note in project heading: "Tickler because: waiting for
           budget approval"
         • When reactivated, first task might be "Check if budget was
           approved"
@@ -3857,7 +3934,7 @@ File: org-gtd.info,  Node: Incubating Projects Pausing Work You're Not Ready For
           "Audit security" (quarterly)
 
      *Strategy:*
-        • After completing Q1 batch, incubate with Q2 start date
+        • After completing Q1 batch, tickler with Q2 start date
         • Review dates: 2025-04-01, 2025-07-01, 2025-10-01, 2026-01-01
         • Consistent rhythm without manual tracking
 
@@ -3869,8 +3946,8 @@ File: org-gtd.info,  Node: Incubating Projects Pausing Work You're Not Ready For
           "Code refactoring sprint" (waiting for team to finish current release)
 
      *Strategy:*
-        • Incubate with return/availability date
-        • In project heading, note: "Incubated: waiting for Sarah (back
+        • Tickler with return/availability date
+        • In project heading, note: "Tickler: waiting for Sarah (back
           June 10th)"
         • Reactivate when team is available, project structure intact
 
@@ -3886,30 +3963,30 @@ File: org-gtd.info,  Node: Incubating Projects Pausing Work You're Not Ready For
      Task B1 has an *external dependency*—it depends on a task from a
      different project.
 
-     *What Happens When Incubating*
+     *What Happens When Tickler'ing*
 
-     If you incubate Project A, org-gtd warns you:
+     If you tickler Project A, org-gtd warns you:
 
           External tasks depend on this project:
             - Task B1: Evaluate vendors (in Project B)
 
-          Continue incubating? (y/n)
+          Continue tickler? (y/n)
 
-     **Why warn?**  Incubating Project A clears Task A1's TODO keyword.
+     **Why warn?**  Tickler'ing Project A clears Task A1's TODO keyword.
      Task B1 is still expecting Task A1 to be NEXT or TODO.  This
      creates a "dangling reference"—B1 is blocked by a task that doesn't
      exist in active work anymore.
 
      **Your options:**
 
-       1. *Cancel incubation* (‘n’): Don't incubate Project A yet.
-          Maybe restructure dependencies first.
+       1. *Cancel tickler* (‘n’): Don't tickler Project A yet.  Maybe
+          restructure dependencies first.
 
        2. *Continue anyway* (‘y’): Accept that Task B1 will stay
           TODO/blocked until you reactivate Project A.  Make a note in
           Project B about this.
 
-       3. *Remove the dependency*: Before incubating, use graph view to
+       3. *Remove the dependency*: Before tickler'ing, use graph view to
           remove the B1 → A1 dependency link.  Decide if B1 should
           proceed independently.
 
@@ -3924,34 +4001,34 @@ File: org-gtd.info,  Node: Incubating Projects Pausing Work You're Not Ready For
         • "Design conference branding" → depends on "Book venue" (need
           venue details for design)
 
-     If you incubate Project Conference (venue not booked yet,
-     conference might not happen), the warning shows you that
-     Marketing's branding task will be stuck.
+     If you tickler Project Conference (venue not booked yet, conference
+     might not happen), the warning shows you that Marketing's branding
+     task will be stuck.
 
      *Decision:* You might realize the branding task should just wait in
      Project Marketing with a note "start when conference is confirmed",
      rather than having a hard dependency.  Remove the link before
-     incubating.
+     tickler'ing.
 
-   • Technical Details: How Incubation Works Under the Hood
+   • Technical Details: How Tickler Works Under the Hood
 
      *Property-Based State Management*
 
-     Incubation uses properties, not file movement.  The project and its
+     Tickler uses properties, not file movement.  The project and its
      tasks stay in the same file, same location.  Only properties
      change:
 
-     Before incubation (Task 1 of a project): #+begin_example
+     Before tickler (Task 1 of a project): #+begin_example
 
 
-File: org-gtd.info,  Node: NEXT Task 1 Research options,  Next: Task 1 Research options,  Prev: Incubating Projects Pausing Work You're Not Ready For,  Up: Working with Projects (Advanced)
+File: org-gtd.info,  Node: NEXT Task 1 Research options,  Next: Task 1 Research options,  Prev: Tickler Projects Pausing Work You're Not Ready For,  Up: Working with Projects (Advanced)
 
 5.4.18 NEXT Task 1: Research options
 ------------------------------------
 
 #+end_example
 
-   After incubation: #+begin_example
+   After tickler: #+begin_example
 
 
 File: org-gtd.info,  Node: Task 1 Research options,  Next: Project Progress Cookies See Your Progress at a Glance,  Prev: NEXT Task 1 Research options,  Up: Working with Projects (Advanced)
@@ -3963,25 +4040,25 @@ File: org-gtd.info,  Node: Task 1 Research options,  Next: Project Progress Cook
 
    Note:
    • TODO keyword cleared (was NEXT, now nothing)
-   • ‘ORG_GTD’ changed to "Incubated"
+   • ‘ORG_GTD’ changed to "Tickler"
    • Original values saved in ‘PREVIOUS_*’ properties
    • Dependencies (‘ORG_GTD_BLOCKS’) preserved unchanged
 
    *View Filtering Mechanism*
 
-   Why don't incubated tasks appear in views?
+   Why don't tickler tasks appear in views?
 
    Most views filter by TODO keywords: ‘(todo . "NEXT")’, ‘(todo .
 "TODO|NEXT|WAIT")’, etc.
 
-   Since incubated tasks have NO TODO keyword (cleared to nil), they
-don't match these filters.  Natural exclusion.
+   Since tickler tasks have NO TODO keyword (cleared to nil), they don't
+match these filters.  Natural exclusion.
 
    For area-of-focus reviews that show projects, we filter: ‘(and
 (property "ORG_GTD" "Projects") (property "CATEGORY" "Work"))’
 
-   Incubated projects have ‘(property "ORG_GTD" "Incubated")’ instead of
-"Projects", so they appear in a separate "Incubated projects" section.
+   Tickler projects have ‘(property "ORG_GTD" "Tickler")’ instead of
+"Projects", so they appear in a separate "Tickler projects" section.
 
    *Reactivation Dependency Recalculation*
 
@@ -4005,7 +4082,7 @@ don't match these filters.  Natural exclusion.
         • Immediate feedback on project structure
 
    **Why recalculate?**  You might have manually edited the project
-while incubated—added tasks, changed dependencies, marked some DONE.
+while in tickler—added tasks, changed dependencies, marked some DONE.
 Recalculation ensures consistent state.
 
    *Multi-Project Task Detection*
@@ -4016,18 +4093,18 @@ Recalculation ensures consistent state.
        (if (> (length project-ids) 1)
            ;; Skip this task - belongs to multiple projects
            (message "Skipping multi-project task: %s" (org-get-heading))
-         ;; Normal incubation
+         ;; Normal tickler
          ...))
 
    If ‘ORG_GTD_PROJECT_IDS’ contains ‘"project-a project-b"’ (two IDs),
-the task belongs to both projects.  Incubating one project shouldn't
+the task belongs to both projects.  Tickler'ing one project shouldn't
 hide the task—it's still needed by the other project.
 
-   • Troubleshooting Incubation
+   • Troubleshooting Tickler
 
-     *Tasks Still Showing After Incubating Project*
+     *Tasks Still Showing After Tickler'ing Project*
 
-     *Symptom:* You incubated a project, but some of its tasks still
+     *Symptom:* You tickler'd a project, but some of its tasks still
      appear in your engage view.
 
      *Diagnosis:* Check if those tasks belong to multiple projects:
@@ -4038,13 +4115,13 @@ hide the task—it's still needed by the other project.
 
      *Solution:* This is expected behavior.  Multi-project tasks remain
      active because other projects need them.  Options:
-        • Incubate ALL projects the task belongs to (task will then be
-          incubated)
+        • Tickler ALL projects the task belongs to (task will then be
+          tickler'd)
         • Remove the task from one of the projects first
         • Accept that the task stays visible (it's genuinely active in
           another project)
 
-     *Incubated Project Doesn't Appear on Review Date*
+     *Tickler Project Doesn't Appear on Review Date*
 
      *Symptom:* Review date arrived (e.g., June 1st), but the project
      doesn't show in your agenda.
@@ -4056,7 +4133,7 @@ hide the task—it's still needed by the other project.
        4. Check your org-agenda-files includes the GTD file
 
      *Solution:*
-        • If property is missing: re-incubate with a date
+        • If property is missing: tickler again with a date
         • If format is wrong: manually fix to ‘<YYYY-MM-DD>’
         • If file not in agenda: ‘M-x org-agenda-file-to-front’ while in
           the GTD file
@@ -4077,30 +4154,30 @@ hide the task—it's still needed by the other project.
           incorrect
         • Use ‘d’ to modify dependencies, then ‘r’ to recalculate
 
-     *Can't Reactivate: "Not Incubated" Error*
+     *Can't Reactivate: "Not Tickler" Error*
 
      *Symptom:* Running ‘org-gtd-reactivate’ gives error: "Item at point
-     is not incubated"
+     is not tickler"
 
      *Diagnosis:* Check the ‘ORG_GTD’ property:
        1. ‘C-c C-x p’ to show properties
        2. Look for ‘ORG_GTD’ value
-       3. Should be "Incubated"
+       3. Should be "Tickler"
 
      *Solution:*
-        • If ‘ORG_GTD’ is something else (e.g., "Projects"): it's not
-          incubated, nothing to reactivate
-        • If manually edited: set ‘ORG_GTD’ back to "Incubated" or just
+        • If ‘ORG_GTD’ is something else (e.g., "Projects"): it's not in
+          tickler, nothing to reactivate
+        • If manually edited: set ‘ORG_GTD’ back to "Tickler" or just
           manually restore the state
         • If ‘PREVIOUS_*’ properties are missing: you'll need to
           manually set states
 
    • See Also
 
-        • *note Commands Reference:: for ‘org-gtd-incubate’ and
+        • *note Commands Reference:: for ‘org-gtd-tickler’ and
           ‘org-gtd-reactivate’ full command details
         • *note Tutorial Your First Project:: for project basics before
-          incubating
+          tickler'ing
         • *note Why Visual Project Management?: First Contact Why Visual
           Project Management?. for understanding project structure
         • *note Properties Reference: Properties Reference (Internal
@@ -4361,7 +4438,8 @@ emacs and would like GTD to track something for you as a result:
    • ‘org-gtd-habit-create’
    • ‘org-gtd-calendar-create’
    • ‘org-gtd-delegate-create’
-   • ‘org-gtd-incubate-create’
+   • ‘org-gtd-tickler-create’
+   • ‘org-gtd-someday-create’
    • ‘org-gtd-single-action-create’
 
    See the documentation for each, but suffice it to say they all take,
@@ -4519,7 +4597,8 @@ File: org-gtd.info,  Node: Directory and File Configuration,  Next: Capture Conf
      org-gtd will look for all its files in this directory:
         • ‘inbox.org’ - Capture target
         • ‘org-gtd-tasks.org’ - Main GTD file
-        • ‘org-gtd-incubate.org’ - Someday/maybe items
+        • ‘org-gtd-incubate.org’ - Tickler items (time-based reminders)
+          and someday/maybe items
         • ‘org-gtd-calendar.org’ - Calendar items
 
      *Example*:
@@ -4645,8 +4724,8 @@ File: org-gtd.info,  Node: Organize and Process Configuration,  Next: Mode-Line 
         • Takes a list of item types to check against
         • Returns t if current item matches one of the types
         • Available types: ‘action’, ‘project’, ‘project-task’,
-          ‘calendar’, ‘delegate’, ‘incubate’, ‘habit’, ‘knowledge’,
-          ‘quick’, ‘trash’
+          ‘calendar’, ‘delegate’, ‘tickler’, ‘someday’, ‘habit’,
+          ‘knowledge’, ‘quick’, ‘trash’
 
    • ‘org-gtd-save-after-organize’
 
@@ -4973,8 +5052,8 @@ File: org-gtd.info,  Node: Advanced Item Configuration,  Next: Projects Configur
      but cannot add new ones.
 
      Each entry is ‘(TYPE-NAME . PLIST)’ where TYPE-NAME must be one of:
-     ‘next-action’, ‘delegated’, ‘calendar’, ‘incubated’, ‘project’,
-     ‘habit’, ‘reference’, ‘trash’, ‘quick-action’.
+     ‘next-action’, ‘delegated’, ‘calendar’, ‘tickler’, ‘someday’,
+     ‘project’, ‘habit’, ‘reference’, ‘trash’, ‘quick-action’.
 
      *Property attributes you can set:*
 
@@ -5217,7 +5296,8 @@ File: org-gtd.info,  Node: Core GTD Workflow Commands,  Next: Reflect Commands, 
         • [D] Delegate
         • [S] Single action
         • [H] Habit
-        • [I] Incubate
+        • [I] Tickler
+        • [y] Someday/Maybe
         • [K] Knowledge
         • [Q] Quick action
         • [T] Trash
@@ -5344,9 +5424,9 @@ Each of these commands finds items with problems in a specific category:
 
      Finds calendar items with invalid or missing timestamps.
 
-   • ‘org-gtd-reflect-stuck-incubated-items’
+   • ‘org-gtd-reflect-stuck-tickler-items’
 
-     Finds incubated items with invalid or missing review dates.
+     Finds tickler items with invalid or missing review dates.
 
    • ‘org-gtd-reflect-stuck-habit-items’
 
@@ -5668,8 +5748,8 @@ File: org-gtd.info,  Node: Custom View Commands,  Next: Clarification Commands, 
             (type . delegated))
 
      The most common filter is ‘type’, which matches GTD item types:
-     ‘project’, ‘next-action’, ‘calendar’, ‘delegated’, ‘incubated’,
-     ‘habit’, ‘stuck-project’, ‘completed-project’.
+     ‘project’, ‘next-action’, ‘calendar’, ‘delegated’, ‘tickler’,
+     ‘someday’, ‘habit’, ‘stuck-project’, ‘completed-project’.
 
      **Tutorial: Common custom views**
 
@@ -5733,7 +5813,8 @@ File: org-gtd.info,  Node: Custom View Commands,  Next: Clarification Commands, 
           (type . next-action)      ; Single actions (with NEXT keyword)
           (type . delegated)        ; Delegated items (with WAIT keyword)
           (type . calendar)         ; Calendar items
-          (type . incubated)        ; Someday/maybe items
+          (type . tickler)          ; Tickler items (time-based reminders)
+          (type . someday)          ; Someday/maybe items
           (type . habit)            ; Habits
           (type . stuck-project)    ; Projects needing attention
           (type . completed-project) ; Projects ready to archive
@@ -5746,7 +5827,7 @@ File: org-gtd.info,  Node: Custom View Commands,  Next: Clarification Commands, 
      The ‘when’ filter automatically uses the right timestamp property
      for each type:
         • For ‘delegated’ and ‘calendar’: checks ‘ORG_GTD_TIMESTAMP’
-        • For ‘incubated’: checks the incubation review date
+        • For ‘tickler’: checks the tickler review date
 
      *Filter by area of focus:*
           (area-of-focus . "Work")
@@ -6192,31 +6273,31 @@ File: org-gtd.info,  Node: Project Management Commands,  Next: Task Dependency C
      *See also*: *note Project Progress Cookies: Project Progress
      Cookies See Your Progress at a Glance. for detailed usage guide.
 
-   • ‘org-gtd-incubate’
+   • ‘org-gtd-tickler’
 
-     **What it is:** Smart command to pause items you're not ready to
-     work on yet.
+     **What it is:** Smart command to pause items with a specific review
+     date (time-based reminder).
 
      **Why you'd use it:** You have a project or action that's a good
-     idea, but not right now.  You want to set it aside with a reminder
-     to review it later, without losing your planning work.
+     idea, but not ready NOW.  You want to set it aside with a specific
+     date to review it later, without losing your planning work.
 
-     **Who needs it:** Anyone managing "someday/maybe" items or projects
-     they want to defer.
+     **Who needs it:** Anyone managing items that need to be deferred
+     until a specific time or date.
 
      **Your first use (30 seconds):**
 
        1. Navigate to a project or action
-       2. Run: ‘M-x org-gtd-incubate’
+       2. Run: ‘M-x org-gtd-tickler’
        3. Enter review date: ‘2025-12-01’
        4. Done - it disappears from your engage view until that date
 
      **What it does:**
 
      Detects what you're on:
-        • Project heading → incubates entire project with all tasks
-        • Project task → incubates the project it belongs to
-        • Single action → incubates just that action
+        • Project heading → ticklers entire project with all tasks
+        • Project task → ticklers the project it belongs to
+        • Single action → ticklers just that action
 
      For projects:
         • Preserves all task states and dependencies
@@ -6226,28 +6307,33 @@ File: org-gtd.info,  Node: Project Management Commands,  Next: Task Dependency C
 
      **When to use:**
 
-        • Projects you want to pursue "someday" but not now
-        • Ideas that need to marinate before you're ready
-        • Seasonal projects (start each year)
-        • Projects blocked by external factors beyond your control
+        • Projects you want to start on a specific future date
+        • Seasonal projects (start each year at a certain time)
+        • Projects blocked by external factors with an expected
+          resolution date
+        • Items you want to reconsider after a specific event or
+          milestone
+
+     **Note:** For items with NO specific timeframe ("maybe someday"),
+     use ‘org-gtd-someday’ instead.
 
    • ‘org-gtd-reactivate’
 
-     **What it is:** Bring back incubated projects and actions.
+     **What it is:** Bring back tickler projects and actions.
 
      **Why you'd use it:** The review date arrived, you're ready to work
      on it again.
 
      **Your first use (30 seconds):**
 
-       1. When you see an incubated item in agenda (on its review date)
+       1. When you see a tickler item in agenda (on its review date)
        2. Run: ‘M-x org-gtd-reactivate’
        3. Graph view opens - review the project structure
        4. Adjust if needed and close
 
      **What it does:**
 
-        • Restores original item states (project → Projects, actions →
+        • Restores original item states (tickler → Projects, actions →
           Actions, etc.)
         • Restores task TODO keywords
         • Recalculates NEXT tasks based on current dependencies
@@ -6257,11 +6343,10 @@ File: org-gtd.info,  Node: Project Management Commands,  Next: Task Dependency C
 
      **When to use:**
 
-        • When an incubated item appears in your agenda on its review
-          date
+        • When a tickler item appears in your agenda on its review date
         • When you're ready to reactivate something earlier than
           scheduled
-        • During weekly review when scanning incubated items
+        • During weekly review when scanning tickler items
 
 
 File: org-gtd.info,  Node: Task Dependency Commands,  Next: Area of Focus Commands,  Prev: Project Management Commands,  Up: Commands Reference
@@ -6455,14 +6540,25 @@ and Emacs Lisp code):
 
           (add-hook 'message-send-hook 'org-gtd-email-reminder)
 
-   • ‘org-gtd-incubate-create’
+   • ‘org-gtd-tickler-create’
 
      *Arguments*: STRING and REVIEW-DATE
 
-     *Use case*: Programmatically adding someday/maybe items
+     *Use case*: Programmatically adding tickler items (time-based
+     reminders)
 
      *Example*:
-          (org-gtd-incubate-create "Learn Rust" (org-read-date nil nil "+6m"))
+          (org-gtd-tickler-create "Review Q2 goals" (org-read-date nil nil "+3m"))
+
+   • ‘org-gtd-someday-create’
+
+     *Arguments*: STRING
+
+     *Use case*: Programmatically adding someday/maybe items (no
+     specific timeframe)
+
+     *Example*:
+          (org-gtd-someday-create "Learn Rust")
 
    • ‘org-gtd-single-action-create’
 
@@ -6657,7 +6753,7 @@ File: org-gtd.info,  Node: Core GTD Properties,  Next: Project Properties,  Up: 
    • ORG_GTD
 
      *Used on*: All GTD items (projects, actions, calendar items,
-     incubated items, etc.)
+     tickler items, etc.)
 
      *Purpose*: Identifies the type of GTD item
 
@@ -6668,8 +6764,10 @@ File: org-gtd.info,  Node: Core GTD Properties,  Next: Project Properties,  Up: 
           Project tasks and single actions
      ‘"Calendar"’
           Calendar items (appointments, deadlines)
-     ‘"Incubated"’
-          Someday/maybe items
+     ‘"Tickler"’
+          Items with specific review dates (time-based reminders)
+     ‘"Someday"’
+          Someday/maybe items (no specific timeframe)
      ‘"Delegated"’
           Delegated tasks (set in combination with DELEGATED_TO)
 
@@ -6701,8 +6799,10 @@ File: org-gtd.info,  Node: Core GTD Properties,  Next: Project Properties,  Up: 
           Target for refiling single actions
      ‘"Calendar"’
           Target for refiling calendar items
-     ‘"Incubated"’
-          Target for refiling incubated items
+     ‘"Tickler"’
+          Target for refiling tickler items (time-based reminders)
+     ‘"Someday"’
+          Target for refiling someday/maybe items
      ‘"Habits"’
           Target for refiling habits
 
@@ -7349,15 +7449,27 @@ Filter by GTD item type:
           '((name . "Stuck Projects")
             (type . stuck-project))
 
-   • ‘(type . incubated)’
+   • ‘(type . tickler)’
 
-     *Matches*: Items with ‘ORG_GTD="Incubated"’ (someday/maybe)
+     *Matches*: Items with ‘ORG_GTD="Tickler"’ (time-based reminders
+     with review dates)
+
+     *Use case*: Review tickler items
+
+     *Example*:
+          '((name . "Tickler Items")
+            (type . tickler))
+
+   • ‘(type . someday)’
+
+     *Matches*: Items with ‘ORG_GTD="Someday"’ (someday/maybe with no
+     specific timeframe)
 
      *Use case*: Review someday/maybe list
 
      *Example*:
           '((name . "Someday/Maybe")
-            (type . incubated))
+            (type . someday))
 
    • ‘(type . habit)’
 
@@ -7380,15 +7492,16 @@ Filter by GTD item type:
           '((name . "Single Actions")
             (type . next-action))
 
-   • ‘(type . incubated-project)’
+   • ‘(type . tickler-project)’
 
-     *Matches*: Projects that were moved to someday/maybe
+     *Matches*: Projects that were moved to tickler (paused with review
+     dates)
 
-     *Use case*: Review incubated projects during weekly review
+     *Use case*: Review tickler projects during weekly review
 
      *Example*:
-          '((name . "Incubated Projects")
-            (type . incubated-project))
+          '((name . "Tickler Projects")
+            (type . tickler-project))
 
 
 File: org-gtd.info,  Node: Time-based Filters,  Next: Keyword Filters,  Prev: Type Filters,  Up: View DSL Filter Reference
@@ -7406,7 +7519,7 @@ Filter by timestamps, deadlines, and scheduled dates.
 
         • For ‘delegated’ and ‘calendar’ types: checks
           ‘ORG_GTD_TIMESTAMP’
-        • For ‘incubated’ type: checks the incubation review date
+        • For ‘tickler’ type: checks the tickler review date
 
      Values: ‘today’, ‘past’, ‘future’
 
@@ -7942,7 +8055,9 @@ Custom hooks are functions that run during organization.  They can:
           Calendar items
      ‘'delegate’
           Delegated items
-     ‘'incubate’
+     ‘'tickler’
+          Tickler items (time-based reminders)
+     ‘'someday’
           Someday/maybe items
      ‘'habit’
           Habits
@@ -8156,7 +8271,7 @@ command documentation, see *note Commands Reference::.
 * Projects without a NEXT item::
 * I can't create a project when clarifying an inbox item!::
 * Configuration problems::
-* Tasks still showing after incubating project::
+* Tasks still showing after tickler'ing project::
 * Still stuck?::
 
 
@@ -8170,8 +8285,8 @@ several commands to find problematic items:
 
 ‘org-gtd-reflect-stuck-calendar-items’
      Calendar items with invalid or missing timestamps
-‘org-gtd-reflect-stuck-incubated-items’
-     Incubated items with invalid or missing review dates
+‘org-gtd-reflect-stuck-tickler-items’
+     Tickler items with invalid or missing review dates
 ‘org-gtd-reflect-stuck-habit-items’
      Habits with incorrect configuration
 ‘org-gtd-reflect-stuck-delegated-items’
@@ -8246,7 +8361,7 @@ structure:
   3. Any error messages
 
 
-File: org-gtd.info,  Node: Configuration problems,  Next: Tasks still showing after incubating project,  Prev: I can't create a project when clarifying an inbox item!,  Up: Troubleshooting
+File: org-gtd.info,  Node: Configuration problems,  Next: Tasks still showing after tickler'ing project,  Prev: I can't create a project when clarifying an inbox item!,  Up: Troubleshooting
 
 7.4 Configuration problems
 ==========================
@@ -8305,36 +8420,36 @@ If items aren't appearing in ‘org-gtd-engage’:
 options.
 
 
-File: org-gtd.info,  Node: Tasks still showing after incubating project,  Next: Still stuck?,  Prev: Configuration problems,  Up: Troubleshooting
+File: org-gtd.info,  Node: Tasks still showing after tickler'ing project,  Next: Still stuck?,  Prev: Configuration problems,  Up: Troubleshooting
 
-7.5 Tasks still showing after incubating project
-================================================
+7.5 Tasks still showing after tickler'ing project
+=================================================
 
-*Symptom*: Incubated a project but some tasks still appear in engage
+*Symptom*: Tickler'd a project but some tasks still appear in engage
 view.
 
    *Diagnosis*:
    • Multi-project tasks (tasks shared between projects) are not
-     incubated
-   • If task belongs to Project A and Project B, and you only incubate
+     tickler'd
+   • If task belongs to Project A and Project B, and you only tickler
      Project A, the task stays visible
 
    *Solution*:
    • Check task's ORG_GTD_PROJECT_IDS property to see which projects it
      belongs to
-   • Either incubate all projects the task belongs to, or remove it from
+   • Either tickler all projects the task belongs to, or remove it from
      one project first
-   • During incubation, watch for "Skipping multi-project task" messages
+   • During tickler, watch for "Skipping multi-project task" messages
 
    *Recommended workflow*:
-  1. Before incubating: review the project for multi-project tasks
+  1. Before tickler'ing: review the project for multi-project tasks
   2. Decide: should this task stay active (part of other project) or be
-     incubated too?
-  3. If incubating: incubate all projects it belongs to
+     tickler'd too?
+  3. If tickler'ing: tickler all projects it belongs to
   4. If staying active: accept that it will remain visible
 
 
-File: org-gtd.info,  Node: Still stuck?,  Prev: Tasks still showing after incubating project,  Up: Troubleshooting
+File: org-gtd.info,  Node: Still stuck?,  Prev: Tasks still showing after tickler'ing project,  Up: Troubleshooting
 
 7.6 Still stuck?
 ================
@@ -8354,448 +8469,452 @@ If you're still having problems:
 
 Tag Table:
 Node: Top736
-Node: Summary7684
-Node: What's new in 4011409
-Node: Flexible project dependencies (the big one!)12047
-Node: Simplified keyword configuration13163
-Node: Data-driven configuration14183
-Node: Declarative view language14768
-Node: Better project modification15354
-Node: Updated terminology Review → Reflect15829
-Node: Enhanced reflect capabilities16393
-Node: Simplified configuration16847
-Node: What you need to do17319
-Node: Previous versions17998
-Node: Setting up Org GTD18228
-Node: Upgrading18624
-Node: 400 <- 3xx18907
-Ref: Required Configuration changes19261
-Ref: Required Data migration20908
-Ref: Why these changes?22634
-Ref: org-gtd-mode has a new purpose23275
-Node: Installing23955
-Node: use-package24250
-Node: Manually24462
-Node: Configuring24828
-Node: Basic setup25178
-Node: Complete Configuration Examples25828
-Ref: Example 1 Vanilla Emacs (Minimal Configuration)26196
-Ref: Example 2 Doom Emacs Configuration27974
-Ref: Example 3 Spacemacs Configuration29367
-Ref: What These Configurations Do30809
-Ref: Testing Your Configuration32105
-Ref: Common Configuration Problems33308
-Ref: Working with Your Existing Org Setup36604
-Node: Understanding Keybindings38532
-Ref: Global Keybindings38852
-Ref: Clarify Map Keybindings39447
-Node: Required configuration of sub-packages40571
-Ref: Configuring org-edna40832
-Ref: Adding org-gtd files to your agenda41131
-Node: configuration options for org-gtd41526
-Ref: I don't care just let me start using it41776
-Ref: Tell me all the levers I can pull42363
-Ref: Required keyword configuration42526
-Ref: Optional configuration44382
-Node: Recommended key bindings47974
-Node: Sample Doom Emacs Config48733
-Node: Getting Started with Org GTD50005
-Node: Quick Start Reference50416
-Node: Tutorial Your First Project50954
-Node: What You'll Learn51724
-Node: The Project52124
-Node: Step 1 Capture the Project52558
-Node: Step 2 Process the Inbox53184
-Node: Step 3 Organize as a Project53761
-Node: Step 4 View in Engage54487
-Node: Step 5 Complete the First Task55162
-Node: Step 6 Refresh and See the Change55693
-Node: What Just Happened?56252
-Node: Continue the Project57337
-Node: Key Takeaways57906
-Node: What's Next?58532
-Node: Tutorial Creating Your First Custom View59267
-Node: What You'll Learn (1)60073
-Node: Why This View?60430
-Node: Understanding the View DSL60962
-Node: Creating the View Function61799
-Node: Using Your View62478
-Node: Binding to a Key62786
-Node: What You'll See63512
-Node: Experiment Modify the View64065
-Node: Available Filters65311
-Node: Key Takeaways (1)66214
-Node: What's Next? (1)66761
-Node: Where to Go From Here67414
-Node: Using Org GTD68748
-Node: Your Daily Workflow69368
-Node: Quick command reference70255
-Node: The GTD Flow in Depth71728
-Node: Adding things to the inbox72134
-Node: Processing the inbox73512
-Node: Clarifying each item74357
-Ref: How to start clarifying74880
-Ref: data shape requirements75383
-Ref: Options and commands related to clarification75940
-Node: Organizing an item into the system77320
-Ref: Refiling to the appropriate area78246
-Ref: Understanding Refiling in V478292
-Ref: Refile Target System78708
-Ref: Creating New Refile Targets79835
-Ref: Using Your Own Refile Targets80606
-Ref: Migration from V381285
-Node: Engaging with your GTD items81887
-Node: Understanding GTD Item Types82546
-Node: Single Action [S]83284
-Node: Project [P]83934
-Node: Add to existing project [A]84929
-Node: Calendar [C]85790
-Node: Delegate [D]86629
-Node: Quick Action [Q]87445
-Node: Incubate [I]88080
-Node: Habit [H]88881
-Node: Knowledge [K]89570
-Node: Trash [T]90315
-Node: Working with the GTD Horizons91171
-Ref: Areas of focus91864
-Ref: Longer-term horizons93149
-Node: Working with Projects (Advanced)94320
-Node: Quick Navigation95727
-Node: First Contact Why Visual Project Management?96997
-Node: Black Triangle Your First Project Graph View98011
-Ref: Step 1 Find a project98370
-Ref: Step 2 Open the graph view98548
-Ref: Step 3 Explore98706
-Node: Understanding Project Dependencies99191
-Ref: The Dependency Graph (DAG)99570
-Ref: What You See in Graph View100107
-Ref: Sequential vs Parallel vs Mixed100754
-Node: Tutorial Parallel Tasks with Graph View101661
-Ref: The Scenario102032
-Ref: Step 1 Capture and Organize102443
-Ref: Step 2 Open Graph View102801
-Ref: Step 3 Add Orthopedist Appointment as Root Task103372
-Ref: Step 3 (Revised) Build with Graph View Commands104025
-Ref: What Graph View CAN Do Right Now104474
-Ref: The Dependency Pattern (Diamond)105444
-Ref: Current Workaround105720
-Node: Tutorial Complex Dependencies with Graph View106129
-Ref: The Scenario (1)106460
-Ref: The Dependency Graph107026
-Ref: Building with Graph View107584
-Ref: Key Patterns This Example Shows108323
-Node: Common Dependency Patterns (Visual Reference)108718
-Ref: Sequential Chain (A → B → C)109093
-Ref: Parallel Independent (A B C all start together)109479
-Ref: Fan-out (A → B A → C A → D)109835
-Ref: Fan-in / Convergence (A → C B → C)110250
-Ref: Diamond (A → B → D A → C → D)110695
-Node: Graph View Command Reference111160
-Ref: Opening Graph View111566
-Ref: Direct Keybindings (Always Available)111834
-Ref: Transient Menu Commands (Press ? first)112892
-Ref: Visual Indicators114279
-Ref: Operations Not Available in Graph View114559
-Ref: Text-Based Alternatives115221
-Node: Graph Rendering Modes115818
-Ref: SVG Mode (Default)116132
-Ref: ASCII Mode116448
-Ref: Toggling Modes116788
-Ref: Troubleshooting ASCII Rendering116899
-Node: Complete Keyboard Reference117215
-Ref: Navigation117530
-Ref: Modification (via transient menu ?)118140
-Ref: Information118577
-Ref: View Control118802
-Node: Auto-Refresh on File Changes119089
-Node: Technical Details119748
-Ref: Graph Data Structure119976
-Ref: Layout Algorithm120326
-Ref: Properties Used120647
-Ref: Undo/Redo Support121513
-Node: Practical Tips for Project Management121840
-Ref: When to Use Graph View122104
-Ref: When to Use Sequential (Default)122461
-Ref: When to Create Parallel Structures122842
-Ref: Managing Complexity123177
-Ref: Growing Projects Over Time123576
-Node: Exporting Project Graphs123970
-Ref: First Contact What is Graph Export?124231
-Ref: Tutorial Export Your First Graph124901
-Ref: Progressive Learning Choosing Export Formats125413
-Ref: When Exports Differ from Display127093
-Ref: Reference Export Commands127647
-Ref: Troubleshooting Exports128301
-Node: Troubleshooting Projects with Graph View129000
-Ref: Project is Stuck (has TODO tasks but no NEXT)129264
-Ref: Task Should Be NEXT But Shows as TODO130110
-Ref: Too Many Tasks Are NEXT130659
-Ref: Graph Won't Open131121
-Ref: Graph Shows No Tasks131486
-Ref: Task Shows Wrong State (NEXT vs TODO)131881
-Ref: Can't Modify Dependencies132339
-Node: See Also132734
-Node: Incubating Projects Pausing Work You're Not Ready For133376
-Ref: First Contact Why Incubate Projects?133685
-Ref: Black Triangle Incubate Your First Project in 30 Seconds134650
-Ref: Understanding Incubation What Actually Happens135479
-Ref: Tutorial Managing Seasonal Projects137199
-Ref: Common Patterns and Scenarios139378
-Ref: Advanced External Dependencies and Warnings141415
-Ref: Technical Details How Incubation Works Under the Hood143520
-Node: NEXT Task 1 Research options143832
-Node: Task 1 Research options144152
-Ref: Troubleshooting Incubation146831
-Ref: See Also (1)149639
-Node: Project Progress Cookies See Your Progress at a Glance150202
-Ref: First Contact What Are Progress Cookies?150539
-Ref: Black Triangle See Progress in 30 Seconds151040
-Ref: Tutorial Watch Cookies Update Automatically151482
-Ref: Understanding How Cookies Work152221
-Ref: Configuring Cookie Position153168
-Ref: Common Scenarios153922
-Ref: Technical Reference154684
-Node: Cleaning up / archiving completed work155526
-Node: Commands you can call on org-agenda156438
-Node: Defining your own agenda views157365
-Node: Adding your own hooks when organizing158244
-Node: Automating through emacs159624
-Node: Reference160888
-Node: Configuration Variables Reference162324
-Node: Required Configuration163076
-Ref: org-todo-keywords (org-mode variable)163276
-Ref: org-gtd-keyword-mapping163763
-Node: Directory and File Configuration164780
-Ref: org-gtd-directory165030
-Ref: org-gtd-additional-inbox-files165669
-Ref: org-gtd-horizons-file166542
-Node: Capture Configuration166923
-Ref: org-gtd-capture-templates167163
-Node: Organize and Process Configuration168301
-Ref: org-gtd-organize-hooks168558
-Ref: org-gtd-save-after-organize169877
-Ref: org-gtd-refile-to-any-target170188
-Node: Mode-Line Configuration170691
-Ref: org-gtd-mode-update-interval170932
-Node: Clarification Configuration171721
-Ref: org-gtd-clarify-show-horizons171964
-Ref: org-gtd-clarify-display-helper-buffer172623
-Ref: org-gtd-clarify-project-templates173207
-Node: Areas of Focus Configuration174306
-Ref: org-gtd-areas-of-focus174553
-Node: Engage View Configuration175128
-Ref: org-gtd-engage-prefix-width175363
-Node: Archive Configuration175722
-Ref: org-gtd-archive-location175960
-Node: Missed Engagements Review Configuration177462
-Ref: org-gtd-reflect-missed-custom-views177737
-Node: ID Overlay Configuration179044
-Ref: org-gtd-id-overlay-truncate-length179295
-Ref: org-gtd-id-overlay-ellipsis179673
-Node: Advanced Item Configuration179911
-Ref: org-gtd-user-types180151
-Node: Projects Configuration183230
-Ref: org-gtd-project-progress-cookie-position183467
-Node: Obsolete Variables (Do Not Use)185415
-Ref: org-gtd-todo-keyword (obsolete)185725
-Ref: org-gtd-next-keyword (obsolete)185843
-Ref: org-gtd-wait-keyword (obsolete)185961
-Ref: org-gtd-canceled-keyword (obsolete)186079
-Node: Commands Reference186198
-Node: Core GTD Workflow Commands187032
-Ref: org-gtd-capture187213
-Ref: org-gtd-process-inbox187777
-Ref: org-gtd-organize188537
-Ref: org-gtd-engage189349
-Ref: org-gtd-show-all-next190062
-Node: Reflect Commands190413
-Ref: org-gtd-reflect-stuck-projects190609
-Ref: org-gtd-reflect-area-of-focus191112
-Ref: org-gtd-reflect-completed-items191643
-Ref: org-gtd-reflect-completed-projects192138
-Ref: org-gtd-reflect-missed-items192362
-Node: Stuck Item Review Commands192619
-Ref: org-gtd-reflect-stuck-calendar-items192920
-Ref: org-gtd-reflect-stuck-incubated-items193034
-Ref: org-gtd-reflect-stuck-habit-items193152
-Ref: org-gtd-reflect-stuck-delegated-items193254
-Ref: org-gtd-reflect-stuck-single-action-items193377
-Node: Reflect Commands (Missed Engagements)193481
-Ref: What Are Missed Engagements?193751
-Ref: Your First Review in 30 Seconds194493
-Ref: Understanding the Review Workflow194919
-Ref: Tutorial Daily Review Workflow195562
-Ref: Common Patterns196315
-Ref: Command Reference196782
-Ref: Backward Compatibility Note197502
-Node: Reflect Commands (Upcoming Delegated)198097
-Ref: What Are Upcoming Delegated Check-ins?198361
-Ref: Your First Review in 30 Seconds (1)199114
-Ref: Understanding Proactive Delegation Management199567
-Ref: Tutorial Weekly Planning Workflow200151
-Ref: Common Patterns (1)201184
-Ref: Understanding What You See201900
-Ref: Comparison Missed vs Upcoming202596
-Ref: Command Reference (1)203071
-Node: Custom View Commands203474
-Ref: org-gtd-view-show203689
-Node: Clarification Commands211648
-Ref: org-gtd-clarify-item211846
-Ref: org-gtd-clarify-agenda-item212282
-Ref: org-gtd-clarify-toggle-horizons-window212540
-Ref: org-gtd-clarify-project-insert-template212871
-Ref: Updating Items Without Refiling213169
-Node: Archive Commands217733
-Ref: org-gtd-archive-completed-items217923
-Node: Agenda-Specific Commands218391
-Ref: org-gtd-delegate-agenda-item218661
-Ref: org-gtd-project-cancel-from-agenda218984
-Node: Project Management Commands219270
-Ref: org-gtd-projects-fix-todo-keywords-for-project-at-point219497
-Ref: org-gtd-projects-fix-all-todo-keywords220087
-Ref: org-gtd-project-update-all-cookies222808
-Ref: org-gtd-incubate224279
-Ref: org-gtd-reactivate225692
-Node: Task Dependency Commands226747
-Ref: org-gtd-task-add-blockers227636
-Ref: org-gtd-task-remove-blockers228362
-Ref: org-gtd-task-add-dependent228628
-Ref: org-gtd-task-add-dependents229271
-Ref: org-gtd-task-clear-relationships229513
-Ref: org-gtd-task-show-relationships229836
-Ref: org-gtd-validate-project-dependencies230181
-Ref: org-gtd-remove-task-from-project230610
-Node: Area of Focus Commands230947
-Ref: org-gtd-area-of-focus-set-on-item-at-point231165
-Ref: org-gtd-area-of-focus-set-on-agenda-item231532
-Node: Programmatic Creation Commands231870
-Ref: org-gtd-habit-create232191
-Ref: org-gtd-calendar-create232427
-Ref: org-gtd-delegate-create232666
-Ref: org-gtd-incubate-create233320
-Ref: org-gtd-single-action-create233558
-Node: Utility Commands233752
-Ref: org-gtd-setup-keywords-wizard233947
-Ref: org-gtd-inbox-path234259
-Node: ID Overlay Commands234616
-Ref: org-gtd-id-overlay-mode234817
-Ref: org-gtd-id-overlay-refresh-buffer235165
-Ref: org-gtd-id-overlay-clear-buffer235421
-Node: Migration and Upgrade Commands235623
-Ref: org-gtd-upgrade-v3-to-v4235851
-Node: Mode-Line Integration236376
-Ref: org-gtd-mode236584
-Ref: org-gtd-inbox-count237055
-Node: Obsolete Commands237312
-Ref: org-gtd-delegate-item-at-point (removed in 40)237473
-Node: Properties Reference (Internal Implementation)238255
-Node: Core GTD Properties239374
-Ref: ORG_GTD239564
-Ref: ORG_GTD_REFILE240395
-Node: Project Properties241975
-Ref: ORG_GTD_FIRST_TASKS242198
-Node: Task Dependency Properties243024
-Ref: ORG_GTD_DEPENDS_ON243272
-Ref: ORG_GTD_BLOCKS244979
-Ref: ORG_GTD_PROJECT_IDS245731
-Node: Calendar and Time Properties246044
-Ref: ORG_GTD_TIMESTAMP246299
-Node: Delegation Properties247139
-Ref: DELEGATED_TO247370
-Node: Habit Properties248195
-Ref: STYLE248412
-Node: Area of Focus Properties248811
-Ref: CATEGORY249062
-Node: Standard Org Properties Used by org-gtd249811
-Ref: ID250067
-Ref: keyword250314
-Ref: SCHEDULED (org-mode standard)250904
-Ref: DEADLINE (org-mode standard)251154
-Node: Troubleshooting Projects251377
-Node: Fixing Broken Dependencies252005
-Node: When Manual Property Editing is Needed253373
-Node: Common Problems and Solutions255202
-Ref: Project Shows No NEXT Tasks (Stuck Project)255420
-Ref: Too Many NEXT Tasks256182
-Ref: Task Won't Advance to NEXT256596
-Ref: Task States Inconsistent After External Edits257197
-Node: View DSL Filter Reference258300
-Node: View Structure258937
-Ref: Multi-Block Views259330
-Ref: Block Types259938
-Node: Type Filters260296
-Ref: (type delegated)260493
-Ref: (type calendar)260738
-Ref: (type project)260963
-Ref: (type active-project)261174
-Ref: (type completed-project)261423
-Ref: (type stuck-project)261694
-Ref: (type incubated)261964
-Ref: (type habit)262197
-Ref: (type next-action)262389
-Ref: (type incubated-project)262671
-Node: Time-based Filters262928
-Ref: Semantic Time (when VALUE)263167
-Ref: Raw Timestamp (timestamp VALUE)264033
-Ref: Deadline (deadline VALUE)264246
-Ref: Scheduled (scheduled VALUE)264461
-Ref: Closed (closed VALUE)264691
-Node: Keyword Filters264965
-Ref: (todo ("KEYWORD1" "KEYWORD2"))265425
-Ref: (done t)265804
-Node: Area of Focus Filters266035
-Ref: (area-of-focus "AREA")266249
-Node: Tag Filters266614
-Ref: (tags ("TAG1" "TAG2"))266808
-Ref: (tags-match "PATTERN")267096
-Node: Property Filters267564
-Ref: (property (("PROP" "VALUE")))267781
-Node: Structural Filters268063
-Ref: (level N)268285
-Node: Special Filters268638
-Ref: (not-habit t)268830
-Ref: (invalid-timestamp t)269074
-Node: View Configuration Options269373
-Ref: (block-type TYPE)269643
-Ref: (blocks BLOCK-LIST)270401
-Ref: (prefix-format FORMAT-STRING)271002
-Ref: (view-type agenda)271422
-Ref: (agenda-span N)271712
-Node: Complete View Examples271856
-Ref: Weekly Review View272074
-Ref: Context-Based View272679
-Ref: Morning Planning View272871
-Node: Creating Custom Views273480
-Node: Hooks Framework Reference274126
-Node: What Are Organize Hooks?274564
-Node: Your First Hook in 2 Minutes275226
-Node: The org-gtd-organize-hooks Variable276361
-Node: Built-in Hooks276860
-Ref: org-set-tags-command277060
-Ref: org-gtd-set-area-of-focus277303
-Node: Writing Custom Hooks277822
-Ref: Basic Hook Structure278214
-Ref: Using org-gtd-organize-type-member-p278548
-Node: Example Custom Hooks279621
-Ref: Selective Tagging with Unless279824
-Ref: Add Effort Estimation280541
-Ref: Add Priority280874
-Ref: Auto-Set Property Based on Keywords281170
-Ref: Add Custom Property281638
-Ref: Integration with Org-Roam282069
-Ref: Set Effort from Keywords282432
-Node: Hook Execution Order283152
-Node: Best Practices283662
-Node: Complete Example Comprehensive Hook Setup284645
-Node: Troubleshooting286774
-Node: Finding lost tasks287231
-Node: Projects without a NEXT item288240
-Node: I can't create a project when clarifying an inbox item!289496
-Node: Configuration problems290454
-Node: Keywords not working290773
-Node: Items not showing in engage view291587
-Node: Tasks still showing after incubating project292335
-Node: Still stuck?293451
+Node: Summary7764
+Node: What's new in 4011489
+Node: Flexible project dependencies (the big one!)12188
+Node: Simplified keyword configuration13304
+Node: Data-driven configuration14324
+Node: Declarative view language14909
+Node: Better project modification15495
+Node: Updated terminology Review → Reflect15970
+Node: Updated terminology Incubate → Tickler + Someday/Maybe16561
+Node: Enhanced reflect capabilities17929
+Node: Simplified configuration18401
+Node: What you need to do18873
+Node: Previous versions19554
+Node: Setting up Org GTD19784
+Node: Upgrading20180
+Node: 400 <- 3xx20463
+Ref: Required Configuration changes20817
+Ref: Required Data migration22464
+Ref: Why these changes?24190
+Ref: org-gtd-mode has a new purpose24831
+Node: Installing25511
+Node: use-package25806
+Node: Manually26018
+Node: Configuring26384
+Node: Basic setup26734
+Node: Complete Configuration Examples27384
+Ref: Example 1 Vanilla Emacs (Minimal Configuration)27752
+Ref: Example 2 Doom Emacs Configuration29530
+Ref: Example 3 Spacemacs Configuration30923
+Ref: What These Configurations Do32365
+Ref: Testing Your Configuration33661
+Ref: Common Configuration Problems34864
+Ref: Working with Your Existing Org Setup38160
+Node: Understanding Keybindings40088
+Ref: Global Keybindings40408
+Ref: Clarify Map Keybindings41003
+Node: Required configuration of sub-packages42127
+Ref: Configuring org-edna42388
+Ref: Adding org-gtd files to your agenda42687
+Node: configuration options for org-gtd43082
+Ref: I don't care just let me start using it43332
+Ref: Tell me all the levers I can pull43919
+Ref: Required keyword configuration44082
+Ref: Optional configuration45938
+Node: Recommended key bindings49530
+Node: Sample Doom Emacs Config50289
+Node: Getting Started with Org GTD51561
+Node: Quick Start Reference51972
+Node: Tutorial Your First Project52510
+Node: What You'll Learn53280
+Node: The Project53680
+Node: Step 1 Capture the Project54114
+Node: Step 2 Process the Inbox54740
+Node: Step 3 Organize as a Project55317
+Node: Step 4 View in Engage56043
+Node: Step 5 Complete the First Task56718
+Node: Step 6 Refresh and See the Change57249
+Node: What Just Happened?57808
+Node: Continue the Project58893
+Node: Key Takeaways59462
+Node: What's Next?60088
+Node: Tutorial Creating Your First Custom View60823
+Node: What You'll Learn (1)61629
+Node: Why This View?61986
+Node: Understanding the View DSL62518
+Node: Creating the View Function63355
+Node: Using Your View64034
+Node: Binding to a Key64342
+Node: What You'll See65068
+Node: Experiment Modify the View65621
+Node: Available Filters66867
+Node: Key Takeaways (1)67783
+Node: What's Next? (1)68330
+Node: Where to Go From Here68983
+Node: Using Org GTD70336
+Node: Your Daily Workflow70956
+Node: Quick command reference71843
+Node: The GTD Flow in Depth73316
+Node: Adding things to the inbox73722
+Node: Processing the inbox75100
+Node: Clarifying each item75945
+Ref: How to start clarifying76468
+Ref: data shape requirements76971
+Ref: Options and commands related to clarification77528
+Node: Organizing an item into the system78908
+Ref: Refiling to the appropriate area79834
+Ref: Understanding Refiling in V479880
+Ref: Refile Target System80296
+Ref: Creating New Refile Targets81423
+Ref: Using Your Own Refile Targets82246
+Ref: Migration from V382925
+Node: Engaging with your GTD items83527
+Node: Understanding GTD Item Types84186
+Node: Single Action [S]84945
+Node: Project [P]85595
+Node: Add to existing project [A]86590
+Node: Calendar [C]87451
+Node: Delegate [D]88290
+Node: Quick Action [Q]89106
+Node: Tickler [I]89740
+Node: Someday/Maybe [y]91010
+Node: Habit [H]92312
+Node: Knowledge [K]93006
+Node: Trash [T]93753
+Node: Working with the GTD Horizons94609
+Ref: Areas of focus95302
+Ref: Longer-term horizons96587
+Node: Working with Projects (Advanced)97758
+Node: Quick Navigation99162
+Node: First Contact Why Visual Project Management?100432
+Node: Black Triangle Your First Project Graph View101446
+Ref: Step 1 Find a project101805
+Ref: Step 2 Open the graph view101983
+Ref: Step 3 Explore102141
+Node: Understanding Project Dependencies102626
+Ref: The Dependency Graph (DAG)103005
+Ref: What You See in Graph View103542
+Ref: Sequential vs Parallel vs Mixed104189
+Node: Tutorial Parallel Tasks with Graph View105096
+Ref: The Scenario105467
+Ref: Step 1 Capture and Organize105878
+Ref: Step 2 Open Graph View106236
+Ref: Step 3 Add Orthopedist Appointment as Root Task106807
+Ref: Step 3 (Revised) Build with Graph View Commands107460
+Ref: What Graph View CAN Do Right Now107909
+Ref: The Dependency Pattern (Diamond)108879
+Ref: Current Workaround109155
+Node: Tutorial Complex Dependencies with Graph View109564
+Ref: The Scenario (1)109895
+Ref: The Dependency Graph110461
+Ref: Building with Graph View111019
+Ref: Key Patterns This Example Shows111758
+Node: Common Dependency Patterns (Visual Reference)112153
+Ref: Sequential Chain (A → B → C)112528
+Ref: Parallel Independent (A B C all start together)112914
+Ref: Fan-out (A → B A → C A → D)113270
+Ref: Fan-in / Convergence (A → C B → C)113685
+Ref: Diamond (A → B → D A → C → D)114130
+Node: Graph View Command Reference114595
+Ref: Opening Graph View115001
+Ref: Direct Keybindings (Always Available)115269
+Ref: Transient Menu Commands (Press ? first)116327
+Ref: Visual Indicators117714
+Ref: Operations Not Available in Graph View117994
+Ref: Text-Based Alternatives118656
+Node: Graph Rendering Modes119253
+Ref: SVG Mode (Default)119567
+Ref: ASCII Mode119883
+Ref: Toggling Modes120223
+Ref: Troubleshooting ASCII Rendering120334
+Node: Complete Keyboard Reference120650
+Ref: Navigation120965
+Ref: Modification (via transient menu ?)121575
+Ref: Information122012
+Ref: View Control122237
+Node: Auto-Refresh on File Changes122524
+Node: Technical Details123183
+Ref: Graph Data Structure123411
+Ref: Layout Algorithm123761
+Ref: Properties Used124082
+Ref: Undo/Redo Support124948
+Node: Practical Tips for Project Management125275
+Ref: When to Use Graph View125539
+Ref: When to Use Sequential (Default)125896
+Ref: When to Create Parallel Structures126277
+Ref: Managing Complexity126612
+Ref: Growing Projects Over Time127011
+Node: Exporting Project Graphs127405
+Ref: First Contact What is Graph Export?127666
+Ref: Tutorial Export Your First Graph128336
+Ref: Progressive Learning Choosing Export Formats128848
+Ref: When Exports Differ from Display130528
+Ref: Reference Export Commands131082
+Ref: Troubleshooting Exports131736
+Node: Troubleshooting Projects with Graph View132435
+Ref: Project is Stuck (has TODO tasks but no NEXT)132699
+Ref: Task Should Be NEXT But Shows as TODO133545
+Ref: Too Many Tasks Are NEXT134094
+Ref: Graph Won't Open134556
+Ref: Graph Shows No Tasks134921
+Ref: Task Shows Wrong State (NEXT vs TODO)135316
+Ref: Can't Modify Dependencies135774
+Node: See Also136169
+Node: Tickler Projects Pausing Work You're Not Ready For136808
+Ref: First Contact Why Tickler Projects?137108
+Ref: Black Triangle Tickler Your First Project in 30 Seconds138095
+Ref: Understanding Tickler What Actually Happens138918
+Ref: Tutorial Managing Seasonal Projects140627
+Ref: Common Patterns and Scenarios142820
+Ref: Advanced External Dependencies and Warnings144851
+Ref: Technical Details How Tickler Works Under the Hood146952
+Node: NEXT Task 1 Research options147255
+Node: Task 1 Research options147569
+Ref: Troubleshooting Tickler150235
+Ref: See Also (1)153033
+Node: Project Progress Cookies See Your Progress at a Glance153596
+Ref: First Contact What Are Progress Cookies?153933
+Ref: Black Triangle See Progress in 30 Seconds154434
+Ref: Tutorial Watch Cookies Update Automatically154876
+Ref: Understanding How Cookies Work155615
+Ref: Configuring Cookie Position156562
+Ref: Common Scenarios157316
+Ref: Technical Reference158078
+Node: Cleaning up / archiving completed work158920
+Node: Commands you can call on org-agenda159832
+Node: Defining your own agenda views160759
+Node: Adding your own hooks when organizing161638
+Node: Automating through emacs163018
+Node: Reference164317
+Node: Configuration Variables Reference165753
+Node: Required Configuration166505
+Ref: org-todo-keywords (org-mode variable)166705
+Ref: org-gtd-keyword-mapping167192
+Node: Directory and File Configuration168209
+Ref: org-gtd-directory168459
+Ref: org-gtd-additional-inbox-files169149
+Ref: org-gtd-horizons-file170022
+Node: Capture Configuration170403
+Ref: org-gtd-capture-templates170643
+Node: Organize and Process Configuration171781
+Ref: org-gtd-organize-hooks172038
+Ref: org-gtd-save-after-organize173371
+Ref: org-gtd-refile-to-any-target173682
+Node: Mode-Line Configuration174185
+Ref: org-gtd-mode-update-interval174426
+Node: Clarification Configuration175215
+Ref: org-gtd-clarify-show-horizons175458
+Ref: org-gtd-clarify-display-helper-buffer176117
+Ref: org-gtd-clarify-project-templates176701
+Node: Areas of Focus Configuration177800
+Ref: org-gtd-areas-of-focus178047
+Node: Engage View Configuration178622
+Ref: org-gtd-engage-prefix-width178857
+Node: Archive Configuration179216
+Ref: org-gtd-archive-location179454
+Node: Missed Engagements Review Configuration180956
+Ref: org-gtd-reflect-missed-custom-views181231
+Node: ID Overlay Configuration182538
+Ref: org-gtd-id-overlay-truncate-length182789
+Ref: org-gtd-id-overlay-ellipsis183167
+Node: Advanced Item Configuration183405
+Ref: org-gtd-user-types183645
+Node: Projects Configuration186737
+Ref: org-gtd-project-progress-cookie-position186974
+Node: Obsolete Variables (Do Not Use)188922
+Ref: org-gtd-todo-keyword (obsolete)189232
+Ref: org-gtd-next-keyword (obsolete)189350
+Ref: org-gtd-wait-keyword (obsolete)189468
+Ref: org-gtd-canceled-keyword (obsolete)189586
+Node: Commands Reference189705
+Node: Core GTD Workflow Commands190539
+Ref: org-gtd-capture190720
+Ref: org-gtd-process-inbox191284
+Ref: org-gtd-organize192044
+Ref: org-gtd-engage192885
+Ref: org-gtd-show-all-next193598
+Node: Reflect Commands193949
+Ref: org-gtd-reflect-stuck-projects194145
+Ref: org-gtd-reflect-area-of-focus194648
+Ref: org-gtd-reflect-completed-items195179
+Ref: org-gtd-reflect-completed-projects195674
+Ref: org-gtd-reflect-missed-items195898
+Node: Stuck Item Review Commands196155
+Ref: org-gtd-reflect-stuck-calendar-items196456
+Ref: org-gtd-reflect-stuck-tickler-items196570
+Ref: org-gtd-reflect-stuck-habit-items196684
+Ref: org-gtd-reflect-stuck-delegated-items196786
+Ref: org-gtd-reflect-stuck-single-action-items196909
+Node: Reflect Commands (Missed Engagements)197013
+Ref: What Are Missed Engagements?197283
+Ref: Your First Review in 30 Seconds198025
+Ref: Understanding the Review Workflow198451
+Ref: Tutorial Daily Review Workflow199094
+Ref: Common Patterns199847
+Ref: Command Reference200314
+Ref: Backward Compatibility Note201034
+Node: Reflect Commands (Upcoming Delegated)201629
+Ref: What Are Upcoming Delegated Check-ins?201893
+Ref: Your First Review in 30 Seconds (1)202646
+Ref: Understanding Proactive Delegation Management203099
+Ref: Tutorial Weekly Planning Workflow203683
+Ref: Common Patterns (1)204716
+Ref: Understanding What You See205432
+Ref: Comparison Missed vs Upcoming206128
+Ref: Command Reference (1)206603
+Node: Custom View Commands207006
+Ref: org-gtd-view-show207221
+Node: Clarification Commands215263
+Ref: org-gtd-clarify-item215461
+Ref: org-gtd-clarify-agenda-item215897
+Ref: org-gtd-clarify-toggle-horizons-window216155
+Ref: org-gtd-clarify-project-insert-template216486
+Ref: Updating Items Without Refiling216784
+Node: Archive Commands221348
+Ref: org-gtd-archive-completed-items221538
+Node: Agenda-Specific Commands222006
+Ref: org-gtd-delegate-agenda-item222276
+Ref: org-gtd-project-cancel-from-agenda222599
+Node: Project Management Commands222885
+Ref: org-gtd-projects-fix-todo-keywords-for-project-at-point223112
+Ref: org-gtd-projects-fix-all-todo-keywords223702
+Ref: org-gtd-project-update-all-cookies226423
+Ref: org-gtd-tickler227894
+Ref: org-gtd-reactivate229516
+Node: Task Dependency Commands230551
+Ref: org-gtd-task-add-blockers231440
+Ref: org-gtd-task-remove-blockers232166
+Ref: org-gtd-task-add-dependent232432
+Ref: org-gtd-task-add-dependents233075
+Ref: org-gtd-task-clear-relationships233317
+Ref: org-gtd-task-show-relationships233640
+Ref: org-gtd-validate-project-dependencies233985
+Ref: org-gtd-remove-task-from-project234414
+Node: Area of Focus Commands234751
+Ref: org-gtd-area-of-focus-set-on-item-at-point234969
+Ref: org-gtd-area-of-focus-set-on-agenda-item235336
+Node: Programmatic Creation Commands235674
+Ref: org-gtd-habit-create235995
+Ref: org-gtd-calendar-create236231
+Ref: org-gtd-delegate-create236470
+Ref: org-gtd-tickler-create237124
+Ref: org-gtd-someday-create237387
+Ref: org-gtd-single-action-create237606
+Node: Utility Commands237800
+Ref: org-gtd-setup-keywords-wizard237995
+Ref: org-gtd-inbox-path238307
+Node: ID Overlay Commands238664
+Ref: org-gtd-id-overlay-mode238865
+Ref: org-gtd-id-overlay-refresh-buffer239213
+Ref: org-gtd-id-overlay-clear-buffer239469
+Node: Migration and Upgrade Commands239671
+Ref: org-gtd-upgrade-v3-to-v4239899
+Node: Mode-Line Integration240424
+Ref: org-gtd-mode240632
+Ref: org-gtd-inbox-count241103
+Node: Obsolete Commands241360
+Ref: org-gtd-delegate-item-at-point (removed in 40)241521
+Node: Properties Reference (Internal Implementation)242303
+Node: Core GTD Properties243422
+Ref: ORG_GTD243612
+Ref: ORG_GTD_REFILE244550
+Node: Project Properties246220
+Ref: ORG_GTD_FIRST_TASKS246443
+Node: Task Dependency Properties247269
+Ref: ORG_GTD_DEPENDS_ON247517
+Ref: ORG_GTD_BLOCKS249224
+Ref: ORG_GTD_PROJECT_IDS249976
+Node: Calendar and Time Properties250289
+Ref: ORG_GTD_TIMESTAMP250544
+Node: Delegation Properties251384
+Ref: DELEGATED_TO251615
+Node: Habit Properties252440
+Ref: STYLE252657
+Node: Area of Focus Properties253056
+Ref: CATEGORY253307
+Node: Standard Org Properties Used by org-gtd254056
+Ref: ID254312
+Ref: keyword254559
+Ref: SCHEDULED (org-mode standard)255149
+Ref: DEADLINE (org-mode standard)255399
+Node: Troubleshooting Projects255622
+Node: Fixing Broken Dependencies256250
+Node: When Manual Property Editing is Needed257618
+Node: Common Problems and Solutions259447
+Ref: Project Shows No NEXT Tasks (Stuck Project)259665
+Ref: Too Many NEXT Tasks260427
+Ref: Task Won't Advance to NEXT260841
+Ref: Task States Inconsistent After External Edits261442
+Node: View DSL Filter Reference262545
+Node: View Structure263182
+Ref: Multi-Block Views263575
+Ref: Block Types264183
+Node: Type Filters264541
+Ref: (type delegated)264738
+Ref: (type calendar)264983
+Ref: (type project)265208
+Ref: (type active-project)265419
+Ref: (type completed-project)265668
+Ref: (type stuck-project)265939
+Ref: (type tickler)266209
+Ref: (type someday)266461
+Ref: (type habit)266720
+Ref: (type next-action)266912
+Ref: (type tickler-project)267194
+Node: Time-based Filters267469
+Ref: Semantic Time (when VALUE)267708
+Ref: Raw Timestamp (timestamp VALUE)268569
+Ref: Deadline (deadline VALUE)268782
+Ref: Scheduled (scheduled VALUE)268997
+Ref: Closed (closed VALUE)269227
+Node: Keyword Filters269501
+Ref: (todo ("KEYWORD1" "KEYWORD2"))269961
+Ref: (done t)270340
+Node: Area of Focus Filters270571
+Ref: (area-of-focus "AREA")270785
+Node: Tag Filters271150
+Ref: (tags ("TAG1" "TAG2"))271344
+Ref: (tags-match "PATTERN")271632
+Node: Property Filters272100
+Ref: (property (("PROP" "VALUE")))272317
+Node: Structural Filters272599
+Ref: (level N)272821
+Node: Special Filters273174
+Ref: (not-habit t)273366
+Ref: (invalid-timestamp t)273610
+Node: View Configuration Options273909
+Ref: (block-type TYPE)274179
+Ref: (blocks BLOCK-LIST)274937
+Ref: (prefix-format FORMAT-STRING)275538
+Ref: (view-type agenda)275958
+Ref: (agenda-span N)276248
+Node: Complete View Examples276392
+Ref: Weekly Review View276610
+Ref: Context-Based View277215
+Ref: Morning Planning View277407
+Node: Creating Custom Views278016
+Node: Hooks Framework Reference278662
+Node: What Are Organize Hooks?279100
+Node: Your First Hook in 2 Minutes279762
+Node: The org-gtd-organize-hooks Variable280897
+Node: Built-in Hooks281396
+Ref: org-set-tags-command281596
+Ref: org-gtd-set-area-of-focus281839
+Node: Writing Custom Hooks282358
+Ref: Basic Hook Structure282750
+Ref: Using org-gtd-organize-type-member-p283084
+Node: Example Custom Hooks284223
+Ref: Selective Tagging with Unless284426
+Ref: Add Effort Estimation285143
+Ref: Add Priority285476
+Ref: Auto-Set Property Based on Keywords285772
+Ref: Add Custom Property286240
+Ref: Integration with Org-Roam286671
+Ref: Set Effort from Keywords287034
+Node: Hook Execution Order287754
+Node: Best Practices288264
+Node: Complete Example Comprehensive Hook Setup289247
+Node: Troubleshooting291376
+Node: Finding lost tasks291834
+Node: Projects without a NEXT item292839
+Node: I can't create a project when clarifying an inbox item!294095
+Node: Configuration problems295053
+Node: Keywords not working295373
+Node: Items not showing in engage view296187
+Node: Tasks still showing after tickler'ing project296935
+Node: Still stuck?298050
 
 End Tag Table
 

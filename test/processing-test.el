@@ -27,7 +27,7 @@
      (capture-inbox-item "test project")
      (capture-inbox-item "test calendar item")
      (capture-inbox-item "test delegated item")
-     (capture-inbox-item "test incubated item")
+     (capture-inbox-item "test tickler item")
      (capture-inbox-item "test single action")
      (capture-inbox-item "test knowledge item")
 

@@ -35,7 +35,8 @@
 (require 'org-gtd-calendar)
 (require 'org-gtd-habit)
 (require 'org-gtd-knowledge)
-(require 'org-gtd-incubate)
+(require 'org-gtd-tickler)
+(require 'org-gtd-someday)
 (require 'org-gtd-quick-action)
 (require 'org-gtd-single-action)
 (require 'org-gtd-trash)
@@ -71,7 +72,7 @@ Once you have your ground items managed, you might like to set the variable
 
 (defconst org-gtd-organize-action-types
   '(quick-action single-action calendar habit
-                 delegated incubated knowledge trash
+                 delegated tickler someday knowledge trash
                  project-heading project-task everything)
   "Valid actions types as input for `org-gtd-organize-type-member-p'.")
 
@@ -103,9 +104,10 @@ Once you have your ground items managed, you might like to set the variable
   [("p" "Project (multi-step)" org-gtd-project-new)
    ("a" "Add this task to an existing project" org-gtd-project-extend)]
   ["Non-actionable"
-   [("i" "Incubate" org-gtd-incubate)
-    ("k" "Knowledge to be stored" org-gtd-knowledge)]
-   [("t" "Trash" org-gtd-trash)]])
+   [("i" "Tickler" org-gtd-tickler)
+    ("y" "Someday/Maybe" org-gtd-someday)]
+   [("k" "Knowledge to be stored" org-gtd-knowledge)
+    ("t" "Trash" org-gtd-trash)]])
 
 ;;;; Functions
 
@@ -129,7 +131,8 @@ Valid members of LIST include:
 - \\='calendar (do at a given time)
 - \\='delegated (done by someone else)
 - \\='habit (a recurring action)
-- \\='incubated (remind me later)
+- \\='tickler (remind me later - has a specific date)
+- \\='someday (maybe do someday - no specific timeframe)
 - \\='knowledge (stored as reference)
 - \\='trash (self-explanatory)
 - \\='project-heading (top-level project info, e.g. area of focus)

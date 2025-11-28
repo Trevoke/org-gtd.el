@@ -94,7 +94,7 @@ otherwise calls `org-gtd-archive-location'."
     ;; Archive projects
     (org-gtd--archive-complete-projects)
 
-    ;; Archive actions, delegated, calendar, incubated, and quick items
+    ;; Archive actions, delegated, calendar, tickler, and quick items
     ;; Exclude project tasks (those with ORG_GTD_PROJECT or ORG_GTD_PROJECT_IDS properties)
     (org-map-entries #'org-gtd--archive-completed-actions
                      "+ORG_GTD=\"Actions\"-ORG_GTD_PROJECT={.+}-ORG_GTD_PROJECT_IDS={.+}"
@@ -109,7 +109,7 @@ otherwise calls `org-gtd-archive-location'."
                      "+ORG_GTD=\"Calendar\""
                      'agenda)
     (org-map-entries #'org-gtd--archive-completed-actions
-                     "+ORG_GTD=\"Incubated\""
+                     "+ORG_GTD=\"Tickler\""
                      'agenda)))
 
 (defun org-gtd-archive-item-at-point ()

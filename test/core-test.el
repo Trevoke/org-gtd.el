@@ -104,7 +104,7 @@
     (expect org-gtd-action :to-equal "Actions")
     (expect org-gtd-projects :to-equal "Projects")
     (expect org-gtd-calendar :to-equal "Calendar")
-    (expect org-gtd-incubate :to-equal "Incubated")
+    (expect org-gtd-tickler :to-equal "Tickler")
     (expect org-gtd-knowledge :to-equal "Reference")
     (expect org-gtd-trash :to-equal "Trash")))
 

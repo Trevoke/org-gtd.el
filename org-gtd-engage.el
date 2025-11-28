@@ -52,7 +52,7 @@ This is where the project name is displayed, on the left side."
   "Return GTD view specification for the engage view.
 Shows:
 - Calendar day view (Calendar + Habit items with timestamps for today)
-- Incubated items due today
+- Tickler items due today
 - Delegated items with check-ins due today
 - All next actions"
   (let ((project-format-prefix
@@ -62,8 +62,8 @@ Shows:
     `((name . "GTD Engage View")
       (blocks . (((name . "Today's Schedule")
                   (block-type . calendar-day))
-                 ((name . "Incubated items ready for today")
-                  (type . incubated)
+                 ((name . "Tickler items ready for today")
+                  (type . tickler)
                   (when . today))
                  ((name . "Delegated items to check in on today")
                   (type . delegated)

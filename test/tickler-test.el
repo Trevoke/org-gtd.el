@@ -11,7 +11,7 @@
 (require 'with-simulated-input)
 
 (describe
- "An incubated item"
+ "A tickler item"
 
 
  (before-each (setq inhibit-message t) (ogt--configure-emacs))
@@ -26,17 +26,17 @@
        (with-current-buffer (org-gtd--default-file)
          (goto-char (point-min))
          (search-forward "Yowza")
-         (expect (task-type (current-task)) :to-equal 'incubated)
+         (expect (task-type (current-task)) :to-equal 'tickler)
          (let ((timestamp (task-timestamp (current-task))))
            (expect timestamp :to-match (format "%s-%#02d-%#02d" year month day))))))
 
   (it "appears in daily agenda when review date arrives"
-     (org-gtd-incubate-create "Dentist appointment"
-                              (format-time-string "%Y-%m-%d"))
+     (org-gtd-tickler-create "Dentist appointment"
+                             (format-time-string "%Y-%m-%d"))
      (org-gtd-engage)
      (expect (agenda-contains? "Dentist appointment") :to-be-truthy)))
 
-(describe "Smart incubation dispatcher"
+(describe "Smart tickler dispatcher"
   (before-each (setq inhibit-message t)
                (ogt--configure-emacs))
   (after-each (ogt--close-and-delete-files))
@@ -48,15 +48,15 @@
         (search-forward "Test project")
         (org-back-to-heading t)
 
-        ;; Call org-gtd-incubate with review date parameter
-        (org-gtd-incubate "2025-12-01")
+        ;; Call org-gtd-tickler with review date parameter
+        (org-gtd-tickler "2025-12-01")
 
-        ;; Verify project was incubated
-        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Incubated")
+        ;; Verify project was tickler'd
+        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Tickler")
         (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-equal "Projects")))
 
-  (it "detects single item and uses existing incubation logic"
-      ;; Just verify that calling org-gtd-incubate on a single item
+  (it "detects single item and uses existing tickler logic"
+      ;; Just verify that calling org-gtd-tickler on a single item
       ;; doesn't error and uses the existing path
       (create-single-action "Test action")
       (with-current-buffer (org-gtd--default-file)
@@ -64,7 +64,7 @@
         (search-forward "Test action")
         (org-back-to-heading t)
 
-        ;; Verify it's not a project (should use existing incubation logic)
+        ;; Verify it's not a project (should use existing tickler logic)
         (expect (org-entry-get (point) "ORG_GTD") :not :to-equal "Projects")
         (expect (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")
                 :to-equal nil))))
@@ -74,18 +74,18 @@
                (ogt--configure-emacs))
   (after-each (ogt--close-and-delete-files))
 
-  (it "detects incubated project and calls org-gtd-project-reactivate"
+  (it "detects tickler'd project and calls org-gtd-project-reactivate"
       (create-project "Test project")
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-min))
         (search-forward "Test project")
         (org-back-to-heading t)
 
-        ;; Incubate it first
-        (org-gtd-incubate "2025-12-01")
+        ;; Tickler it first
+        (org-gtd-tickler "2025-12-01")
 
-        ;; Verify it's incubated
-        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Incubated")
+        ;; Verify it's tickler'd
+        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Tickler")
 
         ;; Reactivate it
         (org-gtd-reactivate)

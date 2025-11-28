@@ -150,7 +150,7 @@
          (expect (current-buffer-raw-text)
                  :not :to-match "Get report from John"))))
 
- (describe "Incubated workflow"
+ (describe "Tickler workflow"
    (it "captures, processes, organizes, and handles someday/maybe items"
        ;; 1. CAPTURE
        (capture-inbox-item "Learn Spanish")
@@ -158,15 +158,15 @@
        ;; 2. PROCESS
        (org-gtd-process-inbox)
 
-       ;; 3. ORGANIZE (incubate)
+       ;; 3. ORGANIZE (tickler)
        (defer-item (calendar-current-date))
 
-       ;; 4. VERIFY stored in main GTD file under Incubated
+       ;; 4. VERIFY stored in main GTD file under Tickler
        (with-current-buffer (org-gtd--default-file)
          (expect (current-buffer-raw-text)
                  :to-match "Learn Spanish"))
 
-       ;; Incubated items DO show in agenda with their scheduled date
+       ;; Tickler items DO show in agenda with their scheduled date
        (org-gtd-engage)
        (expect (agenda-raw-text)
                :to-match "Learn Spanish")))
@@ -623,7 +623,7 @@
           (expect (agenda-raw-text)
                   :to-match "Client presentation")))
 
-    (it "verifies incubated item with past date shows in missed review"
+    (it "verifies tickler item with past date shows in missed review"
         ;; Create past date (5 days ago)
         (let* ((past-date-time (time-subtract (current-time) (days-to-time 5)))
                (past-date (decode-time past-date-time))
@@ -631,7 +631,7 @@
                                         (nth 3 past-date)  ; day
                                         (nth 5 past-date))))  ; year
 
-          ;; 1. CAPTURE and ORGANIZE incubated item with past date
+          ;; 1. CAPTURE and ORGANIZE tickler item with past date
           (capture-inbox-item "Review investment portfolio")
           (org-gtd-process-inbox)
           (defer-item past-calendar-date)
@@ -823,8 +823,8 @@
             (expect (agenda-raw-text)
                     :not :to-match "Multi-file project review")))))
 
-  (describe "Review of incubated items"
-    (it "verifies incubated item appears in area of focus review"
+  (describe "Review of tickler items"
+    (it "verifies tickler item appears in area of focus review"
         ;; Create future date (7 days ahead)
         (let* ((future-date-time (time-add (current-time) (days-to-time 7)))
                (future-date (decode-time future-date-time))
@@ -833,7 +833,7 @@
                                           (nth 5 future-date)))  ; year
                (org-gtd-areas-of-focus '("Personal" "Work" "Health")))
 
-          ;; 1. CAPTURE and ORGANIZE incubated item with future date
+          ;; 1. CAPTURE and ORGANIZE tickler item with future date
           (capture-inbox-item "Learn Italian")
           (org-gtd-process-inbox)
           (defer-item future-calendar-date)
@@ -849,8 +849,8 @@
           (expect (agenda-raw-text)
                   :to-match "Learn Italian")))
 
-    (it "verifies incubated item can be archived after completion"
-        ;; 1. CAPTURE and ORGANIZE incubated item
+    (it "verifies tickler item can be archived after completion"
+        ;; 1. CAPTURE and ORGANIZE tickler item
         (capture-inbox-item "Research vacation spots")
         (org-gtd-process-inbox)
         (defer-item (calendar-current-date))
@@ -3121,7 +3121,7 @@
                 (expect agenda-content :not :to-match "Task B")
                 (expect agenda-content :to-match "Task C"))))))))
 
-(describe "Incubating and reactivating projects (end-to-end)"
+(describe "Ticklering and reactivating projects (end-to-end)"
   (before-each (setq inhibit-message t)
                (ogt--configure-emacs))
   (after-each (ogt--close-and-delete-files))
@@ -3141,17 +3141,17 @@
         (goto-char (point-min))
         (search-forward "Future project")
         (org-back-to-heading t)
-        (org-gtd-incubate "2025-12-01")
+        (org-gtd-tickler "2025-12-01")
 
-        ;; Verify project is incubated
-        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Incubated")
+        ;; Verify project is tickler
+        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Tickler")
         (expect (org-entry-get (point) "ORG_GTD_TIMESTAMP") :to-equal "<2025-12-01>")
 
-        ;; Verify tasks are incubated (no TODO keywords)
+        ;; Verify tasks are tickler (no TODO keywords)
         (goto-char (point-min))
         (search-forward "Task 1")
         (org-back-to-heading t)
-        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Incubated")
+        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Tickler")
         (expect (org-entry-get (point) "TODO") :to-be nil)
         (expect (org-entry-get (point) "PREVIOUS_TODO") :to-equal "NEXT"))
 

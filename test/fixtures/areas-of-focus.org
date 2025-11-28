@@ -193,19 +193,19 @@ SCHEDULED: <2021-11-20 9:00-9:15 .+1d>
 ** DONE this is done
 ** CNCL this is canceled
 
-* Incubate
+* Tickler
 :PROPERTIES:
-:ORG_GTD:  Incubated
+:ORG_GTD:  Tickler
 :END:
 ** For later
 :PROPERTIES:
-:ORG_GTD: Incubated
+:ORG_GTD: Tickler
 :ORG_GTD_TIMESTAMP: <2037-02-19 Thu>
 :CATEGORY: Home
 :END:
 
 ** CNCL not worth thinking about
 :PROPERTIES:
-:ORG_GTD: Incubated
+:ORG_GTD: Tickler
 :ORG_GTD_TIMESTAMP: <2021-11-21 Sun>
 :END:

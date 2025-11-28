@@ -79,8 +79,8 @@ PROJECT-TASKS should be a string with the project structure to add."
   ;; Use the proven organization pattern
   (delegate-item person date))
 
-(defun ogt-verify-keyboard-and-organize-as-incubate (item-text &optional date)
-  "Full end-to-end: capture ITEM-TEXT, process, verify keyboard, organize as incubate."
+(defun ogt-verify-keyboard-and-organize-as-tickler (item-text &optional date)
+  "Full end-to-end: capture ITEM-TEXT, process, verify keyboard, organize as tickler."
   (ogt-capture-and-process-with-keyboard-verification item-text)
   ;; Use the proven organization pattern
   (defer-item date))
@@ -146,7 +146,7 @@ ITEMS-AND-TYPES should be a list of (text . type) pairs where type is a symbol."
                 (organize-as-project))
                ((eq type 'calendar) (schedule-item (calendar-current-date)))
                ((eq type 'delegate) (delegate-item "Someone" (calendar-current-date)))
-               ((eq type 'incubate) (defer-item (calendar-current-date)))
+               ((eq type 'tickler) (defer-item (calendar-current-date)))
                ((eq type 'knowledge) (org-gtd-knowledge))
                (t (error "Unknown organization type: %s" type))))))))))
 

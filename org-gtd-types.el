@@ -50,12 +50,17 @@
      ((:when :org-property "ORG_GTD_TIMESTAMP" :type timestamp :required t
              :prompt "When is this happening?")))
 
-    (incubated
-     :org-gtd "Incubated"
+    (tickler
+     :org-gtd "Tickler"
      :state nil
      :properties
      ((:when :org-property "ORG_GTD_TIMESTAMP" :type timestamp :required t
              :prompt "When to revisit?")))
+
+    (someday
+     :org-gtd "Someday"
+     :state nil
+     :properties nil)
 
     (project
      :org-gtd "Projects"
@@ -97,7 +102,7 @@ This alist allows overriding properties of existing types defined in
 `org-gtd-types'.  You cannot add new types, only customize existing ones.
 
 Each entry is (TYPE-NAME . PLIST) where TYPE-NAME must be one of the
-built-in types: next-action, delegated, calendar, incubated, project,
+built-in types: next-action, delegated, calendar, tickler, project,
 habit, reference, trash, quick-action.
 
 PLIST can contain:

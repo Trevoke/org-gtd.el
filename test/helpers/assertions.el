@@ -99,7 +99,7 @@ Returns a symbol representing the task type:
   - 'project
   - 'delegated
   - 'calendar
-  - 'incubated
+  - 'tickler
   - 'habit
   - 'knowledge
   - nil if not categorized
@@ -116,7 +116,7 @@ TASK-MARKER-OR-POINT can be a marker, point, or nil (uses current point)."
          (t 'single-action)))
        ((string= org-gtd-value "Projects") 'project)
        ((string= org-gtd-value "Calendar") 'calendar)
-       ((string= org-gtd-value "Incubated") 'incubated)
+       ((string= org-gtd-value "Tickler") 'tickler)
        ((string= org-gtd-value "Knowledge") 'knowledge)
        (t nil)))))
 

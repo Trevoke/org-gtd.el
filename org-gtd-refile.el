@@ -113,7 +113,7 @@ files outside are accepted without filtering."
   "Get refile targets for TYPE, merging user's targets with org-gtd's.
 
 Returns the list of refile targets that would be available when refiling
-an item of TYPE (e.g., `org-gtd-projects', `org-gtd-incubate')."
+an item of TYPE (e.g., `org-gtd-projects', `org-gtd-tickler')."
   (let ((org-refile-target-verify-function
          (lambda ()
            (let* ((file (buffer-file-name))

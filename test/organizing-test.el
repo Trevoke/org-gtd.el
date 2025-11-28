@@ -77,7 +77,7 @@
               :to-be-truthy))
 
   (it "is truthy as long as 'everything is in the list"
-      (expect (org-gtd-organize-type-member-p '(incubated trash everything project-task))
+      (expect (org-gtd-organize-type-member-p '(tickler trash everything project-task))
               :to-be-truthy))
 
   (it "signals an error if any element in the list is not one of the expected members"
@@ -87,13 +87,13 @@
   (it "is truthy if the buffer-local variable is in the list"
       (with-temp-buffer
         (setq-local org-gtd--organize-type 'quick-action)
-        (expect (org-gtd-organize-type-member-p '(incubated quick-action delegated))
+        (expect (org-gtd-organize-type-member-p '(tickler quick-action delegated))
                 :to-be-truthy)))
 
   (it "is falsey if the buffer-local variable is not the list"
       (with-temp-buffer
         (setq-local org-gtd--organize-type 'trash)
-        (expect (org-gtd-organize-type-member-p '(incubated quick-action delegated))
+        (expect (org-gtd-organize-type-member-p '(tickler quick-action delegated))
                 :not :to-be-truthy)))))
 
 (describe

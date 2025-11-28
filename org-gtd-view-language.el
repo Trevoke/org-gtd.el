@@ -38,7 +38,8 @@
 ;;   (type . next-action)      - Single actions ready to do
 ;;   (type . delegated)        - Items delegated to others
 ;;   (type . calendar)         - Time-specific appointments/reminders
-;;   (type . incubated)        - Someday/maybe items
+;;   (type . tickler)          - Time-based reminder items
+;;   (type . someday)          - Someday/Maybe items (no timeframe)
 ;;   (type . project)          - Multi-step outcomes
 ;;   (type . habit)            - Recurring routines
 ;;   (type . reference)        - Reference/knowledge items
@@ -49,7 +50,7 @@
 ;;   (type . stuck-project)     - Projects with no NEXT/WAIT tasks
 ;;   (type . active-project)    - Projects with at least one active task
 ;;   (type . completed-project) - Projects with all tasks done
-;;   (type . incubated-project) - Projects moved to someday/maybe
+;;   (type . tickler-project)   - Projects moved to tickler
 ;;
 ;; Time-based Filters:
 ;;   (timestamp . past)       - ORG_GTD_TIMESTAMP in the past
@@ -301,15 +302,12 @@ Multi-block specs have a \\='blocks key containing a list of block specs."
     (list `(and (property ,org-gtd-prop-category ,org-gtd-projects)
                 (level 2)
                 (project-is-stuck))))
-   ((eq category 'incubate)
-    (list `(property ,org-gtd-prop-category ,org-gtd-incubate)))
-   ((eq category 'incubated-projects)
-    ;; Match headings with ORG_GTD: Incubated AND PREVIOUS_ORG_GTD: Projects
-    (list `(and (property ,org-gtd-prop-category ,org-gtd-incubate)
+   ((eq category 'tickler)
+    (list `(property ,org-gtd-prop-category ,org-gtd-tickler)))
+   ((eq category 'tickler-projects)
+    ;; Match headings with ORG_GTD: Tickler AND PREVIOUS_ORG_GTD: Projects
+    (list `(and (property ,org-gtd-prop-category ,org-gtd-tickler)
                 (property ,org-gtd-prop-previous-category ,org-gtd-projects))))
-   ((eq category 'incubated)
-    ;; Match any item with ORG_GTD: Incubated
-    (list `(property ,org-gtd-prop-category ,org-gtd-incubate)))
    ((eq category 'habit)
     (list `(property ,org-gtd-prop-style ,org-gtd-prop-style-value-habit)))
    (t (error "Unknown category: %s" category))))
@@ -434,7 +432,7 @@ Also supports computed types:
   - \\='stuck-project - Projects with no NEXT/WAIT tasks
   - \\='active-project - Projects with at least one active task
   - \\='completed-project - Projects with all tasks done
-  - \\='incubated-project - Incubated items that were projects"
+  - \\='tickler-project - Tickler items that were projects"
   (cond
    ;; Computed project types
    ((eq type-name 'stuck-project)
@@ -446,8 +444,8 @@ Also supports computed types:
    ((eq type-name 'completed-project)
     (list `(and (property ,org-gtd-prop-category ,org-gtd-projects)
                 (not (project-has-active-tasks)))))
-   ((eq type-name 'incubated-project)
-    (list `(and (property ,org-gtd-prop-category ,org-gtd-incubate)
+   ((eq type-name 'tickler-project)
+    (list `(and (property ,org-gtd-prop-category ,org-gtd-tickler)
                 (property ,org-gtd-prop-previous-category ,org-gtd-projects))))
    ;; Types with implied TODO keywords
    ((eq type-name 'next-action)
@@ -466,7 +464,7 @@ Also supports computed types:
 (defun org-gtd-view-lang--translate-previous-type-filter (type-name)
   "Translate previous-type TYPE-NAME to PREVIOUS_ORG_GTD property filter.
 TYPE-NAME should be a symbol like \\='delegated, \\='next-action, \\='project, etc.
-This is used for incubated items to filter by their original type."
+This is used for tickler items to filter by their original type."
   (let ((org-gtd-val (org-gtd-type-org-gtd-value type-name)))
     (unless org-gtd-val
       (user-error "Unknown GTD type: %s" type-name))

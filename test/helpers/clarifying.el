@@ -33,9 +33,9 @@ tasks can be worked on next based on the dependency graph."
 (defun defer-item (&optional date)
   "Defer the item at point for later review.
 
-In GTD, incubated items (someday/maybe) are things you might want to
-do in the future but not right now. They're reviewed periodically
-to see if they should become active projects or tasks.
+In GTD, tickler items are things you want to be reminded about
+at a specific future date. They're reviewed periodically and surface
+when their reminder date arrives.
 
 DATE is optional and specifies when to review this item. If provided,
 it should be in calendar-current-date format (MM DD YYYY). If omitted,
@@ -46,7 +46,7 @@ the item is deferred without a specific review date."
                                 (month (nth 0 date))
                                 (day (nth 1 date)))
                            (format "%04d-%02d-%02d" year month day)))))
-    (org-gtd-incubate reminder-date)))
+    (org-gtd-tickler reminder-date)))
 
 (defun delegate-item (&optional to-whom date)
   "Delegate the item at point to someone else.

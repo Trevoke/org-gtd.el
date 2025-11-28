@@ -30,7 +30,7 @@
        :to-throw
        'org-gtd-invalid-area-of-focus))
 
-  (it "shows projects, next actions, habits, incubated items in agenda for a specific area of focus"
+  (it "shows projects, next actions, habits, tickler items in agenda for a specific area of focus"
       (let ((task-buffer (ogt--create-org-file-in-org-gtd-dir
                           "foo"
                           (org-file-contents
@@ -43,13 +43,13 @@
                 (next-actions "Next actions[[:space:]].*?Clean gutters")
                 (reminders "Reminders[[:space:]].*?Meet plumber")
                 (routines "Routines[[:space:]].*?Sweep the")
-                (incubated-items "Incubated items[[:space:]].*?For later"))
+                (tickler-items "Tickler items[[:space:]].*?For later"))
             (expect (buffer-name) :to-equal "*Org Agenda: Home*")
             (expect (current-buffer-raw-text) :to-match active-projects)
             (expect (current-buffer-raw-text) :to-match next-actions)
             (expect (current-buffer-raw-text) :to-match reminders)
             (expect (current-buffer-raw-text) :to-match routines)
-            (expect (current-buffer-raw-text) :to-match incubated-items))))))
+            (expect (current-buffer-raw-text) :to-match tickler-items))))))
  (describe
   "Missed events"
 
@@ -74,16 +74,16 @@
           )))))
 
  (describe
-  "Area of focus review with incubated projects"
+  "Area of focus review with tickler projects"
   (before-each (setq inhibit-message t)
                (ogt--configure-emacs)
                (setq org-gtd-areas-of-focus '("Work" "Personal")))
   (after-each (ogt--close-and-delete-files))
 
-  (it "shows incubated projects in area review"
-      ;; Create active and incubated projects in Work area
+  (it "shows tickler projects in area review"
+      ;; Create active and tickler projects in Work area
       (create-project "Active work project")
-      (create-project "Incubated work project")
+      (create-project "Tickler work project")
 
       (with-current-buffer (org-gtd--default-file)
         ;; Set CATEGORY property for both projects to Work area
@@ -93,12 +93,12 @@
         (org-entry-put (point) "CATEGORY" "Work")
 
         (goto-char (point-min))
-        (search-forward "Incubated work project")
+        (search-forward "Tickler work project")
         (org-back-to-heading t)
         (org-entry-put (point) "CATEGORY" "Work")
 
-        ;; Incubate the second project
-        (org-gtd-incubate "2025-12-01"))
+        ;; Tickler the second project
+        (org-gtd-tickler "2025-12-01"))
 
       ;; Run area of focus review for Work
       (org-gtd-review-area-of-focus "Work")
@@ -107,9 +107,9 @@
         ;; Should show active project in Active projects section
         (expect (buffer-string) :to-match "Active projects")
         (expect (buffer-string) :to-match "Active work project")
-        ;; Should show incubated project in Incubated projects section
-        (expect (buffer-string) :to-match "Incubated projects")
-        (expect (buffer-string) :to-match "Incubated work project"))))
+        ;; Should show tickler project in Tickler projects section
+        (expect (buffer-string) :to-match "Tickler projects")
+        (expect (buffer-string) :to-match "Tickler work project"))))
 
 
 ;; (let* ((yesterday (format-org-date -1))
