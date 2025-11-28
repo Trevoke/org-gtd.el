@@ -71,7 +71,9 @@ Returns (graph-window . details-window) cons cell."
          (total-width (window-body-width graph-window))
          (graph-width (floor (* total-width org-gtd-graph-ui-split-ratio)))
          (details-width (- total-width graph-width))
-         (details-window (split-window-right (- details-width) graph-window))
+         ;; Use split-window instead of split-window-right for Emacs 28 compatibility
+         ;; (split-window-right WINDOW arg was added in Emacs 29)
+         (details-window (split-window graph-window (- details-width) 'right))
          (details-buffer (get-buffer-create
                           (format "*GTD Graph Details: %s*"
                                   (buffer-name graph-buffer)))))

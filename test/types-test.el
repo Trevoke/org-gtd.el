@@ -121,10 +121,11 @@
       (expect props :to-be-truthy)
       (expect (length props) :to-equal 2)
       ;; Check :who property
-      (let ((who-prop (seq-find (lambda (p) (eq (car p) :who)) props)))
+      (let* ((who-prop (seq-find (lambda (p) (eq (car p) :who)) props))
+             (type-val (plist-get (cdr who-prop) :type)))
         (expect who-prop :to-be-truthy)
         (expect (plist-get (cdr who-prop) :org-property) :to-equal "DELEGATED_TO")
-        (expect (plist-get (cdr who-prop) :type) :to-equal 'text)
+        (expect type-val :to-equal 'text)
         (expect (plist-get (cdr who-prop) :required) :to-be-truthy))))
 
   (it "returns nil for type without properties"
