@@ -220,6 +220,8 @@ KEY defaults to \"o\", TITLE defaults to \"GTD Views\"."
       (org-gtd-view-lang--translate-type-filter filter-value))
      ((eq filter-type 'previous-type)
       (org-gtd-view-lang--translate-previous-type-filter filter-value))
+     ((eq filter-type 'when)
+      (org-gtd-view-lang--translate-when-filter filter-value))
      ((keywordp filter-type)
       (org-gtd-view-lang--translate-semantic-property-filter filter-type filter-value))
      (t (error "Unknown GTD filter: %s" filter-type)))))
@@ -270,6 +272,22 @@ KEY defaults to \"o\", TITLE defaults to \"GTD Views\"."
     (list `(property-ts> ,org-gtd-timestamp "today")))
    (t (error "Unknown timestamp spec: %s" time-spec))))
 
+(defun org-gtd-view-lang--translate-when-filter (time-spec)
+  "Translate when TIME-SPEC using semantic property lookup.
+Requires a type filter to be present for property resolution."
+  (unless org-gtd-view-lang--current-type
+    (user-error "The 'when' filter requires a 'type' filter"))
+  (let ((org-prop (org-gtd-type-property org-gtd-view-lang--current-type :when)))
+    (unless org-prop
+      (user-error "Type %s does not have a :when property" org-gtd-view-lang--current-type))
+    (cond
+     ((eq time-spec 'past)
+      (list `(property-ts< ,org-prop "today") '(not (done))))
+     ((eq time-spec 'today)
+      (list `(property-ts= ,org-prop ,(format-time-string "%Y-%m-%d"))))
+     ((eq time-spec 'future)
+      (list `(property-ts> ,org-prop "today")))
+     (t (user-error "Unknown when spec: %s" time-spec)))))
 
 (defun org-gtd-view-lang--translate-deadline-filter (time-spec)
   "Translate deadline TIME-SPEC to org-ql deadline filter."

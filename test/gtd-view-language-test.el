@@ -747,6 +747,57 @@
                       (property-ts> "ORG_GTD_TIMESTAMP" "today"))))))
 
  (describe
+  "when filter using semantic property lookup"
+
+  (it "translates when filter using semantic property lookup"
+      (let ((gtd-view-spec
+             '((name . "Delegated Due Today")
+               (type . delegated)
+               (when . today))))
+        (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
+                :to-equal
+                `(and (property "ORG_GTD" "Delegated")
+                      (todo ,(org-gtd-keywords--wait))
+                      (property-ts= "ORG_GTD_TIMESTAMP" ,(format-time-string "%Y-%m-%d"))))))
+
+  (it "translates (when . past) with delegated type"
+      (let ((gtd-view-spec
+             '((name . "Missed Delegated")
+               (type . delegated)
+               (when . past))))
+        (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
+                :to-equal
+                `(and (property "ORG_GTD" "Delegated")
+                      (todo ,(org-gtd-keywords--wait))
+                      (property-ts< "ORG_GTD_TIMESTAMP" "today")
+                      (not (done))))))
+
+  (it "translates (when . future) with incubated type"
+      (let ((gtd-view-spec
+             '((name . "Future Incubated")
+               (type . incubated)
+               (when . future))))
+        (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
+                :to-equal
+                '(and (property "ORG_GTD" "Incubated")
+                      (property-ts> "ORG_GTD_TIMESTAMP" "today")))))
+
+  (it "requires type filter to be present"
+      (let ((gtd-view-spec
+             '((name . "Invalid When")
+               (when . today))))
+        (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
+                :to-throw 'user-error)))
+
+  (it "errors when type doesn't have :when property"
+      (let ((gtd-view-spec
+             '((name . "Invalid Type")
+               (type . next-action)
+               (when . today))))
+        (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
+                :to-throw 'user-error))))
+
+ (describe
   "previous-type filter for incubated items"
 
   (it "translates (previous-type . delegated) to PREVIOUS_ORG_GTD=Delegated"
