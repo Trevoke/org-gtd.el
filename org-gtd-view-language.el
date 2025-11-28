@@ -264,6 +264,8 @@ KEY defaults to \"o\", TITLE defaults to \"GTD Views\"."
   (cond
    ((eq time-spec 'past)
     (list `(property-ts< ,org-gtd-timestamp "today") '(not (done))))
+   ((eq time-spec 'today)
+    (list `(property-ts= ,org-gtd-timestamp ,(format-time-string "%Y-%m-%d"))))
    ((eq time-spec 'future)
     (list `(property-ts> ,org-gtd-timestamp "today")))
    (t (error "Unknown timestamp spec: %s" time-spec))))

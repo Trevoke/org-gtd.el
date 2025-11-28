@@ -52,6 +52,16 @@
                 :to-equal
                 '(and (property "ORG_GTD" "Actions")))))
 
+  (it "translates timestamp today filter"
+      (let ((gtd-view-spec
+             '((name . "Today Items")
+               (filters . ((type . calendar)
+                           (timestamp . today))))))
+        (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
+                :to-equal
+                `(and (property "ORG_GTD" "Calendar")
+                      (property-ts= "ORG_GTD_TIMESTAMP" ,(format-time-string "%Y-%m-%d"))))))
+
   (it "can define a GTD view for overdue deadlines"
       (let ((gtd-view-spec
              '((name . "Overdue Deadlines")
