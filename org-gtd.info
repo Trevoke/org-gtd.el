@@ -5639,7 +5639,7 @@ File: org-gtd.info,  Node: Custom View Commands,  Next: Clarification Commands, 
                  (interactive)
                  (org-gtd-view-show
                   '((name . "All NEXT Actions")
-                    (filters . ((todo . ("NEXT")))))))
+                    (type . next-action))))
 
        2. Save and reload your config (‘M-x eval-buffer’ or restart
           Emacs)
@@ -5653,20 +5653,23 @@ File: org-gtd.info,  Node: Custom View Commands,  Next: Clarification Commands, 
      **Understanding how views work:**
 
      Think of views like filtered searches.  You tell org-gtd what to
-     show using ‘filters’, and it finds matching items.
+     show, and it finds matching items.
 
      The built-in ‘org-gtd-engage’ command?  It uses ‘org-gtd-view-show’
      internally.  ‘org-gtd-reflect-stuck-projects’?  Same thing.  You're
      now using the same tool the package uses to create its own views.
 
-     Each view has two parts:
-     ‘name’
-          What to call the view (shows in agenda header)
-     ‘filters’
-          What to show (type, TODO state, tags, dates, etc.)
+     View specs are simple: give it a ‘name’ and add filters.  Filters
+     are pairs like ‘(filter-type . value)’.  Multiple filters combine
+     with AND logic—all must match.
 
-     Filters are pairs like ‘(filter-type . value)’.  Multiple filters
-     combine with AND logic—all must match.
+          ;; Simple view spec
+          '((name . "Delegated Items")
+            (type . delegated))
+
+     The most common filter is ‘type’, which matches GTD item types:
+     ‘project’, ‘next-action’, ‘calendar’, ‘delegated’, ‘incubated’,
+     ‘habit’, ‘stuck-project’, ‘completed-project’.
 
      **Tutorial: Common custom views**
 
@@ -5677,10 +5680,10 @@ File: org-gtd.info,  Node: Custom View Commands,  Next: Clarification Commands, 
             (interactive)
             (org-gtd-view-show
              '((name . "Work NEXT Actions")
-               (filters . ((todo . ("NEXT"))
-                           (area-of-focus . "Work"))))))
+               (type . next-action)
+               (area-of-focus . "Work"))))
 
-     Two filters: must be NEXT AND must be in Work area.
+     Two filters: must be a next-action AND must be in Work area.
 
      *Show projects that are stuck:*
 
@@ -5689,22 +5692,24 @@ File: org-gtd.info,  Node: Custom View Commands,  Next: Clarification Commands, 
             (interactive)
             (org-gtd-view-show
              '((name . "Stuck Projects")
-               (filters . ((type . stuck-project))))))
+               (type . stuck-project))))
 
      One filter: type must be stuck-project (built-in type that checks
      for stuck state).
 
-     *Show items with past deadlines:*
+     *Show delegated items due today:*
 
-          (defun my-overdue-items ()
-            "Show all items with deadlines in the past."
+          (defun my-delegated-today ()
+            "Show delegated items with check-ins due today."
             (interactive)
             (org-gtd-view-show
-             '((name . "Overdue Items")
-               (filters . ((deadline . past))))))
+             '((name . "Delegated Check-ins Today")
+               (type . delegated)
+               (when . today))))
 
-     One filter: deadline must be in the past.  (Automatically excludes
-     DONE items.)
+     The ‘when’ filter uses semantic time: ‘today’, ‘past’, or ‘future’.
+     It automatically knows that for delegated items, "when" means the
+     ‘ORG_GTD_TIMESTAMP’ property.
 
      *Show multiple related views together:*
 
@@ -5713,41 +5718,45 @@ File: org-gtd.info,  Node: Custom View Commands,  Next: Clarification Commands, 
             (interactive)
             (org-gtd-view-show
              '(((name . "Today's NEXT Actions")
-                (filters . ((todo . ("NEXT")))))
-               ((name . "Upcoming Calendar Items")
-                (filters . ((type . calendar)
-                            (timestamp . future)))))))
+                (type . next-action))
+               ((name . "Delegated Items to Follow Up")
+                (type . delegated)
+                (when . today)))))
 
      This shows TWO views in one agenda: NEXT actions first, then
-     upcoming calendar items.
+     delegated items due today.
 
      **Common patterns:**
 
+     *Filter by type (most common):*
+          (type . project)          ; All projects
+          (type . next-action)      ; Single actions (with NEXT keyword)
+          (type . delegated)        ; Delegated items (with WAIT keyword)
+          (type . calendar)         ; Calendar items
+          (type . incubated)        ; Someday/maybe items
+          (type . habit)            ; Habits
+          (type . stuck-project)    ; Projects needing attention
+          (type . completed-project) ; Projects ready to archive
+
+     *Filter by semantic time (‘when’):*
+          (when . today)            ; Items due today
+          (when . past)             ; Missed items
+          (when . future)           ; Upcoming items
+
+     The ‘when’ filter automatically uses the right timestamp property
+     for each type:
+        • For ‘delegated’ and ‘calendar’: checks ‘ORG_GTD_TIMESTAMP’
+        • For ‘incubated’: checks the incubation review date
+
      *Filter by area of focus:*
-          (filters . ((area-of-focus . "Work")))
-
-     *Filter by type (item type):*
-          (filters . ((type . project)))      ; All projects
-          (filters . ((type . next-action)))       ; Single actions
-          (filters . ((type . delegated)))     ; Delegated items
-          (filters . ((type . calendar)))      ; Calendar items
-          (filters . ((type . stuck-project))) ; Stuck projects only
-
-     *Filter by TODO state:*
-          (filters . ((todo . ("NEXT"))))          ; Just NEXT
-          (filters . ((todo . ("TODO" "NEXT"))))   ; TODO or NEXT
-
-     *Filter by time:*
-          (filters . ((deadline . past)))          ; Overdue deadlines
-          (filters . ((timestamp . past)))         ; Past timestamps
-          (filters . ((timestamp . future)))       ; Future timestamps
-          (filters . ((scheduled . today)))        ; Scheduled for today
+          (area-of-focus . "Work")
 
      *Combine multiple filters (AND logic):*
-          (filters . ((type . project)
-                      (area-of-focus . "Work")
-                      (deadline . past)))
-          ; Shows: Projects AND Work area AND overdue
+          '((name . "Overdue Work Projects")
+            (type . project)
+            (area-of-focus . "Work")
+            (deadline . past))
+          ;; Shows: Projects AND Work area AND overdue
 
      **When to create custom views:**
 
@@ -5782,18 +5791,18 @@ File: org-gtd.info,  Node: Custom View Commands,  Next: Clarification Commands, 
      View DSL Reference: View DSL Filter Reference.
 
      Common filters include:
-     ‘category’
-          projects, actions, delegated, calendar, stuck-projects, etc.
-     ‘todo’
-          List of TODO keywords to match
+     ‘type’
+          project, next-action, delegated, calendar, incubated, habit,
+          stuck-project, completed-project
+     ‘when’
+          Semantic time filter (today, past, future) - automatically
+          uses correct property per type
      ‘area-of-focus’
           Specific area/category
-     ‘deadline’, ‘scheduled’, ‘timestamp’
-          Time-based filters (past, future, today)
+     ‘deadline’, ‘scheduled’
+          Org timestamp filters (past, future, today)
      ‘tags’
           Match specific tags
-     ‘level’
-          Heading level (2 for projects, 3+ for tasks)
 
      **Command reference:**
 
@@ -5806,16 +5815,16 @@ File: org-gtd.info,  Node: Custom View Commands,  Next: Clarification Commands, 
           specifications
 
      *View specification structure:*
+          ;; Simple view - filters are top-level
           '((name . "View Name")
-            (filters . ((filter-type . value)
-                        (filter-type . value)
-                        ...)))
+            (type . delegated)
+            (when . past))
 
      *Multiple views:*
           '(((name . "View 1")
-             (filters . (...)))
+             (type . next-action))
             ((name . "View 2")
-             (filters . (...))))
+             (type . stuck-project)))
 
      *Returns:* Opens org-agenda buffer with the specified view
 
@@ -5823,14 +5832,14 @@ File: org-gtd.info,  Node: Custom View Commands,  Next: Clarification Commands, 
           ;; Single view
           (org-gtd-view-show
            '((name . "Active Projects")
-             (filters . ((type . project)))))
+             (type . project)))
 
           ;; Multiple views
           (org-gtd-view-show
            '(((name . "NEXT Actions")
-              (filters . ((todo . ("NEXT")))))
+              (type . next-action))
              ((name . "Stuck Projects")
-              (filters . ((type . stuck-project))))))
+              (type . stuck-project))))
 
 
 File: org-gtd.info,  Node: Clarification Commands,  Next: Archive Commands,  Prev: Custom View Commands,  Up: Commands Reference
@@ -7233,12 +7242,43 @@ File: org-gtd.info,  Node: View Structure,  Next: Type Filters,  Up: View DSL Fi
 6.5.1 View Structure
 --------------------
 
-A GTD view is defined as an alist:
+A GTD view is defined as an alist with filters at the top level:
 
+     ;; Simple view with filters at top level
      '((name . "View Name")
-       (filters . ((filter-type . filter-value) ...)))
+       (type . delegated)
+       (when . past))
 
    Multiple filters create AND logic (all must match).
+
+   • Multi-Block Views
+
+     For complex views with multiple sections (like the engage view),
+     use ‘blocks’:
+
+          '((name . "My Custom Dashboard")
+            (blocks . (((name . "Today's Calendar")
+                        (block-type . calendar-day))
+                       ((name . "Items Due Today")
+                        (type . delegated)
+                        (when . today))
+                       ((name . "All NEXT Actions")
+                        (type . next-action)))))
+
+     Each block is its own view spec.  Blocks are displayed in order as
+     separate agenda sections.
+
+   • Block Types
+
+     Special ‘block-type’ values control how blocks are rendered:
+
+     ‘calendar-day’
+          Native org-agenda day view filtered to Calendar and Habit
+          items only
+     ‘todo’
+          Native org-agenda todo block (requires ‘todo-keyword’)
+     _default_
+          org-ql query block (when no block-type specified)
 
 
 File: org-gtd.info,  Node: Type Filters,  Next: Time-based Filters,  Prev: View Structure,  Up: View DSL Filter Reference
@@ -7250,13 +7290,13 @@ Filter by GTD item type:
 
    • ‘(type . delegated)’
 
-     *Matches*: Items with ‘ORG_GTD="Delegated"’
+     *Matches*: Items with ‘ORG_GTD="Delegated"’ and TODO keyword ‘WAIT’
 
      *Use case*: See all delegated tasks
 
      *Example*:
           '((name . "All Delegations")
-            (filters . ((type . delegated))))
+            (type . delegated))
 
    • ‘(type . calendar)’
 
@@ -7266,7 +7306,7 @@ Filter by GTD item type:
 
      *Example*:
           '((name . "Calendar Items")
-            (filters . ((type . calendar))))
+            (type . calendar))
 
    • ‘(type . project)’
 
@@ -7276,7 +7316,7 @@ Filter by GTD item type:
 
      *Example*:
           '((name . "All Projects")
-            (filters . ((type . project))))
+            (type . project))
 
    • ‘(type . active-project)’
 
@@ -7286,7 +7326,7 @@ Filter by GTD item type:
 
      *Example*:
           '((name . "Active Projects")
-            (filters . ((type . active-project))))
+            (type . active-project))
 
    • ‘(type . completed-project)’
 
@@ -7297,7 +7337,7 @@ Filter by GTD item type:
 
      *Example*:
           '((name . "Completed Projects")
-            (filters . ((type . completed-project))))
+            (type . completed-project))
 
    • ‘(type . stuck-project)’
 
@@ -7307,7 +7347,7 @@ Filter by GTD item type:
 
      *Example*:
           '((name . "Stuck Projects")
-            (filters . ((type . stuck-project))))
+            (type . stuck-project))
 
    • ‘(type . incubated)’
 
@@ -7317,27 +7357,28 @@ Filter by GTD item type:
 
      *Example*:
           '((name . "Someday/Maybe")
-            (filters . ((type . incubated))))
+            (type . incubated))
 
    • ‘(type . habit)’
 
-     *Matches*: Items with ‘ORG_GTD="Habit"’
+     *Matches*: Items with ‘ORG_GTD="Habits"’
 
      *Use case*: See all habits
 
      *Example*:
           '((name . "All Habits")
-            (filters . ((type . habit))))
+            (type . habit))
 
    • ‘(type . next-action)’
 
-     *Matches*: Single action items (‘ORG_GTD="Actions"’)
+     *Matches*: Single action items (‘ORG_GTD="Actions"’) with TODO
+     keyword ‘NEXT’
 
      *Use case*: See all single actions (not project tasks)
 
      *Example*:
           '((name . "Single Actions")
-            (filters . ((type . next-action))))
+            (type . next-action))
 
    • ‘(type . incubated-project)’
 
@@ -7347,7 +7388,7 @@ Filter by GTD item type:
 
      *Example*:
           '((name . "Incubated Projects")
-            (filters . ((type . incubated-project))))
+            (type . incubated-project))
 
 
 File: org-gtd.info,  Node: Time-based Filters,  Next: Keyword Filters,  Prev: Type Filters,  Up: View DSL Filter Reference
@@ -7355,106 +7396,72 @@ File: org-gtd.info,  Node: Time-based Filters,  Next: Keyword Filters,  Prev: Ty
 6.5.3 Time-based Filters
 ------------------------
 
-Filter by timestamps, deadlines, and scheduled dates:
+Filter by timestamps, deadlines, and scheduled dates.
 
-   • ‘(timestamp . past)’
+   • Semantic Time: ‘(when . VALUE)’
 
-     *Matches*: Items with ‘ORG_GTD_TIMESTAMP’ in the past that aren't
-     done
+     The ‘when’ filter provides semantic time filtering that
+     automatically uses the correct timestamp property for each GTD item
+     type:
 
-     *Use case*: Missed appointments and follow-ups
+        • For ‘delegated’ and ‘calendar’ types: checks
+          ‘ORG_GTD_TIMESTAMP’
+        • For ‘incubated’ type: checks the incubation review date
 
-     *Example*:
+     Values: ‘today’, ‘past’, ‘future’
+
+     *Example*: Delegated items due today:
+          '((name . "Delegated Check-ins Today")
+            (type . delegated)
+            (when . today))
+
+     *Example*: Missed calendar appointments:
           '((name . "Missed Appointments")
-            (filters . ((type . calendar)
-                        (timestamp . past))))
+            (type . calendar)
+            (when . past))
 
-   • ‘(timestamp . future)’
+     *Example*: Upcoming delegated check-ins:
+          '((name . "Upcoming Delegated")
+            (type . delegated)
+            (when . future))
 
-     *Matches*: Items with ‘ORG_GTD_TIMESTAMP’ in the future
+   • Raw Timestamp: ‘(timestamp . VALUE)’
 
-     *Use case*: Upcoming appointments
+     Filter directly by ‘ORG_GTD_TIMESTAMP’ property.  Use ‘when’
+     instead when filtering by type.
 
-     *Example*:
-          '((name . "Upcoming Appointments")
-            (filters . ((type . calendar)
-                        (timestamp . future))))
+     Values: ‘past’, ‘future’, ‘today’
 
-   • ‘(deadline . past)’
+   • Deadline: ‘(deadline . VALUE)’
 
-     *Matches*: Items with deadline in the past that aren't done
+     Filter by org-mode DEADLINE.
 
-     *Use case*: Overdue items
+     Values: ‘past’, ‘future’, ‘today’
 
      *Example*:
           '((name . "Overdue Items")
-            (filters . ((deadline . past))))
+            (deadline . past))
 
-   • ‘(scheduled . past)’
+   • Scheduled: ‘(scheduled . VALUE)’
 
-     *Matches*: Items scheduled in the past that aren't done
+     Filter by org-mode SCHEDULED.
 
-     *Use case*: Find items that should have started
-
-     *Example*:
-          '((name . "Overdue Start Dates")
-            (filters . ((scheduled . past))))
-
-   • ‘(scheduled . future)’
-
-     *Matches*: Items scheduled in the future
-
-     *Use case*: See what's coming up
-
-     *Example*:
-          '((name . "Future Scheduled")
-            (filters . ((scheduled . future))))
-
-   • ‘(scheduled . today)’
-
-     *Matches*: Items scheduled for today
-
-     *Use case*: Today's habits and scheduled actions
+     Values: ‘past’, ‘future’, ‘today’
 
      *Example*:
           '((name . "Today's Scheduled Items")
-            (filters . ((scheduled . today))))
+            (scheduled . today))
 
-   • ‘(closed . recent)’
+   • Closed: ‘(closed . VALUE)’
 
-     *Matches*: Items closed in last 7 days
+     Filter by CLOSED timestamp.
 
-     *Use case*: Weekly review accomplishments
-
-     *Example*:
-          '((name . "Recent Completions")
-            (filters . ((closed . recent))))
-
-   • ‘(closed . past-day)’
-
-     *Matches*: Items closed in last day
-
-   • ‘(closed . past-week)’
-
-     *Matches*: Items closed in last week
-
-   • ‘(closed . past-month)’
-
-     *Matches*: Items closed in last month
-
-   • ‘(closed . past-year)’
-
-     *Matches*: Items closed in last year
-
-   • ‘(closed . today)’
-
-     *Matches*: Items closed today
-
-     *Use case*: End-of-day review
+     Values: ‘today’, ‘recent’ (7 days), ‘past-day’, ‘past-week’,
+     ‘past-month’, ‘past-year’
 
      *Example*:
           '((name . "Completed Today")
-            (filters . ((closed . today))))
+            (closed . today))
 
 
 File: org-gtd.info,  Node: Keyword Filters,  Next: Area of Focus Filters,  Prev: Time-based Filters,  Up: View DSL Filter Reference
@@ -7462,7 +7469,12 @@ File: org-gtd.info,  Node: Keyword Filters,  Next: Area of Focus Filters,  Prev:
 6.5.4 *TODO* Keyword Filters
 ----------------------------
 
-Filter by TODO state:
+Filter by TODO state.
+
+   *Note*: The ‘type’ filter automatically includes the correct TODO
+keyword for each type (e.g., ‘next-action’ includes ‘NEXT’, ‘delegated’
+includes ‘WAIT’).  Use these filters only when you need explicit
+control.
 
    • ‘(todo . ("KEYWORD1" "KEYWORD2"))’
 
@@ -7472,11 +7484,11 @@ Filter by TODO state:
 
      *Example*: Show only NEXT actions:
           '((name . "NEXT Actions Only")
-            (filters . ((todo . ("NEXT")))))
+            (todo . ("NEXT")))
 
      *Example*: Show NEXT and WAIT:
           '((name . "Active and Waiting")
-            (filters . ((todo . ("NEXT" "WAIT")))))
+            (todo . ("NEXT" "WAIT")))
 
    • ‘(done . t)’
 
@@ -7487,7 +7499,7 @@ Filter by TODO state:
 
      *Example*:
           '((name . "Completed Items")
-            (filters . ((done . t))))
+            (done . t))
 
 
 File: org-gtd.info,  Node: Area of Focus Filters,  Next: Tag Filters,  Prev: Keyword Filters,  Up: View DSL Filter Reference
@@ -7505,12 +7517,12 @@ Filter by life area:
 
      *Example*:
           '((name . "Work Items")
-            (filters . ((area-of-focus . "Work"))))
+            (area-of-focus . "Work"))
 
      *Example*: Work projects only:
           '((name . "Work Projects")
-            (filters . ((type . active-project)
-                        (area-of-focus . "Work"))))
+            (type . active-project)
+            (area-of-focus . "Work"))
 
 
 File: org-gtd.info,  Node: Tag Filters,  Next: Property Filters,  Prev: Area of Focus Filters,  Up: View DSL Filter Reference
@@ -7528,8 +7540,8 @@ Filter by org tags:
 
      *Example*:
           '((name . "Home and Errands")
-            (filters . ((todo . ("NEXT"))
-                        (tags . ("@home" "@errands")))))
+            (type . next-action)
+            (tags . ("@home" "@errands")))
 
    • ‘(tags-match . "PATTERN")’
 
@@ -7539,7 +7551,7 @@ Filter by org tags:
 
      *Example*: All items with context tags (tags starting with @):
           '((name . "Context-Tagged Items")
-            (filters . ((tags-match . "{^@}"))))
+            (tags-match . "{^@}"))
 
      *Org tag expressions*:
      ‘"tag1|tag2"’
@@ -7565,12 +7577,8 @@ Filter by arbitrary org properties:
 
      *Example*:
           '((name . "High Priority Actions")
-            (filters . ((property . (("PRIORITY" . "A")))
-                        (todo . ("NEXT")))))
-
-     *Example*: Multiple property filters:
-          '((name . "Project Tasks")
-            (filters . ((property . (("ORG_GTD" . "Actions"))))))
+            (property . (("PRIORITY" . "A")))
+            (type . next-action))
 
 
 File: org-gtd.info,  Node: Structural Filters,  Next: Special Filters,  Prev: Property Filters,  Up: View DSL Filter Reference
@@ -7588,8 +7596,8 @@ Filter by org heading structure:
 
      *Example*: Top-level projects only:
           '((name . "Top-Level Projects")
-            (filters . ((type . project)
-                        (level . 2))))
+            (type . project)
+            (level . 2))
 
      *Note*: org-gtd projects are typically at level 2 in their files
      (under a category heading at level 1).
@@ -7608,8 +7616,8 @@ File: org-gtd.info,  Node: Special Filters,  Next: View Configuration Options,  
 
      *Example*:
           '((name . "NEXT Actions (No Habits)")
-            (filters . ((todo . ("NEXT"))
-                        (not-habit . t))))
+            (type . next-action)
+            (not-habit . t))
 
    • ‘(invalid-timestamp . t)’
 
@@ -7620,7 +7628,7 @@ File: org-gtd.info,  Node: Special Filters,  Next: View Configuration Options,  
 
      *Example*:
           '((name . "Items with Invalid Timestamps")
-            (filters . ((invalid-timestamp . t))))
+            (invalid-timestamp . t))
 
 
 File: org-gtd.info,  Node: View Configuration Options,  Next: Complete View Examples,  Prev: Special Filters,  Up: View DSL Filter Reference
@@ -7630,17 +7638,70 @@ File: org-gtd.info,  Node: View Configuration Options,  Next: Complete View Exam
 
 These options control how the view is displayed:
 
+   • ‘(block-type . TYPE)’
+
+     *Purpose*: Control how a block is rendered
+
+     *Values*:
+     ‘calendar-day’
+          Native org-agenda day view filtered to Calendar and Habit
+          items
+     ‘todo’
+          Native org-agenda todo block (requires ‘todo-keyword’)
+     _omit_
+          Default org-ql query block
+
+     *Use case*: When you need native agenda features (time grid,
+     habits, etc.)
+
+     *Example*: Multi-block view with calendar:
+          '((name . "My Dashboard")
+            (blocks . (((name . "Today's Schedule")
+                        (block-type . calendar-day))
+                       ((name . "Delegated Due Today")
+                        (type . delegated)
+                        (when . today)))))
+
+   • ‘(blocks . BLOCK-LIST)’
+
+     *Purpose*: Create a multi-section view with multiple blocks
+
+     *Format*: List of view specs, each with its own name and filters
+
+     *Example*:
+          '((name . "Review Dashboard")
+            (blocks . (((name . "Stuck Projects")
+                        (type . stuck-project))
+                       ((name . "Missed Delegated")
+                        (type . delegated)
+                        (when . past))
+                       ((name . "Upcoming Calendar")
+                        (type . calendar)
+                        (when . future)))))
+
+   • ‘(prefix-format . FORMAT-STRING)’
+
+     *Purpose*: Custom agenda prefix format for all blocks in a
+     multi-block view
+
+     *Use case*: Show project names alongside tasks
+
+     *Example*:
+          '((name . "Tasks with Projects")
+            (prefix-format . " %i %-12:(org-gtd-agenda--prefix-format 12) ")
+            (blocks . (((name . "NEXT Actions")
+                        (type . next-action)))))
+
    • ‘(view-type . agenda)’
 
      *Purpose*: Create a native org-agenda view instead of org-ql block
 
-     *Use case*: When you want a day/week agenda view
+     *Use case*: When you want a standard day/week agenda view
 
      *Example*:
           '((name . "Weekly Agenda")
             (view-type . agenda)
-            (agenda-span . 7)
-            (filters . ()))
+            (agenda-span . 7))
 
    • ‘(agenda-span . N)’
 
@@ -7649,46 +7710,6 @@ These options control how the view is displayed:
      *Default*: 1
 
      *Requires*: ‘(view-type . agenda)’
-
-     *Example*: Week view:
-          '((name . "Week Ahead")
-            (view-type . agenda)
-            (agenda-span . 7))
-
-   • ‘(show-habits . t)’ or ‘(show-habits . nil)’
-
-     *Purpose*: Control habit visibility in agenda views
-
-     *Default*: Habits shown
-
-     *Requires*: ‘(view-type . agenda)’
-
-     *Example*: Agenda without habits:
-          '((name . "Today (No Habits)")
-            (view-type . agenda)
-            (show-habits . nil))
-
-   • ‘(additional-blocks . BLOCK-SPECS)’
-
-     *Purpose*: Add additional agenda blocks to the view
-
-     *Format*: List of block specifications
-
-     *Example*: Agenda + NEXT actions:
-          '((name . "Today + Actions")
-            (view-type . agenda)
-            (additional-blocks . ((todo . "NEXT"))))
-
-   • ‘(prefix-format . FORMAT-STRING)’
-
-     *Purpose*: Custom agenda prefix format
-
-     *Use case*: Customize how items appear in agenda
-
-     *Example*:
-          '((name . "Custom Format View")
-            (view-type . agenda)
-            (prefix-format . "  %-12:c %?-12t% s"))
 
 
 File: org-gtd.info,  Node: Complete View Examples,  Next: Creating Custom Views,  Prev: View Configuration Options,  Up: View DSL Filter Reference
@@ -7699,20 +7720,19 @@ File: org-gtd.info,  Node: Complete View Examples,  Next: Creating Custom Views,
    • Weekly Review View
 
           (defun my-weekly-review ()
-            "Weekly review showing completed items, active projects, and stuck projects."
+            "Weekly review: stuck projects, missed items, recent completions."
             (interactive)
-            (org-agenda nil "w")
-            (let ((org-agenda-custom-commands
-                   '(("w" "Weekly Review"
-                      ((org-ql-block '(and (property "ORG_GTD" "Projects")
-                                           (project-has-active-tasks))
-                                     ((org-ql-block-header "Active Projects")))
-                       (org-ql-block '(and (property "ORG_GTD" "Projects")
-                                           (project-is-stuck))
-                                     ((org-ql-block-header "Stuck Projects")))
-                       (org-ql-block '(closed :from "-7d")
-                                     ((org-ql-block-header "Completed This Week"))))))))
-              (org-agenda nil "w")))
+            (org-gtd-view-show
+             '(((name . "Stuck Projects")
+                (type . stuck-project))
+               ((name . "Missed Delegated Check-ins")
+                (type . delegated)
+                (when . past))
+               ((name . "Missed Calendar Items")
+                (type . calendar)
+                (when . past))
+               ((name . "Completed This Week")
+                (closed . past-week)))))
 
    • Context-Based View
 
@@ -7724,13 +7744,17 @@ File: org-gtd.info,  Node: Complete View Examples,  Next: Creating Custom Views,
    • Morning Planning View
 
           (defun my-morning-view ()
-            "Morning planning: today's agenda, NEXT actions, and delegations to follow up."
+            "Morning planning: calendar, delegated check-ins, NEXT actions."
             (interactive)
             (org-gtd-view-show
              '((name . "Morning Planning")
-               (view-type . agenda)
-               (agenda-span . 1)
-               (additional-blocks . ((todo . "NEXT"))))))
+               (blocks . (((name . "Today's Schedule")
+                           (block-type . calendar-day))
+                          ((name . "Delegated Items to Check")
+                           (type . delegated)
+                           (when . today))
+                          ((name . "Ready to Work On")
+                           (type . next-action)))))))
 
 
 File: org-gtd.info,  Node: Creating Custom Views,  Prev: Complete View Examples,  Up: View DSL Filter Reference
@@ -7746,8 +7770,8 @@ To create a custom view:
             (interactive)
             (org-gtd-view-show
              '((name . "View Name")
-               (filters . ((filter1 . value1)
-                           (filter2 . value2))))))
+               (type . delegated)
+               (when . today))))
 
   2. *Bind to a key* (optional):
           (global-set-key (kbd "C-c d v") 'my-custom-view)
@@ -8615,168 +8639,163 @@ Ref: Comparison Missed vs Upcoming202596
 Ref: Command Reference (1)203071
 Node: Custom View Commands203474
 Ref: org-gtd-view-show203689
-Node: Clarification Commands211268
-Ref: org-gtd-clarify-item211466
-Ref: org-gtd-clarify-agenda-item211902
-Ref: org-gtd-clarify-toggle-horizons-window212160
-Ref: org-gtd-clarify-project-insert-template212491
-Ref: Updating Items Without Refiling212789
-Node: Archive Commands217353
-Ref: org-gtd-archive-completed-items217543
-Node: Agenda-Specific Commands218011
-Ref: org-gtd-delegate-agenda-item218281
-Ref: org-gtd-project-cancel-from-agenda218604
-Node: Project Management Commands218890
-Ref: org-gtd-projects-fix-todo-keywords-for-project-at-point219117
-Ref: org-gtd-projects-fix-all-todo-keywords219707
-Ref: org-gtd-project-update-all-cookies222428
-Ref: org-gtd-incubate223899
-Ref: org-gtd-reactivate225312
-Node: Task Dependency Commands226367
-Ref: org-gtd-task-add-blockers227256
-Ref: org-gtd-task-remove-blockers227982
-Ref: org-gtd-task-add-dependent228248
-Ref: org-gtd-task-add-dependents228891
-Ref: org-gtd-task-clear-relationships229133
-Ref: org-gtd-task-show-relationships229456
-Ref: org-gtd-validate-project-dependencies229801
-Ref: org-gtd-remove-task-from-project230230
-Node: Area of Focus Commands230567
-Ref: org-gtd-area-of-focus-set-on-item-at-point230785
-Ref: org-gtd-area-of-focus-set-on-agenda-item231152
-Node: Programmatic Creation Commands231490
-Ref: org-gtd-habit-create231811
-Ref: org-gtd-calendar-create232047
-Ref: org-gtd-delegate-create232286
-Ref: org-gtd-incubate-create232940
-Ref: org-gtd-single-action-create233178
-Node: Utility Commands233372
-Ref: org-gtd-setup-keywords-wizard233567
-Ref: org-gtd-inbox-path233879
-Node: ID Overlay Commands234236
-Ref: org-gtd-id-overlay-mode234437
-Ref: org-gtd-id-overlay-refresh-buffer234785
-Ref: org-gtd-id-overlay-clear-buffer235041
-Node: Migration and Upgrade Commands235243
-Ref: org-gtd-upgrade-v3-to-v4235471
-Node: Mode-Line Integration235996
-Ref: org-gtd-mode236204
-Ref: org-gtd-inbox-count236675
-Node: Obsolete Commands236932
-Ref: org-gtd-delegate-item-at-point (removed in 40)237093
-Node: Properties Reference (Internal Implementation)237875
-Node: Core GTD Properties238994
-Ref: ORG_GTD239184
-Ref: ORG_GTD_REFILE240015
-Node: Project Properties241595
-Ref: ORG_GTD_FIRST_TASKS241818
-Node: Task Dependency Properties242644
-Ref: ORG_GTD_DEPENDS_ON242892
-Ref: ORG_GTD_BLOCKS244599
-Ref: ORG_GTD_PROJECT_IDS245351
-Node: Calendar and Time Properties245664
-Ref: ORG_GTD_TIMESTAMP245919
-Node: Delegation Properties246759
-Ref: DELEGATED_TO246990
-Node: Habit Properties247815
-Ref: STYLE248032
-Node: Area of Focus Properties248431
-Ref: CATEGORY248682
-Node: Standard Org Properties Used by org-gtd249431
-Ref: ID249687
-Ref: keyword249934
-Ref: SCHEDULED (org-mode standard)250524
-Ref: DEADLINE (org-mode standard)250774
-Node: Troubleshooting Projects250997
-Node: Fixing Broken Dependencies251625
-Node: When Manual Property Editing is Needed252993
-Node: Common Problems and Solutions254822
-Ref: Project Shows No NEXT Tasks (Stuck Project)255040
-Ref: Too Many NEXT Tasks255802
-Ref: Task Won't Advance to NEXT256216
-Ref: Task States Inconsistent After External Edits256817
-Node: View DSL Filter Reference257920
-Node: View Structure258557
-Node: Type Filters258874
-Ref: (type delegated)259071
-Ref: (type calendar)259302
-Ref: (type project)259541
-Ref: (type active-project)259766
-Ref: (type completed-project)260029
-Ref: (type stuck-project)260314
-Ref: (type incubated)260598
-Ref: (type habit)260845
-Ref: (type next-action)261050
-Ref: (type incubated-project)261312
-Node: Time-based Filters261583
-Ref: (timestamp past)261822
-Ref: (timestamp future)262142
-Ref: (deadline past)262435
-Ref: (scheduled past)262664
-Ref: (scheduled future)262919
-Ref: (scheduled today)263145
-Ref: (closed recent)263388
-Ref: (closed past-day)263617
-Ref: (closed past-week)263693
-Ref: (closed past-month)263771
-Ref: (closed past-year)263851
-Ref: (closed today)263929
-Node: Keyword Filters264125
-Ref: (todo ("KEYWORD1" "KEYWORD2"))264349
-Ref: (done t)264756
-Node: Area of Focus Filters265001
-Ref: (area-of-focus "AREA")265215
-Node: Tag Filters265620
-Ref: (tags ("TAG1" "TAG2"))265814
-Ref: (tags-match "PATTERN")266125
-Node: Property Filters266607
-Ref: (property (("PROP" "VALUE")))266824
-Node: Structural Filters267276
-Ref: (level N)267498
-Node: Special Filters267877
-Ref: (not-habit t)268069
-Ref: (invalid-timestamp t)268336
-Node: View Configuration Options268649
-Ref: (view-type agenda)268919
-Ref: (agenda-span N)269227
-Ref: (show-habits t) or (show-habits nil)269504
-Ref: (additional-blocks BLOCK-SPECS)269845
-Ref: (prefix-format FORMAT-STRING)270161
-Node: Complete View Examples270444
-Ref: Weekly Review View270662
-Ref: Context-Based View271592
-Ref: Morning Planning View271784
-Node: Creating Custom Views272163
-Node: Hooks Framework Reference272839
-Node: What Are Organize Hooks?273277
-Node: Your First Hook in 2 Minutes273939
-Node: The org-gtd-organize-hooks Variable275074
-Node: Built-in Hooks275573
-Ref: org-set-tags-command275773
-Ref: org-gtd-set-area-of-focus276016
-Node: Writing Custom Hooks276535
-Ref: Basic Hook Structure276927
-Ref: Using org-gtd-organize-type-member-p277261
-Node: Example Custom Hooks278334
-Ref: Selective Tagging with Unless278537
-Ref: Add Effort Estimation279254
-Ref: Add Priority279587
-Ref: Auto-Set Property Based on Keywords279883
-Ref: Add Custom Property280351
-Ref: Integration with Org-Roam280782
-Ref: Set Effort from Keywords281145
-Node: Hook Execution Order281865
-Node: Best Practices282375
-Node: Complete Example Comprehensive Hook Setup283358
-Node: Troubleshooting285487
-Node: Finding lost tasks285944
-Node: Projects without a NEXT item286953
-Node: I can't create a project when clarifying an inbox item!288209
-Node: Configuration problems289167
-Node: Keywords not working289486
-Node: Items not showing in engage view290300
-Node: Tasks still showing after incubating project291048
-Node: Still stuck?292164
+Node: Clarification Commands211648
+Ref: org-gtd-clarify-item211846
+Ref: org-gtd-clarify-agenda-item212282
+Ref: org-gtd-clarify-toggle-horizons-window212540
+Ref: org-gtd-clarify-project-insert-template212871
+Ref: Updating Items Without Refiling213169
+Node: Archive Commands217733
+Ref: org-gtd-archive-completed-items217923
+Node: Agenda-Specific Commands218391
+Ref: org-gtd-delegate-agenda-item218661
+Ref: org-gtd-project-cancel-from-agenda218984
+Node: Project Management Commands219270
+Ref: org-gtd-projects-fix-todo-keywords-for-project-at-point219497
+Ref: org-gtd-projects-fix-all-todo-keywords220087
+Ref: org-gtd-project-update-all-cookies222808
+Ref: org-gtd-incubate224279
+Ref: org-gtd-reactivate225692
+Node: Task Dependency Commands226747
+Ref: org-gtd-task-add-blockers227636
+Ref: org-gtd-task-remove-blockers228362
+Ref: org-gtd-task-add-dependent228628
+Ref: org-gtd-task-add-dependents229271
+Ref: org-gtd-task-clear-relationships229513
+Ref: org-gtd-task-show-relationships229836
+Ref: org-gtd-validate-project-dependencies230181
+Ref: org-gtd-remove-task-from-project230610
+Node: Area of Focus Commands230947
+Ref: org-gtd-area-of-focus-set-on-item-at-point231165
+Ref: org-gtd-area-of-focus-set-on-agenda-item231532
+Node: Programmatic Creation Commands231870
+Ref: org-gtd-habit-create232191
+Ref: org-gtd-calendar-create232427
+Ref: org-gtd-delegate-create232666
+Ref: org-gtd-incubate-create233320
+Ref: org-gtd-single-action-create233558
+Node: Utility Commands233752
+Ref: org-gtd-setup-keywords-wizard233947
+Ref: org-gtd-inbox-path234259
+Node: ID Overlay Commands234616
+Ref: org-gtd-id-overlay-mode234817
+Ref: org-gtd-id-overlay-refresh-buffer235165
+Ref: org-gtd-id-overlay-clear-buffer235421
+Node: Migration and Upgrade Commands235623
+Ref: org-gtd-upgrade-v3-to-v4235851
+Node: Mode-Line Integration236376
+Ref: org-gtd-mode236584
+Ref: org-gtd-inbox-count237055
+Node: Obsolete Commands237312
+Ref: org-gtd-delegate-item-at-point (removed in 40)237473
+Node: Properties Reference (Internal Implementation)238255
+Node: Core GTD Properties239374
+Ref: ORG_GTD239564
+Ref: ORG_GTD_REFILE240395
+Node: Project Properties241975
+Ref: ORG_GTD_FIRST_TASKS242198
+Node: Task Dependency Properties243024
+Ref: ORG_GTD_DEPENDS_ON243272
+Ref: ORG_GTD_BLOCKS244979
+Ref: ORG_GTD_PROJECT_IDS245731
+Node: Calendar and Time Properties246044
+Ref: ORG_GTD_TIMESTAMP246299
+Node: Delegation Properties247139
+Ref: DELEGATED_TO247370
+Node: Habit Properties248195
+Ref: STYLE248412
+Node: Area of Focus Properties248811
+Ref: CATEGORY249062
+Node: Standard Org Properties Used by org-gtd249811
+Ref: ID250067
+Ref: keyword250314
+Ref: SCHEDULED (org-mode standard)250904
+Ref: DEADLINE (org-mode standard)251154
+Node: Troubleshooting Projects251377
+Node: Fixing Broken Dependencies252005
+Node: When Manual Property Editing is Needed253373
+Node: Common Problems and Solutions255202
+Ref: Project Shows No NEXT Tasks (Stuck Project)255420
+Ref: Too Many NEXT Tasks256182
+Ref: Task Won't Advance to NEXT256596
+Ref: Task States Inconsistent After External Edits257197
+Node: View DSL Filter Reference258300
+Node: View Structure258937
+Ref: Multi-Block Views259330
+Ref: Block Types259938
+Node: Type Filters260296
+Ref: (type delegated)260493
+Ref: (type calendar)260738
+Ref: (type project)260963
+Ref: (type active-project)261174
+Ref: (type completed-project)261423
+Ref: (type stuck-project)261694
+Ref: (type incubated)261964
+Ref: (type habit)262197
+Ref: (type next-action)262389
+Ref: (type incubated-project)262671
+Node: Time-based Filters262928
+Ref: Semantic Time (when VALUE)263167
+Ref: Raw Timestamp (timestamp VALUE)264033
+Ref: Deadline (deadline VALUE)264246
+Ref: Scheduled (scheduled VALUE)264461
+Ref: Closed (closed VALUE)264691
+Node: Keyword Filters264965
+Ref: (todo ("KEYWORD1" "KEYWORD2"))265425
+Ref: (done t)265804
+Node: Area of Focus Filters266035
+Ref: (area-of-focus "AREA")266249
+Node: Tag Filters266614
+Ref: (tags ("TAG1" "TAG2"))266808
+Ref: (tags-match "PATTERN")267096
+Node: Property Filters267564
+Ref: (property (("PROP" "VALUE")))267781
+Node: Structural Filters268063
+Ref: (level N)268285
+Node: Special Filters268638
+Ref: (not-habit t)268830
+Ref: (invalid-timestamp t)269074
+Node: View Configuration Options269373
+Ref: (block-type TYPE)269643
+Ref: (blocks BLOCK-LIST)270401
+Ref: (prefix-format FORMAT-STRING)271002
+Ref: (view-type agenda)271422
+Ref: (agenda-span N)271712
+Node: Complete View Examples271856
+Ref: Weekly Review View272074
+Ref: Context-Based View272679
+Ref: Morning Planning View272871
+Node: Creating Custom Views273480
+Node: Hooks Framework Reference274126
+Node: What Are Organize Hooks?274564
+Node: Your First Hook in 2 Minutes275226
+Node: The org-gtd-organize-hooks Variable276361
+Node: Built-in Hooks276860
+Ref: org-set-tags-command277060
+Ref: org-gtd-set-area-of-focus277303
+Node: Writing Custom Hooks277822
+Ref: Basic Hook Structure278214
+Ref: Using org-gtd-organize-type-member-p278548
+Node: Example Custom Hooks279621
+Ref: Selective Tagging with Unless279824
+Ref: Add Effort Estimation280541
+Ref: Add Priority280874
+Ref: Auto-Set Property Based on Keywords281170
+Ref: Add Custom Property281638
+Ref: Integration with Org-Roam282069
+Ref: Set Effort from Keywords282432
+Node: Hook Execution Order283152
+Node: Best Practices283662
+Node: Complete Example Comprehensive Hook Setup284645
+Node: Troubleshooting286774
+Node: Finding lost tasks287231
+Node: Projects without a NEXT item288240
+Node: I can't create a project when clarifying an inbox item!289496
+Node: Configuration problems290454
+Node: Keywords not working290773
+Node: Items not showing in engage view291587
+Node: Tasks still showing after incubating project292335
+Node: Still stuck?293451
 
 End Tag Table
 

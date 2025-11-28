@@ -864,4 +864,79 @@
              '((name . "Single View")
                (type . next-action))))
         (let ((commands (org-gtd-view-lang--create-custom-commands (list single-block-spec))))
-          (expect (length (caddr (car commands))) :to-equal 1))))))
+          (expect (length (caddr (car commands))) :to-equal 1)))))
+
+ (describe
+  "calendar-day block type"
+
+  (it "creates a native agenda block with calendar-day block-type"
+      (let ((calendar-day-spec
+             '((name . "Today's Calendar")
+               (block-type . calendar-day))))
+        (let ((block (org-gtd-view-lang--create-agenda-block calendar-day-spec)))
+          ;; Should be a native agenda block
+          (expect (car block) :to-equal 'agenda)
+          ;; Should have skip function for filtering
+          (let ((settings (caddr block)))
+            (expect (assoc 'org-agenda-skip-function settings) :to-be-truthy)))))
+
+  (it "includes skip function that filters to Calendar and Habit items"
+      (let ((calendar-day-spec
+             '((name . "Today's Calendar")
+               (block-type . calendar-day))))
+        (let* ((block (org-gtd-view-lang--create-agenda-block calendar-day-spec))
+               (settings (caddr block))
+               (skip-fn (cadr (assoc 'org-agenda-skip-function settings))))
+          ;; Skip function should be the calendar-or-habit filter (quoted in the settings list)
+          (expect skip-fn :to-equal ''org-gtd-view-lang--skip-unless-calendar-or-habit))))
+
+  (it "provides the skip function that returns nil for Calendar items"
+      (with-current-buffer (org-gtd--default-file)
+        (insert "* Calendar Event
+:PROPERTIES:
+:ORG_GTD: Calendar
+:END:
+")
+        (basic-save-buffer)
+        (goto-char (point-min))
+        (search-forward "Calendar Event")
+        (org-back-to-heading t)
+        ;; Should return nil (don't skip)
+        (expect (org-gtd-view-lang--skip-unless-calendar-or-habit) :to-be nil)))
+
+  (it "provides the skip function that returns nil for Habit items"
+      (with-current-buffer (org-gtd--default-file)
+        (insert (format "* Daily Habit
+:PROPERTIES:
+:ORG_GTD: %s
+:END:
+" (org-gtd-type-org-gtd-value 'habit)))
+        (basic-save-buffer)
+        (goto-char (point-min))
+        (search-forward "Daily Habit")
+        (org-back-to-heading t)
+        ;; Should return nil (don't skip)
+        (expect (org-gtd-view-lang--skip-unless-calendar-or-habit) :to-be nil)))
+
+  (it "provides the skip function that skips non-Calendar non-Habit items"
+      (with-current-buffer (org-gtd--default-file)
+        (insert "* Some Action
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+")
+        (basic-save-buffer)
+        (goto-char (point-min))
+        (search-forward "Some Action")
+        (org-back-to-heading t)
+        ;; Should return end of entry (skip)
+        (expect (org-gtd-view-lang--skip-unless-calendar-or-habit) :to-be-truthy)))
+
+  (it "includes time grid settings in calendar-day block"
+      (let ((calendar-day-spec
+             '((name . "Today's Calendar")
+               (block-type . calendar-day))))
+        (let* ((block (org-gtd-view-lang--create-agenda-block calendar-day-spec))
+               (settings (caddr block)))
+          ;; Should have day span
+          (expect (cadr (assoc 'org-agenda-span settings)) :to-equal 1))))))

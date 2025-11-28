@@ -6503,7 +6503,7 @@ Add this to your config file:
   (interactive)
   (org-gtd-view-show
    '((name . "All NEXT Actions")
-     (filters . ((todo . ("NEXT")))))))
+     (type . next-action))))
 @end lisp
 
 @item
@@ -6520,19 +6520,19 @@ You'll see all your NEXT actions in one list. That's it—you've created a custo
 
 @strong{@strong{Understanding how views work:}}
 
-Think of views like filtered searches. You tell org-gtd what to show using @code{filters}, and it finds matching items.
+Think of views like filtered searches. You tell org-gtd what to show, and it finds matching items.
 
 The built-in @code{org-gtd-engage} command? It uses @code{org-gtd-view-show} internally. @code{org-gtd-reflect-stuck-projects}? Same thing. You're now using the same tool the package uses to create its own views.
 
-Each view has two parts:
-@table @asis
-@item @code{name}
-What to call the view (shows in agenda header)
-@item @code{filters}
-What to show (type, TODO state, tags, dates, etc.)
-@end table
+View specs are simple: give it a @code{name} and add filters. Filters are pairs like @code{(filter-type . value)}. Multiple filters combine with AND logic—all must match.
 
-Filters are pairs like @code{(filter-type . value)}. Multiple filters combine with AND logic—all must match.
+@lisp
+;; Simple view spec
+'((name . "Delegated Items")
+  (type . delegated))
+@end lisp
+
+The most common filter is @code{type}, which matches GTD item types: @code{project}, @code{next-action}, @code{calendar}, @code{delegated}, @code{incubated}, @code{habit}, @code{stuck-project}, @code{completed-project}.
 
 @strong{@strong{Tutorial: Common custom views}}
 
@@ -6544,11 +6544,11 @@ Filters are pairs like @code{(filter-type . value)}. Multiple filters combine wi
   (interactive)
   (org-gtd-view-show
    '((name . "Work NEXT Actions")
-     (filters . ((todo . ("NEXT"))
-                 (area-of-focus . "Work"))))))
+     (type . next-action)
+     (area-of-focus . "Work"))))
 @end lisp
 
-Two filters: must be NEXT AND must be in Work area.
+Two filters: must be a next-action AND must be in Work area.
 
 @strong{Show projects that are stuck:}
 
@@ -6558,23 +6558,24 @@ Two filters: must be NEXT AND must be in Work area.
   (interactive)
   (org-gtd-view-show
    '((name . "Stuck Projects")
-     (filters . ((type . stuck-project))))))
+     (type . stuck-project))))
 @end lisp
 
 One filter: type must be stuck-project (built-in type that checks for stuck state).
 
-@strong{Show items with past deadlines:}
+@strong{Show delegated items due today:}
 
 @lisp
-(defun my-overdue-items ()
-  "Show all items with deadlines in the past."
+(defun my-delegated-today ()
+  "Show delegated items with check-ins due today."
   (interactive)
   (org-gtd-view-show
-   '((name . "Overdue Items")
-     (filters . ((deadline . past))))))
+   '((name . "Delegated Check-ins Today")
+     (type . delegated)
+     (when . today))))
 @end lisp
 
-One filter: deadline must be in the past. (Automatically excludes DONE items.)
+The @code{when} filter uses semantic time: @code{today}, @code{past}, or @code{future}. It automatically knows that for delegated items, "when" means the @code{ORG_GTD_TIMESTAMP} property.
 
 @strong{Show multiple related views together:}
 
@@ -6584,50 +6585,55 @@ One filter: deadline must be in the past. (Automatically excludes DONE items.)
   (interactive)
   (org-gtd-view-show
    '(((name . "Today's NEXT Actions")
-      (filters . ((todo . ("NEXT")))))
-     ((name . "Upcoming Calendar Items")
-      (filters . ((type . calendar)
-                  (timestamp . future)))))))
+      (type . next-action))
+     ((name . "Delegated Items to Follow Up")
+      (type . delegated)
+      (when . today)))))
 @end lisp
 
-This shows TWO views in one agenda: NEXT actions first, then upcoming calendar items.
+This shows TWO views in one agenda: NEXT actions first, then delegated items due today.
 
 @strong{@strong{Common patterns:}}
 
+@strong{Filter by type (most common):}
+@lisp
+(type . project)          ; All projects
+(type . next-action)      ; Single actions (with NEXT keyword)
+(type . delegated)        ; Delegated items (with WAIT keyword)
+(type . calendar)         ; Calendar items
+(type . incubated)        ; Someday/maybe items
+(type . habit)            ; Habits
+(type . stuck-project)    ; Projects needing attention
+(type . completed-project) ; Projects ready to archive
+@end lisp
+
+@strong{Filter by semantic time (@code{when}):}
+@lisp
+(when . today)            ; Items due today
+(when . past)             ; Missed items
+(when . future)           ; Upcoming items
+@end lisp
+
+The @code{when} filter automatically uses the right timestamp property for each type:
+@itemize
+@item
+For @code{delegated} and @code{calendar}: checks @code{ORG_GTD_TIMESTAMP}
+@item
+For @code{incubated}: checks the incubation review date
+@end itemize
+
 @strong{Filter by area of focus:}
 @lisp
-(filters . ((area-of-focus . "Work")))
-@end lisp
-
-@strong{Filter by type (item type):}
-@lisp
-(filters . ((type . project)))      ; All projects
-(filters . ((type . next-action)))       ; Single actions
-(filters . ((type . delegated)))     ; Delegated items
-(filters . ((type . calendar)))      ; Calendar items
-(filters . ((type . stuck-project))) ; Stuck projects only
-@end lisp
-
-@strong{Filter by TODO state:}
-@lisp
-(filters . ((todo . ("NEXT"))))          ; Just NEXT
-(filters . ((todo . ("TODO" "NEXT"))))   ; TODO or NEXT
-@end lisp
-
-@strong{Filter by time:}
-@lisp
-(filters . ((deadline . past)))          ; Overdue deadlines
-(filters . ((timestamp . past)))         ; Past timestamps
-(filters . ((timestamp . future)))       ; Future timestamps
-(filters . ((scheduled . today)))        ; Scheduled for today
+(area-of-focus . "Work")
 @end lisp
 
 @strong{Combine multiple filters (AND logic):}
 @lisp
-(filters . ((type . project)
-            (area-of-focus . "Work")
-            (deadline . past)))
-; Shows: Projects AND Work area AND overdue
+'((name . "Overdue Work Projects")
+  (type . project)
+  (area-of-focus . "Work")
+  (deadline . past))
+;; Shows: Projects AND Work area AND overdue
 @end lisp
 
 @strong{@strong{When to create custom views:}}
@@ -6669,18 +6675,16 @@ For the full list of available filters and their syntax, see @ref{View DSL Filte
 
 Common filters include:
 @table @asis
-@item @code{category}
-projects, actions, delegated, calendar, stuck-projects, etc.
-@item @code{todo}
-List of TODO keywords to match
+@item @code{type}
+project, next-action, delegated, calendar, incubated, habit, stuck-project, completed-project
+@item @code{when}
+Semantic time filter (today, past, future) - automatically uses correct property per type
 @item @code{area-of-focus}
 Specific area/category
-@item @code{deadline}, @code{scheduled}, @code{timestamp}
-Time-based filters (past, future, today)
+@item @code{deadline}, @code{scheduled}
+Org timestamp filters (past, future, today)
 @item @code{tags}
 Match specific tags
-@item @code{level}
-Heading level (2 for projects, 3+ for tasks)
 @end table
 
 @strong{@strong{Command reference:}}
@@ -6698,18 +6702,18 @@ Either a single view specification (alist) or list of view specifications
 
 @strong{View specification structure:}
 @lisp
+;; Simple view - filters are top-level
 '((name . "View Name")
-  (filters . ((filter-type . value)
-              (filter-type . value)
-              ...)))
+  (type . delegated)
+  (when . past))
 @end lisp
 
 @strong{Multiple views:}
 @lisp
 '(((name . "View 1")
-   (filters . (...)))
+   (type . next-action))
   ((name . "View 2")
-   (filters . (...))))
+   (type . stuck-project)))
 @end lisp
 
 @strong{Returns:} Opens org-agenda buffer with the specified view
@@ -6719,14 +6723,14 @@ Either a single view specification (alist) or list of view specifications
 ;; Single view
 (org-gtd-view-show
  '((name . "Active Projects")
-   (filters . ((type . project)))))
+   (type . project)))
 
 ;; Multiple views
 (org-gtd-view-show
  '(((name . "NEXT Actions")
-    (filters . ((todo . ("NEXT")))))
+    (type . next-action))
    ((name . "Stuck Projects")
-    (filters . ((type . stuck-project))))))
+    (type . stuck-project))))
 @end lisp
 @end itemize
 
@@ -8548,14 +8552,52 @@ The View DSL (Domain-Specific Language) lets you create custom agenda views usin
 @node View Structure
 @subsection View Structure
 
-A GTD view is defined as an alist:
+A GTD view is defined as an alist with filters at the top level:
 
 @lisp
+;; Simple view with filters at top level
 '((name . "View Name")
-  (filters . ((filter-type . filter-value) ...)))
+  (type . delegated)
+  (when . past))
 @end lisp
 
 Multiple filters create AND logic (all must match).
+
+@itemize
+@item
+@anchor{Multi-Block Views}Multi-Block Views
+
+
+For complex views with multiple sections (like the engage view), use @code{blocks}:
+
+@lisp
+'((name . "My Custom Dashboard")
+  (blocks . (((name . "Today's Calendar")
+              (block-type . calendar-day))
+             ((name . "Items Due Today")
+              (type . delegated)
+              (when . today))
+             ((name . "All NEXT Actions")
+              (type . next-action)))))
+@end lisp
+
+Each block is its own view spec. Blocks are displayed in order as separate agenda sections.
+
+@item
+@anchor{Block Types}Block Types
+
+
+Special @code{block-type} values control how blocks are rendered:
+
+@table @asis
+@item @code{calendar-day}
+Native org-agenda day view filtered to Calendar and Habit items only
+@item @code{todo}
+Native org-agenda todo block (requires @code{todo-keyword})
+@item @emph{default}
+org-ql query block (when no block-type specified)
+@end table
+@end itemize
 
 @node Type Filters
 @subsection Type Filters
@@ -8567,14 +8609,14 @@ Filter by GTD item type:
 @anchor{@code{(type delegated)}}@code{(type . delegated)}
 
 
-@strong{Matches}: Items with @code{ORG_GTD="Delegated"}
+@strong{Matches}: Items with @code{ORG_GTD="Delegated"} and TODO keyword @code{WAIT}
 
 @strong{Use case}: See all delegated tasks
 
 @strong{Example}:
 @lisp
 '((name . "All Delegations")
-  (filters . ((type . delegated))))
+  (type . delegated))
 @end lisp
 
 @item
@@ -8588,7 +8630,7 @@ Filter by GTD item type:
 @strong{Example}:
 @lisp
 '((name . "Calendar Items")
-  (filters . ((type . calendar))))
+  (type . calendar))
 @end lisp
 
 @item
@@ -8602,7 +8644,7 @@ Filter by GTD item type:
 @strong{Example}:
 @lisp
 '((name . "All Projects")
-  (filters . ((type . project))))
+  (type . project))
 @end lisp
 
 @item
@@ -8616,7 +8658,7 @@ Filter by GTD item type:
 @strong{Example}:
 @lisp
 '((name . "Active Projects")
-  (filters . ((type . active-project))))
+  (type . active-project))
 @end lisp
 
 @item
@@ -8630,7 +8672,7 @@ Filter by GTD item type:
 @strong{Example}:
 @lisp
 '((name . "Completed Projects")
-  (filters . ((type . completed-project))))
+  (type . completed-project))
 @end lisp
 
 @item
@@ -8644,7 +8686,7 @@ Filter by GTD item type:
 @strong{Example}:
 @lisp
 '((name . "Stuck Projects")
-  (filters . ((type . stuck-project))))
+  (type . stuck-project))
 @end lisp
 
 @item
@@ -8658,35 +8700,35 @@ Filter by GTD item type:
 @strong{Example}:
 @lisp
 '((name . "Someday/Maybe")
-  (filters . ((type . incubated))))
+  (type . incubated))
 @end lisp
 
 @item
 @anchor{@code{(type habit)}}@code{(type . habit)}
 
 
-@strong{Matches}: Items with @code{ORG_GTD="Habit"}
+@strong{Matches}: Items with @code{ORG_GTD="Habits"}
 
 @strong{Use case}: See all habits
 
 @strong{Example}:
 @lisp
 '((name . "All Habits")
-  (filters . ((type . habit))))
+  (type . habit))
 @end lisp
 
 @item
 @anchor{@code{(type next-action)}}@code{(type . next-action)}
 
 
-@strong{Matches}: Single action items (@code{ORG_GTD="Actions"})
+@strong{Matches}: Single action items (@code{ORG_GTD="Actions"}) with TODO keyword @code{NEXT}
 
 @strong{Use case}: See all single actions (not project tasks)
 
 @strong{Example}:
 @lisp
 '((name . "Single Actions")
-  (filters . ((type . next-action))))
+  (type . next-action))
 @end lisp
 
 @item
@@ -8700,159 +8742,109 @@ Filter by GTD item type:
 @strong{Example}:
 @lisp
 '((name . "Incubated Projects")
-  (filters . ((type . incubated-project))))
+  (type . incubated-project))
 @end lisp
 @end itemize
 
 @node Time-based Filters
 @subsection Time-based Filters
 
-Filter by timestamps, deadlines, and scheduled dates:
+Filter by timestamps, deadlines, and scheduled dates.
 
 @itemize
 @item
-@anchor{@code{(timestamp past)}}@code{(timestamp . past)}
+@anchor{Semantic Time @code{(when VALUE)}}Semantic Time: @code{(when . VALUE)}
 
 
-@strong{Matches}: Items with @code{ORG_GTD_TIMESTAMP} in the past that aren't done
+The @code{when} filter provides semantic time filtering that automatically uses the correct timestamp property for each GTD item type:
 
-@strong{Use case}: Missed appointments and follow-ups
+@itemize
+@item
+For @code{delegated} and @code{calendar} types: checks @code{ORG_GTD_TIMESTAMP}
+@item
+For @code{incubated} type: checks the incubation review date
+@end itemize
 
-@strong{Example}:
+Values: @code{today}, @code{past}, @code{future}
+
+@strong{Example}: Delegated items due today:
+@lisp
+'((name . "Delegated Check-ins Today")
+  (type . delegated)
+  (when . today))
+@end lisp
+
+@strong{Example}: Missed calendar appointments:
 @lisp
 '((name . "Missed Appointments")
-  (filters . ((type . calendar)
-              (timestamp . past))))
+  (type . calendar)
+  (when . past))
 @end lisp
 
-@item
-@anchor{@code{(timestamp future)}}@code{(timestamp . future)}
-
-
-@strong{Matches}: Items with @code{ORG_GTD_TIMESTAMP} in the future
-
-@strong{Use case}: Upcoming appointments
-
-@strong{Example}:
+@strong{Example}: Upcoming delegated check-ins:
 @lisp
-'((name . "Upcoming Appointments")
-  (filters . ((type . calendar)
-              (timestamp . future))))
+'((name . "Upcoming Delegated")
+  (type . delegated)
+  (when . future))
 @end lisp
 
 @item
-@anchor{@code{(deadline past)}}@code{(deadline . past)}
+@anchor{Raw Timestamp @code{(timestamp VALUE)}}Raw Timestamp: @code{(timestamp . VALUE)}
 
 
-@strong{Matches}: Items with deadline in the past that aren't done
+Filter directly by @code{ORG_GTD_TIMESTAMP} property. Use @code{when} instead when filtering by type.
 
-@strong{Use case}: Overdue items
+Values: @code{past}, @code{future}, @code{today}
+
+@item
+@anchor{Deadline @code{(deadline VALUE)}}Deadline: @code{(deadline . VALUE)}
+
+
+Filter by org-mode DEADLINE@.
+
+Values: @code{past}, @code{future}, @code{today}
 
 @strong{Example}:
 @lisp
 '((name . "Overdue Items")
-  (filters . ((deadline . past))))
+  (deadline . past))
 @end lisp
 
 @item
-@anchor{@code{(scheduled past)}}@code{(scheduled . past)}
+@anchor{Scheduled @code{(scheduled VALUE)}}Scheduled: @code{(scheduled . VALUE)}
 
 
-@strong{Matches}: Items scheduled in the past that aren't done
+Filter by org-mode SCHEDULED@.
 
-@strong{Use case}: Find items that should have started
-
-@strong{Example}:
-@lisp
-'((name . "Overdue Start Dates")
-  (filters . ((scheduled . past))))
-@end lisp
-
-@item
-@anchor{@code{(scheduled future)}}@code{(scheduled . future)}
-
-
-@strong{Matches}: Items scheduled in the future
-
-@strong{Use case}: See what's coming up
-
-@strong{Example}:
-@lisp
-'((name . "Future Scheduled")
-  (filters . ((scheduled . future))))
-@end lisp
-
-@item
-@anchor{@code{(scheduled today)}}@code{(scheduled . today)}
-
-
-@strong{Matches}: Items scheduled for today
-
-@strong{Use case}: Today's habits and scheduled actions
+Values: @code{past}, @code{future}, @code{today}
 
 @strong{Example}:
 @lisp
 '((name . "Today's Scheduled Items")
-  (filters . ((scheduled . today))))
+  (scheduled . today))
 @end lisp
 
 @item
-@anchor{@code{(closed recent)}}@code{(closed . recent)}
+@anchor{Closed @code{(closed VALUE)}}Closed: @code{(closed . VALUE)}
 
 
-@strong{Matches}: Items closed in last 7 days
+Filter by CLOSED timestamp.
 
-@strong{Use case}: Weekly review accomplishments
-
-@strong{Example}:
-@lisp
-'((name . "Recent Completions")
-  (filters . ((closed . recent))))
-@end lisp
-
-@item
-@anchor{@code{(closed past-day)}}@code{(closed . past-day)}
-
-
-@strong{Matches}: Items closed in last day
-
-@item
-@anchor{@code{(closed past-week)}}@code{(closed . past-week)}
-
-
-@strong{Matches}: Items closed in last week
-
-@item
-@anchor{@code{(closed past-month)}}@code{(closed . past-month)}
-
-
-@strong{Matches}: Items closed in last month
-
-@item
-@anchor{@code{(closed past-year)}}@code{(closed . past-year)}
-
-
-@strong{Matches}: Items closed in last year
-
-@item
-@anchor{@code{(closed today)}}@code{(closed . today)}
-
-
-@strong{Matches}: Items closed today
-
-@strong{Use case}: End-of-day review
+Values: @code{today}, @code{recent} (7 days), @code{past-day}, @code{past-week}, @code{past-month}, @code{past-year}
 
 @strong{Example}:
 @lisp
 '((name . "Completed Today")
-  (filters . ((closed . today))))
+  (closed . today))
 @end lisp
 @end itemize
 
 @node Keyword Filters
 @subsection @strong{TODO} Keyword Filters
 
-Filter by TODO state:
+Filter by TODO state.
+
+@strong{Note}: The @code{type} filter automatically includes the correct TODO keyword for each type (e.g., @code{next-action} includes @code{NEXT}, @code{delegated} includes @code{WAIT}). Use these filters only when you need explicit control.
 
 @itemize
 @item
@@ -8866,13 +8858,13 @@ Filter by TODO state:
 @strong{Example}: Show only NEXT actions:
 @lisp
 '((name . "NEXT Actions Only")
-  (filters . ((todo . ("NEXT")))))
+  (todo . ("NEXT")))
 @end lisp
 
 @strong{Example}: Show NEXT and WAIT:
 @lisp
 '((name . "Active and Waiting")
-  (filters . ((todo . ("NEXT" "WAIT")))))
+  (todo . ("NEXT" "WAIT")))
 @end lisp
 
 @item
@@ -8886,7 +8878,7 @@ Filter by TODO state:
 @strong{Example}:
 @lisp
 '((name . "Completed Items")
-  (filters . ((done . t))))
+  (done . t))
 @end lisp
 @end itemize
 
@@ -8907,14 +8899,14 @@ Filter by life area:
 @strong{Example}:
 @lisp
 '((name . "Work Items")
-  (filters . ((area-of-focus . "Work"))))
+  (area-of-focus . "Work"))
 @end lisp
 
 @strong{Example}: Work projects only:
 @lisp
 '((name . "Work Projects")
-  (filters . ((type . active-project)
-              (area-of-focus . "Work"))))
+  (type . active-project)
+  (area-of-focus . "Work"))
 @end lisp
 @end itemize
 
@@ -8935,8 +8927,8 @@ Filter by org tags:
 @strong{Example}:
 @lisp
 '((name . "Home and Errands")
-  (filters . ((todo . ("NEXT"))
-              (tags . ("@@home" "@@errands")))))
+  (type . next-action)
+  (tags . ("@@home" "@@errands")))
 @end lisp
 
 @item
@@ -8950,7 +8942,7 @@ Filter by org tags:
 @strong{Example}: All items with context tags (tags starting with @@):
 @lisp
 '((name . "Context-Tagged Items")
-  (filters . ((tags-match . "@{^@@@}"))))
+  (tags-match . "@{^@@@}"))
 @end lisp
 
 @strong{Org tag expressions}:
@@ -8981,14 +8973,8 @@ Filter by arbitrary org properties:
 @strong{Example}:
 @lisp
 '((name . "High Priority Actions")
-  (filters . ((property . (("PRIORITY" . "A")))
-              (todo . ("NEXT")))))
-@end lisp
-
-@strong{Example}: Multiple property filters:
-@lisp
-'((name . "Project Tasks")
-  (filters . ((property . (("ORG_GTD" . "Actions"))))))
+  (property . (("PRIORITY" . "A")))
+  (type . next-action))
 @end lisp
 @end itemize
 
@@ -9009,8 +8995,8 @@ Filter by org heading structure:
 @strong{Example}: Top-level projects only:
 @lisp
 '((name . "Top-Level Projects")
-  (filters . ((type . project)
-              (level . 2))))
+  (type . project)
+  (level . 2))
 @end lisp
 
 @strong{Note}: org-gtd projects are typically at level 2 in their files (under a category heading at level 1).
@@ -9031,8 +9017,8 @@ Filter by org heading structure:
 @strong{Example}:
 @lisp
 '((name . "NEXT Actions (No Habits)")
-  (filters . ((todo . ("NEXT"))
-              (not-habit . t))))
+  (type . next-action)
+  (not-habit . t))
 @end lisp
 
 @item
@@ -9046,7 +9032,7 @@ Filter by org heading structure:
 @strong{Example}:
 @lisp
 '((name . "Items with Invalid Timestamps")
-  (filters . ((invalid-timestamp . t))))
+  (invalid-timestamp . t))
 @end lisp
 @end itemize
 
@@ -9057,19 +9043,83 @@ These options control how the view is displayed:
 
 @itemize
 @item
+@anchor{@code{(block-type TYPE)}}@code{(block-type . TYPE)}
+
+
+@strong{Purpose}: Control how a block is rendered
+
+@strong{Values}:
+@table @asis
+@item @code{calendar-day}
+Native org-agenda day view filtered to Calendar and Habit items
+@item @code{todo}
+Native org-agenda todo block (requires @code{todo-keyword})
+@item @emph{omit}
+Default org-ql query block
+@end table
+
+@strong{Use case}: When you need native agenda features (time grid, habits, etc.)
+
+@strong{Example}: Multi-block view with calendar:
+@lisp
+'((name . "My Dashboard")
+  (blocks . (((name . "Today's Schedule")
+              (block-type . calendar-day))
+             ((name . "Delegated Due Today")
+              (type . delegated)
+              (when . today)))))
+@end lisp
+
+@item
+@anchor{@code{(blocks BLOCK-LIST)}}@code{(blocks . BLOCK-LIST)}
+
+
+@strong{Purpose}: Create a multi-section view with multiple blocks
+
+@strong{Format}: List of view specs, each with its own name and filters
+
+@strong{Example}:
+@lisp
+'((name . "Review Dashboard")
+  (blocks . (((name . "Stuck Projects")
+              (type . stuck-project))
+             ((name . "Missed Delegated")
+              (type . delegated)
+              (when . past))
+             ((name . "Upcoming Calendar")
+              (type . calendar)
+              (when . future)))))
+@end lisp
+
+@item
+@anchor{@code{(prefix-format FORMAT-STRING)}}@code{(prefix-format . FORMAT-STRING)}
+
+
+@strong{Purpose}: Custom agenda prefix format for all blocks in a multi-block view
+
+@strong{Use case}: Show project names alongside tasks
+
+@strong{Example}:
+@lisp
+'((name . "Tasks with Projects")
+  (prefix-format . " %i %-12:(org-gtd-agenda--prefix-format 12) ")
+  (blocks . (((name . "NEXT Actions")
+              (type . next-action)))))
+@end lisp
+
+@item
 @anchor{@code{(view-type agenda)}}@code{(view-type . agenda)}
 
 
 @strong{Purpose}: Create a native org-agenda view instead of org-ql block
 
-@strong{Use case}: When you want a day/week agenda view
+@strong{Use case}: When you want a standard day/week agenda view
 
 @strong{Example}:
 @lisp
 '((name . "Weekly Agenda")
   (view-type . agenda)
-  (agenda-span . 7)
-  (filters . ()))
+  (agenda-span . 7))
 @end lisp
 
 @item
@@ -9081,60 +9131,6 @@ These options control how the view is displayed:
 @strong{Default}: 1
 
 @strong{Requires}: @code{(view-type . agenda)}
-
-@strong{Example}: Week view:
-@lisp
-'((name . "Week Ahead")
-  (view-type . agenda)
-  (agenda-span . 7))
-@end lisp
-
-@item
-@anchor{@code{(show-habits t)} or @code{(show-habits nil)}}@code{(show-habits . t)} or @code{(show-habits . nil)}
-
-
-@strong{Purpose}: Control habit visibility in agenda views
-
-@strong{Default}: Habits shown
-
-@strong{Requires}: @code{(view-type . agenda)}
-
-@strong{Example}: Agenda without habits:
-@lisp
-'((name . "Today (No Habits)")
-  (view-type . agenda)
-  (show-habits . nil))
-@end lisp
-
-@item
-@anchor{@code{(additional-blocks BLOCK-SPECS)}}@code{(additional-blocks . BLOCK-SPECS)}
-
-
-@strong{Purpose}: Add additional agenda blocks to the view
-
-@strong{Format}: List of block specifications
-
-@strong{Example}: Agenda + NEXT actions:
-@lisp
-'((name . "Today + Actions")
-  (view-type . agenda)
-  (additional-blocks . ((todo . "NEXT"))))
-@end lisp
-
-@item
-@anchor{@code{(prefix-format FORMAT-STRING)}}@code{(prefix-format . FORMAT-STRING)}
-
-
-@strong{Purpose}: Custom agenda prefix format
-
-@strong{Use case}: Customize how items appear in agenda
-
-@strong{Example}:
-@lisp
-'((name . "Custom Format View")
-  (view-type . agenda)
-  (prefix-format . "  %-12:c %?-12t% s"))
-@end lisp
 @end itemize
 
 @node Complete View Examples
@@ -9147,20 +9143,19 @@ These options control how the view is displayed:
 
 @lisp
 (defun my-weekly-review ()
-  "Weekly review showing completed items, active projects, and stuck projects."
+  "Weekly review: stuck projects, missed items, recent completions."
   (interactive)
-  (org-agenda nil "w")
-  (let ((org-agenda-custom-commands
-         '(("w" "Weekly Review"
-            ((org-ql-block '(and (property "ORG_GTD" "Projects")
-                                 (project-has-active-tasks))
-                           ((org-ql-block-header "Active Projects")))
-             (org-ql-block '(and (property "ORG_GTD" "Projects")
-                                 (project-is-stuck))
-                           ((org-ql-block-header "Stuck Projects")))
-             (org-ql-block '(closed :from "-7d")
-                           ((org-ql-block-header "Completed This Week"))))))))
-    (org-agenda nil "w")))
+  (org-gtd-view-show
+   '(((name . "Stuck Projects")
+      (type . stuck-project))
+     ((name . "Missed Delegated Check-ins")
+      (type . delegated)
+      (when . past))
+     ((name . "Missed Calendar Items")
+      (type . calendar)
+      (when . past))
+     ((name . "Completed This Week")
+      (closed . past-week)))))
 @end lisp
 
 @item
@@ -9180,13 +9175,17 @@ These options control how the view is displayed:
 
 @lisp
 (defun my-morning-view ()
-  "Morning planning: today's agenda, NEXT actions, and delegations to follow up."
+  "Morning planning: calendar, delegated check-ins, NEXT actions."
   (interactive)
   (org-gtd-view-show
    '((name . "Morning Planning")
-     (view-type . agenda)
-     (agenda-span . 1)
-     (additional-blocks . ((todo . "NEXT"))))))
+     (blocks . (((name . "Today's Schedule")
+                 (block-type . calendar-day))
+                ((name . "Delegated Items to Check")
+                 (type . delegated)
+                 (when . today))
+                ((name . "Ready to Work On")
+                 (type . next-action)))))))
 @end lisp
 @end itemize
 
@@ -9204,8 +9203,8 @@ To create a custom view:
   (interactive)
   (org-gtd-view-show
    '((name . "View Name")
-     (filters . ((filter1 . value1)
-                 (filter2 . value2))))))
+     (type . delegated)
+     (when . today))))
 @end lisp
 
 @item

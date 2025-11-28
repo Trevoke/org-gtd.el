@@ -49,15 +49,28 @@ This is where the project name is displayed, on the left side."
 ;;;; GTD View Specifications
 
 (defun org-gtd-engage-view-spec ()
-  "Return GTD view specification for the engage view."
+  "Return GTD view specification for the engage view.
+Shows:
+- Calendar day view (Calendar + Habit items with timestamps for today)
+- Incubated items due today
+- Delegated items with check-ins due today
+- All next actions"
   (let ((project-format-prefix
          (format " %%i %%-%d:(org-gtd-agenda--prefix-format %d) "
                  org-gtd-engage-prefix-width
                  org-gtd-engage-prefix-width)))
     `((name . "GTD Engage View")
-      (view-type . agenda)
-      (agenda-span . 1)
-      (additional-blocks . ((todo . ,(org-gtd-keywords--next))))
+      (blocks . (((name . "Today's Schedule")
+                  (block-type . calendar-day))
+                 ((name . "Incubated items ready for today")
+                  (type . incubated)
+                  (when . today))
+                 ((name . "Delegated items to check in on today")
+                  (type . delegated)
+                  (when . today))
+                 ((name . "All actions ready to be executed")
+                  (block-type . todo)
+                  (todo-keyword . ,(org-gtd-keywords--next)))))
       (prefix-format . ,project-format-prefix))))
 
 (defun org-gtd-engage-grouped-by-context-view-spec ()
@@ -71,7 +84,7 @@ This is where the project name is displayed, on the left side."
 (defun org-gtd-show-all-next-view-spec ()
   "Return GTD view specification for showing all next actions."
   `((name . "All Next Actions")
-    (filters . ((todo . (,(org-gtd-keywords--next)))))))
+    (type . next-action)))
 
 ;;;; Commands
 

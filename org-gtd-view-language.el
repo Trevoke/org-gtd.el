@@ -120,22 +120,65 @@
 (require 'org-gtd-skip)
 (require 'org-gtd-types)
 
-(defun org-gtd-view-lang--create-agenda-block (gtd-view-spec)
+(defun org-gtd-view-lang--create-agenda-block (gtd-view-spec &optional inherited-prefix-format)
   "Create an agenda block from GTD-VIEW-SPEC.
+If block-type is \\='calendar-day, creates a native agenda filtered to Calendar/Habit.
+If block-type is \\='todo, creates a native todo block.
 If view-type is \\='agenda, creates a native agenda block.
 If view-type is \\='tags-grouped, creates grouped views.
-Otherwise creates an org-ql agenda block."
+Otherwise creates an org-ql agenda block.
+INHERITED-PREFIX-FORMAT is optionally passed from parent view spec."
   (let* ((name (alist-get 'name gtd-view-spec))
-         (view-type (alist-get 'view-type gtd-view-spec)))
+         (block-type (alist-get 'block-type gtd-view-spec))
+         (view-type (alist-get 'view-type gtd-view-spec))
+         (prefix-format (or (alist-get 'prefix-format gtd-view-spec)
+                            inherited-prefix-format)))
     (cond
+     ((eq block-type 'calendar-day)
+      (org-gtd-view-lang--create-calendar-day-block gtd-view-spec))
+     ((eq block-type 'todo)
+      (org-gtd-view-lang--create-todo-block gtd-view-spec prefix-format))
      ((eq view-type 'agenda)
       (org-gtd-view-lang--create-native-agenda-block gtd-view-spec))
      ((eq view-type 'tags-grouped)
       (org-gtd-view-lang--create-grouped-views gtd-view-spec))
      (t
-      (let ((query (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)))
-        `(org-ql-block ',query
-                       ((org-ql-block-header ,name))))))))
+      (let ((query (org-gtd-view-lang--translate-to-org-ql gtd-view-spec))
+            (settings `((org-ql-block-header ,name))))
+        (when prefix-format
+          (push `(org-super-agenda-header-prefix ,prefix-format) settings)
+          (push `(org-agenda-prefix-format '((tags . ,prefix-format)
+                                             (todo . ,prefix-format))) settings))
+        `(org-ql-block ',query ,settings))))))
+
+(defun org-gtd-view-lang--skip-unless-calendar-or-habit ()
+  "Skip function to filter agenda to only Calendar and Habit items.
+Also skips items that are done or cancelled.
+Returns nil to include item, or end of entry point to skip."
+  (let ((org-gtd-value (org-entry-get (point) "ORG_GTD")))
+    (if (and (or (equal org-gtd-value (org-gtd-type-org-gtd-value 'calendar))
+                 (equal org-gtd-value (org-gtd-type-org-gtd-value 'habit)))
+             (not (org-entry-is-done-p)))
+        nil
+      (org-entry-end-position))))
+
+(defun org-gtd-view-lang--create-calendar-day-block (gtd-view-spec)
+  "Create a calendar-day agenda block from GTD-VIEW-SPEC.
+This is a native org-agenda day view filtered to show only Calendar and Habit items."
+  (let ((settings '((org-agenda-span 1)
+                    (org-agenda-start-day nil)
+                    (org-agenda-skip-additional-timestamps-same-entry t)
+                    (org-agenda-skip-function 'org-gtd-view-lang--skip-unless-calendar-or-habit))))
+    `(agenda "" ,settings)))
+
+(defun org-gtd-view-lang--create-todo-block (gtd-view-spec prefix-format)
+  "Create a native todo block from GTD-VIEW-SPEC with PREFIX-FORMAT."
+  (let* ((name (alist-get 'name gtd-view-spec))
+         (todo-keyword (alist-get 'todo-keyword gtd-view-spec))
+         (settings `((org-agenda-overriding-header ,name))))
+    (when prefix-format
+      (push `(org-agenda-prefix-format '((todo . ,prefix-format))) settings))
+    `(todo ,todo-keyword ,settings)))
 
 (defun org-gtd-view-lang--create-native-agenda-block (gtd-view-spec)
   "Create a native agenda block from GTD-VIEW-SPEC."
@@ -175,10 +218,13 @@ Multi-block specs have a \\='blocks key containing a list of block specs."
   (let* ((command-key (or key "o"))
          (command-title (or title "GTD Views"))
          (blocks (mapcan (lambda (view-spec)
-                           (let ((blocks-list (alist-get 'blocks view-spec)))
+                           (let ((blocks-list (alist-get 'blocks view-spec))
+                                 (prefix-format (alist-get 'prefix-format view-spec)))
                              (if blocks-list
-                                 ;; Multi-block spec: process each block
-                                 (mapcar #'org-gtd-view-lang--create-agenda-block blocks-list)
+                                 ;; Multi-block spec: process each block, passing prefix-format
+                                 (mapcar (lambda (block)
+                                           (org-gtd-view-lang--create-agenda-block block prefix-format))
+                                         blocks-list)
                                ;; Single-block spec: process as-is
                                (let ((main-block (org-gtd-view-lang--create-agenda-block view-spec))
                                      (additional-blocks (org-gtd-view-lang--create-additional-blocks view-spec)))

@@ -113,8 +113,7 @@
              (query (org-gtd-view-lang--translate-to-org-ql upcoming-spec)))
         (expect query :to-equal `(and (property "ORG_GTD" "Delegated")
                                       (todo ,(org-gtd-keywords--wait))
-                                      (property-ts> "ORG_GTD_TIMESTAMP" "today")
-                                      (not (done)))))))
+                                      (property-ts> "ORG_GTD_TIMESTAMP" "today"))))))
 
   (describe "Function Availability"
 
