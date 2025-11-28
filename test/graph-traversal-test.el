@@ -1,13 +1,6 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
-(require 'compat)
-
-
-
-(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
-(require 'org-gtd-test-helper-builders (file-name-concat default-directory "test/helpers/builders.el"))
-(require 'org-gtd)
-(require 'buttercup)
+(require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 
 (describe
  "Graph traversal for project tasks"

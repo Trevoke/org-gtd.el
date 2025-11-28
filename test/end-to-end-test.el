@@ -1,14 +1,6 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
-(require 'compat)
-
-
-
-;; Load test helpers via setup.el (which now uses require internally)
-(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
-(require 'ogt-assertions (file-name-concat default-directory "test/helpers/assertions.el"))
-(require 'org-gtd)
-(require 'buttercup)
+(require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 
 (describe
  "End-to-End GTD Workflow Tests"

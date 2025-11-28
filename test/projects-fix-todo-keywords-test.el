@@ -1,8 +1,5 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
-(require 'compat)
-
-
 ;;; projects-fix-todo-keywords-test.el --- Tests for org-gtd-projects-fix-todo-keywords -*- lexical-binding: t; coding: utf-8 -*-
 
 ;; Copyright © 2025 Aldric Giacomoni
@@ -16,10 +13,7 @@
 
 ;;; Code:
 
-(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
-(require 'org-gtd-test-helper-builders (file-name-concat default-directory "test/helpers/builders.el"))
-(require 'org-gtd)
-(require 'buttercup)
+(require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 
 (describe "org-gtd-projects-fix-todo-keywords with dependency-aware traversal"
 

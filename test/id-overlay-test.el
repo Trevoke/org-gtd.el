@@ -1,8 +1,5 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
-(require 'compat)
-
-
 ;;; id-overlay-test.el --- Tests for org-gtd-id-overlay -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2023, 2025 Aldric Giacomoni
@@ -32,9 +29,7 @@
 
 ;;;; Requirements
 
-(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
-(require 'org-gtd)
-(require 'buttercup)
+(require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'with-simulated-input)
 
 ;;;; Test Helpers

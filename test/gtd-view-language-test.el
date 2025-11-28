@@ -1,13 +1,6 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
-(require 'compat)
-
-
-
-;; Load test helpers
-(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
-(require 'org-gtd)
-(require 'buttercup)
+(require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 
 (describe
  "GTD View Language Translation"

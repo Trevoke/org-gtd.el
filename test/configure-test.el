@@ -1,11 +1,8 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
-(require 'compat)
-(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
-(require 'org-gtd)
+(require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'org-gtd-types)
 (require 'org-gtd-configure)
-(require 'buttercup)
 
 ;; Helper macro for tests
 (defmacro ogt--with-temp-org-buffer (contents &rest body)

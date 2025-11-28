@@ -28,12 +28,9 @@
 
 ;;; Code:
 
-(require 'compat)
-(require 'buttercup)
-(require 'org-gtd)
+(require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'org-gtd-agenda-property)
 (require 'org-gtd-delegate)
-(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 
 (describe "org-gtd-agenda-property infinite loop bug"
 

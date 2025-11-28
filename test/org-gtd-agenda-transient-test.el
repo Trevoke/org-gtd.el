@@ -14,11 +14,8 @@
 
 ;;; Code:
 
-(require 'compat)
-(require 'buttercup)
-(require 'org-gtd)
+(require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'org-gtd-agenda-transient)
-(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 
 ;;;; Context Detection Tests
 

@@ -1,10 +1,6 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
-(require 'compat)
-(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
-(require 'buttercup)
-
-;; This will fail until org-gtd-types.el is created
+(require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'org-gtd-types)
 
 (describe "org-gtd-types constant"

@@ -1,7 +1,5 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
-(require 'compat)
-
 ;;; org-gtd-graph-transient-test.el --- Unit tests for graph transient menu -*- lexical-binding: t; -*-
 
 ;; Copyright © 2025 Aldric Giacomoni
@@ -22,14 +20,10 @@
 
 ;;; Code:
 
-(require 'buttercup)
-(require 'org-gtd)
+(require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'org-gtd-graph-transient)
 (require 'org-gtd-graph-view)
 (require 'org-gtd-graph-ui)
-(require 'org-gtd-files)
-(require 'org-gtd-core)
-(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
 (require 'org-gtd-test-helper-utils (file-name-concat default-directory "test/helpers/utils.el"))
 (require 'with-simulated-input)
 

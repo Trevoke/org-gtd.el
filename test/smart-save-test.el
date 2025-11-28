@@ -2,10 +2,7 @@
 
 ;; TDD tests for smart buffer saving after organize
 
-(require 'org-gtd-test-setup (file-name-concat default-directory "test/helpers/setup.el"))
-(require 'ogt-assertions (file-name-concat default-directory "test/helpers/assertions.el"))
-(require 'org-gtd)
-(require 'buttercup)
+(require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 
 (describe
  "Smart buffer saving for GTD operations"
