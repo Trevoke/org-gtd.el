@@ -906,7 +906,7 @@ Does not check for external dependencies or multi-project tasks yet
     (org-gtd-project--save-state project-marker)
 
     ;; Set review date
-    (org-entry-put (point) "ORG_GTD_TIMESTAMP" (format "<%s>" review-date))
+    (org-entry-put (point) org-gtd-timestamp (format "<%s>" review-date))
 
     ;; Incubate all tasks
     (let ((task-markers (org-gtd-project--get-all-tasks project-marker)))
@@ -931,7 +931,7 @@ Reactivates the project by:
     (org-gtd-project--restore-state project-marker)
 
     ;; Remove review date
-    (org-entry-delete (point) "ORG_GTD_TIMESTAMP")
+    (org-entry-delete (point) org-gtd-timestamp)
 
     ;; Restore all tasks
     (let ((task-markers (org-gtd-project--get-all-tasks project-marker)))

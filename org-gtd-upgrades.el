@@ -29,7 +29,7 @@
 
 (require 'org-habit)
 
-(require 'org-gtd-delegate)
+(require 'org-gtd-types)
 (require 'org-gtd-habit)
 
 ;;;; Commands
@@ -131,7 +131,7 @@ planning keyword in `org-mode'."
 
 (defun org-gtd-upgrades--delegated-item-p ()
   "Return t if item at point is delegated."
-  (and (org-entry-get (point) org-gtd-delegate-property)
+  (and (org-entry-get (point) (org-gtd-type-property 'delegated :who))
        (string-equal (org-entry-get (point) org-gtd-prop-todo) (org-gtd-keywords--wait))))
 
 (defun org-gtd-upgrades--organize-habits-v3 ()

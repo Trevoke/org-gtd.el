@@ -29,6 +29,7 @@
 (require 'org)
 
 (require 'org-gtd-core)
+(require 'org-gtd-types)
 (require 'org-gtd-single-action)
 (require 'org-gtd-clarify)
 (require 'org-gtd-refile)
@@ -42,8 +43,6 @@
 ;;;; Customization
 
 ;;;; Constants
-
-(defconst org-gtd-delegate-property "DELEGATED_TO")
 
 (defconst org-gtd-delegate-func #'org-gtd-delegate--apply
   "Function called when organizing item at at point as delegated.")
@@ -119,8 +118,8 @@ prompting behavior."
                                    ,@(when when-fn `((:when . ,(funcall when-fn nil)))))))))
 
 (defun org-gtd-delegate--add-delegation-note ()
-  "Add delegation note with person's name from DELEGATED_TO property."
-  (let ((person (org-entry-get (point) "DELEGATED_TO")))
+  "Add delegation note with person's name from the delegated type's :who property."
+  (let ((person (org-entry-get (point) (org-gtd-type-property 'delegated :who))))
     (when person
       (save-excursion
         (goto-char (org-log-beginning t))

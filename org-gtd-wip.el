@@ -27,6 +27,7 @@
 ;;;; Requirements
 
 (require 'org-gtd-core)
+(require 'org-gtd-types)
 (require 'org-gtd-id)
 
 (declare-function org-gtd-stuck-projects "org-gtd-projects")
@@ -126,7 +127,7 @@ If BUFFER is empty, then copy org heading at MARKER and paste inside
       (with-current-buffer buffer
         (org-paste-subtree)
         (org-entry-delete (point) org-gtd-timestamp)
-        (org-entry-delete (point) org-gtd-delegate-property)
+        (org-entry-delete (point) (org-gtd-type-property 'delegated :who))
         (org-entry-delete (point) org-gtd-prop-style)
         (org-entry-delete (point) org-gtd-prop-project)))))
 

@@ -247,11 +247,11 @@ KEY defaults to \"o\", TITLE defaults to \"GTD Views\"."
     (list `(property ,org-gtd-prop-category ,org-gtd-incubate)))
    ((eq category 'incubated-projects)
     ;; Match headings with ORG_GTD: Incubated AND PREVIOUS_ORG_GTD: Projects
-    (list '(and (property "ORG_GTD" "Incubated")
-                (property "PREVIOUS_ORG_GTD" "Projects"))))
+    (list `(and (property ,org-gtd-prop-category ,org-gtd-incubate)
+                (property ,org-gtd-prop-previous-category ,org-gtd-projects))))
    ((eq category 'incubated)
     ;; Match any item with ORG_GTD: Incubated
-    (list '(property "ORG_GTD" "Incubated")))
+    (list `(property ,org-gtd-prop-category ,org-gtd-incubate)))
    ((eq category 'habit)
     (list `(property ,org-gtd-prop-style ,org-gtd-prop-style-value-habit)))
    (t (error "Unknown category: %s" category))))

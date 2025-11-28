@@ -34,10 +34,10 @@
 (require 'org-gtd-backward-compatibility)
 
 ;;;; Forward declarations
-(defvar org-gtd-delegate-property)
 (defvar org-gtd-archive-location)
 (defvar org-gtd-projects)
 (declare-function org-gtd-stuck-projects "org-gtd-projects")
+(declare-function org-gtd-type-property "org-gtd-types")
 
 ;;;; Essential variables for autoload compatibility
 ;; These provide fallback values when the full modules aren't loaded
@@ -49,8 +49,6 @@
       ("@computer" "@phone" "@travel" "@agenda")
       "")))
 
-(unless (boundp 'org-gtd-delegate-property)
-  (defvar org-gtd-delegate-property "DELEGATED_TO"))
 
 ;;;; Customization
 
@@ -364,6 +362,9 @@ This property also controls the prefix displayed in agenda views.")
 (defconst org-gtd-prop-refile "ORG_GTD_REFILE"
   "Property storing the refile target category.")
 
+(defconst org-gtd-prop-previous-category "PREVIOUS_ORG_GTD"
+  "Property storing the original ORG_GTD value for incubated items.")
+
 ;;;; Variables
 
 (defvar-local org-gtd--loading-p nil
@@ -373,10 +374,10 @@ This property also controls the prefix displayed in agenda views.")
 
 (defun org-gtd-set-event-date-on-heading-at-point ()
   (interactive)
-  (let ((old-timestamp (org-entry-get nil "ORG_GTD_TIMESTAMP"))
+  (let ((old-timestamp (org-entry-get nil org-gtd-timestamp))
         (new-timestamp (org-read-date nil t)))
-    ;; Replace the ORG_GTD_TIMESTAMP property
-    (org-entry-put nil "ORG_GTD_TIMESTAMP" new-timestamp)
+    ;; Replace the timestamp property
+    (org-entry-put nil org-gtd-timestamp new-timestamp)
 
     ;; Move to the end of the current heading
     (save-excursion
@@ -411,7 +412,7 @@ Configure org-agenda-files and other settings directly instead."
             (org-stuck-projects (org-gtd-stuck-projects))
             (org-odd-levels-only nil)
             (org-agenda-files (org-gtd-core--agenda-files))
-            (org-gtd-agenda-property-list `(,org-gtd-delegate-property)))
+            (org-gtd-agenda-property-list `(,(org-gtd-type-property 'delegated :who))))
        (unwind-protect
            (progn
              (advice-add 'org-agenda-files :filter-return #'org-gtd-core--uniq)

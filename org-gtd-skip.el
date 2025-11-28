@@ -51,7 +51,7 @@
 
 ;;;; Requirements
 
-(require 'org-gtd-delegate)
+(require 'org-gtd-types)
 
 ;;;; Functions
 
@@ -119,14 +119,14 @@
 (defun org-gtd-skip-unless-delegated ()
   "Skip entry unless it is delegated."
   (let ((subtree-end (save-excursion (org-end-of-subtree t))))
-    (if (org-entry-get (point) org-gtd-delegate-property)
+    (if (org-entry-get (point) (org-gtd-type-property 'delegated :who))
         nil
       subtree-end)))
 
 (defun org-gtd-skip-unless-delegated-to-empty ()
   "Skip-function: only keep this if it's a habit."
   (let ((subtree-end (save-excursion (org-end-of-subtree t))))
-    (if (org-entry-get (point) org-gtd-delegate-property)
+    (if (org-entry-get (point) (org-gtd-type-property 'delegated :who))
         nil
       subtree-end)))
 
