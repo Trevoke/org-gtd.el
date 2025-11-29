@@ -5200,12 +5200,12 @@ File: org-gtd.info,  Node: Missed Engagements Review Configuration,  Next: ID Ov
      *Example - Area-Specific Reviews*:
           (setq org-gtd-reflect-missed-custom-views
                 '(((name . "Overdue Work Items")
-                   (filters . ((area-of-focus . "Work")
-                               (deadline . past))))
+                   (area-of-focus . "Work")
+                   (deadline . past))
                   ((name . "Missed Home Appointments")
-                   (filters . ((area-of-focus . "Home")
-                               (type . calendar)
-                               (timestamp . past))))))
+                   (area-of-focus . "Home")
+                   (type . calendar)
+                   (when . past))))
 
      After configuring, run ‘M-x org-gtd-reflect-missed-with-custom’ to
      see all standard views plus your custom ones.
@@ -6123,8 +6123,9 @@ File: org-gtd.info,  Node: Custom View Commands,  Next: Clarification Commands, 
 
      Common filters include:
      ‘type’
-          project, next-action, delegated, calendar, incubated, habit,
-          stuck-project, completed-project
+          project, next-action, delegated, calendar, tickler, someday,
+          habit, stuck-project, completed-project, stuck-delegated,
+          stuck-calendar, stuck-tickler, stuck-habit
      ‘when’
           Semantic time filter (today, past, future) - automatically
           uses correct property per type
@@ -7765,6 +7766,48 @@ Filter by GTD item type:
           '((name . "Tickler Projects")
             (type . tickler-project))
 
+   • ‘(type . stuck-delegated)’
+
+     *Matches*: Delegated items missing required metadata
+     (invalid/missing timestamp OR missing "who")
+
+     *Use case*: Find delegated items needing attention during weekly
+     review
+
+     *Example*:
+          '((name . "Stuck Delegated Items")
+            (type . stuck-delegated))
+
+   • ‘(type . stuck-calendar)’
+
+     *Matches*: Calendar items missing a valid timestamp
+
+     *Use case*: Find calendar items that need a date set
+
+     *Example*:
+          '((name . "Stuck Calendar Items")
+            (type . stuck-calendar))
+
+   • ‘(type . stuck-tickler)’
+
+     *Matches*: Tickler items missing a valid review date
+
+     *Use case*: Find tickler items that need a review date
+
+     *Example*:
+          '((name . "Stuck Tickler Items")
+            (type . stuck-tickler))
+
+   • ‘(type . stuck-habit)’
+
+     *Matches*: Habit items missing a valid scheduled date
+
+     *Use case*: Find habits that need a schedule
+
+     *Example*:
+          '((name . "Stuck Habits")
+            (type . stuck-habit))
+
 
 File: org-gtd.info,  Node: Time-based Filters,  Next: Keyword Filters,  Prev: Type Filters,  Up: View DSL Filter Reference
 
@@ -7799,13 +7842,6 @@ Filter by timestamps, deadlines, and scheduled dates.
           '((name . "Upcoming Delegated")
             (type . delegated)
             (when . future))
-
-   • Raw Timestamp: ‘(timestamp . VALUE)’
-
-     Filter directly by ‘ORG_GTD_TIMESTAMP’ property.  Use ‘when’
-     instead when filtering by type.
-
-     Values: ‘past’, ‘future’, ‘today’
 
    • Deadline: ‘(deadline . VALUE)’
 
@@ -8981,217 +9017,220 @@ Node: Archive Configuration187976
 Ref: org-gtd-archive-location188214
 Node: Missed Engagements Review Configuration189716
 Ref: org-gtd-reflect-missed-custom-views189991
-Node: ID Overlay Configuration191298
-Ref: org-gtd-id-overlay-truncate-length191549
-Ref: org-gtd-id-overlay-ellipsis191927
-Node: Advanced Item Configuration192165
-Ref: org-gtd-user-types192405
-Node: Projects Configuration195497
-Ref: org-gtd-project-progress-cookie-position195734
-Node: Obsolete Variables (Do Not Use)197682
-Ref: org-gtd-todo-keyword (obsolete)197992
-Ref: org-gtd-next-keyword (obsolete)198110
-Ref: org-gtd-wait-keyword (obsolete)198228
-Ref: org-gtd-canceled-keyword (obsolete)198346
-Node: Commands Reference198465
-Node: Core GTD Workflow Commands199299
-Ref: org-gtd-command-center199480
-Ref: org-gtd-capture200618
-Ref: org-gtd-process-inbox201182
-Ref: org-gtd-organize201942
-Ref: org-gtd-engage202783
-Ref: org-gtd-show-all-next203496
-Node: Reflect Commands203847
-Ref: org-gtd-reflect-stuck-projects204043
-Ref: org-gtd-reflect-area-of-focus204546
-Ref: org-gtd-reflect-completed-items205077
-Ref: org-gtd-reflect-completed-projects205572
-Ref: org-gtd-reflect-missed-items205796
-Node: Stuck Item Review Commands206053
-Ref: org-gtd-reflect-stuck-calendar-items206354
-Ref: org-gtd-reflect-stuck-tickler-items206468
-Ref: org-gtd-reflect-stuck-habit-items206582
-Ref: org-gtd-reflect-stuck-delegated-items206684
-Ref: org-gtd-reflect-stuck-single-action-items206807
-Node: Reflect Commands (Missed Engagements)206911
-Ref: What Are Missed Engagements?207181
-Ref: Your First Review in 30 Seconds207923
-Ref: Understanding the Review Workflow208349
-Ref: Tutorial Daily Review Workflow208992
-Ref: Common Patterns209745
-Ref: Command Reference (1)210212
-Ref: Backward Compatibility Note210932
-Node: Reflect Commands (Upcoming Delegated)211527
-Ref: What Are Upcoming Delegated Check-ins?211791
-Ref: Your First Review in 30 Seconds (1)212544
-Ref: Understanding Proactive Delegation Management212997
-Ref: Tutorial Weekly Planning Workflow213581
-Ref: Common Patterns (1)214614
-Ref: Understanding What You See215330
-Ref: Comparison Missed vs Upcoming216026
-Ref: Command Reference (2)216501
-Node: Custom View Commands216904
-Ref: org-gtd-view-show217119
-Node: Clarification Commands225161
-Ref: org-gtd-clarify-item225359
-Ref: org-gtd-clarify-agenda-item225795
-Ref: org-gtd-clarify-toggle-horizons-window226053
-Ref: org-gtd-clarify-toggle-organize-help226384
-Ref: org-gtd-clarify-project-insert-template226887
-Ref: Updating Items Without Refiling227185
-Node: Archive Commands231749
-Ref: org-gtd-archive-completed-items231939
-Node: Agenda-Specific Commands232407
-Ref: org-gtd-delegate-agenda-item232677
-Ref: org-gtd-project-cancel-from-agenda233000
-Node: Project Management Commands233286
-Ref: org-gtd-projects-fix-todo-keywords-for-project-at-point233513
-Ref: org-gtd-projects-fix-all-todo-keywords234103
-Ref: org-gtd-project-update-all-cookies236824
-Ref: org-gtd-tickler238295
-Ref: org-gtd-reactivate239917
-Node: Task Dependency Commands240952
-Ref: org-gtd-task-add-blockers241841
-Ref: org-gtd-task-remove-blockers242567
-Ref: org-gtd-task-add-dependent242833
-Ref: org-gtd-task-add-dependents243476
-Ref: org-gtd-task-clear-relationships243718
-Ref: org-gtd-task-show-relationships244041
-Ref: org-gtd-validate-project-dependencies244386
-Ref: org-gtd-remove-task-from-project244815
-Node: Area of Focus Commands245152
-Ref: org-gtd-area-of-focus-set-on-item-at-point245370
-Ref: org-gtd-area-of-focus-set-on-agenda-item245737
-Node: Programmatic Creation Commands246075
-Ref: org-gtd-habit-create246396
-Ref: org-gtd-calendar-create246632
-Ref: org-gtd-delegate-create246871
-Ref: org-gtd-tickler-create247525
-Ref: org-gtd-someday-create247788
-Ref: org-gtd-single-action-create248007
-Node: Utility Commands248201
-Ref: org-gtd-setup-keywords-wizard248396
-Ref: org-gtd-inbox-path248708
-Node: ID Overlay Commands249065
-Ref: org-gtd-id-overlay-mode249266
-Ref: org-gtd-id-overlay-refresh-buffer249614
-Ref: org-gtd-id-overlay-clear-buffer249870
-Node: Migration and Upgrade Commands250072
-Ref: org-gtd-upgrade-v3-to-v4250300
-Node: Mode-Line Integration250825
-Ref: org-gtd-mode251033
-Ref: org-gtd-inbox-count251504
-Node: Obsolete Commands251761
-Ref: org-gtd-delegate-item-at-point (removed in 40)251922
-Node: Properties Reference (Internal Implementation)252704
-Node: Core GTD Properties253823
-Ref: ORG_GTD254013
-Ref: ORG_GTD_REFILE254951
-Node: Project Properties256621
-Ref: ORG_GTD_FIRST_TASKS256844
-Node: Task Dependency Properties257670
-Ref: ORG_GTD_DEPENDS_ON257918
-Ref: ORG_GTD_BLOCKS259625
-Ref: ORG_GTD_PROJECT_IDS260377
-Node: Calendar and Time Properties260690
-Ref: ORG_GTD_TIMESTAMP260945
-Node: Delegation Properties261785
-Ref: DELEGATED_TO262016
-Node: Habit Properties262841
-Ref: STYLE263058
-Node: Area of Focus Properties263457
-Ref: CATEGORY263708
-Node: Standard Org Properties Used by org-gtd264457
-Ref: ID264713
-Ref: keyword264960
-Ref: SCHEDULED (org-mode standard)265550
-Ref: DEADLINE (org-mode standard)265800
-Node: Troubleshooting Projects266023
-Node: Fixing Broken Dependencies266651
-Node: When Manual Property Editing is Needed268019
-Node: Common Problems and Solutions269848
-Ref: Project Shows No NEXT Tasks (Stuck Project)270066
-Ref: Too Many NEXT Tasks270828
-Ref: Task Won't Advance to NEXT271242
-Ref: Task States Inconsistent After External Edits271843
-Node: View DSL Filter Reference272946
-Node: View Structure273583
-Ref: Multi-Block Views273976
-Ref: Block Types274584
-Node: Type Filters274942
-Ref: (type delegated)275139
-Ref: (type calendar)275384
-Ref: (type project)275609
-Ref: (type active-project)275820
-Ref: (type completed-project)276069
-Ref: (type stuck-project)276340
-Ref: (type tickler)276610
-Ref: (type someday)276862
-Ref: (type habit)277121
-Ref: (type next-action)277313
-Ref: (type tickler-project)277595
-Node: Time-based Filters277870
-Ref: Semantic Time (when VALUE)278109
-Ref: Raw Timestamp (timestamp VALUE)278970
-Ref: Deadline (deadline VALUE)279183
-Ref: Scheduled (scheduled VALUE)279398
-Ref: Closed (closed VALUE)279628
-Node: Keyword Filters279902
-Ref: (todo ("KEYWORD1" "KEYWORD2"))280362
-Ref: (done t)280741
-Node: Area of Focus Filters280972
-Ref: (area-of-focus "AREA")281186
-Node: Tag Filters281551
-Ref: (tags ("TAG1" "TAG2"))281745
-Ref: (tags-match "PATTERN")282033
-Node: Property Filters282501
-Ref: (property (("PROP" "VALUE")))282718
-Node: Structural Filters283000
-Ref: (level N)283222
-Node: Special Filters283575
-Ref: (not-habit t)283767
-Ref: (invalid-timestamp t)284011
-Node: View Configuration Options284310
-Ref: (block-type TYPE)284580
-Ref: (blocks BLOCK-LIST)285338
-Ref: (prefix-format FORMAT-STRING)285939
-Ref: (view-type agenda)286359
-Ref: (agenda-span N)286649
-Node: Complete View Examples286793
-Ref: Weekly Review View287011
-Ref: Context-Based View287616
-Ref: Morning Planning View287808
-Node: Creating Custom Views288417
-Node: Hooks Framework Reference289063
-Node: What Are Organize Hooks?289501
-Node: Your First Hook in 2 Minutes290163
-Node: The org-gtd-organize-hooks Variable291298
-Node: Built-in Hooks291797
-Ref: org-set-tags-command291997
-Ref: org-gtd-set-area-of-focus292240
-Node: Writing Custom Hooks292759
-Ref: Basic Hook Structure293151
-Ref: Using org-gtd-organize-type-member-p293485
-Node: Example Custom Hooks294624
-Ref: Selective Tagging with Unless294827
-Ref: Add Effort Estimation295544
-Ref: Add Priority295877
-Ref: Auto-Set Property Based on Keywords296173
-Ref: Add Custom Property296641
-Ref: Integration with Org-Roam297072
-Ref: Set Effort from Keywords297435
-Node: Hook Execution Order298155
-Node: Best Practices298665
-Node: Complete Example Comprehensive Hook Setup299648
-Node: Troubleshooting301777
-Node: Finding lost tasks302235
-Node: Projects without a NEXT item303240
-Node: I can't create a project when clarifying an inbox item!304496
-Node: Configuration problems305454
-Node: Keywords not working305774
-Node: Items not showing in engage view306588
-Node: Tasks still showing after tickler'ing project307336
-Node: Still stuck?308451
+Node: ID Overlay Configuration191229
+Ref: org-gtd-id-overlay-truncate-length191480
+Ref: org-gtd-id-overlay-ellipsis191858
+Node: Advanced Item Configuration192096
+Ref: org-gtd-user-types192336
+Node: Projects Configuration195428
+Ref: org-gtd-project-progress-cookie-position195665
+Node: Obsolete Variables (Do Not Use)197613
+Ref: org-gtd-todo-keyword (obsolete)197923
+Ref: org-gtd-next-keyword (obsolete)198041
+Ref: org-gtd-wait-keyword (obsolete)198159
+Ref: org-gtd-canceled-keyword (obsolete)198277
+Node: Commands Reference198396
+Node: Core GTD Workflow Commands199230
+Ref: org-gtd-command-center199411
+Ref: org-gtd-capture200549
+Ref: org-gtd-process-inbox201113
+Ref: org-gtd-organize201873
+Ref: org-gtd-engage202714
+Ref: org-gtd-show-all-next203427
+Node: Reflect Commands203778
+Ref: org-gtd-reflect-stuck-projects203974
+Ref: org-gtd-reflect-area-of-focus204477
+Ref: org-gtd-reflect-completed-items205008
+Ref: org-gtd-reflect-completed-projects205503
+Ref: org-gtd-reflect-missed-items205727
+Node: Stuck Item Review Commands205984
+Ref: org-gtd-reflect-stuck-calendar-items206285
+Ref: org-gtd-reflect-stuck-tickler-items206399
+Ref: org-gtd-reflect-stuck-habit-items206513
+Ref: org-gtd-reflect-stuck-delegated-items206615
+Ref: org-gtd-reflect-stuck-single-action-items206738
+Node: Reflect Commands (Missed Engagements)206842
+Ref: What Are Missed Engagements?207112
+Ref: Your First Review in 30 Seconds207854
+Ref: Understanding the Review Workflow208280
+Ref: Tutorial Daily Review Workflow208923
+Ref: Common Patterns209676
+Ref: Command Reference (1)210143
+Ref: Backward Compatibility Note210863
+Node: Reflect Commands (Upcoming Delegated)211458
+Ref: What Are Upcoming Delegated Check-ins?211722
+Ref: Your First Review in 30 Seconds (1)212475
+Ref: Understanding Proactive Delegation Management212928
+Ref: Tutorial Weekly Planning Workflow213512
+Ref: Common Patterns (1)214545
+Ref: Understanding What You See215261
+Ref: Comparison Missed vs Upcoming215957
+Ref: Command Reference (2)216432
+Node: Custom View Commands216835
+Ref: org-gtd-view-show217050
+Node: Clarification Commands225170
+Ref: org-gtd-clarify-item225368
+Ref: org-gtd-clarify-agenda-item225804
+Ref: org-gtd-clarify-toggle-horizons-window226062
+Ref: org-gtd-clarify-toggle-organize-help226393
+Ref: org-gtd-clarify-project-insert-template226896
+Ref: Updating Items Without Refiling227194
+Node: Archive Commands231758
+Ref: org-gtd-archive-completed-items231948
+Node: Agenda-Specific Commands232416
+Ref: org-gtd-delegate-agenda-item232686
+Ref: org-gtd-project-cancel-from-agenda233009
+Node: Project Management Commands233295
+Ref: org-gtd-projects-fix-todo-keywords-for-project-at-point233522
+Ref: org-gtd-projects-fix-all-todo-keywords234112
+Ref: org-gtd-project-update-all-cookies236833
+Ref: org-gtd-tickler238304
+Ref: org-gtd-reactivate239926
+Node: Task Dependency Commands240961
+Ref: org-gtd-task-add-blockers241850
+Ref: org-gtd-task-remove-blockers242576
+Ref: org-gtd-task-add-dependent242842
+Ref: org-gtd-task-add-dependents243485
+Ref: org-gtd-task-clear-relationships243727
+Ref: org-gtd-task-show-relationships244050
+Ref: org-gtd-validate-project-dependencies244395
+Ref: org-gtd-remove-task-from-project244824
+Node: Area of Focus Commands245161
+Ref: org-gtd-area-of-focus-set-on-item-at-point245379
+Ref: org-gtd-area-of-focus-set-on-agenda-item245746
+Node: Programmatic Creation Commands246084
+Ref: org-gtd-habit-create246405
+Ref: org-gtd-calendar-create246641
+Ref: org-gtd-delegate-create246880
+Ref: org-gtd-tickler-create247534
+Ref: org-gtd-someday-create247797
+Ref: org-gtd-single-action-create248016
+Node: Utility Commands248210
+Ref: org-gtd-setup-keywords-wizard248405
+Ref: org-gtd-inbox-path248717
+Node: ID Overlay Commands249074
+Ref: org-gtd-id-overlay-mode249275
+Ref: org-gtd-id-overlay-refresh-buffer249623
+Ref: org-gtd-id-overlay-clear-buffer249879
+Node: Migration and Upgrade Commands250081
+Ref: org-gtd-upgrade-v3-to-v4250309
+Node: Mode-Line Integration250834
+Ref: org-gtd-mode251042
+Ref: org-gtd-inbox-count251513
+Node: Obsolete Commands251770
+Ref: org-gtd-delegate-item-at-point (removed in 40)251931
+Node: Properties Reference (Internal Implementation)252713
+Node: Core GTD Properties253832
+Ref: ORG_GTD254022
+Ref: ORG_GTD_REFILE254960
+Node: Project Properties256630
+Ref: ORG_GTD_FIRST_TASKS256853
+Node: Task Dependency Properties257679
+Ref: ORG_GTD_DEPENDS_ON257927
+Ref: ORG_GTD_BLOCKS259634
+Ref: ORG_GTD_PROJECT_IDS260386
+Node: Calendar and Time Properties260699
+Ref: ORG_GTD_TIMESTAMP260954
+Node: Delegation Properties261794
+Ref: DELEGATED_TO262025
+Node: Habit Properties262850
+Ref: STYLE263067
+Node: Area of Focus Properties263466
+Ref: CATEGORY263717
+Node: Standard Org Properties Used by org-gtd264466
+Ref: ID264722
+Ref: keyword264969
+Ref: SCHEDULED (org-mode standard)265559
+Ref: DEADLINE (org-mode standard)265809
+Node: Troubleshooting Projects266032
+Node: Fixing Broken Dependencies266660
+Node: When Manual Property Editing is Needed268028
+Node: Common Problems and Solutions269857
+Ref: Project Shows No NEXT Tasks (Stuck Project)270075
+Ref: Too Many NEXT Tasks270837
+Ref: Task Won't Advance to NEXT271251
+Ref: Task States Inconsistent After External Edits271852
+Node: View DSL Filter Reference272955
+Node: View Structure273592
+Ref: Multi-Block Views273985
+Ref: Block Types274593
+Node: Type Filters274951
+Ref: (type delegated)275148
+Ref: (type calendar)275393
+Ref: (type project)275618
+Ref: (type active-project)275829
+Ref: (type completed-project)276078
+Ref: (type stuck-project)276349
+Ref: (type tickler)276619
+Ref: (type someday)276871
+Ref: (type habit)277130
+Ref: (type next-action)277322
+Ref: (type tickler-project)277604
+Ref: (type stuck-delegated)277886
+Ref: (type stuck-calendar)278217
+Ref: (type stuck-tickler)278470
+Ref: (type stuck-habit)278723
+Node: Time-based Filters278949
+Ref: Semantic Time (when VALUE)279188
+Ref: Deadline (deadline VALUE)280049
+Ref: Scheduled (scheduled VALUE)280264
+Ref: Closed (closed VALUE)280494
+Node: Keyword Filters280768
+Ref: (todo ("KEYWORD1" "KEYWORD2"))281228
+Ref: (done t)281607
+Node: Area of Focus Filters281838
+Ref: (area-of-focus "AREA")282052
+Node: Tag Filters282417
+Ref: (tags ("TAG1" "TAG2"))282611
+Ref: (tags-match "PATTERN")282899
+Node: Property Filters283367
+Ref: (property (("PROP" "VALUE")))283584
+Node: Structural Filters283866
+Ref: (level N)284088
+Node: Special Filters284441
+Ref: (not-habit t)284633
+Ref: (invalid-timestamp t)284877
+Node: View Configuration Options285176
+Ref: (block-type TYPE)285446
+Ref: (blocks BLOCK-LIST)286204
+Ref: (prefix-format FORMAT-STRING)286805
+Ref: (view-type agenda)287225
+Ref: (agenda-span N)287515
+Node: Complete View Examples287659
+Ref: Weekly Review View287877
+Ref: Context-Based View288482
+Ref: Morning Planning View288674
+Node: Creating Custom Views289283
+Node: Hooks Framework Reference289929
+Node: What Are Organize Hooks?290367
+Node: Your First Hook in 2 Minutes291029
+Node: The org-gtd-organize-hooks Variable292164
+Node: Built-in Hooks292663
+Ref: org-set-tags-command292863
+Ref: org-gtd-set-area-of-focus293106
+Node: Writing Custom Hooks293625
+Ref: Basic Hook Structure294017
+Ref: Using org-gtd-organize-type-member-p294351
+Node: Example Custom Hooks295490
+Ref: Selective Tagging with Unless295693
+Ref: Add Effort Estimation296410
+Ref: Add Priority296743
+Ref: Auto-Set Property Based on Keywords297039
+Ref: Add Custom Property297507
+Ref: Integration with Org-Roam297938
+Ref: Set Effort from Keywords298301
+Node: Hook Execution Order299021
+Node: Best Practices299531
+Node: Complete Example Comprehensive Hook Setup300514
+Node: Troubleshooting302643
+Node: Finding lost tasks303101
+Node: Projects without a NEXT item304106
+Node: I can't create a project when clarifying an inbox item!305362
+Node: Configuration problems306320
+Node: Keywords not working306640
+Node: Items not showing in engage view307454
+Node: Tasks still showing after tickler'ing project308202
+Node: Still stuck?309317
 
 End Tag Table
 

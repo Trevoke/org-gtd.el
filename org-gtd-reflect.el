@@ -107,36 +107,38 @@ day for the agenda.  It is mostly of value for testing purposes."
   (org-gtd-view-show org-gtd-reflect-missed-items-view-specs))
 
 (defun org-gtd-reflect-stuck-calendar-items ()
-  "Agenda view with all invalid Calendar actions."
+  "Agenda view with all invalid Calendar actions.
+Shows calendar items that are missing a valid timestamp."
   (interactive)
   (org-gtd-view-show
    '((name . "Stuck Calendar Items")
-     (type . calendar)
-     (invalid-timestamp . t))))
+     (type . stuck-calendar))))
 
 (defun org-gtd-reflect-stuck-delegated-items ()
-  "Agenda view with all invalid delegated actions."
+  "Agenda view with all invalid delegated actions.
+Shows delegated items that are missing either:
+- A valid timestamp (when to follow up)
+- The person delegated to (who)"
   (interactive)
   (org-gtd-view-show
    '((name . "Stuck Delegated Items")
-     (type . delegated)
-     (invalid-timestamp . t))))
+     (type . stuck-delegated))))
 
 (defun org-gtd-reflect-stuck-habit-items ()
-  "Agenda view with all invalid habit actions."
+  "Agenda view with all invalid habit actions.
+Shows habit items that are missing a valid timestamp."
   (interactive)
   (org-gtd-view-show
    '((name . "Stuck Habit Items")
-     (type . habit)
-     (invalid-timestamp . t))))
+     (type . stuck-habit))))
 
 (defun org-gtd-reflect-stuck-tickler-items ()
-  "Agenda view with all invalid tickler actions."
+  "Agenda view with all invalid tickler actions.
+Shows tickler items that are missing a valid timestamp."
   (interactive)
   (org-gtd-view-show
    '((name . "Stuck Tickler Items")
-     (type . tickler)
-     (invalid-timestamp . t))))
+     (type . stuck-tickler))))
 
 ;;;###autoload
 (defun org-gtd-reflect-someday-maybe ()
@@ -162,12 +164,11 @@ indicating they need attention to identify the next actionable step."
      (type . stuck-project))))
 
 (defun org-gtd-reflect-stuck-single-action-items ()
-  "Agenda view with all invalid single action items."
+  "Agenda view with all invalid single action items.
+Note: Single actions have no required properties, so this view
+will always be empty. Kept for backward compatibility."
   (interactive)
-  (org-gtd-view-show
-   '((name . "Stuck Single Action Items")
-     (type . next-action)
-     (invalid-timestamp . t))))
+  (message "Single actions have no required properties to validate"))
 
 ;;;###autoload
 (defun org-gtd-reflect-completed-items (&optional days-back)

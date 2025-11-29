@@ -96,6 +96,15 @@ are required but missing or malformed."
               (string-empty-p (string-trim prop-value))
               (not (org-string-match-p org-ts-regexp-both prop-value)))))
 
+(org-ql-defpred property-empty-or-missing (property)
+  "True if PROPERTY doesn't exist or is empty/whitespace-only.
+
+This is useful for finding items missing required metadata, such as
+delegated items without a \\='who\\=' field."
+  :body (let ((prop-value (org-entry-get nil property)))
+          (or (not prop-value)
+              (string-empty-p (string-trim prop-value)))))
+
 (defun org-gtd-generate-org-ql-block (view-type alist)
   "Generate an org-ql block based on VIEW-TYPE and ALIST."
   (let* ((view (cdr (assoc view-type (alist-get 'views (cdr alist)))))

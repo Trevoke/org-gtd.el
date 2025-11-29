@@ -16,20 +16,21 @@
   (it "can define a simple GTD view for delegated items with past timestamps"
       (let ((gtd-view-spec
              '((name . "Missed Delegated Check-ins")
-               (filters . ((category . delegated)
-                           (timestamp . past))))))
+               (type . delegated)
+               (when . past))))
         (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
                 :to-equal
-                '(and (property "ORG_GTD" "Delegated")
+                `(and (property "ORG_GTD" "Delegated")
+                      (todo ,(org-gtd-keywords--wait))
                       (property-ts< "ORG_GTD_TIMESTAMP" "today")
                       (not (done))))))
 
   (it "can define a GTD view for calendar items with past timestamps"
       (let ((gtd-view-spec
              '((name . "Missed Appointments")
-               (filters . ((category . calendar)
-                           (level . 2)
-                           (timestamp . past))))))
+               (type . calendar)
+               (level . 2)
+               (when . past))))
         (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
                 :to-equal
                 '(and (property "ORG_GTD" "Calendar")
@@ -45,11 +46,11 @@
                 :to-equal
                 '(and (property "ORG_GTD" "Actions")))))
 
-  (it "translates timestamp today filter"
+  (it "translates when today filter"
       (let ((gtd-view-spec
              '((name . "Today Items")
-               (filters . ((type . calendar)
-                           (timestamp . today))))))
+               (type . calendar)
+               (when . today))))
         (expect (org-gtd-view-lang--translate-to-org-ql gtd-view-spec)
                 :to-equal
                 `(and (property "ORG_GTD" "Calendar")
@@ -120,13 +121,14 @@
       ;; This tests that our new system can replicate existing functionality
       (let ((delegated-oops-spec
              '((name . "Missed check-ins on delegated items")
-               (filters . ((category . delegated)
-                           (timestamp . past))))))
+               (type . delegated)
+               (when . past))))
         ;; The translated query should be functionally equivalent to:
         ;; items with ORG_GTD = "Delegated" and past timestamp
         (expect (org-gtd-view-lang--translate-to-org-ql delegated-oops-spec)
                 :to-equal
-                '(and (property "ORG_GTD" "Delegated")
+                `(and (property "ORG_GTD" "Delegated")
+                      (todo ,(org-gtd-keywords--wait))
                       (property-ts< "ORG_GTD_TIMESTAMP" "today")
                       (not (done)))))))
 
@@ -469,25 +471,26 @@
                            (project-is-stuck)))))))
 
  (describe
-  "Invalid Timestamp and Stuck Item Detection"
+  "Stuck Item Detection via Computed Types"
 
-  (it "can define a view for items with invalid timestamps"
-      (let ((invalid-ts-spec
-             '((name . "Items with Invalid Timestamps")
-               (filters . ((invalid-timestamp . t))))))
-        (expect (org-gtd-view-lang--translate-to-org-ql invalid-ts-spec)
-                :to-equal
-                '(and (property-invalid-timestamp "ORG_GTD_TIMESTAMP")))))
-
-  (it "can define a view for stuck calendar items"
+  (it "can define a view for stuck calendar items using computed type"
       (let ((stuck-calendar-spec
              '((name . "Stuck Calendar Items")
-               (filters . ((category . calendar)
-                           (invalid-timestamp . t))))))
+               (type . stuck-calendar))))
         (expect (org-gtd-view-lang--translate-to-org-ql stuck-calendar-spec)
                 :to-equal
-                '(and (property "ORG_GTD" "Calendar")
-                      (property-invalid-timestamp "ORG_GTD_TIMESTAMP")))))
+                '(and (and (property "ORG_GTD" "Calendar")
+                           (property-invalid-timestamp "ORG_GTD_TIMESTAMP"))))))
+
+  (it "can define a view for stuck delegated items using computed type"
+      (let ((stuck-delegated-spec
+             '((name . "Stuck Delegated Items")
+               (type . stuck-delegated))))
+        (expect (org-gtd-view-lang--translate-to-org-ql stuck-delegated-spec)
+                :to-equal
+                '(and (and (property "ORG_GTD" "Delegated")
+                           (or (property-empty-or-missing "DELEGATED_TO")
+                               (property-invalid-timestamp "ORG_GTD_TIMESTAMP")))))))
 
   (it "detects items with missing ORG_GTD_TIMESTAMP"
       (with-current-buffer (org-gtd--default-file)

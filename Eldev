@@ -6,6 +6,7 @@
 
 (eldev-use-plugin 'autoloads)
 (eldev-use-plugin 'maintainer)
+(eldev-use-plugin 'undercover)
 
 (setq eldev-test-framework 'buttercup)
 

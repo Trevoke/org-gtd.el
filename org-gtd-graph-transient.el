@@ -1037,11 +1037,11 @@ Prompts for confirmation before trashing."
 (defun org-gtd-graph-incubate-project ()
   "Incubate the current project being viewed in graph mode.
 
-Calls org-gtd-incubate which will detect it's on a project heading
-and incubate the entire project with all its tasks."
+Calls org-gtd-tickler which will detect it's on a project heading
+and move the entire project with all its tasks to the tickler."
   (interactive)
   (org-with-point-at org-gtd-graph-view--project-marker
-    (call-interactively #'org-gtd-incubate)))
+    (call-interactively #'org-gtd-tickler)))
 
 ;;;; Footer
 

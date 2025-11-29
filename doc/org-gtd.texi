@@ -5929,12 +5929,12 @@ Think of this like creating saved searches. Instead of seeing ALL missed items, 
 @lisp
 (setq org-gtd-reflect-missed-custom-views
       '(((name . "Overdue Work Items")
-         (filters . ((area-of-focus . "Work")
-                     (deadline . past))))
+         (area-of-focus . "Work")
+         (deadline . past))
         ((name . "Missed Home Appointments")
-         (filters . ((area-of-focus . "Home")
-                     (type . calendar)
-                     (timestamp . past))))))
+         (area-of-focus . "Home")
+         (type . calendar)
+         (when . past))))
 @end lisp
 
 After configuring, run @code{M-x org-gtd-reflect-missed-with-custom} to see all standard views plus your custom ones.
@@ -7107,7 +7107,7 @@ For the full list of available filters and their syntax, see @ref{View DSL Filte
 Common filters include:
 @table @asis
 @item @code{type}
-project, next-action, delegated, calendar, incubated, habit, stuck-project, completed-project
+project, next-action, delegated, calendar, tickler, someday, habit, stuck-project, completed-project, stuck-delegated, stuck-calendar, stuck-tickler, stuck-habit
 @item @code{when}
 Semantic time filter (today, past, future) - automatically uses correct property per type
 @item @code{area-of-focus}
@@ -9224,6 +9224,62 @@ Filter by GTD item type:
 '((name . "Tickler Projects")
   (type . tickler-project))
 @end lisp
+
+@item
+@anchor{@code{(type stuck-delegated)}}@code{(type . stuck-delegated)}
+
+
+@strong{Matches}: Delegated items missing required metadata (invalid/missing timestamp OR missing "who")
+
+@strong{Use case}: Find delegated items needing attention during weekly review
+
+@strong{Example}:
+@lisp
+'((name . "Stuck Delegated Items")
+  (type . stuck-delegated))
+@end lisp
+
+@item
+@anchor{@code{(type stuck-calendar)}}@code{(type . stuck-calendar)}
+
+
+@strong{Matches}: Calendar items missing a valid timestamp
+
+@strong{Use case}: Find calendar items that need a date set
+
+@strong{Example}:
+@lisp
+'((name . "Stuck Calendar Items")
+  (type . stuck-calendar))
+@end lisp
+
+@item
+@anchor{@code{(type stuck-tickler)}}@code{(type . stuck-tickler)}
+
+
+@strong{Matches}: Tickler items missing a valid review date
+
+@strong{Use case}: Find tickler items that need a review date
+
+@strong{Example}:
+@lisp
+'((name . "Stuck Tickler Items")
+  (type . stuck-tickler))
+@end lisp
+
+@item
+@anchor{@code{(type stuck-habit)}}@code{(type . stuck-habit)}
+
+
+@strong{Matches}: Habit items missing a valid scheduled date
+
+@strong{Use case}: Find habits that need a schedule
+
+@strong{Example}:
+@lisp
+'((name . "Stuck Habits")
+  (type . stuck-habit))
+@end lisp
 @end itemize
 
 @node Time-based Filters
@@ -9267,14 +9323,6 @@ Values: @code{today}, @code{past}, @code{future}
   (type . delegated)
   (when . future))
 @end lisp
-
-@item
-@anchor{Raw Timestamp @code{(timestamp VALUE)}}Raw Timestamp: @code{(timestamp . VALUE)}
-
-
-Filter directly by @code{ORG_GTD_TIMESTAMP} property. Use @code{when} instead when filtering by type.
-
-Values: @code{past}, @code{future}, @code{today}
 
 @item
 @anchor{Deadline @code{(deadline VALUE)}}Deadline: @code{(deadline . VALUE)}

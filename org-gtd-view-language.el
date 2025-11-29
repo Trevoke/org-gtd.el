@@ -21,105 +21,93 @@
 ;;; Commentary:
 ;;
 ;; This module provides a declarative language for specifying GTD views
-;; that can be automatically translated to performant org-ql queries.
-;; This replaces the complex skip functions with a more maintainable
-;; and user-friendly declarative approach.
+;; that translate to performant org-ql queries.
 ;;
 ;; GTD View Language Specification:
 ;;
-;; A GTD view is defined as an alist with the following structure:
+;; A GTD view is an alist with a name and filter keys:
 ;;
-;; '((name . "View Name")
-;;   (filters . ((filter-type . filter-value) ...)))
+;;   '((name . "View Name")
+;;     (type . delegated)
+;;     (when . past))
 ;;
-;; Available Filter Types:
+;; GTD Type Filters:
+;;   (type . next-action)       - Single actions ready to do
+;;   (type . delegated)         - Items delegated to others
+;;   (type . calendar)          - Time-specific appointments
+;;   (type . tickler)           - Time-based reminders
+;;   (type . someday)           - Someday/Maybe items
+;;   (type . project)           - Multi-step outcomes
+;;   (type . habit)             - Recurring routines
+;;   (type . reference)         - Reference/knowledge items
+;;   (type . trash)             - Discarded items
+;;   (type . quick-action)      - 2-minute actions
 ;;
-;; GTD Type Filters (PRIMARY - use these for filtering by GTD item type):
-;;   (type . next-action)      - Single actions ready to do
-;;   (type . delegated)        - Items delegated to others
-;;   (type . calendar)         - Time-specific appointments/reminders
-;;   (type . tickler)          - Time-based reminder items
-;;   (type . someday)          - Someday/Maybe items (no timeframe)
-;;   (type . project)          - Multi-step outcomes
-;;   (type . habit)            - Recurring routines
-;;   (type . reference)        - Reference/knowledge items
-;;   (type . trash)            - Discarded items
-;;   (type . quick-action)     - 2-minute actions (done immediately)
-;;
-;; Computed Project Types (special project state queries):
+;; Computed Types (special state queries):
 ;;   (type . stuck-project)     - Projects with no NEXT/WAIT tasks
-;;   (type . active-project)    - Projects with at least one active task
+;;   (type . active-project)    - Projects with active tasks
 ;;   (type . completed-project) - Projects with all tasks done
 ;;   (type . tickler-project)   - Projects moved to tickler
+;;   (type . stuck-delegated)   - Delegated items missing timestamp or who
+;;   (type . stuck-calendar)    - Calendar items missing timestamp
+;;   (type . stuck-tickler)     - Tickler items missing timestamp
+;;   (type . stuck-habit)       - Habit items missing timestamp
 ;;
-;; Time-based Filters:
-;;   (timestamp . past)       - ORG_GTD_TIMESTAMP in the past
-;;   (timestamp . future)     - ORG_GTD_TIMESTAMP in the future
-;;   (deadline . past)        - Deadline in the past (auto-adds "not done")
-;;   (scheduled . past)       - Scheduled in the past (auto-adds "not done")
-;;   (scheduled . future)     - Scheduled in the future
-;;   (scheduled . today)      - Scheduled for today (for habits)
-;;   (closed . recent)        - Closed in last 7 days
-;;   (closed . past-day)      - Closed in last day
-;;   (closed . past-week)     - Closed in last week
-;;   (closed . past-month)    - Closed in last month
-;;   (closed . past-year)     - Closed in last year
-;;   (closed . today)         - Closed today
+;; Time Filters (semantic - resolved based on type):
+;;   (when . past)              - Type's timestamp in the past
+;;   (when . future)            - Type's timestamp in the future
+;;   (when . today)             - Type's timestamp is today
+;;   (deadline . past)          - Deadline in the past
+;;   (scheduled . past)         - Scheduled in the past
+;;   (scheduled . future)       - Scheduled in the future
+;;   (scheduled . today)        - Scheduled for today
+;;   (closed . recent)          - Closed in last 7 days
+;;   (closed . today)           - Closed today
 ;;
 ;; Structural Filters:
-;;   (level . N)              - Heading level N
-;;   (todo . ("TODO" "NEXT")) - Specific TODO keywords
-;;   (done . t)               - Items with done TODO states
-;;   (not-done . t)           - Exclude items with done TODO states
+;;   (level . N)                - Heading level N
+;;   (todo . ("TODO" "NEXT"))   - Specific TODO keywords
+;;   (done . t)                 - Completed items
+;;   (not-done . t)             - Incomplete items
 ;;
 ;; Metadata Filters:
-;;   (area-of-focus . "Work") - Specific area of focus (CATEGORY property)
-;;   (not-habit . t)          - Exclude habits (STYLE != "habit")
-;;
-;; Data Validation Filters:
-;;   (invalid-timestamp . t)  - Items with missing or invalid ORG_GTD_TIMESTAMP
+;;   (area-of-focus . "Work")   - Specific area of focus
+;;   (who . "Alice")            - Delegated to specific person
+;;   (who . nil)                - Missing delegation recipient
 ;;
 ;; Tag Filters:
-;;   (tags . ("@work" "@computer")) - Match specific tags
-;;   (tags-match . "{^@}")    - Match tags using org-mode tag expressions
-;;
-;; View Configuration:
-;;   (view-type . agenda)     - Create native agenda view (default: org-ql)
-;;   (agenda-span . N)        - Number of days in agenda view (default: 1)
-;;   (show-habits . t/nil)    - Control habit visibility in agenda
-;;   (additional-blocks . ((todo . "NEXT"))) - Additional blocks to include
+;;   (tags . ("@work"))         - Match specific tags
+;;   (tags-match . "{^@}")      - Tag expression match
 ;;
 ;; Examples:
 ;;
-;; Simple Example - Show all next actions:
+;;   ;; All next actions
+;;   '((name . "Next Actions")
+;;     (type . next-action))
 ;;
-;; '((name . "All My Next Actions")
-;;   (filters . ((type . next-action))))
+;;   ;; Overdue delegated items
+;;   '((name . "Overdue Delegated")
+;;     (type . delegated)
+;;     (when . past))
 ;;
-;; This is the simplest possible view - just show all single-action items.
+;;   ;; Overdue work projects
+;;   '((name . "Overdue Work")
+;;     (type . project)
+;;     (deadline . past)
+;;     (area-of-focus . "Work"))
 ;;
-;; Complex Example - Show overdue work projects:
-;;
-;; '((name . "Overdue Work Projects")
-;;   (filters . ((type . project)
-;;               (deadline . past)
-;;               (area-of-focus . "Work"))))
-;;
-;; This combines multiple filters to narrow down to specific items.
-;;
-;; Computed Type Example - Show stuck projects:
-;;
-;; '((name . "Stuck Projects")
-;;   (filters . ((type . stuck-project))))
-;;
-;; Computed types handle complex queries like finding projects without
-;; next actions.
+;;   ;; Stuck delegated items (missing timestamp or who)
+;;   '((name . "Stuck Delegated")
+;;     (type . stuck-delegated))
 ;;
 ;;; Code:
 (require 'org-gtd-core)
 (require 'org-gtd-ql)
 (require 'org-gtd-skip)
 (require 'org-gtd-types)
+
+(defvar org-gtd-view-lang--current-type nil
+  "Track the current type filter for semantic property resolution.")
 
 (defun org-gtd-view-lang--create-agenda-block (gtd-view-spec &optional inherited-prefix-format)
   "Create an agenda block from GTD-VIEW-SPEC.
@@ -163,7 +151,7 @@ Returns nil to include item, or end of entry point to skip."
         nil
       (org-entry-end-position))))
 
-(defun org-gtd-view-lang--create-calendar-day-block (gtd-view-spec)
+(defun org-gtd-view-lang--create-calendar-day-block (_gtd-view-spec)
   "Create a calendar-day agenda block from GTD-VIEW-SPEC.
 This is a native org-agenda day view filtered to show only Calendar and Habit items."
   (let ((settings '((org-agenda-span 1)
@@ -242,8 +230,6 @@ Multi-block specs have a \\='blocks key containing a list of block specs."
     (cond
      ((eq filter-type 'category)
       (org-gtd-view-lang--translate-category-filter filter-value))
-     ((eq filter-type 'timestamp)
-      (org-gtd-view-lang--translate-timestamp-filter filter-value))
      ((eq filter-type 'deadline)
       (org-gtd-view-lang--translate-deadline-filter filter-value))
      ((eq filter-type 'scheduled)
@@ -260,8 +246,8 @@ Multi-block specs have a \\='blocks key containing a list of block specs."
       (org-gtd-view-lang--translate-done-filter filter-value))
      ((eq filter-type 'not-done)
       (org-gtd-view-lang--translate-not-done-filter filter-value))
-     ((eq filter-type 'invalid-timestamp)
-      (org-gtd-view-lang--translate-invalid-timestamp-filter filter-value))
+     ((eq filter-type 'who)
+      (org-gtd-view-lang--translate-who-filter filter-value))
      ((eq filter-type 'tags)
       (org-gtd-view-lang--translate-tags-filter filter-value))
      ((eq filter-type 'tags-match)
@@ -311,17 +297,6 @@ Multi-block specs have a \\='blocks key containing a list of block specs."
    ((eq category 'habit)
     (list `(property ,org-gtd-prop-style ,org-gtd-prop-style-value-habit)))
    (t (error "Unknown category: %s" category))))
-
-(defun org-gtd-view-lang--translate-timestamp-filter (time-spec)
-  "Translate timestamp TIME-SPEC to org-ql time filter."
-  (cond
-   ((eq time-spec 'past)
-    (list `(property-ts< ,org-gtd-timestamp "today") '(not (done))))
-   ((eq time-spec 'today)
-    (list `(property-ts= ,org-gtd-timestamp ,(format-time-string "%Y-%m-%d"))))
-   ((eq time-spec 'future)
-    (list `(property-ts> ,org-gtd-timestamp "today")))
-   (t (error "Unknown timestamp spec: %s" time-spec))))
 
 (defun org-gtd-view-lang--translate-when-filter (time-spec)
   "Translate when TIME-SPEC using semantic property lookup.
@@ -385,12 +360,20 @@ Requires a type filter to be present for property resolution."
   (when value
     (list '(not (done)))))
 
-(defun org-gtd-view-lang--translate-invalid-timestamp-filter (value)
-  "Translate invalid-timestamp VALUE to org-ql filter.
-Uses property-invalid-timestamp predicate to find items with missing or
-malformed ORG_GTD_TIMESTAMP properties."
-  (when value
-    (list `(property-invalid-timestamp ,org-gtd-timestamp))))
+(defun org-gtd-view-lang--translate-who-filter (value)
+  "Translate who VALUE to org-ql filter.
+When VALUE is nil or empty string, finds items with missing :who property.
+Requires a type filter to be present for property resolution."
+  (unless org-gtd-view-lang--current-type
+    (user-error "The 'who' filter requires a 'type' filter"))
+  (let ((who-prop (org-gtd-type-property org-gtd-view-lang--current-type :who)))
+    (unless who-prop
+      (user-error "Type %s does not have a :who property" org-gtd-view-lang--current-type))
+    (if (or (null value) (and (stringp value) (string-empty-p value)))
+        ;; nil or "" means find items with missing/empty :who
+        (list `(property-empty-or-missing ,who-prop))
+      ;; Otherwise filter by specific value
+      (list `(property ,who-prop ,value)))))
 
 (defun org-gtd-view-lang--translate-not-habit-filter (value)
   "Translate not-habit VALUE to org-ql filter."
@@ -432,7 +415,11 @@ Also supports computed types:
   - \\='stuck-project - Projects with no NEXT/WAIT tasks
   - \\='active-project - Projects with at least one active task
   - \\='completed-project - Projects with all tasks done
-  - \\='tickler-project - Tickler items that were projects"
+  - \\='tickler-project - Tickler items that were projects
+  - \\='stuck-delegated - Delegated items missing timestamp or who
+  - \\='stuck-calendar - Calendar items missing timestamp
+  - \\='stuck-tickler - Tickler items missing timestamp
+  - \\='stuck-habit - Habit items missing timestamp"
   (cond
    ;; Computed project types
    ((eq type-name 'stuck-project)
@@ -447,6 +434,15 @@ Also supports computed types:
    ((eq type-name 'tickler-project)
     (list `(and (property ,org-gtd-prop-category ,org-gtd-tickler)
                 (property ,org-gtd-prop-previous-category ,org-gtd-projects))))
+   ;; Computed stuck types - items missing required metadata
+   ((eq type-name 'stuck-delegated)
+    (org-gtd-view-lang--stuck-type-query 'delegated))
+   ((eq type-name 'stuck-calendar)
+    (org-gtd-view-lang--stuck-type-query 'calendar))
+   ((eq type-name 'stuck-tickler)
+    (org-gtd-view-lang--stuck-type-query 'tickler))
+   ((eq type-name 'stuck-habit)
+    (org-gtd-view-lang--stuck-type-query 'habit))
    ;; Types with implied TODO keywords
    ((eq type-name 'next-action)
     (list `(property "ORG_GTD" ,(org-gtd-type-org-gtd-value 'next-action))
@@ -461,6 +457,25 @@ Also supports computed types:
         (user-error "Unknown GTD type: %s" type-name))
       (list `(property "ORG_GTD" ,org-gtd-val))))))
 
+(defun org-gtd-view-lang--stuck-type-query (base-type)
+  "Generate org-ql query for stuck items of BASE-TYPE.
+Stuck items are those missing required metadata (invalid timestamp or
+missing semantic properties like :who for delegated items)."
+  (let ((org-gtd-val (org-gtd-type-org-gtd-value base-type))
+        (conditions '()))
+    ;; Check for invalid timestamp if type has :when property
+    (when-let ((when-prop (org-gtd-type-property base-type :when)))
+      (push `(property-invalid-timestamp ,when-prop) conditions))
+    ;; Check for missing :who if type has :who property
+    (when-let ((who-prop (org-gtd-type-property base-type :who)))
+      (push `(property-empty-or-missing ,who-prop) conditions))
+    ;; Build the query: type match AND (condition1 OR condition2 ...)
+    (if (= (length conditions) 1)
+        (list `(and (property "ORG_GTD" ,org-gtd-val)
+                    ,(car conditions)))
+      (list `(and (property "ORG_GTD" ,org-gtd-val)
+                  (or ,@conditions))))))
+
 (defun org-gtd-view-lang--translate-previous-type-filter (type-name)
   "Translate previous-type TYPE-NAME to PREVIOUS_ORG_GTD property filter.
 TYPE-NAME should be a symbol like \\='delegated, \\='next-action, \\='project, etc.
@@ -469,9 +484,6 @@ This is used for tickler items to filter by their original type."
     (unless org-gtd-val
       (user-error "Unknown GTD type: %s" type-name))
     (list `(property "PREVIOUS_ORG_GTD" ,org-gtd-val))))
-
-(defvar org-gtd-view-lang--current-type nil
-  "Track the current type filter for semantic property resolution.")
 
 (defun org-gtd-view-lang--translate-to-org-ql (gtd-view-spec)
   "Translate GTD-VIEW-SPEC to an org-ql query expression.

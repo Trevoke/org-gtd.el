@@ -85,9 +85,7 @@ Can be toggled with `org-gtd-graph-toggle-render-mode'.")
 
 (defun org-gtd-graph-view-create (project-marker)
   "Create or update graph view for project at PROJECT-MARKER."
-  (let* ((project-id (org-with-point-at project-marker
-                       (org-gtd-id-get-create)))
-         (project-name (org-with-point-at project-marker
+  (let* ((project-name (org-with-point-at project-marker
                          (org-get-heading t t t t)))
          (buffer-name (org-gtd-graph-view--buffer-name project-name))
          (buffer (get-buffer-create buffer-name)))

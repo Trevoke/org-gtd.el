@@ -3780,12 +3780,12 @@ Think of this like creating saved searches. Instead of seeing ALL missed items, 
 #+begin_src emacs-lisp
 (setq org-gtd-reflect-missed-custom-views
       '(((name . "Overdue Work Items")
-         (filters . ((area-of-focus . "Work")
-                     (deadline . past))))
+         (area-of-focus . "Work")
+         (deadline . past))
         ((name . "Missed Home Appointments")
-         (filters . ((area-of-focus . "Home")
-                     (type . calendar)
-                     (timestamp . past))))))
+         (area-of-focus . "Home")
+         (type . calendar)
+         (when . past))))
 #+end_src
 
 After configuring, run ~M-x org-gtd-reflect-missed-with-custom~ to see all standard views plus your custom ones.
@@ -4601,7 +4601,7 @@ Once you've created a view you use often, bind it to a key:
 For the full list of available filters and their syntax, see [[#view-dsl-reference][View DSL Reference]].
 
 Common filters include:
-- ~type~ :: project, next-action, delegated, calendar, incubated, habit, stuck-project, completed-project
+- ~type~ :: project, next-action, delegated, calendar, tickler, someday, habit, stuck-project, completed-project, stuck-delegated, stuck-calendar, stuck-tickler, stuck-habit
 - ~when~ :: Semantic time filter (today, past, future) - automatically uses correct property per type
 - ~area-of-focus~ :: Specific area/category
 - ~deadline~, ~scheduled~ :: Org timestamp filters (past, future, today)
@@ -5995,6 +5995,54 @@ Filter by GTD item type:
   (type . tickler-project))
 #+end_src
 
+**** ~(type . stuck-delegated)~
+
+*Matches*: Delegated items missing required metadata (invalid/missing timestamp OR missing "who")
+
+*Use case*: Find delegated items needing attention during weekly review
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Stuck Delegated Items")
+  (type . stuck-delegated))
+#+end_src
+
+**** ~(type . stuck-calendar)~
+
+*Matches*: Calendar items missing a valid timestamp
+
+*Use case*: Find calendar items that need a date set
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Stuck Calendar Items")
+  (type . stuck-calendar))
+#+end_src
+
+**** ~(type . stuck-tickler)~
+
+*Matches*: Tickler items missing a valid review date
+
+*Use case*: Find tickler items that need a review date
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Stuck Tickler Items")
+  (type . stuck-tickler))
+#+end_src
+
+**** ~(type . stuck-habit)~
+
+*Matches*: Habit items missing a valid scheduled date
+
+*Use case*: Find habits that need a schedule
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Stuck Habits")
+  (type . stuck-habit))
+#+end_src
+
 *** Time-based Filters
 
 Filter by timestamps, deadlines, and scheduled dates.
@@ -6028,12 +6076,6 @@ Values: ~today~, ~past~, ~future~
   (type . delegated)
   (when . future))
 #+end_src
-
-**** Raw Timestamp: ~(timestamp . VALUE)~
-
-Filter directly by ~ORG_GTD_TIMESTAMP~ property. Use ~when~ instead when filtering by type.
-
-Values: ~past~, ~future~, ~today~
 
 **** Deadline: ~(deadline . VALUE)~
 

@@ -500,16 +500,7 @@ Only saves buffers that are in `org-gtd-directory'."
 
 (defun org-gtd-core-prepare-agenda-buffers ()
   "Ensure `org-mode' uses org-gtd settings in the relevant agenda buffers."
-  (org-gtd-core--agenda-files)
-  ;; (mapc
-  ;;  (lambda (file) (org-gtd-core-prepare-buffer (find-file-noselect file)))
-  ;;  (-flatten
-  ;;   (mapcar
-  ;;    (lambda (org-agenda-entry) (if (f-directory-p org-agenda-entry)
-  ;;                                   (directory-files org-agenda-entry t org-agenda-file-regexp t)
-  ;;                                 org-agenda-entry))
-  ;;    (with-org-gtd-context (org-gtd-core--agenda-files)))))
-  )
+  (org-gtd-core--agenda-files))
 
 (defun org-gtd-core-prepare-buffer (&optional buffer)
   "Make sure BUFFER is prepared to handle Org GTD operations.
