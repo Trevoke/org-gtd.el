@@ -83,9 +83,6 @@ otherwise calls `org-gtd-archive-location'."
   ;; v4: Users configure org-agenda-files directly.
   ;; Bind org-archive-location locally for all archive operations in this function.
   (let ((org-archive-location (org-gtd--effective-archive-location)))
-    ;; Prepare all agenda buffers first
-    (org-gtd-core-prepare-agenda-buffers)
-
     ;; Update org-id locations to ensure graph traversal can find all tasks
     ;; Expand directories and filter to get only .org files
     (org-id-update-id-locations

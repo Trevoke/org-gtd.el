@@ -623,8 +623,7 @@ Multiple views example - show several related views:
 
 See the module commentary for complete filter documentation and more examples."
   (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-  ;; v4: Users configure org-agenda-files directly, no need for with-org-gtd-context
+  ;; v4: Users configure org-agenda-files directly
   (let* ((view-specs (if (and (listp view-spec-or-specs)
                               (listp (car view-spec-or-specs))
                               (symbolp (caar view-spec-or-specs)))

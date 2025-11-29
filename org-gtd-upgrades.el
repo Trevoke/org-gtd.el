@@ -54,7 +54,6 @@ planning keyword in `org-mode'."
   ;; v4: Explicitly bind settings for upgrade - users may not have
   ;; configured them yet. Property inheritance needed for v3-style data where
   ;; ORG_GTD is on parent headings.
-  (org-gtd-core-prepare-agenda-buffers)
   (let ((org-agenda-files (org-gtd-core--agenda-files))
         (org-use-property-inheritance "ORG_GTD"))
     (org-map-entries
@@ -73,7 +72,6 @@ planning keyword in `org-mode'."
   "Change delegated items away from SCHEDULED to using a custom property."
   ;; v4: Explicitly bind settings for upgrade. Property inheritance needed
   ;; for v3-style data where ORG_GTD is on parent headings.
-  (org-gtd-core-prepare-agenda-buffers)
   (let ((org-agenda-files (org-gtd-core--agenda-files))
         (org-use-property-inheritance "ORG_GTD"))
     (org-map-entries
@@ -92,7 +90,6 @@ planning keyword in `org-mode'."
   "Move habits from wherever they may be to their own subtree."
   ;; v4: Explicitly bind settings for upgrade. Property inheritance needed
   ;; for v3-style data where ORG_GTD is on parent headings.
-  (org-gtd-core-prepare-agenda-buffers)
   (let ((org-agenda-files (org-gtd-core--agenda-files))
         (org-use-property-inheritance "ORG_GTD"))
     (org-gtd-refile--add-target org-gtd-habit-template)
@@ -112,7 +109,6 @@ planning keyword in `org-mode'."
   "Change incubated items away from SCHEDULED to using a custom property."
   ;; v4: Explicitly bind settings for upgrade. Property inheritance needed
   ;; for v3-style data where ORG_GTD is on parent headings.
-  (org-gtd-core-prepare-agenda-buffers)
   (let ((org-agenda-files (org-gtd-core--agenda-files))
         (org-use-property-inheritance "ORG_GTD"))
     (org-map-entries
@@ -223,7 +219,6 @@ This function finds all items with DELEGATED_TO property and changes their
 ORG_GTD value from \"Actions\" to \"Delegated\".
 
 Safe to run multiple times - only updates items still marked as \"Actions\"."
-  (org-gtd-core-prepare-agenda-buffers)
   (let ((org-agenda-files (org-gtd-core--agenda-files))
         (migrated-count 0))
     (org-map-entries
@@ -250,7 +245,6 @@ This function finds all items with STYLE=\"habit\" and adds ORG_GTD=\"Habit\"
 if not already present.
 
 Safe to run multiple times - only updates items missing ORG_GTD property."
-  (org-gtd-core-prepare-agenda-buffers)
   (let ((org-agenda-files (org-gtd-core--agenda-files))
         (migrated-count 0))
     (org-map-entries
@@ -271,7 +265,6 @@ Safe to run multiple times - only updates items missing ORG_GTD property."
   "Add ORG_GTD properties to existing items (Step 1 of migration)."
   ;; v4: Explicitly bind settings for upgrade. Property inheritance needed
   ;; for v3-style data where ORG_GTD is on parent headings.
-  (org-gtd-core-prepare-agenda-buffers)
   (let ((org-agenda-files (org-gtd-core--agenda-files))
         (org-use-property-inheritance "ORG_GTD"))
     ;; Find ALL level 1 category headings with ORG_GTD property
@@ -338,7 +331,6 @@ Sets TRIGGER to org-gtd-update-project-after-task-done! on all."
   (require 'org-gtd-projects)
   ;; v4: Explicitly bind settings for upgrade. Property inheritance needed
   ;; for v3-style data where ORG_GTD is on parent headings.
-  (org-gtd-core-prepare-agenda-buffers)
   (let ((org-agenda-files (org-gtd-core--agenda-files))
         (org-use-property-inheritance "ORG_GTD"))
     ;; Find all project headings and add dependencies

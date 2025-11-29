@@ -101,12 +101,12 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
 
 ;;;###autoload
 (defun org-gtd-reactivate ()
-  "Reactivate a tickler GTD item or project at point.
-Restores the item to active status, returning it to your GTD workflow.
+  "Reactivate a tickler'd project at point.
+Restores a paused project to active status, returning it to your GTD workflow.
 
-Smart dispatcher that detects context:
-- On tickler project heading: reactivate entire project
-- On tickler single item: reactivate that item (future enhancement)"
+Tickler items that are NOT projects (single actions, delegated items, etc.)
+should be re-clarified using `org-gtd-clarify-item' when their reminder date
+arrives, allowing you to decide what to do with them."
   (interactive)
 
   ;; Check if item is tickler'd
@@ -122,10 +122,9 @@ Smart dispatcher that detects context:
         (require 'org-gtd-projects)
         (org-gtd-project-reactivate (point-marker)))
 
-       ;; Case 2: Was a single item - reactivate that item
-       ;; TODO: Implement single item reactivation logic (future enhancement)
+       ;; Case 2: Non-project tickler item - guide user to re-clarify
        (t
-        (user-error "Single item reactivation not yet implemented"))))))
+        (user-error "Use `org-gtd-clarify-item' to decide what to do with this tickler item"))))))
 
 ;;;; Functions
 

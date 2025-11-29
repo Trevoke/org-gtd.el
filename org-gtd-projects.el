@@ -174,8 +174,6 @@ This is useful for:
 - After bulk changes to tasks or dependencies
 - Recovery from manual state changes"
   (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-
   ;; Phase 1: Collect all project markers
   (let ((project-markers '()))
     (org-map-entries
@@ -780,7 +778,6 @@ Intended to be called from `org-after-todo-state-change-hook'."
 Useful for weekly reviews or after bulk changes."
   (interactive)
   (when org-gtd-project-progress-cookie-position
-    (org-gtd-core-prepare-agenda-buffers)
     (org-map-entries
      (lambda ()
        (let ((project-id (org-entry-get (point) "ID")))

@@ -2233,8 +2233,7 @@
             (expect agenda-content :not :to-match "Task C"))
 
           ;; 11. VERIFY workflow: Complete A, then B becomes NEXT
-          ;; NOTE: org-edna should automatically update TODO states when dependencies are satisfied
-          ;; TODO: This test will pass once org-edna supports ORG_GTD_BLOCKS/ORG_GTD_DEPENDS_ON properties
+          ;; org-edna automatically updates TODO states when dependencies are satisfied
           (with-current-buffer (org-gtd--default-file)
             (goto-char (point-min))
             (search-forward "Task A")
@@ -2473,9 +2472,7 @@
             (expect agenda-content :not :to-match "Task C"))
 
           ;; 7. VERIFY workflow: Complete A, then B and C both become NEXT (parallel execution)
-          ;; NOTE: Automatic TODO state updates require org-edna integration with ORG_GTD_ properties
-          ;; NOTE: org-edna should automatically update TODO states when dependencies are satisfied
-          ;; TODO: This test will pass once org-edna supports ORG_GTD_BLOCKS/ORG_GTD_DEPENDS_ON properties
+          ;; org-edna automatically updates TODO states when dependencies are satisfied
           (with-current-buffer (org-gtd--default-file)
             (goto-char (point-min))
             (search-forward "Task A")
@@ -2617,8 +2614,7 @@
                 (expect agenda-content :not :to-match "Task C"))
 
               ;; 8. VERIFY workflow: Complete A, then B and C both become NEXT (parallel execution across files)
-              ;; NOTE: org-edna should automatically update TODO states when dependencies are satisfied
-              ;; TODO: This test will pass once org-edna supports ORG_GTD_BLOCKS/ORG_GTD_DEPENDS_ON properties
+              ;; org-edna automatically updates TODO states when dependencies are satisfied
               (with-current-buffer (org-gtd--default-file)
                 (goto-char (point-min))
                 (search-forward "Task A")
@@ -2743,8 +2739,7 @@
             (expect agenda-content :not :to-match "Task C"))
 
           ;; 7. VERIFY workflow: Complete A, then B becomes NEXT, complete B, then C becomes NEXT
-          ;; NOTE: org-edna should automatically update TODO states when dependencies are satisfied
-          ;; TODO: This test will pass once org-edna supports ORG_GTD_BLOCKS/ORG_GTD_DEPENDS_ON properties
+          ;; org-edna automatically updates TODO states when dependencies are satisfied
           (with-current-buffer (org-gtd--default-file)
             (goto-char (point-min))
             (search-forward "Task A")
@@ -2900,8 +2895,7 @@
                 (expect agenda-content :not :to-match "Task C"))
 
               ;; 8. VERIFY workflow: Complete A, then B becomes NEXT, complete B, then C becomes NEXT
-              ;; NOTE: org-edna should automatically update TODO states when dependencies are satisfied
-              ;; TODO: This test will pass once org-edna supports ORG_GTD_BLOCKS/ORG_GTD_DEPENDS_ON properties
+              ;; org-edna automatically updates TODO states when dependencies are satisfied
               (with-current-buffer (org-gtd--default-file)
                 (goto-char (point-min))
                 (search-forward "Task A")

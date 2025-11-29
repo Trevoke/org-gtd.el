@@ -498,10 +498,6 @@ Only saves buffers that are in `org-gtd-directory'."
   (when org-gtd-save-after-organize
     (save-some-buffers t #'org-gtd-buffer-p)))
 
-(defun org-gtd-core-prepare-agenda-buffers ()
-  "Ensure `org-mode' uses org-gtd settings in the relevant agenda buffers."
-  (org-gtd-core--agenda-files))
-
 (defun org-gtd-core-prepare-buffer (&optional buffer)
   "Make sure BUFFER is prepared to handle Org GTD operations.
 
