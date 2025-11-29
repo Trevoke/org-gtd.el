@@ -172,4 +172,59 @@
      (org-back-to-heading t)
      (expect (org-gtd-reactivate) :to-throw 'user-error))))
 
+(describe "Integration: someday then reactivate"
+
+  (before-each (setq inhibit-message t) (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
+  (it "preserves delegated state through someday cycle"
+    (ogt--with-temp-org-buffer
+     "* Delegated task
+:PROPERTIES:
+:ID: cycle-test-id
+:ORG_GTD: Delegated
+:DELEGATED_TO: Bob
+:ORG_GTD_TIMESTAMP: <2024-05-01>
+:END:"
+     (org-back-to-heading t)
+     (let ((org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL"))))
+       (org-todo "WAIT")
+       ;; Someday the item
+       (org-gtd-someday--configure)
+       ;; Verify someday state
+       (expect (org-entry-get (point) "ORG_GTD") :to-equal "Someday")
+       (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-equal "Delegated")
+       ;; Reactivate with mocked prompts
+       (spy-on 'read-string :and-call-fake
+               (lambda (prompt &optional initial-input history default-value)
+                 default-value))
+       (org-gtd-reactivate)
+       ;; Verify restored
+       (expect (org-entry-get (point) "ORG_GTD") :to-equal "Delegated")
+       (expect (org-entry-get (point) "DELEGATED_TO") :to-equal "Bob"))))
+
+  (it "preserves calendar state through tickler cycle"
+    (ogt--with-temp-org-buffer
+     "* Calendar event
+:PROPERTIES:
+:ID: tickler-cycle-id
+:ORG_GTD: Calendar
+:ORG_GTD_TIMESTAMP: <2024-06-20>
+:END:"
+     (org-back-to-heading t)
+     ;; Tickler the item (mock the date prompt)
+     (spy-on 'org-gtd-prompt-for-active-date :and-return-value "<2025-01-01>")
+     (org-gtd-tickler--configure)
+     ;; Verify tickler state
+     (expect (org-entry-get (point) "ORG_GTD") :to-equal "Tickler")
+     (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-equal "Calendar")
+     ;; Reactivate with mocked prompts
+     (spy-on 'read-string :and-call-fake
+             (lambda (prompt &optional initial-input history default-value)
+               default-value))
+     (org-gtd-reactivate)
+     ;; Verify restored
+     (expect (org-entry-get (point) "ORG_GTD") :to-equal "Calendar")
+     (expect (org-entry-get (point) "ORG_GTD_TIMESTAMP") :to-equal "<2024-06-20>"))))
+
 ;;; reactivate-test.el ends here

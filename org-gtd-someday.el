@@ -32,6 +32,7 @@
 (require 'org-gtd-clarify)
 (require 'org-gtd-refile)
 (require 'org-gtd-configure)
+(require 'org-gtd-reactivate)
 
 (declare-function org-gtd-organize--call 'org-gtd-organize)
 (declare-function org-gtd-organize-apply-hooks 'org-gtd-organize)
@@ -102,7 +103,11 @@ TOPIC is the string you want to see when reviewing someday/maybe items."
 (defun org-gtd-someday--configure ()
   "Configure item at point as someday/maybe.
 
-Sets ORG_GTD property to Someday and removes any timestamp properties."
+Saves current state to PREVIOUS_* properties, then sets ORG_GTD
+property to Someday and removes any timestamp properties."
+  ;; Save current state before changing type
+  (org-gtd-save-state)
+
   ;; Configure as someday type (no properties needed - no timestamps!)
   (org-gtd-configure-as-type 'someday)
 

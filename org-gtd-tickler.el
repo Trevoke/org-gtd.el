@@ -30,6 +30,7 @@
 (require 'org-gtd-clarify)
 (require 'org-gtd-refile)
 (require 'org-gtd-configure)
+(require 'org-gtd-reactivate)
 
 (declare-function org-gtd-organize--call 'org-gtd-organize)
 (declare-function org-gtd-organize-apply-hooks 'org-gtd-organize)
@@ -99,33 +100,6 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
             (org-gtd-organize--call
              (lambda () (org-gtd-tickler--apply config-override))))))))))
 
-;;;###autoload
-(defun org-gtd-reactivate ()
-  "Reactivate a tickler'd project at point.
-Restores a paused project to active status, returning it to your GTD workflow.
-
-Tickler items that are NOT projects (single actions, delegated items, etc.)
-should be re-clarified using `org-gtd-clarify-item' when their reminder date
-arrives, allowing you to decide what to do with them."
-  (interactive)
-
-  ;; Check if item is tickler'd
-  (let ((org-gtd-value (org-entry-get (point) "ORG_GTD")))
-    (unless (string= org-gtd-value "Tickler")
-      (user-error "Item at point is not tickler'd (ORG_GTD: %s)" org-gtd-value))
-
-    ;; Detect if this is a project heading by checking PREVIOUS_ORG_GTD
-    (let ((previous-org-gtd (org-entry-get (point) "PREVIOUS_ORG_GTD")))
-      (cond
-       ;; Case 1: Was a project heading - reactivate project
-       ((string= previous-org-gtd "Projects")
-        (require 'org-gtd-projects)
-        (org-gtd-project-reactivate (point-marker)))
-
-       ;; Case 2: Non-project tickler item - guide user to re-clarify
-       (t
-        (user-error "Use `org-gtd-clarify-item' to decide what to do with this tickler item"))))))
-
 ;;;; Functions
 
 ;;;;; Public
@@ -150,8 +124,11 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
 (defun org-gtd-tickler--configure (&optional config-override)
   "Configure item at point as tickler.
 
+Saves current state to PREVIOUS_* properties before setting type.
 CONFIG-OVERRIDE can provide input configuration to override default
 prompting behavior."
+  ;; Save current state before changing type
+  (org-gtd-save-state)
   (org-gtd-configure-as-type 'tickler
                              (when config-override
                                `((:when . ,(funcall (alist-get '(quote active-timestamp) config-override nil nil #'equal) nil))))))
