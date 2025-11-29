@@ -12,3 +12,8 @@
 
 (eldev-add-extra-dependencies 'test 'with-simulated-input)
 (eldev-add-extra-dependencies 'test 'dash)
+
+;; Virtual filesystem for testing - avoids writing to real disk
+;; Use :unstable to get latest HEAD commit
+(eldev-use-vc-repository 'mock-fs :git "https://codeberg.org/Trevoke/mock-fs.el" :commit "congruence")
+(eldev-add-extra-dependencies 'test 'mock-fs)

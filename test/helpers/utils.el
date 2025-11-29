@@ -22,8 +22,9 @@
   (ogt--buffer-string (ogt--archive)))
 
 (defun ogt--save-all-buffers ()
+  "Save all modified buffers without prompting."
   (let ((inhibit-message t))
-    (with-simulated-input "!" (save-some-buffers))))
+    (save-some-buffers t)))
 
 (defun ogt--temp-org-file-buffer (basename &optional text)
   "Create a new org-mode file with a unique name.
@@ -56,11 +57,9 @@ Return the buffer visiting that file."
   (message "*** End List of active buffers"))
 
 (defun ogt--org-dir-buffer-string ()
-  (let ((ogt-files (progn (list-directory org-gtd-directory)
-                          (with-current-buffer "*Directory*"
-                            (buffer-string)))))
-    (kill-buffer "*Directory*")
-    ogt-files))
+  "Return a string listing files in org-gtd-directory.
+Uses `directory-files' which works with mock-fs, unlike `list-directory'."
+  (mapconcat #'identity (directory-files org-gtd-directory) "\n"))
 
 ;; End load guard and provide feature
 (provide 'org-gtd-test-helper-utils))

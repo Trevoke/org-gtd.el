@@ -1,7 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8 -*-
 
 (require 'compat)
-
+(require 'mock-fs)
 
 ;; Load guard to prevent redundant loading
 (unless (featurep 'org-gtd-test-setup)
@@ -16,8 +16,17 @@
 (require 'org-gtd-test-helper-wip (file-name-concat default-directory "test/helpers/wip.el"))
 
 (defun ogt--configure-emacs ()
+  ;; Initialize mock filesystem for this test
+  ;; Creates fresh virtual filesystem - no disk writes, perfect isolation
+  (setq mock-fs--current (mock-fs-create))
+  (mock-fs-add-directory mock-fs--current "/gtd/")
+  (mock-fs-add-directory mock-fs--current "/config/")
+
   (setq last-command nil
-        org-gtd-directory (make-temp-file "org-gtd" t)
+        ;; Use mock filesystem path instead of real temp directory
+        org-gtd-directory "/mock:/gtd/"
+        ;; Use mock path for org-id locations to prevent cross-test pollution
+        org-id-locations-file "/mock:/config/.org-id-locations"
         org-gtd-areas-of-focus nil
         org-gtd-organize-hooks '()
         org-gtd-refile-to-any-target t
@@ -55,6 +64,9 @@
                      ;; Kill some transient-related buffers but not all
                      (string-match-p "\\*Help\\*" (buffer-name buffer))
                      (string-match-p "\\*Warnings\\*" (buffer-name buffer))
+                     ;; Kill buffers visiting mock filesystem paths
+                     (and (buffer-file-name buffer)
+                          (string-prefix-p "/mock:" (buffer-file-name buffer)))
                      ;; Also kill any buffer with file name containing GTD paths
                      (and (buffer-file-name buffer)
                           (string-match-p "org-gtd" (buffer-file-name buffer)))))
@@ -70,6 +82,9 @@
             (with-current-buffer buffer
               (set-buffer-modified-p nil)))
           (kill-buffer buffer)))))
+
+  ;; Clear mock filesystem - releases all virtual files
+  (setq mock-fs--current nil)
 
   ;; Clear all org-mode internal state
   (ogt--clear-org-mode-state)
@@ -111,10 +126,9 @@
         ;; returning stale buffers from previous test directories
         file-name-history nil)
 
-  ;; CRITICAL: Save the cleared org-id state to disk
-  ;; Without this, the .org-id-locations file still contains stale IDs
-  ;; from previous tests, which get reloaded and cause test pollution
-  (org-id-locations-save)
+  ;; Note: With mock-fs, we don't need to save org-id locations to disk
+  ;; since each test gets a fresh virtual filesystem. The in-memory state
+  ;; is cleared above and the mock filesystem is cleared in ogt--close-and-delete-files.
 
   ;; Clear transient state that might be left over from previous tests
   (when (fboundp 'transient--emergency-exit)

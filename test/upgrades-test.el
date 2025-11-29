@@ -360,6 +360,9 @@ Do that thing.
  (describe
   "Complete v3 to v4 user upgrade path"
 
+  (before-each (ogt--configure-emacs))
+  (after-each (ogt--close-and-delete-files))
+
   (it "removes ORG_GTD property from level 1 category headings"
       (with-current-buffer (org-gtd--default-file)
         (insert """
@@ -486,7 +489,9 @@ Content here.
       (let (orig-tags orig-custom)
         (with-current-buffer (org-gtd--default-file)
           (goto-char (point-min))
-          (search-forward "Task")
+          ;; Use case-sensitive search to avoid matching ORG_GTD_FIRST_TASKS property
+          (let ((case-fold-search nil))
+            (search-forward "Task"))
           (org-back-to-heading t)
           (setq orig-tags (org-get-tags)
                 orig-custom (org-entry-get (point) "CUSTOM")))
@@ -496,7 +501,9 @@ Content here.
 
         (with-current-buffer (org-gtd--default-file)
           (goto-char (point-min))
-          (search-forward "Task")
+          ;; Use case-sensitive search to avoid matching ORG_GTD_FIRST_TASKS property
+          (let ((case-fold-search nil))
+            (search-forward "Task"))
           (org-back-to-heading t)
           (expect (org-get-tags) :to-equal orig-tags)
           (expect (org-entry-get (point) "CUSTOM") :to-equal orig-custom))))
