@@ -54,6 +54,63 @@ Saves ORG_GTD, TODO state, and all type-specific properties."
           (when-let ((val (org-entry-get (point) org-prop)))
             (org-entry-put (point) (concat "PREVIOUS_" org-prop) val)))))))
 
+(declare-function org-gtd-clarify-item "org-gtd-clarify")
+
+(defun org-gtd-restore-state ()
+  "Restore GTD state from PREVIOUS_* properties.
+
+If PREVIOUS_ORG_GTD is nil, clears ORG_GTD and calls `org-gtd-clarify-item'.
+Otherwise, restores ORG_GTD, TODO, and type-specific properties.
+Prompts user to confirm/update each type-specific property."
+  (let ((previous-org-gtd (org-entry-get (point) "PREVIOUS_ORG_GTD")))
+
+    ;; Clear someday/tickler-specific properties
+    (org-entry-delete (point) "ORG_GTD_TIMESTAMP")
+
+    (if (null previous-org-gtd)
+        ;; No saved state - re-clarify
+        (progn
+          (org-entry-delete (point) "ORG_GTD")
+          (require 'org-gtd-clarify)
+          (org-gtd-clarify-item))
+
+      ;; Has saved state - restore with prompts
+      (let ((previous-type (org-gtd-type-from-org-gtd-value previous-org-gtd)))
+        ;; Restore ORG_GTD
+        (org-entry-put (point) "ORG_GTD" previous-org-gtd)
+        (org-entry-delete (point) "PREVIOUS_ORG_GTD")
+
+        ;; Restore TODO state
+        (when-let ((previous-todo (org-entry-get (point) "PREVIOUS_TODO")))
+          (org-todo previous-todo)
+          (org-entry-delete (point) "PREVIOUS_TODO"))
+
+        ;; Restore type-specific properties with prompts
+        (dolist (prop (org-gtd-type-properties previous-type))
+          (let* ((prop-def (cdr prop))
+                 (org-prop (plist-get prop-def :org-property))
+                 (prompt (plist-get prop-def :prompt))
+                 (previous-key (concat "PREVIOUS_" org-prop))
+                 (previous-val (org-entry-get (point) previous-key)))
+            (when previous-val
+              (let ((new-val (read-string
+                              (format "%s [%s]: " prompt previous-val)
+                              nil nil previous-val)))
+                (org-entry-put (point) org-prop new-val))
+              (org-entry-delete (point) previous-key))))))))
+
+;;;###autoload
+(defun org-gtd-reactivate ()
+  "Reactivate a someday/tickler item at point.
+
+Restores the item to its previous GTD state, prompting to confirm
+or update each type-specific property (dates, delegated-to, etc.)."
+  (interactive)
+  (let ((org-gtd-value (org-entry-get (point) "ORG_GTD")))
+    (unless (member org-gtd-value (list org-gtd-someday org-gtd-tickler))
+      (user-error "Item is not someday/tickler (ORG_GTD: %s)" org-gtd-value))
+    (org-gtd-restore-state)))
+
 ;;;; Footer
 
 (provide 'org-gtd-reactivate)
