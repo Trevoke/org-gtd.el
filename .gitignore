@@ -7,6 +7,7 @@
 /dev/.cache
 /dev/.config/
 /doc/org-gtd.info
+/doc/org-gtd.texi
 /dev/gtd
 /gtd-test
 dist/
