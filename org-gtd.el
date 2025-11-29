@@ -60,6 +60,7 @@
 (require 'org-gtd-clarify)
 (require 'org-gtd-delegate)
 (require 'org-gtd-archive)
+(require 'org-gtd-reactivate)
 (require 'org-gtd-capture)
 (require 'org-gtd-refile)
 (require 'org-gtd-accessors)

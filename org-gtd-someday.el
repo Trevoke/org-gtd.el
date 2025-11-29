@@ -63,24 +63,6 @@ with ORG_GTD_REFILE: Someday property."
   (org-gtd-organize--call
    (lambda () (org-gtd-someday--apply))))
 
-;;;###autoload
-(defun org-gtd-someday-activate ()
-  "Activate a someday/maybe item by re-clarifying it.
-
-Removes the someday/maybe categorization and returns the item to
-the clarification workflow so it can be properly organized."
-  (interactive)
-  ;; Check if item is someday/maybe
-  (let ((org-gtd-value (org-entry-get (point) "ORG_GTD")))
-    (unless (string= org-gtd-value "Someday")
-      (user-error "Item at point is not someday/maybe (ORG_GTD: %s)" org-gtd-value))
-
-    ;; Remove ORG_GTD property to allow re-clarification
-    (org-entry-delete (point) "ORG_GTD")
-
-    ;; Invoke clarify to re-process the item
-    (org-gtd-clarify-item)))
-
 ;;;; Functions
 
 ;;;;; Public
