@@ -1726,6 +1726,8 @@ See [[#working-with-projects-advanced][Working with Projects]] for advanced feat
 
 *Use case - Paused projects*: You can tickler entire projects to temporarily hide them from your active views while preserving all structure and dependencies. See [[#tickler-projects][Tickler Projects]] for details.
 
+*State Preservation*: Like someday items, tickler saves your item's current state (~ORG_GTD~, TODO keyword, and type-specific properties like ~DELEGATED_TO~). When the review date arrives and you run ~M-x org-gtd-reactivate~, you'll be prompted to confirm or update each property.
+
 *GTD principle*: The tickler file is a time-based reminder system. Items appear when the date arrives, prompting you to decide if you're ready to act.
 
 *** Someday/Maybe [y]
@@ -1750,6 +1752,15 @@ See [[#working-with-projects-advanced][Working with Projects]] for advanced feat
 *Key difference from Tickler*: Someday items have NO review date. They don't appear in your agenda automatically. You choose when to review them (typically during weekly/monthly reviews).
 
 *GTD principle*: Someday/maybe items acknowledge possibilities without cluttering your active system. They're safe to ignore until you're ready.
+
+*State Preservation*: When you move an item TO someday, org-gtd automatically saves its current state:
+- ~ORG_GTD~ value → saved to ~PREVIOUS_ORG_GTD~
+- TODO keyword → saved to ~PREVIOUS_TODO~
+- Type-specific properties (e.g., ~DELEGATED_TO~, ~SCHEDULED~) → saved to ~PREVIOUS_*~ versions
+
+This means a delegated action moved to someday will remember who it was delegated to, and a calendar item will remember its original date.
+
+*Reactivating Someday Items*: When you're ready to work on a someday item again, use ~M-x org-gtd-reactivate~. For non-project items, you'll be prompted to confirm or update each preserved property (e.g., "Delegated to [Jane Smith]: "). This lets you adjust for the time that has passed while keeping your original planning work.
 
 *** Habit [H]
 
@@ -4991,30 +5002,42 @@ For projects:
 
 **** ~org-gtd-reactivate~
 
-**What it is:** Bring back tickler projects and actions.
+**What it is:** Bring back tickler or someday items to their original active state.
 
-**Why you'd use it:** The review date arrived, you're ready to work on it again.
+**Why you'd use it:** You're ready to work on something you previously set aside—either a tickler item whose review date arrived, or a someday item you've decided to act on.
 
 **Your first use (30 seconds):**
 
-1. When you see a tickler item in agenda (on its review date)
+1. Navigate to a tickler or someday item
 2. Run: ~M-x org-gtd-reactivate~
-3. Graph view opens - review the project structure
-4. Adjust if needed and close
+3. For non-project items: confirm or update each saved property when prompted
+4. For projects: graph view opens for review
 
 **What it does:**
 
-- Restores original item states (tickler → Projects, actions → Actions, etc.)
-- Restores task TODO keywords
+*For all items:*
+- Restores original ~ORG_GTD~ value from ~PREVIOUS_ORG_GTD~
+- Restores TODO keyword from ~PREVIOUS_TODO~
+- Removes ~ORG_GTD_TIMESTAMP~ (tickler review date)
+
+*For non-project items (delegated, calendar, single actions):*
+- Prompts you to confirm or update each type-specific property
+- Example: "Delegated to [Jane Smith]: " lets you keep Jane or enter someone new
+- Example: "Scheduled [2025-03-15]: " lets you update the date
+
+*For projects:*
+- Iterates over all project tasks restoring each one
 - Recalculates NEXT tasks based on current dependencies
-- Opens project graph view (for projects) so you can review and adjust
-- Removes the review date
+- Opens project graph view for review
 
 **When to use:**
 
 - When a tickler item appears in your agenda on its review date
+- During someday/maybe review when you decide to activate an item
 - When you're ready to reactivate something earlier than scheduled
-- During weekly review when scanning tickler items
+- During weekly review when scanning tickler or someday items
+
+**Note:** If an item has no saved state (~PREVIOUS_ORG_GTD~ is empty), reactivation will start the organize workflow so you can categorize it fresh.
 
 *** Task Dependency Commands
 :PROPERTIES:
