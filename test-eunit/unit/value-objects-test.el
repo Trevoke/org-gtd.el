@@ -102,4 +102,68 @@
   (value-objects-test--setup)
   (assert-nil (org-gtd-todo-state-is-ready-p nil)))
 
+;;; org-gtd-todo-state-blocks-others-p
+
+(deftest todo-state-blocks-others-todo-blocks ()
+  "TODO blocks dependent tasks from becoming NEXT."
+  (value-objects-test--setup)
+  (assert-true (org-gtd-todo-state-blocks-others-p "TODO")))
+
+(deftest todo-state-blocks-others-next-blocks ()
+  "NEXT blocks dependent tasks from becoming NEXT."
+  (value-objects-test--setup)
+  (assert-true (org-gtd-todo-state-blocks-others-p "NEXT")))
+
+(deftest todo-state-blocks-others-wait-blocks ()
+  "WAIT blocks dependent tasks from becoming NEXT."
+  (value-objects-test--setup)
+  (assert-true (org-gtd-todo-state-blocks-others-p "WAIT")))
+
+(deftest todo-state-blocks-others-done-does-not-block ()
+  "DONE does not block dependent tasks."
+  (value-objects-test--setup)
+  (assert-nil (org-gtd-todo-state-blocks-others-p "DONE")))
+
+(deftest todo-state-blocks-others-cncl-does-not-block ()
+  "CNCL does not block dependent tasks."
+  (value-objects-test--setup)
+  (assert-nil (org-gtd-todo-state-blocks-others-p "CNCL")))
+
+(deftest todo-state-blocks-others-nil-returns-nil ()
+  "org-gtd-todo-state-blocks-others-p returns nil for nil state."
+  (value-objects-test--setup)
+  (assert-nil (org-gtd-todo-state-blocks-others-p nil)))
+
+;;; org-gtd-todo-state-should-reset-p
+
+(deftest todo-state-should-reset-todo-resets ()
+  "TODO should be recalculated during project updates."
+  (value-objects-test--setup)
+  (assert-true (org-gtd-todo-state-should-reset-p "TODO")))
+
+(deftest todo-state-should-reset-next-resets ()
+  "NEXT should be recalculated during project updates."
+  (value-objects-test--setup)
+  (assert-true (org-gtd-todo-state-should-reset-p "NEXT")))
+
+(deftest todo-state-should-reset-wait-preserves ()
+  "WAIT preserves explicit user decision."
+  (value-objects-test--setup)
+  (assert-nil (org-gtd-todo-state-should-reset-p "WAIT")))
+
+(deftest todo-state-should-reset-cncl-preserves ()
+  "CNCL preserves explicit user decision."
+  (value-objects-test--setup)
+  (assert-nil (org-gtd-todo-state-should-reset-p "CNCL")))
+
+(deftest todo-state-should-reset-done-preserves ()
+  "DONE preserves explicit user decision."
+  (value-objects-test--setup)
+  (assert-nil (org-gtd-todo-state-should-reset-p "DONE")))
+
+(deftest todo-state-should-reset-nil-returns-nil ()
+  "org-gtd-todo-state-should-reset-p returns nil for nil state."
+  (value-objects-test--setup)
+  (assert-nil (org-gtd-todo-state-should-reset-p nil)))
+
 ;;; value-objects-test.el ends here

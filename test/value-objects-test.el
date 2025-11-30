@@ -26,6 +26,8 @@
 ;; Tests migrated to test-eunit/unit/value-objects-test.el:
 ;; org-gtd-todo-state-is-active-p (7 tests)
 ;; org-gtd-todo-state-is-ready-p (6 tests)
+;; org-gtd-todo-state-blocks-others-p (6 tests)
+;; org-gtd-todo-state-should-reset-p (6 tests)
 
 ;;;; Test Setup
 
