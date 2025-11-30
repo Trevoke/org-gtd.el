@@ -3,6 +3,18 @@
 (require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'org-gtd-types)
 
+;; Tests migrated to test-eunit/unit/types-test.el:
+;; - types-defines-all-expected-gtd-types
+;; - types-maps-each-type-to-correct-org-gtd-value
+;; - types-maps-to-correct-todo-state-semantics
+;; - type-get-returns-definition-for-valid-type
+;; - type-get-returns-nil-for-unknown-type
+;; - type-org-gtd-value-returns-property-value
+;; - type-org-gtd-value-returns-nil-for-unknown
+;; - type-state-returns-semantic-for-type
+;; - type-from-org-gtd-value-returns-type-name
+;; - type-from-org-gtd-value-returns-nil-for-unknown
+
 (describe "org-gtd-types constant"
 
   (it "defines all expected GTD types"
