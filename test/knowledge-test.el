@@ -3,6 +3,9 @@
 (require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'with-simulated-input)
 
+;; "through the inbox, moves the task to the archive file" migrated to
+;; test-eunit/acceptance/basic-workflows-test.el (knowledge-item-moves-to-archive)
+
 (describe
  "Processing a knowledge item"
 

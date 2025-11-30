@@ -3,6 +3,9 @@
 (require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'with-simulated-input)
 
+;; "through the inbox, mark a task as trash" migrated to
+;; test-eunit/acceptance/basic-workflows-test.el (trash-item-moves-to-archive)
+
 (describe
  "Processing a trash item"
 

@@ -3,6 +3,9 @@
 (require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'with-simulated-input)
 
+;; "appears in daily agenda after creation" migrated to
+;; test-eunit/acceptance/basic-workflows-test.el (single-action-programmatic-create)
+
 (describe
  "A single action"
 

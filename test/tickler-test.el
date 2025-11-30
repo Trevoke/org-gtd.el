@@ -3,6 +3,9 @@
 (require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'with-simulated-input)
 
+;; "appears in daily agenda when review date arrives" migrated to
+;; test-eunit/acceptance/basic-workflows-test.el (tickler-item-programmatic-create)
+
 (describe
  "A tickler item"
 

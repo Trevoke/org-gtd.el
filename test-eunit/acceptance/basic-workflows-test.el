@@ -315,4 +315,86 @@
     (refute-match "Birthday party" (current-buffer-raw-text))
     (refute-match "Emacs manual" (current-buffer-raw-text))))
 
+;;; Programmatic Creation APIs
+;; These tests verify the org-gtd-*-create functions that allow
+;; programmatic item creation without going through capture/organize flow.
+
+(deftest single-action-programmatic-create ()
+  "Verifies single action appears in daily agenda after programmatic creation."
+  ;; Use the programmatic API instead of capture → organize flow
+  (org-gtd-single-action-create "Write this test")
+
+  ;; Verify it shows in engage view
+  (org-gtd-engage)
+  (assert-match "Write this test" (agenda-raw-text)))
+
+(deftest calendar-item-programmatic-create ()
+  "Verifies calendar item appears in daily agenda after programmatic creation."
+  ;; Use the programmatic API with today's date
+  (org-gtd-calendar-create "Dentist appointment"
+                           (format-time-string "%Y-%m-%d"))
+
+  ;; Verify it shows in engage view
+  (org-gtd-engage)
+  (assert-match "Dentist appointment" (agenda-raw-text)))
+
+(deftest tickler-item-programmatic-create ()
+  "Verifies tickler item appears in daily agenda when review date arrives."
+  ;; Use the programmatic API with today's date (so it shows immediately)
+  (org-gtd-tickler-create "Review insurance policy"
+                          (format-time-string "%Y-%m-%d"))
+
+  ;; Verify it shows in engage view (today is the review date)
+  (org-gtd-engage)
+  (assert-match "Review insurance policy" (agenda-raw-text)))
+
+;;; Reference/Knowledge Items
+
+(deftest knowledge-item-moves-to-archive ()
+  "Verifies reference/knowledge item is moved to archive file."
+  ;; In GTD, reference material is information you might need later but
+  ;; doesn't require action. It's stored in the archive, not action lists.
+  (create-reference-item "Git commands reference")
+
+  ;; Verify it's in the archive file
+  (assert-true (archive-contains? "Git commands reference"))
+
+  ;; Verify it's NOT in the main GTD file (action lists)
+  (with-current-buffer (org-gtd--default-file)
+    (refute-match "Git commands reference" (current-buffer-raw-text))))
+
+;;; Trash/Discard Items
+
+(deftest trash-item-moves-to-archive ()
+  "Verifies discarded item is moved to archive file."
+  ;; During GTD processing, some inbox items turn out to be not actionable
+  ;; and not worth keeping. They get moved to trash (in archive).
+  (discard-inbox-item "Old meeting notes")
+
+  ;; Verify it's in the archive file
+  (assert-true (archive-contains? "Old meeting notes"))
+
+  ;; Verify it's NOT in the inbox
+  (with-current-buffer (ogt-inbox-buffer)
+    (refute-match "Old meeting notes" (current-buffer-raw-text))))
+
+;;; Quick Action Items
+
+(deftest quick-action-moves-to-archive ()
+  "Verifies quick action is moved to archive file with Quick type."
+  ;; In GTD, quick actions are tasks that take less than 2 minutes.
+  ;; They should be done immediately, then archived.
+  (create-quick-action "Reply to email")
+
+  ;; Verify it's in the archive file
+  (assert-true (archive-contains? "Reply to email"))
+
+  ;; Verify it has the correct ORG_GTD type
+  (let ((archive-buffer (ogt--archive)))
+    (with-current-buffer archive-buffer
+      (goto-char (point-min))
+      (search-forward "Reply to email")
+      (org-back-to-heading t)
+      (assert-equal "Quick" (org-entry-get (point) "ORG_GTD")))))
+
 ;;; basic-workflows-test.el ends here
