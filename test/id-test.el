@@ -3,6 +3,9 @@
 (require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'with-simulated-input)
 
+;; "generates a makeshift id if the heading is empty" migrated to
+;; test-eunit/unit/id-test.el (id-generates-makeshift-for-empty-heading)
+
 (describe
  "Generating ID for headings"
 

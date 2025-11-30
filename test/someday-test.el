@@ -3,6 +3,9 @@
 (require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'with-simulated-input)
 
+;; "has ORG_GTD property set to Someday" migrated to
+;; test-eunit/acceptance/basic-workflows-test.el (someday-item-programmatic-create)
+
 (describe
  "A someday/maybe item"
 

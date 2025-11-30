@@ -369,6 +369,17 @@
   (org-gtd-engage)
   (assert-match "Morning exercise" (agenda-raw-text)))
 
+(deftest someday-item-programmatic-create ()
+  "Verifies someday/maybe item has correct ORG_GTD property."
+  ;; Use the programmatic API
+  (org-gtd-someday-create "Learn Spanish")
+
+  ;; Verify the item was created with correct ORG_GTD property
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "Learn Spanish")
+    (assert-equal "Someday" (org-entry-get (point) "ORG_GTD"))))
+
 ;;; Reference/Knowledge Items
 
 (deftest knowledge-item-moves-to-archive ()
