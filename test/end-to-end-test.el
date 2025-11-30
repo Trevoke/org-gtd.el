@@ -4,294 +4,74 @@
 
 ;; Basic workflow tests migrated to test-eunit/acceptance/basic-workflows-test.el
 ;; Cancel and archive tests migrated to test-eunit/acceptance/cancel-archive-test.el
+;; Review flow tests migrated to test-eunit/acceptance/review-flow-test.el
 
-(describe "Review Flow Tests"
+;; Multi-file project review test kept here (requires real filesystem, not mock-fs)
+(describe "Multi-file Project Review Tests"
 
   (before-each (setq inhibit-message t) (ogt--configure-emacs))
   (after-each (ogt--close-and-delete-files))
 
-  (describe "Review of active items"
-    (it "verifies single action appears in all next actions view"
-        ;; 1. CAPTURE and ORGANIZE single action
-        (capture-inbox-item "Review quarterly goals")
-        (org-gtd-process-inbox)
-        (organize-as-single-action)
+  (it "verifies multi-file project does NOT appear stuck when it has NEXT task in other file"
+      ;; NOTE: This test verifies the IMPROVED behavior with DSL-based stuck detection.
+      ;; The new implementation uses org-gtd-projects--is-stuck-p which traverses
+      ;; the dependency graph across files via ORG_GTD_FIRST_TASKS relationships.
+      ;; Projects with NEXT/WAIT tasks in other files are correctly identified as
+      ;; NOT stuck, which is an improvement over org-mode's native stuck projects
+      ;; view that only looks at children of the project heading.
 
-        ;; 2. VERIFY appears in all next actions view
-        (org-gtd-show-all-next)
-        (expect (agenda-raw-text)
-                :to-match "Review quarterly goals")))
+      ;; 1. CAPTURE and ORGANIZE project in main file
+      (capture-inbox-item "Multi-file project review")
+      (org-gtd-process-inbox)
 
-  (describe "Review of missed items"
-    (it "verifies delegated item with past date shows in missed review"
-        ;; Create past date (7 days ago)
-        (let* ((past-date-time (time-subtract (current-time) (days-to-time 7)))
-               (past-date (decode-time past-date-time))
-               (past-calendar-date (list (nth 4 past-date)  ; month
-                                        (nth 3 past-date)  ; day
-                                        (nth 5 past-date))))  ; year
+      (with-wip-buffer
+        (goto-char (point-max))
+        (newline)
+        (make-task "Task in main file" :level 2)
+        (organize-as-project))
 
-          ;; 1. CAPTURE and ORGANIZE delegated item with past date
-          (capture-inbox-item "Get contract from legal")
-          (org-gtd-process-inbox)
-          (delegate-item "Legal" past-calendar-date)
+      ;; 2. Create second file with NEXT task
+      (let ((second-file (org-gtd--path "review-secondary")))
+        (with-temp-file second-file
+          (make-task "Task in second file" :id "review-task-id" :level 1))
 
-          ;; 2. VERIFY appears in missed items review
-          (org-gtd-review-missed-items)
-          (expect (agenda-raw-text)
-                  :to-match "Get contract from legal")))
-
-    (it "verifies calendar item with past date shows in missed review"
-        ;; Create past date (3 days ago)
-        (let* ((past-date-time (time-subtract (current-time) (days-to-time 3)))
-               (past-date (decode-time past-date-time))
-               (past-calendar-date (list (nth 4 past-date)  ; month
-                                        (nth 3 past-date)  ; day
-                                        (nth 5 past-date))))  ; year
-
-          ;; 1. CAPTURE and ORGANIZE calendar item with past date
-          (capture-inbox-item "Client presentation")
-          (org-gtd-process-inbox)
-          (schedule-item past-calendar-date)
-
-          ;; 2. VERIFY appears in missed items review
-          (org-gtd-review-missed-items)
-          (expect (agenda-raw-text)
-                  :to-match "Client presentation")))
-
-    (it "verifies tickler item with past date shows in missed review"
-        ;; Create past date (5 days ago)
-        (let* ((past-date-time (time-subtract (current-time) (days-to-time 5)))
-               (past-date (decode-time past-date-time))
-               (past-calendar-date (list (nth 4 past-date)  ; month
-                                        (nth 3 past-date)  ; day
-                                        (nth 5 past-date))))  ; year
-
-          ;; 1. CAPTURE and ORGANIZE tickler item with past date
-          (capture-inbox-item "Review investment portfolio")
-          (org-gtd-process-inbox)
-          (defer-item past-calendar-date)
-
-          ;; 2. VERIFY appears in missed items review
-          (org-gtd-review-missed-items)
-          (expect (agenda-raw-text)
-                  :to-match "Review investment portfolio"))))
-
-  (describe "Review of projects"
-    (it "verifies project shows in stuck projects review when it has no NEXT actions"
-        ;; NOTE: This test documents expected behavior for stuck projects.
-        ;; A stuck project is one that has TODO state but no NEXT or WAIT tasks.
-        ;; Since org-gtd creates projects with NEXT tasks by default via edna triggers,
-        ;; we need to transition tasks to TODO (without NEXT) to make the project stuck.
-
-        ;; 1. CAPTURE and ORGANIZE project
-        (capture-inbox-item "Launch new website")
-        (org-gtd-process-inbox)
-
-        (with-wip-buffer
-          (goto-char (point-max))
-          (newline)
-          (make-task "Design mockups" :level 2)
-          (make-task "Write content" :level 2)
-          (make-task "Deploy site" :level 2)
-          (organize-as-project))
-
-        ;; 2. Make project stuck by transitioning NEXT tasks back to TODO
-        ;; This creates a project with tasks but no next actions available
-        (with-current-buffer (org-gtd--default-file)
+        (with-current-buffer (find-file-noselect second-file)
+          (org-mode)
           (goto-char (point-min))
-          (re-search-forward "Design mockups")
-          (org-todo "TODO")
-          (re-search-forward "Write content")
-          (org-todo "TODO")
-          (re-search-forward "Deploy site")
-          (org-todo "TODO"))
+          (search-forward "Task in second file")
+          (org-back-to-heading t)
+          (org-id-add-location "review-task-id" second-file)
+          (org-todo "NEXT"))
 
-        ;; 3. VERIFY project appears in stuck projects review
-        (org-gtd-review-stuck-projects)
-        (expect (agenda-raw-text)
-                :to-match "Launch new website"))
+        (let ((org-agenda-files (append (org-agenda-files) (list second-file))))
 
-    (it "verifies completed project does NOT appear in stuck projects review"
-        ;; NOTE: This test verifies the disambiguation between stuck and completed projects.
-        ;; A completed project (all tasks DONE/CNCL) should:
-        ;; - NOT appear in stuck projects review (has no work remaining)
-        ;; - SHOULD appear in completed projects review (ready for archiving)
-
-        ;; 1. CAPTURE and ORGANIZE project
-        (capture-inbox-item "Finished Campaign")
-        (org-gtd-process-inbox)
-
-        (with-wip-buffer
-          (goto-char (point-max))
-          (newline)
-          (make-task "Research audience" :level 2)
-          (make-task "Create content" :level 2)
-          (make-task "Launch campaign" :level 2)
-          (organize-as-project))
-
-        ;; 2. Complete all tasks (mark as DONE)
-        (with-current-buffer (org-gtd--default-file)
-          (goto-char (point-min))
-          (re-search-forward "Research audience")
-          (org-todo "DONE")
-          (goto-char (point-min))
-          (re-search-forward "Create content")
-          (org-todo "DONE")
-          (goto-char (point-min))
-          (re-search-forward "Launch campaign")
-          (org-todo "DONE"))
-
-        ;; 3. VERIFY project does NOT appear in stuck projects review
-        (org-gtd-review-stuck-projects)
-        (expect (agenda-raw-text)
-                :not :to-match "Finished Campaign")
-
-        ;; 4. VERIFY project DOES appear in completed projects review
-        (org-gtd-review-completed-projects)
-        (expect (agenda-raw-text)
-                :to-match "Finished Campaign")))
-
-  (describe "Engage view for habits"
-    (it "verifies habit appears in engage view"
-        ;; 1. CAPTURE and ORGANIZE habit with daily repeater
-        (capture-inbox-item "Daily meditation")
-        (org-gtd-process-inbox)
-        (organize-as-habit "+1d")
-
-        ;; 2. VERIFY appears in engage view
-        (org-gtd-engage)
-        (expect (agenda-raw-text)
-                :to-match "Daily meditation")))
-
-  (describe "Review of habits"
-    (it "verifies habit appears in area of focus review"
-        ;; Habits should appear in review views to ensure they're being maintained
-        (let ((org-gtd-areas-of-focus '("Personal" "Work" "Health")))
-
-          ;; 1. CAPTURE and ORGANIZE habit with daily repeater
-          (capture-inbox-item "Morning workout")
-          (org-gtd-process-inbox)
-          (organize-as-habit "+1d")
-
-          ;; 2. Set area of focus (uses CATEGORY property)
-          (with-current-buffer (org-gtd--default-file)
-            (goto-char (point-min))
-            (re-search-forward "Morning workout")
-            (org-set-property "CATEGORY" "Health"))
-
-          ;; 3. VERIFY appears in area of focus review
-          (org-gtd-review-area-of-focus "Health")
-          (expect (agenda-raw-text)
-                  :to-match "Morning workout"))))
-
-  (describe "Review of multi-file projects"
-    (it "verifies multi-file project does NOT appear stuck when it has NEXT task in other file"
-        ;; NOTE: This test verifies the IMPROVED behavior with DSL-based stuck detection.
-        ;; The new implementation uses org-gtd-projects--is-stuck-p which traverses
-        ;; the dependency graph across files via ORG_GTD_FIRST_TASKS relationships.
-        ;; Projects with NEXT/WAIT tasks in other files are correctly identified as
-        ;; NOT stuck, which is an improvement over org-mode's native stuck projects
-        ;; view that only looks at children of the project heading.
-
-        ;; 1. CAPTURE and ORGANIZE project in main file
-        (capture-inbox-item "Multi-file project review")
-        (org-gtd-process-inbox)
-
-        (with-wip-buffer
-          (goto-char (point-max))
-          (newline)
-          (make-task "Task in main file" :level 2)
-          (organize-as-project))
-
-        ;; 2. Create second file with NEXT task
-        (let ((second-file (org-gtd--path "review-secondary")))
-          (with-temp-file second-file
-            (make-task "Task in second file" :id "review-task-id" :level 1))
-
-          (with-current-buffer (find-file-noselect second-file)
-            (org-mode)
-            (goto-char (point-min))
-            (search-forward "Task in second file")
-            (org-back-to-heading t)
-            (org-id-add-location "review-task-id" second-file)
-            (org-todo "NEXT"))
-
-          (let ((org-agenda-files (append (org-agenda-files) (list second-file))))
-
-            ;; 3. Get project ID and link task from second file to project
-            (let ((project-id nil))
-              (with-current-buffer (org-gtd--default-file)
-                (goto-char (point-min))
-                (search-forward "Multi-file project review")
-                (org-back-to-heading t)
-                (setq project-id (org-entry-get (point) "ID"))
-                (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" "review-task-id"))
-
-              ;; 3a. Add project ID to task in second file (v4 compliance)
-              (with-current-buffer (find-file-noselect second-file)
-                (goto-char (point-min))
-                (search-forward "Task in second file")
-                (org-back-to-heading t)
-                (org-entry-put (point) "ORG_GTD" "Actions")
-                (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)))
-
-            ;; 4. Make main file task TODO (project has work, but also has NEXT in other file)
+          ;; 3. Get project ID and link task from second file to project
+          (let ((project-id nil))
             (with-current-buffer (org-gtd--default-file)
               (goto-char (point-min))
-              (search-forward "Task in main file")
-              (org-todo "TODO"))
+              (search-forward "Multi-file project review")
+              (org-back-to-heading t)
+              (setq project-id (org-entry-get (point) "ID"))
+              (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" "review-task-id"))
 
-            ;; 5. VERIFY project does NOT appear as stuck (it has a NEXT task in other file)
-            (org-gtd-review-stuck-projects)
-            (expect (agenda-raw-text)
-                    :not :to-match "Multi-file project review")))))
+            ;; 3a. Add project ID to task in second file (v4 compliance)
+            (with-current-buffer (find-file-noselect second-file)
+              (goto-char (point-min))
+              (search-forward "Task in second file")
+              (org-back-to-heading t)
+              (org-entry-put (point) "ORG_GTD" "Actions")
+              (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)))
 
-  (describe "Review of tickler items"
-    (it "verifies tickler item appears in area of focus review"
-        ;; Create future date (7 days ahead)
-        (let* ((future-date-time (time-add (current-time) (days-to-time 7)))
-               (future-date (decode-time future-date-time))
-               (future-calendar-date (list (nth 4 future-date)  ; month
-                                          (nth 3 future-date)  ; day
-                                          (nth 5 future-date)))  ; year
-               (org-gtd-areas-of-focus '("Personal" "Work" "Health")))
-
-          ;; 1. CAPTURE and ORGANIZE tickler item with future date
-          (capture-inbox-item "Learn Italian")
-          (org-gtd-process-inbox)
-          (defer-item future-calendar-date)
-
-          ;; 2. Set area of focus (uses CATEGORY property, not AREA_OF_FOCUS)
+          ;; 4. Make main file task TODO (project has work, but also has NEXT in other file)
           (with-current-buffer (org-gtd--default-file)
             (goto-char (point-min))
-            (re-search-forward "Learn Italian")
-            (org-set-property "CATEGORY" "Personal"))
+            (search-forward "Task in main file")
+            (org-todo "TODO"))
 
-          ;; 3. VERIFY appears in area of focus review
-          (org-gtd-review-area-of-focus "Personal")
+          ;; 5. VERIFY project does NOT appear as stuck (it has a NEXT task in other file)
+          (org-gtd-review-stuck-projects)
           (expect (agenda-raw-text)
-                  :to-match "Learn Italian")))
-
-    (it "verifies tickler item can be archived after completion"
-        ;; 1. CAPTURE and ORGANIZE tickler item
-        (capture-inbox-item "Research vacation spots")
-        (org-gtd-process-inbox)
-        (defer-item (calendar-current-date))
-
-        ;; 2. MARK DONE
-        (with-current-buffer (org-gtd--default-file)
-          (goto-char (point-min))
-          (re-search-forward "Research vacation spots")
-          (org-todo "DONE"))
-
-        ;; 3. ARCHIVE
-        (org-gtd-archive-completed-items)
-
-        ;; 4. VERIFY archived
-        (with-current-buffer (org-gtd--default-file)
-          (expect (current-buffer-raw-text)
-                  :not :to-match "Research vacation spots")))))
+                  :not :to-match "Multi-file project review")))))
 
 (describe "Habit Flow Tests"
 
