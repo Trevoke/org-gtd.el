@@ -14,6 +14,14 @@
 ;; - type-state-returns-semantic-for-type
 ;; - type-from-org-gtd-value-returns-type-name
 ;; - type-from-org-gtd-value-returns-nil-for-unknown
+;; - type-property-resolves-who-for-delegated
+;; - type-property-resolves-when-for-delegated
+;; - type-property-resolves-when-for-calendar
+;; - type-property-resolves-when-for-habit
+;; - type-property-returns-nil-for-missing-semantic
+;; - type-properties-returns-list-for-type-with-properties
+;; - type-properties-returns-nil-for-type-without-properties
+;; - type-properties-someday-has-no-properties
 
 (describe "org-gtd-types constant"
 

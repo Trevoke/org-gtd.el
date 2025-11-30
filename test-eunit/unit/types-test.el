@@ -121,4 +121,49 @@
   "org-gtd-type-from-org-gtd-value returns nil for unknown ORG_GTD value."
   (assert-nil (org-gtd-type-from-org-gtd-value "Unknown")))
 
+;;; org-gtd-type-property
+
+(deftest type-property-resolves-who-for-delegated ()
+  "org-gtd-type-property resolves :who semantic to DELEGATED_TO for delegated type."
+  (assert-equal "DELEGATED_TO" (org-gtd-type-property 'delegated :who)))
+
+(deftest type-property-resolves-when-for-delegated ()
+  "org-gtd-type-property resolves :when semantic to ORG_GTD_TIMESTAMP for delegated type."
+  (assert-equal "ORG_GTD_TIMESTAMP" (org-gtd-type-property 'delegated :when)))
+
+(deftest type-property-resolves-when-for-calendar ()
+  "org-gtd-type-property resolves :when semantic to ORG_GTD_TIMESTAMP for calendar type."
+  (assert-equal "ORG_GTD_TIMESTAMP" (org-gtd-type-property 'calendar :when)))
+
+(deftest type-property-resolves-when-for-habit ()
+  "org-gtd-type-property resolves :when semantic to SCHEDULED for habit type."
+  (assert-equal "SCHEDULED" (org-gtd-type-property 'habit :when)))
+
+(deftest type-property-returns-nil-for-missing-semantic ()
+  "org-gtd-type-property returns nil for type without the semantic property."
+  (assert-nil (org-gtd-type-property 'next-action :when))
+  (assert-nil (org-gtd-type-property 'next-action :who)))
+
+;;; org-gtd-type-properties
+
+(deftest type-properties-returns-list-for-type-with-properties ()
+  "org-gtd-type-properties returns list of semantic properties for delegated type."
+  (let ((props (org-gtd-type-properties 'delegated)))
+    (assert-true props)
+    (assert-equal 2 (length props))
+    ;; Check :who property exists
+    (let ((who-prop (seq-find (lambda (p) (eq (car p) :who)) props)))
+      (assert-true who-prop)
+      (assert-equal "DELEGATED_TO" (plist-get (cdr who-prop) :org-property))
+      (assert-equal 'text (plist-get (cdr who-prop) :type))
+      (assert-true (plist-get (cdr who-prop) :required)))))
+
+(deftest type-properties-returns-nil-for-type-without-properties ()
+  "org-gtd-type-properties returns nil for type without properties."
+  (assert-nil (org-gtd-type-properties 'next-action)))
+
+(deftest type-properties-someday-has-no-properties ()
+  "someday type has no properties (no timestamp required)."
+  (assert-nil (org-gtd-type-properties 'someday)))
+
 ;;; types-test.el ends here
