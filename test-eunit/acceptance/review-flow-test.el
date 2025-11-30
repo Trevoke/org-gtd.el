@@ -264,41 +264,44 @@
     (make-task "Task in main file" :level 2)
     (organize-as-project))
 
-  ;; 2. Create second file with NEXT task
-  (let ((second-file (org-gtd--path "review-secondary")))
-    (with-temp-file second-file
+  ;; 2. Get project ID first
+  (let ((project-id nil)
+        (second-file (org-gtd--path "review-secondary")))
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Multi-file project review")
+      (org-back-to-heading t)
+      (setq project-id (org-id-get-create))
+      (save-buffer))
+
+    ;; 3. Create second file with NEXT task linked to project
+    (with-current-buffer (find-file-noselect second-file)
+      (erase-buffer)
+      (org-mode)
       (insert "* TODO Task in second file\n")
       (insert ":PROPERTIES:\n")
-      (insert ":ID: review-task-id\n")
-      (insert ":END:\n"))
-
-    (with-current-buffer (find-file-noselect second-file)
-      (org-mode)
+      (insert ":ORG_GTD: Actions\n")
+      (insert ":END:\n")
       (goto-char (point-min))
-      (search-forward "Task in second file")
       (org-back-to-heading t)
-      (org-id-add-location "review-task-id" second-file)
-      (org-todo "NEXT"))
+      ;; Generate ID (not hardcoded)
+      (let ((task-id (org-id-get-create)))
+        ;; Link task to project
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+        (org-todo "NEXT")
+        (save-buffer)
+        (org-id-update-id-locations (list second-file))
+
+        ;; Link project to task
+        (with-current-buffer (org-gtd--default-file)
+          (goto-char (point-min))
+          (search-forward "Multi-file project review")
+          (org-back-to-heading t)
+          (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" task-id)
+          (save-buffer))))
 
     ;; Add second file to agenda files
     (add-to-list 'org-agenda-files second-file)
-
-    ;; 3. Get project ID and link task from second file to project
-    (let ((project-id nil))
-      (with-current-buffer (org-gtd--default-file)
-        (goto-char (point-min))
-        (search-forward "Multi-file project review")
-        (org-back-to-heading t)
-        (setq project-id (org-entry-get (point) "ID"))
-        (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" "review-task-id"))
-
-      ;; 3a. Add project ID to task in second file (v4 compliance)
-      (with-current-buffer (find-file-noselect second-file)
-        (goto-char (point-min))
-        (search-forward "Task in second file")
-        (org-back-to-heading t)
-        (org-entry-put (point) "ORG_GTD" "Actions")
-        (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)))
 
     ;; 4. Make main file task TODO (project has work, but also has NEXT in other file)
     (with-current-buffer (org-gtd--default-file)

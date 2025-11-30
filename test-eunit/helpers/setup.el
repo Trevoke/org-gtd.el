@@ -130,14 +130,15 @@ Kills GTD-related buffers and clears org-mode internal state."
         org-agenda-markers nil
         org-agenda-contributing-files nil
         org-agenda-last-search-view-search-was-boolean nil
-        ;; Clear org-id cache
-        org-id-locations nil
         org-id-files nil
         org-id-extra-files nil
         file-name-history nil)
 
-  ;; Save cleared org-id state
-  (ignore-errors (org-id-locations-save))
+  ;; Create a fresh empty hash table for org-id-locations
+  ;; CRITICAL: Setting to nil causes org-id to reload from disk on next use,
+  ;; which brings back /tmp paths from buttercup tests. An empty hash table
+  ;; prevents this lazy-loading behavior.
+  (setq org-id-locations (make-hash-table :test 'equal))
 
   ;; Clear transient state
   (when (fboundp 'transient--emergency-exit)
@@ -167,11 +168,14 @@ Kills GTD-related buffers and clears org-mode internal state."
 Sets up the mock filesystem, configures Emacs for testing,
 executes BODY, and cleans up afterward."
   (declare (indent 0) (debug t))
-  `(with-mock-fs (ogt-eunit--mock-fs-spec)
-     (ogt-eunit--configure-emacs)
-     (unwind-protect
-         (progn ,@body)
-       (ogt-eunit--cleanup))))
+  `(progn
+     ;; Clear state BEFORE test to ensure clean start
+     (ogt-eunit--clear-org-state)
+     (with-mock-fs (ogt-eunit--mock-fs-spec)
+       (ogt-eunit--configure-emacs)
+       (unwind-protect
+           (progn ,@body)
+         (ogt-eunit--cleanup)))))
 
 (provide 'ogt-eunit-setup)
 
