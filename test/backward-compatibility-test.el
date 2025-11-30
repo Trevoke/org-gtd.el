@@ -3,6 +3,11 @@
 (require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'with-simulated-input)
 
+;; All tests migrated to test-eunit/unit/backward-compatibility-test.el:
+;; - incubate-function-is-obsolete-alias-for-tickler
+;; - incubate-create-is-obsolete-alias-for-tickler-create
+;; - incubate-constant-is-obsolete-alias-for-tickler
+
 (describe
  "Backward compatibility aliases for incubate→tickler rename"
 
