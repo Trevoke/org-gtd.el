@@ -247,12 +247,67 @@
     (refute-match "Research vacation spots" (current-buffer-raw-text))))
 
 ;;; Multi-file Project Review
-;; NOTE: This test is more complex due to multi-file setup with mock-fs.
-;; Skipping for now - will need special handling for secondary files in mock-fs.
 
-;; (deftest multi-file-project-not-stuck-with-next-in-other-file ()
-;;   "Verifies multi-file project does NOT appear stuck when it has NEXT task in other file."
-;;   ;; TODO: Implement with proper mock-fs multi-file support
-;;   )
+(deftest multi-file-project-not-stuck-with-next-in-other-file ()
+  "Verifies multi-file project does NOT appear stuck when it has NEXT task in other file."
+  ;; NOTE: This test verifies the IMPROVED behavior with DSL-based stuck detection.
+  ;; The new implementation uses org-gtd-projects--is-stuck-p which traverses
+  ;; the dependency graph across files via ORG_GTD_FIRST_TASKS relationships.
+
+  ;; 1. CAPTURE and ORGANIZE project in main file
+  (capture-inbox-item "Multi-file project review")
+  (org-gtd-process-inbox)
+
+  (with-wip-buffer
+    (goto-char (point-max))
+    (newline)
+    (make-task "Task in main file" :level 2)
+    (organize-as-project))
+
+  ;; 2. Create second file with NEXT task
+  (let ((second-file (org-gtd--path "review-secondary")))
+    (with-temp-file second-file
+      (insert "* TODO Task in second file\n")
+      (insert ":PROPERTIES:\n")
+      (insert ":ID: review-task-id\n")
+      (insert ":END:\n"))
+
+    (with-current-buffer (find-file-noselect second-file)
+      (org-mode)
+      (goto-char (point-min))
+      (search-forward "Task in second file")
+      (org-back-to-heading t)
+      (org-id-add-location "review-task-id" second-file)
+      (org-todo "NEXT"))
+
+    ;; Add second file to agenda files
+    (add-to-list 'org-agenda-files second-file)
+
+    ;; 3. Get project ID and link task from second file to project
+    (let ((project-id nil))
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Multi-file project review")
+        (org-back-to-heading t)
+        (setq project-id (org-entry-get (point) "ID"))
+        (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" "review-task-id"))
+
+      ;; 3a. Add project ID to task in second file (v4 compliance)
+      (with-current-buffer (find-file-noselect second-file)
+        (goto-char (point-min))
+        (search-forward "Task in second file")
+        (org-back-to-heading t)
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)))
+
+    ;; 4. Make main file task TODO (project has work, but also has NEXT in other file)
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Task in main file")
+      (org-todo "TODO"))
+
+    ;; 5. VERIFY project does NOT appear as stuck (it has a NEXT task in other file)
+    (org-gtd-review-stuck-projects)
+    (refute-match "Multi-file project review" (agenda-raw-text))))
 
 ;;; review-flow-test.el ends here

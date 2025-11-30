@@ -4,74 +4,7 @@
 
 ;; Basic workflow tests migrated to test-eunit/acceptance/basic-workflows-test.el
 ;; Cancel and archive tests migrated to test-eunit/acceptance/cancel-archive-test.el
-;; Review flow tests migrated to test-eunit/acceptance/review-flow-test.el
-
-;; Multi-file project review test kept here (requires real filesystem, not mock-fs)
-(describe "Multi-file Project Review Tests"
-
-  (before-each (setq inhibit-message t) (ogt--configure-emacs))
-  (after-each (ogt--close-and-delete-files))
-
-  (it "verifies multi-file project does NOT appear stuck when it has NEXT task in other file"
-      ;; NOTE: This test verifies the IMPROVED behavior with DSL-based stuck detection.
-      ;; The new implementation uses org-gtd-projects--is-stuck-p which traverses
-      ;; the dependency graph across files via ORG_GTD_FIRST_TASKS relationships.
-      ;; Projects with NEXT/WAIT tasks in other files are correctly identified as
-      ;; NOT stuck, which is an improvement over org-mode's native stuck projects
-      ;; view that only looks at children of the project heading.
-
-      ;; 1. CAPTURE and ORGANIZE project in main file
-      (capture-inbox-item "Multi-file project review")
-      (org-gtd-process-inbox)
-
-      (with-wip-buffer
-        (goto-char (point-max))
-        (newline)
-        (make-task "Task in main file" :level 2)
-        (organize-as-project))
-
-      ;; 2. Create second file with NEXT task
-      (let ((second-file (org-gtd--path "review-secondary")))
-        (with-temp-file second-file
-          (make-task "Task in second file" :id "review-task-id" :level 1))
-
-        (with-current-buffer (find-file-noselect second-file)
-          (org-mode)
-          (goto-char (point-min))
-          (search-forward "Task in second file")
-          (org-back-to-heading t)
-          (org-id-add-location "review-task-id" second-file)
-          (org-todo "NEXT"))
-
-        (let ((org-agenda-files (append (org-agenda-files) (list second-file))))
-
-          ;; 3. Get project ID and link task from second file to project
-          (let ((project-id nil))
-            (with-current-buffer (org-gtd--default-file)
-              (goto-char (point-min))
-              (search-forward "Multi-file project review")
-              (org-back-to-heading t)
-              (setq project-id (org-entry-get (point) "ID"))
-              (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" "review-task-id"))
-
-            ;; 3a. Add project ID to task in second file (v4 compliance)
-            (with-current-buffer (find-file-noselect second-file)
-              (goto-char (point-min))
-              (search-forward "Task in second file")
-              (org-back-to-heading t)
-              (org-entry-put (point) "ORG_GTD" "Actions")
-              (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)))
-
-          ;; 4. Make main file task TODO (project has work, but also has NEXT in other file)
-          (with-current-buffer (org-gtd--default-file)
-            (goto-char (point-min))
-            (search-forward "Task in main file")
-            (org-todo "TODO"))
-
-          ;; 5. VERIFY project does NOT appear as stuck (it has a NEXT task in other file)
-          (org-gtd-review-stuck-projects)
-          (expect (agenda-raw-text)
-                  :not :to-match "Multi-file project review")))))
+;; Review flow tests migrated to test-eunit/acceptance/review-flow-test.el (including multi-file)
 
 (describe "Habit Flow Tests"
 
