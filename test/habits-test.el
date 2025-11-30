@@ -3,6 +3,9 @@
 (require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'with-simulated-input)
 
+;; "appears in daily agenda after creation with recurring schedule" migrated to
+;; test-eunit/acceptance/basic-workflows-test.el (habit-item-programmatic-create)
+
 (describe
  "A habit"
 

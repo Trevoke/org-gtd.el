@@ -3,6 +3,9 @@
 (require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'with-simulated-input)
 
+;; "appears in daily agenda with WAIT state after delegation" migrated to
+;; test-eunit/acceptance/basic-workflows-test.el (delegate-item-programmatic-create)
+
 (describe
  "delegating a task"
 

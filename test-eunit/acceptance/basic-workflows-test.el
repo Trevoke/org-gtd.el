@@ -348,6 +348,27 @@
   (org-gtd-engage)
   (assert-match "Review insurance policy" (agenda-raw-text)))
 
+(deftest delegate-item-programmatic-create ()
+  "Verifies delegated item appears in daily agenda with WAIT state."
+  ;; Use the programmatic API with delegatee and check-in date
+  (org-gtd-delegate-create "Talk to university"
+                           "Favorite student"
+                           (format-time-string "%Y-%m-%d"))
+
+  ;; Verify it shows in engage view
+  (org-gtd-engage)
+  (assert-match "Talk to university" (agenda-raw-text)))
+
+(deftest habit-item-programmatic-create ()
+  "Verifies habit item appears in daily agenda with recurring schedule."
+  ;; Use the programmatic API with recurring schedule
+  (org-gtd-habit-create "Morning exercise"
+                        ".+1d")
+
+  ;; Verify it shows in engage view
+  (org-gtd-engage)
+  (assert-match "Morning exercise" (agenda-raw-text)))
+
 ;;; Reference/Knowledge Items
 
 (deftest knowledge-item-moves-to-archive ()
