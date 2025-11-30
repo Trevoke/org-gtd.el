@@ -140,6 +140,13 @@ Kills GTD-related buffers and clears org-mode internal state."
   ;; prevents this lazy-loading behavior.
   (setq org-id-locations (make-hash-table :test 'equal))
 
+  ;; Clear org-id internal state that could cause cross-test contamination:
+  ;; - org-id--locations-checksum: If stale, org-id-update-id-locations may
+  ;;   skip rescanning when files have actually changed
+  ;; - org-id-overriding-file-name: Used for temp buffers, could leak paths
+  (setq org-id--locations-checksum nil
+        org-id-overriding-file-name nil)
+
   ;; Clear transient state
   (when (fboundp 'transient--emergency-exit)
     (ignore-errors (transient--emergency-exit)))

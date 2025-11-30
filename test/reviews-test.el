@@ -3,6 +3,8 @@
 (require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'with-simulated-input)
 
+;; "shows tickler projects in area review" migrated to test-eunit/acceptance/review-flow-test.el
+
 (describe
  "Reviews"
 

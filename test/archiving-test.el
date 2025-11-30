@@ -3,6 +3,9 @@
 (require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 (require 'with-simulated-input)
 
+;; "archives completed single action while preserving active ones"
+;; migrated to test-eunit/acceptance/cancel-archive-test.el
+
 (describe
  "archiving"
 

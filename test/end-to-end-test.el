@@ -14,6 +14,8 @@
 ;; (Only active tests migrated; xit tests for unimplemented features not migrated)
 ;; Multi-project task sharing tests migrated to test-eunit/acceptance/multi-project-sharing-test.el
 ;; Project cancellation and archive tests migrated to test-eunit/acceptance/project-cancellation-test.el
+;; Ticklering and reactivating projects migrated to test-eunit/acceptance/tickler-flow-test.el
+;; Area of focus review with tickler projects migrated to test-eunit/acceptance/review-flow-test.el
 
 (describe "Orphaned Task Detection"
 

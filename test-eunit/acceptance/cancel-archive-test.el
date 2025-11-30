@@ -265,4 +265,38 @@
     (assert-match "Purchase tools" archived-content)
     (assert-match "Build foundation" archived-content)))
 
+;;; Selective Archiving Tests
+
+(deftest archives-completed-single-action-preserving-active ()
+  "Verifies completed single action is archived while active one is preserved."
+  ;; 1. CREATE two single actions
+  (create-single-action "action one")
+  (create-single-action "action two")
+
+  ;; 2. VERIFY both show in engage view
+  (org-gtd-engage)
+  (let ((agenda-content (agenda-raw-text)))
+    (assert-match "action one" agenda-content)
+    (assert-match "action two" agenda-content))
+
+  ;; 3. COMPLETE first action
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "action one")
+    (org-todo "DONE"))
+
+  ;; 4. ARCHIVE completed items
+  (org-gtd-archive-completed-items)
+
+  ;; 5. VERIFY active action is still in main file
+  (with-current-buffer (org-gtd--default-file)
+    (assert-match "action two" (current-buffer-raw-text)))
+
+  ;; 6. VERIFY completed action is NOT in main file
+  (with-current-buffer (org-gtd--default-file)
+    (refute-match "DONE action one" (current-buffer-raw-text)))
+
+  ;; 7. VERIFY completed action IS in archive
+  (assert-match "action one" (archive-raw-text)))
+
 ;;; cancel-archive-test.el ends here

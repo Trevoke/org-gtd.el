@@ -313,4 +313,40 @@
     (org-gtd-review-stuck-projects)
     (refute-match "Multi-file project review" (agenda-raw-text))))
 
+;;; Area of Focus Review with Tickler Projects
+
+(deftest tickler-projects-in-area-of-focus-review ()
+  "Verifies tickler projects appear in area of focus review."
+  (let ((org-gtd-areas-of-focus '("Work" "Personal")))
+    ;; 1. CREATE active and tickler projects in Work area
+    (create-project "Active work project")
+    (create-project "Tickler work project")
+
+    ;; 2. SET CATEGORY property for both projects to Work area
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Active work project")
+      (org-back-to-heading t)
+      (org-set-property "CATEGORY" "Work")
+
+      (goto-char (point-min))
+      (search-forward "Tickler work project")
+      (org-back-to-heading t)
+      (org-set-property "CATEGORY" "Work")
+
+      ;; 3. TICKLER the second project
+      (org-gtd-tickler "2025-12-01"))
+
+    ;; 4. RUN area of focus review for Work
+    (org-gtd-review-area-of-focus "Work")
+
+    ;; 5. VERIFY active project in Active projects section
+    (let ((agenda-content (agenda-raw-text)))
+      (assert-match "Active projects" agenda-content)
+      (assert-match "Active work project" agenda-content)
+
+      ;; 6. VERIFY tickler project in Tickler projects section
+      (assert-match "Tickler projects" agenda-content)
+      (assert-match "Tickler work project" agenda-content))))
+
 ;;; review-flow-test.el ends here
