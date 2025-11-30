@@ -2,6 +2,14 @@
 
 (require 'org-gtd-test-prelude (file-name-concat default-directory "test/helpers/prelude.el"))
 
+;; All tests migrated to test-eunit/unit/command-center-test.el:
+;; - command-center-is-defined-as-transient-prefix
+;; - command-center-contains-engage-commands
+;; - command-center-contains-capture-and-process-commands
+;; - command-center-contains-reflect-commands
+;; - command-center-has-stuck-items-submenu
+;; - command-center-has-missed-items-submenu
+
 (describe
  "org-gtd-command-center"
 
