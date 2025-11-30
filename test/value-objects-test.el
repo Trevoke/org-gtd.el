@@ -23,6 +23,10 @@
 (require 'org-gtd-value-objects)
 (require 'org-gtd-core)
 
+;; Tests migrated to test-eunit/unit/value-objects-test.el:
+;; org-gtd-todo-state-is-active-p (7 tests)
+;; org-gtd-todo-state-is-ready-p (6 tests)
+
 ;;;; Test Setup
 
 (defun value-objects-test--setup ()
