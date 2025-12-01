@@ -166,4 +166,32 @@
   (value-objects-test--setup)
   (assert-nil (org-gtd-todo-state-should-reset-p nil)))
 
+;;;; Task Dependency Value Object - org-gtd-task-deps--create
+
+(deftest task-deps-create-with-depends-on ()
+  "org-gtd-task-deps--create creates struct with depends-on list."
+  (let ((deps (org-gtd-task-deps--create :depends-on '("task-1" "task-2"))))
+    (assert-equal '("task-1" "task-2") (org-gtd-task-deps-depends-on deps))))
+
+(deftest task-deps-create-with-blocks ()
+  "org-gtd-task-deps--create creates struct with blocks list."
+  (let ((deps (org-gtd-task-deps--create :blocks '("task-3" "task-4"))))
+    (assert-equal '("task-3" "task-4") (org-gtd-task-deps-blocks deps))))
+
+(deftest task-deps-create-with-both-lists ()
+  "org-gtd-task-deps--create creates struct with both lists."
+  (let ((deps (org-gtd-task-deps--create
+               :depends-on '("task-1")
+               :blocks '("task-2" "task-3"))))
+    (assert-equal '("task-1") (org-gtd-task-deps-depends-on deps))
+    (assert-equal '("task-2" "task-3") (org-gtd-task-deps-blocks deps))))
+
+(deftest task-deps-create-with-empty-lists ()
+  "org-gtd-task-deps--create creates struct with empty lists."
+  (let ((deps (org-gtd-task-deps--create)))
+    (assert-nil (org-gtd-task-deps-depends-on deps))
+    (assert-nil (org-gtd-task-deps-blocks deps))))
+
+(provide 'value-objects-test)
+
 ;;; value-objects-test.el ends here

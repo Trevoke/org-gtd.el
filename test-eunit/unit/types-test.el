@@ -166,4 +166,77 @@
   "someday type has no properties (no timestamp required)."
   (assert-nil (org-gtd-type-properties 'someday)))
 
+;;;; org-gtd-user-types
+
+(deftest user-types-variable-exists ()
+  "org-gtd-user-types variable exists."
+  (assert-true (boundp 'org-gtd-user-types)))
+
+(deftest user-types-defaults-to-empty-list ()
+  "org-gtd-user-types defaults to empty list."
+  (let ((org-gtd-user-types '()))
+    (assert-equal '() org-gtd-user-types)))
+
+(deftest user-types-returns-builtin-unchanged-when-no-override ()
+  "Returns builtin type unchanged when no user override."
+  (let ((org-gtd-user-types '()))
+    (let ((result (org-gtd-type-get 'delegated)))
+      (assert-equal 'delegated (car result))
+      (assert-equal "Delegated" (plist-get (cdr result) :org-gtd)))))
+
+(deftest user-types-merges-user-property-override ()
+  "Merges user property override with builtin."
+  (let ((org-gtd-user-types
+         '((delegated
+            :properties
+            ((:who :org-property "DELEGATED_TO" :type text :required t
+                   :prompt "Custom prompt"))))))
+    (let* ((result (org-gtd-type-get 'delegated))
+           (props (plist-get (cdr result) :properties))
+           (who-prop (seq-find (lambda (p) (eq (car p) :who)) props)))
+      ;; User prompt should override
+      (assert-equal "Custom prompt" (plist-get (cdr who-prop) :prompt))
+      ;; :when property from builtin should still exist
+      (assert-true (seq-find (lambda (p) (eq (car p) :when)) props)))))
+
+(deftest user-types-can-add-new-properties ()
+  "User can add new properties to existing type."
+  (let ((org-gtd-user-types
+         '((next-action
+            :properties
+            ((:custom :org-property "MY_CUSTOM" :type text :required nil
+                      :prompt "Custom value"))))))
+    (let* ((result (org-gtd-type-get 'next-action))
+           (props (plist-get (cdr result) :properties)))
+      (assert-true (seq-find (lambda (p) (eq (car p) :custom)) props)))))
+
+(deftest user-types-never-overrides-org-gtd ()
+  "Never overrides :org-gtd from user config."
+  (let ((org-gtd-user-types
+         '((delegated
+            :org-gtd "HackedValue"))))
+    (let ((result (org-gtd-type-get 'delegated)))
+      ;; Should still be the builtin value
+      (assert-equal "Delegated" (plist-get (cdr result) :org-gtd)))))
+
+(deftest user-types-allows-overriding-state ()
+  "Allows overriding :state."
+  (let ((org-gtd-user-types
+         '((delegated
+            :state :next))))
+    (let ((result (org-gtd-type-get 'delegated)))
+      (assert-equal :next (plist-get (cdr result) :state)))))
+
+(deftest user-types-ignores-unknown-type-names ()
+  "Ignores unknown type names in user-types."
+  (let ((org-gtd-user-types
+         '((nonexistent-type
+            :properties ((:foo :org-property "FOO" :type text))))))
+    ;; Should not error, just return nil for unknown type
+    (assert-nil (org-gtd-type-get 'nonexistent-type))
+    ;; Builtin types should still work
+    (assert-true (org-gtd-type-get 'delegated))))
+
+(provide 'types-test)
+
 ;;; types-test.el ends here

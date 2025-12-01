@@ -21,6 +21,7 @@
 ;; org-gtd-todo-state-is-ready-p (6 tests)
 ;; org-gtd-todo-state-blocks-others-p (6 tests)
 ;; org-gtd-todo-state-should-reset-p (6 tests)
+;; org-gtd-task-deps--create (4 tests)
 
 ;; Remaining tests (not yet migrated - use spy-on for mocking):
 
@@ -28,26 +29,7 @@
 
 (describe "org-gtd-task-deps value object"
 
-  (describe "org-gtd-task-deps--create"
-    (it "creates struct with depends-on list"
-      (let ((deps (org-gtd-task-deps--create :depends-on '("task-1" "task-2"))))
-        (expect (org-gtd-task-deps-depends-on deps) :to-equal '("task-1" "task-2"))))
-
-    (it "creates struct with blocks list"
-      (let ((deps (org-gtd-task-deps--create :blocks '("task-3" "task-4"))))
-        (expect (org-gtd-task-deps-blocks deps) :to-equal '("task-3" "task-4"))))
-
-    (it "creates struct with both lists"
-      (let ((deps (org-gtd-task-deps--create
-                   :depends-on '("task-1")
-                   :blocks '("task-2" "task-3"))))
-        (expect (org-gtd-task-deps-depends-on deps) :to-equal '("task-1"))
-        (expect (org-gtd-task-deps-blocks deps) :to-equal '("task-2" "task-3"))))
-
-    (it "creates struct with empty lists"
-      (let ((deps (org-gtd-task-deps--create)))
-        (expect (org-gtd-task-deps-depends-on deps) :to-be nil)
-        (expect (org-gtd-task-deps-blocks deps) :to-be nil))))
+  ;; org-gtd-task-deps--create tests migrated to e-unit
 
   (describe "org-gtd-task-deps-is-blocked-p"
     (it "returns nil when task has no dependencies"
