@@ -118,67 +118,11 @@ HEADING-TEXT is the heading content, ID is optional custom ID."
         (org-gtd-id-overlay-mode 1)
         (expect (ogt-find-overlay-with-text "Short") :not :to-be nil))))
 
+  ;; Pure unit tests migrated to test-eunit/unit/id-overlay-test.el:
+  ;; - org-gtd-id-overlay--extract-heading-text (6 tests)
+  ;; - org-gtd-id-overlay--truncate-text (5 tests)
+
   ;;;; Unit Tests - Component Specific Behavior
-
-  (describe "text extraction functions"
-    
-    (describe "org-gtd-id-overlay--extract-heading-text"
-      
-      (it "extracts plain heading text"
-        (expect (org-gtd-id-overlay--extract-heading-text "Meeting with client")
-                :to-equal "Meeting with client"))
-
-      (it "removes TODO keywords"
-        (expect (org-gtd-id-overlay--extract-heading-text "TODO Review quarterly budget")
-                :to-equal "Review quarterly budget")
-        (expect (org-gtd-id-overlay--extract-heading-text "DONE Complete project")
-                :to-equal "Complete project")
-        (expect (org-gtd-id-overlay--extract-heading-text "NEXT Call customer")
-                :to-equal "Call customer"))
-
-      (it "removes statistics cookies"
-        (expect (org-gtd-id-overlay--extract-heading-text "Project tasks [1/3]")
-                :to-equal "Project tasks")
-        (expect (org-gtd-id-overlay--extract-heading-text "Progress [33%]")
-                :to-equal "Progress")
-        (expect (org-gtd-id-overlay--extract-heading-text "Multi [2/5] [40%]")
-                :to-equal "Multi"))
-
-      (it "handles complex combinations"
-        (expect (org-gtd-id-overlay--extract-heading-text "TODO Complete project [2/4] [50%]")
-                :to-equal "Complete project"))
-
-      (it "handles empty results gracefully"
-        (expect (org-gtd-id-overlay--extract-heading-text "TODO")
-                :to-equal "")
-        (expect (org-gtd-id-overlay--extract-heading-text "[1/3]")
-                :to-equal ""))
-
-      (it "handles whitespace properly"
-        (expect (org-gtd-id-overlay--extract-heading-text "TODO   Multiple    spaces   ")
-                :to-equal "Multiple spaces")))
-
-    (describe "org-gtd-id-overlay--truncate-text"
-      
-      (it "truncates text longer than limit with ellipsis"
-        (expect (org-gtd-id-overlay--truncate-text "This is a very long heading that needs truncation" 20)
-                :to-equal "This is a very long ..."))
-
-      (it "returns short text unchanged"
-        (expect (org-gtd-id-overlay--truncate-text "Short text" 20)
-                :to-equal "Short text"))
-
-      (it "handles text exactly at limit"
-        (expect (org-gtd-id-overlay--truncate-text "Exactly twenty chars" 20)
-                :to-equal "Exactly twenty chars"))
-
-      (it "handles empty text"
-        (expect (org-gtd-id-overlay--truncate-text "" 20)
-                :to-equal ""))
-
-      (it "handles custom truncation length"
-        (expect (org-gtd-id-overlay--truncate-text "Long text here" 8)
-                :to-equal "Long tex..."))))
 
   (describe "overlay management"
     
