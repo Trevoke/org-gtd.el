@@ -59,12 +59,18 @@ Includes /tmp/ for tests that need files outside GTD directory."
 
 ;;; Emacs Configuration for Tests
 
+(defconst ogt-eunit--mock-tmp-path "/mock:/tmp/"
+  "Path to the virtual temp directory when accessing via Emacs (with /mock: prefix).")
+
 (defun ogt-eunit--configure-emacs ()
   "Configure Emacs for GTD testing with mock-fs paths.
 Sets up org-gtd to use the virtual filesystem."
   ;; Suppress messages during tests
   ;; NOTE: Keep this disabled for e-unit to see test output
   ;; (setq inhibit-message t)
+
+  ;; Temp file directory for mock-fs (used by make-temp-file)
+  (setq temporary-file-directory ogt-eunit--mock-tmp-path)
 
   ;; GTD configuration pointing to mock filesystem
   (setq org-gtd-directory ogt-eunit--mock-gtd-path
