@@ -6,19 +6,13 @@
 ;; "appears in daily agenda after creation with recurring schedule" migrated to
 ;; test-eunit/acceptance/basic-workflows-test.el (habit-item-programmatic-create)
 
+;; Remaining tests (not yet migrated):
+
 (describe
  "A habit"
 
-
  (before-each (setq inhibit-message t) (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
-
- (it "appears in daily agenda after creation with recurring schedule"
-     (org-gtd-habit-create "Dentist appointment"
-                              ".+3m")
-     (org-gtd-engage)
-     (expect (agenda-contains? "Dentist appointment") :to-be-truthy))
-
 
  (it "is formatted like org-mode wants"
      (let* ((repeater "++1m"))

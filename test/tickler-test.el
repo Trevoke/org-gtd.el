@@ -6,9 +6,10 @@
 ;; "appears in daily agenda when review date arrives" migrated to
 ;; test-eunit/acceptance/basic-workflows-test.el (tickler-item-programmatic-create)
 
+;; Remaining tests (not yet migrated):
+
 (describe
  "A tickler item"
-
 
  (before-each (setq inhibit-message t) (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
@@ -24,13 +25,7 @@
          (search-forward "Yowza")
          (expect (task-type (current-task)) :to-equal 'tickler)
          (let ((timestamp (task-timestamp (current-task))))
-           (expect timestamp :to-match (format "%s-%#02d-%#02d" year month day))))))
-
-  (it "appears in daily agenda when review date arrives"
-     (org-gtd-tickler-create "Dentist appointment"
-                             (format-time-string "%Y-%m-%d"))
-     (org-gtd-engage)
-     (expect (agenda-contains? "Dentist appointment") :to-be-truthy)))
+           (expect timestamp :to-match (format "%s-%#02d-%#02d" year month day)))))))
 
 (describe "Smart tickler dispatcher"
   (before-each (setq inhibit-message t)

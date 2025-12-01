@@ -6,19 +6,13 @@
 ;; "appears in daily agenda with WAIT state after delegation" migrated to
 ;; test-eunit/acceptance/basic-workflows-test.el (delegate-item-programmatic-create)
 
+;; Remaining tests (not yet migrated - use with-simulated-input for UI):
+
 (describe
  "delegating a task"
 
-
  (before-each (setq inhibit-message t) (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
-
- (it "appears in daily agenda with WAIT state after delegation"
-     (org-gtd-delegate-create "Talk to university"
-                              "Favorite student"
-                              (format-time-string "%Y-%m-%d"))
-     (org-gtd-engage)
-     (expect (agenda-contains? "Talk to university") :to-be-truthy))
 
  (it "can be done through the agenda and show on the agenda"
      (create-single-action "delegateme")

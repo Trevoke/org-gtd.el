@@ -6,18 +6,13 @@
 ;; "has ORG_GTD property set to Someday" migrated to
 ;; test-eunit/acceptance/basic-workflows-test.el (someday-item-programmatic-create)
 
+;; Remaining tests (not yet migrated):
+
 (describe
  "A someday/maybe item"
 
  (before-each (setq inhibit-message t) (ogt--configure-emacs))
  (after-each (ogt--close-and-delete-files))
-
- (it "has ORG_GTD property set to Someday"
-     (create-someday-item "Learn Spanish")
-     (with-current-buffer (org-gtd--default-file)
-       (goto-char (point-min))
-       (search-forward "Learn Spanish")
-       (expect (org-entry-get (point) "ORG_GTD") :to-equal "Someday")))
 
  (it "has no timestamp properties (no ORG_GTD_TIMESTAMP, SCHEDULED, or DEADLINE)"
      (create-someday-item "Build a treehouse")
