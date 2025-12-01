@@ -40,64 +40,10 @@
                    `(,org-gtd-directory)))))
 )
 
-(describe "org-gtd-project-progress-cookie-position"
-  (it "defaults to 'end"
-    (expect org-gtd-project-progress-cookie-position :to-equal 'end))
-
-  (it "accepts nil, 'start, or 'end"
-    (let ((org-gtd-project-progress-cookie-position nil))
-      (expect org-gtd-project-progress-cookie-position :to-be nil))
-    (let ((org-gtd-project-progress-cookie-position 'start))
-      (expect org-gtd-project-progress-cookie-position :to-equal 'start))
-    (let ((org-gtd-project-progress-cookie-position 'end))
-      (expect org-gtd-project-progress-cookie-position :to-equal 'end))))
-
-(describe "org-gtd--extract-keyword-name"
-  (it "returns plain keyword unchanged"
-    (expect (org-gtd--extract-keyword-name "NEXT") :to-equal "NEXT"))
-
-  (it "strips single-char shortcut"
-    (expect (org-gtd--extract-keyword-name "NEXT(n)") :to-equal "NEXT"))
-
-  (it "strips shortcut with logging config"
-    (expect (org-gtd--extract-keyword-name "NEXT(n/@)") :to-equal "NEXT")
-    (expect (org-gtd--extract-keyword-name "DONE(d/!)") :to-equal "DONE"))
-
-  (it "handles complex logging syntax"
-    (expect (org-gtd--extract-keyword-name "WAIT(w@/!)") :to-equal "WAIT")))
-
-(describe "org-gtd-keyword-mapping validation"
-  (it "validates keywords with DSL syntax in org-todo-keywords"
-    (let ((org-todo-keywords '((sequence "TODO(t)" "NEXT(n/@)" "WAIT(w@/!)" "|" "DONE(d/!)" "CNCL(c@)")))
-          (org-gtd-keyword-mapping nil))
-      ;; Should not error - the mapping uses plain keywords while org-todo-keywords uses DSL
-      (expect (org-gtd--validate-and-set-keyword-mapping
-               'org-gtd-keyword-mapping
-               '((todo . "TODO") (next . "NEXT") (wait . "WAIT") (done . "DONE") (canceled . "CNCL")))
-              :not :to-throw)))
-
-  (it "still rejects keywords not in org-todo-keywords"
-    (let ((org-todo-keywords '((sequence "TODO" "NEXT" "|" "DONE")))
-          (org-gtd-keyword-mapping nil))
-      ;; Should error - WAIT and CNCL don't exist
-      (expect (org-gtd--validate-and-set-keyword-mapping
-               'org-gtd-keyword-mapping
-               '((todo . "TODO") (next . "NEXT") (wait . "WAIT") (done . "DONE") (canceled . "CNCL")))
-              :to-throw 'user-error))))
-
-(describe "ORG_GTD category constants"
-
-  (it "defines org-gtd-delegated constant"
-    (expect org-gtd-delegated :to-equal "Delegated"))
-
-  (it "defines org-gtd-quick constant"
-    (expect org-gtd-quick :to-equal "Quick"))
-
-  (it "has all existing constants defined"
-    (expect org-gtd-action :to-equal "Actions")
-    (expect org-gtd-projects :to-equal "Projects")
-    (expect org-gtd-calendar :to-equal "Calendar")
-    (expect org-gtd-tickler :to-equal "Tickler")
-    (expect org-gtd-knowledge :to-equal "Reference")
-    (expect org-gtd-trash :to-equal "Trash")))
+;; The following tests have been migrated to test-eunit/unit/core-test.el (11 tests):
+;;
+;; - org-gtd-project-progress-cookie-position (2 tests)
+;; - org-gtd--extract-keyword-name (4 tests)
+;; - org-gtd-keyword-mapping validation (2 tests)
+;; - ORG_GTD category constants (3 tests)
 
