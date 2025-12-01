@@ -24,8 +24,12 @@
 ;;; Code:
 
 (require 'e-unit)
+(require 'e-unit-mock)
 (require 'mock-fs)
 (require 'org-gtd)
+
+;; Initialize e-unit-mock for test doubles (spy, stub, mock, fake, dummy)
+(e-unit-mock-initialize)
 
 ;; Helper function to get path relative to this prelude file
 ;; This file is at test-eunit/helpers/prelude.el

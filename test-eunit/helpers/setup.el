@@ -31,6 +31,15 @@
 (require 'mock-fs)
 (require 'org-gtd)
 
+;;; Custom Assertions
+
+(defun assert-same-items (expected actual)
+  "Assert EXPECTED and ACTUAL contain same items (order-independent).
+Useful for migrating buttercup tests that use :to-have-same-items-as matcher."
+  (let ((exp-sorted (sort (copy-sequence expected) #'string<))
+        (act-sorted (sort (copy-sequence actual) #'string<)))
+    (assert-equal exp-sorted act-sorted)))
+
 ;;; Mock-FS Configuration
 
 ;; Paths in the mock-fs spec should NOT include the /mock: prefix.
@@ -77,7 +86,9 @@ Sets up org-gtd to use the virtual filesystem."
         org-gtd-areas-of-focus nil
         org-gtd-organize-hooks '()
         org-gtd-refile-to-any-target t
-        org-gtd-update-ack "3.0.0")
+        org-gtd-update-ack "3.0.0"
+        ;; Show DELEGATED_TO property in agenda views (for delegation tests)
+        org-gtd-agenda-property-list '("DELEGATED_TO"))
 
   ;; Org-mode configuration
   (setq org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL"))
@@ -145,6 +156,12 @@ Kills GTD-related buffers and clears org-mode internal state."
         org-id-files nil
         org-id-extra-files nil
         file-name-history nil)
+
+  ;; Clear org-gtd state that could leak between tests
+  ;; IMPORTANT: org-gtd-areas-of-focus and org-gtd-organize-hooks can
+  ;; cause unexpected prompts if not reset between tests
+  (setq org-gtd-areas-of-focus nil
+        org-gtd-organize-hooks '())
 
   ;; Create a fresh empty hash table for org-id-locations
   ;; CRITICAL: Setting to nil causes org-id to reload from disk on next use,

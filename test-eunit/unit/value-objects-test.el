@@ -16,11 +16,13 @@
 ;;; Code:
 
 (require 'e-unit)
+(require 'e-unit-mock)
 (require 'org-gtd-value-objects)
 (require 'org-gtd-core)
 
-;; Initialize e-unit short syntax
+;; Initialize e-unit short syntax and mocking
 (e-unit-initialize)
+(e-unit-mock-initialize)
 
 ;;; Test Setup
 
@@ -191,6 +193,57 @@
   (let ((deps (org-gtd-task-deps--create)))
     (assert-nil (org-gtd-task-deps-depends-on deps))
     (assert-nil (org-gtd-task-deps-blocks deps))))
+
+;;;; org-gtd-task-deps-is-blocked-p tests
+
+(deftest task-deps-is-blocked-nil-when-no-dependencies ()
+  "org-gtd-task-deps-is-blocked-p returns nil when task has no dependencies."
+  (let ((deps (org-gtd-task-deps--create :depends-on nil)))
+    (assert-nil (org-gtd-task-deps-is-blocked-p deps))))
+
+(deftest task-deps-is-blocked-nil-when-all-done ()
+  "org-gtd-task-deps-is-blocked-p returns nil when all dependencies are done."
+  (with-stub org-gtd-task-is-done-p t
+    (let ((deps (org-gtd-task-deps--create :depends-on '("task-1" "task-2"))))
+      (assert-nil (org-gtd-task-deps-is-blocked-p deps)))))
+
+(deftest task-deps-is-blocked-t-when-some-not-done ()
+  "org-gtd-task-deps-is-blocked-p returns t when some dependencies are not done."
+  (with-fake org-gtd-task-is-done-p (lambda (id) (equal id "task-1"))
+    (let ((deps (org-gtd-task-deps--create :depends-on '("task-1" "task-2"))))
+      (assert-true (org-gtd-task-deps-is-blocked-p deps)))))
+
+(deftest task-deps-is-blocked-t-when-none-done ()
+  "org-gtd-task-deps-is-blocked-p returns t when no dependencies are done."
+  (with-stub org-gtd-task-is-done-p nil
+    (let ((deps (org-gtd-task-deps--create :depends-on '("task-1" "task-2"))))
+      (assert-true (org-gtd-task-deps-is-blocked-p deps)))))
+
+;;;; org-gtd-task-deps-is-ready-p tests
+
+(deftest task-deps-is-ready-t-when-no-dependencies ()
+  "org-gtd-task-deps-is-ready-p returns t when task has no dependencies."
+  (let ((deps (org-gtd-task-deps--create :depends-on nil)))
+    (assert-true (org-gtd-task-deps-is-ready-p deps))))
+
+(deftest task-deps-is-ready-t-when-all-done ()
+  "org-gtd-task-deps-is-ready-p returns t when all dependencies are done."
+  (with-stub org-gtd-task-is-done-p t
+    (let ((deps (org-gtd-task-deps--create :depends-on '("task-1" "task-2"))))
+      (assert-true (org-gtd-task-deps-is-ready-p deps)))))
+
+(deftest task-deps-is-ready-nil-when-some-not-done ()
+  "org-gtd-task-deps-is-ready-p returns nil when some dependencies are not done."
+  (with-fake org-gtd-task-is-done-p (lambda (id) (equal id "task-1"))
+    (let ((deps (org-gtd-task-deps--create :depends-on '("task-1" "task-2"))))
+      (assert-nil (org-gtd-task-deps-is-ready-p deps)))))
+
+(deftest task-deps-ready-is-inverse-of-blocked ()
+  "org-gtd-task-deps-is-ready-p is the logical inverse of is-blocked-p."
+  (with-stub org-gtd-task-is-done-p nil
+    (let ((deps (org-gtd-task-deps--create :depends-on '("task-1"))))
+      (assert-true (org-gtd-task-deps-is-blocked-p deps))
+      (assert-nil (org-gtd-task-deps-is-ready-p deps)))))
 
 (provide 'value-objects-test)
 
