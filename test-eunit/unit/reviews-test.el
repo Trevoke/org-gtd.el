@@ -99,8 +99,11 @@
   "Shows tickler projects in area of focus review."
   (let ((org-gtd-areas-of-focus '("Work" "Personal")))
     ;; Create active and tickler projects in Work area
-    (create-project "Active work project")
-    (create-project "Tickler work project")
+    ;; Use with-simulated-input to handle area-of-focus prompt during organize
+    (with-simulated-input "Work RET"
+      (create-project "Active work project"))
+    (with-simulated-input "Work RET"
+      (create-project "Tickler work project"))
 
     (with-current-buffer (org-gtd--default-file)
       ;; Set CATEGORY property for both projects to Work area
