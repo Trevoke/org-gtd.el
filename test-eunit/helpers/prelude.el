@@ -62,6 +62,20 @@
 ;; Domain assertions (query functions are framework-agnostic)
 (require 'ogt-assertions (ogt-eunit--relative-path "../../test/helpers/assertions.el"))
 
+;;; Simple utility macros
+
+(defmacro ogt--with-temp-org-buffer (contents &rest body)
+  "Like `with-temp-buffer', but in Org mode.
+
+CONTENTS is inserted and point is set to the buffer's beginning
+before running BODY."
+  (declare (debug t))
+  `(with-temp-buffer
+     (org-mode)
+     (insert ,contents)
+     (goto-char 1)
+     ,@body))
+
 (provide 'ogt-eunit-prelude)
 
 ;;; prelude.el ends here
