@@ -101,7 +101,7 @@ DEPENDENT-ID is the task that depends on the blocker.
 Throws user-error with descriptive path if cycle would be created."
   (when (org-gtd-dependencies-has-path-p dependent-id blocker-id)
     (let ((existing-path (org-gtd-dependencies--find-path dependent-id blocker-id)))
-      (error "Circular dependency detected: %s"
+      (user-error "Circular dependency detected: %s"
              (mapconcat 'identity
                         (append (or existing-path (list dependent-id blocker-id))
                                 (list dependent-id))
