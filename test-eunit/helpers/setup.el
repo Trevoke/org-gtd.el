@@ -82,6 +82,9 @@ Sets up org-gtd to use the virtual filesystem."
   (setq temporary-file-directory ogt-eunit--mock-tmp-path)
 
   ;; GTD configuration pointing to mock filesystem
+  ;; IMPORTANT: org-gtd-areas-of-focus and org-gtd-organize-hooks must be
+  ;; reset here to prevent cross-test contamination (e.g., unwanted prompts
+  ;; for "Which area of focus?" when a previous test set these values)
   (setq org-gtd-directory ogt-eunit--mock-gtd-path
         org-gtd-areas-of-focus nil
         org-gtd-organize-hooks '()
@@ -156,12 +159,6 @@ Kills GTD-related buffers and clears org-mode internal state."
         org-id-files nil
         org-id-extra-files nil
         file-name-history nil)
-
-  ;; Clear org-gtd state that could leak between tests
-  ;; IMPORTANT: org-gtd-areas-of-focus and org-gtd-organize-hooks can
-  ;; cause unexpected prompts if not reset between tests
-  (setq org-gtd-areas-of-focus nil
-        org-gtd-organize-hooks '())
 
   ;; Create a fresh empty hash table for org-id-locations
   ;; CRITICAL: Setting to nil causes org-id to reload from disk on next use,
