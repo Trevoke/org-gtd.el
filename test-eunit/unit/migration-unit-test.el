@@ -75,7 +75,8 @@
   ;; Level 1: "Projects" (category heading) - already has ORG_GTD="Projects"
   ;; Level 2: PROJECT HEADINGS (individual projects) - should get ORG_GTD="Projects"
   ;; Level 3+: PROJECT TASKS (work items) - should get ORG_GTD="Actions"
-  (let* ((temp-file (make-temp-file "org-gtd-migration-test" nil ".org"))
+  (let* ((org-agenda-skip-unavailable-files t)  ; Suppress prompts about missing files
+         (temp-file (make-temp-file "org-gtd-migration-test" nil ".org"))
          (temp-buffer (find-file-noselect temp-file)))
     (unwind-protect
         (progn
