@@ -22,10 +22,13 @@
 
 ;; Fetch e-unit from git repository (works in CI)
 ;; When e-unit is on MELPA, replace with: (eldev-add-extra-dependencies 'test 'e-unit)
-(eldev-use-vc-repository 'e-unit :git "https://codeberg.org/Trevoke/e-unit.el.git")
+;; NOTE: Comment out when using local sources above
+;; (eldev-use-vc-repository 'e-unit :git "https://codeberg.org/Trevoke/e-unit.el.git")
 (eldev-add-extra-dependencies 'test 'e-unit)
 
 ;; Mock filesystem for testing
+;; Use local mock-fs during development (comment out for CI)
+;; (eldev-use-local-sources "../mock-fs.el")
 (eldev-use-vc-repository 'mock-fs :git "https://codeberg.org/Trevoke/mock-fs.el.git")
 (eldev-add-extra-dependencies 'test 'mock-fs)
 

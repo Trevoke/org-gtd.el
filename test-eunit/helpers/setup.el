@@ -44,12 +44,18 @@
 (defun ogt-eunit--mock-fs-spec ()
   "Return the mock filesystem spec for GTD tests.
 Creates a minimal GTD directory structure with empty org files.
-Paths are WITHOUT the /mock: prefix - that's added when accessing."
+
+Spec paths use bare paths like /gtd/, but test code accesses them
+via /mock:/gtd/ - the prefix triggers the file-name-handler.
+
+Includes /tmp/ for tests that need files outside GTD directory."
   `(("/gtd/" . directory)
     ("/gtd/inbox.org" . "")
     ("/gtd/org-gtd-tasks.org" . "")
     ("/gtd/org-gtd-calendar.org" . "")
-    ("/gtd/org-gtd-incubate.org" . "")))
+    ("/gtd/org-gtd-incubate.org" . "")
+    ;; /tmp/ for tests that create non-GTD files (e.g., smart-save tests)
+    ("/tmp/" . directory)))
 
 ;;; Emacs Configuration for Tests
 
