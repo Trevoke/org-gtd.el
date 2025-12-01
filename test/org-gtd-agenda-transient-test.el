@@ -53,67 +53,9 @@
       (expect (plist-get info :org-gtd-type) :to-equal "Actions")
       (expect (plist-get info :marker) :not :to-be nil))))
 
-;;;; Transient Definition Tests
-
-(describe "org-gtd-agenda-transient"
-
-  (it "is a valid transient prefix"
-    (expect (functionp 'org-gtd-agenda-transient) :to-be-truthy)
-    (expect (get 'org-gtd-agenda-transient 'transient--prefix) :not :to-be nil))
-
-  (it "can be invoked interactively"
-    (expect (commandp 'org-gtd-agenda-transient) :to-be-truthy)))
-
-;;;; Has-Timestamp Detection Tests
-
-(describe "org-gtd-agenda-transient--has-timestamp-p"
-
-  (it "returns truthy for Calendar items"
-    (with-temp-buffer
-      (org-mode)
-      (insert "* TODO Calendar task\n")
-      (goto-char (point-min))
-      (org-entry-put (point) "ORG_GTD" "Calendar")
-      (expect (org-gtd-agenda-transient--has-timestamp-p) :to-be-truthy)))
-
-  (it "returns truthy for Delegated items"
-    (with-temp-buffer
-      (org-mode)
-      (insert "* TODO Delegated task\n")
-      (goto-char (point-min))
-      (org-entry-put (point) "ORG_GTD" "Delegated")
-      (expect (org-gtd-agenda-transient--has-timestamp-p) :to-be-truthy)))
-
-  (it "returns truthy for Tickler items"
-    (with-temp-buffer
-      (org-mode)
-      (insert "* TODO Tickler task\n")
-      (goto-char (point-min))
-      (org-entry-put (point) "ORG_GTD" "Tickler")
-      (expect (org-gtd-agenda-transient--has-timestamp-p) :to-be-truthy)))
-
-  (it "returns nil for Habit items (excluded from Time section)"
-    (with-temp-buffer
-      (org-mode)
-      (insert "* TODO Habit task\n")
-      (goto-char (point-min))
-      (org-entry-put (point) "ORG_GTD" "Habit")
-      (expect (org-gtd-agenda-transient--has-timestamp-p) :to-be nil)))
-
-  (it "returns nil for Actions items"
-    (with-temp-buffer
-      (org-mode)
-      (insert "* TODO Action task\n")
-      (goto-char (point-min))
-      (org-entry-put (point) "ORG_GTD" "Actions")
-      (expect (org-gtd-agenda-transient--has-timestamp-p) :to-be nil)))
-
-  (it "returns nil for items without ORG_GTD property"
-    (with-temp-buffer
-      (org-mode)
-      (insert "* TODO Regular task\n")
-      (goto-char (point-min))
-      (expect (org-gtd-agenda-transient--has-timestamp-p) :to-be nil))))
+;; Tests migrated to test-eunit/unit/transient-test.el:
+;; - Transient Definition Tests (2 tests)
+;; - Has-Timestamp Detection Tests (6 tests)
 
 ;;;; State Change Action Tests
 
@@ -254,30 +196,9 @@
       (let ((new-timestamp (org-entry-get (point) org-gtd-timestamp)))
         (expect new-timestamp :to-equal "<2025-11-29>")))))
 
-;;;; Clarify Action Tests
-
-(describe "org-gtd-agenda-transient clarify actions"
-
-  (it "has a callable clarify-refile function"
-    (expect (commandp 'org-gtd-agenda-transient--clarify-refile) :to-be-truthy))
-
-  (it "has a callable clarify-in-place function"
-    (expect (commandp 'org-gtd-agenda-transient--clarify-in-place) :to-be-truthy)))
-
-;;;; Clocking and Metadata Action Tests
-
-(describe "org-gtd-agenda-transient clocking and metadata actions"
-
-  (it "has callable clocking functions"
-    (expect (commandp 'org-gtd-agenda-transient--clock-in) :to-be-truthy)
-    (expect (commandp 'org-gtd-agenda-transient--clock-out) :to-be-truthy))
-
-  (it "has callable metadata functions"
-    (expect (commandp 'org-gtd-agenda-transient--effort) :to-be-truthy)
-    (expect (commandp 'org-gtd-agenda-transient--priority) :to-be-truthy)
-    (expect (commandp 'org-gtd-agenda-transient--tags) :to-be-truthy)
-    (expect (commandp 'org-gtd-agenda-transient--note) :to-be-truthy)
-    (expect (commandp 'org-gtd-agenda-transient--area-of-focus) :to-be-truthy)))
+;; Also migrated to test-eunit/unit/transient-test.el:
+;; - Clarify Action Tests (2 tests)
+;; - Clocking and Metadata Action Tests (2 tests)
 
 (provide 'org-gtd-agenda-transient-test)
 

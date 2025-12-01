@@ -57,34 +57,9 @@
         (basic-save-buffer)
         (point-marker)))))
 
-;;;; org-gtd-graph-transient-main Tests
-
-(describe "org-gtd-graph-transient-main"
-
-  (it "is a valid transient prefix"
-    (expect (functionp 'org-gtd-graph-transient-main) :to-be-truthy)
-    (expect (get 'org-gtd-graph-transient-main 'transient--prefix) :not :to-be nil))
-
-  (it "can be invoked interactively"
-    (expect (commandp 'org-gtd-graph-transient-main) :to-be-truthy)))
-
-;;;; Placeholder Command Tests
-
-(describe "Placeholder commands for future phases"
-
-  (it "navigation commands are defined and callable"
-    (expect (commandp 'org-gtd-graph-nav-next-sibling) :to-be-truthy)
-    (expect (commandp 'org-gtd-graph-nav-goto) :to-be-truthy))
-
-  (it "view commands are defined and callable"
-    (expect (commandp 'org-gtd-graph-transient-zoom) :to-be-truthy))
-
-  (it "undo/redo commands are defined and callable"
-    (expect (commandp 'org-gtd-graph-undo) :to-be-truthy)
-    (expect (commandp 'org-gtd-graph-redo) :to-be-truthy))
-
-  (it "quit command is defined and callable"
-    (expect (commandp 'org-gtd-graph-quit-and-kill) :to-be-truthy)))
+;; Tests migrated to test-eunit/unit/transient-test.el:
+;; - org-gtd-graph-transient-main Tests (2 tests)
+;; - Placeholder Command Tests (6 tests)
 
 ;;;; org-gtd-graph-transient-add-child Tests
 
