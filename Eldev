@@ -8,10 +8,7 @@
 (eldev-use-plugin 'maintainer)
 (eldev-use-plugin 'undercover)
 
-;; Test framework configuration
-;; Use buttercup for existing tests, with e-unit available for new tests
-(setq eldev-test-framework 'buttercup)
-
+;; Test framework dependencies
 (eldev-add-extra-dependencies 'test 'with-simulated-input)
 (eldev-add-extra-dependencies 'test 'dash)
 
@@ -26,51 +23,9 @@
 (eldev-use-vc-repository 'mock-fs :git "https://codeberg.org/Trevoke/mock-fs.el.git")
 (eldev-add-extra-dependencies 'test 'mock-fs)
 
-;; Register e-unit as a test framework
-(add-to-list 'eldev-test-known-frameworks
-             '(e-unit . ((detect . (lambda ()
-                                     (and (featurep 'e-unit)
-                                          (boundp 'e-unit--tests)
-                                          e-unit--tests)))
-                         (features . e-unit)
-                         (run-tests . eldev-run-e-unit-tests)
-                         (count-tests . eldev-count-e-unit-tests))))
-
-;; E-unit support functions
-(defun eldev-run-e-unit-tests (selectors &optional _environment)
-  "Run e-unit tests according to SELECTORS."
-  (require 'e-unit)
-  ;; Initialize e-unit with short syntax
-  (e-unit-initialize)
-  ;; Set reporter for eldev integration
-  (e-unit-set-reporter 'console)
-  ;; Run tests from test-eunit directory (separate from buttercup tests in test/)
-  (let ((test-dir "test-eunit"))
-    (when (file-directory-p test-dir)
-      (let ((results (e-unit-run-directory test-dir)))
-        (when results
-          (let ((passed (length (cl-remove-if-not
-                                 (lambda (r) (eq (plist-get r :status) 'pass))
-                                 results)))
-                (failed (length (cl-remove-if-not
-                                 (lambda (r) (memq (plist-get r :status) '(fail error)))
-                                 results))))
-            ;; Update eldev counters
-            (setq eldev-test-num-passed (+ eldev-test-num-passed passed)
-                  eldev-test-num-failed (+ eldev-test-num-failed failed))
-            ;; Signal error if tests failed
-            (when (> failed 0)
-              (signal 'eldev-error `("%d e-unit test(s) failed" ,failed)))))))))
-
-(defun eldev-count-e-unit-tests (_selectors)
-  "Count e-unit tests."
-  (require 'e-unit)
-  (length e-unit--tests))
-
-;;; Custom test command for e-unit only
+;;; Custom test command for e-unit
 ;;
-;; Use `eldev etest` to run only e-unit tests (from test-eunit/ directory)
-;; Use `eldev test` to run buttercup tests (from test/ directory)
+;; Use `eldev gtd-etest` (or `eldev etest`) to run e-unit tests from test/ directory
 
 ;; Variables for etest options
 (defvar org-gtd-etest-reporter 'console
@@ -92,15 +47,17 @@
 (eldev-defcommand org-gtd-etest (&rest _parameters)
   "Run e-unit tests.
 
-E-unit tests should be placed in test-eunit/ directory (or subdirectories)
-to avoid conflicts with buttercup tests in test/."
+E-unit tests are in the test/ directory with subdirectories:
+  - test/unit/       Unit tests
+  - test/integration/ Integration tests
+  - test/acceptance/  Acceptance tests"
   :aliases    (etest)
   :category   testing
 
   (eldev-load-project-dependencies 'test)
   (require 'e-unit)
 
-  (let ((root-dir "test-eunit"))
+  (let ((root-dir "test"))
 
     ;; Configure e-unit
     (e-unit-configure :verbose org-gtd-etest-verbose
@@ -111,7 +68,7 @@ to avoid conflicts with buttercup tests in test/."
 
     ;; Check if test directory exists
     (if (not (file-directory-p root-dir))
-        (message "No e-unit test directory found (%s). Create it and add *-test.el files to run e-unit tests." root-dir)
+        (message "No test directory found (%s). Create it and add *-test.el files to run e-unit tests." root-dir)
 
       ;; Find all directories with test files
       (let ((test-dirs (org-gtd-etest--find-test-dirs root-dir))
