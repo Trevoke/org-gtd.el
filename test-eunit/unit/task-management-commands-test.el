@@ -381,6 +381,54 @@
              (format-string (car call-args)))
         (assert-match "has no relationships to clear" format-string)))))
 
+;;; Relationship visualization tests
+
+(deftest task-mgmt/show-relationships-formatted-display ()
+  "Shows task dependency relationships in a formatted display."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* Task A\n:PROPERTIES:\n:ID: task-a-id\n:ORG_GTD_BLOCKS: task-b-id task-c-id\n:END:\n\n")
+    (insert "* Task B\n:PROPERTIES:\n:ID: task-b-id\n:ORG_GTD_DEPENDS_ON: task-a-id\n:ORG_GTD_BLOCKS: task-d-id\n:END:\n\n")
+    (insert "* Task C\n:PROPERTIES:\n:ID: task-c-id\n:ORG_GTD_DEPENDS_ON: task-a-id\n:END:\n\n")
+    (insert "* Task D\n:PROPERTIES:\n:ID: task-d-id\n:ORG_GTD_DEPENDS_ON: task-b-id\n:END:\n\n")
+
+    ;; Position on Task B (has both blocking and blocked relationships)
+    (goto-char (point-min))
+    (re-search-forward "Task B")
+    (org-back-to-heading t)
+
+    ;; Mock task name resolution function with a fake
+    (with-fake org-gtd-task-management--get-heading-for-id
+        (lambda (id)
+          (cond
+           ((string= id "task-a-id") "Task A")
+           ((string= id "task-b-id") "Task B")
+           ((string= id "task-c-id") "Task C")
+           ((string= id "task-d-id") "Task D")
+           (t "Unknown Task")))
+      (let ((relationship-display (org-gtd-task-show-relationships)))
+        ;; Expect formatted display showing blockers and dependents
+        (assert-match "Task B Dependencies:" relationship-display)
+        (assert-match "Blocked by:.*Task A" relationship-display)
+        (assert-match "Blocks:.*Task D" relationship-display)
+        ;; Task C is not directly related to Task B
+        (assert-nil (string-match-p "Task C" relationship-display))))))
+
+(deftest task-mgmt/show-relationships-no-relationships ()
+  "Shows clear message when task has no relationships."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* Isolated Task\n:PROPERTIES:\n:ID: isolated-task-id\n:END:\n\n")
+
+    ;; Position on the isolated task
+    (goto-char (point-min))
+    (re-search-forward "Isolated Task")
+    (org-back-to-heading t)
+
+    (let ((relationship-display (org-gtd-task-show-relationships)))
+      ;; Should show clear message for no relationships
+      (assert-match "Isolated Task.*no dependency relationships" relationship-display))))
+
 (provide 'task-management-commands-test)
 
 ;;; task-management-commands-test.el ends here
