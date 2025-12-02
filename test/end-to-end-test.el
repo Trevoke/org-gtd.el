@@ -20,37 +20,10 @@
 ;; Orphaned Task Detection tests removed - bug was fixed, equivalent tests exist:
 ;; - test-eunit/integration/task-management-commands-test.el: task-mgmt-int/detects-orphaned-tasks
 
-(describe "Graph Validation Tests"
-
-  (before-each (setq inhibit-message t) (ogt--configure-emacs))
-  (after-each (ogt--close-and-delete-files))
-
-  (describe "Circular dependency detection during organize"
-    (xit "prevents creating A→B→C→A cycle"
-        ;; NOTE: Circular dependency detection is NOT currently implemented for
-        ;; manual property manipulation. org-entry-add-to-multivalued-property
-        ;; doesn't check for cycles. A validation command exists
-        ;; (org-gtd-validate-project-dependencies) but it has a bug.
-        ;;
-        ;; EXPECTED: Adding a dependency that creates a cycle should raise user-error
-        ;; ACTUAL: No error is raised; cycles can be created
-        ;;
-        ;; This test documents the expected behavior for when it's implemented.
-
-        "Feature not implemented: circular dependency prevention during property manipulation"))
-
-  (describe "Circular dependency detection in existing project"
-    (xit "validates project and detects manually introduced cycle"
-        ;; NOTE: This relies on org-gtd-validate-project-dependencies which currently
-        ;; has a bug (calls non-existent org-gtd-agenda-files). Pending fix.
-
-        "Product bug: org-gtd-validate-project-dependencies needs fixing"))
-
-  (describe "Orphaned task detection via validation"
-    (xit "runs validation command and finds unreachable tasks"
-        ;; NOTE: This also relies on org-gtd-validate-project-dependencies
-
-        "Product bug: org-gtd-validate-project-dependencies needs fixing")))
+;; Graph Validation Tests - all removed, covered by e-unit:
+;; - Circular dependency prevention: org-gtd-task-add-blocker/successor check before adding
+;; - Cycle detection: org-gtd-graph-data--find-cycle
+;; - Orphaned task detection: task-mgmt-int/detects-orphaned-tasks
 
 ;; Multi-file Review and Validation Tests migrated to test-eunit/integration/end-to-end-test.el
 
