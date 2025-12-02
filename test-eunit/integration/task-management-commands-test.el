@@ -308,6 +308,106 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
         (assert-true project-heading)
         (assert-match "Multi-file DAG Project" project-heading)))))
 
+;;; Cross-Project Dependencies (Story 5)
+
+(deftest task-mgmt-int/cross-project-shows-project-labels ()
+  "Shows tasks from different projects with project labels when selecting blockers."
+  ;; Set up Project A in main GTD tasks file
+  (capture-inbox-item "Project A")
+  (org-gtd-process-inbox)
+  (goto-char (point-max))
+  (newline)
+  (insert "** Task A1")
+  (organize-as-project)
+
+  ;; Create a second GTD file with Project B
+  (let ((second-file (org-gtd--path "secondary-project.org")))
+    (with-current-buffer (find-file-noselect second-file)
+      (org-mode)
+      (insert "* Project B\n** Task B1\n:PROPERTIES:\n:ID: task-b1-id\n:END:\n")
+      (save-buffer)
+      ;; Register ID
+      (goto-char (point-min))
+      (search-forward "Task B1")
+      (org-back-to-heading t)
+      (org-id-add-location "task-b1-id" second-file))
+
+    ;; Add second file to org-agenda-files for this test
+    (let ((org-agenda-files (append (org-agenda-files) (list second-file))))
+      ;; Capture what task selection interface shows
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Task A1")
+        (org-back-to-heading t)
+
+        ;; Mock completing-read to capture the options presented
+        (let ((presented-options nil)
+              (call-count 0))
+          (with-fake completing-read
+              (lambda (_prompt collection &rest _args)
+                (when (= call-count 0)
+                  (setq presented-options collection))
+                (setq call-count (1+ call-count))
+                (if (= call-count 1) "task-b1-id" ""))
+            (org-gtd-task-management--select-multiple-task-ids "Test prompt: ")
+
+            ;; Verify that tasks are labeled with project information
+            (let ((has-project-labels (cl-some (lambda (option)
+                                                 (string-match-p "Project B" (car option)))
+                                               presented-options)))
+              (assert-true has-project-labels))))))))
+
+(deftest task-mgmt-int/cross-project-creates-dependencies ()
+  "Creates dependencies between tasks in different projects."
+  ;; Set up Project A in main GTD tasks file
+  (capture-inbox-item "Project A")
+  (org-gtd-process-inbox)
+  (goto-char (point-max))
+  (newline)
+  (insert "** Task A1")
+  (organize-as-project)
+
+  ;; Create a second GTD file with Project B
+  (let ((second-file (org-gtd--path "secondary-project.org")))
+    (with-current-buffer (find-file-noselect second-file)
+      (org-mode)
+      (insert "* Project B\n** Task B1\n:PROPERTIES:\n:ID: task-b1-id\n:END:\n")
+      (save-buffer)
+      ;; Register ID
+      (goto-char (point-min))
+      (search-forward "Task B1")
+      (org-back-to-heading t)
+      (org-id-add-location "task-b1-id" second-file))
+
+    ;; Add second file to org-agenda-files for this test
+    (let ((org-agenda-files (append (org-agenda-files) (list second-file))))
+      ;; Create cross-project dependency: Task A1 depends on Task B1
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Task A1")
+        (org-back-to-heading t)
+
+        ;; Mock task selection to return Task B1 from different project
+        (with-spy org-gtd-task-management--select-multiple-task-ids calls '("task-b1-id")
+          (org-gtd-task-add-blockers)
+
+          ;; Verify Task A1 has DEPENDS_ON pointing to Task B1
+          (let ((depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
+            (assert-equal '("task-b1-id") depends-on))))
+
+      ;; Verify Task B1 in the other file has BLOCKS pointing to Task A1
+      (with-current-buffer (find-file-noselect second-file)
+        (goto-char (point-min))
+        (search-forward "Task B1")
+        (org-back-to-heading t)
+        (let ((task-a1-id (with-current-buffer (org-gtd--default-file)
+                            (goto-char (point-min))
+                            (search-forward "Task A1")
+                            (org-back-to-heading t)
+                            (org-entry-get (point) "ID")))
+              (blocks (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
+          (assert-equal (list task-a1-id) blocks))))))
+
 (provide 'task-management-commands-integration-test)
 
 ;;; task-management-commands-test.el ends here

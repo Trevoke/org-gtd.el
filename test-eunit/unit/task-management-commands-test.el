@@ -429,6 +429,182 @@
       ;; Should show clear message for no relationships
       (assert-match "Isolated Task.*no dependency relationships" relationship-display))))
 
+;;; Lazy ID Creation (Story 9)
+
+(deftest task-mgmt/lazy-id-creation-for-all-tasks ()
+  "Automatically creates IDs for tasks without them when adding dependencies."
+  (with-temp-buffer
+    (org-mode)
+    ;; Create tasks WITHOUT IDs initially
+    (insert "* Task A\n\n")
+    (insert "* Task B\n\n")
+
+    ;; Go to Task B (no ID) and add Task A (no ID) as blocker
+    (goto-char (point-min))
+    (re-search-forward "Task B")
+    (org-back-to-heading t)
+
+    ;; Capture the initial state - no IDs should exist
+    (assert-nil (org-entry-get (point) "ID"))
+    (goto-char (point-min))
+    (re-search-forward "Task A")
+    (org-back-to-heading t)
+    (assert-nil (org-entry-get (point) "ID"))
+
+    ;; Go back to Task B to run the command
+    (goto-char (point-min))
+    (re-search-forward "Task B")
+    (org-back-to-heading t)
+
+    (let* ((task-a-id nil)
+           (task-b-id nil))
+      (with-fake org-gtd-task-management--select-multiple-task-ids
+          (lambda (_prompt)
+            ;; First trigger the real task collection to create IDs
+            (org-gtd-task-management--collect-all-task-info)
+            ;; Now capture Task A's ID after it gets created during collection
+            (save-excursion
+              (goto-char (point-min))
+              (re-search-forward "Task A")
+              (org-back-to-heading t)
+              (setq task-a-id (org-entry-get (point) "ID")))
+            (list task-a-id))
+        (org-gtd-task-add-blockers)
+
+        ;; After the command, both tasks should have IDs
+        ;; Task B should have an ID (current task)
+        (setq task-b-id (org-entry-get (point) "ID"))
+        (assert-true task-b-id)
+        (assert-equal 0 (string-match "^[a-z0-9-]+$" task-b-id))
+
+        ;; Task A should have an ID (selected as blocker)
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+        (setq task-a-id (org-entry-get (point) "ID"))
+        (assert-true task-a-id)
+        (assert-equal 0 (string-match "^[a-z0-9-]+$" task-a-id))
+
+        ;; Verify the blocking relationships were created correctly
+        (assert-true (member task-b-id (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
+
+        (goto-char (point-min))
+        (re-search-forward "Task B")
+        (org-back-to-heading t)
+        (assert-true (member task-a-id (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))))))
+
+(deftest task-mgmt/lazy-id-creation-mixed-scenario ()
+  "Creates IDs automatically for tasks without them when some already have IDs."
+  (with-temp-buffer
+    (org-mode)
+    ;; Task A has no ID, Task B has pre-existing ID
+    (insert "* Task A\n\n")
+    (insert "* Task B\n:PROPERTIES:\n:ID: existing-task-b-id\n:END:\n\n")
+
+    ;; Go to Task B (has ID) and add Task A (no ID) as blocker
+    (goto-char (point-min))
+    (re-search-forward "Task B")
+    (org-back-to-heading t)
+
+    ;; Verify initial state
+    (assert-equal "existing-task-b-id" (org-entry-get (point) "ID"))
+    (goto-char (point-min))
+    (re-search-forward "Task A")
+    (org-back-to-heading t)
+    (assert-nil (org-entry-get (point) "ID"))
+
+    (let ((task-a-id nil))
+      (with-fake org-gtd-task-management--select-multiple-task-ids
+          (lambda (_prompt)
+            ;; First trigger the real task collection to create IDs
+            (org-gtd-task-management--collect-all-task-info)
+            ;; The selection should create ID for Task A during collection
+            (save-excursion
+              (goto-char (point-min))
+              (re-search-forward "Task A")
+              (org-back-to-heading t)
+              (setq task-a-id (org-entry-get (point) "ID")))
+            (list task-a-id))
+
+        ;; Go back to Task B to run the command
+        (goto-char (point-min))
+        (re-search-forward "Task B")
+        (org-back-to-heading t)
+        (org-gtd-task-add-blockers)
+
+        ;; Task A should now have an ID
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+        (setq task-a-id (org-entry-get (point) "ID"))
+        (assert-true task-a-id)
+
+        ;; Task B should keep its pre-existing ID
+        (goto-char (point-min))
+        (re-search-forward "Task B")
+        (org-back-to-heading t)
+        (assert-equal "existing-task-b-id" (org-entry-get (point) "ID"))
+
+        ;; Verify relationships were created
+        (assert-true (member task-a-id (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
+        (goto-char (point-min))
+        (re-search-forward "Task A")
+        (org-back-to-heading t)
+        (assert-true (member "existing-task-b-id" (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))))))
+
+;;; Dependency Helper Window (Story 11)
+
+(deftest task-mgmt/dependency-helper-displays-in-wip-buffer ()
+  "Displays live dependency view in WIP buffer when org-gtd-clarify-display-helper-buffer is enabled."
+  (with-temp-buffer
+    ;; Create a WIP buffer with multiple tasks
+    (org-mode)
+    (org-gtd-wip-mode)
+
+    ;; Insert project structure with dependencies (disable ID overlays during insert)
+    (let ((org-gtd-id-overlay-mode nil))
+      (insert "* Build Deck\n")
+      (insert "** Get permits\n")
+      (insert ":PROPERTIES:\n")
+      (insert ":ORG_GTD_BLOCKS: get-materials\n")
+      (insert ":ID: get-permits\n")
+      (insert ":END:\n")
+      (insert "** Get materials\n")
+      (insert ":PROPERTIES:\n")
+      (insert ":ORG_GTD_DEPENDS_ON: get-permits\n")
+      (insert ":ORG_GTD_BLOCKS: install-decking\n")
+      (insert ":ID: get-materials\n")
+      (insert ":END:\n")
+      (insert "** Install decking\n")
+      (insert ":PROPERTIES:\n")
+      (insert ":ORG_GTD_DEPENDS_ON: get-materials\n")
+      (insert ":ID: install-decking\n")
+      (insert ":END:\n")
+      (insert "** Paint deck (orphaned task)\n")
+      (insert ":PROPERTIES:\n")
+      (insert ":ID: paint-deck\n")
+      (insert ":END:\n"))
+
+    ;; Enable the helper buffer feature
+    (let ((org-gtd-clarify-display-helper-buffer t))
+      ;; Trigger the helper window display
+      (org-gtd-clarify-display-dependency-helper)
+
+      ;; Check that helper window was created
+      (let ((helper-buffer (get-buffer "*Org GTD Project Dependencies*")))
+        (assert-true helper-buffer)
+        (with-current-buffer helper-buffer
+          (let ((helper-content (buffer-string)))
+            ;; Should show project name
+            (assert-match "Project name: Build Deck" helper-content)
+            ;; Should show task relationships in format: (depends_on, ...) -> task -> (blocks, ...)
+            (assert-match "() -> Get permits -> (Get materials)" helper-content)
+            (assert-match "(Get permits) -> Get materials -> (Install decking)" helper-content)
+            (assert-match "(Get materials) -> Install decking -> ()" helper-content)
+            ;; Should show orphaned tasks section
+            (assert-match "Orphaned tasks:" helper-content)
+            (assert-match "Paint deck (orphaned task)" helper-content)))))))
+
 (provide 'task-management-commands-test)
 
 ;;; task-management-commands-test.el ends here
