@@ -194,6 +194,20 @@ Kills GTD-related buffers and clears org-mode internal state."
   (with-current-buffer "*scratch*"
     (emacs-lisp-mode)))
 
+;;; Archive Helpers
+
+(defun ogt-eunit--archive-buffer ()
+  "Return the buffer visiting the archive file."
+  (with-current-buffer (find-file-noselect (org-gtd-inbox-path))
+    (let ((org-archive-location (funcall org-gtd-archive-location)))
+      (find-file-noselect
+       (car (org-archive--compute-location org-archive-location))))))
+
+(defun archive-string ()
+  "Return string of items archived from actionable file."
+  (with-current-buffer (ogt-eunit--archive-buffer)
+    (buffer-substring-no-properties (point-min) (point-max))))
+
 ;;; Test Wrapper Macro
 
 (defmacro ogt-eunit-with-mock-gtd (&rest body)
