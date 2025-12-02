@@ -31,4 +31,4 @@ jobs:
 
     - name: Test the project
       run: |
-        eldev -p -dtT test
+        eldev -p -dtT gtd-etest
