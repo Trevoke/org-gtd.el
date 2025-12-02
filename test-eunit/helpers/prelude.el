@@ -62,6 +62,9 @@
 ;; Domain assertions (query functions are framework-agnostic)
 (require 'ogt-assertions (ogt-eunit--relative-path "../../test/helpers/assertions.el"))
 
+;; Keyboard integration helpers for end-to-end testing
+(require 'keyboard-integration (ogt-eunit--relative-path "../../test/helpers/keyboard-integration.el"))
+
 ;;; Simple utility macros
 
 (defmacro ogt--with-temp-org-buffer (contents &rest body)
