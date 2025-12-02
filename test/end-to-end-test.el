@@ -17,19 +17,8 @@
 ;; Ticklering and reactivating projects migrated to test-eunit/acceptance/tickler-flow-test.el
 ;; Area of focus review with tickler projects migrated to test-eunit/acceptance/review-flow-test.el
 
-(describe "Orphaned Task Detection"
-
-  (before-each (setq inhibit-message t) (ogt--configure-emacs))
-  (after-each (ogt--close-and-delete-files))
-
-  (describe "Orphaned task in project"
-    (xit "detects task unreachable from project's ORG_GTD_FIRST_TASKS"
-        ;; NOTE: org-gtd-validate-project-dependencies has a bug - it calls
-        ;; org-gtd-agenda-files which doesn't exist. The function should call
-        ;; org-gtd-core--agenda-files or org-agenda-files instead.
-        ;; This test is marked as pending until the product bug is fixed.
-
-        "Product bug: org-gtd-validate-project-dependencies calls non-existent org-gtd-agenda-files")))
+;; Orphaned Task Detection tests removed - bug was fixed, equivalent tests exist:
+;; - test-eunit/integration/task-management-commands-test.el: task-mgmt-int/detects-orphaned-tasks
 
 (describe "Graph Validation Tests"
 

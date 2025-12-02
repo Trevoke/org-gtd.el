@@ -117,6 +117,85 @@ Shared Task belongs to both Project Alpha and Project Beta; should be NEXT."
     (org-back-to-heading t)
     (assert-equal "NEXT" (org-entry-get (point) "TODO"))))
 
+(deftest fix-kw/multi-project-task-todo-when-blocked-in-some ()
+  "Keeps multi-project task TODO when blocked in ANY project (AND semantics).
+Scenario: Task B belongs to Project Gamma (blocked by Task A) and Project Delta (ready).
+Expected: Task B stays TODO because it must be ready in ALL projects."
+  ;; Create Project Gamma with Task 1 (A) -> Task 2 (B)
+  (create-project "Project Gamma")
+  (with-current-buffer (org-gtd--default-file)
+    ;; Get IDs and set up blocking relationship
+    (goto-char (point-min))
+    (search-forward "Task 1")
+    (org-back-to-heading t)
+    (let ((task-a-id (org-id-get-create)))
+      (goto-char (point-min))
+      (search-forward "Task 2")
+      (org-back-to-heading t)
+      (let ((task-b-id (org-id-get-create)))
+        ;; Make Task A block Task B
+        (goto-char (point-min))
+        (search-forward "Task 1")
+        (org-back-to-heading t)
+        (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" task-b-id)
+        (goto-char (point-min))
+        (search-forward "Task 2")
+        (org-back-to-heading t)
+        (org-entry-add-to-multivalued-property (point) "ORG_GTD_DEPENDS_ON" task-a-id))))
+
+  ;; Create Project Delta with a placeholder task (needed for organize-as-project)
+  (capture-inbox-item "Project Delta")
+  (org-gtd-process-inbox)
+  (with-wip-buffer
+    (goto-char (point-max))
+    (newline)
+    (make-task "Delta Placeholder" :level 2)
+    (organize-as-project))
+
+  ;; Share Task 2 with Project Delta as first task (ready in Delta)
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "Project Gamma")
+    (org-back-to-heading t)
+    (let ((gamma-id (org-id-get-create)))
+      (goto-char (point-min))
+      (search-forward "Project Delta")
+      (org-back-to-heading t)
+      (let ((delta-id (org-id-get-create)))
+        (goto-char (point-min))
+        (search-forward "Task 2")
+        (org-back-to-heading t)
+        (let ((task-2-id (org-id-get-create)))
+          ;; Add Task 2 as first task of Delta
+          (goto-char (point-min))
+          (search-forward "Project Delta")
+          (org-back-to-heading t)
+          (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" task-2-id)
+          ;; Add BOTH project IDs to Task 2
+          (goto-char (point-min))
+          (search-forward "Task 2")
+          (org-back-to-heading t)
+          (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" gamma-id)
+          (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" delta-id)))))
+
+  ;; Run the global fix function
+  (org-gtd-projects-fix-all-todo-keywords)
+
+  ;; Verify: Task 2 should be TODO (blocked in Gamma, ready in Delta)
+  ;; AND semantics: must be ready in ALL projects
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "Task 2")
+    (org-back-to-heading t)
+    (assert-equal "TODO" (org-entry-get (point) "TODO")))
+
+  ;; Verify: Task 1 should be NEXT (ready in Gamma)
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "Task 1")
+    (org-back-to-heading t)
+    (assert-equal "NEXT" (org-entry-get (point) "TODO"))))
+
 ;;; WAIT Task Preservation
 
 (deftest fix-kw/preserves-wait-tasks ()
