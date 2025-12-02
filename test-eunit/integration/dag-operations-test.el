@@ -295,6 +295,250 @@ Manual workflow: Add task C, make B block C."
       (assert-nil (string-match-p "Task B" agenda-content))
       (assert-nil (string-match-p "Task C" agenda-content)))))
 
+;;; Test 3: Parallel children of A in same file
+
+(deftest dag-ops/parallel-children-same-file ()
+  "Adds parallel tasks B and C as children of A in same file.
+After completing A, both B and C become NEXT (parallel execution)."
+  ;; 1. CAPTURE and ORGANIZE initial project with A
+  (capture-inbox-item "Project Gamma")
+  (org-gtd-process-inbox)
+
+  (with-wip-buffer
+    (goto-char (point-max))
+    (newline)
+    (make-task "Task A" :level 2)
+    (organize-as-project))
+
+  ;; 2. Add Task B using project-extend
+  (capture-inbox-item "Task B")
+  (org-gtd-process-inbox)
+
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "Project Gamma")
+    (org-back-to-heading t)
+    (let ((project-buf (current-buffer))
+          (project-pos (point)))
+      (with-wip-buffer
+        (goto-char (point-min))
+        (search-forward "Task B")
+        (org-back-to-heading t)
+        (with-mock-refile-location "Project Gamma" project-buf project-pos
+          (org-gtd-project-extend)))))
+
+  ;; 3. Add Task C using project-extend
+  (capture-inbox-item "Task C")
+  (org-gtd-process-inbox)
+
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "Project Gamma")
+    (org-back-to-heading t)
+    (let ((project-buf (current-buffer))
+          (project-pos (point)))
+      (with-wip-buffer
+        (goto-char (point-min))
+        (search-forward "Task C")
+        (org-back-to-heading t)
+        (with-mock-refile-location "Project Gamma" project-buf project-pos
+          (org-gtd-project-extend)))))
+
+  ;; 4. Make A parent of both B and C
+  (let ((task-a-id nil)
+        (task-b-id nil)
+        (task-c-id nil))
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Task A")
+      (org-back-to-heading t)
+      (setq task-a-id (org-id-get-create))
+
+      (goto-char (point-min))
+      (search-forward "Task B")
+      (org-back-to-heading t)
+      (setq task-b-id (org-id-get-create))
+
+      (goto-char (point-min))
+      (search-forward "Task C")
+      (org-back-to-heading t)
+      (setq task-c-id (org-id-get-create))
+
+      ;; Add A as blocker of B
+      (goto-char (point-min))
+      (search-forward "Task B")
+      (org-back-to-heading t)
+      (org-entry-add-to-multivalued-property (point) "ORG_GTD_DEPENDS_ON" task-a-id)
+
+      ;; Add A as blocker of C
+      (goto-char (point-min))
+      (search-forward "Task C")
+      (org-back-to-heading t)
+      (org-entry-add-to-multivalued-property (point) "ORG_GTD_DEPENDS_ON" task-a-id)
+
+      ;; Update A's BLOCKS to include both B and C
+      (goto-char (point-min))
+      (search-forward "Task A")
+      (org-back-to-heading t)
+      (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" task-b-id)
+      (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" task-c-id)
+
+      ;; Update project's first tasks and fix TODO keywords
+      (goto-char (point-min))
+      (search-forward "Project Gamma")
+      (org-back-to-heading t)
+      (org-gtd-projects--set-first-tasks)
+      (org-gtd-projects-fix-todo-keywords (point-marker)))
+
+    ;; 5. VERIFY: A blocks both B and C
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Task A")
+      (org-back-to-heading t)
+      (let ((blocks-list (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
+        (assert-equal 2 (length blocks-list))))
+
+    ;; 6. VERIFY agenda: Only A is NEXT (blocks B and C)
+    (org-gtd-engage)
+    (let ((agenda-content (agenda-raw-text)))
+      (assert-match "Task A" agenda-content)
+      (assert-nil (string-match-p "Task B" agenda-content))
+      (assert-nil (string-match-p "Task C" agenda-content)))
+
+    ;; 7. VERIFY workflow: Complete A, then B and C both become NEXT (parallel)
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Task A")
+      (org-back-to-heading t)
+      (org-todo "DONE"))
+
+    (org-gtd-engage)
+    (let ((agenda-content (agenda-raw-text)))
+      (assert-nil (string-match-p "Task A" agenda-content))
+      (assert-match "Task B" agenda-content)
+      (assert-match "Task C" agenda-content))))
+
+;;; Test 5: Sequential chain A→B→C in same file
+
+(deftest dag-ops/sequential-chain-same-file ()
+  "Adds sequential tasks B and C chained after A in same file.
+Creates A→B→C chain where only A is NEXT initially."
+  ;; 1. CAPTURE and ORGANIZE initial project with A
+  (capture-inbox-item "Project Epsilon")
+  (org-gtd-process-inbox)
+
+  (with-wip-buffer
+    (goto-char (point-max))
+    (newline)
+    (make-task "Task A" :level 2)
+    (organize-as-project))
+
+  ;; 2. Add Task B using project-extend
+  (capture-inbox-item "Task B")
+  (org-gtd-process-inbox)
+
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "Project Epsilon")
+    (org-back-to-heading t)
+    (let ((project-buf (current-buffer))
+          (project-pos (point)))
+      (with-wip-buffer
+        (goto-char (point-min))
+        (search-forward "Task B")
+        (org-back-to-heading t)
+        (with-mock-refile-location "Project Epsilon" project-buf project-pos
+          (org-gtd-project-extend)))))
+
+  ;; 3. Add Task C using project-extend
+  (capture-inbox-item "Task C")
+  (org-gtd-process-inbox)
+
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "Project Epsilon")
+    (org-back-to-heading t)
+    (let ((project-buf (current-buffer))
+          (project-pos (point)))
+      (with-wip-buffer
+        (goto-char (point-min))
+        (search-forward "Task C")
+        (org-back-to-heading t)
+        (with-mock-refile-location "Project Epsilon" project-buf project-pos
+          (org-gtd-project-extend)))))
+
+  ;; 4. Create A→B→C chain
+  (let ((task-a-id nil)
+        (task-b-id nil))
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Task A")
+      (org-back-to-heading t)
+      (setq task-a-id (org-id-get-create))
+
+      (goto-char (point-min))
+      (search-forward "Task B")
+      (org-back-to-heading t)
+      (setq task-b-id (org-id-get-create))
+
+      ;; Add A as blocker of B
+      (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
+                 (lambda (&rest _) (list task-a-id))))
+        (org-gtd-task-add-blockers))
+
+      ;; Add B as blocker of C
+      (goto-char (point-min))
+      (search-forward "Task C")
+      (org-back-to-heading t)
+      (cl-letf (((symbol-function 'org-gtd-task-management--select-multiple-task-ids)
+                 (lambda (&rest _) (list task-b-id))))
+        (org-gtd-task-add-blockers)))
+
+    ;; 5. VERIFY sequential chain
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Task A")
+      (org-back-to-heading t)
+      (assert-equal (list task-b-id) (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS"))
+
+      (goto-char (point-min))
+      (search-forward "Task B")
+      (org-back-to-heading t)
+      (assert-equal (list task-a-id) (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON")))
+
+    ;; 6. VERIFY only A is NEXT
+    (org-gtd-engage)
+    (let ((agenda-content (agenda-raw-text)))
+      (assert-match "Task A" agenda-content)
+      (assert-nil (string-match-p "Task B" agenda-content))
+      (assert-nil (string-match-p "Task C" agenda-content)))
+
+    ;; 7. Complete A, verify B becomes NEXT
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Task A")
+      (org-back-to-heading t)
+      (org-todo "DONE"))
+
+    (org-gtd-engage)
+    (let ((agenda-content (agenda-raw-text)))
+      (assert-nil (string-match-p "Task A" agenda-content))
+      (assert-match "Task B" agenda-content)
+      (assert-nil (string-match-p "Task C" agenda-content)))
+
+    ;; 8. Complete B, verify C becomes NEXT
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Task B")
+      (org-back-to-heading t)
+      (org-todo "DONE"))
+
+    (org-gtd-engage)
+    (let ((agenda-content (agenda-raw-text)))
+      (assert-nil (string-match-p "Task A" agenda-content))
+      (assert-nil (string-match-p "Task B" agenda-content))
+      (assert-match "Task C" agenda-content))))
+
 (provide 'dag-operations-test)
 
 ;;; dag-operations-test.el ends here
