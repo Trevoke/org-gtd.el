@@ -765,156 +765,12 @@
        (expect (org-entry-get (point) "TODO") :to-equal "NEXT")))
 )
 
-(describe "State preservation for tickler"
+;; State preservation and basic tickler tests migrated to test-eunit/unit/project-tickler-test.el
+
+(describe "Project tickler advanced"
   (before-each (setq inhibit-message t)
                (ogt--configure-emacs))
   (after-each (ogt--close-and-delete-files))
-
-  (it "saves ORG_GTD and TODO state to PREVIOUS_* properties"
-      (create-project "Test project")
-      (with-current-buffer (org-gtd--default-file)
-        (goto-char (point-min))
-        (search-forward "Task 1")
-        (org-back-to-heading t)
-
-        ;; Set up initial state
-        (org-entry-put (point) "ORG_GTD" "Actions")
-        (org-entry-put (point) "TODO" "NEXT")
-
-        ;; Save state
-        (org-gtd-project--save-state (point))
-
-        ;; Verify state was saved
-        (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-equal "Actions")
-        (expect (org-entry-get (point) "PREVIOUS_TODO") :to-equal "NEXT")
-
-        ;; Verify ORG_GTD changed to Tickler
-        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Tickler")
-
-        ;; Verify TODO keyword was cleared
-        (expect (org-entry-get (point) "TODO") :to-be nil)))
-
-  (it "restores ORG_GTD and TODO state from PREVIOUS_* properties"
-      (create-project "Test project")
-      (with-current-buffer (org-gtd--default-file)
-        (goto-char (point-min))
-        (search-forward "Task 1")
-        (org-back-to-heading t)
-
-        ;; Set up tickler state with saved previous values
-        (org-entry-put (point) "ORG_GTD" "Tickler")
-        (org-entry-put (point) "PREVIOUS_ORG_GTD" "Actions")
-        (org-entry-put (point) "PREVIOUS_TODO" "NEXT")
-        (org-todo 'none)  ; Clear TODO keyword
-
-        ;; Restore state
-        (org-gtd-project--restore-state (point))
-
-        ;; Verify state was restored
-        (expect (org-entry-get (point) "ORG_GTD") :to-equal "Actions")
-        (expect (org-entry-get (point) "TODO") :to-equal "NEXT")
-
-        ;; Verify PREVIOUS_* properties were removed
-        (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-be nil)
-        (expect (org-entry-get (point) "PREVIOUS_TODO") :to-be nil)))
-
-  (it "collects all tasks in a project by graph traversal"
-      (create-project "Test project")
-      (with-current-buffer (org-gtd--default-file)
-        (goto-char (point-min))
-        (search-forward "Test project")
-        (org-back-to-heading t)
-        (let ((project-marker (point-marker))
-              (task-ids '()))
-
-          ;; Get all task IDs
-          (goto-char (point-min))
-          (search-forward "Task 1")
-          (org-back-to-heading t)
-          (push (org-id-get-create) task-ids)
-          (goto-char (point-min))
-          (search-forward "Task 2")
-          (org-back-to-heading t)
-          (push (org-id-get-create) task-ids)
-          (goto-char (point-min))
-          (search-forward "Task 3")
-          (org-back-to-heading t)
-          (push (org-id-get-create) task-ids)
-
-          (setq task-ids (nreverse task-ids))
-
-          ;; Get tasks via helper
-          (let ((task-markers (org-gtd-project--get-all-tasks project-marker)))
-            ;; Should return 3 task markers
-            (expect (length task-markers) :to-equal 3)
-            ;; Each marker should point to a task with matching ID
-            (dolist (marker task-markers)
-              (org-with-point-at marker
-                (expect (member (org-id-get) task-ids) :to-be-truthy)))))))
-
-(describe "Project tickler"
-  (before-each (setq inhibit-message t)
-               (ogt--configure-emacs))
-  (after-each (ogt--close-and-delete-files))
-
-  (it "ticklers a project with review date"
-      (create-project "Test project")
-      (with-current-buffer (org-gtd--default-file)
-        (goto-char (point-min))
-        (search-forward "Test project")
-        (org-back-to-heading t)
-        (let ((project-marker (point-marker)))
-
-          ;; Incubate with review date
-          (org-gtd-project-incubate project-marker "2025-12-01")
-
-          ;; Verify project heading is incubated
-          (org-with-point-at project-marker
-            (expect (org-entry-get (point) "ORG_GTD") :to-equal "Tickler")
-            (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-equal "Projects")
-            (expect (org-entry-get (point) "ORG_GTD_TIMESTAMP") :to-equal "<2025-12-01>"))
-
-          ;; Verify all tasks are incubated
-          (goto-char (point-min))
-          (search-forward "Task 1")
-          (org-back-to-heading t)
-          (expect (org-entry-get (point) "ORG_GTD") :to-equal "Tickler")
-          (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-equal "Actions")
-          (expect (org-entry-get (point) "TODO") :to-be nil)
-          (expect (org-entry-get (point) "PREVIOUS_TODO") :to-equal "NEXT"))))
-
-  (it "reactivates a tickler project"
-      (create-project "Test project")
-      (with-current-buffer (org-gtd--default-file)
-        (goto-char (point-min))
-        (search-forward "Test project")
-        (org-back-to-heading t)
-        (let ((project-marker (point-marker)))
-
-          ;; First incubate it
-          (org-gtd-project-incubate project-marker "2025-12-01")
-
-          ;; Verify it's incubated
-          (org-with-point-at project-marker
-            (expect (org-entry-get (point) "ORG_GTD") :to-equal "Tickler"))
-
-          ;; Now reactivate it
-          (org-gtd-project-reactivate project-marker)
-
-          ;; Verify project heading is restored
-          (org-with-point-at project-marker
-            (expect (org-entry-get (point) "ORG_GTD") :to-equal "Projects")
-            (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-be nil)
-            (expect (org-entry-get (point) "ORG_GTD_TIMESTAMP") :to-be nil))
-
-          ;; Verify tasks are restored
-          (goto-char (point-min))
-          (search-forward "Task 1")
-          (org-back-to-heading t)
-          (expect (org-entry-get (point) "ORG_GTD") :to-equal "Actions")
-          (expect (org-entry-get (point) "PREVIOUS_ORG_GTD") :to-be nil)
-          ;; TODO keyword should be restored (will be NEXT after recalculation)
-          (expect (org-entry-get (point) "TODO") :not :to-be nil))))
 
   (it "warns about external dependencies before ticklering"
       ;; Create two projects: Project A and Project B
@@ -952,7 +808,7 @@
               (expect (length external-deps) :to-equal 1)
               (expect (org-with-point-at (car external-deps)
                         (org-id-get))
-                      :to-equal task-b1-id)))))))
+                      :to-equal task-b1-id))))))
 
   (it "skips multi-project tasks during tickler"
       ;; Create project with a task that belongs to multiple projects
