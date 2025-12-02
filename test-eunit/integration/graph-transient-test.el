@@ -62,7 +62,7 @@
 
 (around-each (proceed context)
   "Wrap all tests in mock GTD context.
-Disable native compilation trampolines to avoid mock-fs conflicts."
+Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
   (let ((native-comp-enable-subr-trampolines nil))
     (ogt-eunit-with-mock-gtd
       (funcall proceed context))))
