@@ -35,7 +35,6 @@
 (require 'org-gtd-files)
 
 (declare-function org-gtd-projects--collect-tasks-by-graph "org-gtd-projects")
-(declare-function org-gtd--default-file "org-gtd-files" ())
 
 ;;;; Customization
 

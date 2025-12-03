@@ -33,8 +33,6 @@
 (require 'org-gtd-core)
 (require 'org-gtd-files)
 
-(declare-function org-gtd--default-file "org-gtd-files" ())
-
 ;;;; Customization
 
 (defcustom org-gtd-refile-to-any-target t

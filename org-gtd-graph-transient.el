@@ -34,8 +34,7 @@
 (require 'org-gtd-graph-ui)
 (require 'org-gtd-archive)
 (require 'org-gtd-accessors)
-
-(declare-function org-gtd-tickler "org-gtd-tickler" (&optional reminder-date))
+(require 'org-gtd-tickler)
 
 ;;;; Main Transient Menu
 

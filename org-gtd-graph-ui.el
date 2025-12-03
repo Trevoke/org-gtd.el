@@ -32,10 +32,10 @@
 (require 'org)
 (require 'org-id)
 (require 'org-gtd-task-management)
+(require 'org-gtd-graph-data)
 
-;; Forward declarations to avoid circular dependency
+;; Forward declaration to avoid circular dependency with org-gtd-graph-view
 (declare-function org-gtd-graph-view-refresh "org-gtd-graph-view")
-(declare-function org-gtd-graph-nodes "org-gtd-graph-data" (graph))
 
 ;;;; Customization
 

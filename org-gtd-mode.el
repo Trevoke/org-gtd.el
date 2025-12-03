@@ -30,8 +30,7 @@
 (require 'org-edna)
 
 (require 'org-gtd-core)
-
-(declare-function org-gtd-inbox-path "org-gtd-files" ())
+(require 'org-gtd-files)
 
 ;;;; Constants
 
