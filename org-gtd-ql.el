@@ -114,8 +114,7 @@ delegated items without a \\='who\\=' field."
                               (cond
                                ((eq key 'todo) (list `(todo ,value)))
                                ((eq value :today) (list `(property-ts= ,(symbol-name key) ,(format-time-string "%Y-%m-%d"))))
-                               (t (list `(property ,(symbol-name key) ,value))))
-                              ))
+                               (t (list `(property ,(symbol-name key) ,value))))))
                           view)))
     `(org-ql-block '(and ,@filters))))
 

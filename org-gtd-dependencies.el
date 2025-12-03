@@ -102,7 +102,7 @@ Throws user-error with descriptive path if cycle would be created."
   (when (org-gtd-dependencies-has-path-p dependent-id blocker-id)
     (let ((existing-path (org-gtd-dependencies--find-path dependent-id blocker-id)))
       (user-error "Circular dependency detected: %s"
-             (mapconcat 'identity
+             (mapconcat #'identity
                         (append (or existing-path (list dependent-id blocker-id))
                                 (list dependent-id))
                         " -> ")))))

@@ -111,7 +111,8 @@
 
 (defun org-gtd-view-lang--create-agenda-block (gtd-view-spec &optional inherited-prefix-format)
   "Create an agenda block from GTD-VIEW-SPEC.
-If block-type is \\='calendar-day, creates a native agenda filtered to Calendar/Habit.
+If block-type is \\='calendar-day, creates a native agenda filtered to
+Calendar/Habit.
 If block-type is \\='todo, creates a native todo block.
 If view-type is \\='agenda, creates a native agenda block.
 If view-type is \\='tags-grouped, creates grouped views.
@@ -153,7 +154,8 @@ Returns nil to include item, or end of entry point to skip."
 
 (defun org-gtd-view-lang--create-calendar-day-block (_gtd-view-spec)
   "Create a calendar-day agenda block from GTD-VIEW-SPEC.
-This is a native org-agenda day view filtered to show only Calendar and Habit items."
+This is a native org-agenda day view filtered to show only Calendar and
+Habit items."
   (let ((settings '((org-agenda-span 1)
                     (org-agenda-start-day nil)
                     (org-agenda-skip-additional-timestamps-same-entry t)
@@ -200,7 +202,7 @@ Returns a list of additional blocks like TODO lists."
             additional-blocks)))
 
 (defun org-gtd-view-lang--create-custom-commands (view-specs &optional key title)
-  "Create org-agenda-custom-commands from VIEW-SPECS list.
+  "Create `org-agenda-custom-commands' from VIEW-SPECS list.
 KEY defaults to \"o\", TITLE defaults to \"GTD Views\".
 Supports both single-block and multi-block view specs.
 Multi-block specs have a \\='blocks key containing a list of block specs."

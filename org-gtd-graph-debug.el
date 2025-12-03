@@ -1,4 +1,36 @@
-;;; org-gtd-graph-debug.el --- Debug helpers for graph visualization -*- lexical-binding: t; -*-
+;;; org-gtd-graph-debug.el --- Debug helpers for graph visualization -*- lexical-binding: t; coding: utf-8 -*-
+
+;; Copyright (C) 2019-2023, 2025 Aldric Giacomoni
+
+;; Author: Aldric Giacomoni <trevoke@gmail.com>
+
+;; This file is not part of GNU Emacs.
+
+;; This file is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published
+;; by the Free Software Foundation; either version 3, or
+;; (at your option) any later version.
+
+;; This file is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; This file provides debugging utilities for org-gtd's graph visualization
+;; system.  It includes functions to inspect and debug the graph data structure,
+;; print edges, and examine relationships between nodes.
+;;
+;; These utilities are primarily intended for development and troubleshooting
+;; of the graph visualization features.
+;;
+;;; Code:
+
+;;;; Requirements
 
 (require 'org-gtd-graph-data)
 

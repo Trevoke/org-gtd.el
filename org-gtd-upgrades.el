@@ -159,32 +159,38 @@ STEP 1: Migrate ORG_GTD properties
   - Project tasks: Adds ORG_GTD=\"Actions\" property
 
 STEP 2: Migrate delegated items to new type
-  - Items with DELEGATED_TO property: Changes ORG_GTD from \"Actions\" to \"Delegated\"
+  - Items with DELEGATED_TO property: Changes ORG_GTD from
+    \"Actions\" to \"Delegated\"
   - This separates delegated items from regular single actions
 
 STEP 3: Migrate habits to have ORG_GTD property
   - Items with STYLE=\"habit\": Adds ORG_GTD=\"Habit\"
-  - This ensures habits are discoverable via the unified type system
+  - This ensures habits are discoverable via the unified type
+    system
 
 STEP 4: Add dependency properties to projects
-  - Adds ORG_GTD_DEPENDS_ON and ORG_GTD_BLOCKS for sequential dependencies
+  - Adds ORG_GTD_DEPENDS_ON and ORG_GTD_BLOCKS for sequential
+    dependencies
   - Adds ORG_GTD_FIRST_TASKS to project headings
   - Sets correct NEXT/TODO states based on dependencies
 
 AFTER UPGRADE:
 
-Your level 1 category headings now use ORG_GTD_REFILE property and can
-serve as refile targets. You can:
+Your level 1 category headings now use ORG_GTD_REFILE property and
+can serve as refile targets. You can:
   - Move these headings anywhere in org-agenda-files (any level)
   - Create new refile targets by adding ORG_GTD_REFILE property
-  - Configure org-refile-targets - org-gtd merges your targets with its own
+  - Configure org-refile-targets - org-gtd merges your targets with
+    its own
 
-Items can now exist anywhere in org-agenda-files - ORG_GTD_REFILE markers
-are purely for organizational convenience. Your org-refile-targets appear
-first in completion, followed by org-gtd's property-based targets.
+Items can now exist anywhere in org-agenda-files - ORG_GTD_REFILE
+markers are purely for organizational convenience. Your
+org-refile-targets appear first in completion, followed by org-gtd's
+property-based targets.
 
-This is REQUIRED for org-gtd v4 to work correctly. The old TRIGGER-based
-project system no longer works - v4 uses dependency properties instead.
+This is REQUIRED for org-gtd v4 to work correctly. The old
+TRIGGER-based project system no longer works - v4 uses dependency
+properties instead.
 
 Make a backup before running! Safe to run multiple times."
   (interactive)

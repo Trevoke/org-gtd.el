@@ -45,6 +45,7 @@
 ;;;; Commands
 
 (defun org-gtd-area-of-focus-set-on-item-at-point ()
+  "Set the area of focus category on the heading at point."
   (interactive)
   (let ((chosen-area (completing-read
                       "Which area of focus does this belong to? "
@@ -54,6 +55,7 @@
     (org-entry-put (point) "CATEGORY" chosen-area)))
 
 (defun org-gtd-area-of-focus-set-on-agenda-item ()
+  "Set the area of focus category on the current agenda item."
   (interactive)
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)
@@ -84,7 +86,7 @@
 
 ;;;;; Public
 
-(defalias 'org-gtd-set-area-of-focus 'org-gtd-areas-of-focus--set)
+(defalias 'org-gtd-set-area-of-focus #'org-gtd-areas-of-focus--set)
 
 ;;;;; Private
 

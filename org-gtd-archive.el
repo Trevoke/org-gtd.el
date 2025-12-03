@@ -45,11 +45,14 @@
 (defcustom org-gtd-archive-location #'org-gtd-archive-location-func
   "Archive location for org-gtd, or nil to use `org-archive-location'.
 
-When nil, org-gtd uses org-mode's standard `org-archive-location' variable.
+When nil, org-gtd uses org-mode's standard `org-archive-location'
+variable.
 When a function, calls it to get the archive location string.
 
-Set to nil if you want org-gtd to respect your org-mode archive configuration.
-The default function generates gtd_archive_<year>::datetree/ in `org-gtd-directory'.
+Set to nil if you want org-gtd to respect your org-mode archive
+configuration.
+The default function generates gtd_archive_<year>::datetree/ in
+`org-gtd-directory'.
 
 See `org-archive-location' for valid location string formats."
   :group 'org-gtd-archive

@@ -125,8 +125,7 @@ Only sets the value if validation passes."
   ;; Skip validation during byte compilation or when loading - org-todo-keywords may not be set up yet
   (if (or byte-compile-current-file
           (bound-and-true-p byte-compile-current-buffer)
-          (bound-and-true-p load-in-progress)
-          )
+          (bound-and-true-p load-in-progress))
       (set-default symbol value)
     ;; Normal runtime validation
     (org-gtd--validate-and-set-keyword-mapping-runtime symbol value)))
@@ -309,6 +308,9 @@ without validation, use `setq' but ensure the mapping is valid."
 (defconst org-gtd-habit "Habits"
   "GTD category for recurring habits.")
 
+;; Backward compatibility alias - must come before referent
+(define-obsolete-variable-alias 'org-gtd-incubate 'org-gtd-tickler "4.0")
+
 (defconst org-gtd-tickler "Tickler"
   "GTD category for tickler items (time-based reminders).")
 
@@ -376,6 +378,7 @@ This property also controls the prefix displayed in agenda views.")
 ;;;; Commands
 
 (defun org-gtd-set-event-date-on-heading-at-point ()
+  "Set or update the GTD event date on the heading at point."
   (interactive)
   (let ((old-timestamp (org-entry-get nil org-gtd-timestamp))
         (new-timestamp (org-read-date nil t)))
@@ -486,7 +489,8 @@ Configure org-agenda-files and other settings directly instead."
 
 (defun org-gtd-buffer-p (&optional buffer)
   "Return t if BUFFER (or current buffer if nil) is an org-gtd managed buffer.
-A buffer is considered org-gtd managed if its file is within `org-gtd-directory'."
+A buffer is considered org-gtd managed if its file is within
+`org-gtd-directory'."
   (let ((file (buffer-file-name (or buffer (current-buffer)))))
     (and file
          (string-prefix-p (expand-file-name org-gtd-directory)
@@ -536,8 +540,7 @@ If BUFFER is nil, use current buffer."
 
 ;;;; Backward Compatibility Aliases
 
-;; Incubate → Tickler rename (v4.0)
-(define-obsolete-variable-alias 'org-gtd-incubate 'org-gtd-tickler "4.0")
+;; (Aliases moved closer to their referents to satisfy byte-compiler)
 
 ;;;; Footer
 

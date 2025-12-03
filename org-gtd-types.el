@@ -22,7 +22,7 @@
 ;;
 ;; GTD Type System - single source of truth for GTD item types.
 ;; Each type defines its ORG_GTD value, TODO state semantic, and
-;; semantic properties that map to org-mode properties.
+;; semantic properties that map to `org-mode' properties.
 ;;
 ;;; Code:
 

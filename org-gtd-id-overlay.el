@@ -145,8 +145,8 @@ Removes all visual ID overlays without disabling the mode."
 Removes TODO keywords and statistics cookies."
   (let ((text (string-trim heading-text)))
     ;; Remove common TODO keywords (with or without trailing space)
-    (setq text (replace-regexp-in-string 
-                "^\\(TODO\\|DONE\\|NEXT\\|WAIT\\|PROJ\\|CNCL\\|CANCELED\\|CANCELLED\\)\\(\\s-+\\|$\\)" 
+    (setq text (replace-regexp-in-string
+                "^\\(TODO\\|DONE\\|NEXT\\|WAIT\\|PROJ\\|CNCL\\|CANCELED\\|CANCELLED\\)\\(\\s-+\\|$\\)"
                 "" text))
     ;; Remove statistics cookies [n/m] and [n%]
     (setq text (replace-regexp-in-string "\\[\\([0-9]+/[0-9]+\\|[0-9]+%\\)\\]" "" text))
@@ -296,7 +296,10 @@ Prioritizes current buffer (especially WIP buffers) over global org-id system."
         (progn
           (goto-char current-buffer-pos)
           (org-reveal)
-          (org-fold-show-entry))
+          ;; Use org-fold-show-entry in Emacs 29+, fallback to outline-show-entry
+          (if (fboundp 'org-fold-show-entry)
+              (org-fold-show-entry)
+            (outline-show-entry)))
       ;; Second: try org-id system for saved content
       (let ((marker (org-id-find id t)))
         (if marker
@@ -304,7 +307,10 @@ Prioritizes current buffer (especially WIP buffers) over global org-id system."
               (switch-to-buffer (marker-buffer marker))
               (goto-char marker)
               (org-reveal)
-              (org-fold-show-entry))
+              ;; Use org-fold-show-entry in Emacs 29+, fallback to outline-show-entry
+              (if (fboundp 'org-fold-show-entry)
+                  (org-fold-show-entry)
+                (outline-show-entry)))
           ;; Final fallback: inform user
           (message "Cannot find heading with ID: %s" id))))))
 

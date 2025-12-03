@@ -320,9 +320,9 @@ Returns the selected ID or nil if cancelled."
   ;; Could be enhanced with a more sophisticated picker later
   (let* ((all-ids (org-gtd-task-management--collect-all-task-ids))
          (id-alist (mapcar (lambda (id)
-                            (cons (format "%s (%s)" 
+                            (cons (format "%s (%s)"
                                          (org-gtd-task-management--get-heading-for-id id)
-                                         id) 
+                                         id)
                                   id))
                           all-ids))
          (selection (completing-read prompt id-alist nil t)))
@@ -648,13 +648,13 @@ task blocks."
       
       ;; Show what blocks this task (dependencies)
       (if depends-on
-          (let ((blocker-names (mapcar 'org-gtd-task-management--get-heading-for-id depends-on)))
+          (let ((blocker-names (mapcar #'org-gtd-task-management--get-heading-for-id depends-on)))
             (push (format "Blocked by: %s" (string-join blocker-names ", ")) output))
         (push "Blocked by: none" output))
-      
+
       ;; Show what this task blocks (dependents)
       (if blocks
-          (let ((dependent-names (mapcar 'org-gtd-task-management--get-heading-for-id blocks)))
+          (let ((dependent-names (mapcar #'org-gtd-task-management--get-heading-for-id blocks)))
             (push (format "Blocks: %s" (string-join dependent-names ", ")) output))
         (push "Blocks: none" output))
       

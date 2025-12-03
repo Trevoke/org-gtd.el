@@ -48,7 +48,7 @@
   '(("A" . "#e74c3c")
     ("B" . "#f39c12")
     ("C" . "#3498db"))
-  "Color mapping for org-mode priorities.")
+  "Color mapping for `org-mode' priorities.")
 
 (defconst org-gtd-svg--tag-colors
   '(("urgent" . "#e74c3c")

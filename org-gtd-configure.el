@@ -52,6 +52,7 @@
     (format "<%s>" date)))
 
 (defun org-gtd-prompt-for-active-date-with-repeater (prompt)
+  "Prompt for an active date with optional repeater using PROMPT."
   (interactive)
   (let ((input (read-from-minibuffer (format "%s > " prompt))))
     ;; Check if input contains a repeater pattern (starts with + or .)

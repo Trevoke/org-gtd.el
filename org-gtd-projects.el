@@ -673,8 +673,9 @@ dependencies aren't set up properly."
 
 (defun org-gtd-projects--add-progress-cookie ()
   "Add progress tracking cookie to the project heading.
-Uses custom progress cookies if `org-gtd-project-progress-cookie-position' is set,
-otherwise uses org-mode's built-in statistics cookies."
+Uses custom progress cookies if
+`org-gtd-project-progress-cookie-position' is set, otherwise uses
+org-mode's built-in statistics cookies."
   (if org-gtd-project-progress-cookie-position
       ;; Use new custom cookie system
       (let ((project-id (org-entry-get (point) "ID")))
@@ -1014,7 +1015,7 @@ Orchestrates adding a new task to an existing project:
   (org-edna-finder/relatives 'forward-no-wrap 'todo-only 1 'no-sort))
 
 (defalias 'org-edna-finder/org-gtd-next-project-action
-  'org-gtd-projects--edna-next-project-action)
+  #'org-gtd-projects--edna-next-project-action)
 
 (defun org-gtd-projects--edna-update-project-task (_last-entry)
   "`org-edna' extension to change the todo state to `org-gtd-next'."
@@ -1022,7 +1023,7 @@ Orchestrates adding a new task to an existing project:
   (org-todo (org-gtd-keywords--next)))
 
 (defalias 'org-edna-action/org-gtd-update-project-task!
-  'org-gtd-projects--edna-update-project-task)
+  #'org-gtd-projects--edna-update-project-task)
 
 (defun org-gtd-projects--find-id-marker (id)
   "Find marker for task with ID.
@@ -1045,7 +1046,7 @@ and if so, marks it NEXT."
                 (org-entry-put (point) org-gtd-prop-todo (org-gtd-keywords--next))))))))))
 
 (defalias 'org-edna-action/org-gtd-update-project-after-task-done!
-  'org-gtd-projects--edna-update-project-after-task-done)
+  #'org-gtd-projects--edna-update-project-after-task-done)
 
 (defun org-gtd-projects--first-todo-task ()
   "Given an org tree at point, return the first subtask with `org-gtd-todo'.

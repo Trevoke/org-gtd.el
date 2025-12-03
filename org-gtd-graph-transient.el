@@ -818,7 +818,7 @@ If NEW-BLOCKER-IDS is empty, adds task to project's FIRST_TASKS."
          (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids)))
     (setq org-gtd-graph--modify-state
           (mapcar (lambda (task-id)
-                   (cons task-id (not (null (member task-id current-blockers)))))
+                   (cons task-id (and (member task-id current-blockers) t)))
                  valid-candidates)))
   (org-gtd-graph-modify-blockers-menu))
 
@@ -937,7 +937,7 @@ Updates FIRST_TASKS for affected successors based on their blocker status."
          (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids)))
     (setq org-gtd-graph--modify-state
           (mapcar (lambda (task-id)
-                   (cons task-id (not (null (member task-id current-successors)))))
+                   (cons task-id (and (member task-id current-successors) t)))
                  valid-candidates)))
   (org-gtd-graph-modify-successors-menu))
 
@@ -1011,7 +1011,7 @@ Prompts for confirmation before trashing."
                                 (node (org-gtd-graph-data-get-node graph task-id)))
                        (org-gtd-graph-node-title node))))
 
-    (when (yes-or-no-p (format "Trash task '%s'? This will remove it from all projects and mark it as canceled. " task-title))
+    (when (yes-or-no-p (format "Trash task '%s'?  This will remove it from all projects and mark it as canceled.  Are you sure?" task-title))
       (org-gtd-graph--trash-task task-id)
       (message "Trashed task '%s'" task-title)
       (org-gtd-graph-view-refresh))))

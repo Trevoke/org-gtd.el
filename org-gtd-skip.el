@@ -33,7 +33,7 @@
 ;;;; Functions
 
 (defun org-gtd-skip-unless-in-progress ()
-  "Skip-function: only keep if it's not one of the DONE keywords"
+  "Skip-function: only keep if it's not one of the DONE keywords."
   (org-agenda-skip-entry-if 'todo org-done-keywords))
 
 (defun org-gtd-skip-unless-area-of-focus (area)

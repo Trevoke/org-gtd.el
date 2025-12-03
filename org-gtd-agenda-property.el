@@ -1,10 +1,9 @@
-;;; org-gtd-agenda-property.el --- Display org properties in the agenda buffer.
+;;; org-gtd-agenda-property.el --- Display org properties in the agenda buffer.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2013 Artur Malabarba <bruce.connor.am@gmail.com>
 
 ;; Author: Artur Malabarba <bruce.connor.am@gmail.com>
-;; URL: http://github.com/Bruce-Connor/org-gtd-agenda-property
-;; Version: 1.3.2
+;; URL: https://github.com/Trevoke/org-gtd.el
 ;; Package-Requires: ((emacs "24.2"))
 ;; Keywords: calendar
 ;; Separator: -
@@ -64,11 +63,13 @@
 (defconst org-gtd-agenda-property-version "1.3.2"
   "Version string of the `org-gtd-agenda-property' package.")
 (defconst org-gtd-agenda-property-version-int 6
-  "Integer version number of the `org-gtd-agenda-property' package (for comparing versions).")
+  "Integer version of the `org-gtd-agenda-property' package.
+For comparing versions.")
 
 (defun org-gtd-agenda-property-bug-report ()
   "Opens github issues page in a web browser.
-Please send me any bugs you find, and please inclue your emacs and your package versions."
+Please send me any bugs you find, and please inclue your emacs and
+your package versions."
   (interactive)
   (browse-url "https://github.com/Bruce-Connor/org-gtd-agenda-property/issues/new")
   (message "Your org-gtd-agenda-property-version is: %s, and your emacs version is: %s.\nPlease include this in your report!"
@@ -97,10 +98,10 @@ Please send me any bugs you find, and please inclue your emacs and your package 
 (defcustom org-gtd-agenda-property-position 'where-it-fits
   "Where the properties will be placed in the agenda buffer.
 
-'same-line means in the same line as the item it belongs to,
-starting at `org-gtd-agenda-property-column'. 'next-line means on the
-next-line. 'where-it-fits means 'same-line if it fits in the
-window, otherwise 'next-line."
+\\='same-line means in the same line as the item it belongs to,
+starting at `org-gtd-agenda-property-column'.  \\='next-line means on the
+next-line.  \\='where-it-fits means \\='same-line if it fits in the
+window, otherwise \\='next-line."
   :type 'symbol
    :group 'org-gtd-agenda-property)
 
@@ -178,14 +179,14 @@ See: https://github.com/Malabarba/org-agenda-property/issues/6"
 ;;;###autoload
 (eval-after-load 'org-agenda
   '(if (boundp 'org-agenda-finalize-hook)
-       (add-hook 'org-agenda-finalize-hook 'org-gtd-agenda-property-add-properties)
-     (add-hook 'org-finalize-agenda-hook 'org-gtd-agenda-property-add-properties)))
+       (add-hook 'org-agenda-finalize-hook #'org-gtd-agenda-property-add-properties)
+     (add-hook 'org-finalize-agenda-hook #'org-gtd-agenda-property-add-properties)))
 
 ;;;###autoload
 (if (boundp 'org-agenda-finalize-hook)
-    (add-hook 'org-agenda-finalize-hook 'org-gtd-agenda-property-add-properties)
+    (add-hook 'org-agenda-finalize-hook #'org-gtd-agenda-property-add-properties)
   (when (boundp 'org-finalize-agenda-hook)
-    (add-hook 'org-finalize-agenda-hook 'org-gtd-agenda-property-add-properties)))
+    (add-hook 'org-finalize-agenda-hook #'org-gtd-agenda-property-add-properties)))
 
 (provide 'org-gtd-agenda-property)
 ;;; org-gtd-agenda-property.el ends here

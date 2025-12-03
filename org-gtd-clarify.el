@@ -313,13 +313,13 @@ the buffer contains more than one task heading."
   (interactive)
   (when (and org-gtd-clarify-display-helper-buffer
              (derived-mode-p 'org-gtd-wip-mode))
-    (let ((project-name (org-gtd-clarify--extract-project-name))
+    (let ((proj-name (org-gtd-clarify--extract-project-name))
           (task-info (org-gtd-clarify--collect-task-information)))
-      
+
       ;; Show helper if we have tasks to display
       (when task-info
-        (org-gtd-clarify--create-dependency-helper-window 
-         project-name task-info)))))
+        (org-gtd-clarify--create-dependency-helper-window
+         proj-name task-info)))))
 
 ;;;;; Private
 
@@ -402,17 +402,17 @@ Returns a list of (heading id depends-on blocks) for each task."
             (push (list heading id depends-on blocks) task-info)))))
     (nreverse task-info)))
 
-(defun org-gtd-clarify--create-dependency-helper-window (project-name task-info)
+(defun org-gtd-clarify--create-dependency-helper-window (proj-name task-info)
   "Create and display dependency helper window.
-PROJECT-NAME is the name of the project.
+PROJ-NAME is the name of the project.
 TASK-INFO is a list of (heading id depends-on blocks) for each task."
   (let ((helper-buffer (get-buffer-create "*Org GTD Project Dependencies*")))
     (with-current-buffer helper-buffer
       (setq buffer-read-only nil)
       (erase-buffer)
-      
+
       ;; Build and insert content
-      (insert (org-gtd-clarify--format-helper-content project-name task-info))
+      (insert (org-gtd-clarify--format-helper-content proj-name task-info))
       
       (setq buffer-read-only t)
       (goto-char (point-min)))
@@ -421,11 +421,11 @@ TASK-INFO is a list of (heading id depends-on blocks) for each task."
     (display-buffer helper-buffer
                     '(display-buffer-in-side-window . ((side . right))))))
 
-(defun org-gtd-clarify--format-helper-content (project-name task-info)
+(defun org-gtd-clarify--format-helper-content (proj-name task-info)
   "Format the helper window content with project name and task relationships.
-PROJECT-NAME is the name of the project.
+PROJ-NAME is the name of the project.
 TASK-INFO is a list of (heading id depends-on blocks) for each task."
-  (let ((content (format "Project name: %s\n\n" (or project-name "Unknown Project")))
+  (let ((content (format "Project name: %s\n\n" (or proj-name "Unknown Project")))
         (orphaned '()))
     
     ;; Process each task and build relationship strings

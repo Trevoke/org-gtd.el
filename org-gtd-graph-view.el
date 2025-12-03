@@ -79,15 +79,15 @@ Can be toggled with `org-gtd-graph-toggle-render-mode'.")
 
 ;;;; Buffer Management
 
-(defun org-gtd-graph-view--buffer-name (project-name)
-  "Generate buffer name for PROJECT-NAME graph view."
-  (format "*Org GTD Graph: %s*" project-name))
+(defun org-gtd-graph-view--buffer-name (proj-name)
+  "Generate buffer name for PROJ-NAME graph view."
+  (format "*Org GTD Graph: %s*" proj-name))
 
 (defun org-gtd-graph-view-create (project-marker)
   "Create or update graph view for project at PROJECT-MARKER."
-  (let* ((project-name (org-with-point-at project-marker
+  (let* ((proj-name (org-with-point-at project-marker
                          (org-get-heading t t t t)))
-         (buffer-name (org-gtd-graph-view--buffer-name project-name))
+         (buffer-name (org-gtd-graph-view--buffer-name proj-name))
          (buffer (get-buffer-create buffer-name)))
 
     (with-current-buffer buffer
@@ -478,7 +478,7 @@ Removes both blockers (depends on) and dependents (blocks)."
 ;;;; Helper Functions
 
 (defun org-gtd-graph-view--get-all-tasks ()
-  "Get all tasks from org-agenda-files as completion list.
+  "Get all tasks from `org-agenda-files' as completion list.
 Returns list of (title . id) cons cells for tasks with IDs."
   (let (tasks)
     (org-map-entries
