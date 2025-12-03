@@ -29,6 +29,8 @@
 
 ;;;; Requirements
 
+(require 'dag-draw)
+(require 'dag-draw-core)  ; TODO: Remove after dag-draw publishes fix to MELPA
 (require 'org-gtd-graph-data)
 (require 'org-gtd-svg-render)  ; For color/opacity/tooltip functions
 (require 'org-gtd-core)  ; For org-gtd-keywords--* functions
@@ -109,10 +111,6 @@ FORMAT should be \\='svg or \\='ascii.
 SELECTED-NODE-ID, if provided, highlights that node.
 
 Returns rendered string (SVG XML or ASCII art)."
-  (require 'dag-draw)
-  (declare-function dag-draw-create-from-spec "dag-draw")
-  (declare-function dag-draw-layout-graph "dag-draw")
-  (declare-function dag-draw-render-graph "dag-draw")
   (let* ((spec (org-gtd-dag-draw-translate org-gtd-graph selected-node-id))
          (dd-graph (apply #'dag-draw-create-from-spec spec)))
     (dag-draw-layout-graph dd-graph)
