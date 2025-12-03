@@ -31,6 +31,8 @@
 
 (require 'org-gtd-core)
 
+(declare-function org-gtd-inbox-path "org-gtd-files" ())
+
 ;;;; Constants
 
 (defconst org-gtd--agenda-functions (apropos-internal "org-agenda" #'commandp)

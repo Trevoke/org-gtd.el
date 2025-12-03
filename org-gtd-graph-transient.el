@@ -35,6 +35,8 @@
 (require 'org-gtd-archive)
 (require 'org-gtd-accessors)
 
+(declare-function org-gtd-tickler "org-gtd-tickler" (&optional reminder-date))
+
 ;;;; Main Transient Menu
 
 ;;;###autoload (autoload 'org-gtd-graph-transient-main "org-gtd-graph-transient" nil t)
@@ -820,7 +822,8 @@ If NEW-BLOCKER-IDS is empty, adds task to project's FIRST_TASKS."
           (mapcar (lambda (task-id)
                    (cons task-id (and (member task-id current-blockers) t)))
                  valid-candidates)))
-  (org-gtd-graph-modify-blockers-menu))
+  (with-no-warnings
+    (org-gtd-graph-modify-blockers-menu)))
 
 (defun org-gtd-graph--modify-successors-internal (task-id new-successor-ids project-marker)
   "Set TASK-ID's successors in PROJECT-MARKER's context to NEW-SUCCESSOR-IDS.
@@ -939,7 +942,8 @@ Updates FIRST_TASKS for affected successors based on their blocker status."
           (mapcar (lambda (task-id)
                    (cons task-id (and (member task-id current-successors) t)))
                  valid-candidates)))
-  (org-gtd-graph-modify-successors-menu))
+  (with-no-warnings
+    (org-gtd-graph-modify-successors-menu)))
 
 (defun org-gtd-graph-remove-task ()
   "Remove task from project with intelligent rewiring.
@@ -1041,7 +1045,8 @@ Calls org-gtd-tickler which will detect it's on a project heading
 and move the entire project with all its tasks to the tickler."
   (interactive)
   (org-with-point-at org-gtd-graph-view--project-marker
-    (call-interactively #'org-gtd-tickler)))
+    (with-no-warnings
+      (call-interactively #'org-gtd-tickler))))
 
 ;;;; Footer
 

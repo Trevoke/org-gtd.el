@@ -31,6 +31,11 @@
 (require 'org-macs)
 (require 'ffap)
 
+(declare-function org-heading-components "org" ())
+(declare-function org-id-add-location "org-id" (id file))
+(declare-function org-entry-put "org" (pom property value))
+(declare-function org-entry-get "org" (pom property &optional inherit literal-nil))
+
 ;;;; Commands
 
 (defun org-gtd-id-get-create (&optional pom)

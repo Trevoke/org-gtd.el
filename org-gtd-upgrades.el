@@ -32,6 +32,9 @@
 (require 'org-gtd-types)
 (require 'org-gtd-habit)
 
+(declare-function org-gtd-project--setup-dependencies "org-gtd-projects" (project-marker))
+(declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects" (project-marker))
+
 ;;;; Commands
 
 (defun org-gtd-upgrade-v2-to-v3 ()

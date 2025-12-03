@@ -42,6 +42,8 @@
 (require 'org-gtd-configure)
 (require 'org-gtd-files)
 
+(declare-function org-gtd-graph-view-mode "org-gtd-graph-view")
+
 ;;;; Customization
 
 (defcustom org-gtd-graph-render-mode 'svg

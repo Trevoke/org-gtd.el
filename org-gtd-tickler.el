@@ -35,6 +35,7 @@
 (declare-function org-gtd-organize--call 'org-gtd-organize)
 (declare-function org-gtd-organize-apply-hooks 'org-gtd-organize)
 (declare-function org-gtd-organize--update-in-place 'org-gtd-organize)
+(declare-function org-gtd-project-incubate "org-gtd-projects" (project-marker review-date))
 
 ;;;; Constants
 

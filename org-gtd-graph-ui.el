@@ -35,6 +35,7 @@
 
 ;; Forward declarations to avoid circular dependency
 (declare-function org-gtd-graph-view-refresh "org-gtd-graph-view")
+(declare-function org-gtd-graph-nodes "org-gtd-graph-data" (graph))
 
 ;;;; Customization
 

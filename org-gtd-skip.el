@@ -30,6 +30,10 @@
 
 (require 'org-gtd-types)
 
+(declare-function org-entry-get "org" (pom property &optional inherit literal-nil))
+(declare-function org-end-of-subtree "org" (&optional invisible-ok to-heading))
+(declare-function org-agenda-skip-entry-if "org-agenda" (&rest conditions))
+
 ;;;; Functions
 
 (defun org-gtd-skip-unless-in-progress ()

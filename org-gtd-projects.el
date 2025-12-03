@@ -42,6 +42,7 @@
 (declare-function org-gtd-organize--call 'org-gtd-organize)
 (declare-function org-gtd-organize-apply-hooks 'org-gtd-organize)
 (declare-function org-gtd-organize--update-in-place 'org-gtd-organize)
+(declare-function org-gtd-show-project-graph "org-gtd-graph-view" (project-marker))
 
 ;;;; Constants
 
