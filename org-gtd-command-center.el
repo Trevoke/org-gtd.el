@@ -29,30 +29,12 @@
 ;;;; Requirements
 
 (require 'transient)
-
-;; Declare functions to avoid loading everything at definition time
-(declare-function org-gtd-capture "org-gtd-capture")
-(declare-function org-gtd-process-inbox "org-gtd-process")
-(declare-function org-gtd-clarify-item "org-gtd-clarify")
-(declare-function org-gtd-engage "org-gtd-engage")
-(declare-function org-gtd-engage-grouped-by-context "org-gtd-engage")
-(declare-function org-gtd-show-all-next "org-gtd-engage")
-(declare-function org-gtd-reflect-area-of-focus "org-gtd-reflect")
-(declare-function org-gtd-reflect-someday-maybe "org-gtd-reflect")
-(declare-function org-gtd-reflect-upcoming-delegated "org-gtd-reflect")
-(declare-function org-gtd-reflect-completed-items "org-gtd-reflect")
-(declare-function org-gtd-reflect-completed-projects "org-gtd-reflect")
-(declare-function org-gtd-reflect-stuck-projects "org-gtd-reflect")
-(declare-function org-gtd-reflect-stuck-calendar-items "org-gtd-reflect")
-(declare-function org-gtd-reflect-stuck-delegated-items "org-gtd-reflect")
-(declare-function org-gtd-reflect-stuck-habit-items "org-gtd-reflect")
-(declare-function org-gtd-reflect-stuck-tickler-items "org-gtd-reflect")
-(declare-function org-gtd-reflect-stuck-single-action-items "org-gtd-reflect")
-(declare-function org-gtd-reflect-missed-engagements "org-gtd-reflect")
-(declare-function org-gtd-reflect-missed-calendar "org-gtd-reflect")
-(declare-function org-gtd-reflect-missed-delegated "org-gtd-reflect")
-(declare-function org-gtd-reflect-missed-projects "org-gtd-reflect")
-(declare-function org-gtd-archive-completed-items "org-gtd-archive")
+(require 'org-gtd-archive)
+(require 'org-gtd-capture)
+(require 'org-gtd-clarify)
+(require 'org-gtd-engage)
+(require 'org-gtd-process)
+(require 'org-gtd-reflect)
 
 ;;;; Main Transient
 
