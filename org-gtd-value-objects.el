@@ -50,12 +50,6 @@
 (require 'org-gtd-core)
 (require 'org-gtd-accessors)
 
-(declare-function 'org-gtd-keywords--is-done-p 'org-gtd-core)
-(declare-function 'org-gtd-keywords--canceled 'org-gtd-core)
-(declare-function 'org-gtd-keywords--wait 'org-gtd-core)
-(declare-function 'org-gtd-keywords--next 'org-gtd-core)
-(declare-function 'org-gtd-keywords--todo 'org-gtd-core)
-
 ;;;; TODO State Predicates
 
 (defun org-gtd-todo-state-is-active-p (state)

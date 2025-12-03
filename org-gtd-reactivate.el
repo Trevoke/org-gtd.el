@@ -29,6 +29,8 @@
 
 (require 'org-gtd-core)
 (require 'org-gtd-types)
+(require 'org-gtd-clarify)
+(require 'org-gtd-projects)
 
 ;;;; Functions
 
@@ -53,8 +55,6 @@ Saves ORG_GTD, TODO state, and all type-specific properties."
         (let ((org-prop (plist-get (cdr prop) :org-property)))
           (when-let ((val (org-entry-get (point) org-prop)))
             (org-entry-put (point) (concat "PREVIOUS_" org-prop) val)))))))
-
-(declare-function org-gtd-clarify-item "org-gtd-clarify")
 
 (defun org-gtd-restore-state ()
   "Restore GTD state from PREVIOUS_* properties.
@@ -98,8 +98,6 @@ Prompts user to confirm/update each type-specific property."
                               nil nil previous-val)))
                 (org-entry-put (point) org-prop new-val))
               (org-entry-delete (point) previous-key))))))))
-
-(declare-function org-gtd-project-reactivate "org-gtd-projects")
 
 ;;;###autoload
 (defun org-gtd-reactivate ()

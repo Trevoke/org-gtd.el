@@ -38,12 +38,7 @@
 (require 'org-gtd-id)
 (require 'org-gtd-ql)
 (require 'org-gtd-types)
-
-;;;; Forward declarations
-(declare-function org-gtd-keywords--next "org-gtd-core")
-(declare-function org-gtd-keywords--wait "org-gtd-core")
-(declare-function org-gtd-keywords--done "org-gtd-core")
-(declare-function org-gtd-keywords--canceled "org-gtd-core")
+(require 'org-gtd-core)
 
 (defun org-gtd-prompt-for-active-date (prompt)
   "Prompt the user for a date and return it formatted as an active timestamp."

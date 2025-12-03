@@ -33,8 +33,7 @@
 (require 'org-gtd-core)
 (require 'org-gtd-agenda)
 (require 'org-gtd-files)
-
-(declare-function org-gtd-projects--collect-tasks-by-graph "org-gtd-projects")
+(require 'org-gtd-projects)
 
 ;;;; Customization
 

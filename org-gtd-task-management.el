@@ -30,28 +30,15 @@
 ;;;; Requirements
 
 (require 'org)
-
-(declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects")
 (require 'org-gtd-core)
-
-(declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects")
 (require 'org-gtd-id)
-
-(declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects")
 (require 'org-gtd-configure)
-
-(declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects")
 (require 'org-gtd-refile)
-
-(declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects")
 (require 'org-gtd-single-action)
-
-(declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects")
 (require 'org-gtd-accessors)
-
-(declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects")
 (require 'org-gtd-dependencies)
 
+;; Cycle: org-gtd-projects requires org-gtd-task-management
 (declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects")
 
 ;;;; Interactive Commands

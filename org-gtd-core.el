@@ -32,12 +32,13 @@
 (require 'org-gtd-agenda-property)
 
 (require 'org-gtd-backward-compatibility)
+(require 'org-gtd-types)
 
 ;;;; Forward declarations
 (defvar org-gtd-archive-location)
 (defvar org-gtd-projects)
+;; Cycle: org-gtd-projects requires org-gtd-core
 (declare-function org-gtd-stuck-projects "org-gtd-projects")
-(declare-function org-gtd-type-property "org-gtd-types")
 
 ;;;; Essential variables for autoload compatibility
 ;; These provide fallback values when the full modules aren't loaded

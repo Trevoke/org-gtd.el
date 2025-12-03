@@ -44,9 +44,8 @@
 (require 'org)
 (require 'org-gtd-core)
 
+;; Cycle: org-gtd-value-objects requires org-gtd-accessors
 (declare-function org-gtd-todo-state-is-active-p "org-gtd-value-objects")
-(declare-function org-gtd-keywords--is-done-p "org-gtd-core")
-(declare-function org-gtd-keywords--canceled "org-gtd-core")
 
 ;;;; Property Readers
 
