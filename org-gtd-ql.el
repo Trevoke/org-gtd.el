@@ -31,7 +31,6 @@
 
 (declare-function org-gtd-projects--has-active-tasks-p "org-gtd-projects")
 (declare-function org-gtd-projects--is-stuck-p "org-gtd-projects")
-(declare-function org-ql--normalize-query "org-ql")
 
 (org-ql-defpred property-ts< (property greater-ts)
   "Checks whether a timestamp is earlier than a given date."

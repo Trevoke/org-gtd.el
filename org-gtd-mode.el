@@ -30,7 +30,7 @@
 (require 'org-edna)
 
 (require 'org-gtd-core)
-(require 'org-gtd-files)
+(require 'org-gtd-capture)
 
 ;;;; Constants
 
