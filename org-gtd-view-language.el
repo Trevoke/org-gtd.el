@@ -313,22 +313,25 @@ VALUE can be:
   past-day   - done in last day
   past-week  - done in last week
   past-month - done in last month
-  past-year  - done in last year"
+  past-year  - done in last year
+
+Note: org-ql expects numeric relative days (e.g., -7 for 7 days ago),
+not string formats like \"-7d\"."
   (cond
    ((eq value t)
     (list '(done)))
    ((eq value 'recent)
-    (list '(closed :from "-7d")))
+    (list '(closed :from -7)))
    ((eq value 'today)
     (list '(closed :on "today")))
    ((eq value 'past-day)
-    (list '(closed :from "-1d")))
+    (list '(closed :from -1)))
    ((eq value 'past-week)
-    (list '(closed :from "-1w")))
+    (list '(closed :from -7)))
    ((eq value 'past-month)
-    (list '(closed :from "-1m")))
+    (list '(closed :from -30)))
    ((eq value 'past-year)
-    (list '(closed :from "-1y")))
+    (list '(closed :from -365)))
    (t (error "Unknown done spec: %s" value))))
 
 (defun org-gtd-view-lang--translate-not-done-filter (value)

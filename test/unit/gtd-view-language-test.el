@@ -92,6 +92,24 @@
            (not (done)))
      (org-gtd-view-lang--translate-to-org-ql gtd-view-spec))))
 
+(deftest view-lang/scheduled-today-filter ()
+  "Translates scheduled=today filter."
+  (let ((gtd-view-spec
+         '((name . "Scheduled Today")
+           (filters . ((scheduled . today))))))
+    (assert-equal
+     '(and (scheduled :on "today"))
+     (org-gtd-view-lang--translate-to-org-ql gtd-view-spec))))
+
+(deftest view-lang/not-done-filter ()
+  "Translates not-done=t filter."
+  (let ((gtd-view-spec
+         '((name . "Incomplete Items")
+           (filters . ((not-done . t))))))
+    (assert-equal
+     '(and (not (done)))
+     (org-gtd-view-lang--translate-to-org-ql gtd-view-spec))))
+
 ;;; Complex Scenarios
 
 (deftest view-lang/multiple-time-type-filters ()
@@ -269,7 +287,7 @@
          '((name . "Recently Completed")
            (done . recent))))
     (assert-equal
-     '(and (closed :from "-7d"))
+     '(and (closed :from -7))
      (org-gtd-view-lang--translate-to-org-ql done-spec))))
 
 (deftest view-lang/done-on-today ()
@@ -297,7 +315,7 @@
          '((name . "Recently Completed Items")
            (done . past-week))))
     (assert-equal
-     '(and (closed :from "-1w"))
+     '(and (closed :from -7))
      (org-gtd-view-lang--translate-to-org-ql recent-completed-spec))))
 
 ;;; Project Type Filters Without Level Constraints
@@ -378,6 +396,60 @@
                 (or (property-empty-or-missing "DELEGATED_TO")
                     (property-invalid-timestamp "ORG_GTD_TIMESTAMP"))))
      (org-gtd-view-lang--translate-to-org-ql stuck-delegated-spec))))
+
+(deftest view-lang/stuck-tickler-type ()
+  "Translates stuck-tickler computed type."
+  (let ((stuck-tickler-spec
+         '((name . "Stuck Tickler Items")
+           (type . stuck-tickler))))
+    (assert-equal
+     '(and (and (property "ORG_GTD" "Tickler")
+                (property-invalid-timestamp "ORG_GTD_TIMESTAMP")))
+     (org-gtd-view-lang--translate-to-org-ql stuck-tickler-spec))))
+
+(deftest view-lang/stuck-habit-type ()
+  "Translates stuck-habit computed type."
+  (let ((stuck-habit-spec
+         '((name . "Stuck Habit Items")
+           (type . stuck-habit))))
+    (assert-equal
+     '(and (and (property "ORG_GTD" "Habit")
+                (property-invalid-timestamp "SCHEDULED")))
+     (org-gtd-view-lang--translate-to-org-ql stuck-habit-spec))))
+
+;;; Who Filter Tests
+
+(deftest view-lang/who-specific-person ()
+  "Translates who filter for specific person."
+  (let ((gtd-view-spec
+         '((name . "Delegated to Alice")
+           (type . delegated)
+           (who . "Alice"))))
+    (assert-equal
+     `(and (property "ORG_GTD" "Delegated")
+           (todo ,(org-gtd-keywords--wait))
+           (property "DELEGATED_TO" "Alice"))
+     (org-gtd-view-lang--translate-to-org-ql gtd-view-spec))))
+
+(deftest view-lang/who-nil-missing ()
+  "Translates who=nil to find missing delegatee."
+  (let ((gtd-view-spec
+         '((name . "Missing Delegatee")
+           (type . delegated)
+           (who . nil))))
+    (assert-equal
+     `(and (property "ORG_GTD" "Delegated")
+           (todo ,(org-gtd-keywords--wait))
+           (property-empty-or-missing "DELEGATED_TO"))
+     (org-gtd-view-lang--translate-to-org-ql gtd-view-spec))))
+
+(deftest view-lang/who-requires-type ()
+  "Signals error when who filter is used without type."
+  (let ((gtd-view-spec
+         '((name . "Invalid Who")
+           (who . "Alice"))))
+    (assert-raises 'user-error
+      (org-gtd-view-lang--translate-to-org-ql gtd-view-spec))))
 
 ;;; Type-Based Filters Using org-gtd-types
 
@@ -462,6 +534,15 @@
            (filters . ((type . habit))))))
     (assert-equal
      '(and (property "ORG_GTD" "Habit"))
+     (org-gtd-view-lang--translate-to-org-ql view-spec))))
+
+(deftest view-lang/type-someday ()
+  "Translates type=someday."
+  (let ((view-spec
+         '((name . "Someday Items")
+           (filters . ((type . someday))))))
+    (assert-equal
+     '(and (property "ORG_GTD" "Someday"))
      (org-gtd-view-lang--translate-to-org-ql view-spec))))
 
 (deftest view-lang/type-unknown-errors ()
@@ -699,7 +780,7 @@
          '((name . "Recently Completed")
            (done . recent))))
     (assert-equal
-     '(and (closed :from "-7d"))
+     '(and (closed :from -7))
      (org-gtd-view-lang--translate-to-org-ql view-spec))))
 
 (deftest view-lang/done-today ()
@@ -717,7 +798,7 @@
          '((name . "Completed Yesterday")
            (done . past-day))))
     (assert-equal
-     '(and (closed :from "-1d"))
+     '(and (closed :from -1))
      (org-gtd-view-lang--translate-to-org-ql view-spec))))
 
 (deftest view-lang/done-past-week ()
@@ -726,7 +807,7 @@
          '((name . "Completed This Week")
            (done . past-week))))
     (assert-equal
-     '(and (closed :from "-1w"))
+     '(and (closed :from -7))
      (org-gtd-view-lang--translate-to-org-ql view-spec))))
 
 (deftest view-lang/done-past-month ()
@@ -735,7 +816,7 @@
          '((name . "Completed This Month")
            (done . past-month))))
     (assert-equal
-     '(and (closed :from "-1m"))
+     '(and (closed :from -30))
      (org-gtd-view-lang--translate-to-org-ql view-spec))))
 
 (deftest view-lang/done-past-year ()
@@ -744,7 +825,7 @@
          '((name . "Completed This Year")
            (done . past-year))))
     (assert-equal
-     '(and (closed :from "-1y"))
+     '(and (closed :from -365))
      (org-gtd-view-lang--translate-to-org-ql view-spec))))
 
 (deftest view-lang/done-t-unchanged ()

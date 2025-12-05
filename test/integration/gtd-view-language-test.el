@@ -289,6 +289,30 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
     (org-back-to-heading t)
     (assert-true (org-gtd-view-lang--skip-unless-calendar-or-habit))))
 
+;;; Done Filter Integration Tests
+
+(deftest view-lang-int/done-recent-displays-closed-items ()
+  "Displays recently completed items using done=recent."
+  (with-current-buffer (org-gtd--default-file)
+    (insert "* DONE Completed Task
+CLOSED: ")
+    ;; Insert a recent closing timestamp
+    (insert (format-time-string "[%Y-%m-%d %a %H:%M]\n"))
+    (insert ":PROPERTIES:
+:ORG_GTD: Actions
+:END:
+")
+    (basic-save-buffer))
+
+  (org-gtd-view-show
+   '((name . "Recently Completed")
+     (done . recent)))
+
+  (let ((agenda-buffer (get-buffer org-agenda-buffer-name)))
+    (assert-true agenda-buffer)
+    (with-current-buffer agenda-buffer
+      (assert-match "Completed Task" (buffer-string)))))
+
 (provide 'gtd-view-language-integration-test)
 
 ;;; gtd-view-language-test.el ends here
