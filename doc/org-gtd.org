@@ -380,7 +380,7 @@ This is the simplest possible configuration for org-gtd. Copy this entire block 
 ;; Keybinding for clarify map
 ;; This only works when you're in a clarify buffer
 (with-eval-after-load 'org-gtd
-  (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize))
+  (define-key org-gtd-clarify-mode-map (kbd "C-c c") 'org-gtd-organize))
 
 ;; Quick task actions in agenda view
 (with-eval-after-load 'org-agenda
@@ -423,7 +423,7 @@ Then add this to your ~config.el~:
          :desc "Show all next"  "n"  #'org-gtd-show-all-next
          :desc "Stuck projects" "s"  #'org-gtd-reflect-stuck-projects))
   ;; Clarify map binding
-  (map! :map org-gtd-clarify-map
+  (map! :map org-gtd-clarify-mode-map
         :desc "Organize this item" "C-c c" #'org-gtd-organize)
   ;; Quick task actions in agenda view
   (map! :map org-agenda-mode-map
@@ -469,7 +469,7 @@ If you use Spacemacs, add this to your ~dotspacemacs/user-config~ function:
     "od s" 'org-gtd-reflect-stuck-projects)
   ;; Clarify map binding
   (with-eval-after-load 'org-gtd
-    (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize))
+    (define-key org-gtd-clarify-mode-map (kbd "C-c c") 'org-gtd-organize))
   ;; Quick task actions in agenda view
   (with-eval-after-load 'org-agenda
     (define-key org-agenda-mode-map (kbd "C-c .") 'org-gtd-agenda-transient)))
@@ -609,8 +609,8 @@ Or if using ~use-package~ / ~use-package!~:
 *Cause*: Keybindings not defined, or defined incorrectly for your environment.
 
 *Solution*:
-- *Vanilla Emacs*: Use ~global-set-key~ for global commands, ~define-key org-gtd-clarify-map~ for clarify buffer commands
-- *Doom Emacs*: Use ~map!~ with ~:leader~ prefix for global, ~:map org-gtd-clarify-map~ for clarify buffer
+- *Vanilla Emacs*: Use ~global-set-key~ for global commands, ~define-key org-gtd-clarify-mode-map~ for clarify buffer commands
+- *Doom Emacs*: Use ~map!~ with ~:leader~ prefix for global, ~:map org-gtd-clarify-mode-map~ for clarify buffer
 - *Spacemacs*: Use ~spacemacs/set-leader-keys~ for global, ~define-key~ for clarify buffer
 
 The clarify binding (~C-c c~) *only works in clarify buffers* - you must run ~M-x org-gtd-process-inbox~ first.
@@ -674,7 +674,7 @@ These only work when you're in a *clarify buffer* (during inbox processing). The
 
 #+begin_src emacs-lisp
 ;; This only works in clarify buffers:
-(define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize)
+(define-key org-gtd-clarify-mode-map (kbd "C-c c") 'org-gtd-organize)
 #+end_src
 
 *When you're in a clarify buffer:*
@@ -799,7 +799,7 @@ These settings are *required* for Org GTD to work properly:
 There's an important keymap you'll want to make the flow of processing the inbox smoother. To limit impact on your emacs configuration, there is a specific keymap you can use. The function you'll want to bind is ~org-gtd-organize~. I suggest ~C-c c~, as in the following example.
 
 #+begin_src elisp
-(define-key org-gtd-clarify-map (kbd "C-c c") #'org-gtd-organize)
+(define-key org-gtd-clarify-mode-map (kbd "C-c c") #'org-gtd-organize)
 #+end_src
 
 For other keybindings, do what you need. My bindings use ~C-c d~ as a prefix, i.e.:
@@ -851,7 +851,7 @@ If you are a Doom Emacs user, then your configuration may look something like th
            :desc "Process inbox"  "p"  #'org-gtd-process-inbox
            :desc "Show all next"  "n"  #'org-gtd-show-all-next
            :desc "Stuck projects" "s"  #'org-gtd-reflect-stuck-projects))
-    (map! :map org-gtd-clarify-map
+    (map! :map org-gtd-clarify-mode-map
           :desc "Organize this item" "C-c c" #'org-gtd-organize))
 #+END_SRC
 * Getting Started with Org GTD
@@ -1358,7 +1358,7 @@ The only exception will be a project, that will look like a top-level heading fo
 :PROPERTIES:
 :CUSTOM_ID: options-and-behaviors-related-to-clarification-step
 :END:
-The clarify buffers are ~org-mode~ buffers that use the minor mode ~org-gtd-clarify-mode~. There is a keymap, ~org-gtd-clarify-map~, that you can use to bind useful
+The clarify buffers use the major mode ~org-gtd-clarify-mode~, which is derived from ~org-mode~. There is a keymap, ~org-gtd-clarify-mode-map~, that you can use to bind useful
 
 While clarifying, you may find it useful to see your GTD horizons. You can use:
 - ~org-gtd-clarify-toggle-horizons-window~ :: a function that toggles the display of the horizons buffer
@@ -4089,7 +4089,7 @@ C-c C-c to save
 - Runs organize hooks
 - Refiles item to appropriate location
 
-*Important*: This only works in clarify buffers (org-gtd-wip-mode). It won't work in regular org files.
+*Important*: This only works in clarify buffers (org-gtd-clarify-mode). It won't work in regular org files.
 
 *Item types available*:
 - [P] Project

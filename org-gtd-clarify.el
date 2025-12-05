@@ -157,9 +157,15 @@ Called by `org-gtd-organize--call' when non-nil.")
 
 ;;;;; Keymaps
 
-(defvar org-gtd-clarify-map (make-sparse-keymap))
+(defvar org-gtd-clarify-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c C-k") #'org-gtd-clarify-stop)
+    map)
+  "Keymap for `org-gtd-clarify-mode'.")
 
-(define-key org-gtd-clarify-map (kbd "C-c C-k") #'org-gtd-clarify-stop)
+;; Backward compatibility alias (obsolete)
+(defvaralias 'org-gtd-clarify-map 'org-gtd-clarify-mode-map)
+(make-obsolete-variable 'org-gtd-clarify-map 'org-gtd-clarify-mode-map "4.0")
 
 ;; code to make windows atomic, from emacs manual
 ;; (let ((window (split-window-right)))
@@ -174,22 +180,23 @@ Called by `org-gtd-organize--call' when non-nil.")
 ;; dedicated side window
 ;; (display-buffer-in-side-window (get-buffer "horizons.org") '((side . right) (dedicated . t)))
 
-;;;; Macros
+;;;; Modes
 
 ;;;###autoload
-(define-minor-mode org-gtd-clarify-mode
-  "Enable GTD clarification features in the current buffer.
-Provides keybindings and interface for clarifying GTD items before
-organizing them."
-  :lighter " GPM"
-  :keymap org-gtd-clarify-map
+(define-derived-mode org-gtd-clarify-mode org-mode "GTD-Clarify"
+  "Major mode for GTD item clarification.
+Derived from `org-mode' and provides keybindings and interface for
+clarifying GTD items before organizing them.
+
+\\{org-gtd-clarify-mode-map}"
   :group 'org-gtd-clarify
-  (if org-gtd-clarify-mode
-      (setq-local
-       header-line-format
-       (substitute-command-keys
-        "\\<org-gtd-clarify-map>Clarify item.  Use `\\[org-gtd-organize]' to file it when finished, or `\\[org-gtd-clarify-stop]' to cancel."))
-    (setq-local header-line-format nil)))
+  (setq-local org-gtd--loading-p t)
+  (setq-local
+   header-line-format
+   (substitute-command-keys
+    "\\<org-gtd-clarify-mode-map>Clarify item.  \\[org-gtd-organize] to file, \\[org-gtd-clarify-stop] to cancel."))
+  ;; Enable auto-save for crash protection (absorbed from wip-mode)
+  (auto-save-mode 1))
 
 ;;;; Commands
 
@@ -223,9 +230,10 @@ WINDOW-CONFIG is the window config to set after clarification finishes."
          (source-heading-marker (or marker (point-marker)))
          (clarify-id (org-gtd-id-get-create source-heading-marker))
          (processing-buffer (org-gtd-wip--get-buffer clarify-id)))
-    (org-gtd-wip--maybe-initialize-buffer-contents source-heading-marker processing-buffer)
+    (org-gtd-clarify--initialize-buffer-contents source-heading-marker processing-buffer)
     (with-current-buffer processing-buffer
-      (org-gtd-clarify-mode 1)
+      (unless (eq major-mode 'org-gtd-clarify-mode)
+        (org-gtd-clarify-mode))
       (setq-local org-gtd-clarify--window-config window-config
                   org-gtd-clarify--source-heading-marker source-heading-marker
                   org-gtd-clarify--clarify-id clarify-id
@@ -320,7 +328,7 @@ Only displays when `org-gtd-clarify-display-helper-buffer' is non-nil and
 the buffer contains more than one task heading."
   (interactive)
   (when (and org-gtd-clarify-display-helper-buffer
-             (derived-mode-p 'org-gtd-wip-mode))
+             (derived-mode-p 'org-gtd-clarify-mode))
     (let ((proj-name (org-gtd-clarify--extract-project-name))
           (task-info (org-gtd-clarify--collect-task-information)))
 
@@ -330,6 +338,22 @@ the buffer contains more than one task heading."
          proj-name task-info)))))
 
 ;;;;; Private
+
+(defun org-gtd-clarify--initialize-buffer-contents (marker buffer)
+  "Prepare BUFFER with org heading at MARKER if possible.
+If BUFFER is empty, copy org heading at MARKER and paste inside BUFFER,
+then remove org-gtd state properties to prepare for fresh organization."
+  (with-temp-message ""
+    (when (= (buffer-size buffer) 0)
+      (let ((last-command nil))
+        (org-with-point-at marker
+          (org-copy-subtree)))
+      (with-current-buffer buffer
+        (org-paste-subtree)
+        (org-entry-delete (point) org-gtd-timestamp)
+        (org-entry-delete (point) (org-gtd-type-property 'delegated :who))
+        (org-entry-delete (point) org-gtd-prop-style)
+        (org-entry-delete (point) org-gtd-prop-project)))))
 
 (defun org-gtd-clarify--get-or-create-horizons-view ()
   "Get or create read-only indirect buffer for horizons file."

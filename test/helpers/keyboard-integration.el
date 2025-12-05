@@ -19,8 +19,8 @@ This uses the critical org-gtd-process-inbox command while checking keyboard acc
 
     ;; 3. VERIFY keyboard integration points
     (with-wip-buffer
-      ;; Verify WIP buffer is in correct mode
-      (unless org-gtd-clarify-mode
+      ;; Verify WIP buffer is in correct mode (now a major mode)
+      (unless (eq major-mode 'org-gtd-clarify-mode)
         (error "WIP buffer not in org-gtd-clarify-mode"))
 
       ;; Verify keyboard binding exists

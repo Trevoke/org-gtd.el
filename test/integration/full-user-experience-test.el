@@ -74,7 +74,7 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
   ;; Verify keyboard integration in WIP buffer
   (with-wip-buffer
     (assert-equal #'org-gtd-organize (lookup-key org-gtd-clarify-map (kbd "C-c c")))
-    (assert-true org-gtd-clarify-mode)
+    (assert-equal 'org-gtd-clarify-mode major-mode)
     (organize-as-single-action))
 
   ;; Verify both sessions worked

@@ -20,7 +20,8 @@
 
 ;;; Commentary:
 ;;
-;; The WIP buffer needs a custom major mode.
+;; Provides helper functions for managing temporary clarification buffers.
+;; The actual major mode is in org-gtd-clarify.el.
 ;;
 ;;; Code:
 
@@ -34,28 +35,12 @@
 
 ;;;; Constants
 
-(defconst org-gtd-wip--prefix "Org-GTD WIP")
+(defconst org-gtd-wip--prefix "Org-GTD Clarify")
 
 ;;;; Variables
 
 (defvar org-gtd-wip--temp-files (make-hash-table :test 'equal)
   "Hash table mapping buffer IDs to temporary file paths.")
-
-;;;; Modes
-
-;;;###autoload
-(define-derived-mode org-gtd-wip-mode org-mode "GTD-WIP"
-  "Major mode for GTD work-in-progress clarification buffers.
-Derived from `org-mode' and uses temporary files for content persistence.
-
-\\[org-gtd-wip-mode-map]"
-  (setq-local org-gtd--loading-p t)
-  (setq-local
-   header-line-format
-   (substitute-command-keys
-    "\\<org-gtd-wip-mode-map>Clarify item.  Use `\\[org-gtd-organize]' to file it appropriately when finished."))
-  ;; Enable auto-save for crash protection
-  (auto-save-mode 1))
 
 ;;;; Macros
 
@@ -72,16 +57,15 @@ Derived from `org-mode' and uses temporary files for content persistence.
   (format "*%s: %s*" org-gtd-wip--prefix id))
 
 (defun org-gtd-wip--get-buffer (org-id)
-  "Get or create a WIP buffer with temp file for ORG-ID."
+  "Get or create a WIP buffer with temp file for ORG-ID.
+Returns a buffer in `org-mode'.  The caller is responsible for
+activating any additional modes (e.g., `org-gtd-clarify-mode')."
   ;; Check if we already have a temp file for this ID
   (let ((existing-file (gethash org-id org-gtd-wip--temp-files)))
     (if (and existing-file (file-exists-p existing-file))
         ;; Reuse existing temp file
         (let ((buffer (find-file-noselect existing-file)))
           (with-current-buffer buffer
-            (unless (eq major-mode #'org-gtd-wip-mode)
-              ;; v4: Mode doesn't need macro bindings, just call directly
-              (org-gtd-wip-mode))
             ;; Ensure buffer has the correct name
             (rename-buffer (org-gtd-wip--buffer-name org-id) t))
           buffer)
@@ -98,12 +82,9 @@ Derived from `org-mode' and uses temporary files for content persistence.
         ;; Track temp file for cleanup
         (puthash org-id temp-file org-gtd-wip--temp-files)
         (with-current-buffer buffer
-          (unless (eq major-mode #'org-gtd-wip-mode)
-            ;; v4: Mode doesn't need macro bindings, just call directly
-            (org-gtd-wip-mode))
           ;; Set a more user-friendly buffer name
-          (rename-buffer (org-gtd-wip--buffer-name org-id) t)
-          buffer)))))
+          (rename-buffer (org-gtd-wip--buffer-name org-id) t))
+        buffer))))
 
 (defun org-gtd-wip--get-buffers ()
   "Retrieve a list of Org GTD WIP buffers."
@@ -111,23 +92,6 @@ Derived from `org-mode' and uses temporary files for content persistence.
                 (string-search org-gtd-wip--prefix
                                (buffer-name buf)))
               (buffer-list)))
-
-(defun org-gtd-wip--maybe-initialize-buffer-contents (marker buffer)
-  "Prepare BUFFER with org heading at MARKER if possible.
-
-If BUFFER is empty, then copy org heading at MARKER and paste inside
- BUFFER."
-  (with-temp-message ""
-    (when (= (buffer-size buffer) 0)
-      (let ((last-command nil))
-        (org-with-point-at marker
-          (org-copy-subtree)))
-      (with-current-buffer buffer
-        (org-paste-subtree)
-        (org-entry-delete (point) org-gtd-timestamp)
-        (org-entry-delete (point) (org-gtd-type-property 'delegated :who))
-        (org-entry-delete (point) org-gtd-prop-style)
-        (org-entry-delete (point) org-gtd-prop-project)))))
 
 (defun org-gtd-wip--cleanup-temp-file (org-id)
   "Clean up temp file for ORG-ID."

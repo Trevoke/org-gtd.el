@@ -114,24 +114,22 @@ HEADING-TEXT is the heading content, ID is optional custom ID."
   (assert-equal "Long tex..."
                 (org-gtd-id-overlay--truncate-text "Long text here" 8)))
 
-;;; Integration Tests - WIP Mode
+;;; Integration Tests - Clarify Mode
 
-(deftest id-overlay/wip-enables-overlays-automatically ()
-  "Automatically enables overlays in WIP buffers."
+(deftest id-overlay/clarify-enables-overlays-automatically ()
+  "Automatically enables overlays in clarify buffers."
   (with-temp-buffer
-    (org-mode)
     (insert (ogt-create-test-heading-with-id "Buy groceries for the week [1/3]"))
-    (org-gtd-wip-mode)
+    (org-gtd-clarify-mode)
     (org-gtd-id-overlay-maybe-enable)
     (assert-true (bound-and-true-p org-gtd-id-overlay-mode))
     (assert-true (> (ogt-count-overlays-in-buffer) 0))))
 
-(deftest id-overlay/wip-disables-overlays-when-mode-disabled ()
-  "Disables overlays when WIP mode is disabled."
+(deftest id-overlay/clarify-disables-overlays-when-mode-disabled ()
+  "Disables overlays when clarify mode is disabled."
   (with-temp-buffer
-    (org-mode)
     (insert (ogt-create-test-heading-with-id "Test heading"))
-    (org-gtd-wip-mode)
+    (org-gtd-clarify-mode)
     (org-gtd-id-overlay-mode 1)
     (org-gtd-id-overlay-mode -1)
     (assert-nil org-gtd-id-overlay-mode)

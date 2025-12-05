@@ -1,6 +1,45 @@
 For posterity
 
 
+* 4.0.0 <- 3.x
+** IMPORTANT: Configure org-agenda-files
+org-gtd no longer manages ~org-agenda-files~ for you. You must add your GTD directory to ~org-agenda-files~ in your config:
+
+#+begin_src elisp
+;; Add GTD files to agenda (REQUIRED for v4)
+(setq org-agenda-files (list org-gtd-directory))
+
+;; Or if you have other agenda files too:
+(setq org-agenda-files (list "~/org/" org-gtd-directory))
+#+end_src
+
+Without this, your GTD items will not appear in agenda views.
+
+** Minimum Emacs version
+org-gtd 4.0 requires Emacs 28.1 or higher. Users on Emacs 27.x must stay on org-gtd 3.x.
+
+** Clarify mode changes
+~org-gtd-clarify-mode~ is now a major mode derived from ~org-mode~ (was a minor mode).
+The ~org-gtd-wip-mode~ has been removed entirely.
+
+** Update keybindings
+Replace ~org-gtd-clarify-map~ with ~org-gtd-clarify-mode-map~ in your config:
+
+| 3.x                    | 4.0                         |
+|------------------------+-----------------------------|
+| ~org-gtd-clarify-map~  | ~org-gtd-clarify-mode-map~  |
+
+Example:
+#+begin_src elisp
+;; Before (v3):
+(define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize)
+
+;; After (v4):
+(define-key org-gtd-clarify-mode-map (kbd "C-c c") 'org-gtd-organize)
+#+end_src
+
+The old name still works but is obsolete and will show compiler warnings.
+
 * 3.0.0 <- 2.2.0
 There's a lot here, so you may want to make yourself some tea. We have to cover support for org habits, upgrading data, key changes in the configuration, a change in the menu, and the rest of the API changes. And once that's done, you should head back to the [[#new-in-3.0][What's new in 3.0]] section to see what else is available for you!
 ** A note for doom emacs users

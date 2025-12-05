@@ -1,6 +1,15 @@
 * 4.0.0 - YYYY-MM-DD
 
 ** BREAKING CHANGES
+*** You must configure org-agenda-files
+org-gtd no longer manages ~org-agenda-files~ for you. Add your GTD directory to your config:
+
+#+begin_src elisp
+(setq org-agenda-files (list org-gtd-directory))
+#+end_src
+
+Without this, your GTD items will not appear in agenda views.
+
 *** Minimum Emacs version now 28.1
 org-gtd now requires Emacs 28.1 or higher due to transient.el dependency
 updating its minimum requirement.
@@ -8,6 +17,23 @@ updating its minimum requirement.
 *Users on Emacs 27.2 must remain on org-gtd 3.x.*
 
 To check your Emacs version: =M-x emacs-version=
+
+** Changed
+*** Clarify mode is now a major mode
+~org-gtd-clarify-mode~ is now a major mode derived from ~org-mode~ (was a minor mode).
+The internal ~org-gtd-wip-mode~ has been removed. This is an internal refactoring -
+user-facing behavior is unchanged.
+
+The keymap has been renamed from ~org-gtd-clarify-map~ to ~org-gtd-clarify-mode-map~
+(following Emacs naming conventions). The old name still works but is obsolete:
+
+#+begin_src elisp
+;; Old (still works, but deprecated):
+(define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize)
+
+;; New (recommended):
+(define-key org-gtd-clarify-mode-map (kbd "C-c c") 'org-gtd-organize)
+#+end_src
 
 ** Removed
 - Emacs 27.2 compatibility code and declarations
@@ -30,9 +56,6 @@ To check your Emacs version: =M-x emacs-version=
 - CI matrix updated to test on 28.2, 29.1, 30.1
 
 * 3.1.0 (unstable)
-** WIP buffer is now a major mode derived from org-mode
-No action is currently required. This does mean we make obsolete ~org-gtd-clarify-map~ in favor of ~org-gtd-wip-mode-map~.
-This handles #178 even though technically that is incorrect user code, but since no one thinks of org-mode buffers as being disconnected from files, this is probably a good idea anyway, and it gives me a clean place for additional setup in the WIP buffers.
 ** New variable to configure agenda prefix width in engage view
 ** Fix edge case of processing empty heading ( #169 )
 ** Better messages in minibuffer

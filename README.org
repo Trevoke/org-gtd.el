@@ -84,7 +84,7 @@ If you use ~use-package~, copy this entire block into your init file - it includ
    ("C-c d s" . org-gtd-reflect-stuck-projects)
 
    ;; Keybinding for organizing items (only works in clarify buffers)
-   :map org-gtd-clarify-map
+   :map org-gtd-clarify-mode-map
    ("C-c c" . org-gtd-organize)
 
    ;; Quick actions on tasks in agenda views (optional but recommended)
@@ -127,7 +127,7 @@ If you don't use ~use-package~, copy this into your init file and restart Emacs:
 
 ;; Keybinding for organizing items (only works in clarify buffers)
 (with-eval-after-load 'org-gtd
-  (define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize))
+  (define-key org-gtd-clarify-mode-map (kbd "C-c c") 'org-gtd-organize))
 
 ;; Quick actions on tasks in agenda views (optional but recommended)
 (with-eval-after-load 'org-agenda

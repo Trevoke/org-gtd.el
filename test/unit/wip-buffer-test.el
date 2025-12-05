@@ -50,13 +50,13 @@ Taken from https://emacs.stackexchange.com/a/62414/61"
                   (ogt--buffer-string (car (org-gtd-wip--get-buffers))))))
 
 (deftest wip/has-org-gtd-clarify-mode ()
-  "WIP buffer has the org-gtd-clarify-mode enabled."
+  "WIP buffer has the org-gtd-clarify-mode as major mode."
   (let ((source-buffer (ogt--temp-org-file-buffer "taskfile" "* This is the heading to clarify")))
     (with-current-buffer source-buffer
       (org-gtd-clarify-item))
     (let ((wip-buffer (car (org-gtd-wip--get-buffers))))
       (with-current-buffer wip-buffer
-        (assert-true (memq 'org-gtd-clarify-mode (wip-buffer-test--active-minor-modes)))))))
+        (assert-equal 'org-gtd-clarify-mode major-mode)))))
 
 (provide 'wip-buffer-test)
 

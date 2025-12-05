@@ -554,12 +554,11 @@
 
 ;;; Dependency Helper Window (Story 11)
 
-(deftest task-mgmt/dependency-helper-displays-in-wip-buffer ()
-  "Displays live dependency view in WIP buffer when org-gtd-clarify-display-helper-buffer is enabled."
+(deftest task-mgmt/dependency-helper-displays-in-clarify-buffer ()
+  "Displays live dependency view in clarify buffer when org-gtd-clarify-display-helper-buffer is enabled."
   (with-temp-buffer
-    ;; Create a WIP buffer with multiple tasks
-    (org-mode)
-    (org-gtd-wip-mode)
+    ;; Create a clarify buffer with multiple tasks
+    (org-gtd-clarify-mode)
 
     ;; Insert project structure with dependencies (disable ID overlays during insert)
     (let ((org-gtd-id-overlay-mode nil))

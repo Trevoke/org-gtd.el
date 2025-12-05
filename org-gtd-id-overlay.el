@@ -25,7 +25,7 @@
 ;; to improve the user experience during GTD clarification workflows.
 ;;
 ;; The overlays are clickable and provide navigation to the referenced headings.
-;; The feature integrates seamlessly with org-gtd-wip-mode and clarification.
+;; The feature integrates seamlessly with org-gtd-clarify-mode.
 
 ;;; Code:
 
@@ -394,18 +394,17 @@ BEGIN and END mark the affected region."
             (heading-end (or end (progn (org-end-of-subtree t) (point)))))
         (org-gtd-id-overlay--refresh-region heading-start heading-end)))))
 
-;;;; Integration with org-gtd-wip-mode
+;;;; Integration with org-gtd-clarify-mode
 
 ;;;###autoload
 (defun org-gtd-id-overlay-maybe-enable ()
   "Enable org-gtd-id-overlay-mode in appropriate contexts."
-  (when (and (derived-mode-p 'org-mode)
-             (eq major-mode 'org-gtd-wip-mode))
+  (when (derived-mode-p 'org-gtd-clarify-mode)
     (org-gtd-id-overlay-mode 1)))
 
-;; Add hook for automatic enabling in WIP mode
+;; Add hook for automatic enabling in clarify mode
 ;;;###autoload
-(add-hook 'org-gtd-wip-mode-hook #'org-gtd-id-overlay-maybe-enable)
+(add-hook 'org-gtd-clarify-mode-hook #'org-gtd-id-overlay-maybe-enable)
 
 ;;;; Footer
 
