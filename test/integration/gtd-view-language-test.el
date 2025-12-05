@@ -203,7 +203,7 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
 
   (org-gtd-view-show
    '((name . "Test View")
-     (filters . ((category . projects)))))
+     (type . project)))
 
   (let ((agenda-buffer (get-buffer org-agenda-buffer-name)))
     (assert-true agenda-buffer)
@@ -221,7 +221,7 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
 
   (org-gtd-view-show
    '((name . "My Custom View Name")
-     (filters . ((category . projects)))))
+     (type . project)))
 
   (let ((agenda-buffer (get-buffer org-agenda-buffer-name)))
     (assert-true agenda-buffer)
@@ -239,7 +239,7 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
 
   (org-gtd-view-show
    '((name . "Test View")
-     (filters . ((category . projects)))))
+     (type . project)))
 
   (let ((agenda-buffer (get-buffer org-agenda-buffer-name)))
     (with-current-buffer agenda-buffer

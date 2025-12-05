@@ -1053,16 +1053,13 @@ Here's the view we'll create:
 
 #+begin_src emacs-lisp
 '((name . "My Active Projects")
-  (filters . ((type . project)
-              (has-active-tasks . t))))
+  (type . active-project))
 #+end_src
 
 Let's break this down:
 
 - ~name~ :: What displays in the view header
-- ~filters~ :: What to include.
-  - ~type . project~ :: Only show project headings (not single actions)
-  - ~has-active-tasks . t~ :: Only projects with work remaining
+- ~type . active-project~ :: Show projects with at least one active task
 
 That's it! The View DSL translates this into an org-ql query and shows results.
 
@@ -1077,8 +1074,7 @@ Add this to your init file (after your org-gtd configuration):
     (interactive)
     (org-gtd-view-show
      '((name . "My Active Projects")
-       (filters . ((type . project)
-                   (has-active-tasks . t)))))))
+       (type . active-project)))))
 #+end_src
 
 Save your init file and reload it (~M-x eval-buffer~ or restart Emacs).
@@ -1136,8 +1132,7 @@ Try these variations to see how the View DSL works:
   (interactive)
   (org-gtd-view-show
    '((name . "All Projects")
-     (filters . ((type . project))))))
-     ;; Note: removed has-active-tasks filter
+     (type . project))))
 #+end_src
 
 *Show stuck projects:*
@@ -1148,8 +1143,7 @@ Try these variations to see how the View DSL works:
   (interactive)
   (org-gtd-view-show
    '((name . "Stuck Projects")
-     (filters . ((type . project)
-                 (is-stuck . t))))))
+     (type . stuck-project))))
 #+end_src
 
 *Show projects in a specific area of focus* (if you use areas):
@@ -1160,23 +1154,48 @@ Try these variations to see how the View DSL works:
   (interactive)
   (org-gtd-view-show
    '((name . "Work Projects")
-     (filters . ((type . project)
-                 (has-active-tasks . t)
-                 (area-of-focus . "Work"))))))
+     (type . active-project)
+     (area-of-focus . "Work"))))
 #+end_src
 
 *** Available Filters
 
+For the complete View DSL reference, see [[#view-dsl-reference][View DSL Filter Reference]].
+
 Here are common filters you can use in your views:
 
-- ~type~ :: Filter by GTD type: ~project~, ~next-action~, ~calendar~, ~tickler~, ~someday~, ~habit~
-- ~todo~ :: Filter by keyword: ~"NEXT"~, ~"TODO"~, ~"WAIT"~, ~"DONE"~, ~"CNCL"~
-- ~has-active-tasks~ :: Only items with active (non-done) tasks
-- ~is-stuck~ :: Projects that have tasks but no NEXT actions
-- ~scheduled~ :: Items scheduled (you can specify ranges)
-- ~deadline~ :: Items with deadlines
-- ~area-of-focus~ :: Filter by area (if you use GTD horizons)
-- ~property~ :: Filter by any org property
+*GTD Types:*
+- ~(type . next-action)~ :: Single actions ready to do
+- ~(type . delegated)~ :: Items delegated to others
+- ~(type . calendar)~ :: Time-specific appointments
+- ~(type . tickler)~ :: Time-based reminders
+- ~(type . someday)~ :: Someday/Maybe items
+- ~(type . project)~ :: Multi-step outcomes
+- ~(type . habit)~ :: Recurring routines
+
+*Computed Types:*
+- ~(type . active-project)~ :: Projects with at least one active task
+- ~(type . stuck-project)~ :: Projects with no NEXT/WAIT tasks
+- ~(type . completed-project)~ :: Projects with all tasks done
+- ~(type . incubated-project)~ :: Projects in Tickler or Someday/Maybe
+
+*Time Filters:*
+- ~(when . past)~ :: Type's timestamp in the past (requires type)
+- ~(when . today)~ :: Type's timestamp is today
+- ~(when . future)~ :: Type's timestamp in the future
+- ~(scheduled . past)~ :: Scheduled in the past
+- ~(deadline . past)~ :: Deadline in the past
+
+*Completion Filters:*
+- ~(done . t)~ :: Any completed item
+- ~(done . recent)~ :: Completed in last 7 days
+- ~(done . past-week)~ :: Completed in last week
+- ~(not-done . t)~ :: Incomplete items
+
+*Metadata Filters:*
+- ~(area-of-focus . "Work")~ :: Filter by area of focus
+- ~(todo . ("NEXT" "TODO"))~ :: Filter by TODO keywords
+- ~(level . 2)~ :: Filter by heading level
 
 You can combine multiple filters - they all must match (AND logic).
 
@@ -5842,9 +5861,138 @@ The ONLY cases where manual property editing might be necessary:
 :CUSTOM_ID: view-dsl-reference
 :END:
 
-The View DSL (Domain-Specific Language) lets you create custom agenda views using simple, declarative syntax. This section documents all available filters.
+Build custom agenda views in minutes. The View DSL lets you filter your GTD items by type, time, area of focus, and more---using simple declarative syntax instead of writing skip functions.
 
-*** View Structure
+*For:* GTD users who want views beyond the built-in ~org-gtd-engage~ and ~org-gtd-reflect-*~ commands.
+
+*** Your First Custom View in 60 Seconds
+
+Try this now:
+
+1. Evaluate this code (select it and run ~M-x eval-region~):
+
+   #+begin_src emacs-lisp
+   (org-gtd-view-show
+    '((name . "My Delegated Items")
+      (type . delegated)))
+   #+end_src
+
+2. An agenda view appears showing all your delegated items
+
+3. Try changing ~delegated~ to ~next-action~ and re-evaluate---now you see NEXT actions
+
+That's it. You just created a custom view. The rest of this section shows you what else you can filter by.
+
+*** Understanding View Specs
+
+A view spec is a simple list describing what you want to see:
+
+#+begin_src emacs-lisp
+'((name . "View Name")     ;; What appears in the agenda header
+  (type . delegated)       ;; Filter: show only delegated items
+  (when . past))           ;; Filter: only items with past dates
+#+end_src
+
+*Mental model:* Think of each line as a filter. Items must pass ALL filters to appear.  ~(type . delegated)~ means "only delegated items". Adding ~(when . past)~ means "only delegated items whose check-in date has passed".
+
+**** Combining Filters
+
+Filters stack with AND logic:
+
+#+begin_src emacs-lisp
+;; Delegated items + past due = missed check-ins
+'((name . "Missed Check-ins")
+  (type . delegated)
+  (when . past))
+
+;; Projects + specific area = focused view
+'((name . "Work Projects")
+  (type . active-project)
+  (area-of-focus . "Work"))
+#+end_src
+
+**** Multi-Block Views
+
+Show multiple filtered lists in one view:
+
+#+begin_src emacs-lisp
+'((name . "My Dashboard")
+  (blocks . (((name . "Calendar Today")
+              (type . calendar)
+              (when . today))
+             ((name . "Delegated Due")
+              (type . delegated)
+              (when . past))
+             ((name . "NEXT Actions")
+              (type . next-action)))))
+#+end_src
+
+Each block is its own filter. The view shows them stacked as separate sections.
+
+*** Common Patterns
+
+**** Weekly Review View
+
+See what needs attention:
+
+#+begin_src emacs-lisp
+(defun my-weekly-review ()
+  "Show stuck projects, missed items, and recent completions."
+  (interactive)
+  (org-gtd-view-show
+   '(((name . "Stuck Projects")
+      (type . stuck-project))
+     ((name . "Missed Delegated")
+      (type . delegated)
+      (when . past))
+     ((name . "Completed This Week")
+      (done . past-week)))))
+#+end_src
+
+**** Morning Planning View
+
+Start your day focused:
+
+#+begin_src emacs-lisp
+(defun my-morning-view ()
+  "Calendar, delegated check-ins, and NEXT actions."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Morning Planning")
+     (blocks . (((name . "Today's Schedule")
+                 (block-type . calendar-day))
+                ((name . "Check-ins Due")
+                 (type . delegated)
+                 (when . today))
+                ((name . "Ready to Work On")
+                 (type . next-action)))))))
+#+end_src
+
+**** Area of Focus View
+
+Filter everything by life area:
+
+#+begin_src emacs-lisp
+(defun my-work-view ()
+  "All work-related active items."
+  (interactive)
+  (org-gtd-view-show
+   '(((name . "Work Projects")
+      (type . active-project)
+      (area-of-focus . "Work"))
+     ((name . "Work NEXT Actions")
+      (type . next-action)
+      (area-of-focus . "Work"))
+     ((name . "Work Delegated")
+      (type . delegated)
+      (area-of-focus . "Work")))))
+#+end_src
+
+*** Filter Reference
+
+The following sections document all available filters. Use them to build the exact view you need.
+
+**** View Structure
 
 A GTD view is defined as an alist with filters at the top level:
 
@@ -5857,7 +6005,7 @@ A GTD view is defined as an alist with filters at the top level:
 
 Multiple filters create AND logic (all must match).
 
-**** Multi-Block Views
+***** Multi-Block Views
 
 For complex views with multiple sections (like the engage view), use ~blocks~:
 
@@ -5874,7 +6022,7 @@ For complex views with multiple sections (like the engage view), use ~blocks~:
 
 Each block is its own view spec. Blocks are displayed in order as separate agenda sections.
 
-**** Block Types
+***** Block Types
 
 Special ~block-type~ values control how blocks are rendered:
 
@@ -6012,10 +6160,24 @@ Filter by GTD item type:
 
 *Use case*: Review tickler projects during weekly review
 
+*Note*: Consider using ~incubated-project~ instead, which covers both tickler projects and someday/maybe projects.
+
 *Example*:
 #+begin_src emacs-lisp
 '((name . "Tickler Projects")
   (type . tickler-project))
+#+end_src
+
+**** ~(type . incubated-project)~
+
+*Matches*: Projects that were moved to tickler OR someday/maybe (paused projects)
+
+*Use case*: Review all incubated projects during weekly/monthly review. This includes both tickler projects (with review dates) and someday/maybe projects (indefinitely paused).
+
+*Example*:
+#+begin_src emacs-lisp
+'((name . "Incubated Projects")
+  (type . incubated-project))
 #+end_src
 
 **** ~(type . stuck-delegated)~
@@ -6124,18 +6286,6 @@ Values: ~past~, ~future~, ~today~
   (scheduled . today))
 #+end_src
 
-**** Closed: ~(closed . VALUE)~
-
-Filter by CLOSED timestamp.
-
-Values: ~today~, ~recent~ (7 days), ~past-day~, ~past-week~, ~past-month~, ~past-year~
-
-*Example*:
-#+begin_src emacs-lisp
-'((name . "Completed Today")
-  (closed . today))
-#+end_src
-
 *** TODO Keyword Filters
 
 Filter by TODO state.
@@ -6160,16 +6310,37 @@ Filter by TODO state.
   (todo . ("NEXT" "WAIT")))
 #+end_src
 
-**** ~(done . t)~
+**** ~(done . VALUE)~
 
 *Matches*: Items with done TODO states (right side of ~|~ in keyword sequence)
 
-*Use case*: Show completed items
+*Values*:
+- ~t~ :: Any done item, regardless of when closed
+- ~today~ :: Done today
+- ~recent~ :: Done in last 7 days
+- ~past-day~ :: Done in last day
+- ~past-week~ :: Done in last week
+- ~past-month~ :: Done in last month
+- ~past-year~ :: Done in last year
 
-*Example*:
+*Use case*: Show completed items, optionally filtered by when they were completed
+
+*Example*: All completed items:
 #+begin_src emacs-lisp
 '((name . "Completed Items")
   (done . t))
+#+end_src
+
+*Example*: Items completed this week:
+#+begin_src emacs-lisp
+'((name . "Completed This Week")
+  (done . past-week))
+#+end_src
+
+*Example*: Items completed today:
+#+begin_src emacs-lisp
+'((name . "Completed Today")
+  (done . today))
 #+end_src
 
 *** Area of Focus Filters
@@ -6371,58 +6542,11 @@ These options control how the view is displayed:
 
 *Requires*: ~(view-type . agenda)~
 
-*** Complete View Examples
+*** Saving Your Custom Views
 
-**** Weekly Review View
+Once you have a view you like, save it as a command:
 
-#+begin_src emacs-lisp
-(defun my-weekly-review ()
-  "Weekly review: stuck projects, missed items, recent completions."
-  (interactive)
-  (org-gtd-view-show
-   '(((name . "Stuck Projects")
-      (type . stuck-project))
-     ((name . "Missed Delegated Check-ins")
-      (type . delegated)
-      (when . past))
-     ((name . "Missed Calendar Items")
-      (type . calendar)
-      (when . past))
-     ((name . "Completed This Week")
-      (closed . past-week)))))
-#+end_src
-
-**** Context-Based View
-
-#+begin_src emacs-lisp
-(defun my-contexts-view ()
-  "Show NEXT actions grouped by context."
-  (interactive)
-  (org-gtd-engage-grouped-by-context))
-#+end_src
-
-**** Morning Planning View
-
-#+begin_src emacs-lisp
-(defun my-morning-view ()
-  "Morning planning: calendar, delegated check-ins, NEXT actions."
-  (interactive)
-  (org-gtd-view-show
-   '((name . "Morning Planning")
-     (blocks . (((name . "Today's Schedule")
-                 (block-type . calendar-day))
-                ((name . "Delegated Items to Check")
-                 (type . delegated)
-                 (when . today))
-                ((name . "Ready to Work On")
-                 (type . next-action)))))))
-#+end_src
-
-*** Creating Custom Views
-
-To create a custom view:
-
-1. *Define the view specification*:
+1. *Wrap in a function*:
    #+begin_src emacs-lisp
    (defun my-custom-view ()
      "Description of what this view shows."
@@ -6438,7 +6562,7 @@ To create a custom view:
    (global-set-key (kbd "C-c d v") 'my-custom-view)
    #+end_src
 
-3. *Test and refine* - Run the view and adjust filters as needed
+3. *Run with* ~M-x my-custom-view~ or your keybinding
 
 ** Hooks Framework Reference
 :PROPERTIES:

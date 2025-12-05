@@ -181,7 +181,7 @@
   "Creates view specifications without level-based filters."
   ;; Test that view language can specify project tasks without using level filters
   (let ((view-spec '((name . "Project Tasks")
-                     (filters . ((category . projects)
+                     (filters . ((type . project)
                                  (property . (("ORG_GTD" . "Actions"))))))))
 
     ;; Translate to org-ql query - should not contain level filters

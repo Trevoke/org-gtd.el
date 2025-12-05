@@ -48,6 +48,7 @@
 ;;   (type . active-project)    - Projects with active tasks
 ;;   (type . completed-project) - Projects with all tasks done
 ;;   (type . tickler-project)   - Projects moved to tickler
+;;   (type . incubated-project) - Projects in Tickler or Someday/Maybe
 ;;   (type . stuck-delegated)   - Delegated items missing timestamp or who
 ;;   (type . stuck-calendar)    - Calendar items missing timestamp
 ;;   (type . stuck-tickler)     - Tickler items missing timestamp
@@ -61,13 +62,17 @@
 ;;   (scheduled . past)         - Scheduled in the past
 ;;   (scheduled . future)       - Scheduled in the future
 ;;   (scheduled . today)        - Scheduled for today
-;;   (closed . recent)          - Closed in last 7 days
-;;   (closed . today)           - Closed today
 ;;
 ;; Structural Filters:
 ;;   (level . N)                - Heading level N
 ;;   (todo . ("TODO" "NEXT"))   - Specific TODO keywords
-;;   (done . t)                 - Completed items
+;;   (done . t)                 - Any completed item
+;;   (done . recent)            - Completed in last 7 days
+;;   (done . today)             - Completed today
+;;   (done . past-day)          - Completed in last day
+;;   (done . past-week)         - Completed in last week
+;;   (done . past-month)        - Completed in last month
+;;   (done . past-year)         - Completed in last year
 ;;   (not-done . t)             - Incomplete items
 ;;
 ;; Metadata Filters:
@@ -230,14 +235,10 @@ Multi-block specs have a \\='blocks key containing a list of block specs."
   (let ((filter-type (car filter))
         (filter-value (cdr filter)))
     (cond
-     ((eq filter-type 'category)
-      (org-gtd-view-lang--translate-category-filter filter-value))
      ((eq filter-type 'deadline)
       (org-gtd-view-lang--translate-deadline-filter filter-value))
      ((eq filter-type 'scheduled)
       (org-gtd-view-lang--translate-scheduled-filter filter-value))
-     ((eq filter-type 'closed)
-      (org-gtd-view-lang--translate-closed-filter filter-value))
      ((eq filter-type 'not-habit)
       (org-gtd-view-lang--translate-not-habit-filter filter-value))
      ((eq filter-type 'area-of-focus)
@@ -267,38 +268,6 @@ Multi-block specs have a \\='blocks key containing a list of block specs."
      ((keywordp filter-type)
       (org-gtd-view-lang--translate-semantic-property-filter filter-type filter-value))
      (t (error "Unknown GTD filter: %s" filter-type)))))
-
-(defun org-gtd-view-lang--translate-category-filter (category)
-  "Translate category CATEGORY to org-ql property filter."
-  (cond
-   ((eq category 'delegated)
-    (list `(property ,org-gtd-prop-category ,org-gtd-delegated)))
-   ((eq category 'calendar)
-    (list `(property ,org-gtd-prop-category ,org-gtd-calendar)))
-   ((eq category 'actions)
-    (list `(property ,org-gtd-prop-category ,org-gtd-action)))
-   ((eq category 'projects)
-    (list `(property ,org-gtd-prop-category ,org-gtd-projects)))
-   ((eq category 'active-projects)
-    (list `(and (property ,org-gtd-prop-category ,org-gtd-projects)
-                (project-has-active-tasks))))
-   ((eq category 'completed-projects)
-    (list `(and (property ,org-gtd-prop-category ,org-gtd-projects)
-                (level 2)
-                (not (project-has-active-tasks)))))
-   ((eq category 'stuck-projects)
-    (list `(and (property ,org-gtd-prop-category ,org-gtd-projects)
-                (level 2)
-                (project-is-stuck))))
-   ((eq category 'tickler)
-    (list `(property ,org-gtd-prop-category ,org-gtd-tickler)))
-   ((eq category 'tickler-projects)
-    ;; Match headings with ORG_GTD: Tickler AND PREVIOUS_ORG_GTD: Projects
-    (list `(and (property ,org-gtd-prop-category ,org-gtd-tickler)
-                (property ,org-gtd-prop-previous-category ,org-gtd-projects))))
-   ((eq category 'habit)
-    (list `(property ,org-gtd-prop-style ,org-gtd-prop-style-value-habit)))
-   (t (error "Unknown category: %s" category))))
 
 (defun org-gtd-view-lang--translate-when-filter (time-spec)
   "Translate when TIME-SPEC using semantic property lookup.
@@ -335,27 +304,32 @@ Requires a type filter to be present for property resolution."
     (list '(scheduled :on "today")))
    (t (error "Unknown scheduled spec: %s" time-spec))))
 
-(defun org-gtd-view-lang--translate-closed-filter (time-spec)
-  "Translate closed TIME-SPEC to org-ql closed filter."
-  (cond
-   ((eq time-spec 'recent)
-    (list '(closed :from "-7d")))
-   ((eq time-spec 'past-day)
-    (list '(closed :from "-1d")))
-   ((eq time-spec 'past-week)
-    (list '(closed :from "-1w")))
-   ((eq time-spec 'past-month)
-    (list '(closed :from "-1m")))
-   ((eq time-spec 'past-year)
-    (list '(closed :from "-1y")))
-   ((eq time-spec 'today)
-    (list '(closed :on "today")))
-   (t (error "Unknown closed spec: %s" time-spec))))
-
 (defun org-gtd-view-lang--translate-done-filter (value)
-  "Translate done VALUE to org-ql done filter."
-  (when value
-    (list '(done))))
+  "Translate done VALUE to org-ql done filter.
+VALUE can be:
+  t          - any done item
+  recent     - done in last 7 days
+  today      - done today
+  past-day   - done in last day
+  past-week  - done in last week
+  past-month - done in last month
+  past-year  - done in last year"
+  (cond
+   ((eq value t)
+    (list '(done)))
+   ((eq value 'recent)
+    (list '(closed :from "-7d")))
+   ((eq value 'today)
+    (list '(closed :on "today")))
+   ((eq value 'past-day)
+    (list '(closed :from "-1d")))
+   ((eq value 'past-week)
+    (list '(closed :from "-1w")))
+   ((eq value 'past-month)
+    (list '(closed :from "-1m")))
+   ((eq value 'past-year)
+    (list '(closed :from "-1y")))
+   (t (error "Unknown done spec: %s" value))))
 
 (defun org-gtd-view-lang--translate-not-done-filter (value)
   "Translate not-done VALUE to org-ql not-done filter."
@@ -418,6 +392,7 @@ Also supports computed types:
   - \\='active-project - Projects with at least one active task
   - \\='completed-project - Projects with all tasks done
   - \\='tickler-project - Tickler items that were projects
+  - \\='incubated-project - Projects in Tickler or Someday/Maybe
   - \\='stuck-delegated - Delegated items missing timestamp or who
   - \\='stuck-calendar - Calendar items missing timestamp
   - \\='stuck-tickler - Tickler items missing timestamp
@@ -435,6 +410,10 @@ Also supports computed types:
                 (not (project-has-active-tasks)))))
    ((eq type-name 'tickler-project)
     (list `(and (property ,org-gtd-prop-category ,org-gtd-tickler)
+                (property ,org-gtd-prop-previous-category ,org-gtd-projects))))
+   ((eq type-name 'incubated-project)
+    (list `(and (or (property ,org-gtd-prop-category ,org-gtd-tickler)
+                    (property ,org-gtd-prop-category ,org-gtd-someday))
                 (property ,org-gtd-prop-previous-category ,org-gtd-projects))))
    ;; Computed stuck types - items missing required metadata
    ((eq type-name 'stuck-delegated)
@@ -605,25 +584,30 @@ dynamic grouped views with \\='group-by."
 
 VIEW-SPEC-OR-SPECS can be either:
 - A single view specification alist
-- A list of view specification alists
+- A list of view specification alists (shown as multiple blocks)
 
-A view specification is an alist with the following structure:
-  ((name . \"View Name\")
-   (filters . ((filter-type . filter-value) ...)))
+A view specification is an alist with name and filters at top level:
+
+  \\='((name . \"View Name\")
+    (type . delegated)
+    (when . past))
 
 Simple example - show all next actions:
+
   (org-gtd-view-show
    \\='((name . \"All My Next Actions\")
-     (filters . ((type . next-action)))))
+     (type . next-action)))
 
 Multiple views example - show several related views:
+
   (org-gtd-view-show
    \\='(((name . \"Active projects\")
-      (filters . ((type . project))))
+      (type . active-project))
      ((name . \"Stuck projects\")
-      (filters . ((type . stuck-project))))))
+      (type . stuck-project))))
 
-See the module commentary for complete filter documentation and more examples."
+See the module commentary or Info manual for complete filter
+documentation including type, time, area-of-focus, done, and tag filters."
   (interactive)
   ;; v4: Users configure org-agenda-files directly
   (let* ((view-specs (if (and (listp view-spec-or-specs)

@@ -191,8 +191,7 @@ accomplished."
                      (t 'recent))))
     (org-gtd-view-show
      `((name . ,(format "Completed in Last %d Days" days))
-       (done . t)
-       (closed . ,time-spec)))))
+       (done . ,time-spec)))))
 
 ;;;###autoload
 (defun org-gtd-reflect-completed-projects ()

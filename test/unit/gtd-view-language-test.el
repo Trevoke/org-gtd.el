@@ -49,13 +49,14 @@
            (not (done)))
      (org-gtd-view-lang--translate-to-org-ql gtd-view-spec))))
 
-(deftest view-lang/simple-actions-filter ()
-  "Translates actions category filter."
+(deftest view-lang/simple-next-action-type ()
+  "Translates next-action type filter."
   (let ((gtd-view-spec
-         '((name . "All Actions")
-           (filters . ((category . actions))))))
+         '((name . "All Next Actions")
+           (type . next-action))))
     (assert-equal
-     '(and (property "ORG_GTD" "Actions"))
+     `(and (property "ORG_GTD" "Actions")
+           (todo ,(org-gtd-keywords--next)))
      (org-gtd-view-lang--translate-to-org-ql gtd-view-spec))))
 
 (deftest view-lang/when-today-filter ()
@@ -93,11 +94,11 @@
 
 ;;; Complex Scenarios
 
-(deftest view-lang/multiple-time-category-filters ()
-  "Combines multiple time-based and category filters."
+(deftest view-lang/multiple-time-type-filters ()
+  "Combines multiple time-based and type filters."
   (let ((gtd-view-spec
          '((name . "Complex View")
-           (filters . ((category . projects)
+           (filters . ((type . project)
                        (level . 2)
                        (deadline . past)
                        (scheduled . future))))))
@@ -144,13 +145,13 @@
            (not (done)))
      (org-gtd-view-lang--translate-to-org-ql delegated-oops-spec))))
 
-;;; Tickler Category Filters
+;;; Tickler Type Filters
 
 (deftest view-lang/tickler-projects ()
-  "Translates tickler-projects category."
+  "Translates tickler-project type."
   (let ((tickler-projects-spec
          '((name . "Tickler Projects")
-           (filters . ((category . tickler-projects))))))
+           (type . tickler-project))))
     (assert-equal
      '(and (and (property "ORG_GTD" "Tickler")
                 (property "PREVIOUS_ORG_GTD" "Projects")))
@@ -160,7 +161,7 @@
   "Translates all tickler items."
   (let ((tickler-spec
          '((name . "All Tickler")
-           (filters . ((category . tickler))))))
+           (type . tickler))))
     (assert-equal
      '(and (property "ORG_GTD" "Tickler"))
      (org-gtd-view-lang--translate-to-org-ql tickler-spec))))
@@ -242,10 +243,10 @@
 ;;; Active Projects View
 
 (deftest view-lang/active-projects-filter ()
-  "Translates active-projects filter."
+  "Translates active-project type."
   (let ((active-projects-spec
          '((name . "Active Projects")
-           (filters . ((category . active-projects))))))
+           (type . active-project))))
     (assert-equal
      '(and (and (property "ORG_GTD" "Projects")
                 (project-has-active-tasks)))
@@ -262,44 +263,41 @@
      '(and (done))
      (org-gtd-view-lang--translate-to-org-ql done-spec))))
 
-(deftest view-lang/recently-closed ()
-  "Translates recently closed items."
-  (let ((closed-spec
+(deftest view-lang/recently-done ()
+  "Translates recently done items using done filter."
+  (let ((done-spec
          '((name . "Recently Completed")
-           (filters . ((closed . recent))))))
+           (done . recent))))
     (assert-equal
      '(and (closed :from "-7d"))
-     (org-gtd-view-lang--translate-to-org-ql closed-spec))))
+     (org-gtd-view-lang--translate-to-org-ql done-spec))))
 
-(deftest view-lang/closed-today ()
-  "Translates items closed today."
-  (let ((closed-today-spec
+(deftest view-lang/done-on-today ()
+  "Translates items done today using done filter."
+  (let ((done-today-spec
          '((name . "Completed Today")
-           (filters . ((closed . today))))))
+           (done . today))))
     (assert-equal
      '(and (closed :on "today"))
-     (org-gtd-view-lang--translate-to-org-ql closed-today-spec))))
+     (org-gtd-view-lang--translate-to-org-ql done-today-spec))))
 
 (deftest view-lang/completed-projects ()
-  "Translates completed projects view."
+  "Translates completed-project type."
   (let ((completed-projects-spec
          '((name . "Completed Projects")
-           (filters . ((category . completed-projects))))))
+           (type . completed-project))))
     (assert-equal
      '(and (and (property "ORG_GTD" "Projects")
-                (level 2)
                 (not (project-has-active-tasks))))
      (org-gtd-view-lang--translate-to-org-ql completed-projects-spec))))
 
-(deftest view-lang/done-closed-combined ()
-  "Combines done and closed filters."
+(deftest view-lang/done-with-time-spec ()
+  "Done filter with time spec uses closed predicate."
   (let ((recent-completed-spec
          '((name . "Recently Completed Items")
-           (filters . ((done . t)
-                       (closed . past-week))))))
+           (done . past-week))))
     (assert-equal
-     '(and (done)
-           (closed :from "-1w"))
+     '(and (closed :from "-1w"))
      (org-gtd-view-lang--translate-to-org-ql recent-completed-spec))))
 
 ;;; Project Type Filters Without Level Constraints
@@ -692,6 +690,84 @@
     (let* ((block (org-gtd-view-lang--create-agenda-block calendar-day-spec))
            (settings (caddr block)))
       (assert-equal 1 (cadr (assoc 'org-agenda-span settings))))))
+
+;;; Extended Done Filter with Time Specs
+
+(deftest view-lang/done-recent ()
+  "Translates done=recent to closed in last 7 days."
+  (let ((view-spec
+         '((name . "Recently Completed")
+           (done . recent))))
+    (assert-equal
+     '(and (closed :from "-7d"))
+     (org-gtd-view-lang--translate-to-org-ql view-spec))))
+
+(deftest view-lang/done-today ()
+  "Translates done=today to closed today."
+  (let ((view-spec
+         '((name . "Completed Today")
+           (done . today))))
+    (assert-equal
+     '(and (closed :on "today"))
+     (org-gtd-view-lang--translate-to-org-ql view-spec))))
+
+(deftest view-lang/done-past-day ()
+  "Translates done=past-day to closed in last day."
+  (let ((view-spec
+         '((name . "Completed Yesterday")
+           (done . past-day))))
+    (assert-equal
+     '(and (closed :from "-1d"))
+     (org-gtd-view-lang--translate-to-org-ql view-spec))))
+
+(deftest view-lang/done-past-week ()
+  "Translates done=past-week to closed in last week."
+  (let ((view-spec
+         '((name . "Completed This Week")
+           (done . past-week))))
+    (assert-equal
+     '(and (closed :from "-1w"))
+     (org-gtd-view-lang--translate-to-org-ql view-spec))))
+
+(deftest view-lang/done-past-month ()
+  "Translates done=past-month to closed in last month."
+  (let ((view-spec
+         '((name . "Completed This Month")
+           (done . past-month))))
+    (assert-equal
+     '(and (closed :from "-1m"))
+     (org-gtd-view-lang--translate-to-org-ql view-spec))))
+
+(deftest view-lang/done-past-year ()
+  "Translates done=past-year to closed in last year."
+  (let ((view-spec
+         '((name . "Completed This Year")
+           (done . past-year))))
+    (assert-equal
+     '(and (closed :from "-1y"))
+     (org-gtd-view-lang--translate-to-org-ql view-spec))))
+
+(deftest view-lang/done-t-unchanged ()
+  "Translates done=t to any done item (unchanged behavior)."
+  (let ((view-spec
+         '((name . "All Done")
+           (done . t))))
+    (assert-equal
+     '(and (done))
+     (org-gtd-view-lang--translate-to-org-ql view-spec))))
+
+;;; Incubated Project Type
+
+(deftest view-lang/incubated-project-type ()
+  "Translates incubated-project to projects in Tickler OR Someday."
+  (let ((view-spec
+         '((name . "Incubated Projects")
+           (type . incubated-project))))
+    (assert-equal
+     '(and (and (or (property "ORG_GTD" "Tickler")
+                    (property "ORG_GTD" "Someday"))
+                (property "PREVIOUS_ORG_GTD" "Projects")))
+     (org-gtd-view-lang--translate-to-org-ql view-spec))))
 
 (provide 'gtd-view-language-test)
 
