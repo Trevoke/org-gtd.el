@@ -16,25 +16,16 @@ curl -fsSL https://raw.github.com/doublep/eldev/master/webinstall/github-eldev |
 ### Testing
 ```bash
 # Run all tests (standard - minimal output)
-eldev test -B
+eldev etest -B
 
 # Run all tests for a specific version of emacs
-eldev docker 30 test
+eldev docker 30 etest
 
 # Run all tests with backtraces (debugging)
-eldev test
+eldev etest
 
 # Run tests with full debugging (CI command)
-eldev -p -dtT test
-
-# Run specific test file
-eldev test -B --file="test/organizing-test.el"
-
-# Stop on first failure
-eldev test -B --stop
-
-# Test specific functions (buttercup selectors)
-eldev test -B "clarify"
+eldev -p -dtT etest
 ```
 
 ### Build and Compilation
@@ -128,7 +119,7 @@ org-gtd.el implements David Allen's Getting Things Done (GTD) methodology as an 
 
 **Transient UI**: Modern menu interface for organization choices using transient.el
 
-**WIP Buffers**: Dedicated major mode (`org-gtd-wip-mode`) derived from org-mode for clarification workflow
+**WIP Buffers**: Generic temp-file-backed buffer infrastructure; `org-gtd-clarify-mode` major mode for clarification workflow
 
 **Modular Organization**: Each GTD category is completely self-contained with its own module
 
@@ -146,8 +137,8 @@ GTD files are organized in `org-gtd-directory` (default: `~/gtd/`):
 
 ### Testing Architecture
 
-Uses Buttercup framework with comprehensive test coverage:
-- **Unit tests**: Per-module testing in `test/*-test.el`
+Uses e-unit framework with comprehensive test coverage:
+- **Unit tests**: pure function tests (as much as possible) in `test/*-test.el`
 - **Autoload tests**: Separate directory testing lazy loading
 - **Integration helpers**: Realistic GTD workflow simulation
 - **Fixtures**: Example GTD data for testing
@@ -186,11 +177,3 @@ Key testing dependencies: `with-simulated-input`, `dash`
 ## Memory Annotations
 
 - When using the emacs mcp server, always redefine or eval-buffer, don't use file loads, because of emacs' caching mechanism
-
-## Long-term TODO Items
-
-### Progress Cookie Implementation
-- **Issue**: Built-in org-mode progress cookies may not work correctly with flexible project structure
-- **Solution**: Implement custom progress tracking that understands task dependencies
-- **Priority**: Low - disable built-in cookies first, implement custom solution later
-- **Files**: `org-gtd-projects.el` (line 212-217 has current cookie logic)
