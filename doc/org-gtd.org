@@ -9,7 +9,7 @@
 #+TEXINFO_DIR_TITLE: Org GTD: (org-gtd)
 #+TEXINFO_DIR_DESC: An opinionated GTD flow implemented in org-mode
 #+TEXINFO_FILENAME: ../org-gtd.info
-#+SUBTITLE: for version 4.0
+#+SUBTITLE: for version 4.0.0beta1
 #+TEXINFO_DEFFN: t
 #+OPTIONS: H:3 num:3 toc:2
 #+PROPERTY: header-args :eval never
@@ -19,7 +19,7 @@ Org GTD is an attempt to implement the GTD flow described in the GTD
 book as faithfully as possible.
 
 #+TEXINFO: @noindent
-This manual is for Org GTD version 4.0
+This manual is for Org GTD version 4.0.0beta1
 
 :END:
 * Copying
