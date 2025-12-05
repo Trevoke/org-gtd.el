@@ -26,7 +26,6 @@
 ;; dependencies, making code self-documenting and centralizing validation logic.
 ;;
 ;; TODO State Predicates:
-;; - org-gtd-todo-state-is-active-p: Is this an active (not done/canceled/wait) state?
 ;; - org-gtd-todo-state-is-ready-p: Can this task be worked on?
 ;; - org-gtd-todo-state-blocks-others-p: Does this state prevent dependent tasks from becoming NEXT?
 ;; - org-gtd-todo-state-should-reset-p: Should this state be reset to TODO during project updates?
@@ -51,19 +50,6 @@
 (require 'org-gtd-accessors)
 
 ;;;; TODO State Predicates
-
-(defun org-gtd-todo-state-is-active-p (state)
-  "Domain predicate: Is STATE an active (not done/canceled/wait) state?
-
-Active states are those that represent work that can be or is being done,
-excluding states that indicate waiting, completion, or cancellation.
-
-STATE should be a TODO keyword string (e.g., \"TODO\", \"NEXT\", \"DONE\").
-Returns t if STATE is active, nil otherwise or if STATE is nil."
-  (when state
-    (not (or (org-gtd-keywords--is-done-p state)
-             (equal state (org-gtd-keywords--canceled))
-             (equal state (org-gtd-keywords--wait))))))
 
 (defun org-gtd-todo-state-is-ready-p (state)
   "Domain predicate: Can a task in STATE be worked on?

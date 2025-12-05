@@ -83,7 +83,8 @@ After the main inbox is empty, continues processing items from
       (org-N-empty-lines-before-current 1))
     (if (org-at-heading-p)
         (org-gtd-clarify-inbox-item (point-marker)
-                                    (current-window-configuration))
+                                    (current-window-configuration)
+                                    #'org-gtd-process-inbox)
       ;; Current inbox is empty, try next pending inbox
       (org-gtd-process--try-next-inbox))))
 

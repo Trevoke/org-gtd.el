@@ -30,11 +30,7 @@
 (require 'org-gtd-refile)
 (require 'org-gtd-clarify)
 (require 'org-gtd-configure)
-
-(declare-function org-gtd-organize-apply-hooks "org-gtd-organize")
-(declare-function org-gtd-organize--call "org-gtd-organize")
-(declare-function org-gtd-organize--update-in-place "org-gtd-organize")
-(declare-function org-gtd-clarify-item "org-gtd-clarify")
+(require 'org-gtd-organize-core)
 
 ;;;; Constants
 

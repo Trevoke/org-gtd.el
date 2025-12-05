@@ -37,19 +37,6 @@
 ;;;; Forward declarations
 (defvar org-gtd-archive-location)
 (defvar org-gtd-projects)
-;; Cycle: org-gtd-projects requires org-gtd-core
-(declare-function org-gtd-stuck-projects "org-gtd-projects")
-
-;;;; Essential variables for autoload compatibility
-;; These provide fallback values when the full modules aren't loaded
-
-(unless (boundp 'org-gtd-stuck-projects)
-  (defvar org-gtd-stuck-projects
-    '("ORG_GTD=\"Projects\""
-      ("TODO" "NEXT")
-      ("@computer" "@phone" "@travel" "@agenda")
-      "")))
-
 
 ;;;; Customization
 
@@ -398,34 +385,20 @@ This property also controls the prefix displayed in agenda views.")
 
 ;;;###autoload
 (defmacro with-org-gtd-context (&rest body)
-  "DEPRECATED: This macro is no longer necessary in org-gtd v4.
+  "DEPRECATED: No-op in org-gtd v4.
 
 In v4, configure org-mode directly instead:
 - Add `org-gtd-directory' to `org-agenda-files'
 - Configure `org-archive-location' as needed
 
-This macro is kept for backward compatibility and will be removed
-in a future version.
-
-Previously: Wrap BODY... in this macro to inherit org-gtd settings."
+This macro is a no-op and will be removed in a future version."
   (declare (debug t) (indent 2))
   `(progn
      (display-warning 'org-gtd
-                      "with-org-gtd-context is deprecated and will be removed.
+                      "with-org-gtd-context is deprecated and is now a no-op.
 Configure org-agenda-files and other settings directly instead."
                       :warning)
-     (let* ((org-use-property-inheritance "ORG_GTD")
-            (org-archive-location (funcall org-gtd-archive-location))
-            (org-stuck-projects (org-gtd-stuck-projects))
-            (org-odd-levels-only nil)
-            (org-agenda-files (org-gtd-core--agenda-files))
-            (org-gtd-agenda-property-list `(,(org-gtd-type-property 'delegated :who))))
-       (unwind-protect
-           (progn
-             (advice-add 'org-agenda-files :filter-return #'org-gtd-core--uniq)
-             ,@body)
-         (progn
-           (advice-remove 'org-agenda-files #'org-gtd-core--uniq))))))
+     ,@body))
 
 (make-obsolete 'with-org-gtd-context
                "Configure org-agenda-files and other settings directly."

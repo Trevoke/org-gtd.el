@@ -37,9 +37,7 @@
 (require 'org-gtd-single-action)
 (require 'org-gtd-accessors)
 (require 'org-gtd-dependencies)
-
-;; Cycle: org-gtd-projects requires org-gtd-task-management
-(declare-function org-gtd-projects-fix-todo-keywords "org-gtd-projects")
+(require 'org-gtd-projects)
 
 ;;;; Interactive Commands
 

@@ -29,9 +29,6 @@
 (require 'org-ql)
 (require 'ts)
 
-(declare-function org-gtd-projects--has-active-tasks-p "org-gtd-projects")
-(declare-function org-gtd-projects--is-stuck-p "org-gtd-projects")
-
 (org-ql-defpred property-ts< (property greater-ts)
   "Checks whether a timestamp is earlier than a given date."
   :body (when-let ((ts-value (org-entry-get nil property)))
@@ -54,31 +51,6 @@
                    (other-ts-start (ts-parse-fill 'begin other-ts))
                    (other-ts-end (ts-parse-fill 'end other-ts)))
           (ts-in other-ts-start other-ts-end (ts-parse-org ts-value))))
-
-(org-ql-defpred project-has-active-tasks ()
-  "True if the project at point has at least one active (non-done) task.
-
-Active tasks are those with TODO states that are not in `org-done-keywords'.
-This predicate only evaluates to true for headings with ORG_GTD=\"Projects\".
-
-This uses the project dependency graph to find all tasks belonging to the
-project, making it work correctly with flexible project structures where
-tasks can be at any level in the hierarchy."
-  :body (when (string-equal (org-entry-get nil "ORG_GTD") "Projects")
-          (require 'org-gtd-projects)
-          (org-gtd-projects--has-active-tasks-p (point-marker))))
-
-(org-ql-defpred project-is-stuck ()
-  "True if the project at point is stuck.
-
-A stuck project has active tasks (work remaining) but no immediately actionable
-tasks (NEXT or WAIT states). This typically indicates incomplete planning or
-missing dependencies. Only evaluates for headings with ORG_GTD=\"Projects\".
-
-This uses the project dependency graph to analyze all tasks in the project."
-  :body (when (string-equal (org-entry-get nil "ORG_GTD") "Projects")
-          (require 'org-gtd-projects)
-          (org-gtd-projects--is-stuck-p (point-marker))))
 
 (org-ql-defpred property-invalid-timestamp (property)
   "True if PROPERTY doesn't exist, is empty, or isn't a valid org timestamp.

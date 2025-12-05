@@ -29,9 +29,7 @@
 (require 'transient)
 
 (require 'org-gtd-backward-compatibility)
-(require 'org-gtd-core)
-(require 'org-gtd-wip)
-(require 'org-gtd-clarify)
+(require 'org-gtd-organize-core)
 (require 'org-gtd-calendar)
 (require 'org-gtd-habit)
 (require 'org-gtd-knowledge)
@@ -45,28 +43,6 @@
 (require 'org-gtd-projects)
 (require 'org-gtd-refile)
 (require 'org-gtd-process)
-
-;;;; Customization
-
-(defgroup org-gtd-organize nil
-  "Manage the functions for organizing the GTD actions."
-  :group 'org-gtd
-  :package-version '(org-gtd . "3.0.0"))
-
-(defcustom org-gtd-organize-hooks '(org-set-tags-command)
-  "Enhancements to add to each item as they get processed from the inbox.
-
-This is a list of functions that modify an org element.  The default value has
-one function: setting org tags on the item.  Some built-in examples are
-provided as options here.  You can create your own functions to further organize
-the items once they have been processed and add them to that list.
-
-Once you have your ground items managed, you might like to set the variable
-`org-gtd-areas-of-focus' and add `org-gtd-set-area-of-focus' to these hooks."
-  :group 'org-gtd-organize
-  :options '(org-set-tags-command org-set-effort org-priority)
-  :package-version '(org-gtd . "1.0.4")
-  :type 'hook)
 
 ;;;; Constants
 
@@ -113,15 +89,6 @@ Once you have your ground items managed, you might like to set the variable
 
 ;;;;; Public
 
-(defun org-gtd-organize-apply-hooks ()
-  "Apply hooks to add metadata to a given GTD item."
-  (dolist (hook org-gtd-organize-hooks)
-    (save-excursion
-      (goto-char (point-min))
-      (when (org-before-first-heading-p)
-        (org-next-visible-heading 1))
-      (save-restriction (funcall hook)))))
-
 (defun org-gtd-organize-type-member-p (list)
   "Return t if the action type chosen by the user is in LIST.
 
@@ -146,70 +113,6 @@ Valid members of LIST include:
               `(,list ,org-gtd-organize-action-types)))
     (or (member 'everything list)
         (member org-gtd--organize-type list))))
-
-;;;;; Private
-
-(defun org-gtd-organize--update-in-place ()
-  "Replace original heading with configured content from WIP buffer.
-Uses `org-gtd-clarify--source-heading-marker' to find the original location."
-  (let ((new-content (save-excursion
-                       (goto-char (point-min))
-                       (when (org-before-first-heading-p)
-                         (org-next-visible-heading 1))
-                       (org-copy-subtree)
-                       (current-kill 0)))
-        ;; Capture marker value while still in WIP buffer
-        (source-marker org-gtd-clarify--source-heading-marker))
-    (when (and (boundp 'org-gtd-clarify--source-heading-marker)
-               source-marker
-               (markerp source-marker)
-               (marker-buffer source-marker))
-      (with-current-buffer (marker-buffer source-marker)
-        (goto-char source-marker)
-        (org-back-to-heading t)
-        (org-cut-subtree)
-        (insert new-content)
-        (save-buffer)))))
-
-(defun org-gtd-organize--call (func)
-  "Wrap FUNC, which does the real work, to keep Emacs clean.
-This handles the internal bits of `org-gtd'."
-  (goto-char (point-min))
-  (when (org-before-first-heading-p)
-    (org-next-visible-heading 1))
-  ;; v4: Users configure org-agenda-files directly, no need for with-org-gtd-context
-  (let ((error-caught
-         (catch 'org-gtd-error
-           (save-excursion (funcall func))
-           nil))) ;; Return nil when no error was thrown
-    (unless error-caught
-      ;; Only run cleanup if no error was thrown
-      (let ((loop-p org-gtd-clarify--inbox-p)
-            (task-id org-gtd-clarify--clarify-id)
-            (window-config org-gtd-clarify--window-config)
-            (skip-refile org-gtd-clarify--skip-refile))
-        ;; Only cut original if we refiled (not updated in place)
-        (unless skip-refile
-          (when (and (boundp 'org-gtd-clarify--source-heading-marker)
-                     org-gtd-clarify--source-heading-marker
-                     (markerp org-gtd-clarify--source-heading-marker))
-            (let ((buffer (marker-buffer org-gtd-clarify--source-heading-marker))
-                  (position (marker-position org-gtd-clarify--source-heading-marker)))
-              (when (and buffer position)
-                (with-current-buffer buffer
-                  (goto-char position)
-                  (with-temp-message ""
-                    (org-cut-subtree)))))))
-        (when task-id
-          (org-gtd-wip--cleanup-temp-file task-id))
-        (when window-config
-          (set-window-configuration window-config))
-        (if loop-p (org-gtd-process-inbox))
-        ;; Save GTD buffers after organizing
-        (org-gtd-save-buffers)
-        ;; Clean up horizons view for one-off clarification
-        (unless loop-p
-          (org-gtd-clarify--cleanup-horizons-view))))))
 
 (define-error
   'org-gtd-invalid-organize-action-type-error

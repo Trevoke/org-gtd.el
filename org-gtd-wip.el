@@ -30,8 +30,6 @@
 (require 'org-gtd-types)
 (require 'org-gtd-id)
 
-(declare-function org-gtd-stuck-projects "org-gtd-projects")
-
 ;;;; Customizations
 
 ;;;; Constants

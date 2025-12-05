@@ -33,10 +33,7 @@
 (require 'org-gtd-refile)
 (require 'org-gtd-configure)
 (require 'org-gtd-reactivate)
-
-(declare-function org-gtd-organize--call 'org-gtd-organize)
-(declare-function org-gtd-organize-apply-hooks 'org-gtd-organize)
-(declare-function org-gtd-organize--update-in-place 'org-gtd-organize)
+(require 'org-gtd-organize-core)
 
 ;;;; Constants
 

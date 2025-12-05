@@ -145,6 +145,11 @@ Not needed. Deletes the item.
   "When non-nil, update item in place instead of refiling.
 Set via C-u prefix to clarify commands or transient toggle.")
 
+(defvar-local org-gtd-clarify--continuation nil
+  "Function to call after organizing completes.
+Set by `org-gtd-clarify-inbox-item' to continue inbox processing.
+Called by `org-gtd-organize--call' when non-nil.")
+
 ;;;;; External variables (defined in org-gtd-process.el)
 
 (defvar org-gtd-process--session-active)
@@ -271,14 +276,17 @@ cleans up temp file, and kills the WIP buffer without organizing the item."
 
 ;;;;; Public
 
-(defun org-gtd-clarify-inbox-item (marker window-config)
+(defun org-gtd-clarify-inbox-item (marker window-config &optional continuation)
   "Process item at point through org-gtd.
 This function is called through the inbox clarification process.
 
 MARKER must be a marker pointing to an org heading.
-WINDOW-CONFIG is the window config to set after clarification finishes."
+WINDOW-CONFIG is the window config to set after clarification finishes.
+CONTINUATION is a function to call after organizing completes (e.g., to
+process the next inbox item)."
   (org-gtd-clarify-item marker window-config)
-  (setq-local org-gtd-clarify--inbox-p t))
+  (setq-local org-gtd-clarify--inbox-p t)
+  (setq-local org-gtd-clarify--continuation continuation))
 
 (defun org-gtd-clarify-project-insert-template ()
   "Insert user-provided template under item at point."
