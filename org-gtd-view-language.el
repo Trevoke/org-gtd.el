@@ -109,9 +109,13 @@
 (require 'org-gtd-core)
 (require 'org-gtd-skip)
 (require 'org-gtd-types)
+(require 'org-gtd-agenda)
 
 (defvar org-gtd-view-lang--current-type nil
   "Track the current type filter for semantic property resolution.")
+
+(defconst org-gtd-view-lang--default-prefix-width 12
+  "Default width for prefix elements when not specified.")
 
 (defconst org-gtd-view-lang--simple-types
   '(next-action delegated calendar tickler project someday habit reference trash quick-action)
@@ -153,8 +157,8 @@ INHERITED-PREFIX-FORMAT is optionally passed from parent view spec."
          (view-type (alist-get 'view-type gtd-view-spec))
          (type-filter (alist-get 'type gtd-view-spec))
          (done-filter (alist-get 'done gtd-view-spec))
-         (prefix-format (or (alist-get 'prefix-format gtd-view-spec)
-                            inherited-prefix-format)))
+         ;; Use new prefix DSL or fall back to inherited format
+         (prefix-format (org-gtd-view-lang--get-prefix-format gtd-view-spec inherited-prefix-format)))
     (cond
      ((eq block-type 'calendar-day)
       (org-gtd-view-lang--create-calendar-day-block gtd-view-spec))
@@ -220,7 +224,7 @@ Habit items."
   "Create additional agenda blocks from GTD-VIEW-SPEC.
 Returns a list of additional blocks like TODO lists."
   (let ((additional-blocks (alist-get 'additional-blocks gtd-view-spec))
-        (prefix-format (alist-get 'prefix-format gtd-view-spec)))
+        (prefix-format (org-gtd-view-lang--get-prefix-format gtd-view-spec)))
     (mapcar (lambda (block-spec)
               (let ((block-type (car block-spec))
                     (block-value (cdr block-spec)))
@@ -242,11 +246,12 @@ Multi-block specs have a \\='blocks key containing a list of block specs."
          (command-title (or title "GTD Views"))
          (blocks (mapcan (lambda (view-spec)
                            (let ((blocks-list (alist-get 'blocks view-spec))
-                                 (prefix-format (alist-get 'prefix-format view-spec)))
+                                 ;; Get parent's prefix format (from new DSL or nil)
+                                 (parent-prefix-format (org-gtd-view-lang--get-prefix-format view-spec)))
                              (if blocks-list
-                                 ;; Multi-block spec: process each block, passing prefix-format
+                                 ;; Multi-block spec: process each block, passing parent prefix
                                  (mapcar (lambda (block)
-                                           (org-gtd-view-lang--create-agenda-block block prefix-format))
+                                           (org-gtd-view-lang--create-agenda-block block parent-prefix-format))
                                          blocks-list)
                                ;; Single-block spec: process as-is
                                (let ((main-block (org-gtd-view-lang--create-agenda-block view-spec))
@@ -503,7 +508,7 @@ GTD-VIEW-SPEC should be an alist with \\='name and either:
 - Filter keys directly at top level (new flat format)"
   (let* ((explicit-filters (alist-get 'filters gtd-view-spec))
          ;; Reserved keys that are not filters
-         (reserved-keys '(name blocks block-type prefix-format view-type
+         (reserved-keys '(name blocks block-type prefix prefix-width view-type
                           agenda-span show-habits additional-blocks
                           group-contexts group-by tags-match))
          ;; Extract filters: either from 'filters key or from top-level keys
@@ -869,6 +874,45 @@ Optional PREFIX-FORMAT is applied for project name display."
                           'tags-todo
                         'tags)))
       `(,block-type ,match-string ,settings))))
+
+;;;; Prefix DSL Expansion
+
+(defun org-gtd-view-lang--expand-prefix (prefix-elements width)
+  "Expand PREFIX-ELEMENTS fallback chain to org-agenda-prefix-format string.
+PREFIX-ELEMENTS is a list of symbols and/or strings, tried in order.
+WIDTH is the column width for the prefix.
+Returns a format string suitable for `org-agenda-prefix-format'."
+  (let ((elements-str (org-gtd-view-lang--quote-prefix-elements prefix-elements)))
+    (format " %%i %%-%d:(org-gtd-agenda--resolve-prefix-chain '%s %d) "
+            width elements-str width)))
+
+(defun org-gtd-view-lang--quote-prefix-elements (elements)
+  "Convert ELEMENTS list to a string suitable for embedding in format.
+Symbols are kept as-is, strings are quoted."
+  (format "(%s)"
+          (mapconcat
+           (lambda (el)
+             (if (stringp el)
+                 (format "\"%s\"" el)
+               (symbol-name el)))
+           elements " ")))
+
+(defun org-gtd-view-lang--get-prefix-format (gtd-view-spec &optional inherited-prefix-format)
+  "Get the prefix format string from GTD-VIEW-SPEC or inherited value.
+If GTD-VIEW-SPEC has a `prefix' key, expand it to a format string.
+Otherwise use INHERITED-PREFIX-FORMAT if provided."
+  (let ((prefix-elements (alist-get 'prefix gtd-view-spec))
+        (prefix-width (alist-get 'prefix-width gtd-view-spec
+                                 org-gtd-view-lang--default-prefix-width)))
+    (cond
+     ;; New prefix DSL takes precedence
+     (prefix-elements
+      (org-gtd-view-lang--expand-prefix prefix-elements prefix-width))
+     ;; Fall back to inherited format
+     (inherited-prefix-format
+      inherited-prefix-format)
+     ;; No prefix specified
+     (t nil))))
 
 ;;;; Public API
 

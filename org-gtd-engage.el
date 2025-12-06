@@ -55,23 +55,20 @@ Shows:
 - Tickler items due today
 - Delegated items with check-ins due today
 - All next actions"
-  (let ((project-format-prefix
-         (format " %%i %%-%d:(org-gtd-agenda--prefix-format %d) "
-                 org-gtd-engage-prefix-width
-                 org-gtd-engage-prefix-width)))
-    `((name . "GTD Engage View")
-      (blocks . (((name . "Today's Schedule")
-                  (block-type . calendar-day))
-                 ((name . "Tickler items ready for today")
-                  (type . tickler)
-                  (when . today))
-                 ((name . "Delegated items to check in on today")
-                  (type . delegated)
-                  (when . today))
-                 ((name . "All actions ready to be executed")
-                  (block-type . todo)
-                  (todo-keyword . ,(org-gtd-keywords--next)))))
-      (prefix-format . ,project-format-prefix))))
+  `((name . "GTD Engage View")
+    (prefix . (project area-of-focus "—"))
+    (prefix-width . ,org-gtd-engage-prefix-width)
+    (blocks . (((name . "Today's Schedule")
+                (block-type . calendar-day))
+               ((name . "Tickler items ready for today")
+                (type . tickler)
+                (when . today))
+               ((name . "Delegated items to check in on today")
+                (type . delegated)
+                (when . today))
+               ((name . "All actions ready to be executed")
+                (block-type . todo)
+                (todo-keyword . ,(org-gtd-keywords--next)))))))
 
 (defun org-gtd-engage-grouped-by-context-view-spec ()
   "Return GTD view specification for the grouped by context engage view."

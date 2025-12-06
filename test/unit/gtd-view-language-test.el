@@ -1267,6 +1267,63 @@
       ;; Was not a project, should be skipped
       (assert-true (numberp result)))))
 
+;;; Prefix DSL Tests
+
+(deftest view-lang/expand-prefix-generates-format-string ()
+  "The prefix key generates an org-agenda-prefix-format string."
+  (let* ((view-spec '((name . "Test")
+                      (type . next-action)
+                      (prefix . (project area-of-focus))
+                      (prefix-width . 12)))
+         (block (org-gtd-view-lang--create-agenda-block view-spec))
+         (settings (caddr block))
+         (prefix-setting (assoc 'org-agenda-prefix-format settings)))
+    ;; Should have a prefix format setting
+    (assert-true prefix-setting)))
+
+(deftest view-lang/expand-prefix-uses-default-width ()
+  "The prefix key uses default width when prefix-width not specified."
+  (let* ((view-spec '((name . "Test")
+                      (type . next-action)
+                      (prefix . (project area-of-focus))))
+         (block (org-gtd-view-lang--create-agenda-block view-spec))
+         (settings (caddr block)))
+    ;; Should still generate prefix format with default width
+    (assert-true (assoc 'org-agenda-prefix-format settings))))
+
+(deftest view-lang/expand-prefix-inherits-to-blocks ()
+  "The prefix key at top level inherits to child blocks."
+  (let* ((view-spec '((name . "Multi Block View")
+                      (prefix . (project "default"))
+                      (prefix-width . 10)
+                      (blocks . (((name . "Actions")
+                                  (type . next-action))))))
+         (commands (org-gtd-view-lang--create-custom-commands (list view-spec)))
+         (first-command (car commands))
+         (blocks (caddr first-command))
+         (first-block (car blocks))
+         (settings (caddr first-block)))
+    ;; Child block should have inherited prefix format
+    (assert-true (assoc 'org-agenda-prefix-format settings))))
+
+(deftest view-lang/prefix-generates-resolve-chain-call ()
+  "The prefix format string calls org-gtd-agenda--resolve-prefix-chain."
+  (let* ((format-str (org-gtd-view-lang--expand-prefix '(project area-of-focus) 12)))
+    ;; Format string should contain the resolver function call
+    (assert-match "org-gtd-agenda--resolve-prefix-chain" format-str)))
+
+(deftest view-lang/prefix-includes-width-in-format ()
+  "The prefix format string includes the width parameter."
+  (let* ((format-str (org-gtd-view-lang--expand-prefix '(project area-of-focus) 15)))
+    ;; Format string should reference the width
+    (assert-match "15" format-str)))
+
+(deftest view-lang/prefix-quoted-elements-in-format ()
+  "Literal strings in prefix are properly quoted in format."
+  (let* ((format-str (org-gtd-view-lang--expand-prefix '(project "Incubated") 12)))
+    ;; Format string should contain the quoted literal
+    (assert-match "Incubated" format-str)))
+
 (provide 'gtd-view-language-test)
 
 ;;; gtd-view-language-test.el ends here

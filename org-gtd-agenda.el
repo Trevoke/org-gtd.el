@@ -66,6 +66,52 @@ Uses project name if available, otherwise CATEGORY, otherwise \"no project\"."
         (t  "no project"))))
      width nil ?\s "…")))
 
+;;;;; Prefix Element Resolvers
+
+(defun org-gtd-agenda--resolve-project ()
+  "Return parent project headline for item at point, or nil if none."
+  (when-let ((proj-name (org-entry-get (point) org-gtd-prop-project)))
+    (let ((tally-cookie-regexp "\[[[:digit:]]+/[[:digit:]]+\][[:space:]]*"))
+      (string-trim
+       (org-gtd-agenda-replace-link-with-description
+        (replace-regexp-in-string tally-cookie-regexp "" proj-name))))))
+
+(defun org-gtd-agenda--resolve-area-of-focus ()
+  "Return explicitly set CATEGORY property for item at point, or nil if none.
+Unlike `org-entry-get' with CATEGORY, this only returns user-set values,
+not org-mode's computed default category."
+  (let ((category (org-entry-get (point) "CATEGORY")))
+    ;; Filter out org-mode's default "???" category
+    (unless (or (null category) (string= category "???"))
+      category)))
+
+(defun org-gtd-agenda--resolve-file-name ()
+  "Return base file name for current buffer, or nil if no file."
+  (when buffer-file-name
+    (file-name-base buffer-file-name)))
+
+(defun org-gtd-agenda--resolve-prefix-element (element)
+  "Resolve ELEMENT to a string value at point, or nil if unavailable.
+ELEMENT can be:
+- \\='project - parent project headline
+- \\='area-of-focus - CATEGORY property
+- \\='file-name - buffer file base name
+- a string - returned as-is (literal)"
+  (pcase element
+    ('project (org-gtd-agenda--resolve-project))
+    ('area-of-focus (org-gtd-agenda--resolve-area-of-focus))
+    ('file-name (org-gtd-agenda--resolve-file-name))
+    ((pred stringp) element)
+    (_ nil)))
+
+(defun org-gtd-agenda--resolve-prefix-chain (elements width)
+  "Try each element in ELEMENTS, return first non-nil truncated to WIDTH.
+ELEMENTS is a list of prefix element specifiers (symbols or strings).
+The first element that resolves to a non-nil value is used.
+Result is truncated with ellipsis if too long, padded with spaces if too short."
+  (let ((result (cl-some #'org-gtd-agenda--resolve-prefix-element elements)))
+    (truncate-string-to-width (or result "") width nil ?\s "…")))
+
 ;;;; Footer
 
 (provide 'org-gtd-agenda)

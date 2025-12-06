@@ -46,7 +46,8 @@
     ((name . "Tickler projects")
      (type . tickler-project)
      (area-of-focus . ,area)
-     (prefix-format . "  Tickler: "))
+     (prefix . ("Tickler"))
+     (prefix-width . 10))
 
     ((name . "Next actions")
      (type . next-action)
