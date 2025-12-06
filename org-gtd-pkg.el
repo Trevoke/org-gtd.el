@@ -34,7 +34,6 @@
     (f "0.20.0")
     (org "9.6")
     (transient "0.3.7")
-    (org-ql "0.8.10")
     (dag-draw "1.0.0")))
 
 ;;; org-gtd-pkg.el ends here

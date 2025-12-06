@@ -727,11 +727,14 @@
                       ((name . "Delegated Block")
                        (type . delegated)))))))
     (let* ((commands (org-gtd-view-lang--create-custom-commands (list multi-block-spec)))
-           (blocks (caddr (car commands))))
-      (assert-equal '((org-ql-block-header "Next Actions Block"))
-                    (caddr (car blocks)))
-      (assert-equal '((org-ql-block-header "Delegated Block"))
-                    (caddr (cadr blocks))))))
+           (blocks (caddr (car commands)))
+           (first-block-settings (caddr (car blocks)))
+           (second-block-settings (caddr (cadr blocks))))
+      ;; Native blocks use org-agenda-overriding-header
+      (assert-equal "Next Actions Block"
+                    (cadr (assoc 'org-agenda-overriding-header first-block-settings)))
+      (assert-equal "Delegated Block"
+                    (cadr (assoc 'org-agenda-overriding-header second-block-settings))))))
 
 (deftest view-lang/single-block-without-blocks-key ()
   "Still supports single-block specs without blocks key."
@@ -849,6 +852,420 @@
                     (property "ORG_GTD" "Someday"))
                 (property "PREVIOUS_ORG_GTD" "Projects")))
      (org-gtd-view-lang--translate-to-org-ql view-spec))))
+
+;;; Native Block Translation Tests
+;;
+;; Tests for the native org-agenda block translation layer that replaces org-ql.
+
+(deftest view-lang/build-match-string-next-action ()
+  "Builds match string for next-action type with TODO filter."
+  (let ((view-spec '((type . next-action))))
+    (assert-equal
+     (format "LEVEL>0+ORG_GTD=\"Actions\"/TODO=\"%s\"" (org-gtd-keywords--next))
+     (org-gtd-view-lang--build-match-string view-spec))))
+
+(deftest view-lang/build-match-string-delegated ()
+  "Builds match string for delegated type with TODO filter."
+  (let ((view-spec '((type . delegated))))
+    (assert-equal
+     (format "LEVEL>0+ORG_GTD=\"Delegated\"/TODO=\"%s\"" (org-gtd-keywords--wait))
+     (org-gtd-view-lang--build-match-string view-spec))))
+
+(deftest view-lang/build-match-string-calendar ()
+  "Builds match string for calendar type (property only, no TODO filter)."
+  (let ((view-spec '((type . calendar))))
+    (assert-equal
+     "LEVEL>0+ORG_GTD=\"Calendar\""
+     (org-gtd-view-lang--build-match-string view-spec))))
+
+(deftest view-lang/build-match-string-tickler ()
+  "Builds match string for tickler type (property only, no TODO filter)."
+  (let ((view-spec '((type . tickler))))
+    (assert-equal
+     "LEVEL>0+ORG_GTD=\"Tickler\""
+     (org-gtd-view-lang--build-match-string view-spec))))
+
+(deftest view-lang/build-match-string-project ()
+  "Builds match string for project type (property only, no TODO filter)."
+  (let ((view-spec '((type . project))))
+    (assert-equal
+     "LEVEL>0+ORG_GTD=\"Projects\""
+     (org-gtd-view-lang--build-match-string view-spec))))
+
+(deftest view-lang/build-match-string-someday ()
+  "Builds match string for someday type (property only, no TODO filter)."
+  (let ((view-spec '((type . someday))))
+    (assert-equal
+     "LEVEL>0+ORG_GTD=\"Someday\""
+     (org-gtd-view-lang--build-match-string view-spec))))
+
+(deftest view-lang/build-match-string-habit ()
+  "Builds match string for habit type (property only, no TODO filter)."
+  (let ((view-spec '((type . habit))))
+    (assert-equal
+     "LEVEL>0+ORG_GTD=\"Habit\""
+     (org-gtd-view-lang--build-match-string view-spec))))
+
+;;; Skip Function Builder Tests
+
+(deftest view-lang/build-skip-function-returns-function ()
+  "Returns a function that can be used as skip function."
+  (let ((view-spec '((type . delegated)
+                     (when . past))))
+    (let ((skip-fn (org-gtd-view-lang--build-skip-function view-spec)))
+      (assert-true (functionp skip-fn)))))
+
+(deftest view-lang/build-skip-function-skips-wrong-type ()
+  "Skip function skips items with wrong ORG_GTD type."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* Test\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . delegated)))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Should return a number (end of subtree) to skip
+      (assert-true (numberp result)))))
+
+(deftest view-lang/build-skip-function-includes-matching-type ()
+  "Skip function includes items with matching ORG_GTD type."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* Test\n:PROPERTIES:\n:ORG_GTD: Delegated\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . delegated)))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Should return nil to include
+      (assert-nil result))))
+
+(deftest view-lang/build-skip-function-handles-when-past ()
+  "Skip function handles when=past filter."
+  (with-temp-buffer
+    (org-mode)
+    ;; Future timestamp should be skipped for when=past
+    (insert "* Test\n:PROPERTIES:\n:ORG_GTD: Delegated\n:ORG_GTD_TIMESTAMP: <2099-01-01 Wed>\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . delegated)
+                        (when . past)))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Future timestamp should be skipped
+      (assert-true (numberp result)))))
+
+(deftest view-lang/build-skip-function-includes-past-timestamp ()
+  "Skip function includes items with past timestamps for when=past."
+  (with-temp-buffer
+    (org-mode)
+    ;; Past timestamp should be included for when=past
+    (insert "* Test\n:PROPERTIES:\n:ORG_GTD: Delegated\n:ORG_GTD_TIMESTAMP: <2020-01-01 Wed>\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . delegated)
+                        (when . past)))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Past timestamp should be included
+      (assert-nil result))))
+
+;;; Native Block Translator Tests
+
+(deftest view-lang/translate-to-native-block-uses-tags ()
+  "Native block translator uses tags for types without specific TODO keywords."
+  (let* ((view-spec '((name . "Test View")
+                      (type . calendar)))
+         (block (org-gtd-view-lang--translate-to-native-block view-spec)))
+    (assert-equal 'tags (car block))))
+
+(deftest view-lang/translate-to-native-block-includes-match-string ()
+  "Native block includes match string."
+  (let* ((view-spec '((name . "Test View")
+                      (type . calendar)))
+         (block (org-gtd-view-lang--translate-to-native-block view-spec)))
+    (assert-equal "LEVEL>0+ORG_GTD=\"Calendar\""
+                  (cadr block))))
+
+(deftest view-lang/translate-to-native-block-includes-header ()
+  "Native block includes header setting."
+  (let* ((view-spec '((name . "My Test View")
+                      (type . next-action)))
+         (block (org-gtd-view-lang--translate-to-native-block view-spec))
+         (settings (caddr block)))
+    (assert-equal "My Test View"
+                  (cadr (assoc 'org-agenda-overriding-header settings)))))
+
+(deftest view-lang/translate-to-native-block-includes-skip-function ()
+  "Native block includes skip function when filters need it."
+  (let* ((view-spec '((name . "Delegated Past")
+                      (type . delegated)
+                      (when . past)))
+         (block (org-gtd-view-lang--translate-to-native-block view-spec))
+         (settings (caddr block)))
+    (assert-true (assoc 'org-agenda-skip-function settings))))
+
+(deftest view-lang/translate-to-native-block-with-prefix-format ()
+  "Native block includes prefix format when provided."
+  (let* ((view-spec '((name . "Test View")
+                      (type . next-action)))
+         (prefix-format " %i %-12:(org-gtd-agenda--prefix-format 12) ")
+         (block (org-gtd-view-lang--translate-to-native-block view-spec prefix-format))
+         (settings (caddr block))
+         (prefix-setting (assoc 'org-agenda-prefix-format settings)))
+    ;; The setting is: (org-agenda-prefix-format '((tags . FORMAT) (todo . FORMAT)))
+    ;; So cadr is the quoted alist, and we need to eval or get the value from that quote
+    (assert-true prefix-setting)
+    (let ((format-alist (cadr (cadr prefix-setting))))  ; Get inside the quote
+      (assert-equal prefix-format (cdr (assoc 'tags format-alist))))))
+
+;;; Routing Tests - Verify types use native blocks
+
+(deftest view-lang/create-agenda-block-routes-next-action-to-native ()
+  "Routes type=next-action to native tags-todo block (has specific TODO keyword)."
+  (let* ((view-spec '((name . "Next Actions")
+                      (type . next-action)))
+         (block (org-gtd-view-lang--create-agenda-block view-spec)))
+    (assert-equal 'tags-todo (car block))))
+
+(deftest view-lang/create-agenda-block-routes-delegated-to-native ()
+  "Routes type=delegated to native tags-todo block (has specific TODO keyword)."
+  (let* ((view-spec '((name . "Delegated")
+                      (type . delegated)))
+         (block (org-gtd-view-lang--create-agenda-block view-spec)))
+    (assert-equal 'tags-todo (car block))))
+
+(deftest view-lang/create-agenda-block-routes-calendar-to-native ()
+  "Routes type=calendar to native tags block."
+  (let* ((view-spec '((name . "Calendar")
+                      (type . calendar)))
+         (block (org-gtd-view-lang--create-agenda-block view-spec)))
+    (assert-equal 'tags (car block))))
+
+(deftest view-lang/create-agenda-block-routes-tickler-to-native ()
+  "Routes type=tickler to native tags block."
+  (let* ((view-spec '((name . "Tickler")
+                      (type . tickler)))
+         (block (org-gtd-view-lang--create-agenda-block view-spec)))
+    (assert-equal 'tags (car block))))
+
+(deftest view-lang/create-agenda-block-native-includes-prefix-format ()
+  "Native block includes inherited prefix format."
+  (let* ((view-spec '((name . "Test")
+                      (type . next-action)))
+         (prefix-format " %i %-12:(test) ")
+         (block (org-gtd-view-lang--create-agenda-block view-spec prefix-format))
+         (settings (caddr block)))
+    (assert-true (assoc 'org-agenda-prefix-format settings))))
+
+;;; Complex Type Routing Tests
+
+(deftest view-lang/create-agenda-block-routes-stuck-project-to-native ()
+  "Routes type=stuck-project to native tags block."
+  (let* ((view-spec '((name . "Stuck Projects")
+                      (type . stuck-project)))
+         (block (org-gtd-view-lang--create-agenda-block view-spec)))
+    (assert-equal 'tags (car block))))
+
+(deftest view-lang/create-agenda-block-routes-active-project-to-native ()
+  "Routes type=active-project to native tags block."
+  (let* ((view-spec '((name . "Active Projects")
+                      (type . active-project)))
+         (block (org-gtd-view-lang--create-agenda-block view-spec)))
+    (assert-equal 'tags (car block))))
+
+(deftest view-lang/create-agenda-block-routes-completed-project-to-native ()
+  "Routes type=completed-project to native tags block."
+  (let* ((view-spec '((name . "Completed Projects")
+                      (type . completed-project)))
+         (block (org-gtd-view-lang--create-agenda-block view-spec)))
+    (assert-equal 'tags (car block))))
+
+(deftest view-lang/create-agenda-block-routes-stuck-calendar-to-native ()
+  "Routes type=stuck-calendar to native tags block."
+  (let* ((view-spec '((name . "Stuck Calendar")
+                      (type . stuck-calendar)))
+         (block (org-gtd-view-lang--create-agenda-block view-spec)))
+    (assert-equal 'tags (car block))))
+
+(deftest view-lang/create-agenda-block-routes-stuck-delegated-to-native ()
+  "Routes type=stuck-delegated to native tags block."
+  (let* ((view-spec '((name . "Stuck Delegated")
+                      (type . stuck-delegated)))
+         (block (org-gtd-view-lang--create-agenda-block view-spec)))
+    (assert-equal 'tags (car block))))
+
+(deftest view-lang/create-agenda-block-routes-stuck-tickler-to-native ()
+  "Routes type=stuck-tickler to native tags block."
+  (let* ((view-spec '((name . "Stuck Tickler")
+                      (type . stuck-tickler)))
+         (block (org-gtd-view-lang--create-agenda-block view-spec)))
+    (assert-equal 'tags (car block))))
+
+(deftest view-lang/create-agenda-block-routes-stuck-habit-to-native ()
+  "Routes type=stuck-habit to native tags block."
+  (let* ((view-spec '((name . "Stuck Habit")
+                      (type . stuck-habit)))
+         (block (org-gtd-view-lang--create-agenda-block view-spec)))
+    (assert-equal 'tags (car block))))
+
+(deftest view-lang/create-agenda-block-routes-tickler-project-to-native ()
+  "Routes type=tickler-project to native tags block."
+  (let* ((view-spec '((name . "Tickler Projects")
+                      (type . tickler-project)))
+         (block (org-gtd-view-lang--create-agenda-block view-spec)))
+    (assert-equal 'tags (car block))))
+
+(deftest view-lang/create-agenda-block-routes-incubated-project-to-native ()
+  "Routes type=incubated-project to native tags block."
+  (let* ((view-spec '((name . "Incubated Projects")
+                      (type . incubated-project)))
+         (block (org-gtd-view-lang--create-agenda-block view-spec)))
+    (assert-equal 'tags (car block))))
+
+;;; Complex Type Match String Tests
+
+(deftest view-lang/build-match-string-stuck-project ()
+  "Builds match string for stuck-project type."
+  (let ((view-spec '((type . stuck-project))))
+    (assert-equal
+     "LEVEL>0+ORG_GTD=\"Projects\""
+     (org-gtd-view-lang--build-match-string view-spec))))
+
+(deftest view-lang/build-match-string-active-project ()
+  "Builds match string for active-project type."
+  (let ((view-spec '((type . active-project))))
+    (assert-equal
+     "LEVEL>0+ORG_GTD=\"Projects\""
+     (org-gtd-view-lang--build-match-string view-spec))))
+
+(deftest view-lang/build-match-string-stuck-calendar ()
+  "Builds match string for stuck-calendar type."
+  (let ((view-spec '((type . stuck-calendar))))
+    (assert-equal
+     "LEVEL>0+ORG_GTD=\"Calendar\""
+     (org-gtd-view-lang--build-match-string view-spec))))
+
+(deftest view-lang/build-match-string-stuck-delegated ()
+  "Builds match string for stuck-delegated type."
+  (let ((view-spec '((type . stuck-delegated))))
+    (assert-equal
+     "LEVEL>0+ORG_GTD=\"Delegated\""
+     (org-gtd-view-lang--build-match-string view-spec))))
+
+(deftest view-lang/build-match-string-tickler-project ()
+  "Builds match string for tickler-project type."
+  (let ((view-spec '((type . tickler-project))))
+    (assert-equal
+     "LEVEL>0+ORG_GTD=\"Tickler\""
+     (org-gtd-view-lang--build-match-string view-spec))))
+
+(deftest view-lang/build-match-string-incubated-project ()
+  "Builds match string for incubated-project type (requires OR in skip fn)."
+  (let ((view-spec '((type . incubated-project))))
+    ;; Match string can only do one property, skip function handles OR
+    (assert-equal
+     "LEVEL>0+ORG_GTD<>\"\""
+     (org-gtd-view-lang--build-match-string view-spec))))
+
+;;; Complex Type Skip Function Tests
+
+(deftest view-lang/build-skip-function-stuck-project ()
+  "Skip function for stuck-project uses project-is-stuck predicate."
+  (let* ((view-spec '((type . stuck-project)))
+         (skip-fn (org-gtd-view-lang--build-skip-function view-spec)))
+    (assert-true (functionp skip-fn))))
+
+(deftest view-lang/build-skip-function-active-project ()
+  "Skip function for active-project uses project-has-active-tasks predicate."
+  (let* ((view-spec '((type . active-project)))
+         (skip-fn (org-gtd-view-lang--build-skip-function view-spec)))
+    (assert-true (functionp skip-fn))))
+
+(deftest view-lang/build-skip-function-stuck-calendar-invalid-ts ()
+  "Skip function for stuck-calendar checks for invalid timestamp."
+  (with-temp-buffer
+    (org-mode)
+    ;; Calendar item with valid timestamp should be skipped (not stuck)
+    (insert "* Test\n:PROPERTIES:\n:ORG_GTD: Calendar\n:ORG_GTD_TIMESTAMP: <2025-01-15 Wed>\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . stuck-calendar)))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Valid timestamp = not stuck, should be skipped
+      (assert-true (numberp result)))))
+
+(deftest view-lang/build-skip-function-stuck-calendar-missing-ts ()
+  "Skip function for stuck-calendar includes items with missing timestamp."
+  (with-temp-buffer
+    (org-mode)
+    ;; Calendar item with NO timestamp should be included (is stuck)
+    (insert "* Test\n:PROPERTIES:\n:ORG_GTD: Calendar\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . stuck-calendar)))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Missing timestamp = stuck, should be included
+      (assert-nil result))))
+
+(deftest view-lang/build-skip-function-stuck-delegated-missing-who ()
+  "Skip function for stuck-delegated includes items with missing DELEGATED_TO."
+  (with-temp-buffer
+    (org-mode)
+    ;; Delegated item with timestamp but NO who should be included (is stuck)
+    (insert "* Test\n:PROPERTIES:\n:ORG_GTD: Delegated\n:ORG_GTD_TIMESTAMP: <2025-01-15 Wed>\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . stuck-delegated)))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Missing who = stuck, should be included
+      (assert-nil result))))
+
+(deftest view-lang/build-skip-function-stuck-delegated-complete ()
+  "Skip function for stuck-delegated skips items with both who and timestamp."
+  (with-temp-buffer
+    (org-mode)
+    ;; Delegated item with BOTH timestamp and who should be skipped (not stuck)
+    (insert "* Test\n:PROPERTIES:\n:ORG_GTD: Delegated\n:ORG_GTD_TIMESTAMP: <2025-01-15 Wed>\n:DELEGATED_TO: Alice\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . stuck-delegated)))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Has both = not stuck, should be skipped
+      (assert-true (numberp result)))))
+
+(deftest view-lang/build-skip-function-tickler-project ()
+  "Skip function for tickler-project checks PREVIOUS_ORG_GTD property."
+  (with-temp-buffer
+    (org-mode)
+    ;; Tickler item that was a project should be included
+    (insert "* Test\n:PROPERTIES:\n:ORG_GTD: Tickler\n:PREVIOUS_ORG_GTD: Projects\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . tickler-project)))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Was a project, should be included
+      (assert-nil result))))
+
+(deftest view-lang/build-skip-function-tickler-project-wrong-previous ()
+  "Skip function for tickler-project skips items that weren't projects."
+  (with-temp-buffer
+    (org-mode)
+    ;; Tickler item that was NOT a project should be skipped
+    (insert "* Test\n:PROPERTIES:\n:ORG_GTD: Tickler\n:PREVIOUS_ORG_GTD: Actions\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . tickler-project)))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Was not a project, should be skipped
+      (assert-true (numberp result)))))
 
 (provide 'gtd-view-language-test)
 

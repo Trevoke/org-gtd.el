@@ -107,12 +107,36 @@
 ;;
 ;;; Code:
 (require 'org-gtd-core)
-(require 'org-gtd-ql)
 (require 'org-gtd-skip)
 (require 'org-gtd-types)
 
 (defvar org-gtd-view-lang--current-type nil
   "Track the current type filter for semantic property resolution.")
+
+(defconst org-gtd-view-lang--simple-types
+  '(next-action delegated calendar tickler project someday habit reference trash quick-action)
+  "List of simple GTD types that can be handled by native agenda blocks.
+These types have straightforward ORG_GTD property matches.")
+
+(defconst org-gtd-view-lang--complex-types
+  '(stuck-project active-project completed-project
+    tickler-project incubated-project
+    stuck-delegated stuck-calendar stuck-tickler stuck-habit)
+  "List of complex GTD types that require special predicate handling.
+These are computed types that need additional logic beyond property matches.")
+
+(defun org-gtd-view-lang--simple-type-p (type-name)
+  "Return non-nil if TYPE-NAME is a simple type for native handling."
+  (memq type-name org-gtd-view-lang--simple-types))
+
+(defun org-gtd-view-lang--complex-type-p (type-name)
+  "Return non-nil if TYPE-NAME is a complex type for native handling."
+  (memq type-name org-gtd-view-lang--complex-types))
+
+(defun org-gtd-view-lang--native-type-p (type-name)
+  "Return non-nil if TYPE-NAME can be handled by native agenda blocks."
+  (or (org-gtd-view-lang--simple-type-p type-name)
+      (org-gtd-view-lang--complex-type-p type-name)))
 
 (defun org-gtd-view-lang--create-agenda-block (gtd-view-spec &optional inherited-prefix-format)
   "Create an agenda block from GTD-VIEW-SPEC.
@@ -121,11 +145,14 @@ Calendar/Habit.
 If block-type is \\='todo, creates a native todo block.
 If view-type is \\='agenda, creates a native agenda block.
 If view-type is \\='tags-grouped, creates grouped views.
-Otherwise creates an org-ql agenda block.
+If type filter is present, creates a native tags-todo block.
+If done filter is present, creates a native tags block for completed items.
 INHERITED-PREFIX-FORMAT is optionally passed from parent view spec."
   (let* ((name (alist-get 'name gtd-view-spec))
          (block-type (alist-get 'block-type gtd-view-spec))
          (view-type (alist-get 'view-type gtd-view-spec))
+         (type-filter (alist-get 'type gtd-view-spec))
+         (done-filter (alist-get 'done gtd-view-spec))
          (prefix-format (or (alist-get 'prefix-format gtd-view-spec)
                             inherited-prefix-format)))
     (cond
@@ -137,14 +164,14 @@ INHERITED-PREFIX-FORMAT is optionally passed from parent view spec."
       (org-gtd-view-lang--create-native-agenda-block gtd-view-spec))
      ((eq view-type 'tags-grouped)
       (org-gtd-view-lang--create-grouped-views gtd-view-spec))
+     ;; Route type filters to native blocks (both simple and complex)
+     ((and type-filter (org-gtd-view-lang--native-type-p type-filter))
+      (org-gtd-view-lang--translate-to-native-block gtd-view-spec prefix-format))
+     ;; Route done filters to native blocks
+     (done-filter
+      (org-gtd-view-lang--create-done-filter-block gtd-view-spec prefix-format))
      (t
-      (let ((query (org-gtd-view-lang--translate-to-org-ql gtd-view-spec))
-            (settings `((org-ql-block-header ,name))))
-        (when prefix-format
-          (push `(org-super-agenda-header-prefix ,prefix-format) settings)
-          (push `(org-agenda-prefix-format '((tags . ,prefix-format)
-                                             (todo . ,prefix-format))) settings))
-        `(org-ql-block ',query ,settings))))))
+      (user-error "Unsupported view spec: %S" gtd-view-spec)))))
 
 (defun org-gtd-view-lang--skip-unless-calendar-or-habit ()
   "Skip function to filter agenda to only Calendar and Habit items.
@@ -578,6 +605,270 @@ dynamic grouped views with \\='group-by."
          ;; Add other filter types as needed
          )))
     (string-join (reverse search-parts) "")))
+
+;;;; Native Block Translation
+
+(defun org-gtd-view-lang--complex-type-base-property (type-name)
+  "Return the base ORG_GTD property value for complex TYPE-NAME.
+Returns nil for types that need OR logic (handled by skip function)."
+  (cond
+   ;; Project computed types all match ORG_GTD=\"Projects\"
+   ((memq type-name '(stuck-project active-project completed-project))
+    org-gtd-projects)
+   ;; Tickler-project matches ORG_GTD=\"Tickler\"
+   ((eq type-name 'tickler-project)
+    org-gtd-tickler)
+   ;; Incubated-project needs OR (Tickler OR Someday), handled by skip fn
+   ((eq type-name 'incubated-project)
+    nil)
+   ;; Stuck types match their base type's ORG_GTD value
+   ((eq type-name 'stuck-delegated)
+    (org-gtd-type-org-gtd-value 'delegated))
+   ((eq type-name 'stuck-calendar)
+    (org-gtd-type-org-gtd-value 'calendar))
+   ((eq type-name 'stuck-tickler)
+    (org-gtd-type-org-gtd-value 'tickler))
+   ((eq type-name 'stuck-habit)
+    (org-gtd-type-org-gtd-value 'habit))
+   (t nil)))
+
+(defun org-gtd-view-lang--build-match-string (gtd-view-spec)
+  "Build an org-agenda match string from GTD-VIEW-SPEC.
+The match string is used with tags agenda blocks.
+Returns a string like \"LEVEL>0+ORG_GTD=\\\"Calendar\\\"/TODO=\\\"NEXT\\\"\"."
+  (let* ((type-filter (alist-get 'type gtd-view-spec))
+         ;; For simple types, use org-gtd-type-org-gtd-value
+         ;; For complex types, use the base property lookup
+         (org-gtd-val (cond
+                       ((org-gtd-view-lang--simple-type-p type-filter)
+                        (org-gtd-type-org-gtd-value type-filter))
+                       ((org-gtd-view-lang--complex-type-p type-filter)
+                        (org-gtd-view-lang--complex-type-base-property type-filter))
+                       (t nil)))
+         (property-part (if org-gtd-val
+                           (format "LEVEL>0+ORG_GTD=\"%s\"" org-gtd-val)
+                         "LEVEL>0+ORG_GTD<>\"\""))
+         (todo-part nil))
+    (when type-filter
+      ;; Add TODO keyword for types that have implied keywords
+      (cond
+       ((eq type-filter 'next-action)
+        (setq todo-part (format "TODO=\"%s\"" (org-gtd-keywords--next))))
+       ((eq type-filter 'delegated)
+        (setq todo-part (format "TODO=\"%s\"" (org-gtd-keywords--wait))))))
+    ;; Build match string:
+    ;; - Use LEVEL>0 as base (matches all headlines)
+    ;; - Use ORG_GTD="value" to filter to specific type
+    ;; - For types with specific TODO keywords, add /TODO="STATE"
+    (if todo-part
+        (concat property-part "/" todo-part)
+      property-part)))
+
+(defun org-gtd-view-lang--build-skip-function-for-stuck-type (base-type)
+  "Build a skip function for stuck items of BASE-TYPE.
+Stuck items are included if they have ANY missing/invalid metadata.
+Returns a function suitable for `org-agenda-skip-function'."
+  (let ((org-gtd-val (org-gtd-type-org-gtd-value base-type))
+        (when-prop (org-gtd-type-property base-type :when))
+        (who-prop (org-gtd-type-property base-type :who)))
+    (lambda ()
+      (let ((end (org-entry-end-position)))
+        ;; Must match the base type
+        (if (not (equal (org-entry-get (point) "ORG_GTD") org-gtd-val))
+            end  ; Skip - wrong type
+          ;; Item is stuck if ANY of the following are true:
+          ;; - Invalid timestamp (when type has :when property)
+          ;; - Missing/empty who (when type has :who property)
+          (let ((is-stuck nil))
+            (when when-prop
+              (let ((ts-value (org-entry-get (point) when-prop)))
+                (when (or (not ts-value)
+                          (string-empty-p (string-trim ts-value))
+                          (not (string-match org-ts-regexp-both ts-value)))
+                  (setq is-stuck t))))
+            (when (and who-prop (not is-stuck))
+              (let ((who-value (org-entry-get (point) who-prop)))
+                (when (or (not who-value)
+                          (string-empty-p (string-trim who-value)))
+                  (setq is-stuck t))))
+            (if is-stuck
+                nil   ; Include - item is stuck
+              end))))))) ; Skip - item is not stuck
+
+(defun org-gtd-view-lang--build-skip-function-for-project-type (project-type)
+  "Build a skip function for computed PROJECT-TYPE.
+PROJECT-TYPE is one of stuck-project, active-project, completed-project."
+  (lambda ()
+    (let ((end (org-entry-end-position)))
+      ;; Must be a project
+      (if (not (equal (org-entry-get (point) "ORG_GTD") org-gtd-projects))
+          end  ; Skip - not a project
+        (cond
+         ((eq project-type 'stuck-project)
+          (if (funcall (org-gtd-pred--project-is-stuck))
+              nil    ; Include - project is stuck
+            end))    ; Skip - project is not stuck
+         ((eq project-type 'active-project)
+          (if (funcall (org-gtd-pred--project-has-active-tasks))
+              nil    ; Include - has active tasks
+            end))    ; Skip - no active tasks
+         ((eq project-type 'completed-project)
+          (if (not (funcall (org-gtd-pred--project-has-active-tasks)))
+              nil    ; Include - no active tasks (completed)
+            end))    ; Skip - still has active tasks
+         (t end))))))
+
+(defun org-gtd-view-lang--build-skip-function-for-tickler-project ()
+  "Build a skip function for tickler-project type.
+Matches items in Tickler that were previously Projects."
+  (lambda ()
+    (let ((end (org-entry-end-position)))
+      (if (and (equal (org-entry-get (point) "ORG_GTD") org-gtd-tickler)
+               (equal (org-entry-get (point) org-gtd-prop-previous-category) org-gtd-projects))
+          nil    ; Include - tickler item that was a project
+        end))))  ; Skip - not matching
+
+(defun org-gtd-view-lang--build-skip-function-for-incubated-project ()
+  "Build a skip function for incubated-project type.
+Matches items in Tickler OR Someday that were previously Projects."
+  (lambda ()
+    (let ((end (org-entry-end-position))
+          (org-gtd-val (org-entry-get (point) "ORG_GTD"))
+          (prev-val (org-entry-get (point) org-gtd-prop-previous-category)))
+      (if (and (or (equal org-gtd-val org-gtd-tickler)
+                   (equal org-gtd-val org-gtd-someday))
+               (equal prev-val org-gtd-projects))
+          nil    ; Include - incubated project
+        end))))  ; Skip - not matching
+
+(defun org-gtd-view-lang--done-filter-days (done-value)
+  "Return the number of days to look back for DONE-VALUE filter.
+Returns nil for (done . t) which means any done item."
+  (cond
+   ((eq done-value t) nil)
+   ((eq done-value 'recent) 7)
+   ((eq done-value 'today) 0)
+   ((eq done-value 'past-day) 1)
+   ((eq done-value 'past-week) 7)
+   ((eq done-value 'past-month) 30)
+   ((eq done-value 'past-year) 365)
+   (t nil)))
+
+(defun org-gtd-view-lang--build-skip-function-for-done-filter (done-value)
+  "Build a skip function for done filter with DONE-VALUE.
+Matches items that are done and closed within the time range."
+  (let ((days-back (org-gtd-view-lang--done-filter-days done-value)))
+    (lambda ()
+      (let ((end (org-entry-end-position)))
+        ;; Must have a done TODO state
+        (if (not (org-entry-is-done-p))
+            end  ; Skip - not done
+          ;; If no time constraint, include all done items
+          (if (not days-back)
+              nil  ; Include - any done item
+            ;; Check CLOSED timestamp is within range
+            (let ((closed-ts (org-entry-get (point) "CLOSED")))
+              (if (not closed-ts)
+                  end  ; Skip - no CLOSED timestamp
+                (let ((closed-time (org-time-string-to-time closed-ts))
+                      (cutoff-time (time-subtract (current-time)
+                                                  (days-to-time days-back))))
+                  (if (time-less-p cutoff-time closed-time)
+                      nil    ; Include - closed within range
+                    end))))))))))  ; Skip - closed too long ago
+
+(defun org-gtd-view-lang--create-done-filter-block (gtd-view-spec &optional prefix-format)
+  "Create a native block for done filter from GTD-VIEW-SPEC.
+Optional PREFIX-FORMAT is applied for display formatting."
+  (let* ((name (alist-get 'name gtd-view-spec))
+         (done-value (alist-get 'done gtd-view-spec))
+         (skip-fn (org-gtd-view-lang--build-skip-function-for-done-filter done-value))
+         ;; Match any ORG_GTD item at level > 0
+         (match-string "LEVEL>0+ORG_GTD<>\"\"")
+         (settings `((org-agenda-overriding-header ,name))))
+    ;; Add skip function
+    (push `(org-agenda-skip-function ,skip-fn) settings)
+    ;; Add prefix format if provided
+    (when prefix-format
+      (push `(org-agenda-prefix-format '((tags . ,prefix-format)
+                                          (todo . ,prefix-format))) settings))
+    ;; Use 'tags' block since done items match any TODO state in org-done-keywords
+    `(tags ,match-string ,settings)))
+
+(defun org-gtd-view-lang--build-skip-function (gtd-view-spec)
+  "Build a skip function from GTD-VIEW-SPEC.
+Returns a function suitable for `org-agenda-skip-function'.
+The function composes predicates from the view spec filters."
+  (let* ((type-filter (alist-get 'type gtd-view-spec))
+         (when-filter (alist-get 'when gtd-view-spec))
+         (area-filter (alist-get 'area-of-focus gtd-view-spec)))
+    ;; Handle complex types with specialized skip functions
+    (cond
+     ;; Stuck types - need OR logic for missing metadata
+     ((eq type-filter 'stuck-calendar)
+      (org-gtd-view-lang--build-skip-function-for-stuck-type 'calendar))
+     ((eq type-filter 'stuck-delegated)
+      (org-gtd-view-lang--build-skip-function-for-stuck-type 'delegated))
+     ((eq type-filter 'stuck-tickler)
+      (org-gtd-view-lang--build-skip-function-for-stuck-type 'tickler))
+     ((eq type-filter 'stuck-habit)
+      (org-gtd-view-lang--build-skip-function-for-stuck-type 'habit))
+     ;; Project computed types
+     ((memq type-filter '(stuck-project active-project completed-project))
+      (org-gtd-view-lang--build-skip-function-for-project-type type-filter))
+     ;; Tickler/incubated project types
+     ((eq type-filter 'tickler-project)
+      (org-gtd-view-lang--build-skip-function-for-tickler-project))
+     ((eq type-filter 'incubated-project)
+      (org-gtd-view-lang--build-skip-function-for-incubated-project))
+     ;; Simple types - use predicate composition
+     (t
+      (let ((predicates '()))
+        ;; Add type predicate
+        (when type-filter
+          (let ((org-gtd-val (org-gtd-type-org-gtd-value type-filter)))
+            (when org-gtd-val
+              (push (org-gtd-pred--property-equals "ORG_GTD" org-gtd-val) predicates))))
+        ;; Add area-of-focus predicate (uses CATEGORY property)
+        (when area-filter
+          (push (org-gtd-pred--property-equals org-gtd-prop-area-of-focus area-filter) predicates))
+        ;; Add when predicate based on type's semantic property
+        (when (and when-filter type-filter)
+          (let ((when-prop (org-gtd-type-property type-filter :when)))
+            (when when-prop
+              (cond
+               ((eq when-filter 'past)
+                (push (org-gtd-pred--property-ts< when-prop "today") predicates))
+               ((eq when-filter 'today)
+                (push (org-gtd-pred--property-ts= when-prop "today") predicates))
+               ((eq when-filter 'future)
+                (push (org-gtd-pred--property-ts> when-prop "today") predicates))))))
+        ;; Always exclude done items from native blocks
+        (push (org-gtd-pred--not-done) predicates)
+        ;; Compose predicates into skip function
+        (org-gtd-skip--compose (nreverse predicates)))))))
+
+(defun org-gtd-view-lang--translate-to-native-block (gtd-view-spec &optional prefix-format)
+  "Translate GTD-VIEW-SPEC to a native org-agenda block.
+Returns a tags block with match string and skip function.
+Optional PREFIX-FORMAT is applied for project name display."
+  (let* ((name (alist-get 'name gtd-view-spec))
+         (type-filter (alist-get 'type gtd-view-spec))
+         (match-string (org-gtd-view-lang--build-match-string gtd-view-spec))
+         (skip-fn (org-gtd-view-lang--build-skip-function gtd-view-spec))
+         (settings `((org-agenda-overriding-header ,name))))
+    ;; Add skip function - always needed for native blocks
+    (push `(org-agenda-skip-function ,skip-fn) settings)
+    ;; Add prefix format if provided
+    (when prefix-format
+      (push `(org-agenda-prefix-format '((tags . ,prefix-format)
+                                          (todo . ,prefix-format))) settings))
+    ;; Use 'tags' for property-only matches (items without TODO keywords)
+    ;; Use 'tags-todo' for items with specific TODO requirements
+    (let ((block-type (if (memq type-filter '(next-action delegated))
+                          'tags-todo
+                        'tags)))
+      `(,block-type ,match-string ,settings))))
 
 ;;;; Public API
 

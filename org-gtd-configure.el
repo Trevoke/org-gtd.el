@@ -36,7 +36,6 @@
 ;;
 ;;; Code:
 (require 'org-gtd-id)
-(require 'org-gtd-ql)
 (require 'org-gtd-types)
 (require 'org-gtd-core)
 

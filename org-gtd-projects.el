@@ -32,7 +32,6 @@
 (require 'org-edna)
 
 (require 'org-gtd-core)
-(require 'org-gtd-ql)
 (require 'org-gtd-refile)
 (require 'org-gtd-configure)
 (require 'org-gtd-accessors)
@@ -647,31 +646,6 @@ dependencies aren't set up properly."
              (t (setq has-todo-tasks t)))))))
     ;; Project is stuck if it has work remaining but nothing actionable
     (and has-todo-tasks (not has-actionable-task))))
-
-;;;; Org-ql Predicates for Projects
-
-(org-ql-defpred project-has-active-tasks ()
-  "True if the project at point has at least one active (non-done) task.
-
-Active tasks are those with TODO states that are not in `org-done-keywords'.
-This predicate only evaluates to true for headings with ORG_GTD=\"Projects\".
-
-This uses the project dependency graph to find all tasks belonging to the
-project, making it work correctly with flexible project structures where
-tasks can be at any level in the hierarchy."
-  :body (when (string-equal (org-entry-get nil "ORG_GTD") "Projects")
-          (org-gtd-projects--has-active-tasks-p (point-marker))))
-
-(org-ql-defpred project-is-stuck ()
-  "True if the project at point is stuck.
-
-A stuck project has active tasks (work remaining) but no immediately actionable
-tasks (NEXT or WAIT states). This typically indicates incomplete planning or
-missing dependencies. Only evaluates for headings with ORG_GTD=\"Projects\".
-
-This uses the project dependency graph to analyze all tasks in the project."
-  :body (when (string-equal (org-entry-get nil "ORG_GTD") "Projects")
-          (org-gtd-projects--is-stuck-p (point-marker))))
 
 (defun org-gtd-projects--create-dependency-relationship (blocker-marker dependent-marker)
   "Create bidirectional dependency: BLOCKER-MARKER blocks DEPENDENT-MARKER."

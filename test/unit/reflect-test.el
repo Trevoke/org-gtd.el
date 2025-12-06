@@ -69,13 +69,15 @@
 
 ;;; Agenda Block Generation
 
-(deftest reflect/creates-org-ql-agenda-blocks ()
-  "Can create org-ql agenda blocks."
+(deftest reflect/creates-native-agenda-blocks ()
+  "Can create native agenda blocks from type filters."
   (let* ((delegated-spec (car org-gtd-reflect-missed-engagements-view-specs))
-         (block (org-gtd-view-lang--create-agenda-block delegated-spec)))
-    (assert-equal 'org-ql-block (car block))
-    (assert-equal 'org-ql-block-header (car (caadr (cdr block))))
-    (assert-equal "Missed check-ins on delegated items" (cadr (caadr (cdr block))))))
+         (block (org-gtd-view-lang--create-agenda-block delegated-spec))
+         (settings (caddr block)))
+    ;; Delegated uses tags-todo (has specific TODO=WAIT keyword)
+    (assert-equal 'tags-todo (car block))
+    (assert-equal "Missed check-ins on delegated items"
+                  (cadr (assoc 'org-agenda-overriding-header settings)))))
 
 (deftest reflect/creates-custom-commands-structure ()
   "Can create custom commands structure."
