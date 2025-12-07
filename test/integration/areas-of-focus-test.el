@@ -176,18 +176,21 @@ set CATEGORY on all tasks in the project DAG."
     (let ((beta-category (org-entry-get (point) "CATEGORY" nil)))
       (assert-not-equal "Career" beta-category))))
 
-(deftest areas-of-focus/agenda-errors-when-no-org-gtd-property ()
-  "Errors when item has no ORG_GTD property."
+(deftest areas-of-focus/errors-when-no-org-gtd-property ()
+  "Errors when item has no ORG_GTD property.
+Tests that `org-gtd-area-of-focus-set-on-agenda-item' rejects items
+that lack proper GTD metadata."
   ;; Create a single action, then corrupt it by removing ORG_GTD
   (create-single-action "corrupted action")
   (with-current-buffer (org-gtd--default-file)
     (goto-char (point-min))
     (search-forward "corrupted action")
+    (org-back-to-heading t)
     ;; Remove ORG_GTD property to corrupt the item
     (org-entry-delete (point) "ORG_GTD"))
 
-  ;; Try to set area of focus from agenda - should error
-  (org-gtd-engage)
+  ;; Use raw todo agenda (not GTD engage view) which shows all TODOs
+  (org-todo-list)
   (with-current-buffer org-agenda-buffer
     (goto-char (point-min))
     (search-forward "corrupted action")

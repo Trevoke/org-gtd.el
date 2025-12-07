@@ -861,14 +861,14 @@
   "Builds match string for next-action type with TODO filter."
   (let ((view-spec '((type . next-action))))
     (assert-equal
-     (format "LEVEL>0+ORG_GTD=\"Actions\"/TODO=\"%s\"" (org-gtd-keywords--next))
+     (format "LEVEL>0+ORG_GTD=\"Actions\"/%s" (org-gtd-keywords--next))
      (org-gtd-view-lang--build-match-string view-spec))))
 
 (deftest view-lang/build-match-string-delegated ()
   "Builds match string for delegated type with TODO filter."
   (let ((view-spec '((type . delegated))))
     (assert-equal
-     (format "LEVEL>0+ORG_GTD=\"Delegated\"/TODO=\"%s\"" (org-gtd-keywords--wait))
+     (format "LEVEL>0+ORG_GTD=\"Delegated\"/%s" (org-gtd-keywords--wait))
      (org-gtd-view-lang--build-match-string view-spec))))
 
 (deftest view-lang/build-match-string-calendar ()

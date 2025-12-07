@@ -63,20 +63,19 @@ Shows:
                 (type . delegated)
                 (when . today))
                ((name . "All actions ready to be executed")
-                (block-type . todo)
-                (todo-keyword . ,(org-gtd-keywords--next)))))))
+                (type . next-action))))))
 
-(defun org-gtd-engage-grouped-by-context-view-spec ()
-  "Return GTD view specification for the grouped by context engage view."
-  `((name . "Actions by Context")
-    (view-type . tags-grouped)
-    (group-by . context)
-    (filters . ((tags-match . "{^@}")
-                (todo . (,(org-gtd-keywords--next)))))))
+(defun org-gtd-engage-tagged-view-spec (tag)
+  "Return GTD view specification for next actions with TAG."
+  `((name . ,(format "Next Actions: %s" tag))
+    (prefix . (project area-of-focus "—"))
+    (prefix-width . ,org-gtd-prefix-width)
+    (type . next-action)
+    (tags . (,tag))))
 
 (defun org-gtd-show-all-next-view-spec ()
   "Return GTD view specification for showing all next actions."
-  `((name . "All Next Actions")
+  '((name . "All Next Actions")
     (type . next-action)))
 
 ;;;; Commands
@@ -88,10 +87,13 @@ Shows:
   (org-gtd-view-show (org-gtd-engage-view-spec)))
 
 ;;;###autoload
-(defun org-gtd-engage-grouped-by-context ()
-  "Show all `org-gtd-next' actions grouped by context (tag prefixed with @)."
-  (interactive)
-  (org-gtd-view-show (org-gtd-engage-grouped-by-context-view-spec)))
+(defun org-gtd-engage-tagged (&optional tag)
+  "Show next actions filtered by TAG.
+Prompts for a tag if not provided."
+  (interactive
+   (list (completing-read "Show next actions with tag: "
+                          (org-global-tags-completion-table))))
+  (org-gtd-view-show (org-gtd-engage-tagged-view-spec tag)))
 
 ;;;###autoload
 (defun org-gtd-show-all-next ()
@@ -99,6 +101,14 @@ Shows:
 This assumes all GTD files are also agenda files."
   (interactive)
   (org-gtd-view-show (org-gtd-show-all-next-view-spec)))
+
+;;;; Backward Compatibility
+
+;;;###autoload
+(define-obsolete-function-alias 'org-gtd-engage-grouped-by-context
+  #'org-gtd-engage-tagged "4.0"
+  "Use `org-gtd-engage-tagged' instead.
+The new function prompts for any tag, not just @-prefixed context tags.")
 
 ;;;; Footer
 

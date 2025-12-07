@@ -153,25 +153,32 @@
     (make-task "Create content calendar" :level 2)
     (organize-as-project))
 
-  ;; Add a new first task to the project
+  ;; Add a new first task to the project using proper GTD configuration
   (with-current-buffer (org-gtd--default-file)
     (goto-char (point-min))
     (search-forward "Marketing campaign")
     (org-back-to-heading t)
-    (org-insert-heading-after-current)
-    (insert "Design landing page")
-    (org-do-demote)
-    (org-todo "NEXT")  ; Mark the new task as NEXT so it shows in agenda
-    (let ((new-task-id (org-id-get-create)))
-      (org-up-heading-safe)
-      (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" new-task-id)
+    (let ((project-id (org-id-get)))
+      (org-insert-heading-after-current)
+      (insert "Design landing page")
+      (org-do-demote)
+      ;; Configure as next-action properly (sets ORG_GTD, TODO state, etc.)
+      (org-gtd-configure-as-type 'next-action)
+      (let ((new-task-id (org-id-get-create)))
+        ;; Link task to project
+        (org-entry-put (point) "ORG_GTD_PROJECT" "Marketing campaign")
+        (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)
+        (org-entry-put (point) "TRIGGER" "org-gtd-update-project-after-task-done!")
+        ;; Add to project's FIRST_TASKS
+        (org-up-heading-safe)
+        (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" new-task-id)
 
-      ;; Verify task was added to FIRST_TASKS
-      (let ((first-tasks (org-entry-get-multivalued-property (point) "ORG_GTD_FIRST_TASKS")))
-        (refute-nil (member new-task-id first-tasks)))
+        ;; Verify task was added to FIRST_TASKS
+        (let ((first-tasks (org-entry-get-multivalued-property (point) "ORG_GTD_FIRST_TASKS")))
+          (refute-nil (member new-task-id first-tasks)))
 
-      ;; Verify new task shows in engage
-      (org-gtd-engage)
-      (assert-match "Design landing page" (agenda-raw-text)))))
+        ;; Verify new task shows in engage
+        (org-gtd-engage)
+        (assert-match "Design landing page" (agenda-raw-text))))))
 
 ;;; project-task-operations-test.el ends here

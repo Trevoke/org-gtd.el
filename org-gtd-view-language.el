@@ -684,13 +684,14 @@ Returns a string like \"LEVEL>0+ORG_GTD=\\\"Calendar\\\"/TODO=\\\"NEXT\\\"\"."
       ;; Add TODO keyword for types that have implied keywords
       (cond
        ((eq type-filter 'next-action)
-        (setq todo-part (format "TODO=\"%s\"" (org-gtd-keywords--next))))
+        (setq todo-part (org-gtd-keywords--next)))
        ((eq type-filter 'delegated)
-        (setq todo-part (format "TODO=\"%s\"" (org-gtd-keywords--wait))))))
+        (setq todo-part (org-gtd-keywords--wait)))))
     ;; Build match string:
     ;; - Use LEVEL>0 as base (matches all headlines)
     ;; - Use ORG_GTD="value" to filter to specific type
-    ;; - For types with specific TODO keywords, add /TODO="STATE"
+    ;; - For types with specific TODO keywords, add /KEYWORD
+    ;;   Note: the /KEYWORD syntax matches the TODO state, not a regexp
     (if todo-part
         (concat property-part "/" todo-part)
       property-part)))
