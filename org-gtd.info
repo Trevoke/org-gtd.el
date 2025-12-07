@@ -3243,53 +3243,70 @@ Let's build a project where some tasks happen simultaneously.
      But our graph view doesn't have delete/modify yet.  Let's note this
      and continue with what we CAN do.
 
-   • What Graph View CAN Do Right Now
+   • What Graph View CAN Do
 
-     From the project heading in graph view:
+     From the project heading in graph view, press ‘?’ to open the
+     command menu:
 
-     ‘a c’
-          Add a child task (creates: selected task → new task)
      ‘a r’
           Add a root task (no dependencies, starts immediately)
+     ‘a s’
+          Add a successor (a new task that depends on the selected task)
      ‘a b’
-          Add a blocker task (creates: new task → selected task)
+          Add a blocker (a new task that the selected task depends on)
 
-     Example: Building a parallel structure from scratch:
+     *The key insight:* ‘a s’ and ‘a b’ let you connect ONE new task to
+     MULTIPLE existing tasks using a checkbox menu.  This enables
+     complex patterns like convergence (diamond).
+
+   • Building Our Parallel Structure
+
+     Let's build the correct structure from scratch:
 
        1. Start with project heading selected
-       2. ‘a r’ → "Find place to get MRI"
-       3. ‘a r’ → "Make orthopedist appointment" (now TWO root tasks!)
+       2. ‘a r’ → "Find place to get MRI" (root task 1)
+       3. ‘a r’ → "Make orthopedist appointment" (root task 2 - now
+          parallel!)
        4. Select "Find place to get MRI"
-       5. ‘a c’ → "Make MRI appointment"
-       6. Select "Make MRI appointment", ‘a c’ → "Get diagnosis (MRI
-          side)"
-       7. Select "Make orthopedist appointment", ‘a c’ → "Get diagnosis
-          (ortho side)"
+       5. ‘a s’ → "Make MRI appointment" → check only "Find MRI" → RET
+       6. Now select "Make MRI appointment"
+       7. ‘a s’ → "Get diagnosis"
+       8. *Here's the key step:* The checkbox menu shows ALL project
+          tasks.  Check BOTH "Make MRI appointment" AND "Make
+          orthopedist appointment"
+       9. Press ‘RET’ to apply
 
-     But wait—we can't make ONE task depend on TWO tasks with current
-     commands.
+     Now "Get diagnosis" is blocked by BOTH appointments - a convergence
+     point!
 
-     *THIS REVEALS A MISSING FEATURE.*
+   • The Diamond Pattern in Action
 
-   • The Dependency Pattern (Diamond)
+     What we just built:
 
-     The pattern we want is called a "diamond":
+          [Find MRI - NEXT]    [Make Ortho Appt - NEXT]
+                  ↓                    ↓
+          [Make MRI Appt - TODO]      │
+                  ↓                   │
+                  └───────┬───────────┘
+                          ↓
+                 [Get Diagnosis - TODO]
 
-              Find MRI ─────┐
-                            ├──→ Get Diagnosis
-          Make Ortho Appt ──┘
+     Two parallel paths converging at "Get diagnosis".  This is the
+     diamond pattern.
 
-     Two parallel paths converge at a single task.
+   • Alternative Approach: Add Blockers
 
-   • Current Workaround
+     You could also build this using ‘a b’ (add blocker):
 
-     For now, to create complex convergence patterns, you would:
-       1. Use graph view to build the basic structure
-       2. Press ‘r’ to refresh and verify
-       3. For convergence points (multiple tasks blocking one task), you
-          need to either:
-             • Structure the project differently
-             • Wait for "modify dependency" commands to be implemented
+       1. Create "Get diagnosis" first as a root task (‘a r’)
+       2. Select "Get diagnosis"
+       3. ‘a b’ → "Make MRI appointment" → check "Get diagnosis" → RET
+       4. Still on "Get diagnosis", ‘a b’ → "Make orthopedist
+          appointment" → check "Get diagnosis" → RET
+       5. Continue building backwards...
+
+     Both approaches work.  Use whichever feels more natural for your
+     mental model.
 
 
 File: org-gtd.info,  Node: Tutorial Complex Dependencies with Graph View,  Next: Common Dependency Patterns (Visual Reference),  Prev: Tutorial Parallel Tasks with Graph View,  Up: Working with Projects (Advanced)
@@ -3323,34 +3340,72 @@ File: org-gtd.info,  Node: Tutorial Complex Dependencies with Graph View,  Next:
 
    • Building with Graph View
 
-     Starting from the project heading:
+     Starting from the project heading, open the command menu with ‘?’:
 
        1. ‘a r’ → "List features" (root task)
        2. Select "List features"
-       3. ‘a c’ → "Implement features" (depends on list)
+       3. ‘a s’ → "Implement features" → check "List features" → RET
        4. Go back to "List features"
-       5. ‘a c’ → "Write documentation" (also depends on list - now
-          parallel!)
+       5. ‘a s’ → "Write documentation" → check "List features" → RET
 
-     Now you have two parallel branches.  Both are green (NEXT) because
-     they only depend on the root task.
+     Now you have two parallel branches from "List features".
 
-     For the convergence at "Get Beta Feedback":
-        • Select "Implement features"
-        • ‘a c’ → "Get Beta Feedback (from implement)"
+   • Creating the Convergence Point
 
-     *But we can't make it ALSO depend on "Write documentation" yet.*
+     For "Get Beta Feedback" that depends on BOTH implement AND
+     documentation:
 
-     *THIS REVEALS THE SAME MISSING FEATURE.*
+       1. Select "Implement features"
+       2. ‘a s’ → "Get Beta Feedback"
+       3. In the checkbox menu, check BOTH "Implement features" AND
+          "Write documentation"
+       4. Press ‘RET’
+
+     Now "Get Beta Feedback" has two blockers - it won't become NEXT
+     until both are complete.
+
+   • Building the Rest
+
+     Continue building the parallel update paths:
+
+       1. Select "Get Beta Feedback"
+       2. ‘a s’ → "Update code" → check "Get Beta Feedback" → RET
+       3. Select "Get Beta Feedback" again
+       4. ‘a s’ → "Update docs" → check "Get Beta Feedback" → RET
+
+     For the final convergence at "Release":
+
+       1. Select "Update code"
+       2. ‘a s’ → "Release"
+       3. Check BOTH "Update code" AND "Update docs"
+       4. Press ‘RET’
+
+   • The Complete Graph
+
+                     [List Features - NEXT]
+                        /              \
+                       ↓                ↓
+          [Implement - TODO]    [Write Docs - TODO]
+                       \                /
+                        ↓              ↓
+                   [Get Beta Feedback - TODO]
+                        /              \
+                       ↓                ↓
+             [Update Code - TODO]  [Update Docs - TODO]
+                        \              /
+                         ↓            ↓
+                      [Release - TODO]
 
    • Key Patterns This Example Shows
 
-       1. *Parallel branches* after List Features (we CAN do this with
-          ‘a c’ from same parent)
-       2. *Converging paths* at Get Beta Feedback (we CANNOT do this
-          yet—needs "add as blocker to existing task")
-       3. *Parallel updates* after feedback (we CAN do this)
-       4. *Final convergence* at Release (we CANNOT do this yet)
+       1. *Parallel branches* from List Features (using ‘a s’ twice from
+          same parent)
+       2. *Converging paths* at Get Beta Feedback (using multi-select
+          checkbox)
+       3. *Parallel updates* after feedback (using ‘a s’ twice)
+       4. *Final convergence* at Release (using multi-select checkbox)
+
+     All four patterns are fully supported.
 
 
 File: org-gtd.info,  Node: Common Dependency Patterns (Visual Reference),  Next: Graph View Command Reference,  Prev: Tutorial Complex Dependencies with Graph View,  Up: Working with Projects (Advanced)
@@ -3370,8 +3425,8 @@ Here's what different patterns look like in graph view:
 
      *When to use*: Order matters, each task depends on the previous.
 
-     *How to build*: Start at project, ‘a r’ for first task, then ‘a c’
-     repeatedly.
+     *How to build*: ‘a r’ for A, select A, ‘a s’ for B (check A),
+     select B, ‘a s’ for C (check B).
 
      *Example*: Review blueprints → Order windows → Schedule carpenter
 
@@ -3396,7 +3451,8 @@ Here's what different patterns look like in graph view:
 
      *When to use*: Initial work enables multiple independent paths.
 
-     *How to build*: ‘a r’ for A, select A, then ‘a c’ for B, C, D.
+     *How to build*: ‘a r’ for A, select A, then ‘a s’ three times (B,
+     C, D - each checking only A).
 
      *Example*: Get project approval → (Design UI, Write backend API,
      Setup infrastructure)
@@ -3410,9 +3466,8 @@ Here's what different patterns look like in graph view:
 
      *When to use*: Final task needs all previous work completed.
 
-     *How to build*: CANNOT BUILD YET—needs "multiple blockers" feature.
-
-     *Workaround*: Make A → C → ... and B → something-else for now.
+     *How to build*: ‘a r’ for A and B.  Select A, ‘a s’ for C, then
+     check BOTH A and B in the checkbox menu.
 
      *Example*: (Write code, Write tests) → Merge to main
 
@@ -3428,8 +3483,11 @@ Here's what different patterns look like in graph view:
 
      *When to use*: Work splits, proceeds in parallel, then combines.
 
-     *How to build*: CANNOT BUILD YET—convergence at D needs multiple
-     blockers.
+     *How to build*:
+       1. ‘a r’ for A
+       2. Select A, ‘a s’ for B (check A)
+       3. Select A again, ‘a s’ for C (check A)
+       4. Select B, ‘a s’ for D, then check BOTH B and C
 
      *Example*: Research → (Write content, Design graphics) → Publish
      article
@@ -3481,21 +3539,45 @@ commands.
 
      *Add Operations (‘a’ prefix):*
 
-     Key   Command          Description
-     ---------------------------------------------------------------------------------
-     a c   Add child        Create task that depends on selected task
-     a r   Add root         Create task with no dependencies (starts immediately)
-     a b   Add blocker      Create task that blocks the selected task
-     a d   Add dependency   Add dependency between two tasks (supports convergence)
+     Key   Command         Description
+     -------------------------------------------------------------------------------
+     a r   Add root task   Create task with no dependencies (starts immediately)
+     a s   Add successor   Create task that the selected task must complete first
+     a b   Add blocker     Create task that must complete before selected task
 
-     *After adding*: Graph automatically refreshes to show new task.
+     *Understanding successors and blockers:*
 
-     *Modify Operations:*
+     These two commands handle all dependency relationships:
 
-     Key   Command                   Description
-     -----------------------------------------------------------------------------
-     d     Remove dependency         Remove a dependency between two tasks
-     x     Clear all relationships   Clear all relationships from selected task
+        • *Add successor* (‘a s’): "What comes after this task?"
+          Creates a new task that depends on the selected task.  The
+          selected task blocks the new task.
+
+        • *Add blocker* (‘a b’): "What must happen first?"  Creates a
+          new task that the selected task depends on.  The new task
+          blocks the selected task.
+
+     Both commands:
+       1. Prompt you to select an existing task OR type a new task title
+       2. If creating new: ask whether to clarify/organize it or create
+          as simple action
+       3. Let you choose multiple edges (which tasks to connect) via
+          checkbox menu
+       4. Automatically refresh the graph
+
+     *After adding*: Graph automatically refreshes to show new task and
+     dependencies.
+
+     *Modify Operations (‘m’ prefix):*
+
+     Key   Command             Description
+     ------------------------------------------------------------------------
+     m b   Modify blockers     Toggle which tasks block the selected task
+     m d   Modify dependents   Toggle which tasks the selected task blocks
+
+     These commands open a checkbox menu showing all project tasks.
+     Toggle checkboxes to add/remove relationships, then press ‘RET’ to
+     apply.
 
      *Inspect:*
 
@@ -3624,12 +3706,12 @@ This is a comprehensive quick reference for all graph view keybindings.
    • Modification (via transient menu ‘?’)
 
      Key     Action
-     ---------------------------------------------
-     ‘a a’   Insert task AFTER selected (child)
-     ‘a b’   Insert task BEFORE selected
+     ---------------------------------------------------------------
      ‘a r’   Add root task (no dependencies)
-     ‘m b’   Modify what blocks this task
-     ‘m a’   Modify what this task blocks
+     ‘a s’   Add successor (new task that selected task blocks)
+     ‘a b’   Add blocker (new task that blocks selected task)
+     ‘m b’   Modify blockers (toggle what blocks selected task)
+     ‘m d’   Modify dependents (toggle what selected task blocks)
      ‘r’     Remove task from project
      ‘t’     Change TODO state
 
@@ -3774,12 +3856,12 @@ File: org-gtd.info,  Node: Practical Tips for Project Management,  Next: Exporti
      As projects evolve, you need to add tasks:
 
         • *New independent work stream*: ‘a r’ (add root task)
-        • *Next step in sequence*: Select current task, ‘a c’ (add
-          child)
+        • *Next step in sequence*: Select current task, ‘a s’ (add
+          successor)
         • *Prerequisite for existing task*: Select existing task, ‘a b’
           (add blocker)
 
-     After adding, press ‘r’ to refresh the view.
+     After adding, the graph refreshes automatically.
 
 
 File: org-gtd.info,  Node: Exporting Project Graphs,  Next: Troubleshooting Projects with Graph View,  Prev: Practical Tips for Project Management,  Up: Working with Projects (Advanced)
@@ -3936,11 +4018,12 @@ File: org-gtd.info,  Node: Troubleshooting Projects with Graph View,  Next: See 
         • Are all those blockers green?  Then something's wrong.
         • Are some blockers gray?  Then the task is correctly blocked.
 
-     If blockers are actually DONE but still showing as green, press ‘r’
+     If blockers are actually DONE but still showing as green, press ‘R’
      to refresh.
 
-     *How to fix*: Use ‘d’ to remove incorrect dependencies, or ‘x’ to
-     clear all relationships for a task and rebuild.
+     *How to fix*: Use ‘m b’ to modify blockers (uncheck incorrect
+     ones), or use text command ‘org-gtd-task-clear-relationships’ to
+     start fresh.
 
    • Too Many Tasks Are NEXT
 
@@ -3952,9 +4035,9 @@ File: org-gtd.info,  Node: Troubleshooting Projects with Graph View,  Next: See 
 
      *How to fix*:
         • Select a task that should be blocked
-        • Press ‘a b’ to add a blocker task
-        • Or restructure: tasks later in the workflow should be children
-          (‘a c’) of earlier tasks
+        • Press ‘m b’ to modify its blockers
+        • Or use ‘a s’ from an earlier task to add a successor that
+          should come later
 
    • Graph Won't Open
 
@@ -4171,7 +4254,8 @@ File: org-gtd.info,  Node: Tickler Projects Pausing Work You're Not Ready For,  
        3. Project graph opens automatically:
              • Review the project structure
              • Verify NEXT/TODO states make sense
-             • Make any needed adjustments (‘a’, ‘d’, ‘r’ keys)
+             • Adjust dependencies with ‘m b’ (modify blockers) or ‘m d’
+               (modify dependents)
 
    • Common Patterns and Scenarios
 
@@ -4429,10 +4513,10 @@ hide the task—it's still needed by the other project.
         • Look for tasks with cleared keywords that should have keywords
 
      *Solution:*
-        • Press ‘r’ to refresh and recalculate states
+        • Press ‘R’ to refresh and recalculate states
         • If recalculation doesn't fix it: dependencies might be
           incorrect
-        • Use ‘d’ to modify dependencies, then ‘r’ to recalculate
+        • Use ‘m b’ to modify blockers, then ‘R’ to recalculate
 
      *Can't Reactivate: "Not Tickler" Error*
 
@@ -6886,9 +6970,10 @@ graph view.  Most users will find the graph view more intuitive (press
    • Preference for text-based workflows
 
    *Graph UI equivalents*:
-   • Adding dependencies: ‘a’ (add dependency), ‘a b’ (add blocker), ‘a
-     c’ (add child)
-   • Removing dependencies: ‘d’ (remove dependency), ‘x’ (clear all)
+   • Adding tasks with dependencies: ‘a r’ (root), ‘a s’ (successor), ‘a
+     b’ (blocker)
+   • Modifying relationships: ‘m b’ (modify blockers), ‘m d’ (modify
+     dependents)
    • Viewing relationships: ‘i’ (show relationships)
 
    See *note Graph View Command Reference:: for the visual approach.
@@ -7440,11 +7525,11 @@ File: org-gtd.info,  Node: Task Dependency Properties,  Next: Calendar and Time 
         • Task 004 (implement) waits for both 002 and 003 to complete
 
      *How it's set*:
-        • Automatically by graph view ‘a’ (add dependency), ‘a c’ (add
-          child), ‘a b’ (add blocker)
-        • Automatically by text commands ‘org-gtd-task-add-blockers’,
+        • Graph view: ‘a s’ (add successor), ‘a b’ (add blocker), ‘m b’
+          (modify blockers)
+        • Text commands: ‘org-gtd-task-add-blockers’,
           ‘org-gtd-task-add-dependent’
-        • Programmatically via ‘org-gtd-dependencies-create’ (maintains
+        • Programmatically: ‘org-gtd-dependencies-create’ (maintains
           bidirectional relationships)
 
      *For interactive use*: Use graph view or text-based task commands
@@ -7695,19 +7780,19 @@ references, orphaned tasks):
   2. *Visual inspection with graph view*:
         • Run ‘M-x org-gtd-show-project-graph’
         • Visual inspection often makes problems obvious
-        • Missing arrows?  Use ‘a’ to add missing dependencies
-        • Wrong arrows?  Use ‘d’ to remove incorrect dependencies
-        • Task with too many relationships?  Use ‘i’ to inspect, ‘x’ to
-          clear all
+        • Missing arrows?  Use ‘a s’ to add successor or ‘m b’ to add
+          blockers
+        • Wrong arrows?  Use ‘m b’ or ‘m d’ to uncheck incorrect
+          relationships
+        • Use ‘i’ to inspect a task's current relationships
 
   3. *Clear and rebuild*: If task relationships are completely
      corrupted:
-        • In graph view: Select the problematic task, press ‘x’ to clear
-          all relationships
-        • Or in text: Put point on task, run ‘M-x
-          org-gtd-task-clear-relationships’
-        • Rebuild dependencies using graph view add commands (‘a’, ‘a
-          c’, ‘a b’)
+        • In graph view: Select task, use ‘m b’ and ‘m d’ to adjust
+          blockers/dependents
+        • Or in text: Run ‘M-x org-gtd-task-clear-relationships’
+        • Rebuild using graph view: ‘a s’ (add successor), ‘a b’ (add
+          blocker)
 
 
 File: org-gtd.info,  Node: When Manual Property Editing is Needed,  Next: Common Problems and Solutions,  Prev: Fixing Broken Dependencies,  Up: Troubleshooting Projects
@@ -7769,10 +7854,10 @@ File: org-gtd.info,  Node: Common Problems and Solutions,  Prev: When Manual Pro
              • Missing ORG_GTD_FIRST_TASKS property
 
      *Solution*:
-        • Fix circular dependencies: Use ‘d’ to remove incorrect
-          dependencies
-        • Add root tasks: Use ‘a r’ or ‘a b’ to create tasks that can
-          start immediately
+        • Fix circular dependencies: Use ‘m b’ to remove incorrect
+          blocker relationships
+        • Add root tasks: Use ‘a r’ to create tasks that can start
+          immediately
         • Run ‘org-gtd-validate-project-dependencies’ for detailed
           diagnosis
 
@@ -7784,9 +7869,9 @@ File: org-gtd.info,  Node: Common Problems and Solutions,  Prev: When Manual Pro
 
      *Solution*:
         • In graph view, identify tasks that should depend on others
-        • Use ‘a’ to add dependencies between tasks
-        • Or restructure: tasks later in workflow should be children (‘a
-          c’) of earlier tasks
+        • Select a task, use ‘m b’ to add blockers it should wait for
+        • Or use ‘a s’ from an earlier task to add a successor that
+          should come later
 
    • Task Won't Advance to NEXT
 
@@ -7799,12 +7884,12 @@ File: org-gtd.info,  Node: Common Problems and Solutions,  Prev: When Manual Pro
         • Check if all blockers are actually DONE
 
      *Solution*:
-        • If blockers are DONE but showing as blocking: Press ‘r’ to
+        • If blockers are DONE but showing as blocking: Press ‘R’ to
           refresh graph
-        • If blocker shouldn't block this task: Use ‘d’ to remove the
-          dependency
-        • If multiple wrong dependencies: Use ‘x’ to clear all, rebuild
-          with ‘a’
+        • If blocker shouldn't block this task: Use ‘m b’ to modify
+          blockers and uncheck it
+        • If many wrong dependencies: Run
+          ‘org-gtd-task-clear-relationships’, rebuild with ‘a s~/~a b’
 
    • Task States Inconsistent After External Edits
 
@@ -9540,361 +9625,365 @@ Ref: Step 1 Capture and Organize117186
 Ref: Step 2 Open Graph View117544
 Ref: Step 3 Add Orthopedist Appointment as Root Task118115
 Ref: Step 3 (Revised) Build with Graph View Commands118768
-Ref: What Graph View CAN Do Right Now119217
-Ref: The Dependency Pattern (Diamond)120187
-Ref: Current Workaround120463
-Node: Tutorial Complex Dependencies with Graph View120872
-Ref: The Scenario (1)121203
-Ref: The Dependency Graph121769
-Ref: Building with Graph View122327
-Ref: Key Patterns This Example Shows123066
-Node: Common Dependency Patterns (Visual Reference)123461
-Ref: Sequential Chain (A → B → C)123836
-Ref: Parallel Independent (A B C all start together)124222
-Ref: Fan-out (A → B A → C A → D)124578
-Ref: Fan-in / Convergence (A → C B → C)124993
-Ref: Diamond (A → B → D A → C → D)125438
-Node: Graph View Command Reference125903
-Ref: Opening Graph View126309
-Ref: Direct Keybindings (Always Available)126577
-Ref: Transient Menu Commands (Press ? first)127635
-Ref: Visual Indicators129022
-Ref: Operations Not Available in Graph View129302
-Ref: Text-Based Alternatives129964
-Node: Graph Rendering Modes130561
-Ref: SVG Mode (Default)130941
-Ref: ASCII Mode131257
-Ref: Toggling Modes131597
-Ref: Troubleshooting ASCII Rendering131708
-Node: Complete Keyboard Reference132024
-Ref: Navigation132339
-Ref: Modification (via transient menu ?)132949
-Ref: Information133386
-Ref: View Control133611
-Node: Auto-Refresh on File Changes133898
-Node: Technical Details134557
-Ref: Graph Data Structure134785
-Ref: Layout Algorithm135135
-Ref: Properties Used135456
-Ref: Undo/Redo Support136322
-Node: Practical Tips for Project Management136649
-Ref: When to Use Graph View136913
-Ref: When to Use Sequential (Default)137270
-Ref: When to Create Parallel Structures137651
-Ref: Managing Complexity137986
-Ref: Growing Projects Over Time138385
-Node: Exporting Project Graphs138779
-Ref: First Contact What is Graph Export?139040
-Ref: Tutorial Export Your First Graph139710
-Ref: Progressive Learning Choosing Export Formats140222
-Ref: When Exports Differ from Display141902
-Ref: Reference Export Commands142456
-Ref: Troubleshooting Exports143110
-Node: Troubleshooting Projects with Graph View143809
-Ref: Project is Stuck (has TODO tasks but no NEXT)144073
-Ref: Task Should Be NEXT But Shows as TODO144919
-Ref: Too Many Tasks Are NEXT145468
-Ref: Graph Won't Open145930
-Ref: Graph Shows No Tasks146295
-Ref: Task Shows Wrong State (NEXT vs TODO)146690
-Ref: Can't Modify Dependencies147148
-Node: See Also147543
-Node: Tickler Projects Pausing Work You're Not Ready For148182
-Ref: First Contact Why Tickler Projects?148482
-Ref: Black Triangle Tickler Your First Project in 30 Seconds149469
-Ref: Understanding Tickler What Actually Happens150292
-Ref: Tutorial Managing Seasonal Projects152001
-Ref: Common Patterns and Scenarios154194
-Ref: Advanced External Dependencies and Warnings156225
-Ref: Technical Details How Tickler Works Under the Hood158326
-Node: NEXT Task 1 Research options158629
-Node: Task 1 Research options158943
-Ref: Troubleshooting Tickler161609
-Ref: See Also (1)164407
-Node: Project Progress Cookies See Your Progress at a Glance164970
-Ref: First Contact What Are Progress Cookies?165307
-Ref: Black Triangle See Progress in 30 Seconds165808
-Ref: Tutorial Watch Cookies Update Automatically166250
-Ref: Understanding How Cookies Work166989
-Ref: Configuring Cookie Position167936
-Ref: Common Scenarios168690
-Ref: Technical Reference169452
-Node: Cleaning up / archiving completed work170294
-Node: Commands you can call on org-agenda171206
-Node: Defining your own agenda views172133
-Node: Adding your own hooks when organizing173012
-Node: Automating through emacs174392
-Node: Reference175691
-Node: Configuration Variables Reference177127
-Node: Required Configuration177941
-Ref: org-todo-keywords (org-mode variable)178141
-Ref: org-gtd-keyword-mapping178628
-Node: Directory and File Configuration179645
-Ref: org-gtd-directory179895
-Ref: org-gtd-additional-inbox-files180585
-Ref: org-gtd-horizons-file181458
-Node: Capture Configuration181839
-Ref: org-gtd-capture-templates182079
-Node: Organize and Process Configuration183217
-Ref: org-gtd-organize-hooks183474
-Ref: org-gtd-save-after-organize184807
-Ref: org-gtd-refile-to-any-target185118
-Node: Mode-Line Configuration185621
-Ref: org-gtd-mode-update-interval185862
-Node: Clarification Configuration186651
-Ref: org-gtd-clarify-show-horizons186894
-Ref: org-gtd-clarify-show-organize-help187553
-Ref: org-gtd-clarify-display-helper-buffer188552
-Ref: org-gtd-clarify-project-templates189136
-Node: Areas of Focus Configuration190235
-Ref: org-gtd-areas-of-focus190482
-Node: View Prefix Configuration191057
-Ref: org-gtd-prefix-width191292
-Node: Archive Configuration192138
-Ref: org-gtd-archive-location192376
-Node: Missed Engagements Review Configuration193878
-Ref: org-gtd-reflect-missed-custom-views194153
-Node: ID Overlay Configuration195391
-Ref: org-gtd-id-overlay-truncate-length195642
-Ref: org-gtd-id-overlay-ellipsis196020
-Node: Advanced Item Configuration196258
-Ref: org-gtd-user-types196504
-Node: Agenda Display Configuration199596
-Ref: org-gtd-agenda-property-list200062
-Ref: org-gtd-agenda-property-position200562
-Ref: org-gtd-agenda-property-column201104
-Ref: org-gtd-agenda-property-separator201510
-Node: Graph View Configuration201828
-Ref: org-gtd-graph-render-mode202129
-Ref: org-gtd-graph-ui-split-ratio202781
-Node: Projects Configuration203472
-Ref: org-gtd-project-progress-cookie-position203706
-Node: Obsolete Variables (Do Not Use)205654
-Ref: org-gtd-todo-keyword (obsolete)205964
-Ref: org-gtd-next-keyword (obsolete)206082
-Ref: org-gtd-wait-keyword (obsolete)206200
-Ref: org-gtd-canceled-keyword (obsolete)206318
-Node: Commands Reference206437
-Node: Core GTD Workflow Commands207271
-Ref: org-gtd-command-center207452
-Ref: org-gtd-capture208590
-Ref: org-gtd-process-inbox209154
-Ref: org-gtd-organize209914
-Ref: org-gtd-engage210760
-Ref: org-gtd-show-all-next211466
-Node: Reflect Commands211817
-Ref: org-gtd-reflect-stuck-projects212013
-Ref: org-gtd-reflect-area-of-focus212516
-Ref: org-gtd-reflect-completed-items213047
-Ref: org-gtd-reflect-completed-projects213542
-Ref: org-gtd-reflect-missed-items213766
-Node: Stuck Item Review Commands214023
-Ref: org-gtd-reflect-stuck-calendar-items214324
-Ref: org-gtd-reflect-stuck-tickler-items214438
-Ref: org-gtd-reflect-stuck-habit-items214552
-Ref: org-gtd-reflect-stuck-delegated-items214654
-Ref: org-gtd-reflect-stuck-single-action-items214777
-Node: Reflect Commands (Missed Engagements)214881
-Ref: What Are Missed Engagements?215151
-Ref: Your First Review in 30 Seconds215893
-Ref: Understanding the Review Workflow216319
-Ref: Tutorial Daily Review Workflow216962
-Ref: Common Patterns217715
-Ref: Command Reference (1)218182
-Ref: Backward Compatibility Note218902
-Node: Reflect Commands (Upcoming Delegated)219497
-Ref: What Are Upcoming Delegated Check-ins?219761
-Ref: Your First Review in 30 Seconds (1)220514
-Ref: Understanding Proactive Delegation Management220967
-Ref: Tutorial Weekly Planning Workflow221551
-Ref: Common Patterns (1)222584
-Ref: Understanding What You See223300
-Ref: Comparison Missed vs Upcoming223996
-Ref: Command Reference (2)224471
-Node: Custom View Commands224874
-Ref: org-gtd-view-show225089
-Node: Clarification Commands233209
-Ref: org-gtd-clarify-item233407
-Ref: org-gtd-clarify-agenda-item233843
-Ref: org-gtd-clarify-toggle-horizons-window234101
-Ref: org-gtd-clarify-toggle-organize-help234432
-Ref: org-gtd-clarify-project-insert-template234935
-Ref: Updating Items Without Refiling235233
-Node: Archive Commands239797
-Ref: org-gtd-archive-completed-items239987
-Node: Agenda-Specific Commands240455
-Ref: org-gtd-delegate-agenda-item240725
-Ref: org-gtd-project-cancel-from-agenda241048
-Node: Project Management Commands241334
-Ref: org-gtd-projects-fix-todo-keywords-for-project-at-point241561
-Ref: org-gtd-projects-fix-all-todo-keywords242151
-Ref: org-gtd-project-update-all-cookies244872
-Ref: org-gtd-tickler246343
-Ref: org-gtd-reactivate247965
-Node: Task Dependency Commands249850
-Ref: org-gtd-task-add-blockers250739
-Ref: org-gtd-task-remove-blockers251465
-Ref: org-gtd-task-add-dependent251731
-Ref: org-gtd-task-add-dependents252374
-Ref: org-gtd-task-clear-relationships252616
-Ref: org-gtd-task-show-relationships252939
-Ref: org-gtd-validate-project-dependencies253284
-Ref: org-gtd-remove-task-from-project253713
-Node: Area of Focus Commands254050
-Ref: org-gtd-area-of-focus-set-on-item-at-point254268
-Ref: org-gtd-area-of-focus-set-on-agenda-item254635
-Node: Programmatic Creation Commands254973
-Ref: org-gtd-habit-create255294
-Ref: org-gtd-calendar-create255530
-Ref: org-gtd-delegate-create255769
-Ref: org-gtd-tickler-create256423
-Ref: org-gtd-someday-create256686
-Ref: org-gtd-single-action-create256905
-Node: Utility Commands257099
-Ref: org-gtd-setup-keywords-wizard257294
-Ref: org-gtd-inbox-path257606
-Node: ID Overlay Commands257963
-Ref: org-gtd-id-overlay-mode258164
-Ref: org-gtd-id-overlay-refresh-buffer258512
-Ref: org-gtd-id-overlay-clear-buffer258768
-Node: Migration and Upgrade Commands258970
-Ref: org-gtd-upgrade-v3-to-v4259198
-Node: Mode-Line Integration259723
-Ref: org-gtd-mode259931
-Ref: org-gtd-inbox-count260402
-Node: Obsolete Commands260659
-Ref: org-gtd-delegate-item-at-point (removed in 40)260820
-Node: Properties Reference (Internal Implementation)261602
-Node: Core GTD Properties262721
-Ref: ORG_GTD262911
-Ref: ORG_GTD_REFILE263849
-Node: Project Properties265519
-Ref: ORG_GTD_FIRST_TASKS265742
-Node: Task Dependency Properties266568
-Ref: ORG_GTD_DEPENDS_ON266816
-Ref: ORG_GTD_BLOCKS268523
-Ref: ORG_GTD_PROJECT_IDS269275
-Node: Calendar and Time Properties269588
-Ref: ORG_GTD_TIMESTAMP269843
-Node: Delegation Properties270683
-Ref: DELEGATED_TO270914
-Node: Habit Properties271739
-Ref: STYLE271956
-Node: Area of Focus Properties272355
-Ref: CATEGORY272606
-Node: Standard Org Properties Used by org-gtd273355
-Ref: ID273611
-Ref: keyword273858
-Ref: SCHEDULED (org-mode standard)274448
-Ref: DEADLINE (org-mode standard)274698
-Node: Troubleshooting Projects274921
-Node: Fixing Broken Dependencies275549
-Node: When Manual Property Editing is Needed276917
-Node: Common Problems and Solutions278746
-Ref: Project Shows No NEXT Tasks (Stuck Project)278964
-Ref: Too Many NEXT Tasks279726
-Ref: Task Won't Advance to NEXT280140
-Ref: Task States Inconsistent After External Edits280741
-Node: View DSL Filter Reference281844
-Node: Your First Custom View in 60 Seconds282750
-Node: Understanding View Specs283437
-Ref: Combining Filters284175
-Ref: Multi-Block Views284560
-Node: Common Patterns (2)285116
-Ref: Weekly Review View285308
-Ref: Morning Planning View285813
-Ref: Area of Focus View286434
-Node: Filter Reference286997
-Ref: View Structure287279
-Ref: Multi-Block Views (1)287579
-Ref: Block Types288252
-Node: Type Filters288650
-Ref: (type delegated)288849
-Ref: (type calendar)289094
-Ref: (type project)289319
-Ref: (type active-project)289530
-Ref: (type completed-project)289779
-Ref: (type stuck-project)290050
-Ref: (type tickler)290320
-Ref: (type someday)290572
-Ref: (type habit)290831
-Ref: (type next-action)291023
-Ref: (type tickler-project)291305
-Ref: (type incubated-project)291717
-Ref: (type stuck-delegated)292145
-Ref: (type stuck-calendar)292476
-Ref: (type stuck-tickler)292729
-Ref: (type stuck-habit)292982
-Node: Time-based Filters293208
-Ref: Semantic Time (when VALUE)293447
-Ref: Deadline (deadline VALUE)294308
-Ref: Scheduled (scheduled VALUE)294523
-Node: Keyword Filters294746
-Ref: (todo ("KEYWORD1" "KEYWORD2"))295206
-Ref: (done VALUE)295585
-Node: Area of Focus Filters296483
-Ref: (area-of-focus "AREA")296697
-Node: Tag Filters297062
-Ref: (tags ("TAG1" "TAG2"))297256
-Ref: (tags-match "PATTERN")297544
-Node: Property Filters298012
-Ref: (property (("PROP" "VALUE")))298231
-Node: Structural Filters298513
-Ref: (level N)298737
-Node: Special Filters299090
-Ref: (not-habit t)299284
-Ref: (invalid-timestamp t)299528
-Node: View Configuration Options299827
-Ref: (block-type TYPE)300103
-Ref: (blocks BLOCK-LIST)300861
-Ref: Prefix DSL Customizing the Task Prefix Column301462
-Ref: Your First Prefix in 60 Seconds301917
-Ref: (prefix (ELEMENT ))302491
-Ref: (prefix-width N)303688
-Ref: Prefix Inheritance in Multi-Block Views304203
-Ref: Low-Level (prefix-format FORMAT-STRING)305286
-Ref: (view-type agenda)305820
-Ref: (agenda-span N)306110
-Node: Simplified Multi-Block Views306254
-Ref: The Problem Verbose Block Definitions306718
-Ref: The Solution Implicit Blocks307535
-Ref: Try It Now308141
-Ref: Smart Type Defaults308713
-Ref: Top-Level Inheritance309586
-Ref: The Four-Tier Precedence Model309930
-Ref: When to Use Explicit Blocks310989
-Ref: Quick Reference311612
-Node: Saving Your Custom Views312004
-Node: Hooks Framework Reference312675
-Node: What Are Organize Hooks?313113
-Node: Your First Hook in 2 Minutes313775
-Node: The org-gtd-organize-hooks Variable314910
-Node: Built-in Hooks315409
-Ref: org-set-tags-command315609
-Ref: org-gtd-set-area-of-focus315852
-Node: Writing Custom Hooks316371
-Ref: Basic Hook Structure316763
-Ref: Using org-gtd-organize-type-member-p317097
-Node: Example Custom Hooks318236
-Ref: Selective Tagging with Unless318439
-Ref: Add Effort Estimation319156
-Ref: Add Priority319489
-Ref: Auto-Set Property Based on Keywords319785
-Ref: Add Custom Property320253
-Ref: Integration with Org-Roam320684
-Ref: Set Effort from Keywords321047
-Node: Hook Execution Order321767
-Node: Best Practices322277
-Node: Complete Example Comprehensive Hook Setup323260
-Node: Troubleshooting325389
-Node: Finding lost tasks325847
-Node: Projects without a NEXT item326852
-Node: I can't create a project when clarifying an inbox item!328108
-Node: Configuration problems329066
-Node: Keywords not working329386
-Node: Items not showing in engage view330200
-Node: Tasks still showing after tickler'ing project330948
-Node: Still stuck?332063
+Ref: What Graph View CAN Do119217
+Ref: Building Our Parallel Structure119790
+Ref: The Diamond Pattern in Action120581
+Ref: Alternative Approach Add Blockers121076
+Node: Tutorial Complex Dependencies with Graph View121612
+Ref: The Scenario (1)121943
+Ref: The Dependency Graph122509
+Ref: Building with Graph View123067
+Ref: Creating the Convergence Point123522
+Ref: Building the Rest123955
+Ref: The Complete Graph124456
+Ref: Key Patterns This Example Shows125067
+Node: Common Dependency Patterns (Visual Reference)125475
+Ref: Sequential Chain (A → B → C)125850
+Ref: Parallel Independent (A B C all start together)126256
+Ref: Fan-out (A → B A → C A → D)126612
+Ref: Fan-in / Convergence (A → C B → C)127065
+Ref: Diamond (A → B → D A → C → D)127483
+Node: Graph View Command Reference128067
+Ref: Opening Graph View128473
+Ref: Direct Keybindings (Always Available)128741
+Ref: Transient Menu Commands (Press ? first)129799
+Ref: Visual Indicators132102
+Ref: Operations Not Available in Graph View132382
+Ref: Text-Based Alternatives133044
+Node: Graph Rendering Modes133641
+Ref: SVG Mode (Default)134021
+Ref: ASCII Mode134337
+Ref: Toggling Modes134677
+Ref: Troubleshooting ASCII Rendering134788
+Node: Complete Keyboard Reference135104
+Ref: Navigation135419
+Ref: Modification (via transient menu ?)136029
+Ref: Information136567
+Ref: View Control136792
+Node: Auto-Refresh on File Changes137079
+Node: Technical Details137738
+Ref: Graph Data Structure137966
+Ref: Layout Algorithm138316
+Ref: Properties Used138637
+Ref: Undo/Redo Support139503
+Node: Practical Tips for Project Management139830
+Ref: When to Use Graph View140094
+Ref: When to Use Sequential (Default)140451
+Ref: When to Create Parallel Structures140832
+Ref: Managing Complexity141167
+Ref: Growing Projects Over Time141566
+Node: Exporting Project Graphs141964
+Ref: First Contact What is Graph Export?142225
+Ref: Tutorial Export Your First Graph142895
+Ref: Progressive Learning Choosing Export Formats143407
+Ref: When Exports Differ from Display145087
+Ref: Reference Export Commands145641
+Ref: Troubleshooting Exports146295
+Node: Troubleshooting Projects with Graph View146994
+Ref: Project is Stuck (has TODO tasks but no NEXT)147258
+Ref: Task Should Be NEXT But Shows as TODO148104
+Ref: Too Many Tasks Are NEXT148684
+Ref: Graph Won't Open149135
+Ref: Graph Shows No Tasks149500
+Ref: Task Shows Wrong State (NEXT vs TODO)149895
+Ref: Can't Modify Dependencies150353
+Node: See Also150748
+Node: Tickler Projects Pausing Work You're Not Ready For151387
+Ref: First Contact Why Tickler Projects?151687
+Ref: Black Triangle Tickler Your First Project in 30 Seconds152674
+Ref: Understanding Tickler What Actually Happens153497
+Ref: Tutorial Managing Seasonal Projects155206
+Ref: Common Patterns and Scenarios157439
+Ref: Advanced External Dependencies and Warnings159470
+Ref: Technical Details How Tickler Works Under the Hood161571
+Node: NEXT Task 1 Research options161874
+Node: Task 1 Research options162188
+Ref: Troubleshooting Tickler164854
+Ref: See Also (1)167650
+Node: Project Progress Cookies See Your Progress at a Glance168213
+Ref: First Contact What Are Progress Cookies?168550
+Ref: Black Triangle See Progress in 30 Seconds169051
+Ref: Tutorial Watch Cookies Update Automatically169493
+Ref: Understanding How Cookies Work170232
+Ref: Configuring Cookie Position171179
+Ref: Common Scenarios171933
+Ref: Technical Reference172695
+Node: Cleaning up / archiving completed work173537
+Node: Commands you can call on org-agenda174449
+Node: Defining your own agenda views175376
+Node: Adding your own hooks when organizing176255
+Node: Automating through emacs177635
+Node: Reference178934
+Node: Configuration Variables Reference180370
+Node: Required Configuration181184
+Ref: org-todo-keywords (org-mode variable)181384
+Ref: org-gtd-keyword-mapping181871
+Node: Directory and File Configuration182888
+Ref: org-gtd-directory183138
+Ref: org-gtd-additional-inbox-files183828
+Ref: org-gtd-horizons-file184701
+Node: Capture Configuration185082
+Ref: org-gtd-capture-templates185322
+Node: Organize and Process Configuration186460
+Ref: org-gtd-organize-hooks186717
+Ref: org-gtd-save-after-organize188050
+Ref: org-gtd-refile-to-any-target188361
+Node: Mode-Line Configuration188864
+Ref: org-gtd-mode-update-interval189105
+Node: Clarification Configuration189894
+Ref: org-gtd-clarify-show-horizons190137
+Ref: org-gtd-clarify-show-organize-help190796
+Ref: org-gtd-clarify-display-helper-buffer191795
+Ref: org-gtd-clarify-project-templates192379
+Node: Areas of Focus Configuration193478
+Ref: org-gtd-areas-of-focus193725
+Node: View Prefix Configuration194300
+Ref: org-gtd-prefix-width194535
+Node: Archive Configuration195381
+Ref: org-gtd-archive-location195619
+Node: Missed Engagements Review Configuration197121
+Ref: org-gtd-reflect-missed-custom-views197396
+Node: ID Overlay Configuration198634
+Ref: org-gtd-id-overlay-truncate-length198885
+Ref: org-gtd-id-overlay-ellipsis199263
+Node: Advanced Item Configuration199501
+Ref: org-gtd-user-types199747
+Node: Agenda Display Configuration202839
+Ref: org-gtd-agenda-property-list203305
+Ref: org-gtd-agenda-property-position203805
+Ref: org-gtd-agenda-property-column204347
+Ref: org-gtd-agenda-property-separator204753
+Node: Graph View Configuration205071
+Ref: org-gtd-graph-render-mode205372
+Ref: org-gtd-graph-ui-split-ratio206024
+Node: Projects Configuration206715
+Ref: org-gtd-project-progress-cookie-position206949
+Node: Obsolete Variables (Do Not Use)208897
+Ref: org-gtd-todo-keyword (obsolete)209207
+Ref: org-gtd-next-keyword (obsolete)209325
+Ref: org-gtd-wait-keyword (obsolete)209443
+Ref: org-gtd-canceled-keyword (obsolete)209561
+Node: Commands Reference209680
+Node: Core GTD Workflow Commands210514
+Ref: org-gtd-command-center210695
+Ref: org-gtd-capture211833
+Ref: org-gtd-process-inbox212397
+Ref: org-gtd-organize213157
+Ref: org-gtd-engage214003
+Ref: org-gtd-show-all-next214709
+Node: Reflect Commands215060
+Ref: org-gtd-reflect-stuck-projects215256
+Ref: org-gtd-reflect-area-of-focus215759
+Ref: org-gtd-reflect-completed-items216290
+Ref: org-gtd-reflect-completed-projects216785
+Ref: org-gtd-reflect-missed-items217009
+Node: Stuck Item Review Commands217266
+Ref: org-gtd-reflect-stuck-calendar-items217567
+Ref: org-gtd-reflect-stuck-tickler-items217681
+Ref: org-gtd-reflect-stuck-habit-items217795
+Ref: org-gtd-reflect-stuck-delegated-items217897
+Ref: org-gtd-reflect-stuck-single-action-items218020
+Node: Reflect Commands (Missed Engagements)218124
+Ref: What Are Missed Engagements?218394
+Ref: Your First Review in 30 Seconds219136
+Ref: Understanding the Review Workflow219562
+Ref: Tutorial Daily Review Workflow220205
+Ref: Common Patterns220958
+Ref: Command Reference (1)221425
+Ref: Backward Compatibility Note222145
+Node: Reflect Commands (Upcoming Delegated)222740
+Ref: What Are Upcoming Delegated Check-ins?223004
+Ref: Your First Review in 30 Seconds (1)223757
+Ref: Understanding Proactive Delegation Management224210
+Ref: Tutorial Weekly Planning Workflow224794
+Ref: Common Patterns (1)225827
+Ref: Understanding What You See226543
+Ref: Comparison Missed vs Upcoming227239
+Ref: Command Reference (2)227714
+Node: Custom View Commands228117
+Ref: org-gtd-view-show228332
+Node: Clarification Commands236452
+Ref: org-gtd-clarify-item236650
+Ref: org-gtd-clarify-agenda-item237086
+Ref: org-gtd-clarify-toggle-horizons-window237344
+Ref: org-gtd-clarify-toggle-organize-help237675
+Ref: org-gtd-clarify-project-insert-template238178
+Ref: Updating Items Without Refiling238476
+Node: Archive Commands243040
+Ref: org-gtd-archive-completed-items243230
+Node: Agenda-Specific Commands243698
+Ref: org-gtd-delegate-agenda-item243968
+Ref: org-gtd-project-cancel-from-agenda244291
+Node: Project Management Commands244577
+Ref: org-gtd-projects-fix-todo-keywords-for-project-at-point244804
+Ref: org-gtd-projects-fix-all-todo-keywords245394
+Ref: org-gtd-project-update-all-cookies248115
+Ref: org-gtd-tickler249586
+Ref: org-gtd-reactivate251208
+Node: Task Dependency Commands253093
+Ref: org-gtd-task-add-blockers253998
+Ref: org-gtd-task-remove-blockers254724
+Ref: org-gtd-task-add-dependent254990
+Ref: org-gtd-task-add-dependents255633
+Ref: org-gtd-task-clear-relationships255875
+Ref: org-gtd-task-show-relationships256198
+Ref: org-gtd-validate-project-dependencies256543
+Ref: org-gtd-remove-task-from-project256972
+Node: Area of Focus Commands257309
+Ref: org-gtd-area-of-focus-set-on-item-at-point257527
+Ref: org-gtd-area-of-focus-set-on-agenda-item257894
+Node: Programmatic Creation Commands258232
+Ref: org-gtd-habit-create258553
+Ref: org-gtd-calendar-create258789
+Ref: org-gtd-delegate-create259028
+Ref: org-gtd-tickler-create259682
+Ref: org-gtd-someday-create259945
+Ref: org-gtd-single-action-create260164
+Node: Utility Commands260358
+Ref: org-gtd-setup-keywords-wizard260553
+Ref: org-gtd-inbox-path260865
+Node: ID Overlay Commands261222
+Ref: org-gtd-id-overlay-mode261423
+Ref: org-gtd-id-overlay-refresh-buffer261771
+Ref: org-gtd-id-overlay-clear-buffer262027
+Node: Migration and Upgrade Commands262229
+Ref: org-gtd-upgrade-v3-to-v4262457
+Node: Mode-Line Integration262982
+Ref: org-gtd-mode263190
+Ref: org-gtd-inbox-count263661
+Node: Obsolete Commands263918
+Ref: org-gtd-delegate-item-at-point (removed in 40)264079
+Node: Properties Reference (Internal Implementation)264861
+Node: Core GTD Properties265980
+Ref: ORG_GTD266170
+Ref: ORG_GTD_REFILE267108
+Node: Project Properties268778
+Ref: ORG_GTD_FIRST_TASKS269001
+Node: Task Dependency Properties269827
+Ref: ORG_GTD_DEPENDS_ON270075
+Ref: ORG_GTD_BLOCKS271754
+Ref: ORG_GTD_PROJECT_IDS272506
+Node: Calendar and Time Properties272819
+Ref: ORG_GTD_TIMESTAMP273074
+Node: Delegation Properties273914
+Ref: DELEGATED_TO274145
+Node: Habit Properties274970
+Ref: STYLE275187
+Node: Area of Focus Properties275586
+Ref: CATEGORY275837
+Node: Standard Org Properties Used by org-gtd276586
+Ref: ID276842
+Ref: keyword277089
+Ref: SCHEDULED (org-mode standard)277679
+Ref: DEADLINE (org-mode standard)277929
+Node: Troubleshooting Projects278152
+Node: Fixing Broken Dependencies278780
+Node: When Manual Property Editing is Needed280135
+Node: Common Problems and Solutions281964
+Ref: Project Shows No NEXT Tasks (Stuck Project)282182
+Ref: Too Many NEXT Tasks282942
+Ref: Task Won't Advance to NEXT283366
+Ref: Task States Inconsistent After External Edits284000
+Node: View DSL Filter Reference285103
+Node: Your First Custom View in 60 Seconds286009
+Node: Understanding View Specs286696
+Ref: Combining Filters287434
+Ref: Multi-Block Views287819
+Node: Common Patterns (2)288375
+Ref: Weekly Review View288567
+Ref: Morning Planning View289072
+Ref: Area of Focus View289693
+Node: Filter Reference290256
+Ref: View Structure290538
+Ref: Multi-Block Views (1)290838
+Ref: Block Types291511
+Node: Type Filters291909
+Ref: (type delegated)292108
+Ref: (type calendar)292353
+Ref: (type project)292578
+Ref: (type active-project)292789
+Ref: (type completed-project)293038
+Ref: (type stuck-project)293309
+Ref: (type tickler)293579
+Ref: (type someday)293831
+Ref: (type habit)294090
+Ref: (type next-action)294282
+Ref: (type tickler-project)294564
+Ref: (type incubated-project)294976
+Ref: (type stuck-delegated)295404
+Ref: (type stuck-calendar)295735
+Ref: (type stuck-tickler)295988
+Ref: (type stuck-habit)296241
+Node: Time-based Filters296467
+Ref: Semantic Time (when VALUE)296706
+Ref: Deadline (deadline VALUE)297567
+Ref: Scheduled (scheduled VALUE)297782
+Node: Keyword Filters298005
+Ref: (todo ("KEYWORD1" "KEYWORD2"))298465
+Ref: (done VALUE)298844
+Node: Area of Focus Filters299742
+Ref: (area-of-focus "AREA")299956
+Node: Tag Filters300321
+Ref: (tags ("TAG1" "TAG2"))300515
+Ref: (tags-match "PATTERN")300803
+Node: Property Filters301271
+Ref: (property (("PROP" "VALUE")))301490
+Node: Structural Filters301772
+Ref: (level N)301996
+Node: Special Filters302349
+Ref: (not-habit t)302543
+Ref: (invalid-timestamp t)302787
+Node: View Configuration Options303086
+Ref: (block-type TYPE)303362
+Ref: (blocks BLOCK-LIST)304120
+Ref: Prefix DSL Customizing the Task Prefix Column304721
+Ref: Your First Prefix in 60 Seconds305176
+Ref: (prefix (ELEMENT ))305750
+Ref: (prefix-width N)306947
+Ref: Prefix Inheritance in Multi-Block Views307462
+Ref: Low-Level (prefix-format FORMAT-STRING)308545
+Ref: (view-type agenda)309079
+Ref: (agenda-span N)309369
+Node: Simplified Multi-Block Views309513
+Ref: The Problem Verbose Block Definitions309977
+Ref: The Solution Implicit Blocks310794
+Ref: Try It Now311400
+Ref: Smart Type Defaults311972
+Ref: Top-Level Inheritance312845
+Ref: The Four-Tier Precedence Model313189
+Ref: When to Use Explicit Blocks314248
+Ref: Quick Reference314871
+Node: Saving Your Custom Views315263
+Node: Hooks Framework Reference315934
+Node: What Are Organize Hooks?316372
+Node: Your First Hook in 2 Minutes317034
+Node: The org-gtd-organize-hooks Variable318169
+Node: Built-in Hooks318668
+Ref: org-set-tags-command318868
+Ref: org-gtd-set-area-of-focus319111
+Node: Writing Custom Hooks319630
+Ref: Basic Hook Structure320022
+Ref: Using org-gtd-organize-type-member-p320356
+Node: Example Custom Hooks321495
+Ref: Selective Tagging with Unless321698
+Ref: Add Effort Estimation322415
+Ref: Add Priority322748
+Ref: Auto-Set Property Based on Keywords323044
+Ref: Add Custom Property323512
+Ref: Integration with Org-Roam323943
+Ref: Set Effort from Keywords324306
+Node: Hook Execution Order325026
+Node: Best Practices325536
+Node: Complete Example Comprehensive Hook Setup326519
+Node: Troubleshooting328648
+Node: Finding lost tasks329106
+Node: Projects without a NEXT item330111
+Node: I can't create a project when clarifying an inbox item!331367
+Node: Configuration problems332325
+Node: Keywords not working332645
+Node: Items not showing in engage view333459
+Node: Tasks still showing after tickler'ing project334207
+Node: Still stuck?335322
 
 End Tag Table
 

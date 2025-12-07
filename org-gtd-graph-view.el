@@ -32,7 +32,6 @@
 (require 'org-gtd-graph-data)
 (require 'org-gtd-graph-filter)
 (require 'org-gtd-graph-ui)
-(require 'org-gtd-graph-undo)
 (require 'org-gtd-svg-render)  ; For color helpers and svg-to-image
 (require 'org-gtd-dag-draw)
 (require 'org-gtd-projects)
@@ -280,8 +279,6 @@ If blocker is external to project, adds project ID and TRIGGER property."
                     (save-buffer))))
 
               (message "Added dependency: %s blocks %s" blocker-title blocked-title)
-              ;; TODO: Record for undo (currently disabled - causes test failures)
-              ;; (org-gtd-graph-undo-record-add-dependency blocker-id blocked-id)
               (org-gtd-graph-view-refresh))
           (error (user-error "Cannot add dependency: %s" (error-message-string err))))))))
 
@@ -326,30 +323,8 @@ If blocker is external to project, adds project ID and TRIGGER property."
                     (save-buffer))))
 
               (message "Added blocker: %s blocks %s and is now a root task" blocker-title blocked-title)
-              ;; TODO: Record for undo (currently disabled - causes test failures)
-              ;; (org-gtd-graph-undo-record-add-dependency blocker-id blocked-id)
               (org-gtd-graph-view-refresh))
           (error (user-error "Cannot add blocker: %s" (error-message-string err))))))))
-
-(defun org-gtd-graph-view-remove-dependency ()
-  "Remove a dependency between two tasks interactively."
-  (interactive)
-  (when org-gtd-graph-view--graph
-    (let* ((edges (org-gtd-graph-edges org-gtd-graph-view--graph))
-           (edge-list (org-gtd-graph-view--edges-to-completion-list edges))
-           (edge-desc (completing-read "Remove dependency: " edge-list nil t))
-           (edge-ids (cdr (assoc edge-desc edge-list)))
-           (blocker-id (car edge-ids))
-           (blocked-id (cdr edge-ids)))
-
-      (when (and blocker-id blocked-id)
-        ;; Remove bidirectional dependency
-        (org-gtd-remove-from-multivalued-property blocker-id org-gtd-prop-blocks blocked-id)
-        (org-gtd-remove-from-multivalued-property blocked-id org-gtd-prop-depends-on blocker-id)
-        (message "Removed dependency")
-        ;; TODO: Record for undo (currently disabled - causes test failures)
-        ;; (org-gtd-graph-undo-record-remove-dependency blocker-id blocked-id)
-        (org-gtd-graph-view-refresh)))))
 
 (defun org-gtd-graph-view-show-relationships ()
   "Show relationships for the currently selected node.
@@ -503,23 +478,6 @@ Returns list of (title . id) cons cells for tasks with IDs."
                      result))
              nodes)
     (nreverse result)))
-
-(defun org-gtd-graph-view--edges-to-completion-list (edges)
-  "Convert EDGES list to completion list of (description . (from-id . to-id))."
-  (mapcar (lambda (edge)
-            (let* ((from-id (org-gtd-graph-edge-from-id edge))
-                   (to-id (org-gtd-graph-edge-to-id edge))
-                   (from-node (org-gtd-graph-data-get-node
-                               org-gtd-graph-view--graph from-id))
-                   (to-node (org-gtd-graph-data-get-node
-                             org-gtd-graph-view--graph to-id))
-                   (from-title (or (and from-node (org-gtd-graph-node-title from-node))
-                                   "[Unknown]"))
-                   (to-title (or (and to-node (org-gtd-graph-node-title to-node))
-                                 "[Unknown]"))
-                   (desc (format "%s blocks %s" from-title to-title)))
-              (cons desc (cons from-id to-id))))
-          edges))
 
 ;;;; Footer
 

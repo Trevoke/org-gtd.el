@@ -137,11 +137,6 @@
   "View commands are defined and callable."
   (assert-true (commandp 'org-gtd-graph-transient-zoom)))
 
-(deftest graph-transient/undo-redo-commands-defined ()
-  "Undo/redo commands are defined and callable."
-  (assert-true (commandp 'org-gtd-graph-undo))
-  (assert-true (commandp 'org-gtd-graph-redo)))
-
 (deftest graph-transient/quit-command-defined ()
   "Quit command is defined and callable."
   (assert-true (commandp 'org-gtd-graph-quit-and-kill)))

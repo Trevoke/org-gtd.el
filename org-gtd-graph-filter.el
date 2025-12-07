@@ -1,4 +1,4 @@
-;;; org-gtd-graph-filter.el --- Filtering and zoom for graph views -*- lexical-binding: t; coding: utf-8 -*-
+;;; org-gtd-graph-filter.el --- Zoom functionality for graph views -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
@@ -20,9 +20,8 @@
 
 ;;; Commentary:
 ;;
-;; This module provides filtering and zoom functionality for graph views.
-;; Users can filter nodes by TODO state, priority, tags, and scheduled date,
-;; and can zoom to focus on subtrees.
+;; This module provides zoom functionality for graph views, allowing
+;; users to focus on subtrees of the project dependency graph.
 ;;
 ;;; Code:
 
@@ -245,92 +244,7 @@ and edges between visible nodes."
       (maphash (lambda (tag _val) (push tag tags-list)) tags-set)
       (sort tags-list #'string<))))
 
-;;;; Interactive Filter Commands
-
-(defvar-local org-gtd-graph-filter--active nil
-  "Currently active filter for this graph buffer.")
-
-(defun org-gtd-graph-filter-by-todo ()
-  "Prompt for TODO states to filter."
-  (interactive)
-  (require 'org-gtd-graph-view)
-  (let* ((all-states (list (org-gtd-keywords--todo)
-                           (org-gtd-keywords--next)
-                           (org-gtd-keywords--wait)
-                           (org-gtd-keywords--done)
-                           (org-gtd-keywords--canceled)))
-         (selected (completing-read-multiple
-                    "Filter by TODO states (comma-separated): "
-                    all-states nil t))
-         (current-filter (or org-gtd-graph-view--filter
-                             (org-gtd-graph-filter-create)))
-         (new-filter (copy-org-gtd-graph-filter current-filter)))
-    (setf (org-gtd-graph-filter-todo-states new-filter) selected)
-    (setq org-gtd-graph-view--filter new-filter)
-    (org-gtd-graph-view-refresh)
-    (message "Filtered by TODO states: %s" (mapconcat #'identity selected ", "))))
-
-(defun org-gtd-graph-filter-by-priority ()
-  "Prompt for priorities to filter."
-  (interactive)
-  (require 'org-gtd-graph-view)
-  (let* ((all-priorities '("A" "B" "C"))
-         (selected (completing-read-multiple
-                    "Filter by priorities (comma-separated): "
-                    all-priorities nil t))
-         (current-filter (or org-gtd-graph-view--filter
-                             (org-gtd-graph-filter-create)))
-         (new-filter (copy-org-gtd-graph-filter current-filter)))
-    (setf (org-gtd-graph-filter-priorities new-filter) selected)
-    (setq org-gtd-graph-view--filter new-filter)
-    (org-gtd-graph-view-refresh)
-    (message "Filtered by priorities: %s" (mapconcat #'identity selected ", "))))
-
-(defun org-gtd-graph-filter-by-tag ()
-  "Prompt for tags to filter."
-  (interactive)
-  (require 'org-gtd-graph-view)
-  (let* ((all-tags (org-gtd-graph-filter--get-all-tags org-gtd-graph-view--graph))
-         (selected (if all-tags
-                       (completing-read-multiple
-                        "Filter by tags (comma-separated): "
-                        all-tags nil t)
-                     (progn (message "No tags found in graph")
-                            nil)))
-         (current-filter (or org-gtd-graph-view--filter
-                             (org-gtd-graph-filter-create)))
-         (new-filter (copy-org-gtd-graph-filter current-filter)))
-    (when selected
-      (setf (org-gtd-graph-filter-tags new-filter) selected)
-      (setq org-gtd-graph-view--filter new-filter)
-      (org-gtd-graph-view-refresh)
-      (message "Filtered by tags: %s" (mapconcat #'identity selected ", ")))))
-
-(defun org-gtd-graph-filter-by-scheduled ()
-  "Prompt for scheduled date filter."
-  (interactive)
-  (require 'org-gtd-graph-view)
-  (let* ((options '(("Overdue" . overdue)
-                    ("Today" . today)
-                    ("This Week" . week)
-                    ("Unscheduled" . unscheduled)))
-         (choice (completing-read "Filter by scheduled: " options nil t))
-         (selected (cdr (assoc choice options)))
-         (current-filter (or org-gtd-graph-view--filter
-                             (org-gtd-graph-filter-create)))
-         (new-filter (copy-org-gtd-graph-filter current-filter)))
-    (setf (org-gtd-graph-filter-scheduled new-filter) selected)
-    (setq org-gtd-graph-view--filter new-filter)
-    (org-gtd-graph-view-refresh)
-    (message "Filtered by scheduled: %s" choice)))
-
-(defun org-gtd-graph-filter-clear-all ()
-  "Clear all active filters."
-  (interactive)
-  (require 'org-gtd-graph-view)
-  (setq org-gtd-graph-view--filter nil)
-  (org-gtd-graph-view-refresh)
-  (message "All filters cleared"))
+;;;; Zoom Commands
 
 (defun org-gtd-graph-zoom-to-subtree ()
   "Zoom to selected node and descendants."

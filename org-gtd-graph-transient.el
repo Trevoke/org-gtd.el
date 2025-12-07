@@ -45,8 +45,9 @@
    (lambda () (org-gtd-graph-transient--show-selected-context))
    :class transient-row]
   ["Insert Tasks"
-   ("a b" "Insert BEFORE this" org-gtd-graph-insert-before)
-   ("a a" "Insert AFTER this" org-gtd-graph-insert-after)]
+   ("a r" "Add root task" org-gtd-graph-transient-add-root)
+   ("a s" "Add successor (blocks)" org-gtd-graph-add-successor)
+   ("a b" "Add blocker (blocked by)" org-gtd-graph-add-blocker)]
   ["Modify Relationships"
    ("m b" "Modify blockers" org-gtd-graph-modify-blockers)
    ("m d" "Modify dependents" org-gtd-graph-modify-successors)]
@@ -187,62 +188,6 @@ Returns list of (display . id) cons cells with tasks NOT in current project."
             (nreverse not-in-project))))
 
 ;;;; Add Commands
-
-(defun org-gtd-graph-transient-add-child ()
-  "Add a child task to the selected node.
-User can select an existing task or create a new one.
-Creates a dependency where the parent blocks the child."
-  (interactive)
-  (unless org-gtd-graph-ui--selected-node-id
-    (user-error "No node selected. Click on a node first"))
-
-  (let* ((parent-id org-gtd-graph-ui--selected-node-id)
-         (parent-marker (org-id-find parent-id t))
-         (project-ids (org-entry-get parent-marker "ORG_GTD_PROJECT_IDS"))
-         (choices (org-gtd-graph--select-or-create-task-prioritizing-current
-                   "Select or create child task: "
-                   org-gtd-graph-view--project-marker))
-         (selected (completing-read "Select or create child task: " choices nil nil))
-         (match (assoc-string selected choices))
-         (existing-id (if match (cdr match) nil))
-         (title (if match selected selected)))
-
-    (unless parent-marker
-      (user-error "Cannot find parent node with ID: %s" parent-id))
-
-    (let ((child-id existing-id))
-      (if existing-id
-          ;; Link existing task
-          (let ((task-marker (org-id-find existing-id t)))
-            (unless task-marker
-              (user-error "Cannot find task with ID: %s" existing-id))
-            (org-with-point-at task-marker
-              ;; Add project IDs to existing task
-              (when project-ids
-                (dolist (pid (split-string project-ids))
-                  (org-gtd-add-to-multivalued-property existing-id org-gtd-prop-project-ids pid)))
-              (save-buffer)))
-
-        ;; Create new task
-        (org-with-point-at parent-marker
-          (let ((parent-level (org-current-level)))
-            (org-end-of-subtree t t)
-            (unless (bolp) (insert "\n"))
-            (insert (make-string (1+ parent-level) ?\*) " " title "\n")
-            (forward-line -1)
-            (org-back-to-heading t)
-            (setq child-id (org-id-get-create))
-            (org-todo "TODO")
-            (org-entry-put (point) "ORG_GTD" "Actions")
-            (when project-ids
-              (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-ids))
-            (save-buffer))))
-
-      ;; Create dependency for both new and existing
-      (require 'org-gtd-dependencies)
-      (org-gtd-dependencies-create parent-id child-id)
-      (message "Added child task: %s" title)
-      (org-gtd-graph-view-refresh))))
 
 (defun org-gtd-graph-transient-add-root ()
   "Add a new root task to the project.
@@ -514,191 +459,6 @@ Steps:
       (org-with-point-at marker
         (org-todo (org-gtd-keywords--canceled))
         (save-buffer)))))
-
-(defun org-gtd-graph-insert-before ()
-  "Insert new task as prerequisite to selected task.
-Prompts for where to insert if selected task has blockers."
-  (interactive)
-  (require 'org-gtd-graph-view)
-  (require 'org-gtd-graph-data)
-  (unless org-gtd-graph-ui--selected-node-id
-    (user-error "No node selected"))
-
-  (let* ((selected-id org-gtd-graph-ui--selected-node-id)
-         (graph (org-gtd-graph-data--extract-from-project org-gtd-graph-view--project-marker))
-         (project-id (org-with-point-at org-gtd-graph-view--project-marker
-                       (org-entry-get (point) "ID")))
-         ;; Filter out project ID from predecessors (virtual edge for visualization)
-         (predecessors (seq-remove (lambda (id) (string= id project-id))
-                                   (org-gtd-graph-data-get-predecessors graph selected-id)))
-         (choices (org-gtd-graph--select-or-create-task-prioritizing-current
-                   "Select or create predecessor task: "
-                   org-gtd-graph-view--project-marker))
-         (selected (completing-read "Select or create predecessor task: " choices nil nil))
-         (match (assoc-string selected choices))
-         (existing-id (if match (cdr match) nil))
-         (title (if match selected selected)))
-
-    (when title
-      ;; Get or create task
-      (let ((new-task-id existing-id))
-        (if existing-id
-            ;; Link existing task
-            (org-with-point-at (org-id-find existing-id t)
-              (org-gtd-add-to-multivalued-property existing-id org-gtd-prop-project-ids project-id)
-              (save-buffer))
-
-          ;; Create new task
-          (org-with-point-at org-gtd-graph-view--project-marker
-            (org-end-of-subtree t t)
-            (unless (bolp) (insert "\n"))
-            (insert "** " title "\n")
-            (forward-line -1)
-            (org-back-to-heading t)
-            (setq new-task-id (org-id-get-create))
-            (org-todo "TODO")
-            (org-entry-put (point) "ORG_GTD" "Actions")
-            (when project-id
-              (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id))
-            (save-buffer)))
-
-        ;; Handle different cases based on predecessors
-        (cond
-         ;; Case 1: No predecessors (selected is root)
-         ((null predecessors)
-          ;; Remove selected from FIRST_TASKS and add new task
-          (org-with-point-at org-gtd-graph-view--project-marker
-            (org-entry-remove-from-multivalued-property (point) "ORG_GTD_FIRST_TASKS" selected-id)
-            (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" new-task-id)
-            (basic-save-buffer))
-          ;; Create dependency: new → selected
-          (org-gtd-dependencies-create new-task-id selected-id))
-
-         ;; Case 2: One predecessor - straightforward rewiring
-         ((= 1 (length predecessors))
-          (let ((predecessor-id (car predecessors)))
-            ;; Remove: predecessor → selected
-            (org-gtd-remove-from-multivalued-property predecessor-id org-gtd-prop-blocks selected-id)
-            (org-gtd-remove-from-multivalued-property selected-id org-gtd-prop-depends-on predecessor-id)
-            ;; Add: predecessor → new
-            (org-gtd-dependencies-create predecessor-id new-task-id)
-            ;; Add: new → selected
-            (org-gtd-dependencies-create new-task-id selected-id)))
-
-         ;; Case 3: Multiple predecessors - prompt user
-         (t
-          (let* ((predecessor-choices
-                  (mapcar (lambda (pred-id)
-                            (let* ((marker (org-id-find pred-id t))
-                                   (title (org-with-point-at marker
-                                            (org-get-heading t t t t))))
-                              (cons title pred-id)))
-                          predecessors))
-                 (chosen-title (completing-read
-                                "Insert between which blocker and selected task? "
-                                predecessor-choices
-                                nil t))
-                 (chosen-predecessor-id (cdr (assoc chosen-title predecessor-choices))))
-            ;; Remove: chosen-predecessor → selected
-            (org-gtd-remove-from-multivalued-property chosen-predecessor-id org-gtd-prop-blocks selected-id)
-            (org-gtd-remove-from-multivalued-property selected-id org-gtd-prop-depends-on chosen-predecessor-id)
-            ;; Add: chosen-predecessor → new
-            (org-gtd-dependencies-create chosen-predecessor-id new-task-id)
-            ;; Add: new → selected
-            (org-gtd-dependencies-create new-task-id selected-id))))
-
-        (message "Created predecessor task: %s" title)
-        (org-gtd-graph-view-refresh)))))
-
-(defun org-gtd-graph-insert-after ()
-  "Insert new task as successor to selected task.
-Prompts for which successor to rewire if selected task has multiple successors."
-  (interactive)
-  (require 'org-gtd-graph-view)
-  (require 'org-gtd-graph-data)
-  (unless org-gtd-graph-ui--selected-node-id
-    (user-error "No node selected"))
-
-  (let* ((selected-id org-gtd-graph-ui--selected-node-id)
-         (graph (org-gtd-graph-data--extract-from-project org-gtd-graph-view--project-marker))
-         (project-id (org-with-point-at org-gtd-graph-view--project-marker
-                       (org-entry-get (point) "ID")))
-         ;; Filter out project ID from successors (virtual edge for visualization)
-         (successors (seq-remove (lambda (id) (string= id project-id))
-                                 (org-gtd-graph-data-get-successors graph selected-id)))
-         (choices (org-gtd-graph--select-or-create-task-prioritizing-current
-                   "Select or create successor task: "
-                   org-gtd-graph-view--project-marker))
-         (selected (completing-read "Select or create successor task: " choices nil nil))
-         (match (assoc-string selected choices))
-         (existing-id (if match (cdr match) nil))
-         (title (if match selected selected)))
-
-    (when title
-      ;; Get or create task
-      (let ((new-task-id existing-id))
-        (if existing-id
-            ;; Link existing task
-            (org-with-point-at (org-id-find existing-id t)
-              (org-gtd-add-to-multivalued-property existing-id org-gtd-prop-project-ids project-id)
-              (save-buffer))
-
-          ;; Create new task
-          (org-with-point-at org-gtd-graph-view--project-marker
-            (org-end-of-subtree t t)
-            (unless (bolp) (insert "\n"))
-            (insert "** " title "\n")
-            (forward-line -1)
-            (org-back-to-heading t)
-            (setq new-task-id (org-id-get-create))
-            (org-todo "TODO")
-            (org-entry-put (point) "ORG_GTD" "Actions")
-            (when project-id
-              (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id))
-            (save-buffer)))
-
-        ;; Handle different cases based on successors
-        (cond
-         ;; Case 1: No successors (leaf task) - simple add
-         ((null successors)
-          ;; Create dependency: selected → new
-          (org-gtd-dependencies-create selected-id new-task-id))
-
-         ;; Case 2: One successor - straightforward rewiring
-         ((= 1 (length successors))
-          (let ((successor-id (car successors)))
-            ;; Remove: selected → successor
-            (org-gtd-remove-from-multivalued-property selected-id org-gtd-prop-blocks successor-id)
-            (org-gtd-remove-from-multivalued-property successor-id org-gtd-prop-depends-on selected-id)
-            ;; Add: selected → new
-            (org-gtd-dependencies-create selected-id new-task-id)
-            ;; Add: new → successor
-            (org-gtd-dependencies-create new-task-id successor-id)))
-
-         ;; Case 3: Multiple successors - prompt user
-         (t
-          (let* ((successor-choices
-                  (mapcar (lambda (succ-id)
-                            (let* ((marker (org-id-find succ-id t))
-                                   (title (org-with-point-at marker
-                                            (org-get-heading t t t t))))
-                              (cons title succ-id)))
-                          successors))
-                 (chosen-title (completing-read
-                                "Insert between selected and which successor task? "
-                                successor-choices
-                                nil t))
-                 (chosen-successor-id (cdr (assoc chosen-title successor-choices))))
-            ;; Remove: selected → chosen-successor
-            (org-gtd-remove-from-multivalued-property selected-id org-gtd-prop-blocks chosen-successor-id)
-            (org-gtd-remove-from-multivalued-property chosen-successor-id org-gtd-prop-depends-on selected-id)
-            ;; Add: selected → new
-            (org-gtd-dependencies-create selected-id new-task-id)
-            ;; Add: new → chosen-successor
-            (org-gtd-dependencies-create new-task-id chosen-successor-id))))
-
-        (message "Created successor task: %s" title)
-        (org-gtd-graph-view-refresh)))))
 
 (defun org-gtd-graph--modify-blockers-internal (task-id new-blocker-ids project-marker)
   "Set TASK-ID's blockers to exactly NEW-BLOCKER-IDS in PROJECT-MARKER's context.
@@ -1046,6 +806,325 @@ and move the entire project with all its tasks to the tickler."
   (org-with-point-at org-gtd-graph-view--project-marker
     (with-no-warnings
       (call-interactively #'org-gtd-tickler))))
+
+;;;; Unified Add Commands
+
+;; State for add-successor/add-blocker transient menus
+(defvar org-gtd-graph--add-task-id nil
+  "Task ID being added as successor or blocker.")
+
+(defvar org-gtd-graph--add-task-title nil
+  "Title of task being added.")
+
+(defvar org-gtd-graph--add-edge-state nil
+  "Alist of (TASK-ID . ENABLED) for edge selection in add commands.")
+
+(defun org-gtd-graph-add-successor ()
+  "Add a successor task that blocks project task(s).
+Step 1: Select existing task or create new one.
+Step 2: Select which project tasks the new task should block."
+  (interactive)
+  (require 'org-gtd-graph-view)
+  (require 'org-gtd-graph-data)
+
+  ;; Step 1: Select or create task
+  (let* ((choices (org-gtd-graph--select-or-create-task-prioritizing-current
+                   "Select successor task: "
+                   org-gtd-graph-view--project-marker))
+         (selected (completing-read "Select or create successor task: " choices nil nil))
+         (match (assoc-string selected choices))
+         (existing-id (if match (cdr match) nil))
+         (title (if match selected selected)))
+
+    (if existing-id
+        ;; Existing task selected
+        (setq org-gtd-graph--add-task-id existing-id
+              org-gtd-graph--add-task-title title)
+      ;; New task to be created
+      (setq org-gtd-graph--add-task-id nil
+            org-gtd-graph--add-task-title title))
+
+    ;; Step 2: Open transient menu to select which tasks this should block
+    (org-gtd-graph--init-add-successor-state)
+    (org-gtd-graph-add-successor-menu)))
+
+(defun org-gtd-graph--init-add-successor-state ()
+  "Initialize edge state for add-successor menu.
+Pre-selects the currently selected node if one exists."
+  (let* ((graph (org-gtd-graph-data--extract-from-project org-gtd-graph-view--project-marker))
+         (project-id (org-with-point-at org-gtd-graph-view--project-marker
+                       (org-entry-get (point) "ID")))
+         (all-task-ids (hash-table-keys (org-gtd-graph-nodes graph)))
+         (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids))
+         (selected-id org-gtd-graph-ui--selected-node-id))
+    (setq org-gtd-graph--add-edge-state
+          (mapcar (lambda (task-id)
+                    ;; Pre-select the currently selected node
+                    (cons task-id (and selected-id (string= task-id selected-id))))
+                  valid-candidates))))
+
+(transient-define-prefix org-gtd-graph-add-successor-menu ()
+  "Select which tasks the new successor should block."
+  :refresh-suffixes t
+  [:description org-gtd-graph--add-successor-description
+   :class transient-columns
+   :setup-children org-gtd-graph--add-successor-setup]
+  ["Actions"
+   ("RET" "Apply" org-gtd-graph--add-successor-apply)
+   ("q" "Cancel" transient-quit-one)])
+
+(defun org-gtd-graph--add-successor-description ()
+  "Generate description for add-successor menu."
+  (format "Select tasks that '%s' should block:" org-gtd-graph--add-task-title))
+
+(defun org-gtd-graph--add-successor-setup (_)
+  "Setup children for add-successor transient."
+  (let* ((graph (org-gtd-graph-data--extract-from-project org-gtd-graph-view--project-marker))
+         (project-id (org-with-point-at org-gtd-graph-view--project-marker
+                       (org-entry-get (point) "ID")))
+         (all-task-ids (hash-table-keys (org-gtd-graph-nodes graph)))
+         (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids))
+         (key-char ?a))
+
+    (transient-parse-suffixes
+     'org-gtd-graph-add-successor-menu
+     (list
+      (vconcat
+       (mapcar (lambda (task-id)
+                 (let* ((node (org-gtd-graph-data-get-node graph task-id))
+                        (title (org-gtd-graph-node-title node))
+                        (key (char-to-string key-char))
+                        (enabled (cdr (assoc task-id org-gtd-graph--add-edge-state)))
+                        (display (if enabled
+                                     (format "[X] %s" title)
+                                   (format "[ ] %s" title)))
+                        (toggle-fn (let ((id task-id))
+                                     (lambda ()
+                                       (interactive)
+                                       (let ((current (cdr (assoc id org-gtd-graph--add-edge-state))))
+                                         (setf (alist-get id org-gtd-graph--add-edge-state nil nil #'equal)
+                                               (not current)))))))
+                   (setq key-char (1+ key-char))
+                   (list key display toggle-fn :transient t)))
+               valid-candidates))))))
+
+(defun org-gtd-graph--add-successor-apply (&rest _)
+  "Apply the add-successor changes."
+  (interactive)
+  (let* ((blocked-task-ids (mapcar #'car (seq-filter #'cdr org-gtd-graph--add-edge-state)))
+         (project-id (org-with-point-at org-gtd-graph-view--project-marker
+                       (org-entry-get (point) "ID")))
+         (new-task-id org-gtd-graph--add-task-id))
+
+    ;; Create new task if needed
+    (unless new-task-id
+      (org-with-point-at org-gtd-graph-view--project-marker
+        (org-end-of-subtree t t)
+        (unless (bolp) (insert "\n"))
+        (insert "** " org-gtd-graph--add-task-title "\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq new-task-id (org-id-get-create))
+        (org-todo "TODO")
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+        (save-buffer)))
+
+    ;; Create dependencies: new-task blocks each selected task
+    (dolist (blocked-id blocked-task-ids)
+      (org-gtd-dependencies-create new-task-id blocked-id))
+
+    ;; Link to project if existing external task
+    (when org-gtd-graph--add-task-id
+      (org-gtd-add-to-multivalued-property new-task-id "ORG_GTD_PROJECT_IDS" project-id)
+      (org-with-point-at (org-id-find new-task-id t)
+        (save-buffer)))
+
+    (message "Added successor '%s' blocking %d task(s)"
+             org-gtd-graph--add-task-title (length blocked-task-ids))
+    (org-gtd-graph-view-refresh)
+    (transient-quit-one)))
+
+(defun org-gtd-graph-add-blocker ()
+  "Add a blocker task that is blocked by project task(s).
+Step 1: Select existing task or create new one.
+Step 2: Select which project tasks should block the new task."
+  (interactive)
+  (require 'org-gtd-graph-view)
+  (require 'org-gtd-graph-data)
+
+  ;; Step 1: Select or create task
+  (let* ((choices (org-gtd-graph--select-or-create-task-prioritizing-current
+                   "Select blocker task: "
+                   org-gtd-graph-view--project-marker))
+         (selected (completing-read "Select or create blocker task: " choices nil nil))
+         (match (assoc-string selected choices))
+         (existing-id (if match (cdr match) nil))
+         (title (if match selected selected)))
+
+    (if existing-id
+        (setq org-gtd-graph--add-task-id existing-id
+              org-gtd-graph--add-task-title title)
+      (setq org-gtd-graph--add-task-id nil
+            org-gtd-graph--add-task-title title))
+
+    ;; Step 2: Open transient menu to select which tasks should block this one
+    (org-gtd-graph--init-add-blocker-state)
+    (org-gtd-graph-add-blocker-menu)))
+
+(defun org-gtd-graph--init-add-blocker-state ()
+  "Initialize edge state for add-blocker menu.
+Pre-selects the currently selected node if one exists."
+  (let* ((graph (org-gtd-graph-data--extract-from-project org-gtd-graph-view--project-marker))
+         (project-id (org-with-point-at org-gtd-graph-view--project-marker
+                       (org-entry-get (point) "ID")))
+         (all-task-ids (hash-table-keys (org-gtd-graph-nodes graph)))
+         (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids))
+         (selected-id org-gtd-graph-ui--selected-node-id))
+    (setq org-gtd-graph--add-edge-state
+          (mapcar (lambda (task-id)
+                    (cons task-id (and selected-id (string= task-id selected-id))))
+                  valid-candidates))))
+
+(transient-define-prefix org-gtd-graph-add-blocker-menu ()
+  "Select which tasks should block the new task."
+  :refresh-suffixes t
+  [:description org-gtd-graph--add-blocker-description
+   :class transient-columns
+   :setup-children org-gtd-graph--add-blocker-setup]
+  ["Actions"
+   ("RET" "Apply" org-gtd-graph--add-blocker-apply)
+   ("q" "Cancel" transient-quit-one)])
+
+(defun org-gtd-graph--add-blocker-description ()
+  "Generate description for add-blocker menu."
+  (format "Select tasks that should block '%s':" org-gtd-graph--add-task-title))
+
+(defun org-gtd-graph--add-blocker-setup (_)
+  "Setup children for add-blocker transient."
+  (let* ((graph (org-gtd-graph-data--extract-from-project org-gtd-graph-view--project-marker))
+         (project-id (org-with-point-at org-gtd-graph-view--project-marker
+                       (org-entry-get (point) "ID")))
+         (all-task-ids (hash-table-keys (org-gtd-graph-nodes graph)))
+         (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids))
+         (key-char ?a))
+
+    (transient-parse-suffixes
+     'org-gtd-graph-add-blocker-menu
+     (list
+      (vconcat
+       (mapcar (lambda (task-id)
+                 (let* ((node (org-gtd-graph-data-get-node graph task-id))
+                        (title (org-gtd-graph-node-title node))
+                        (key (char-to-string key-char))
+                        (enabled (cdr (assoc task-id org-gtd-graph--add-edge-state)))
+                        (display (if enabled
+                                     (format "[X] %s" title)
+                                   (format "[ ] %s" title)))
+                        (toggle-fn (let ((id task-id))
+                                     (lambda ()
+                                       (interactive)
+                                       (let ((current (cdr (assoc id org-gtd-graph--add-edge-state))))
+                                         (setf (alist-get id org-gtd-graph--add-edge-state nil nil #'equal)
+                                               (not current)))))))
+                   (setq key-char (1+ key-char))
+                   (list key display toggle-fn :transient t)))
+               valid-candidates))))))
+
+(defun org-gtd-graph--add-blocker-apply (&rest _)
+  "Apply the add-blocker changes."
+  (interactive)
+  (let* ((blocker-task-ids (mapcar #'car (seq-filter #'cdr org-gtd-graph--add-edge-state)))
+         (project-id (org-with-point-at org-gtd-graph-view--project-marker
+                       (org-entry-get (point) "ID")))
+         (new-task-id org-gtd-graph--add-task-id))
+
+    ;; Create new task if needed
+    (unless new-task-id
+      (org-with-point-at org-gtd-graph-view--project-marker
+        (org-end-of-subtree t t)
+        (unless (bolp) (insert "\n"))
+        (insert "** " org-gtd-graph--add-task-title "\n")
+        (forward-line -1)
+        (org-back-to-heading t)
+        (setq new-task-id (org-id-get-create))
+        (org-todo "TODO")
+        (org-entry-put (point) "ORG_GTD" "Actions")
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+        (save-buffer)))
+
+    ;; Create dependencies: each blocker blocks new-task
+    (dolist (blocker-id blocker-task-ids)
+      (org-gtd-dependencies-create blocker-id new-task-id))
+
+    ;; Link to project if existing external task
+    (when org-gtd-graph--add-task-id
+      (org-gtd-add-to-multivalued-property new-task-id "ORG_GTD_PROJECT_IDS" project-id)
+      (org-with-point-at (org-id-find new-task-id t)
+        (save-buffer)))
+
+    (message "Added blocker '%s' blocked by %d task(s)"
+             org-gtd-graph--add-task-title (length blocker-task-ids))
+    (org-gtd-graph-view-refresh)
+    (transient-quit-one)))
+
+;;;; Internal Functions for Testing
+
+(defun org-gtd-graph--add-successor-internal (task-title blocked-task-ids project-marker)
+  "Internal function to add a successor task.
+TASK-TITLE is the title for the new task.
+BLOCKED-TASK-IDS is list of task IDs that the new task should block.
+PROJECT-MARKER is the project marker.
+Returns the ID of the newly created task."
+  (let ((project-id (org-with-point-at project-marker
+                      (org-entry-get (point) "ID")))
+        new-task-id)
+    ;; Create new task
+    (org-with-point-at project-marker
+      (org-end-of-subtree t t)
+      (unless (bolp) (insert "\n"))
+      (insert "** " task-title "\n")
+      (forward-line -1)
+      (org-back-to-heading t)
+      (setq new-task-id (org-id-get-create))
+      (org-todo "TODO")
+      (org-entry-put (point) "ORG_GTD" "Actions")
+      (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+      (save-buffer))
+
+    ;; Create dependencies: new-task blocks each selected task
+    (dolist (blocked-id blocked-task-ids)
+      (org-gtd-dependencies-create new-task-id blocked-id))
+
+    new-task-id))
+
+(defun org-gtd-graph--add-blocker-internal (task-title blocker-task-ids project-marker)
+  "Internal function to add a blocker task.
+TASK-TITLE is the title for the new task.
+BLOCKER-TASK-IDS is list of task IDs that should block the new task.
+PROJECT-MARKER is the project marker.
+Returns the ID of the newly created task."
+  (let ((project-id (org-with-point-at project-marker
+                      (org-entry-get (point) "ID")))
+        new-task-id)
+    ;; Create new task
+    (org-with-point-at project-marker
+      (org-end-of-subtree t t)
+      (unless (bolp) (insert "\n"))
+      (insert "** " task-title "\n")
+      (forward-line -1)
+      (org-back-to-heading t)
+      (setq new-task-id (org-id-get-create))
+      (org-todo "TODO")
+      (org-entry-put (point) "ORG_GTD" "Actions")
+      (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+      (save-buffer))
+
+    ;; Create dependencies: each blocker blocks new-task
+    (dolist (blocker-id blocker-task-ids)
+      (org-gtd-dependencies-create blocker-id new-task-id))
+
+    new-task-id))
 
 ;;;; Footer
 

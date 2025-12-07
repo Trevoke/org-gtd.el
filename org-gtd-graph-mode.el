@@ -95,6 +95,10 @@ The graph is interactive:
 - Create and delete tasks
 - All changes are immediately saved to the org file
 
+Navigation history:
+- Press \\[org-gtd-graph-ui-back] to go back to previously selected node
+- Press \\[org-gtd-graph-ui-forward] to go forward after going back
+
 The graph auto-updates when you refresh (\\[org-gtd-graph-view-refresh])."
   :group 'org-gtd
   (setq-local buffer-read-only t
