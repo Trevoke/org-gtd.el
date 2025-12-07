@@ -789,8 +789,13 @@ These settings are *required* for Org GTD to work properly:
 - ~org-gtd-clarify-show-horizons~ :: When clarifying, do you want the horizons buffer to be shown by default, or do you prefer it hidden?
 - ~org-gtd-clarify-show-organize-help~ :: When clarifying, show a help buffer with GTD item type descriptions and keyboard shortcuts.
 - ~org-gtd-clarify-project-templates~ :: Alist of strings: ~project template name . project template~ where there template is a series of tasks you may want to insert automatically, if you have a generic type of project that comes up a lot.
+- ~org-gtd-clarify-display-helper-buffer~ :: When ~t~, show a dependencies helper window when clarifying projects with multiple tasks. Useful for visualizing task relationships.
 - ~org-gtd-horizons-file~ :: Name of the file, in ~org-gtd-directory~, that will be displayed when the horizons buffer is displayed when clarifying.
 - ~org-gtd-prefix-width~ :: how many characters to dedicate to the prefix, on the left side of the TODO items, so the project name, area of focus, or other context can show clearly. See [[#prefix-dsl][Prefix DSL]] for controlling what appears in the prefix.
+- ~org-gtd-agenda-property-list~ :: List of properties to display in agenda views (default: ~'("LOCATION")~). See [[#config-vars-reference][Configuration Variables Reference]] for related positioning options.
+- ~org-gtd-graph-render-mode~ :: Default rendering mode for project graphs (~'svg~ or ~'ascii~). Terminal users should use ~'ascii~. [[#graph-rendering-modes][Graph Rendering Modes]].
+- ~org-gtd-graph-ui-split-ratio~ :: Width ratio for graph vs. details panel (default: ~0.7~ = 70% graph).
+- ~org-gtd-save-after-organize~ :: When ~t~, save all modified buffers after each organize step.
 *** Recommended key bindings
 :PROPERTIES:
 :CUSTOM_ID: recommended-key-bindings
@@ -1358,15 +1363,22 @@ The only exception will be a project, that will look like a top-level heading fo
 :PROPERTIES:
 :CUSTOM_ID: options-and-behaviors-related-to-clarification-step
 :END:
-The clarify buffers use the major mode ~org-gtd-clarify-mode~, which is derived from ~org-mode~. There is a keymap, ~org-gtd-clarify-mode-map~, that you can use to bind useful
+The clarify buffers use the major mode ~org-gtd-clarify-mode~, which is derived from ~org-mode~. There is a keymap, ~org-gtd-clarify-mode-map~, that you can use to bind useful keybindings.
 
-While clarifying, you may find it useful to see your GTD horizons. You can use:
-- ~org-gtd-clarify-toggle-horizons-window~ :: a function that toggles the display of the horizons buffer
-- ~org-gtd-clarify-show-horizons~ :: a boolean variable defining whether the horizons window should be shown (t) or hidden (nil) by default when clarifying an item. See  [[#working-with-horizons][Working with the GTD Horizons]] for more details.
+org-gtd provides three optional helper windows during clarification, each controlled by a variable:
 
-If you're unsure which GTD category to choose when organizing, the *organize help buffer* shows a quick reference of all item types with their keyboard shortcuts and key properties:
-- ~org-gtd-clarify-toggle-organize-help~ :: toggles a side window showing all GTD item types (Quick Action, Single Action, Project, Calendar, etc.) with brief descriptions
-- ~org-gtd-clarify-show-organize-help~ :: set to ~'right~, ~'left~, ~'top~, or ~'bottom~ to configure the window position
+**Horizons window** — shows your GTD horizons file for context:
+- ~org-gtd-clarify-show-horizons~ :: set to ~'right~, ~'left~, ~'top~, or ~'bottom~ to show by default; ~nil~ to hide
+- ~org-gtd-clarify-toggle-horizons-window~ :: command to toggle visibility
+
+See [[#working-with-horizons][Working with the GTD Horizons]] for more details.
+
+**Organize help window** — shows all GTD item types with keyboard shortcuts:
+- ~org-gtd-clarify-show-organize-help~ :: set to ~'right~, ~'left~, ~'top~, or ~'bottom~ to show by default; ~nil~ to hide
+- ~org-gtd-clarify-toggle-organize-help~ :: command to toggle visibility
+
+**Dependencies helper window** — shows task relationships when clarifying projects:
+- ~org-gtd-clarify-display-helper-buffer~ :: set to ~t~ to show when clarifying projects with multiple tasks; ~nil~ to hide
 
 Try it now: while clarifying an item, run ~M-x org-gtd-clarify-toggle-organize-help~. You'll see each type's purpose and what happens when you choose it.
 
@@ -1424,7 +1436,17 @@ Org-gtd finds refile targets by searching for ~ORG_GTD_REFILE~ property:
 :END:
 #+end_example
 
-When you organize an item as a Project, org-gtd finds *all* headings with ~ORG_GTD_REFILE: Projects~ (plus any targets from your ~org-refile-targets~) and lets you choose where to refile.
+When you organize an item as a Project, org-gtd finds *all* headings with ~ORG_GTD_REFILE: Projects~ (plus any targets from your ~org-refile-targets~).
+
+****** Choosing Between Multiple Targets
+
+By default (~org-gtd-refile-to-any-target~ is ~t~), org-gtd automatically refiles to the first target found without prompting. If you have multiple refile targets and want to choose between them:
+
+#+begin_src elisp
+(setq org-gtd-refile-to-any-target nil)
+#+end_src
+
+With this setting, org-gtd will always prompt you to select from available targets.
 
 ***** Creating New Refile Targets
 
@@ -2375,7 +2397,7 @@ See [[#task-dependency-commands][Task Dependency Commands]] for details.
 :CUSTOM_ID: graph-rendering-modes
 :END:
 
-The graph view supports two rendering modes that you can toggle between at any time.
+The graph view supports two rendering modes that you can toggle between at any time. Configure the default mode with ~org-gtd-graph-render-mode~.
 
 **** SVG Mode (Default)
 
@@ -3928,6 +3950,118 @@ Change the default prompts without changing input behavior:
                 :prompt "Assign to team member")
           (:when :org-property "ORG_GTD_TIMESTAMP" :type timestamp :required t
                  :prompt "Follow-up date")))))
+#+end_src
+
+*** Agenda Display Configuration
+
+These variables control how properties are displayed in org-agenda views. When you run ~org-gtd-engage~ or other agenda commands, these settings determine what additional information appears alongside each task.
+
+**** ~org-gtd-agenda-property-list~
+
+*Type*: List of strings
+
+*Default*: ~'("LOCATION")~
+
+*Description*: Properties to display in agenda views.
+
+When a task has any of these properties set, the value appears in the agenda line. Useful for showing context like location, delegated person, or custom metadata.
+
+*Example*:
+#+begin_src emacs-lisp
+;; Show location and who tasks are delegated to
+(setq org-gtd-agenda-property-list '("LOCATION" "DELEGATED_TO"))
+#+end_src
+
+**** ~org-gtd-agenda-property-position~
+
+*Type*: Symbol
+
+*Default*: ~'where-it-fits~
+
+*Description*: Where properties appear relative to the agenda line.
+
+Values:
+- ~'same-line~ :: On the same line, starting at ~org-gtd-agenda-property-column~
+- ~'next-line~ :: On the line below the task
+- ~'where-it-fits~ :: Same line if it fits in the window, otherwise next line (default)
+
+*Example*:
+#+begin_src emacs-lisp
+(setq org-gtd-agenda-property-position 'next-line)
+#+end_src
+
+**** ~org-gtd-agenda-property-column~
+
+*Type*: Integer
+
+*Default*: ~60~
+
+*Description*: Column position where properties start when using ~'same-line~ or ~'where-it-fits~ position.
+
+Increase this if your task descriptions are long; decrease if you want properties closer to the task text.
+
+*Example*:
+#+begin_src emacs-lisp
+(setq org-gtd-agenda-property-column 50)
+#+end_src
+
+**** ~org-gtd-agenda-property-separator~
+
+*Type*: String
+
+*Default*: ~"|"~
+
+*Description*: Separator between multiple property values when a task has more than one property from ~org-gtd-agenda-property-list~.
+
+*Example*:
+#+begin_src emacs-lisp
+(setq org-gtd-agenda-property-separator " · ")
+#+end_src
+
+*** Graph View Configuration
+
+These variables control the project graph visualization feature.
+
+**** ~org-gtd-graph-render-mode~
+
+*Type*: Symbol
+
+*Default*: ~'svg~
+
+*Description*: Default rendering mode for project dependency graphs.
+
+Values:
+- ~'svg~ :: High-quality graphical rendering (requires GUI Emacs)
+- ~'ascii~ :: Text-based rendering using box-drawing characters (works in terminal)
+
+You can toggle between modes in any graph buffer by pressing ~v~.
+
+*Example*:
+#+begin_src emacs-lisp
+;; Use ASCII mode by default (good for terminal users)
+(setq org-gtd-graph-render-mode 'ascii)
+#+end_src
+
+*See also*: [[#graph-rendering-modes][Graph Rendering Modes]] for detailed comparison.
+
+**** ~org-gtd-graph-ui-split-ratio~
+
+*Type*: Float (0.0 to 1.0)
+
+*Default*: ~0.7~
+
+*Description*: Width ratio for the graph window when showing project graphs.
+
+The graph view displays two panels: the dependency graph and a details panel showing the selected task. This ratio controls how much horizontal space the graph takes.
+
+- ~0.7~ means the graph takes 70% of width, details take 30% (default)
+- ~0.5~ would give equal space to both
+- ~0.8~ would give more space to the graph
+
+*Example*:
+#+begin_src emacs-lisp
+;; Give more space to the details panel
+(setq org-gtd-graph-ui-split-ratio 0.6)
 #+end_src
 
 *** Projects Configuration
