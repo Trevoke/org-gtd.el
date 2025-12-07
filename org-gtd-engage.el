@@ -38,13 +38,9 @@
   :group 'org-gtd
   :package-version '(org-gtd . "3.1"))
 
-(defcustom org-gtd-engage-prefix-width 12
-  "How many characters to dedicate to the agenda prefix in the engage view.
-
-This is where the project name is displayed, on the left side."
-  :group 'org-gtd-engage
-  :package-version '(org-gtd . "3.1")
-  :type 'integer)
+;; Backward compatibility alias for renamed variable
+(define-obsolete-variable-alias 'org-gtd-engage-prefix-width
+  'org-gtd-prefix-width "4.0")
 
 ;;;; GTD View Specifications
 
@@ -57,7 +53,7 @@ Shows:
 - All next actions"
   `((name . "GTD Engage View")
     (prefix . (project area-of-focus "—"))
-    (prefix-width . ,org-gtd-engage-prefix-width)
+    (prefix-width . ,org-gtd-prefix-width)
     (blocks . (((name . "Today's Schedule")
                 (block-type . calendar-day))
                ((name . "Tickler items ready for today")

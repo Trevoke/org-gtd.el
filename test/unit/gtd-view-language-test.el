@@ -1324,6 +1324,219 @@
     ;; Format string should contain the quoted literal
     (assert-match "Incubated" format-str)))
 
+;;; Implicit Blocks with Type Defaults Tests
+
+(deftest view-lang/type-defaults-constant-exists ()
+  "Type defaults constant exists and is an alist."
+  (assert-true (boundp 'org-gtd-view-lang--type-defaults))
+  (assert-true (listp org-gtd-view-lang--type-defaults)))
+
+(deftest view-lang/type-defaults-has-calendar ()
+  "Type defaults has calendar with when=today."
+  (let ((calendar-defaults (alist-get 'calendar org-gtd-view-lang--type-defaults)))
+    (assert-equal 'today (alist-get 'when calendar-defaults))
+    (assert-equal "Calendar" (alist-get 'name calendar-defaults))))
+
+(deftest view-lang/type-defaults-has-delegated ()
+  "Type defaults has delegated with when=today."
+  (let ((delegated-defaults (alist-get 'delegated org-gtd-view-lang--type-defaults)))
+    (assert-equal 'today (alist-get 'when delegated-defaults))
+    (assert-equal "Delegated" (alist-get 'name delegated-defaults))))
+
+(deftest view-lang/type-defaults-has-tickler ()
+  "Type defaults has tickler with when=today."
+  (let ((tickler-defaults (alist-get 'tickler org-gtd-view-lang--type-defaults)))
+    (assert-equal 'today (alist-get 'when tickler-defaults))
+    (assert-equal "Tickler" (alist-get 'name tickler-defaults))))
+
+(deftest view-lang/type-defaults-has-next-action ()
+  "Type defaults has next-action with name only."
+  (let ((next-action-defaults (alist-get 'next-action org-gtd-view-lang--type-defaults)))
+    (assert-nil (alist-get 'when next-action-defaults))
+    (assert-equal "Next Actions" (alist-get 'name next-action-defaults))))
+
+(deftest view-lang/type-defaults-has-stuck-types ()
+  "Type defaults has stuck types with (Needs Attention) suffix."
+  (let ((stuck-calendar (alist-get 'stuck-calendar org-gtd-view-lang--type-defaults))
+        (stuck-delegated (alist-get 'stuck-delegated org-gtd-view-lang--type-defaults))
+        (stuck-project (alist-get 'stuck-project org-gtd-view-lang--type-defaults)))
+    (assert-equal "Calendar (Needs Attention)" (alist-get 'name stuck-calendar))
+    (assert-equal "Delegated (Needs Attention)" (alist-get 'name stuck-delegated))
+    (assert-equal "Projects (Needs Attention)" (alist-get 'name stuck-project))))
+
+(deftest view-lang/default-prefix-constant-exists ()
+  "Default prefix constant exists."
+  (assert-true (boundp 'org-gtd-view-lang--default-prefix))
+  (assert-equal '(project area-of-focus file-name) org-gtd-view-lang--default-prefix))
+
+;;; Extract Type Keys Tests
+
+(deftest view-lang/extract-type-keys-single ()
+  "Extracts single type key from spec."
+  (let ((spec '((name . "Test") (type . calendar))))
+    (assert-equal '(calendar) (org-gtd-view-lang--extract-type-keys spec))))
+
+(deftest view-lang/extract-type-keys-multiple ()
+  "Extracts multiple type keys preserving order."
+  (let ((spec '((name . "Test") (type . calendar) (area-of-focus . "Health") (type . next-action))))
+    (assert-equal '(calendar next-action) (org-gtd-view-lang--extract-type-keys spec))))
+
+(deftest view-lang/extract-type-keys-none ()
+  "Returns nil when no type keys present."
+  (let ((spec '((name . "Test") (area-of-focus . "Health"))))
+    (assert-nil (org-gtd-view-lang--extract-type-keys spec))))
+
+;;; Extract Top-Level Keys Tests
+
+(deftest view-lang/extract-top-level-keys-filters-reserved ()
+  "Filters out reserved keys from top-level."
+  (let ((spec '((name . "Test") (area-of-focus . "Health") (type . calendar) (blocks . ()))))
+    (let ((result (org-gtd-view-lang--extract-top-level-keys spec)))
+      (assert-nil (alist-get 'name result))
+      (assert-nil (alist-get 'type result))
+      (assert-nil (alist-get 'blocks result))
+      (assert-equal "Health" (alist-get 'area-of-focus result)))))
+
+(deftest view-lang/extract-top-level-keys-preserves-filters ()
+  "Preserves filter keys like area-of-focus and when."
+  (let ((spec '((name . "Test") (area-of-focus . "Work") (when . past))))
+    (let ((result (org-gtd-view-lang--extract-top-level-keys spec)))
+      (assert-equal "Work" (alist-get 'area-of-focus result))
+      (assert-equal 'past (alist-get 'when result)))))
+
+;;; Apply Defaults with Four-Tier Precedence Tests
+
+(deftest view-lang/apply-defaults-block-explicit-wins ()
+  "Block-explicit key takes highest precedence."
+  (let ((block-spec '((type . calendar) (when . future)))
+        (top-level '((when . past)))
+        (type 'calendar))
+    (let ((result (org-gtd-view-lang--apply-defaults block-spec type top-level)))
+      ;; Block-explicit 'future should win over top-level 'past and type default 'today
+      (assert-equal 'future (alist-get 'when result)))))
+
+(deftest view-lang/apply-defaults-top-level-over-type-default ()
+  "Top-level explicit beats type smart default."
+  (let ((block-spec '((type . calendar)))  ; no when in block
+        (top-level '((when . past)))
+        (type 'calendar))
+    (let ((result (org-gtd-view-lang--apply-defaults block-spec type top-level)))
+      ;; Top-level 'past should win over type default 'today
+      (assert-equal 'past (alist-get 'when result)))))
+
+(deftest view-lang/apply-defaults-type-default-applied ()
+  "Type smart default applied when no explicit override."
+  (let ((block-spec '((type . calendar)))  ; no when
+        (top-level '())                    ; no when
+        (type 'calendar))
+    (let ((result (org-gtd-view-lang--apply-defaults block-spec type top-level)))
+      ;; Type default 'today should be applied
+      (assert-equal 'today (alist-get 'when result)))))
+
+(deftest view-lang/apply-defaults-adds-name-from-type ()
+  "Adds default name from type when not specified."
+  (let ((block-spec '((type . calendar)))
+        (top-level '())
+        (type 'calendar))
+    (let ((result (org-gtd-view-lang--apply-defaults block-spec type top-level)))
+      (assert-equal "Calendar" (alist-get 'name result)))))
+
+(deftest view-lang/apply-defaults-preserves-area-of-focus ()
+  "Inherits area-of-focus from top-level."
+  (let ((block-spec '((type . calendar)))
+        (top-level '((area-of-focus . "Health")))
+        (type 'calendar))
+    (let ((result (org-gtd-view-lang--apply-defaults block-spec type top-level)))
+      (assert-equal "Health" (alist-get 'area-of-focus result)))))
+
+;;; Expand Implicit Blocks Tests
+
+(deftest view-lang/expand-implicit-blocks-multiple-types ()
+  "Expands multiple type keys into blocks."
+  (let ((spec '((name . "Test View")
+                (type . calendar)
+                (type . next-action))))
+    (let ((result (org-gtd-view-lang--expand-implicit-blocks spec)))
+      ;; Should have blocks key
+      (assert-true (alist-get 'blocks result))
+      ;; Should have two blocks
+      (assert-equal 2 (length (alist-get 'blocks result))))))
+
+(deftest view-lang/expand-implicit-blocks-inherits-area-of-focus ()
+  "Top-level area-of-focus inherits to all blocks."
+  (let ((spec '((name . "Health Review")
+                (area-of-focus . "Health")
+                (type . calendar)
+                (type . next-action))))
+    (let* ((result (org-gtd-view-lang--expand-implicit-blocks spec))
+           (blocks (alist-get 'blocks result)))
+      (assert-equal "Health" (alist-get 'area-of-focus (car blocks)))
+      (assert-equal "Health" (alist-get 'area-of-focus (cadr blocks))))))
+
+(deftest view-lang/expand-implicit-blocks-applies-type-defaults ()
+  "Applies type-specific defaults to each block."
+  (let ((spec '((name . "Test")
+                (type . calendar)
+                (type . next-action))))
+    (let* ((result (org-gtd-view-lang--expand-implicit-blocks spec))
+           (blocks (alist-get 'blocks result))
+           (calendar-block (car blocks))
+           (next-action-block (cadr blocks)))
+      ;; Calendar should get when=today default
+      (assert-equal 'today (alist-get 'when calendar-block))
+      ;; Next-action should NOT have when
+      (assert-nil (alist-get 'when next-action-block)))))
+
+(deftest view-lang/expand-implicit-blocks-skips-when-blocks-present ()
+  "Does not expand when explicit blocks key is present."
+  (let ((spec '((name . "Test")
+                (type . calendar)
+                (blocks . (((name . "Explicit") (type . next-action)))))))
+    (let ((result (org-gtd-view-lang--expand-implicit-blocks spec)))
+      ;; Should keep explicit blocks unchanged
+      (assert-equal 1 (length (alist-get 'blocks result)))
+      (assert-equal "Explicit" (alist-get 'name (car (alist-get 'blocks result)))))))
+
+(deftest view-lang/expand-implicit-blocks-single-type-no-expansion ()
+  "Single type key does not create blocks."
+  (let ((spec '((name . "Test") (type . calendar))))
+    (let ((result (org-gtd-view-lang--expand-implicit-blocks spec)))
+      ;; Should NOT have blocks key for single type
+      (assert-nil (alist-get 'blocks result))
+      ;; Should keep type in place
+      (assert-equal 'calendar (alist-get 'type result)))))
+
+(deftest view-lang/expand-implicit-blocks-top-level-when-overrides-default ()
+  "Top-level when overrides type smart default."
+  (let ((spec '((name . "Test")
+                (when . past)
+                (type . calendar)      ; default when=today
+                (type . delegated))))  ; default when=today
+    (let* ((result (org-gtd-view-lang--expand-implicit-blocks spec))
+           (blocks (alist-get 'blocks result)))
+      ;; Both blocks should have when=past (from top-level)
+      (assert-equal 'past (alist-get 'when (car blocks)))
+      (assert-equal 'past (alist-get 'when (cadr blocks))))))
+
+(deftest view-lang/expand-implicit-blocks-adds-default-prefix ()
+  "Adds default prefix when none specified."
+  (let ((spec '((name . "Test")
+                (type . calendar)
+                (type . next-action))))
+    (let ((result (org-gtd-view-lang--expand-implicit-blocks spec)))
+      ;; Should add default prefix at top level
+      (assert-equal '(project area-of-focus file-name) (alist-get 'prefix result)))))
+
+(deftest view-lang/expand-implicit-blocks-preserves-explicit-prefix ()
+  "Preserves explicitly specified prefix."
+  (let ((spec '((name . "Test")
+                (prefix . (project "Custom"))
+                (type . calendar)
+                (type . next-action))))
+    (let ((result (org-gtd-view-lang--expand-implicit-blocks spec)))
+      ;; Should keep explicit prefix
+      (assert-equal '(project "Custom") (alist-get 'prefix result)))))
+
 (provide 'gtd-view-language-test)
 
 ;;; gtd-view-language-test.el ends here

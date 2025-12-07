@@ -790,7 +790,7 @@ These settings are *required* for Org GTD to work properly:
 - ~org-gtd-clarify-show-organize-help~ :: When clarifying, show a help buffer with GTD item type descriptions and keyboard shortcuts.
 - ~org-gtd-clarify-project-templates~ :: Alist of strings: ~project template name . project template~ where there template is a series of tasks you may want to insert automatically, if you have a generic type of project that comes up a lot.
 - ~org-gtd-horizons-file~ :: Name of the file, in ~org-gtd-directory~, that will be displayed when the horizons buffer is displayed when clarifying.
-- ~org-gtd-engage-prefix-width~ :: how many characters to dedicate to the prefix, on the left side of the TODO items, so the project name, if any, can show clearly.
+- ~org-gtd-prefix-width~ :: how many characters to dedicate to the prefix, on the left side of the TODO items, so the project name, area of focus, or other context can show clearly. See [[#prefix-dsl][Prefix DSL]] for controlling what appears in the prefix.
 *** Recommended key bindings
 :PROPERTIES:
 :CUSTOM_ID: recommended-key-bindings
@@ -3732,22 +3732,28 @@ Used when:
       '("Work" "Home" "Health" "Learning" "Relationships" "Finance"))
 #+end_src
 
-*** Engage View Configuration
+*** View Prefix Configuration
 
-**** ~org-gtd-engage-prefix-width~
+**** ~org-gtd-prefix-width~
 
 *Type*: Integer
 
 *Default*: ~12~
 
-*Description*: How many characters to dedicate to the prefix in the engage agenda view.
+*Description*: Default width for the prefix column in org-gtd views.
 
-The prefix shows the project name on the left side of each task.
+The prefix shows context information (project name, area of focus, etc.) on the left side of each task. This variable sets the default width used when no explicit ~prefix-width~ is specified in a view spec.
+
+Long values are truncated with "…". Short values are padded with spaces.
 
 *Example*: Increase space for longer project names:
 #+begin_src emacs-lisp
-(setq org-gtd-engage-prefix-width 20)
+(setq org-gtd-prefix-width 20)
 #+end_src
+
+*Note*: You can also set ~prefix-width~ per-view in the View DSL. See [[#prefix-dsl][Prefix DSL]].
+
+*Backward compatibility*: The old name ~org-gtd-engage-prefix-width~ still works but is deprecated.
 
 *** Archive Configuration
 
@@ -4115,7 +4121,7 @@ C-c C-c to save
 - Displays the following.
   - Agenda for today (appointments, deadlines, scheduled items)
   - All NEXT actions (grouped by project)
-- Uses prefix width from ~org-gtd-engage-prefix-width~
+- Uses prefix width from ~org-gtd-prefix-width~
 
 *Agenda commands available in this view*:
 - ~t~ :: Change TODO state
@@ -6507,19 +6513,123 @@ These options control how the view is displayed:
               (when . future)))))
 #+end_src
 
-**** ~(prefix-format . FORMAT-STRING)~
+**** Prefix DSL: Customizing the Task Prefix Column
+:PROPERTIES:
+:CUSTOM_ID: prefix-dsl
+:END:
 
-*Purpose*: Custom agenda prefix format for all blocks in a multi-block view
+When you look at your engage view, you see context information on the left of each task---like the project name. The Prefix DSL lets you control what appears there using a simple fallback chain.
 
-*Use case*: Show project names alongside tasks
+*Mental model:* Think of the prefix like a label maker. You specify what you /want/ to show, in order of preference. org-gtd tries each option until one has a value.
+
+***** Your First Prefix in 60 Seconds
+
+Try this now (evaluate with ~M-x eval-region~):
+
+#+begin_src emacs-lisp
+(org-gtd-view-show
+ '((name . "Tasks with Context")
+   (prefix . (project area-of-focus "—"))
+   (type . next-action)))
+#+end_src
+
+You'll see NEXT actions with:
+- The project name (if the task is in a project)
+- Or the area of focus (if no project, but area is set)
+- Or a dash "—" (if neither is available)
+
+That's the fallback chain in action.
+
+***** ~(prefix . (ELEMENT ...))~
+
+*Purpose*: Control what context appears before each task in the view
+
+*Format*: A list of elements, tried in order. First non-empty value wins.
+
+*Available elements*:
+- ~project~ :: The project heading this task belongs to
+- ~area-of-focus~ :: The ~CATEGORY~ property (your GTD area of focus)
+- ~file-name~ :: The base name of the file containing the task
+- ~"literal string"~ :: Any quoted string (used as fallback)
+
+*Example*: Show project, fallback to area, then to literal text:
+#+begin_src emacs-lisp
+'((name . "My View")
+  (prefix . (project area-of-focus "No Context"))
+  (type . next-action))
+#+end_src
+
+*Example*: Just show the project name (or nothing):
+#+begin_src emacs-lisp
+'((name . "Project Tasks")
+  (prefix . (project))
+  (type . next-action))
+#+end_src
+
+*Example*: Tickler items labeled "Incubated":
+#+begin_src emacs-lisp
+'((name . "Tickler Items")
+  (prefix . ("Incubated"))
+  (type . tickler))
+#+end_src
+
+***** ~(prefix-width . N)~
+
+*Purpose*: Control how many characters the prefix column uses
+
+*Default*: Uses ~org-gtd-prefix-width~ (default: 12)
+
+*Note*: Long values are truncated with "…". Short values are padded with spaces.
+
+*Example*: Extra space for long project names:
+#+begin_src emacs-lisp
+'((name . "Wide Prefix View")
+  (prefix . (project area-of-focus))
+  (prefix-width . 20)
+  (type . next-action))
+#+end_src
+
+***** Prefix Inheritance in Multi-Block Views
+
+When you define ~prefix~ at the view level, all blocks inherit it:
+
+#+begin_src emacs-lisp
+'((name . "My Dashboard")
+  (prefix . (project area-of-focus "—"))  ;; All blocks use this
+  (prefix-width . 15)
+  (blocks . (((name . "Calendar Today")
+              (type . calendar)
+              (when . today))
+             ((name . "NEXT Actions")
+              (type . next-action)))))
+#+end_src
+
+Individual blocks can override the inherited prefix:
+
+#+begin_src emacs-lisp
+'((name . "Mixed Prefixes")
+  (prefix . (project))  ;; Default for blocks
+  (blocks . (((name . "Projects")
+              (prefix . ("Project"))  ;; Override: literal label
+              (type . active-project))
+             ((name . "NEXT Actions")
+              ;; Uses inherited (project) prefix
+              (type . next-action)))))
+#+end_src
+
+***** Low-Level: ~(prefix-format . FORMAT-STRING)~
+
+For advanced users who need full control, you can specify the raw org-agenda prefix format string. This bypasses the prefix DSL.
 
 *Example*:
 #+begin_src emacs-lisp
-'((name . "Tasks with Projects")
+'((name . "Custom Format")
   (prefix-format . " %i %-12:(org-gtd-agenda--prefix-format 12) ")
   (blocks . (((name . "NEXT Actions")
               (type . next-action)))))
 #+end_src
+
+Most users should use ~(prefix . ...)~ instead.
 
 **** ~(view-type . agenda)~
 
@@ -6541,6 +6651,158 @@ These options control how the view is displayed:
 *Default*: 1
 
 *Requires*: ~(view-type . agenda)~
+
+*** Simplified Multi-Block Views
+:PROPERTIES:
+:CUSTOM_ID: simplified-view-specs
+:END:
+
+Creating multi-block views usually requires verbose ~blocks~ syntax. The View DSL offers a simpler alternative: just list the types you want to see.
+
+*For:* Users who want quick multi-block views without boilerplate.
+
+**** The Problem: Verbose Block Definitions
+
+A typical area-of-focus review view requires this:
+
+#+begin_src emacs-lisp
+;; Verbose: every block needs explicit configuration
+'((name . "Health Review")
+  (blocks . (((name . "Projects")
+              (type . project)
+              (area-of-focus . "Health"))
+             ((name . "Next Actions")
+              (type . next-action)
+              (area-of-focus . "Health"))
+             ((name . "Calendar")
+              (type . calendar)
+              (area-of-focus . "Health")
+              (when . today)))))
+#+end_src
+
+Notice the repetition: ~area-of-focus~ appears in every block, and you had to remember that ~calendar~ needs ~(when . today)~.
+
+**** The Solution: Implicit Blocks
+
+The same view, simplified:
+
+#+begin_src emacs-lisp
+;; Concise: types expand automatically with smart defaults
+'((name . "Health Review")
+  (area-of-focus . "Health")
+  (type . project)
+  (type . next-action)
+  (type . calendar))
+#+end_src
+
+When you list multiple ~type~ keys at the top level, org-gtd automatically:
+1. Creates a block for each type
+2. Inherits top-level filters (~area-of-focus~) to all blocks
+3. Applies smart defaults (e.g., ~calendar~ gets ~(when . today)~)
+
+**** Try It Now
+
+Evaluate this (select and run ~M-x eval-region~):
+
+#+begin_src emacs-lisp
+(org-gtd-view-show
+ '((name . "Quick Dashboard")
+   (type . next-action)
+   (type . delegated)
+   (type . tickler)))
+#+end_src
+
+You get three sections:
+- "Next Actions" - all your NEXT tasks
+- "Delegated" - items due today (smart default: ~when . today~)
+- "Tickler" - reminders due today (smart default: ~when . today~)
+
+No ~blocks~ syntax. No ~when~ filters. org-gtd inferred them.
+
+**** Smart Type Defaults
+
+Time-sensitive types automatically filter to "today":
+
+| Type | Default ~when~ | Default Name |
+|------+----------------+--------------|
+| ~calendar~ | ~today~ | "Calendar" |
+| ~delegated~ | ~today~ | "Delegated" |
+| ~tickler~ | ~today~ | "Tickler" |
+| ~habit~ | --- | "Habits" |
+| ~next-action~ | --- | "Next Actions" |
+| ~project~ | --- | "Projects" |
+| ~someday~ | --- | "Someday/Maybe" |
+| ~stuck-project~ | --- | "Projects (Needs Attention)" |
+
+*Why these defaults?* For calendar, delegated, and tickler items, you usually want to see what's relevant /today/. For other types, you want to see everything.
+
+**** Top-Level Inheritance
+
+Filters at the top level apply to /all/ blocks:
+
+#+begin_src emacs-lisp
+'((name . "Work Focus")
+  (area-of-focus . "Work")  ;; Applied to all blocks
+  (type . project)
+  (type . next-action)
+  (type . delegated))
+#+end_src
+
+This shows only Work-related items across all three sections.
+
+**** The Four-Tier Precedence Model
+
+When org-gtd expands implicit blocks, it applies settings in this order (highest priority first):
+
+1. *Block-explicit* --- If you use explicit ~blocks~ syntax and set a value, it wins
+2. *Top-level* --- Filters at the view's top level inherit to all blocks
+3. *Type smart default* --- Built-in defaults for that type (e.g., ~calendar~ → ~when . today~)
+4. *Global defaults* --- Package defaults like ~org-gtd-prefix-width~
+
+*Example*: Override a smart default:
+
+#+begin_src emacs-lisp
+;; Show ALL calendar items, not just today
+'((name . "All Calendar")
+  (when . future)  ;; Top-level overrides type default
+  (type . calendar))
+#+end_src
+
+*Example*: Mix explicit and implicit:
+
+#+begin_src emacs-lisp
+'((name . "Mixed View")
+  (area-of-focus . "Work")
+  (type . next-action)  ;; Gets "Next Actions" name, Work filter
+  (type . delegated))   ;; Gets "Delegated" name, Work filter, when=today
+#+end_src
+
+**** When to Use Explicit Blocks
+
+Use explicit ~blocks~ syntax when you need:
+- Custom block names (implicit blocks use default names)
+- Different filters per block (beyond inheritance)
+- Non-standard block types like ~calendar-day~ or ~todo~
+
+*Example*: Custom names require explicit blocks:
+
+#+begin_src emacs-lisp
+'((name . "My Dashboard")
+  (blocks . (((name . "Today's Schedule")  ;; Custom name
+              (block-type . calendar-day))
+             ((name . "Ready to Work On")  ;; Custom name
+              (type . next-action)))))
+#+end_src
+
+**** Quick Reference
+
+| Goal | Use |
+|------+-----|
+| Simple multi-section view | Multiple ~(type . X)~ keys |
+| Custom block names | Explicit ~blocks~ |
+| Filter all blocks | Top-level filter |
+| Override smart default | Top-level filter |
+| Mix native + query blocks | Explicit ~blocks~ |
 
 *** Saving Your Custom Views
 

@@ -114,8 +114,34 @@
 (defvar org-gtd-view-lang--current-type nil
   "Track the current type filter for semantic property resolution.")
 
-(defconst org-gtd-view-lang--default-prefix-width 12
-  "Default width for prefix elements when not specified.")
+;; Note: org-gtd-prefix-width is defined in org-gtd-core.el
+;; and serves as the default width for prefix elements
+
+(defconst org-gtd-view-lang--type-defaults
+  '((calendar . ((when . today) (name . "Calendar")))
+    (delegated . ((when . today) (name . "Delegated")))
+    (tickler . ((when . today) (name . "Tickler")))
+    (habit . ((name . "Habits")))
+    (next-action . ((name . "Next Actions")))
+    (project . ((name . "Projects")))
+    (someday . ((name . "Someday/Maybe")))
+    (stuck-calendar . ((name . "Calendar (Needs Attention)")))
+    (stuck-delegated . ((name . "Delegated (Needs Attention)")))
+    (stuck-habit . ((name . "Habits (Needs Attention)")))
+    (stuck-tickler . ((name . "Tickler (Needs Attention)")))
+    (stuck-project . ((name . "Projects (Needs Attention)")))
+    (tickler-project . ((name . "Tickler Projects")))
+    (completed-project . ((name . "Completed Projects"))))
+  "Smart defaults for each GTD type.
+Each entry maps a type symbol to an alist of default values.
+Types with time-sensitive semantics (calendar, delegated, tickler)
+default to `when' of `today'.")
+
+(defconst org-gtd-view-lang--default-prefix
+  '(project area-of-focus file-name)
+  "Default prefix fallback chain when none specified.
+Elements are tried in order: project name, then area of focus,
+then file name.")
 
 (defconst org-gtd-view-lang--simple-types
   '(next-action delegated calendar tickler project someday habit reference trash quick-action)
@@ -903,7 +929,7 @@ If GTD-VIEW-SPEC has a `prefix' key, expand it to a format string.
 Otherwise use INHERITED-PREFIX-FORMAT if provided."
   (let ((prefix-elements (alist-get 'prefix gtd-view-spec))
         (prefix-width (alist-get 'prefix-width gtd-view-spec
-                                 org-gtd-view-lang--default-prefix-width)))
+                                 org-gtd-prefix-width)))
     (cond
      ;; New prefix DSL takes precedence
      (prefix-elements
@@ -913,6 +939,100 @@ Otherwise use INHERITED-PREFIX-FORMAT if provided."
       inherited-prefix-format)
      ;; No prefix specified
      (t nil))))
+
+;;;; Implicit Blocks Expansion
+
+(defconst org-gtd-view-lang--reserved-keys
+  '(name blocks block-type prefix prefix-width view-type
+    agenda-span show-habits additional-blocks
+    group-contexts group-by tags-match todo-keyword filters)
+  "Keys that are processed specially and not inherited to blocks.")
+
+(defun org-gtd-view-lang--extract-type-keys (spec)
+  "Extract all type values from SPEC.
+Returns a list of type symbols in order of appearance."
+  (let ((types '()))
+    (dolist (pair spec)
+      (when (eq (car pair) 'type)
+        (push (cdr pair) types)))
+    (nreverse types)))
+
+(defun org-gtd-view-lang--extract-top-level-keys (spec)
+  "Extract inheritable keys from SPEC.
+Filters out reserved keys and type keys, returning an alist
+of keys that should be inherited to child blocks."
+  (seq-filter (lambda (pair)
+                (not (or (memq (car pair) org-gtd-view-lang--reserved-keys)
+                         (eq (car pair) 'type))))
+              spec))
+
+(defun org-gtd-view-lang--apply-defaults (block-spec type top-level-keys)
+  "Apply four-tier precedence to BLOCK-SPEC for TYPE with TOP-LEVEL-KEYS.
+Precedence (highest to lowest):
+1. Block-explicit - key in BLOCK-SPEC
+2. Top-level explicit - key in TOP-LEVEL-KEYS
+3. Type smart default - from `org-gtd-view-lang--type-defaults'
+4. Global defaults - prefix, prefix-width"
+  (let* ((type-defaults (alist-get type org-gtd-view-lang--type-defaults))
+         (result (copy-alist block-spec)))
+    ;; Apply type defaults first (tier 3) - lowest precedence of the three
+    ;; These will be overridden by top-level if present
+    (dolist (default type-defaults)
+      (unless (assq (car default) result)
+        (push default result)))
+    ;; Apply top-level keys (tier 2) - these override type defaults
+    ;; We need to REPLACE any existing key, not just add if missing
+    (dolist (top-key top-level-keys)
+      (let ((key (car top-key)))
+        ;; If key exists in result (from block or type-default), check if block had it
+        ;; Block-explicit (tier 1) wins, so only override if NOT in original block-spec
+        (unless (assq key block-spec)
+          ;; Not in original block, so top-level takes precedence
+          ;; Remove any existing (from type-defaults) and add top-level
+          (setq result (assq-delete-all key result))
+          (push top-key result))))
+    result))
+
+(defun org-gtd-view-lang--expand-implicit-blocks (spec)
+  "Transform SPEC with multiple type keys into explicit blocks form.
+If SPEC has explicit `blocks' key, returns it unchanged.
+If SPEC has single type key, returns it unchanged but with defaults applied.
+If SPEC has multiple type keys, expands to blocks structure."
+  (let ((has-blocks (assq 'blocks spec))
+        (types (org-gtd-view-lang--extract-type-keys spec)))
+    (cond
+     ;; Already has explicit blocks - return unchanged
+     (has-blocks spec)
+     ;; Single type or no types - return with global defaults applied
+     ((<= (length types) 1)
+      (let ((result (copy-alist spec)))
+        ;; Add default prefix if none specified
+        (unless (assq 'prefix result)
+          (push `(prefix . ,org-gtd-view-lang--default-prefix) result))
+        result))
+     ;; Multiple types - expand to blocks
+     (t
+      (let* ((top-level-keys (org-gtd-view-lang--extract-top-level-keys spec))
+             (blocks (mapcar
+                      (lambda (type)
+                        (org-gtd-view-lang--apply-defaults
+                         `((type . ,type))
+                         type
+                         top-level-keys))
+                      types))
+             ;; Build result with blocks, preserving name and prefix keys
+             (result `((blocks . ,blocks))))
+        ;; Add name if present
+        (when-let ((name (alist-get 'name spec)))
+          (push `(name . ,name) result))
+        ;; Add prefix or default
+        (if-let ((prefix (alist-get 'prefix spec)))
+            (push `(prefix . ,prefix) result)
+          (push `(prefix . ,org-gtd-view-lang--default-prefix) result))
+        ;; Add prefix-width if present
+        (when-let ((width (alist-get 'prefix-width spec)))
+          (push `(prefix-width . ,width) result))
+        result)))))
 
 ;;;; Public API
 
@@ -944,6 +1064,14 @@ Multiple views example - show several related views:
      ((name . \"Stuck projects\")
       (type . stuck-project))))
 
+Implicit blocks example - multiple type keys auto-expand to blocks:
+
+  (org-gtd-view-show
+   \\='((name . \"Health Review\")
+     (area-of-focus . \"Health\")
+     (type . calendar)
+     (type . next-action)))
+
 See the module commentary or Info manual for complete filter
 documentation including type, time, area-of-focus, done, and tag filters."
   (interactive)
@@ -955,10 +1083,12 @@ documentation including type, time, area-of-focus, done, and tag filters."
                          (list view-spec-or-specs)
                        ;; Multiple view-specs (list of alists)
                        view-spec-or-specs))
-         (title (alist-get 'name (car view-specs)))
+         ;; Expand implicit blocks for each spec
+         (expanded-specs (mapcar #'org-gtd-view-lang--expand-implicit-blocks view-specs))
+         (title (alist-get 'name (car expanded-specs)))
          (org-agenda-custom-commands
           (org-gtd-view-lang--create-custom-commands
-           view-specs
+           expanded-specs
            "g"
            title)))
     (org-agenda nil "g")

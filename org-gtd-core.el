@@ -90,6 +90,15 @@ your own files if you want multiple refile targets (projects, etc.)."
                  (const :tag "End (before tags)" end))
   :package-version '(org-gtd . "4.0"))
 
+(defcustom org-gtd-prefix-width 12
+  "How many characters to dedicate to the agenda prefix in org-gtd views.
+
+This controls the width of the prefix column where project names and
+areas of focus are displayed on the left side of agenda items."
+  :group 'org-gtd
+  :package-version '(org-gtd . "4.0")
+  :type 'integer)
+
 ;;;; GTD Semantic Keyword Mapping
 
 (defun org-gtd--extract-keyword-name (keyword-string)
