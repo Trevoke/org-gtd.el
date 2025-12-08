@@ -195,7 +195,7 @@
 ;;; Integration tests: someday/tickler cycles
 
 (deftest integration/preserves-delegated-state-through-someday-cycle ()
-  "Preserves delegated state through someday cycle."
+  "Preserves delegated state through someday cycle, including TODO keyword."
   (ogt--with-temp-org-buffer
    "* Delegated task
 :PROPERTIES:
@@ -209,15 +209,18 @@
      (org-todo "WAIT")
      ;; Someday the item
      (org-gtd-someday--configure)
-     ;; Verify someday state
+     ;; Verify someday state - TODO keyword should be cleared
      (assert-equal "Someday" (org-entry-get (point) "ORG_GTD"))
      (assert-equal "Delegated" (org-entry-get (point) "PREVIOUS_ORG_GTD"))
+     (assert-equal "WAIT" (org-entry-get (point) "PREVIOUS_TODO"))
+     (assert-nil (org-entry-get (point) "TODO")) ;; TODO keyword cleared for someday
      ;; Reactivate with simulated input
      (with-simulated-input "RET RET RET RET"
        (org-gtd-reactivate))
-     ;; Verify restored
+     ;; Verify restored - including TODO keyword
      (assert-equal "Delegated" (org-entry-get (point) "ORG_GTD"))
-     (assert-equal "Bob" (org-entry-get (point) "DELEGATED_TO")))))
+     (assert-equal "Bob" (org-entry-get (point) "DELEGATED_TO"))
+     (assert-equal "WAIT" (org-entry-get (point) "TODO")))))  ;; TODO keyword restored
 
 (deftest integration/preserves-calendar-state-through-tickler-cycle ()
   "Preserves calendar state through tickler cycle."
@@ -241,6 +244,35 @@
    ;; Verify restored
    (assert-equal "Calendar" (org-entry-get (point) "ORG_GTD"))
    (assert-equal "<2024-06-20>" (org-entry-get (point) "ORG_GTD_TIMESTAMP"))))
+
+(deftest integration/preserves-delegated-state-through-tickler-cycle ()
+  "Preserves delegated state through tickler cycle, including TODO keyword."
+  (ogt--with-temp-org-buffer
+   "* Delegated task to tickler
+:PROPERTIES:
+:ID: delegated-tickler-cycle-id
+:ORG_GTD: Delegated
+:DELEGATED_TO: Alice
+:ORG_GTD_TIMESTAMP: <2024-05-15>
+:END:"
+   (org-back-to-heading t)
+   (let ((org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL"))))
+     (org-todo "WAIT")
+     ;; Tickler the item (stub the date prompt)
+     (with-stub org-gtd-prompt-for-active-date "<2025-02-01>"
+       (org-gtd-tickler--configure))
+     ;; Verify tickler state - TODO keyword should be cleared
+     (assert-equal "Tickler" (org-entry-get (point) "ORG_GTD"))
+     (assert-equal "Delegated" (org-entry-get (point) "PREVIOUS_ORG_GTD"))
+     (assert-equal "WAIT" (org-entry-get (point) "PREVIOUS_TODO"))
+     (assert-nil (org-entry-get (point) "TODO")) ;; TODO keyword cleared for tickler
+     ;; Reactivate with simulated input
+     (with-simulated-input "RET RET RET RET"
+       (org-gtd-reactivate))
+     ;; Verify restored - including TODO keyword
+     (assert-equal "Delegated" (org-entry-get (point) "ORG_GTD"))
+     (assert-equal "Alice" (org-entry-get (point) "DELEGATED_TO"))
+     (assert-equal "WAIT" (org-entry-get (point) "TODO"))))) ;; TODO keyword restored
 
 (provide 'reactivate-test)
 

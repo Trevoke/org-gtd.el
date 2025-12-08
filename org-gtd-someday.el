@@ -83,12 +83,15 @@ TOPIC is the string you want to see when reviewing someday/maybe items."
   "Configure item at point as someday/maybe.
 
 Saves current state to PREVIOUS_* properties, then sets ORG_GTD
-property to Someday and removes any timestamp properties."
+property to Someday, clears TODO keyword, and removes any timestamp properties."
   ;; Save current state before changing type
   (org-gtd-save-state)
 
   ;; Configure as someday type (no properties needed - no timestamps!)
   (org-gtd-configure-as-type 'someday)
+
+  ;; Clear TODO keyword - someday items are not actionable
+  (org-todo "")
 
   ;; Explicitly remove any timestamp properties that might exist
   (org-entry-delete (point) org-gtd-timestamp)

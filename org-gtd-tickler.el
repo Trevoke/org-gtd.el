@@ -122,14 +122,17 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
 (defun org-gtd-tickler--configure (&optional config-override)
   "Configure item at point as tickler.
 
-Saves current state to PREVIOUS_* properties before setting type.
+Saves current state to PREVIOUS_* properties before setting type,
+then clears TODO keyword since tickler items are not actionable.
 CONFIG-OVERRIDE can provide input configuration to override default
 prompting behavior."
   ;; Save current state before changing type
   (org-gtd-save-state)
   (org-gtd-configure-as-type 'tickler
                              (when config-override
-                               `((:when . ,(funcall (alist-get '(quote active-timestamp) config-override nil nil #'equal) nil))))))
+                               `((:when . ,(funcall (alist-get '(quote active-timestamp) config-override nil nil #'equal) nil)))))
+  ;; Clear TODO keyword - tickler items are not actionable
+  (org-todo ""))
 
 (defun org-gtd-tickler--finalize ()
   "Finalize tickler item organization and refile."
