@@ -460,6 +460,48 @@ Returns path forming cycle if found, nil otherwise."
       (remhash node-id rec-stack)
       nil)))
 
+;;;; First Actionable Task
+
+(defun org-gtd-graph-data-find-first-actionable (graph)
+  "Find the first actionable task in GRAPH using breadth-first search.
+
+An actionable task has a TODO state that is NOT:
+- DONE (completed)
+- CNCL (cancelled)
+- TODO (not yet activated)
+- nil (no state)
+
+This means NEXT, WAIT, or other active workflow states.
+
+Searches from root tasks (ORG_GTD_FIRST_TASKS) in BFS order.
+
+Returns the node ID of the first actionable task, or nil if none found."
+  (let* ((nodes (org-gtd-graph-nodes graph))
+         (root-ids (org-gtd-graph-root-ids graph))
+         (project-id (org-gtd-graph-project-id graph))
+         (non-actionable-states '("DONE" "CNCL" "TODO"))
+         (visited (make-hash-table :test 'equal))
+         (queue (copy-sequence root-ids)))
+
+    (catch 'found
+      (while queue
+        (let ((node-id (pop queue)))
+          (unless (or (gethash node-id visited)
+                      (equal node-id project-id))
+            (puthash node-id t visited)
+            (when-let ((node (gethash node-id nodes)))
+              (let ((state (org-gtd-graph-node-state node)))
+                ;; Actionable = has a state that's not in non-actionable list
+                (when (and state
+                           (not (member state non-actionable-states)))
+                  (throw 'found node-id)))
+              ;; Enqueue successors for BFS
+              (dolist (succ-id (org-gtd-graph-data-get-successors graph node-id))
+                (unless (gethash succ-id visited)
+                  (setq queue (append queue (list succ-id)))))))))
+      ;; Return nil if no actionable task found
+      nil)))
+
 ;;;; Footer
 
 (provide 'org-gtd-graph-data)

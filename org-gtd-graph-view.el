@@ -107,10 +107,12 @@ Can be toggled with `org-gtd-graph-toggle-render-mode'.")
     ;; Setup split-window layout after buffer is displayed
     (org-gtd-graph-ui-setup-windows buffer)
 
-    ;; Auto-select project heading as initial node (after window setup)
-    (when-let* ((graph org-gtd-graph-view--graph)
-                (project-id (org-gtd-graph-project-id graph)))
-      (org-gtd-graph-ui-select-node project-id t))  ; t = no history
+    ;; Auto-select first actionable task (or project heading if none)
+    (when org-gtd-graph-view--graph
+      (let ((initial-node (or (org-gtd-graph-data-find-first-actionable
+                               org-gtd-graph-view--graph)
+                              (org-gtd-graph-project-id org-gtd-graph-view--graph))))
+        (org-gtd-graph-ui-select-node initial-node t)))  ; t = no history
 
     buffer))
 
