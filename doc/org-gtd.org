@@ -170,6 +170,15 @@ The old ~org-gtd-incubate~ command still works as an alias to ~org-gtd-tickler~ 
 ** Simplified configuration
 - *org-gtd-mode has a new purpose* - The mode is no longer about wrapping agenda commands. It now provides a mode-line indicator showing your inbox count (e.g., =GTD[5]=), giving you at-a-glance visibility into how many items need processing.
 
+** Per-type refile prompting
+You can now control refile prompting behavior for each GTD item type independently:
+
+- *Fine-grained control* - Configure which item types prompt for refile target selection vs. auto-refile to first target
+- *Sensible defaults* - Most item types prompt by default; quick actions, knowledge, and trash auto-refile
+- *Deprecates ~org-gtd-refile-to-any-target~* - The old boolean is replaced by ~org-gtd-refile-prompt-for-types~, a list of types that should prompt
+
+See [[#refiling-after-organizing][Refiling to the appropriate area]] for configuration details.
+
 ** What you need to do
 If you're upgrading from 3.x, see the [[#upgrading][Upgrading section]] for complete step-by-step instructions. The required changes are:
 
@@ -783,7 +792,7 @@ These settings are *required* for Org GTD to work properly:
 - ~org-reverse-note-order~ :: (=org-mode= variable) set this to ~t~ to add new items to the top of project tasks and to ~nil~ to add new items to the bottom of project tasks when organizing an item as such.
 - ~org-gtd-organize-hooks~ :: this is a list of functions that you can use to decorate each item when you clarify it. For instance, you could add a function to set the effort, or the priority, or some category, etc. By default it has only one function, which lets you add tags, but of course you can change this entirely. [[#organizing-an-item][Organizing an item]].
 - ~org-gtd-archive-location~ :: Points to a function to generate the archive file dynamically. Default value generates a file suffixed with the current year. The function has an arity of zero and generates an org-mode file+outline path. [[#cleaning-up-the-system][Cleaning up / archiving completed work]].
-- ~org-gtd-refile-to-any-target~ :: when ~t~, =org-gtd= will refile to the first target it finds, and create a target if it doesn't find one. When false, it will ask for confirmation before refiling. [[#refiling-after-organizing][Refiling to the appropriate area]].
+- ~org-gtd-refile-prompt-for-types~ :: list of GTD item types that should prompt for refile target selection. Types not in the list auto-refile to first target. [[#controlling-refile-prompts][Controlling Refile Prompts by Item Type]].
 - ~org-gtd-delegate-read-func~ :: function that is used to prompt for a person a task is delegated to. Must return a string. By default this is set to ~read-string~.
 - ~org-gtd-areas-of-focus~ :: list of strings representing your areas of focus (horizon 2 in GTD).
 - ~org-gtd-clarify-show-horizons~ :: When clarifying, do you want the horizons buffer to be shown by default, or do you prefer it hidden?
@@ -1438,15 +1447,43 @@ Org-gtd finds refile targets by searching for ~ORG_GTD_REFILE~ property:
 
 When you organize an item as a Project, org-gtd finds *all* headings with ~ORG_GTD_REFILE: Projects~ (plus any targets from your ~org-refile-targets~).
 
-****** Choosing Between Multiple Targets
+****** Controlling Refile Prompts by Item Type
+:PROPERTIES:
+:CUSTOM_ID: controlling-refile-prompts
+:END:
 
-By default (~org-gtd-refile-to-any-target~ is ~t~), org-gtd automatically refiles to the first target found without prompting. If you have multiple refile targets and want to choose between them:
+When you have multiple refile targets, you might want org-gtd to prompt for some item types but auto-refile others. For example: always prompt when organizing projects (you care where they go), but auto-refile quick actions (just get them out of the inbox).
+
+The ~org-gtd-refile-prompt-for-types~ variable controls this. It's a list of GTD item types that should prompt for target selection:
 
 #+begin_src elisp
-(setq org-gtd-refile-to-any-target nil)
+;; Default value - these types prompt for refile target:
+(setq org-gtd-refile-prompt-for-types
+      '(single-action project-heading project-task calendar
+        someday delegated tickler habit))
 #+end_src
 
-With this setting, org-gtd will always prompt you to select from available targets.
+Item types *not* in the list auto-refile to the first available target. By default, ~quick-action~, ~knowledge~, and ~trash~ auto-refile.
+
+*Example: Auto-refile everything except projects*
+
+If you want maximum speed and only care about choosing project locations:
+
+#+begin_src elisp
+(setq org-gtd-refile-prompt-for-types '(project-heading project-task))
+#+end_src
+
+*Example: Always prompt for everything*
+
+If you always want to choose where items go:
+
+#+begin_src elisp
+(setq org-gtd-refile-prompt-for-types
+      '(single-action project-heading project-task calendar
+        someday delegated tickler habit knowledge quick-action trash))
+#+end_src
+
+*Valid type symbols:* ~single-action~, ~project-heading~, ~project-task~, ~calendar~, ~someday~, ~delegated~, ~tickler~, ~habit~, ~knowledge~, ~quick-action~, ~trash~
 
 ***** Creating New Refile Targets
 
@@ -3670,21 +3707,61 @@ Useful if you want automatic saves during inbox processing.
 (setq org-gtd-save-after-organize t)
 #+end_src
 
-**** ~org-gtd-refile-to-any-target~
+**** ~org-gtd-refile-to-any-target~ (deprecated)
 
 *Type*: Boolean
 
 *Default*: ~t~
 
-*Description*: Control refile behavior when organizing items.
+*Deprecated*: As of 4.0.0. Use ~org-gtd-refile-prompt-for-types~ instead.
 
-- When ~t~: org-gtd will refile to the first target it finds, or create a target if necessary, without confirmation
-- When ~nil~: org-gtd will ask for confirmation regardless of number of options
+*Description*: Control refile behavior when organizing items. This variable is deprecated and will show a warning when used.
 
-*Example*: Require manual refile target selection:
+- When ~t~: org-gtd will refile to the first target it finds without prompting (deprecated behavior)
+- When ~nil~: org-gtd consults ~org-gtd-refile-prompt-for-types~ to decide per item type
+
+*Migration*: To migrate to the new system:
+
 #+begin_src emacs-lisp
+;; Old way (deprecated):
 (setq org-gtd-refile-to-any-target nil)
+
+;; New way - equivalent behavior (prompt for all default types):
+(setq org-gtd-refile-to-any-target nil)  ; Must be nil to use new system
+;; org-gtd-refile-prompt-for-types has sensible defaults, no change needed
 #+end_src
+
+See [[#controlling-refile-prompts][Controlling Refile Prompts by Item Type]] for the new approach.
+
+**** ~org-gtd-refile-prompt-for-types~
+
+*Type*: List of symbols
+
+*Default*: ~(single-action project-heading project-task calendar someday delegated tickler habit)~
+
+*Description*: List of GTD item types that should prompt for refile target selection when organizing.
+
+- Types in the list prompt user to choose from available refile targets
+- Types *not* in the list auto-refile to the first available target
+- Only consulted when ~org-gtd-refile-to-any-target~ is ~nil~
+
+*Valid type symbols:* ~single-action~, ~project-heading~, ~project-task~, ~calendar~, ~someday~, ~delegated~, ~tickler~, ~habit~, ~knowledge~, ~quick-action~, ~trash~
+
+*Example*: Only prompt for projects, auto-refile everything else:
+
+#+begin_src emacs-lisp
+(setq org-gtd-refile-prompt-for-types '(project-heading project-task))
+#+end_src
+
+*Example*: Add knowledge items to prompt list (they auto-refile by default):
+
+#+begin_src emacs-lisp
+(setq org-gtd-refile-prompt-for-types
+      '(single-action project-heading project-task calendar
+        someday delegated tickler habit knowledge))
+#+end_src
+
+See [[#controlling-refile-prompts][Controlling Refile Prompts by Item Type]] for detailed examples.
 
 *** Mode-Line Configuration
 

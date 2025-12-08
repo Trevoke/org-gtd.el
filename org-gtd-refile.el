@@ -50,8 +50,54 @@ setting as part of following the instructions to add your own refile targets."
   :package-version '(org-gtd . "2.0.0")
   :type 'boolean)
 
+(make-obsolete-variable 'org-gtd-refile-to-any-target
+                        'org-gtd-refile-prompt-for-types
+                        "4.0.0")
+
+(defcustom org-gtd-refile-prompt-for-types
+  '(single-action project-heading project-task calendar someday delegated tickler habit)
+  "List of GTD types that should prompt for refile target selection.
+
+When refiling an item, if its type is in this list, org-gtd will prompt
+you to choose from available refile targets (ORG_GTD_REFILE targets +
+user's `org-refile-targets').  If the type is not in this list, org-gtd
+will automatically refile to the first available target.
+
+This variable is only consulted when `org-gtd-refile-to-any-target' is nil.
+
+Valid type symbols (same as `org-gtd-organize-type-member-p'):
+  single-action, project-heading, project-task, calendar, someday,
+  delegated, tickler, habit, knowledge, quick-action, trash"
+  :group 'org-gtd-organize
+  :package-version '(org-gtd . "4.0.0")
+  :type '(repeat symbol))
+
+;;;; Variables
+
+(defvar org-gtd--organize-type)
+
+(defvar org-gtd-refile--deprecated-warning-shown nil
+  "Non-nil if deprecation warning for `org-gtd-refile-to-any-target' was shown.")
+
 
 ;;;; Functions
+
+;;;;; Helper
+
+(defun org-gtd-refile--should-prompt-p (type)
+  "Return non-nil if refiling TYPE should prompt for target selection.
+
+Checks `org-gtd-refile-to-any-target' first (deprecated, takes precedence
+when non-nil).  If nil, checks if TYPE is in `org-gtd-refile-prompt-for-types'."
+  (if org-gtd-refile-to-any-target
+      (progn
+        (unless org-gtd-refile--deprecated-warning-shown
+          (display-warning 'org-gtd
+                           "`org-gtd-refile-to-any-target' is deprecated as of 4.0.0.
+Set it to nil and customize `org-gtd-refile-prompt-for-types' instead.")
+          (setq org-gtd-refile--deprecated-warning-shown t))
+        nil)
+    (memq type org-gtd-refile-prompt-for-types)))
 
 ;;;;; Private
 
@@ -80,9 +126,9 @@ files outside are accepted without filtering."
                                     '((org-agenda-files :maxlevel . 9))))
         (org-refile-use-outline-path t)
         (org-outline-path-complete-in-steps nil))
-    (if org-gtd-refile-to-any-target
-        (org-refile nil nil (car (org-refile-get-targets)))
-      (org-refile nil nil nil "Finish organizing task under: "))))
+    (if (org-gtd-refile--should-prompt-p org-gtd--organize-type)
+        (org-refile nil nil nil "Finish organizing task under: ")
+      (org-refile nil nil (car (org-refile-get-targets))))))
 
 (defun org-gtd-refile--do-project-task ()
   "Refile a task into an existing project.
@@ -90,9 +136,11 @@ files outside are accepted without filtering."
 Merges user's `org-refile-targets' with org-gtd's project targets.
 User's targets appear first, then level-2 headings with ORG_GTD=Projects.
 Files in `org-gtd-directory' are filtered for project headings;
-files outside are accepted without filtering."
-  (let ((org-gtd-refile-to-any-target nil)
-        (org-refile-use-outline-path t)
+files outside are accepted without filtering.
+
+Respects `org-gtd-refile-prompt-for-types': if \\='project-task is in the
+list, prompts for target; otherwise auto-refiles to the first project."
+  (let ((org-refile-use-outline-path t)
         (org-outline-path-complete-in-steps nil)
         (org-refile-allow-creating-parent-nodes nil)
         ;; MERGE: user's targets first, then org-gtd's project targets
@@ -108,7 +156,9 @@ files outside are accepted without filtering."
                  (string-equal org-gtd-projects (org-entry-get nil "ORG_GTD"))
                ;; Non-GTD files: allow all (user's targets)
                t)))))
-    (org-refile 3 nil nil "Which project should this task go to? ")))
+    (if (org-gtd-refile--should-prompt-p 'project-task)
+        (org-refile 3 nil nil "Which project should this task go to? ")
+      (org-refile nil nil (car (org-refile-get-targets))))))
 
 (defun org-gtd-refile--get-targets (type)
   "Get refile targets for TYPE, merging user's targets with org-gtd's.

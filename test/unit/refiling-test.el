@@ -168,6 +168,33 @@
     ;; Cleanup is handled by mock-fs teardown
     (kill-buffer temp-buffer)))
 
+;;; Should-Prompt Helper Tests
+
+(deftest refile/should-prompt-returns-nil-when-deprecated-var-set ()
+  "Returns nil when org-gtd-refile-to-any-target is t (deprecated path)."
+  (let ((org-gtd-refile-to-any-target t)
+        (org-gtd-refile--deprecated-warning-shown t)) ; suppress warning in test
+    (assert-nil (org-gtd-refile--should-prompt-p 'single-action))))
+
+(deftest refile/should-prompt-checks-list-when-deprecated-var-nil ()
+  "Checks org-gtd-refile-prompt-for-types when deprecated var is nil."
+  (let ((org-gtd-refile-to-any-target nil)
+        (org-gtd-refile-prompt-for-types '(single-action calendar)))
+    (assert-true (org-gtd-refile--should-prompt-p 'single-action))
+    (assert-true (org-gtd-refile--should-prompt-p 'calendar))
+    (assert-nil (org-gtd-refile--should-prompt-p 'trash))))
+
+(deftest refile/deprecated-var-shows-warning-once ()
+  "Shows deprecation warning only once per session."
+  (let ((org-gtd-refile-to-any-target t)
+        (org-gtd-refile--deprecated-warning-shown nil)
+        (warnings nil))
+    (cl-letf (((symbol-function 'display-warning)
+               (lambda (&rest args) (push args warnings))))
+      (org-gtd-refile--should-prompt-p 'single-action)
+      (org-gtd-refile--should-prompt-p 'calendar)
+      (assert-equal 1 (length warnings)))))
+
 (provide 'refiling-test)
 
 ;;; refiling-test.el ends here
