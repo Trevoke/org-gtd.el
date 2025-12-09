@@ -39,13 +39,15 @@
 
 (defcustom org-gtd-capture-templates
   `(("i" "Inbox"
-     entry  (file ,#'org-gtd-inbox-path)
+     entry (file ,#'org-gtd-inbox-path)
      "* %?\n%U\n\n  %i"
-     :kill-buffer t)
+     :kill-buffer t
+     :before-finalize org-gtd-capture--add-captured-at-timestamp)
     ("l" "Inbox with link"
      entry (file ,#'org-gtd-inbox-path)
      "* %?\n%U\n\n  %i\n  %a"
-     :kill-buffer t))
+     :kill-buffer t
+     :before-finalize org-gtd-capture--add-captured-at-timestamp))
   "Capture templates to be used when adding something to the inbox.
 
 See `org-capture-templates' for the format of each capture template.
@@ -88,6 +90,15 @@ same name."
    (org-capture goto keys)))
 
 ;;;; Functions
+
+;;;; Private
+
+(defun org-gtd-capture--add-captured-at-timestamp ()
+  "Add ORG_GTD_CAPTURED_AT property with inactive timestamp.
+Used as :before-finalize hook in `org-gtd-capture-templates'."
+  (org-back-to-heading t)
+  (org-entry-put nil "ORG_GTD_CAPTURED_AT"
+                 (format-time-string (org-time-stamp-format t t))))
 
 ;;;; Public
 

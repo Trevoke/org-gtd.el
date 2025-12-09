@@ -179,6 +179,15 @@ You can now control refile prompting behavior for each GTD item type independent
 
 See [[#refiling-after-organizing][Refiling to the appropriate area]] for configuration details.
 
+** Capture timestamps
+Captured items now automatically receive an ~ORG_GTD_CAPTURED_AT~ property with an inactive timestamp recording when the item was captured. This is useful for:
+
+- *Inbox reviews* - See how long items have been sitting in your inbox
+- *Weekly reviews* - Identify items that have been captured but not processed
+- *Auditing* - Track when ideas and tasks entered your system
+
+This happens automatically for all captures using the default templates. No configuration needed.
+
 ** What you need to do
 If you're upgrading from 3.x, see the [[#upgrading][Upgrading section]] for complete step-by-step instructions. The required changes are:
 
