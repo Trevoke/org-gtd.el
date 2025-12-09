@@ -358,6 +358,7 @@ This is the simplest possible configuration for org-gtd. Copy this entire block 
 #+begin_src emacs-lisp
 ;; Configure org-mode TODO keywords
 ;; All GTD keywords MUST be in the same sequence
+;; Standard options like "TODO(t)" or "DONE(d!)" are fine - org-gtd ignores them
 (setq org-todo-keywords
       '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
 
@@ -3522,6 +3523,16 @@ These variables control how org-gtd behaves. All can be customized via ~M-x cust
 #+end_src
 
 The ~|~ separator marks done states (right side) from active states (left side).
+
+*Org-mode keyword options are supported*: You can use org-mode's standard keyword syntax with fast access keys and logging options (e.g., ~"TODO(t)"~, ~"DONE(d!)"~, ~"WAIT(w@/!)"~). Org-gtd only looks at the base keyword string, so these are equivalent:
+
+#+begin_src emacs-lisp
+;; Basic
+'((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL"))
+
+;; With fast access keys and logging
+'((sequence "TODO(t)" "NEXT(n)" "WAIT(w@/!)" "|" "DONE(d!)" "CNCL(c)"))
+#+end_src
 
 **** ~org-gtd-keyword-mapping~
 
