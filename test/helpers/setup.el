@@ -74,9 +74,6 @@ Includes /tmp/ for tests that need files outside GTD directory."
 (defun ogt-eunit--configure-emacs ()
   "Configure Emacs for GTD testing with mock-fs paths.
 Sets up org-gtd to use the virtual filesystem."
-  ;; Suppress messages during tests
-  ;; NOTE: Keep this disabled for e-unit to see test output
-  ;; (setq inhibit-message t)
 
   ;; Temp file directory for mock-fs (used by make-temp-file)
   (setq temporary-file-directory ogt-eunit--mock-tmp-path)
@@ -223,6 +220,22 @@ executes BODY, and cleans up afterward."
        (unwind-protect
            (progn ,@body)
          (ogt-eunit--cleanup)))))
+
+(setup-suite
+ (setq inhibit-message t)
+ ;; Suppress noisy org-mode state change messages during tests
+ ;; e.g., "TODO state changed to NEXT", "TODO state was already TODO"
+ (setq inhibit-message-regexps '("^.*? state was already.*?$"
+                                 "^.*? state changed to.*?$"
+                                 "^.*? state changed to^"
+                                 "^Copied: Subtree(s) with .*? characters$"
+                                 ;"^Save file .*?inbox\.org.*?$" ;;; seems to not be a message
+                                 "^Graph exported to.*?$"
+                                 "^Refile to .*?: done$"
+                                 "^.*?files scanned.*?$"
+                                 "^Finding ID locations.*?$"
+                                 ))
+ )
 
 (provide 'ogt-eunit-setup)
 
