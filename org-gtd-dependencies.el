@@ -115,11 +115,23 @@ BLOCKER-ID must complete before DEPENDENT-ID can be worked on.
 Creates bidirectional properties:
 - Adds DEPENDENT-ID to BLOCKER-ID's ORG_GTD_BLOCKS
 - Adds BLOCKER-ID to DEPENDENT-ID's ORG_GTD_DEPENDS_ON
+- Sets TRIGGER on BLOCKER-ID for org-edna dependency handling
 
 Validates no cycles before creating relationship."
   (org-gtd-dependencies-validate-acyclic blocker-id dependent-id)
   (org-gtd-add-to-multivalued-property blocker-id org-gtd-prop-blocks dependent-id)
-  (org-gtd-add-to-multivalued-property dependent-id org-gtd-prop-depends-on blocker-id))
+  (org-gtd-add-to-multivalued-property dependent-id org-gtd-prop-depends-on blocker-id)
+  ;; Ensure blocker has TRIGGER for org-edna to handle state updates
+  (org-gtd-dependencies--ensure-trigger blocker-id))
+
+(defun org-gtd-dependencies--ensure-trigger (task-id)
+  "Ensure TASK-ID has TRIGGER property for org-edna dependency handling."
+  (let ((marker (org-gtd-find-task-marker task-id)))
+    (when marker
+      (org-with-point-at marker
+        (unless (org-entry-get (point) "TRIGGER")
+          ;; self = target is the current entry; action processes its ORG_GTD_BLOCKS
+          (org-entry-put (point) "TRIGGER" "self org-gtd-update-project-after-task-done!"))))))
 
 ;;;; Private Helpers
 

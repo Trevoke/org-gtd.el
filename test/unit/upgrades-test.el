@@ -634,24 +634,24 @@ Content here.
     (goto-char (point-min))
     (search-forward "Design database")
     (org-back-to-heading t)
-    (assert-equal "org-gtd-update-project-after-task-done!" (org-entry-get (point) "TRIGGER"))
+    (assert-equal "self org-gtd-update-project-after-task-done!" (org-entry-get (point) "TRIGGER"))
 
     (goto-char (point-min))
     (search-forward "Implement API")
     (org-back-to-heading t)
-    (assert-equal "org-gtd-update-project-after-task-done!" (org-entry-get (point) "TRIGGER"))
+    (assert-equal "self org-gtd-update-project-after-task-done!" (org-entry-get (point) "TRIGGER"))
 
     ;; Check nested task
     (goto-char (point-min))
     (search-forward "Create endpoint")
     (org-back-to-heading t)
-    (assert-equal "org-gtd-update-project-after-task-done!" (org-entry-get (point) "TRIGGER"))
+    (assert-equal "self org-gtd-update-project-after-task-done!" (org-entry-get (point) "TRIGGER"))
 
     ;; Check second project's task
     (goto-char (point-min))
     (search-forward "Create user manual")
     (org-back-to-heading t)
-    (assert-equal "org-gtd-update-project-after-task-done!" (org-entry-get (point) "TRIGGER"))))
+    (assert-equal "self org-gtd-update-project-after-task-done!" (org-entry-get (point) "TRIGGER"))))
 
 (provide 'upgrades-test)
 

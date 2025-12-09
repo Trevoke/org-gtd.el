@@ -431,7 +431,7 @@ otherwise falls back to outline hierarchy (org-up-heading-safe)."
      (lambda ()
        (unless (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-projects)
          (org-gtd-configure-as-type 'next-action)
-         (org-entry-put (point) "TRIGGER" "org-gtd-update-project-after-task-done!")
+         (org-entry-put (point) "TRIGGER" "self org-gtd-update-project-after-task-done!")
          (org-entry-add-to-multivalued-property (point) org-gtd-prop-project-ids project-id)
          ;; Only set ORG_GTD_PROJECT if not already set (preserves first project for multi-project tasks)
          (unless (org-entry-get (point) org-gtd-prop-project)
@@ -767,7 +767,10 @@ Intended to be called from `org-after-todo-state-change-hook'."
   (when org-gtd-project-progress-cookie-position
     (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
       (dolist (project-id project-ids)
-        (org-gtd-project-update-cookies project-id)))))
+        (org-gtd-project-update-cookies project-id))
+      ;; Trigger statistics hook so other integrations can respond
+      (when project-ids
+        (run-hooks 'org-after-todo-statistics-hook)))))
 
 (defun org-gtd-project-update-all-cookies ()
   "Update progress cookies for all projects in agenda files.
@@ -945,7 +948,7 @@ Reactivates the project by:
   "Configure current task for addition to a project.
 Returns marker to configured task."
   (org-gtd-configure-as-type 'next-action)
-  (org-entry-put (point) "TRIGGER" "org-gtd-update-project-after-task-done!")
+  (org-entry-put (point) "TRIGGER" "self org-gtd-update-project-after-task-done!")
   (setq-local org-gtd--organize-type 'project-task)
   (org-gtd-organize-apply-hooks)
   (point-marker))
@@ -1095,8 +1098,6 @@ Return nil if there isn't one."
   (message ""))
 
 ;;;; Footer
-
-(add-hook 'org-after-todo-state-change-hook #'org-gtd-project--maybe-update-cookies)
 
 (provide 'org-gtd-projects)
 

@@ -594,8 +594,8 @@ For Story 15: Automatically update dependent tasks when a task becomes DONE."
       (when (and current-state (org-gtd-keywords--is-done-p current-state))
         (org-gtd-task-management--update-dependent-tasks task-id)))))
 
-;; Install the hook for automatic updates
-(add-hook 'org-after-todo-state-change-hook #'org-gtd-task-management--after-todo-state-change)
+;; NOTE: Hook removed - org-edna TRIGGER handles this via
+;; org-gtd-update-project-after-task-done! action
 
 ;;;###autoload
 (defun org-gtd-task-show-relationships ()

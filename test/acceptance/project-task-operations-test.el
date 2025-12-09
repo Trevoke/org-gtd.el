@@ -168,7 +168,7 @@
         ;; Link task to project
         (org-entry-put (point) "ORG_GTD_PROJECT" "Marketing campaign")
         (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)
-        (org-entry-put (point) "TRIGGER" "org-gtd-update-project-after-task-done!")
+        (org-entry-put (point) "TRIGGER" "self org-gtd-update-project-after-task-done!")
         ;; Add to project's FIRST_TASKS
         (org-up-heading-safe)
         (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" new-task-id)

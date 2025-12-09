@@ -176,17 +176,5 @@ See: https://github.com/Malabarba/org-agenda-property/issues/6"
     (if first nil
       (concat out "]"))))
 
-;;;###autoload
-(eval-after-load 'org-agenda
-  '(if (boundp 'org-agenda-finalize-hook)
-       (add-hook 'org-agenda-finalize-hook #'org-gtd-agenda-property-add-properties)
-     (add-hook 'org-finalize-agenda-hook #'org-gtd-agenda-property-add-properties)))
-
-;;;###autoload
-(if (boundp 'org-agenda-finalize-hook)
-    (add-hook 'org-agenda-finalize-hook #'org-gtd-agenda-property-add-properties)
-  (when (boundp 'org-finalize-agenda-hook)
-    (add-hook 'org-finalize-agenda-hook #'org-gtd-agenda-property-add-properties)))
-
 (provide 'org-gtd-agenda-property)
 ;;; org-gtd-agenda-property.el ends here

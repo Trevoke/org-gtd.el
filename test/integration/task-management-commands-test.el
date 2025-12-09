@@ -40,17 +40,11 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
     (with-current-buffer (find-file-noselect test-file)
       (org-mode)
       (require 'org-gtd-task-management)
+      (require 'org-gtd-projects)  ;; Ensure org-edna action is defined
 
       (insert "* TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
-      (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:ORG_GTD_DEPENDS_ON: task-a-id\n:END:\n\n")
-      (insert "* TODO Task C\n:PROPERTIES:\n:ID: task-c-id\n:ORG_GTD_DEPENDS_ON: task-a-id\n:END:\n\n")
-
-      ;; Add ORG_GTD_BLOCKS properties to Task A (bidirectional relationship)
-      (goto-char (point-min))
-      (re-search-forward "Task A")
-      (org-back-to-heading t)
-      (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" "task-b-id")
-      (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" "task-c-id")
+      (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:END:\n\n")
+      (insert "* TODO Task C\n:PROPERTIES:\n:ID: task-c-id\n:END:\n\n")
 
       (save-buffer)
 
@@ -58,6 +52,16 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
       (goto-char (point-min))
       (while (re-search-forward "^[ \t]*:ID:[ \t]+\\(\\S-+\\)" nil t)
         (org-id-add-location (match-string 1) test-file))
+
+      ;; Create bidirectional dependencies using the API
+      (org-gtd-dependencies-create "task-a-id" "task-b-id")
+      (org-gtd-dependencies-create "task-a-id" "task-c-id")
+
+      ;; Verify TRIGGER was set on Task A (with self finder for org-edna)
+      (goto-char (point-min))
+      (re-search-forward "Task A")
+      (org-back-to-heading t)
+      (assert-equal "self org-gtd-update-project-after-task-done!" (org-entry-get (point) "TRIGGER"))
 
       ;; Verify initial state: Task B and C should be TODO
       (goto-char (point-min))
@@ -70,7 +74,7 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
       (org-back-to-heading t)
       (assert-equal "TODO" (org-entry-get (point) "TODO"))
 
-      ;; Mark Task A as DONE - this should trigger automatic updates
+      ;; Mark Task A as DONE - this should trigger automatic updates via org-edna
       (goto-char (point-min))
       (re-search-forward "Task A")
       (org-back-to-heading t)
@@ -96,9 +100,9 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
       (org-mode)
       (require 'org-gtd-task-management)
 
-      (insert "* TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:ORG_GTD_BLOCKS: task-c-id\n:END:\n\n")
-      (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:ORG_GTD_BLOCKS: task-c-id\n:END:\n\n")
-      (insert "* TODO Task C\n:PROPERTIES:\n:ID: task-c-id\n:ORG_GTD_DEPENDS_ON: task-a-id task-b-id\n:END:\n\n")
+      (insert "* TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
+      (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:END:\n\n")
+      (insert "* TODO Task C\n:PROPERTIES:\n:ID: task-c-id\n:END:\n\n")
 
       (save-buffer)
 
@@ -106,6 +110,10 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
       (goto-char (point-min))
       (while (re-search-forward "^[ \t]*:ID:[ \t]+\\(\\S-+\\)" nil t)
         (org-id-add-location (match-string 1) test-file))
+
+      ;; Create dependencies using the API: A blocks C, B blocks C
+      (org-gtd-dependencies-create "task-a-id" "task-c-id")
+      (org-gtd-dependencies-create "task-b-id" "task-c-id")
 
       ;; Mark only Task A as DONE (Task B still TODO)
       (goto-char (point-min))
@@ -141,8 +149,8 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
       (org-mode)
       (require 'org-gtd-task-management)
 
-      (insert "* TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:ORG_GTD_BLOCKS: task-b-id\n:END:\n\n")
-      (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:ORG_GTD_DEPENDS_ON: task-a-id\n:END:\n\n")
+      (insert "* TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
+      (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:END:\n\n")
 
       (save-buffer)
 
@@ -150,6 +158,9 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
       (goto-char (point-min))
       (while (re-search-forward "^[ \t]*:ID:[ \t]+\\(\\S-+\\)" nil t)
         (org-id-add-location (match-string 1) test-file))
+
+      ;; Create dependency using the API
+      (org-gtd-dependencies-create "task-a-id" "task-b-id")
 
       ;; Mark Task A as DONE
       (goto-char (point-min))

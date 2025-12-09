@@ -274,10 +274,10 @@ If blocker is external to project, adds project ID and TRIGGER property."
               ;; Check if blocker is external (not in current project's task nodes)
               (let ((blocker-in-project (gethash blocker-id nodes)))
                 (unless blocker-in-project
-                  ;; Blocker is external - add project ID and TRIGGER
+                  ;; Blocker is external - add project ID
+                  ;; TRIGGER is already set by org-gtd-dependencies-create
                   (org-gtd-add-to-multivalued-property blocker-id "ORG_GTD_PROJECT_IDS" project-id)
                   (org-with-point-at (org-id-find blocker-id t)
-                    (org-entry-put (point) "TRIGGER" "org-gtd-projects-trigger")
                     (save-buffer))))
 
               (message "Added dependency: %s blocks %s" blocker-title blocked-title)
@@ -318,10 +318,10 @@ If blocker is external to project, adds project ID and TRIGGER property."
               ;; Check if blocker is external (not in current project's task nodes)
               (let ((blocker-in-project (gethash blocker-id nodes)))
                 (unless blocker-in-project
-                  ;; Blocker is external - add project ID and TRIGGER
+                  ;; Blocker is external - add project ID
+                  ;; TRIGGER is already set by org-gtd-dependencies-create
                   (org-gtd-add-to-multivalued-property blocker-id "ORG_GTD_PROJECT_IDS" project-id)
                   (org-with-point-at (org-id-find blocker-id t)
-                    (org-entry-put (point) "TRIGGER" "org-gtd-projects-trigger")
                     (save-buffer))))
 
               (message "Added blocker: %s blocks %s and is now a root task" blocker-title blocked-title)

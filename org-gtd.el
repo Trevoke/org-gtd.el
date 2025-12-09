@@ -79,7 +79,6 @@
 (require 'org-gtd-reflect)
 (require 'org-gtd-view-language)
 (require 'org-gtd-upgrades)
-(require 'org-gtd-id-overlay)
 (require 'org-gtd-command-center)
 
 ;;;; Constants

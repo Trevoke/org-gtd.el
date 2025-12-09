@@ -191,47 +191,26 @@ Uses builders, then extends with new leaf task."
   "Adds parallel tasks B and C as children of A in same file.
 After completing A, both B and C become NEXT (parallel execution)."
 
-  ;; 1. Create project with A as root, B and C as parallel children
-  (let ((project-data (make-diamond-project "Project Gamma"
-                                            :root-tasks '("Task A")
-                                            :middle-task "Task B"
-                                            :leaf-task "Task C")))
-    ;; The diamond builder creates A→B→C and A→C structure
-    ;; We need to modify to create A→B and A→C (parallel)
+  ;; 1. Create project with parallel tasks using builder
+  (let ((project-data (make-parallel-project "Project Gamma"
+                                             :tasks '("Task A" "Task B" "Task C"))))
 
     ;; Get the IDs
     (let ((task-a-id (alist-get 'task-a-id project-data))
-          (task-b-id (alist-get 'task-c-id project-data))  ;; middle is "B" conceptually
-          (task-c-id (alist-get 'task-d-id project-data))) ;; leaf is "C" conceptually
+          (task-b-id (alist-get 'task-b-id project-data))
+          (task-c-id (alist-get 'task-c-id project-data)))
 
-      ;; Fix the diamond to be a simple fan-out: A blocks both B and C
+      ;; Create fan-out structure: A blocks both B and C
       (with-current-buffer (org-gtd--default-file)
-        ;; Remove B→C dependency to make B and C parallel
-        (goto-char (point-min))
-        (search-forward "Task B")
-        (org-back-to-heading t)
-        (org-entry-delete (point) "ORG_GTD_BLOCKS")
+        ;; Create dependencies using the API
+        (org-gtd-dependencies-create task-a-id task-b-id)
+        (org-gtd-dependencies-create task-a-id task-c-id)
 
-        (goto-char (point-min))
-        (search-forward "Task C")
-        (org-back-to-heading t)
-        ;; C should only depend on A, not B
-        (org-entry-delete (point) "ORG_GTD_DEPENDS_ON")
-        (org-entry-add-to-multivalued-property (point) "ORG_GTD_DEPENDS_ON" task-a-id)
-
-        ;; Fix A's blocks list
-        (goto-char (point-min))
-        (search-forward "Task A")
-        (org-back-to-heading t)
-        (org-entry-delete (point) "ORG_GTD_BLOCKS")
-        (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" task-b-id)
-        (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" task-c-id)
-
-        ;; Update project state
+        ;; Update project state - A is the only first task now
         (goto-char (point-min))
         (search-forward "Project Gamma")
         (org-back-to-heading t)
-        (org-gtd-projects--set-first-tasks)
+        (org-entry-put (point) "ORG_GTD_FIRST_TASKS" task-a-id)
         (org-gtd-projects-fix-todo-keywords (point-marker)))
 
       ;; 2. VERIFY: A blocks both B and C

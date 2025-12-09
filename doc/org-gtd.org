@@ -4014,36 +4014,6 @@ After configuring, run ~M-x org-gtd-reflect-missed-with-custom~ to see all stand
 
 *Backward compatibility*: The old variable name ~org-gtd-oops-custom-views~ still works but will be removed in a future version.
 
-*** ID Overlay Configuration
-
-**** ~org-gtd-id-overlay-truncate-length~
-
-*Type*: Integer
-
-*Default*: ~20~
-
-*Description*: Maximum length for displayed heading text in ID overlays.
-
-When ~org-gtd-id-overlay-mode~ is enabled, task IDs are replaced with truncated heading text for readability.
-
-*Example*:
-#+begin_src emacs-lisp
-(setq org-gtd-id-overlay-truncate-length 30)
-#+end_src
-
-**** ~org-gtd-id-overlay-ellipsis~
-
-*Type*: String
-
-*Default*: ~"..."~
-
-*Description*: String to append to truncated heading text in ID overlays.
-
-*Example*:
-#+begin_src emacs-lisp
-(setq org-gtd-id-overlay-ellipsis "…")
-#+end_src
-
 *** Advanced Item Configuration
 
 **** ~org-gtd-user-types~
@@ -5598,35 +5568,6 @@ These commands create GTD items programmatically (useful for automation and Emac
     ;; do something with inbox file
     ))
 #+end_src
-
-*** ID Overlay Commands
-
-**** ~org-gtd-id-overlay-mode~
-
-*Type*: Minor mode
-
-*When to use*: When working with project dependencies and wanting readable task references
-
-*What it does*:
-- Replaces task IDs with truncated heading text
-- Makes dependency properties more readable
-- Automatically enabled in WIP buffers
-
-**** ~org-gtd-id-overlay-refresh-buffer~
-
-*When to use*: After modifying headings, to update overlays
-
-*What it does*:
-- Refreshes all ID overlays in current buffer
-- Usually automatic, but available for manual refresh
-
-**** ~org-gtd-id-overlay-clear-buffer~
-
-*When to use*: To remove all overlays (see raw IDs)
-
-*What it does*:
-- Removes all ID overlays from buffer
-- Shows actual ID values
 
 *** Migration and Upgrade Commands
 

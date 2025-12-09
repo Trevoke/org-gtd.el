@@ -328,8 +328,8 @@ Sets TRIGGER to org-gtd-update-project-after-task-done! on all."
            (let ((existing-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
              (unless (member project-id existing-ids)
                (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)))
-           ;; Add TRIGGER property to task
-           (org-entry-put (point) "TRIGGER" "org-gtd-update-project-after-task-done!")))
+           ;; Add TRIGGER property to task (self finder + action for org-edna)
+           (org-entry-put (point) "TRIGGER" "self org-gtd-update-project-after-task-done!")))
        nil
        'tree))))
 

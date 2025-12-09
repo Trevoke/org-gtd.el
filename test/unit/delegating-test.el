@@ -34,19 +34,23 @@
 
 (deftest delegation/can-be-done-through-agenda ()
   "Delegation can be done through the agenda and show on the agenda."
-  (create-single-action "delegateme")
-  (ogt--save-all-buffers)
-  (org-gtd-engage)
-  (with-current-buffer org-agenda-buffer
-    (goto-char (point-min))
-    (search-forward "delegateme")
-    (with-simulated-input "That SPC Guy RET RET"
-      (org-gtd-delegate-agenda-item)))
+  (org-gtd-mode 1)
+  (unwind-protect
+      (progn
+        (create-single-action "delegateme")
+        (ogt--save-all-buffers)
+        (org-gtd-engage)
+        (with-current-buffer org-agenda-buffer
+          (goto-char (point-min))
+          (search-forward "delegateme")
+          (with-simulated-input "That SPC Guy RET RET"
+            (org-gtd-delegate-agenda-item)))
 
-  (ogt--save-all-buffers)
-  (org-gtd-engage)
-  (assert-true (agenda-contains? "WAIT "))
-  (assert-true (agenda-contains? "That Guy")))
+        (ogt--save-all-buffers)
+        (org-gtd-engage)
+        (assert-true (agenda-contains? "WAIT "))
+        (assert-true (agenda-contains? "That Guy")))
+    (org-gtd-mode -1)))
 
 ;;; Delegated Item Properties Tests
 

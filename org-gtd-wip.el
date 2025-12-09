@@ -116,9 +116,6 @@ activating any additional modes (e.g., `org-gtd-clarify-mode')."
      (org-gtd-wip--cleanup-temp-file id))
    org-gtd-wip--temp-files))
 
-;; Clean up on Emacs exit
-(add-hook 'kill-emacs-hook #'org-gtd-wip--cleanup-all-temp-files)
-
 ;;;; Footer
 
 (provide 'org-gtd-wip)

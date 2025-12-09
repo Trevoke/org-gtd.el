@@ -32,6 +32,10 @@
 (require 'org-gtd-core)
 (require 'org-gtd-capture)
 
+(declare-function org-gtd-project--maybe-update-cookies "org-gtd-projects")
+(declare-function org-gtd-agenda-property-add-properties "org-gtd-agenda-property")
+(declare-function org-gtd-wip--cleanup-all-temp-files "org-gtd-wip")
+
 ;;;; Constants
 
 (defconst org-gtd--agenda-functions (apropos-internal "org-agenda" #'commandp)
@@ -93,6 +97,15 @@ previous values."
    (lambda (x) (advice-remove x #'org-gtd--wrap))
    org-gtd--agenda-functions)
   (org-edna-mode org-gtd-edna)
+  ;; Remove CLOSED timestamp hook
+  (remove-hook 'org-after-todo-state-change-hook #'org-gtd--add-closed-timestamp)
+  ;; Remove project cookies hook
+  (remove-hook 'org-after-todo-state-change-hook #'org-gtd-project--maybe-update-cookies)
+  ;; Remove agenda property hooks
+  (remove-hook 'org-agenda-finalize-hook #'org-gtd-agenda-property-add-properties)
+  (remove-hook 'org-finalize-agenda-hook #'org-gtd-agenda-property-add-properties)
+  ;; Remove WIP temp file cleanup hook
+  (remove-hook 'kill-emacs-hook #'org-gtd-wip--cleanup-all-temp-files)
   ;; Cancel refresh timer
   (when org-gtd-mode--refresh-timer
     (cancel-timer org-gtd-mode--refresh-timer)
@@ -110,6 +123,16 @@ configuration."
    org-gtd--agenda-functions)
   (setq org-gtd-edna org-edna-mode)
   (org-edna-mode 1)
+  ;; Add CLOSED timestamp hook for GTD items
+  (add-hook 'org-after-todo-state-change-hook #'org-gtd--add-closed-timestamp)
+  ;; Add project cookies hook
+  (add-hook 'org-after-todo-state-change-hook #'org-gtd-project--maybe-update-cookies)
+  ;; Add agenda property hooks (support both old and new hook names)
+  (if (boundp 'org-agenda-finalize-hook)
+      (add-hook 'org-agenda-finalize-hook #'org-gtd-agenda-property-add-properties)
+    (add-hook 'org-finalize-agenda-hook #'org-gtd-agenda-property-add-properties))
+  ;; Add WIP temp file cleanup hook
+  (add-hook 'kill-emacs-hook #'org-gtd-wip--cleanup-all-temp-files)
   ;; Start refresh timer for external file changes
   (org-gtd-mode--start-refresh-timer))
 
@@ -121,6 +144,17 @@ Argument R is there to be passed through.
 
 v4: Now a simple pass-through since users configure org-agenda-files directly."
   (apply fun r))
+
+;;;;; CLOSED Timestamp Hook
+
+(defun org-gtd--add-closed-timestamp ()
+  "Add CLOSED timestamp to GTD items when marked done.
+Only affects headings with an ORG_GTD property.  Does not overwrite
+existing CLOSED timestamps.  Intended for `org-after-todo-state-change-hook'."
+  (when (and (org-entry-get nil "ORG_GTD")
+             (org-entry-is-done-p)
+             (not (org-entry-get nil "CLOSED")))
+    (org-add-planning-info 'closed (current-time))))
 
 ;;;;; Inbox Count
 
