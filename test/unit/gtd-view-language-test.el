@@ -840,6 +840,35 @@
      '(and (done))
      (org-gtd-view-lang--translate-to-org-ql view-spec))))
 
+;;; Numeric Done Filter Values
+
+(deftest view-lang/done-numeric-14-days ()
+  "Translates done=14 (numeric) to closed in last 14 days."
+  (let ((view-spec
+         '((name . "Last 14 Days")
+           (done . 14))))
+    (assert-equal
+     '(and (closed :from -14))
+     (org-gtd-view-lang--translate-to-org-ql view-spec))))
+
+(deftest view-lang/done-numeric-3-days ()
+  "Translates done=3 (numeric) to closed in last 3 days."
+  (let ((view-spec
+         '((name . "Last 3 Days")
+           (done . 3))))
+    (assert-equal
+     '(and (closed :from -3))
+     (org-gtd-view-lang--translate-to-org-ql view-spec))))
+
+(deftest view-lang/done-numeric-90-days ()
+  "Translates done=90 (numeric) to closed in last 90 days."
+  (let ((view-spec
+         '((name . "Last Quarter")
+           (done . 90))))
+    (assert-equal
+     '(and (closed :from -90))
+     (org-gtd-view-lang--translate-to-org-ql view-spec))))
+
 ;;; Incubated Project Type
 
 (deftest view-lang/incubated-project-type ()

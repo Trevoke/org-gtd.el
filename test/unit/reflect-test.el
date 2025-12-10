@@ -159,6 +159,24 @@
   "Provides the org-gtd-reflect-upcoming-delegated function."
   (assert-true (fboundp 'org-gtd-reflect-upcoming-delegated)))
 
+;;; Stuck Single Actions
+
+(deftest reflect/stuck-single-action-view-spec ()
+  "Can translate stuck-single-action view specification to org-ql.
+Stuck single actions are undone items with ORG_GTD=Actions but not in NEXT state."
+  (let* ((stuck-spec '((name . "Stuck Single Actions")
+                       (type . stuck-single-action)))
+         (query (org-gtd-view-lang--translate-to-org-ql stuck-spec)))
+    ;; Should match Actions that are not in NEXT state and not done
+    (assert-equal `(and (property "ORG_GTD" "Actions")
+                        (not (todo ,(org-gtd-keywords--next)))
+                        (not (done)))
+                  query)))
+
+(deftest reflect/stuck-single-action-function-exists ()
+  "Provides the org-gtd-reflect-stuck-single-action-items function."
+  (assert-true (fboundp 'org-gtd-reflect-stuck-single-action-items)))
+
 (provide 'reflect-test)
 
 ;;; reflect-test.el ends here

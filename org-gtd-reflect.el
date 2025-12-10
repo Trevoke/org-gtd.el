@@ -169,11 +169,13 @@ indicating they need attention to identify the next actionable step."
      (type . stuck-project))))
 
 (defun org-gtd-reflect-stuck-single-action-items ()
-  "Agenda view with all invalid single action items.
-Note: Single actions have no required properties, so this view
-will always be empty. Kept for backward compatibility."
+  "Agenda view with single actions that need attention.
+Shows single actions (ORG_GTD=Actions) that are undone but not in NEXT state.
+Single actions should always be in NEXT state since they are ready to work on."
   (interactive)
-  (message "Single actions have no required properties to validate"))
+  (org-gtd-view-show
+   '((name . "Stuck Single Actions")
+     (type . stuck-single-action))))
 
 ;;;###autoload
 (defun org-gtd-reflect-completed-items (&optional days-back)
@@ -181,18 +183,15 @@ will always be empty. Kept for backward compatibility."
 
 This view shows all items with done TODO states that were closed within
 the specified time period. Useful for weekly reviews to see what was
-accomplished."
-  (interactive "p")
-  (let* ((days (or days-back 7))
-         (time-spec (cond
-                     ((= days 1) 'past-day)
-                     ((= days 7) 'past-week)
-                     ((= days 30) 'past-month)
-                     ((= days 365) 'past-year)
-                     (t 'recent))))
+accomplished.
+
+With a numeric prefix argument (e.g., C-u 14), shows items completed
+in that many days."
+  (interactive "P")
+  (let ((days (or (and days-back (prefix-numeric-value days-back)) 7)))
     (org-gtd-view-show
      `((name . ,(format "Completed in Last %d Days" days))
-       (done . ,time-spec)))))
+       (done . ,days)))))
 
 ;;;###autoload
 (defun org-gtd-reflect-completed-projects ()

@@ -130,6 +130,7 @@
     (stuck-habit . ((name . "Habits (Needs Attention)")))
     (stuck-tickler . ((name . "Tickler (Needs Attention)")))
     (stuck-project . ((name . "Projects (Needs Attention)")))
+    (stuck-single-action . ((name . "Single Actions (Needs Attention)")))
     (tickler-project . ((name . "Tickler Projects")))
     (completed-project . ((name . "Completed Projects"))))
   "Smart defaults for each GTD type.
@@ -151,7 +152,8 @@ These types have straightforward ORG_GTD property matches.")
 (defconst org-gtd-view-lang--complex-types
   '(stuck-project active-project completed-project
     tickler-project incubated-project
-    stuck-delegated stuck-calendar stuck-tickler stuck-habit)
+    stuck-delegated stuck-calendar stuck-tickler stuck-habit
+    stuck-single-action)
   "List of complex GTD types that require special predicate handling.
 These are computed types that need additional logic beyond property matches.")
 
@@ -366,6 +368,7 @@ Requires a type filter to be present for property resolution."
   "Translate done VALUE to org-ql done filter.
 VALUE can be:
   t          - any done item
+  NUMBER     - done in last NUMBER days (e.g., 14 for 14 days)
   recent     - done in last 7 days
   today      - done today
   past-day   - done in last day
@@ -378,6 +381,8 @@ not string formats like \"-7d\"."
   (cond
    ((eq value t)
     (list '(done)))
+   ((numberp value)
+    (list `(closed :from ,(- value))))
    ((eq value 'recent)
     (list '(closed :from -7)))
    ((eq value 'today)
@@ -485,6 +490,11 @@ Also supports computed types:
     (org-gtd-view-lang--stuck-type-query 'tickler))
    ((eq type-name 'stuck-habit)
     (org-gtd-view-lang--stuck-type-query 'habit))
+   ;; Stuck single actions - Actions not in NEXT state
+   ((eq type-name 'stuck-single-action)
+    (list `(property "ORG_GTD" ,(org-gtd-type-org-gtd-value 'next-action))
+          `(not (todo ,(org-gtd-keywords--next)))
+          '(not (done))))
    ;; Types with implied TODO keywords
    ((eq type-name 'next-action)
     (list `(property "ORG_GTD" ,(org-gtd-type-org-gtd-value 'next-action))
@@ -661,6 +671,8 @@ Returns nil for types that need OR logic (handled by skip function)."
     (org-gtd-type-org-gtd-value 'tickler))
    ((eq type-name 'stuck-habit)
     (org-gtd-type-org-gtd-value 'habit))
+   ((eq type-name 'stuck-single-action)
+    (org-gtd-type-org-gtd-value 'next-action))
    (t nil)))
 
 (defun org-gtd-view-lang--build-match-string (gtd-view-spec)
@@ -773,11 +785,32 @@ Matches items in Tickler OR Someday that were previously Projects."
           nil    ; Include - incubated project
         end))))  ; Skip - not matching
 
+(defun org-gtd-view-lang--build-skip-function-for-stuck-single-action ()
+  "Build a skip function for stuck-single-action type.
+Matches undone single actions (ORG_GTD=Actions) that are not in NEXT state.
+These need attention because single actions should always be in NEXT."
+  (let ((actions-val (org-gtd-type-org-gtd-value 'next-action))
+        (next-keyword (org-gtd-keywords--next)))
+    (lambda ()
+      (let ((end (org-entry-end-position)))
+        ;; Must be an Actions item
+        (if (not (equal (org-entry-get (point) "ORG_GTD") actions-val))
+            end  ; Skip - not a single action
+          ;; Must not be done
+          (if (org-entry-is-done-p)
+              end  ; Skip - done
+            ;; Is stuck if NOT in NEXT state
+            (let ((todo-state (org-entry-get (point) "TODO")))
+              (if (equal todo-state next-keyword)
+                  end   ; Skip - properly in NEXT state
+                nil)))))))) ; Include - stuck (not in NEXT)
+
 (defun org-gtd-view-lang--done-filter-days (done-value)
   "Return the number of days to look back for DONE-VALUE filter.
 Returns nil for (done . t) which means any done item."
   (cond
    ((eq done-value t) nil)
+   ((numberp done-value) done-value)
    ((eq done-value 'recent) 7)
    ((eq done-value 'today) 0)
    ((eq done-value 'past-day) 1)
@@ -845,6 +878,9 @@ The function composes predicates from the view spec filters."
       (org-gtd-view-lang--build-skip-function-for-stuck-type 'tickler))
      ((eq type-filter 'stuck-habit)
       (org-gtd-view-lang--build-skip-function-for-stuck-type 'habit))
+     ;; Stuck single actions - not in NEXT state
+     ((eq type-filter 'stuck-single-action)
+      (org-gtd-view-lang--build-skip-function-for-stuck-single-action))
      ;; Project computed types
      ((memq type-filter '(stuck-project active-project completed-project))
       (org-gtd-view-lang--build-skip-function-for-project-type type-filter))

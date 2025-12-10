@@ -1212,6 +1212,7 @@ Here are common filters you can use in your views:
 
 *Completion Filters:*
 - ~(done . t)~ :: Any completed item
+- ~(done . NUMBER)~ :: Completed in last NUMBER days (e.g., ~(done . 14)~)
 - ~(done . recent)~ :: Completed in last 7 days
 - ~(done . past-week)~ :: Completed in last week
 - ~(not-done . t)~ :: Incomplete items
@@ -6561,6 +6562,7 @@ Filter by TODO state.
 
 *Values*:
 - ~t~ :: Any done item, regardless of when closed
+- ~NUMBER~ :: Done in last NUMBER days (e.g., ~14~ for last 2 weeks)
 - ~today~ :: Done today
 - ~recent~ :: Done in last 7 days
 - ~past-day~ :: Done in last day
@@ -6580,6 +6582,12 @@ Filter by TODO state.
 #+begin_src emacs-lisp
 '((name . "Completed This Week")
   (done . past-week))
+#+end_src
+
+*Example*: Items completed in the last 14 days:
+#+begin_src emacs-lisp
+'((name . "Completed in Last 2 Weeks")
+  (done . 14))
 #+end_src
 
 *Example*: Items completed today:
