@@ -42,9 +42,11 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
       (require 'org-gtd-task-management)
       (require 'org-gtd-projects)  ;; Ensure org-edna action is defined
 
-      (insert "* TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
-      (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:END:\n\n")
-      (insert "* TODO Task C\n:PROPERTIES:\n:ID: task-c-id\n:END:\n\n")
+      ;; Create a proper project structure - tasks with dependencies ARE a project in GTD
+      (insert "* Test Project\n:PROPERTIES:\n:ID: test-project-id\n:ORG_GTD: Projects\n:ORG_GTD_FIRST_TASKS: task-a-id\n:END:\n\n")
+      (insert "** TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:ORG_GTD: Actions\n:ORG_GTD_PROJECT_IDS: test-project-id\n:END:\n\n")
+      (insert "** TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:ORG_GTD: Actions\n:ORG_GTD_PROJECT_IDS: test-project-id\n:END:\n\n")
+      (insert "** TODO Task C\n:PROPERTIES:\n:ID: task-c-id\n:ORG_GTD: Actions\n:ORG_GTD_PROJECT_IDS: test-project-id\n:END:\n\n")
 
       (save-buffer)
 
@@ -99,10 +101,13 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
     (with-current-buffer (find-file-noselect test-file)
       (org-mode)
       (require 'org-gtd-task-management)
+      (require 'org-gtd-projects)
 
-      (insert "* TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
-      (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:END:\n\n")
-      (insert "* TODO Task C\n:PROPERTIES:\n:ID: task-c-id\n:END:\n\n")
+      ;; Create a proper project structure - tasks with dependencies ARE a project in GTD
+      (insert "* Test Project\n:PROPERTIES:\n:ID: test-project-id\n:ORG_GTD: Projects\n:ORG_GTD_FIRST_TASKS: task-a-id task-b-id\n:END:\n\n")
+      (insert "** TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:ORG_GTD: Actions\n:ORG_GTD_PROJECT_IDS: test-project-id\n:END:\n\n")
+      (insert "** TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:ORG_GTD: Actions\n:ORG_GTD_PROJECT_IDS: test-project-id\n:END:\n\n")
+      (insert "** TODO Task C\n:PROPERTIES:\n:ID: task-c-id\n:ORG_GTD: Actions\n:ORG_GTD_PROJECT_IDS: test-project-id\n:END:\n\n")
 
       (save-buffer)
 
@@ -148,9 +153,12 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
     (with-current-buffer (find-file-noselect test-file)
       (org-mode)
       (require 'org-gtd-task-management)
+      (require 'org-gtd-projects)
 
-      (insert "* TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:END:\n\n")
-      (insert "* TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:END:\n\n")
+      ;; Create a proper project structure - tasks with dependencies ARE a project in GTD
+      (insert "* Test Project\n:PROPERTIES:\n:ID: test-project-id\n:ORG_GTD: Projects\n:ORG_GTD_FIRST_TASKS: task-a-id\n:END:\n\n")
+      (insert "** TODO Task A\n:PROPERTIES:\n:ID: task-a-id\n:ORG_GTD: Actions\n:ORG_GTD_PROJECT_IDS: test-project-id\n:END:\n\n")
+      (insert "** TODO Task B\n:PROPERTIES:\n:ID: task-b-id\n:ORG_GTD: Actions\n:ORG_GTD_PROJECT_IDS: test-project-id\n:END:\n\n")
 
       (save-buffer)
 

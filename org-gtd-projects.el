@@ -222,9 +222,10 @@ This is useful for:
                          (setq should-mark-next (and (> total-projects 0)
                                                      (= ready-count total-projects)))))
 
-                     ;; Apply state change if needed and not WAIT
+                     ;; Apply state change if needed and only for active tasks
+                     ;; Preserves WAIT, CNCL, and DONE states
                      (when (and should-mark-next
-                                (not (equal current-state (org-gtd-keywords--wait))))
+                                (org-gtd-todo-state-should-reset-p current-state))
                        (org-gtd-set-task-state task-id (org-gtd-keywords--next)))))
                  all-tasks))))
 
@@ -257,10 +258,10 @@ Only resets states that should be recalculated (preserves WAIT, DONE, CNCL)."
 
 (defun org-gtd-project--mark-ready-tasks (_project-marker ready-task-ids)
   "Mark tasks in READY-TASK-IDS as NEXT for project at PROJECT-MARKER.
-Respects WAIT tasks - preserves user-set WAIT states on ready tasks."
+Respects special states - preserves WAIT, CNCL, and DONE states on ready tasks."
   (dolist (task-id ready-task-ids)
-    ;; Only mark as NEXT if not currently WAIT (preserve user-set WAIT state)
-    (unless (equal (org-gtd-get-task-state task-id) (org-gtd-keywords--wait))
+    ;; Only mark as NEXT if task should be recalculated (preserves WAIT, CNCL, DONE)
+    (when (org-gtd-todo-state-should-reset-p (org-gtd-get-task-state task-id))
       (org-gtd-set-task-state task-id (org-gtd-keywords--next)))))
 
 ;;;;; Command: Find Ready Tasks
@@ -1029,19 +1030,12 @@ Returns marker or nil if not found."
   (org-id-find id t))
 
 (defun org-gtd-projects--edna-update-project-after-task-done (_last-entry)
-  "`org-edna' action that updates blocked tasks when current task is DONE.
-For each task this one blocks, checks if all its dependencies are satisfied,
-and if so, marks it NEXT."
-  (let ((blocked-ids (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
-    (dolist (blocked-id blocked-ids)
-      (when-let ((blocked-marker (org-gtd-projects--find-id-marker blocked-id)))
-        (with-current-buffer (marker-buffer blocked-marker)
-          (save-excursion
-            (goto-char blocked-marker)
-            (let* ((depends-on (org-entry-get-multivalued-property (point) "ORG_GTD_DEPENDS_ON"))
-                   (all-deps-done (cl-every #'org-gtd-task-is-done-p depends-on)))
-              (when all-deps-done
-                (org-entry-put (point) org-gtd-prop-todo (org-gtd-keywords--next))))))))))
+  "`org-edna' action that recalculates TODO keywords when a task is DONE.
+For each project this task belongs to, recalculates which tasks are ready."
+  (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+    (dolist (project-id project-ids)
+      (when-let ((project-marker (org-id-find project-id t)))
+        (org-gtd-projects-fix-todo-keywords project-marker)))))
 
 (defalias 'org-edna-action/org-gtd-update-project-after-task-done!
   #'org-gtd-projects--edna-update-project-after-task-done)
