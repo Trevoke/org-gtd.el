@@ -83,7 +83,7 @@
 
 ;;;; Constants
 
-(defconst org-gtd-version "3.0.0")
+(defconst org-gtd-version "4.0.0beta1")
 
 ;;;; Variables
 
