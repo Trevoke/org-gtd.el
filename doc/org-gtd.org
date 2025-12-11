@@ -1776,6 +1776,14 @@ See [[#working-with-projects-advanced][Working with Projects]] for advanced feat
 
 *Customization*: Set ~org-gtd-delegate-read-func~ to use completion for names.
 
+*Converting actions to delegated*:
+
+Sometimes you start a task yourself, then realize you need to hand it off. If you change any action item to WAIT (using ~org-todo~ or ~C-c C-t~), org-gtd prompts: "Convert to delegated item?"
+
+If you confirm, you provide who has it and when to follow up. The item becomes a proper delegated item with full tracking.
+
+This ensures your waiting-for list always has the context GTD requires: who has it and when to check back.
+
 *** Quick Action [Q]
 
 *What it is*: Tasks that take less than 2 minutes.
