@@ -56,10 +56,15 @@ This function is a modified copy of `org-id-get'."
 
 ;;;;; Private
 
+(defconst org-gtd-id--max-heading-length 50
+  "Maximum length for the heading portion of generated IDs.
+The timestamp suffix is added after this limit.")
+
 (defun org-gtd-id--generate ()
   "Generate and return a new id.
 The generated ID is stripped off potential progress indicator cookies and
-sanitized to get a slug.  Furthermore, it is suffixed with an ISO date-stamp."
+sanitized to get a slug.  Furthermore, it is suffixed with an ISO date-stamp.
+The heading portion is truncated to `org-gtd-id--max-heading-length' characters."
   (let* ((my-heading-text (or (nth 4 (org-heading-components))
                               "org-gtd-makeshift-id"))
          (clean-text (org-gtd-id--remove-week-time-from-inactive-timestamps
@@ -70,8 +75,21 @@ sanitized to get a slug.  Furthermore, it is suffixed with an ISO date-stamp."
                           (org-gtd-id--remove-percent-progress-indicators
                            my-heading-text)))))))
          (raw-id (org-gtd-id--generate-sanitized-alnum-dash-string clean-text))
+         (truncated-id (org-gtd-id--truncate-to-limit raw-id))
          (timestamp (format-time-string "%F-%H-%M-%S")))
-    (concat raw-id "-" timestamp)))
+    (concat truncated-id "-" timestamp)))
+
+(defun org-gtd-id--truncate-to-limit (str)
+  "Truncate STR to `org-gtd-id--max-heading-length' chars, ending cleanly.
+Truncates at word boundary (dash) when possible, removes trailing dashes."
+  (if (<= (length str) org-gtd-id--max-heading-length)
+      str
+    (let ((truncated (substring str 0 org-gtd-id--max-heading-length)))
+      ;; Try to end at a word boundary (last dash before limit)
+      (if-let ((last-dash (string-match-p "-[^-]*$" truncated)))
+          (substring truncated 0 last-dash)
+        ;; No dash found, just use the truncated string and remove trailing dash
+        (replace-regexp-in-string "-+$" "" truncated)))))
 
 (defun org-gtd-id--remove-percent-progress-indicators (heading)
   (replace-regexp-in-string "\\(\\[[0-9]+%\\]\\)" "" heading))

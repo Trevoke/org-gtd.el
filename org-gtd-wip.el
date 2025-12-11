@@ -37,6 +37,10 @@
 
 (defconst org-gtd-wip--prefix "Org-GTD Clarify")
 
+(defconst org-gtd-wip--max-filename-id-length 80
+  "Maximum length for ID portion in temp filenames.
+Keeps total filename well under the 255-byte NAME_MAX limit.")
+
 ;;;; Variables
 
 (defvar org-gtd-wip--temp-files (make-hash-table :test 'equal)
@@ -51,6 +55,13 @@
 ;;;;; Public
 
 ;;;;; Private
+
+(defun org-gtd-wip--truncate-for-filename (str)
+  "Truncate STR to safe length for use in filenames.
+Ensures the ID portion stays under `org-gtd-wip--max-filename-id-length'."
+  (if (<= (length str) org-gtd-wip--max-filename-id-length)
+      str
+    (substring str 0 org-gtd-wip--max-filename-id-length)))
 
 (defun org-gtd-wip--buffer-name (id)
   "Retrieve the name of the WIP buffer for this particular ID."
@@ -73,9 +84,11 @@ activating any additional modes (e.g., `org-gtd-clarify-mode')."
       (let* ((temp-dir (expand-file-name "org-gtd" temporary-file-directory))
              (_ (unless (file-exists-p temp-dir)
                   (make-directory temp-dir t)))
+             ;; Truncate ID for filename to stay under NAME_MAX (255 bytes)
+             (safe-id (org-gtd-wip--truncate-for-filename org-id))
              (temp-file (make-temp-file
                          (expand-file-name
-                          (format "wip-%s-" org-id)
+                          (format "wip-%s-" safe-id)
                           temp-dir)
                          nil ".org"))
              (buffer (find-file-noselect temp-file)))
