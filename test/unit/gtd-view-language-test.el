@@ -1658,6 +1658,34 @@
       ;; Should include (return nil)
       (assert-nil result))))
 
+(deftest view-lang/skip-priority-comparison-gte ()
+  "Skip predicate handles >= comparison correctly."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Test\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n")
+    (goto-char (point-min))
+    (org-priority ?A)
+    (let* ((view-spec '((type . next-action)
+                        (priority . (>= B))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; A >= B should match (A is higher priority than B)
+      (assert-nil result))))
+
+(deftest view-lang/skip-priority-list ()
+  "Skip predicate handles list of priorities."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Test\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n")
+    (goto-char (point-min))
+    (org-priority ?B)
+    (let* ((view-spec '((type . next-action)
+                        (priority . (A B))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; B in (A B) should match
+      (assert-nil result))))
+
 (provide 'gtd-view-language-test)
 
 ;;; gtd-view-language-test.el ends here
