@@ -975,6 +975,13 @@ The function composes predicates from the view spec filters."
                 (push (org-gtd-pred--property-ts= when-prop "today") predicates))
                ((eq when-filter 'future)
                 (push (org-gtd-pred--property-ts> when-prop "today") predicates))))))
+        ;; Add priority predicate
+        (when-let ((priority-filter (alist-get 'priority gtd-view-spec)))
+          (push (org-gtd-pred--priority-matches priority-filter) predicates))
+        ;; Handle priority=nil explicitly (not filtered by when-let)
+        (when (and (assq 'priority gtd-view-spec)
+                   (null (alist-get 'priority gtd-view-spec)))
+          (push (org-gtd-pred--priority-matches nil) predicates))
         ;; Always exclude done items from native blocks
         (push (org-gtd-pred--not-done) predicates)
         ;; Compose predicates into skip function

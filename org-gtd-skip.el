@@ -89,6 +89,52 @@ Returns t if the TODO state is not a member of `org-done-keywords'."
   (lambda ()
     (not (org-entry-is-done-p))))
 
+;;;; Priority Predicates
+
+(defun org-gtd-pred--priority-matches (value)
+  "Return predicate checking if item priority matches VALUE.
+VALUE can be:
+  - A symbol/string like A (single priority)
+  - A list like (A B) (any of these priorities)
+  - A comparison like (>= B)
+  - nil (no priority set)"
+  (lambda ()
+    (let ((item-priority (save-excursion
+                           (org-back-to-heading t)
+                           (when (looking-at org-complex-heading-regexp)
+                             ;; Group 3 is "[#A]", extract just the letter
+                             (let ((cookie (match-string-no-properties 3)))
+                               (when (and cookie (string-match "\\[#\\(.\\)\\]" cookie))
+                                 (match-string 1 cookie)))))))
+      (cond
+       ;; nil = match missing priority
+       ((null value)
+        (or (null item-priority)
+            (string-empty-p item-priority)))
+       ;; Comparison: (>= B)
+       ((and (listp value) (memq (car value) '(< > <= >=)))
+        (when item-priority
+          (let* ((op (car value))
+                 (ref (cadr value))
+                 (highest (or org-priority-highest ?A))
+                 (item-num (1+ (- (aref item-priority 0) highest)))
+                 (ref-num (1+ (- (aref (symbol-name ref) 0) highest))))
+            (pcase op
+              ('< (< item-num ref-num))
+              ('> (> item-num ref-num))
+              ('<= (<= item-num ref-num))
+              ('>= (<= item-num ref-num))))))  ; >= B means numerically <= B
+       ;; List: (A B)
+       ((listp value)
+        (when item-priority
+          (member item-priority
+                  (mapcar (lambda (p) (if (symbolp p) (symbol-name p) p)) value))))
+       ;; Single value
+       (t
+        (when item-priority
+          (equal item-priority
+                 (if (symbolp value) (symbol-name value) value))))))))
+
 ;;;; Project Predicates
 
 (defun org-gtd-pred--project-has-active-tasks ()

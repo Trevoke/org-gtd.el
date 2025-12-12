@@ -1614,6 +1614,50 @@
            (property-empty-or-missing "PRIORITY"))
      (org-gtd-view-lang--translate-to-org-ql view-spec))))
 
+;;; Priority Skip Predicate Tests
+
+(deftest view-lang/skip-priority-matches-single ()
+  "Skip predicate includes items with matching priority."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Test\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n")
+    (goto-char (point-min))
+    (org-priority ?A)
+    (let* ((view-spec '((type . next-action)
+                        (priority . A)))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Should include (return nil)
+      (assert-nil result))))
+
+(deftest view-lang/skip-priority-skips-non-matching ()
+  "Skip predicate skips items with non-matching priority."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Test\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n")
+    (goto-char (point-min))
+    (org-priority ?C)
+    (let* ((view-spec '((type . next-action)
+                        (priority . A)))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Should skip (return number)
+      (assert-true (numberp result)))))
+
+(deftest view-lang/skip-priority-nil-matches-missing ()
+  "Skip predicate with priority=nil matches items without priority."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Test\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action)
+                        (priority . nil)))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Should include (return nil)
+      (assert-nil result))))
+
 (provide 'gtd-view-language-test)
 
 ;;; gtd-view-language-test.el ends here
