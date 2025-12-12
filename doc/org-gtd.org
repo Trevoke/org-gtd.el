@@ -1243,20 +1243,182 @@ Now that you understand views, you can create:
 - *Time-based views* - Overdue items, upcoming deadlines, this week's schedule
 - *Focus views* - Deep work items (~priority~, ~clocked~), quick wins (~effort~)
 
-See [[#view-dsl-reference][View DSL Filter Reference]] for the complete filter documentation with all available options and many more examples.
+Now that you can create views, let's build some that match real workflows.
+
+** Tutorial: Quick Wins and Focus Work Views
+
+You've learned to create views. Now let's create views that match *how you actually work*---views that answer: "What can I knock out in 10 minutes?" and "What deserves my deep focus?"
+
+*** Why This Matters
+
+Think about your typical day:
+
+- *10 minutes before a meeting* → You want quick tasks you can complete
+- *2-hour focus block* → You want substantial work, not busywork
+- *Weekly review* → You want to find tasks missing estimates
+
+These three scenarios need different views. The engage view shows *everything actionable*. These views show *what matches your available time and energy*.
+
+*** Your First Quick Wins View (30 seconds)
+
+Let's start with the most immediately useful view: tasks under 15 minutes.
+
+Try this right now in your ~*scratch*~ buffer:
+
+#+begin_src emacs-lisp
+(org-gtd-view-show
+ '((name . "Quick Wins")
+   (type . next-action)
+   (effort . (< "15min"))))
+#+end_src
+
+Place your cursor at the end and press ~C-x C-e~.
+
+*What you'll see:* Only NEXT actions that have an effort estimate under 15 minutes. Perfect for those short gaps in your day.
+
+*** The Effort Filter Explained
+
+The ~effort~ filter works with your items' Effort property---the same one org-mode uses for time estimates.
+
+The pattern is simple:
+
+#+begin_src emacs-lisp
+(effort . (< "TIME"))    ;; less than TIME
+(effort . (> "TIME"))    ;; more than TIME
+(effort . (between "MIN" "MAX"))  ;; within range
+#+end_src
+
+Time formats work how you'd expect:
+- ~"15min"~ or ~"0:15"~ → 15 minutes
+- ~"1:30"~ or ~"1h30min"~ → 1 hour 30 minutes
+- ~"2:00"~ or ~"2h"~ → 2 hours
+
+*The mental model:* Think of effort as "how big is this bite?" Quick wins are small bites. Deep work is a full meal.
+
+*** Building a Focus Work View
+
+Now let's create a view for when you have real time to focus. You want tasks that:
+- Are important (priority A or B)
+- Are substantial (over 30 minutes)
+
+#+begin_src emacs-lisp
+(org-gtd-view-show
+ '((name . "Focus Work")
+   (type . next-action)
+   (priority . (>= B))
+   (effort . (> "30min"))))
+#+end_src
+
+*What this shows:* NEXT actions that are priority B or higher AND estimated over 30 minutes. These are tasks worth blocking time for.
+
+*** The Priority Filter Explained
+
+Priority in org-mode goes A (highest) → B → C (lowest). The ~priority~ filter matches this:
+
+#+begin_src emacs-lisp
+(priority . A)           ;; exactly priority A
+(priority . (A B))       ;; priority A or B
+(priority . (>= B))      ;; B or higher (A and B)
+(priority . nil)         ;; no priority set
+#+end_src
+
+*Important:* A is *highest* priority. So ~(>= B)~ means "B or better"---which is A and B.
+
+*The mental model:* Priority answers "how important is this?" Effort answers "how long will it take?" Together they help you match tasks to your available time and energy.
+
+*** Finding Tasks to Triage
+
+One more powerful pattern: finding items missing metadata. During your weekly review, you want to catch tasks that need estimates.
+
+#+begin_src emacs-lisp
+(org-gtd-view-show
+ '((name . "Needs Effort Estimate")
+   (type . next-action)
+   (effort . nil)))
+#+end_src
+
+~(effort . nil)~ matches items with NO effort property set. Same works for priority:
+
+#+begin_src emacs-lisp
+(org-gtd-view-show
+ '((name . "Needs Priority")
+   (type . next-action)
+   (priority . nil)))
+#+end_src
+
+These triage views help maintain your system.
+
+*** Bonus: The Clocked Filter
+
+There's one more filter: ~clocked~. It matches by how much time you've *already invested* in a task.
+
+#+begin_src emacs-lisp
+;; Tasks I've started but not finished (some time clocked)
+(org-gtd-view-show
+ '((name . "In Progress")
+   (type . next-action)
+   (clocked . (> "0:00"))))
+
+;; Tasks I haven't touched yet
+(org-gtd-view-show
+ '((name . "Not Started")
+   (type . next-action)
+   (clocked . nil)))
+#+end_src
+
+*Why this is useful:* Sometimes you want to continue work you've already invested in. Sometimes you want fresh tasks. The clocked filter gives you both options.
+
+*** Putting It All Together
+
+Here's a complete setup with three views for different contexts:
+
+#+begin_src emacs-lisp
+(with-eval-after-load 'org-gtd
+  (defun my-quick-wins ()
+    "Tasks under 15 minutes - perfect for short gaps."
+    (interactive)
+    (org-gtd-view-show
+     '((name . "Quick Wins (< 15min)")
+       (type . next-action)
+       (effort . (< "15min")))))
+
+  (defun my-focus-work ()
+    "Important substantial tasks - for deep work blocks."
+    (interactive)
+    (org-gtd-view-show
+     '((name . "Focus Work")
+       (type . next-action)
+       (priority . (>= B))
+       (effort . (> "30min")))))
+
+  (defun my-needs-estimates ()
+    "Tasks missing effort or priority - for weekly review."
+    (interactive)
+    (org-gtd-view-show
+     '(((name . "Needs Priority")
+        (type . next-action)
+        (priority . nil))
+       ((name . "Needs Effort")
+        (type . next-action)
+        (effort . nil))))))
+#+end_src
+
+*** Key Takeaways
+
+- ~effort~ filter matches time estimates → "How big is this task?"
+- ~priority~ filter matches A/B/C → "How important is this?"
+- ~clocked~ filter matches time invested → "How much have I worked on this?"
+- Use ~nil~ to find items missing metadata
+- Combine filters to match your available time and energy
 
 *** Where to Go From Here
 
-You now know:
-1. How to create and manage projects (Tutorial 1)
-2. How to create custom views (Tutorial 2)
+You've completed the tutorials. You now know how to:
+1. Create and manage projects (Tutorial 1)
+2. Create custom views for any context (Tutorial 2)
+3. Build quick wins, focus work, and triage views (Tutorial 3)
 
-This is enough to be productive with org-gtd! The next section, "Using Org GTD", goes deep into:
-- All GTD item types (calendar, delegate, tickler, someday/maybe, etc.)
-- Advanced project features (parallel tasks, custom dependencies)
-- Hooks and customization
-- Integration with email and other tools
-- Review workflows
+*This is enough to be productive with org-gtd!*
 
 Read those sections as you need them. For now, *start using what you've learned*:
 - Capture items as they come up
@@ -1265,7 +1427,9 @@ Read those sections as you need them. For now, *start using what you've learned*
 - Create a few simple projects
 - Experiment with custom views
 
-The best way to learn GTD is to practice the workflow. org-gtd handles the complexity - you just do the work.
+The best way to learn GTD is to practice the workflow. org-gtd handles the complexity---you just do the work.
+
+For complete filter syntax and all options, see [[#view-dsl-reference][View DSL Filter Reference]].
 
 *Quick reference*:
 - [[#using-org-gtd][Using Org GTD]] - Deep dive into daily workflow and all item types
