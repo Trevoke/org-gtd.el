@@ -1566,6 +1566,54 @@
       ;; Should keep explicit prefix
       (assert-equal '(project "Custom") (alist-get 'prefix result)))))
 
+;;; Priority Filter Tests
+
+(deftest view-lang/priority-single-value ()
+  "Translates priority=A to property match."
+  (let ((view-spec '((name . "High Priority")
+                     (type . next-action)
+                     (priority . A))))
+    (assert-equal
+     `(and (property "ORG_GTD" "Actions")
+           (todo ,(org-gtd-keywords--next))
+           (property "PRIORITY" "A"))
+     (org-gtd-view-lang--translate-to-org-ql view-spec))))
+
+(deftest view-lang/priority-list ()
+  "Translates priority=(A B) to OR match."
+  (let ((view-spec '((name . "High/Medium Priority")
+                     (type . next-action)
+                     (priority . (A B)))))
+    (assert-equal
+     `(and (property "ORG_GTD" "Actions")
+           (todo ,(org-gtd-keywords--next))
+           (or (property "PRIORITY" "A")
+               (property "PRIORITY" "B")))
+     (org-gtd-view-lang--translate-to-org-ql view-spec))))
+
+(deftest view-lang/priority-comparison-gte ()
+  "Translates priority=(>= B) to B or higher (A, B)."
+  (let ((view-spec '((name . "B or Higher")
+                     (type . next-action)
+                     (priority . (>= B)))))
+    (assert-equal
+     `(and (property "ORG_GTD" "Actions")
+           (todo ,(org-gtd-keywords--next))
+           (or (property "PRIORITY" "A")
+               (property "PRIORITY" "B")))
+     (org-gtd-view-lang--translate-to-org-ql view-spec))))
+
+(deftest view-lang/priority-nil-missing ()
+  "Translates priority=nil to missing priority."
+  (let ((view-spec '((name . "No Priority")
+                     (type . next-action)
+                     (priority . nil))))
+    (assert-equal
+     `(and (property "ORG_GTD" "Actions")
+           (todo ,(org-gtd-keywords--next))
+           (property-empty-or-missing "PRIORITY"))
+     (org-gtd-view-lang--translate-to-org-ql view-spec))))
+
 (provide 'gtd-view-language-test)
 
 ;;; gtd-view-language-test.el ends here

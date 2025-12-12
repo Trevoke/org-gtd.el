@@ -325,6 +325,8 @@ Multi-block specs have a \\='blocks key containing a list of block specs."
       (org-gtd-view-lang--translate-previous-type-filter filter-value))
      ((eq filter-type 'when)
       (org-gtd-view-lang--translate-when-filter filter-value))
+     ((eq filter-type 'priority)
+      (org-gtd-view-lang--translate-priority-filter filter-value))
      ((keywordp filter-type)
       (org-gtd-view-lang--translate-semantic-property-filter filter-type filter-value))
      (t (error "Unknown GTD filter: %s" filter-type)))))
@@ -345,6 +347,68 @@ Requires a type filter to be present for property resolution."
      ((eq time-spec 'future)
       (list `(property-ts> ,org-prop "today")))
      (t (user-error "Unknown when spec: %s" time-spec)))))
+
+(defun org-gtd-view-lang--priority-to-number (priority)
+  "Convert PRIORITY letter to numeric value for comparison.
+A=1, B=2, C=3, etc. Lower number = higher priority.
+Respects `org-priority-highest' and `org-priority-lowest'."
+  (let ((highest (or org-priority-highest ?A))
+        (char (if (symbolp priority)
+                  (aref (symbol-name priority) 0)
+                (aref priority 0))))
+    (1+ (- char highest))))
+
+(defun org-gtd-view-lang--priorities-in-range (op reference)
+  "Return list of priority letters matching OP compared to REFERENCE.
+ OP is one of <, >, <=, >=.  REFERENCE is a priority symbol like B.
+Returns list like (\"A\" \"B\") for (>= B)."
+  (let* ((highest (or org-priority-highest ?A))
+         (lowest (or org-priority-lowest ?C))
+         (ref-num (org-gtd-view-lang--priority-to-number reference))
+         (result '()))
+    (cl-loop for char from highest to lowest
+             for num from 1
+             when (pcase op
+                    ('< (< num ref-num))
+                    ('> (> num ref-num))
+                    ('<= (<= num ref-num))
+                    ('>= (<= num ref-num)))  ; >= B means A,B (lower numbers)
+             do (push (char-to-string char) result))
+    (nreverse result)))
+
+(defun org-gtd-view-lang--translate-priority-filter (value)
+  "Translate priority VALUE to org-ql filter.
+VALUE can be:
+  - A symbol like A, B, C (single priority)
+  - A list of symbols like (A B) (OR match)
+  - A comparison like (>= B) (range match)
+  - nil (missing priority)"
+  (cond
+   ;; nil = missing priority
+   ((null value)
+    (list '(property-empty-or-missing "PRIORITY")))
+   ;; Comparison: (>= B), (< C), etc.
+   ((and (listp value)
+         (memq (car value) '(< > <= >=)))
+    (let* ((op (car value))
+           (ref (cadr value))
+           (priorities (org-gtd-view-lang--priorities-in-range op ref)))
+      (if (= (length priorities) 1)
+          (list `(property "PRIORITY" ,(car priorities)))
+        (list `(or ,@(mapcar (lambda (p) `(property "PRIORITY" ,p)) priorities))))))
+   ;; List of priorities: (A B)
+   ((and (listp value) (not (memq (car value) '(< > <= >=))))
+    (let ((priorities (mapcar (lambda (p) (if (symbolp p) (symbol-name p) p)) value)))
+      (if (= (length priorities) 1)
+          (list `(property "PRIORITY" ,(car priorities)))
+        (list `(or ,@(mapcar (lambda (p) `(property "PRIORITY" ,p)) priorities))))))
+   ;; Single priority symbol: A
+   ((symbolp value)
+    (list `(property "PRIORITY" ,(symbol-name value))))
+   ;; Single priority string: "A"
+   ((stringp value)
+    (list `(property "PRIORITY" ,value)))
+   (t (user-error "Invalid priority filter value: %S" value))))
 
 (defun org-gtd-view-lang--translate-deadline-filter (time-spec)
   "Translate deadline TIME-SPEC to org-ql deadline filter."
