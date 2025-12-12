@@ -1724,6 +1724,61 @@
            (property-empty-or-missing "Effort"))
      (org-gtd-view-lang--translate-to-org-ql view-spec))))
 
+;;; Effort Skip Predicate Tests
+
+(deftest view-lang/skip-effort-less-than-includes ()
+  "Skip predicate includes items with effort under threshold."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Test\n:PROPERTIES:\n:ORG_GTD: Actions\n:Effort: 0:15\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action)
+                        (effort . (< "0:30"))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      (assert-nil result))))
+
+(deftest view-lang/skip-effort-less-than-skips ()
+  "Skip predicate skips items with effort over threshold."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Test\n:PROPERTIES:\n:ORG_GTD: Actions\n:Effort: 2:00\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action)
+                        (effort . (< "0:30"))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      (assert-true (numberp result)))))
+
+(deftest view-lang/skip-effort-nil-matches-missing ()
+  "Skip predicate with effort=nil matches items without effort."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Test\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action)
+                        (effort . nil)))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      (assert-nil result))))
+
+(deftest view-lang/skip-effort-parses-duration-formats ()
+  "Skip predicate handles various duration formats."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Test\n:PROPERTIES:\n:ORG_GTD: Actions\n:Effort: 1d2h30min\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action)
+                        (effort . (> "1:00"))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; 1d2h30min > 1:00, should include
+      (assert-nil result))))
+
 (provide 'gtd-view-language-test)
 
 ;;; gtd-view-language-test.el ends here

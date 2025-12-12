@@ -30,6 +30,7 @@
 
 (require 'org)
 (require 'org-agenda)
+(require 'org-duration)
 (require 'org-gtd-types)
 (require 'org-gtd-core)
 
@@ -134,6 +135,41 @@ VALUE can be:
         (when item-priority
           (equal item-priority
                  (if (symbolp value) (symbol-name value) value))))))))
+
+;;;; Effort Predicates
+
+(defun org-gtd-pred--effort-matches (value)
+  "Return predicate checking if item effort matches VALUE.
+VALUE can be:
+  - (< \"0:30\") - less than 30 minutes
+  - (> \"1:00\") - more than 1 hour
+  - (between \"0:15\" \"1:00\") - range (inclusive)
+  - nil - no effort set"
+  (lambda ()
+    (let ((effort-str (org-entry-get (point) "Effort")))
+      (cond
+       ;; nil = match missing effort
+       ((null value)
+        (or (null effort-str)
+            (string-empty-p effort-str)))
+       ;; Have effort, need to compare
+       ((and effort-str (not (string-empty-p effort-str)))
+        (condition-case nil
+            (let ((effort-mins (org-duration-to-minutes effort-str)))
+              (pcase (car value)
+                ('<
+                 (let ((threshold (org-duration-to-minutes (cadr value))))
+                   (< effort-mins threshold)))
+                ('>
+                 (let ((threshold (org-duration-to-minutes (cadr value))))
+                   (> effort-mins threshold)))
+                ('between
+                 (let ((low (org-duration-to-minutes (cadr value)))
+                       (high (org-duration-to-minutes (caddr value))))
+                   (and (>= effort-mins low) (<= effort-mins high))))
+                (_ nil)))
+          (error nil)))  ; Invalid duration format, skip item
+       (t nil)))))  ; No effort but filter wants comparison
 
 ;;;; Project Predicates
 

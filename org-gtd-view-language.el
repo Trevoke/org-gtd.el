@@ -1002,6 +1002,13 @@ The function composes predicates from the view spec filters."
         (when (and (assq 'priority gtd-view-spec)
                    (null (alist-get 'priority gtd-view-spec)))
           (push (org-gtd-pred--priority-matches nil) predicates))
+        ;; Add effort predicate
+        (when-let ((effort-filter (alist-get 'effort gtd-view-spec)))
+          (push (org-gtd-pred--effort-matches effort-filter) predicates))
+        ;; Handle effort=nil explicitly
+        (when (and (assq 'effort gtd-view-spec)
+                   (null (alist-get 'effort gtd-view-spec)))
+          (push (org-gtd-pred--effort-matches nil) predicates))
         ;; Always exclude done items from native blocks
         (push (org-gtd-pred--not-done) predicates)
         ;; Compose predicates into skip function
