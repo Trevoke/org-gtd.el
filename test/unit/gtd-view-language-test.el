@@ -1686,6 +1686,44 @@
       ;; B in (A B) should match
       (assert-nil result))))
 
+;;; Effort Filter Tests
+
+(deftest view-lang/effort-less-than ()
+  "Translates effort=(< \"0:30\") to effort comparison."
+  (let ((view-spec '((name . "Quick Tasks")
+                     (type . next-action)
+                     (effort . (< "0:30")))))
+    (let ((query (org-gtd-view-lang--translate-to-org-ql view-spec)))
+      ;; Should contain effort-< predicate
+      (assert-true (cl-find 'effort-< (flatten-list query))))))
+
+(deftest view-lang/effort-greater-than ()
+  "Translates effort=(> \"1:00\") to effort comparison."
+  (let ((view-spec '((name . "Deep Work")
+                     (type . next-action)
+                     (effort . (> "1:00")))))
+    (let ((query (org-gtd-view-lang--translate-to-org-ql view-spec)))
+      (assert-true (cl-find 'effort-> (flatten-list query))))))
+
+(deftest view-lang/effort-between ()
+  "Translates effort=(between \"0:15\" \"1:00\") to range."
+  (let ((view-spec '((name . "Medium Tasks")
+                     (type . next-action)
+                     (effort . (between "0:15" "1:00")))))
+    (let ((query (org-gtd-view-lang--translate-to-org-ql view-spec)))
+      (assert-true (cl-find 'effort-between (flatten-list query))))))
+
+(deftest view-lang/effort-nil-missing ()
+  "Translates effort=nil to missing effort."
+  (let ((view-spec '((name . "No Estimate")
+                     (type . next-action)
+                     (effort . nil))))
+    (assert-equal
+     `(and (property "ORG_GTD" "Actions")
+           (todo ,(org-gtd-keywords--next))
+           (property-empty-or-missing "Effort"))
+     (org-gtd-view-lang--translate-to-org-ql view-spec))))
+
 (provide 'gtd-view-language-test)
 
 ;;; gtd-view-language-test.el ends here

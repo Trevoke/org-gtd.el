@@ -327,6 +327,8 @@ Multi-block specs have a \\='blocks key containing a list of block specs."
       (org-gtd-view-lang--translate-when-filter filter-value))
      ((eq filter-type 'priority)
       (org-gtd-view-lang--translate-priority-filter filter-value))
+     ((eq filter-type 'effort)
+      (org-gtd-view-lang--translate-effort-filter filter-value))
      ((keywordp filter-type)
       (org-gtd-view-lang--translate-semantic-property-filter filter-type filter-value))
      (t (error "Unknown GTD filter: %s" filter-type)))))
@@ -409,6 +411,24 @@ VALUE can be:
    ((stringp value)
     (list `(property "PRIORITY" ,value)))
    (t (user-error "Invalid priority filter value: %S" value))))
+
+(defun org-gtd-view-lang--translate-effort-filter (value)
+  "Translate effort VALUE to org-ql filter.
+VALUE can be:
+  - (< \"0:30\") - less than 30 minutes
+  - (> \"1:00\") - more than 1 hour
+  - (between \"0:15\" \"1:00\") - range (inclusive)
+  - nil - missing effort estimate"
+  (cond
+   ((null value)
+    (list '(property-empty-or-missing "Effort")))
+   ((and (listp value) (eq (car value) '<))
+    (list `(effort-< ,(cadr value))))
+   ((and (listp value) (eq (car value) '>))
+    (list `(effort-> ,(cadr value))))
+   ((and (listp value) (eq (car value) 'between))
+    (list `(effort-between ,(cadr value) ,(caddr value))))
+   (t (user-error "Invalid effort filter value: %S" value))))
 
 (defun org-gtd-view-lang--translate-deadline-filter (time-spec)
   "Translate deadline TIME-SPEC to org-ql deadline filter."
