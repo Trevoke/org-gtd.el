@@ -89,6 +89,7 @@ Getting Started with Org GTD
 * Quick Start Reference::
 * Tutorial Your First Project::
 * Tutorial Creating Your First Custom View::
+* Tutorial Quick Wins and Focus Work Views::
 
 Tutorial: Your First Project
 
@@ -119,6 +120,19 @@ Tutorial: Creating Your First Custom View
 * Available Filters::
 * Key Takeaways: Key Takeaways (1).
 * What's Next?: What's Next? (1).
+
+
+Tutorial: Quick Wins and Focus Work Views
+
+* Why This Matters::
+* Your First Quick Wins View (30 seconds)::
+* The Effort Filter Explained::
+* Building a Focus Work View::
+* The Priority Filter Explained::
+* Finding Tasks to Triage::
+* Bonus The Clocked Filter::
+* Putting It All Together::
+* Key Takeaways: Key Takeaways (2).
 * Where to Go From Here::
 
 
@@ -267,6 +281,7 @@ View DSL Filter Reference
 * Keyword Filters::
 * Area of Focus Filters::
 * Tag Filters::
+* Priority, Effort, and Clocked Filters: Priority Effort and Clocked Filters.
 * Property Filters::
 * Structural Filters::
 * Special Filters::
@@ -1507,6 +1522,7 @@ examples that demonstrate why org-gtd is powerful.
 * Quick Start Reference::
 * Tutorial Your First Project::
 * Tutorial Creating Your First Custom View::
+* Tutorial Quick Wins and Focus Work Views::
 
 
 File: org-gtd.info,  Node: Quick Start Reference,  Next: Tutorial Your First Project,  Up: Getting Started with Org GTD
@@ -1763,7 +1779,7 @@ is always:
   5. *Complete* tasks and watch progression happen automatically
 
 
-File: org-gtd.info,  Node: Tutorial Creating Your First Custom View,  Prev: Tutorial Your First Project,  Up: Getting Started with Org GTD
+File: org-gtd.info,  Node: Tutorial Creating Your First Custom View,  Next: Tutorial Quick Wins and Focus Work Views,  Prev: Tutorial Your First Project,  Up: Getting Started with Org GTD
 
 4.3 Tutorial: Creating Your First Custom View
 =============================================
@@ -1786,7 +1802,6 @@ projects.
 * Available Filters::
 * Key Takeaways: Key Takeaways (1).
 * What's Next?: What's Next? (1).
-* Where to Go From Here::
 
 
 File: org-gtd.info,  Node: What You'll Learn (1),  Next: Why This View?,  Up: Tutorial Creating Your First Custom View
@@ -2013,6 +2028,12 @@ Reference::.
      Filter by TODO keywords
 ‘(level . 2)’
      Filter by heading level
+‘(priority . A)’
+     Filter by priority (also supports lists and comparisons)
+‘(effort . (< "30min"))’
+     Filter by effort estimate
+‘(clocked . (> "1:00"))’
+     Filter by time clocked
 
    You can combine multiple filters - they all must match (AND logic).
 
@@ -2030,7 +2051,7 @@ File: org-gtd.info,  Node: Key Takeaways (1),  Next: What's Next? (1),  Prev: Av
    • *Views leverage org-ql* - fast and powerful queries
 
 
-File: org-gtd.info,  Node: What's Next? (1),  Next: Where to Go From Here,  Prev: Key Takeaways (1),  Up: Tutorial Creating Your First Custom View
+File: org-gtd.info,  Node: What's Next? (1),  Prev: Key Takeaways (1),  Up: Tutorial Creating Your First Custom View
 
 4.3.11 What's Next?
 -------------------
@@ -2040,29 +2061,248 @@ Now that you understand views, you can create:
    • *Context views* - Show work items, home items, errands, etc.
    • *Time-based views* - Overdue items, upcoming deadlines, this week's
      schedule
-   • *Focus views* - Deep work items, quick wins, waiting-for items
+   • *Focus views* - Deep work items (‘priority’, ‘clocked’), quick wins
+     (‘effort’)
 
-   See *note View DSL Filter Reference:: for the complete filter
-documentation with all available options and many more examples.
+   Now that you can create views, let's build some that match real
+workflows.
 
 
-File: org-gtd.info,  Node: Where to Go From Here,  Prev: What's Next? (1),  Up: Tutorial Creating Your First Custom View
+File: org-gtd.info,  Node: Tutorial Quick Wins and Focus Work Views,  Prev: Tutorial Creating Your First Custom View,  Up: Getting Started with Org GTD
 
-4.3.12 Where to Go From Here
+4.4 Tutorial: Quick Wins and Focus Work Views
+=============================================
+
+You've learned to create views.  Now let's create views that match *how
+you actually work*--views that answer: "What can I knock out in 10
+minutes?"  and "What deserves my deep focus?"
+
+* Menu:
+
+* Why This Matters::
+* Your First Quick Wins View (30 seconds)::
+* The Effort Filter Explained::
+* Building a Focus Work View::
+* The Priority Filter Explained::
+* Finding Tasks to Triage::
+* Bonus The Clocked Filter::
+* Putting It All Together::
+* Key Takeaways: Key Takeaways (2).
+* Where to Go From Here::
+
+
+File: org-gtd.info,  Node: Why This Matters,  Next: Your First Quick Wins View (30 seconds),  Up: Tutorial Quick Wins and Focus Work Views
+
+4.4.1 Why This Matters
+----------------------
+
+Think about your typical day:
+
+   • *10 minutes before a meeting* → You want quick tasks you can
+     complete
+   • *2-hour focus block* → You want substantial work, not busywork
+   • *Weekly review* → You want to find tasks missing estimates
+
+   These three scenarios need different views.  The engage view shows
+*everything actionable*.  These views show *what matches your available
+time and energy*.
+
+
+File: org-gtd.info,  Node: Your First Quick Wins View (30 seconds),  Next: The Effort Filter Explained,  Prev: Why This Matters,  Up: Tutorial Quick Wins and Focus Work Views
+
+4.4.2 Your First Quick Wins View (30 seconds)
+---------------------------------------------
+
+Let's start with the most immediately useful view: tasks under 15
+minutes.
+
+   Try this right now in your ‘*scratch*’ buffer:
+
+     (org-gtd-view-show
+      '((name . "Quick Wins")
+        (type . next-action)
+        (effort . (< "15min"))))
+
+   Place your cursor at the end and press ‘C-x C-e’.
+
+   *What you'll see:* Only NEXT actions that have an effort estimate
+under 15 minutes.  Perfect for those short gaps in your day.
+
+
+File: org-gtd.info,  Node: The Effort Filter Explained,  Next: Building a Focus Work View,  Prev: Your First Quick Wins View (30 seconds),  Up: Tutorial Quick Wins and Focus Work Views
+
+4.4.3 The Effort Filter Explained
+---------------------------------
+
+The ‘effort’ filter works with your items' Effort property--the same one
+org-mode uses for time estimates.
+
+   The pattern is simple:
+
+     (effort . (< "TIME"))    ;; less than TIME
+     (effort . (> "TIME"))    ;; more than TIME
+     (effort . (between "MIN" "MAX"))  ;; within range
+
+   Time formats work how you'd expect:
+   • ‘"15min"’ or ‘"0:15"’ → 15 minutes
+   • ‘"1:30"’ or ‘"1h30min"’ → 1 hour 30 minutes
+   • ‘"2:00"’ or ‘"2h"’ → 2 hours
+
+   *The mental model:* Think of effort as "how big is this bite?"  Quick
+wins are small bites.  Deep work is a full meal.
+
+
+File: org-gtd.info,  Node: Building a Focus Work View,  Next: The Priority Filter Explained,  Prev: The Effort Filter Explained,  Up: Tutorial Quick Wins and Focus Work Views
+
+4.4.4 Building a Focus Work View
+--------------------------------
+
+Now let's create a view for when you have real time to focus.  You want
+tasks that:
+   • Are important (priority A or B)
+   • Are substantial (over 30 minutes)
+
+     (org-gtd-view-show
+      '((name . "Focus Work")
+        (type . next-action)
+        (priority . (>= B))
+        (effort . (> "30min"))))
+
+   *What this shows:* NEXT actions that are priority B or higher AND
+estimated over 30 minutes.  These are tasks worth blocking time for.
+
+
+File: org-gtd.info,  Node: The Priority Filter Explained,  Next: Finding Tasks to Triage,  Prev: Building a Focus Work View,  Up: Tutorial Quick Wins and Focus Work Views
+
+4.4.5 The Priority Filter Explained
+-----------------------------------
+
+Priority in org-mode goes A (highest) → B → C (lowest).  The ‘priority’
+filter matches this:
+
+     (priority . A)           ;; exactly priority A
+     (priority . (A B))       ;; priority A or B
+     (priority . (>= B))      ;; B or higher (A and B)
+     (priority . nil)         ;; no priority set
+
+   *Important:* A is *highest* priority.  So ‘(>= B)’ means "B or
+better"--which is A and B.
+
+   *The mental model:* Priority answers "how important is this?"  Effort
+answers "how long will it take?"  Together they help you match tasks to
+your available time and energy.
+
+
+File: org-gtd.info,  Node: Finding Tasks to Triage,  Next: Bonus The Clocked Filter,  Prev: The Priority Filter Explained,  Up: Tutorial Quick Wins and Focus Work Views
+
+4.4.6 Finding Tasks to Triage
+-----------------------------
+
+One more powerful pattern: finding items missing metadata.  During your
+weekly review, you want to catch tasks that need estimates.
+
+     (org-gtd-view-show
+      '((name . "Needs Effort Estimate")
+        (type . next-action)
+        (effort . nil)))
+
+   ‘(effort . nil)’ matches items with NO effort property set.  Same
+works for priority:
+
+     (org-gtd-view-show
+      '((name . "Needs Priority")
+        (type . next-action)
+        (priority . nil)))
+
+   These triage views help maintain your system.
+
+
+File: org-gtd.info,  Node: Bonus The Clocked Filter,  Next: Putting It All Together,  Prev: Finding Tasks to Triage,  Up: Tutorial Quick Wins and Focus Work Views
+
+4.4.7 Bonus: The Clocked Filter
+-------------------------------
+
+There's one more filter: ‘clocked’.  It matches by how much time you've
+*already invested* in a task.
+
+     ;; Tasks I've started but not finished (some time clocked)
+     (org-gtd-view-show
+      '((name . "In Progress")
+        (type . next-action)
+        (clocked . (> "0:00"))))
+
+     ;; Tasks I haven't touched yet
+     (org-gtd-view-show
+      '((name . "Not Started")
+        (type . next-action)
+        (clocked . nil)))
+
+   *Why this is useful:* Sometimes you want to continue work you've
+already invested in.  Sometimes you want fresh tasks.  The clocked
+filter gives you both options.
+
+
+File: org-gtd.info,  Node: Putting It All Together,  Next: Key Takeaways (2),  Prev: Bonus The Clocked Filter,  Up: Tutorial Quick Wins and Focus Work Views
+
+4.4.8 Putting It All Together
+-----------------------------
+
+Here's a complete setup with three views for different contexts:
+
+     (with-eval-after-load 'org-gtd
+       (defun my-quick-wins ()
+         "Tasks under 15 minutes - perfect for short gaps."
+         (interactive)
+         (org-gtd-view-show
+          '((name . "Quick Wins (< 15min)")
+            (type . next-action)
+            (effort . (< "15min")))))
+
+       (defun my-focus-work ()
+         "Important substantial tasks - for deep work blocks."
+         (interactive)
+         (org-gtd-view-show
+          '((name . "Focus Work")
+            (type . next-action)
+            (priority . (>= B))
+            (effort . (> "30min")))))
+
+       (defun my-needs-estimates ()
+         "Tasks missing effort or priority - for weekly review."
+         (interactive)
+         (org-gtd-view-show
+          '(((name . "Needs Priority")
+             (type . next-action)
+             (priority . nil))
+            ((name . "Needs Effort")
+             (type . next-action)
+             (effort . nil))))))
+
+
+File: org-gtd.info,  Node: Key Takeaways (2),  Next: Where to Go From Here,  Prev: Putting It All Together,  Up: Tutorial Quick Wins and Focus Work Views
+
+4.4.9 Key Takeaways
+-------------------
+
+   • ‘effort’ filter matches time estimates → "How big is this task?"
+   • ‘priority’ filter matches A/B/C → "How important is this?"
+   • ‘clocked’ filter matches time invested → "How much have I worked on
+     this?"
+   • Use ‘nil’ to find items missing metadata
+   • Combine filters to match your available time and energy
+
+
+File: org-gtd.info,  Node: Where to Go From Here,  Prev: Key Takeaways (2),  Up: Tutorial Quick Wins and Focus Work Views
+
+4.4.10 Where to Go From Here
 ----------------------------
 
-You now know:
-  1. How to create and manage projects (Tutorial 1)
-  2. How to create custom views (Tutorial 2)
+You've completed the tutorials.  You now know how to:
+  1. Create and manage projects (Tutorial 1)
+  2. Create custom views for any context (Tutorial 2)
+  3. Build quick wins, focus work, and triage views (Tutorial 3)
 
-   This is enough to be productive with org-gtd!  The next section,
-"Using Org GTD", goes deep into:
-   • All GTD item types (calendar, delegate, tickler, someday/maybe,
-     etc.)
-   • Advanced project features (parallel tasks, custom dependencies)
-   • Hooks and customization
-   • Integration with email and other tools
-   • Review workflows
+   *This is enough to be productive with org-gtd!*
 
    Read those sections as you need them.  For now, *start using what
 you've learned*:
@@ -2073,7 +2313,10 @@ you've learned*:
    • Experiment with custom views
 
    The best way to learn GTD is to practice the workflow.  org-gtd
-handles the complexity - you just do the work.
+handles the complexity--you just do the work.
+
+   For complete filter syntax and all options, see *note View DSL Filter
+Reference::.
 
    *Quick reference*:
    • *note Using Org GTD:: - Deep dive into daily workflow and all item
@@ -8016,6 +8259,7 @@ and ‘org-gtd-reflect-*’ commands.
 * Keyword Filters::
 * Area of Focus Filters::
 * Tag Filters::
+* Priority, Effort, and Clocked Filters: Priority Effort and Clocked Filters.
 * Property Filters::
 * Structural Filters::
 * Special Filters::
@@ -8528,7 +8772,7 @@ Filter by life area:
             (area-of-focus . "Work"))
 
 
-File: org-gtd.info,  Node: Tag Filters,  Next: Property Filters,  Prev: Area of Focus Filters,  Up: View DSL Filter Reference
+File: org-gtd.info,  Node: Tag Filters,  Next: Priority Effort and Clocked Filters,  Prev: Area of Focus Filters,  Up: View DSL Filter Reference
 
 6.5.9 Tag Filters
 -----------------
@@ -8565,9 +8809,129 @@ Filter by org tags:
           Has any tag starting with @
 
 
-File: org-gtd.info,  Node: Property Filters,  Next: Structural Filters,  Prev: Tag Filters,  Up: View DSL Filter Reference
+File: org-gtd.info,  Node: Priority Effort and Clocked Filters,  Next: Property Filters,  Prev: Tag Filters,  Up: View DSL Filter Reference
 
-6.5.10 Property Filters
+6.5.10 Priority, Effort, and Clocked Filters
+--------------------------------------------
+
+Filter by task metadata useful for "quick wins", "deep work", and triage
+views.
+
+   • ‘(priority . VALUE)’
+
+     *Matches*: Items with matching priority
+
+     *Forms*:
+     ‘(priority . A)’
+          Single value--matches priority A
+     ‘(priority . (A B))’
+          List--matches priority A OR B
+     ‘(priority . (>= B))’
+          Comparison--matches B or higher (A, B)
+     ‘(priority . nil)’
+          Items with no priority set
+
+     *Comparison operators*: ‘<’, ‘>’, ‘<=’, ‘>=’
+
+     *Note*: A is highest priority (A > B > C). Respects
+     ‘org-priority-highest’ and ‘org-priority-lowest’ for custom ranges.
+
+     *Example*: High priority actions:
+          '((name . "High Priority")
+            (type . next-action)
+            (priority . A))
+
+     *Example*: Important items (A or B):
+          '((name . "Important Tasks")
+            (type . next-action)
+            (priority . (A B)))
+
+     *Example*: All items B or higher:
+          '((name . "Priority B+")
+            (type . next-action)
+            (priority . (>= B)))
+
+     *Example*: Triage items missing priority:
+          '((name . "Needs Priority")
+            (type . next-action)
+            (priority . nil))
+
+   • ‘(effort . SPEC)’
+
+     *Matches*: Items with matching Effort property
+
+     *Forms*:
+     ‘(effort . (< "0:30"))’
+          Under 30 minutes
+     ‘(effort . (> "1:00"))’
+          Over 1 hour
+     ‘(effort . (between "0:15" "1:00"))’
+          Range (inclusive)
+     ‘(effort . nil)’
+          Items with no effort estimate
+
+     *Duration formats* (all org-mode formats supported):
+     ‘"3:12"’
+          H:MM
+     ‘"1:23:45"’
+          H:MM:SS
+     ‘"1d3h5min"’
+          Units (d, h, min)
+     ‘"30"’
+          Bare number (minutes)
+
+     *Example*: Quick wins (under 15 minutes):
+          '((name . "Quick Wins")
+            (type . next-action)
+            (effort . (< "15min")))
+
+     *Example*: Deep work items (1-2 hours):
+          '((name . "Deep Work")
+            (type . next-action)
+            (effort . (between "1:00" "2:00")))
+
+     *Example*: Triage items missing effort:
+          '((name . "Needs Effort Estimate")
+            (type . next-action)
+            (effort . nil))
+
+   • ‘(clocked . SPEC)’
+
+     *Matches*: Items with matching total clocked time
+
+     *Forms*:
+     ‘(clocked . (< "0:30"))’
+          Less than 30 minutes clocked
+     ‘(clocked . (> "2:00"))’
+          More than 2 hours invested
+     ‘(clocked . (between "0:30" "2:00"))’
+          Range (inclusive)
+     ‘(clocked . nil)’
+          Items with no time clocked (0 minutes)
+
+     *Use case*: Find items you've already invested time in, or items
+     you haven't started yet.
+
+     *Example*: Items with significant time invested:
+          '((name . "Deep in Progress")
+            (type . next-action)
+            (clocked . (> "1:00")))
+
+     *Example*: Not started yet:
+          '((name . "Not Started")
+            (type . next-action)
+            (clocked . nil))
+
+     *Example*: Focus work (high priority, time invested):
+          '((name . "Focus Work")
+            (type . next-action)
+            (priority . (>= B))
+            (clocked . (> "0:30")))
+
+
+File: org-gtd.info,  Node: Property Filters,  Next: Structural Filters,  Prev: Priority Effort and Clocked Filters,  Up: View DSL Filter Reference
+
+6.5.11 Property Filters
 -----------------------
 
 Filter by arbitrary org properties:
@@ -8586,7 +8950,7 @@ Filter by arbitrary org properties:
 
 File: org-gtd.info,  Node: Structural Filters,  Next: Special Filters,  Prev: Property Filters,  Up: View DSL Filter Reference
 
-6.5.11 Structural Filters
+6.5.12 Structural Filters
 -------------------------
 
 Filter by org heading structure:
@@ -8608,7 +8972,7 @@ Filter by org heading structure:
 
 File: org-gtd.info,  Node: Special Filters,  Next: View Configuration Options,  Prev: Structural Filters,  Up: View DSL Filter Reference
 
-6.5.12 Special Filters
+6.5.13 Special Filters
 ----------------------
 
    • ‘(not-habit . t)’
@@ -8636,7 +9000,7 @@ File: org-gtd.info,  Node: Special Filters,  Next: View Configuration Options,  
 
 File: org-gtd.info,  Node: View Configuration Options,  Next: Simplified Multi-Block Views,  Prev: Special Filters,  Up: View DSL Filter Reference
 
-6.5.13 View Configuration Options
+6.5.14 View Configuration Options
 ---------------------------------
 
 These options control how the view is displayed:
@@ -8818,7 +9182,7 @@ These options control how the view is displayed:
 
 File: org-gtd.info,  Node: Simplified Multi-Block Views,  Next: Saving Your Custom Views,  Prev: View Configuration Options,  Up: View DSL Filter Reference
 
-6.5.14 Simplified Multi-Block Views
+6.5.15 Simplified Multi-Block Views
 -----------------------------------
 
 Creating multi-block views usually requires verbose ‘blocks’ syntax.
@@ -8970,7 +9334,7 @@ to see.
 
 File: org-gtd.info,  Node: Saving Your Custom Views,  Prev: Simplified Multi-Block Views,  Up: View DSL Filter Reference
 
-6.5.15 Saving Your Custom Views
+6.5.16 Saving Your Custom Views
 -------------------------------
 
 Once you have a view you like, save it as a command:
@@ -9567,498 +9931,512 @@ If you're still having problems:
 
 Tag Table:
 Node: Top736
-Node: Summary7954
-Node: What's new in 4011679
-Node: Flexible project dependencies (the big one!)12431
-Node: Simplified keyword configuration13547
-Node: Data-driven configuration14567
-Node: Declarative view language15152
-Node: Better project modification15738
-Node: Updated terminology Review → Reflect16213
-Node: Updated terminology Incubate → Tickler + Someday/Maybe16804
-Node: Enhanced reflect capabilities18172
-Node: Simplified configuration18644
-Node: Per-type refile prompting19122
-Node: Capture timestamps19907
-Node: What you need to do20596
-Node: Previous versions21271
-Node: Setting up Org GTD21501
-Node: Upgrading21897
-Node: 400 <- 3xx22180
-Ref: Required Configuration changes22534
-Ref: Required Data migration24181
-Ref: Why these changes?25907
-Ref: org-gtd-mode has a new purpose26548
-Node: Installing27228
-Node: use-package27523
-Node: Manually27735
-Node: Configuring28101
-Node: Basic setup28451
-Node: Complete Configuration Examples29101
-Ref: Example 1 Vanilla Emacs (Minimal Configuration)29469
-Ref: Example 2 Doom Emacs Configuration31521
-Ref: Example 3 Spacemacs Configuration33091
-Ref: What These Configurations Do34721
-Ref: Testing Your Configuration36157
-Ref: Common Configuration Problems37360
-Ref: Working with Your Existing Org Setup40676
-Node: Understanding Keybindings42604
-Ref: Global Keybindings42924
-Ref: Clarify Map Keybindings43519
-Node: Required configuration of sub-packages44648
-Ref: Configuring org-edna44909
-Ref: Adding org-gtd files to your agenda45208
-Node: configuration options for org-gtd45603
-Ref: I don't care just let me start using it45853
-Ref: Tell me all the levers I can pull46440
-Ref: Required keyword configuration46603
-Ref: Optional configuration48459
-Node: Recommended key bindings53353
-Ref: Command Center54124
-Node: Sample Doom Emacs Config54924
-Node: Getting Started with Org GTD56201
-Node: Quick Start Reference56612
-Node: Tutorial Your First Project57150
-Node: What You'll Learn57920
-Node: The Project58320
-Node: Step 1 Capture the Project58754
-Node: Step 2 Process the Inbox59380
-Node: Step 3 Organize as a Project59957
-Node: Step 4 View in Engage60683
-Node: Step 5 Complete the First Task61358
-Node: Step 6 Refresh and See the Change61889
-Node: What Just Happened?62448
-Node: Continue the Project63533
-Node: Key Takeaways64102
-Node: What's Next?64728
-Node: Tutorial Creating Your First Custom View65463
-Node: What You'll Learn (1)66269
-Node: Why This View?66626
-Node: Understanding the View DSL67158
-Node: Creating the View Function67827
-Node: Using Your View68452
-Node: Binding to a Key68760
-Node: What You'll See69486
-Node: Experiment Modify the View70039
-Node: Available Filters71111
-Node: Key Takeaways (1)72994
-Node: What's Next? (1)73541
-Node: Where to Go From Here74194
-Node: Using Org GTD75547
-Node: Your Daily Workflow76167
-Node: Quick command reference77054
-Node: The GTD Flow in Depth78527
-Node: Adding things to the inbox78933
-Node: Processing the inbox80311
-Node: Clarifying each item81156
-Ref: How to start clarifying81679
-Ref: data shape requirements82182
-Ref: Options and commands related to clarification82739
-Node: Organizing an item into the system84940
-Ref: Refiling to the appropriate area85866
-Ref: Understanding Refiling in V485912
-Ref: Refile Target System86328
-Ref: Controlling Refile Prompts by Item Type87414
-Ref: Creating New Refile Targets89328
-Ref: Using Your Own Refile Targets90151
-Ref: Migration from V390830
-Node: Engaging with your GTD items91432
-Ref: Quick Task Actions from the Agenda92098
-Ref: First Contact Why This Feature?92146
-Ref: Black Triangle Your First Quick Action92802
-Ref: Understanding the Actions93556
-Ref: State Changes93700
-Ref: Time Adjustments (Conditional)94205
-Ref: Clocking94875
-Ref: Metadata95068
-Ref: Clarify95551
-Ref: Command Reference95872
-Ref: Suggested Keybinding97112
-Node: Understanding GTD Item Types97457
-Node: Single Action [S]98216
-Node: Project [P]98866
-Node: Add to existing project [A]99861
-Node: Calendar [C]100722
-Node: Delegate [D]101561
-Node: Quick Action [Q]102860
-Node: Tickler [I]103494
-Node: Someday/Maybe [y]105062
-Node: Habit [H]107190
-Node: Knowledge [K]107884
-Node: Trash [T]108631
-Node: Working with the GTD Horizons109487
-Ref: Areas of focus110180
-Ref: Longer-term horizons111465
-Node: Working with Projects (Advanced)112636
-Node: Quick Navigation114040
-Node: First Contact Why Visual Project Management?115310
-Node: Black Triangle Your First Project Graph View116324
-Ref: Step 1 Find a project116683
-Ref: Step 2 Open the graph view116861
-Ref: Step 3 Explore117019
-Node: Understanding Project Dependencies117504
-Ref: The Dependency Graph (DAG)117883
-Ref: What You See in Graph View118420
-Ref: Sequential vs Parallel vs Mixed119067
-Node: Tutorial Parallel Tasks with Graph View119974
-Ref: The Scenario120345
-Ref: Step 1 Capture and Organize120756
-Ref: Step 2 Open Graph View121114
-Ref: Step 3 Add Orthopedist Appointment as Root Task121685
-Ref: Step 3 (Revised) Build with Graph View Commands122338
-Ref: What Graph View CAN Do122787
-Ref: Building Our Parallel Structure123360
-Ref: The Diamond Pattern in Action124151
-Ref: Alternative Approach Add Blockers124646
-Node: Tutorial Complex Dependencies with Graph View125182
-Ref: The Scenario (1)125513
-Ref: The Dependency Graph126079
-Ref: Building with Graph View126637
-Ref: Creating the Convergence Point127092
-Ref: Building the Rest127525
-Ref: The Complete Graph128026
-Ref: Key Patterns This Example Shows128637
-Node: Common Dependency Patterns (Visual Reference)129045
-Ref: Sequential Chain (A → B → C)129420
-Ref: Parallel Independent (A B C all start together)129826
-Ref: Fan-out (A → B A → C A → D)130182
-Ref: Fan-in / Convergence (A → C B → C)130635
-Ref: Diamond (A → B → D A → C → D)131053
-Node: Graph View Command Reference131637
-Ref: Opening Graph View132043
-Ref: Direct Keybindings (Always Available)132311
-Ref: Transient Menu Commands (Press ? first)133369
-Ref: Visual Indicators135672
-Ref: Operations Not Available in Graph View135952
-Ref: Text-Based Alternatives136614
-Node: Graph Rendering Modes137211
-Ref: SVG Mode (Default)137591
-Ref: ASCII Mode137907
-Ref: Toggling Modes138247
-Ref: Troubleshooting ASCII Rendering138358
-Node: Complete Keyboard Reference138674
-Ref: Navigation138989
-Ref: Modification (via transient menu ?)139599
-Ref: Information140137
-Ref: View Control140362
-Node: Auto-Refresh on File Changes140649
-Node: Technical Details141308
-Ref: Graph Data Structure141536
-Ref: Layout Algorithm141886
-Ref: Properties Used142207
-Ref: Undo/Redo Support143073
-Node: Practical Tips for Project Management143400
-Ref: When to Use Graph View143664
-Ref: When to Use Sequential (Default)144021
-Ref: When to Create Parallel Structures144402
-Ref: Managing Complexity144737
-Ref: Growing Projects Over Time145136
-Node: Exporting Project Graphs145534
-Ref: First Contact What is Graph Export?145795
-Ref: Tutorial Export Your First Graph146465
-Ref: Progressive Learning Choosing Export Formats146977
-Ref: When Exports Differ from Display148657
-Ref: Reference Export Commands149211
-Ref: Troubleshooting Exports149865
-Node: Troubleshooting Projects with Graph View150564
-Ref: Project is Stuck (has TODO tasks but no NEXT)150828
-Ref: Task Should Be NEXT But Shows as TODO151674
-Ref: Too Many Tasks Are NEXT152254
-Ref: Graph Won't Open152705
-Ref: Graph Shows No Tasks153070
-Ref: Task Shows Wrong State (NEXT vs TODO)153465
-Ref: Can't Modify Dependencies153923
-Node: See Also154318
-Node: Tickler Projects Pausing Work You're Not Ready For154957
-Ref: First Contact Why Tickler Projects?155257
-Ref: Black Triangle Tickler Your First Project in 30 Seconds156244
-Ref: Understanding Tickler What Actually Happens157067
-Ref: Tutorial Managing Seasonal Projects158776
-Ref: Common Patterns and Scenarios161009
-Ref: Advanced External Dependencies and Warnings163040
-Ref: Technical Details How Tickler Works Under the Hood165141
-Node: NEXT Task 1 Research options165444
-Node: Task 1 Research options165758
-Ref: Troubleshooting Tickler168424
-Ref: See Also (1)171220
-Node: Project Progress Cookies See Your Progress at a Glance171783
-Ref: First Contact What Are Progress Cookies?172120
-Ref: Black Triangle See Progress in 30 Seconds172621
-Ref: Tutorial Watch Cookies Update Automatically173063
-Ref: Understanding How Cookies Work173802
-Ref: Configuring Cookie Position174749
-Ref: Common Scenarios175503
-Ref: Technical Reference176265
-Node: Cleaning up / archiving completed work177107
-Node: Commands you can call on org-agenda178019
-Node: Defining your own agenda views178946
-Node: Adding your own hooks when organizing179825
-Node: Automating through emacs181205
-Node: Reference182504
-Node: Configuration Variables Reference183940
-Node: Required Configuration184725
-Ref: org-todo-keywords (org-mode variable)184925
-Ref: org-gtd-keyword-mapping185913
-Node: Directory and File Configuration186930
-Ref: org-gtd-directory187180
-Ref: org-gtd-additional-inbox-files187870
-Ref: org-gtd-horizons-file188743
-Node: Capture Configuration189124
-Ref: org-gtd-capture-templates189364
-Node: Organize and Process Configuration190502
-Ref: org-gtd-organize-hooks190759
-Ref: org-gtd-save-after-organize192092
-Ref: org-gtd-refile-to-any-target (deprecated)192403
-Ref: org-gtd-refile-prompt-for-types193440
-Node: Mode-Line Configuration194733
-Ref: org-gtd-mode-update-interval194974
-Node: Clarification Configuration195763
-Ref: org-gtd-clarify-show-horizons196006
-Ref: org-gtd-clarify-show-organize-help196665
-Ref: org-gtd-clarify-display-helper-buffer197664
-Ref: org-gtd-clarify-project-templates198248
-Node: Areas of Focus Configuration199347
-Ref: org-gtd-areas-of-focus199594
-Node: View Prefix Configuration200169
-Ref: org-gtd-prefix-width200404
-Node: Archive Configuration201250
-Ref: org-gtd-archive-location201488
-Node: Missed Engagements Review Configuration202990
-Ref: org-gtd-reflect-missed-custom-views203268
-Node: Advanced Item Configuration204506
-Ref: org-gtd-user-types204767
-Node: Agenda Display Configuration207859
-Ref: org-gtd-agenda-property-list208325
-Ref: org-gtd-agenda-property-position208825
-Ref: org-gtd-agenda-property-column209367
-Ref: org-gtd-agenda-property-separator209773
-Node: Graph View Configuration210091
-Ref: org-gtd-graph-render-mode210392
-Ref: org-gtd-graph-ui-split-ratio211044
-Node: Projects Configuration211735
-Ref: org-gtd-project-progress-cookie-position211969
-Node: Obsolete Variables (Do Not Use)213917
-Ref: org-gtd-todo-keyword (obsolete)214227
-Ref: org-gtd-next-keyword (obsolete)214345
-Ref: org-gtd-wait-keyword (obsolete)214463
-Ref: org-gtd-canceled-keyword (obsolete)214581
-Node: Commands Reference214700
-Node: Core GTD Workflow Commands215510
-Ref: org-gtd-command-center215691
-Ref: org-gtd-capture216829
-Ref: org-gtd-process-inbox217393
-Ref: org-gtd-organize218153
-Ref: org-gtd-engage218999
-Ref: org-gtd-show-all-next219705
-Node: Reflect Commands220056
-Ref: org-gtd-reflect-stuck-projects220252
-Ref: org-gtd-reflect-area-of-focus220755
-Ref: org-gtd-reflect-completed-items221286
-Ref: org-gtd-reflect-completed-projects221781
-Ref: org-gtd-reflect-missed-items222005
-Node: Stuck Item Review Commands222262
-Ref: org-gtd-reflect-stuck-calendar-items222563
-Ref: org-gtd-reflect-stuck-tickler-items222677
-Ref: org-gtd-reflect-stuck-habit-items222791
-Ref: org-gtd-reflect-stuck-delegated-items222893
-Ref: org-gtd-reflect-stuck-single-action-items223016
-Node: Reflect Commands (Missed Engagements)223120
-Ref: What Are Missed Engagements?223390
-Ref: Your First Review in 30 Seconds224132
-Ref: Understanding the Review Workflow224558
-Ref: Tutorial Daily Review Workflow225201
-Ref: Common Patterns225954
-Ref: Command Reference (1)226421
-Ref: Backward Compatibility Note227141
-Node: Reflect Commands (Upcoming Delegated)227736
-Ref: What Are Upcoming Delegated Check-ins?228000
-Ref: Your First Review in 30 Seconds (1)228753
-Ref: Understanding Proactive Delegation Management229206
-Ref: Tutorial Weekly Planning Workflow229790
-Ref: Common Patterns (1)230823
-Ref: Understanding What You See231539
-Ref: Comparison Missed vs Upcoming232235
-Ref: Command Reference (2)232710
-Node: Custom View Commands233113
-Ref: org-gtd-view-show233328
-Node: Clarification Commands241448
-Ref: org-gtd-clarify-item241646
-Ref: org-gtd-clarify-agenda-item242082
-Ref: org-gtd-clarify-toggle-horizons-window242340
-Ref: org-gtd-clarify-toggle-organize-help242671
-Ref: org-gtd-clarify-project-insert-template243174
-Ref: Updating Items Without Refiling243472
-Node: Archive Commands248036
-Ref: org-gtd-archive-completed-items248226
-Node: Agenda-Specific Commands248694
-Ref: org-gtd-delegate-agenda-item248964
-Ref: org-gtd-project-cancel-from-agenda249287
-Node: Project Management Commands249573
-Ref: org-gtd-projects-fix-todo-keywords-for-project-at-point249800
-Ref: org-gtd-projects-fix-all-todo-keywords250390
-Ref: org-gtd-project-update-all-cookies253111
-Ref: org-gtd-tickler254582
-Ref: org-gtd-reactivate256204
-Node: Task Dependency Commands258089
-Ref: org-gtd-task-add-blockers258994
-Ref: org-gtd-task-remove-blockers259720
-Ref: org-gtd-task-add-dependent259986
-Ref: org-gtd-task-add-dependents260629
-Ref: org-gtd-task-clear-relationships260871
-Ref: org-gtd-task-show-relationships261194
-Ref: org-gtd-validate-project-dependencies261539
-Ref: org-gtd-remove-task-from-project261968
-Node: Area of Focus Commands262305
-Ref: org-gtd-area-of-focus-set-on-item-at-point262523
-Ref: org-gtd-area-of-focus-set-on-agenda-item262890
-Node: Programmatic Creation Commands263228
-Ref: org-gtd-habit-create263549
-Ref: org-gtd-calendar-create263785
-Ref: org-gtd-delegate-create264024
-Ref: org-gtd-tickler-create264678
-Ref: org-gtd-someday-create264941
-Ref: org-gtd-single-action-create265160
-Node: Utility Commands265354
-Ref: org-gtd-setup-keywords-wizard265560
-Ref: org-gtd-inbox-path265872
-Node: Migration and Upgrade Commands266229
-Ref: org-gtd-upgrade-v3-to-v4266454
-Node: Mode-Line Integration266979
-Ref: org-gtd-mode267187
-Ref: org-gtd-inbox-count267658
-Node: Obsolete Commands267915
-Ref: org-gtd-delegate-item-at-point (removed in 40)268076
-Node: Properties Reference (Internal Implementation)268858
-Node: Core GTD Properties269977
-Ref: ORG_GTD270167
-Ref: ORG_GTD_REFILE271105
-Node: Project Properties272775
-Ref: ORG_GTD_FIRST_TASKS272998
-Node: Task Dependency Properties273824
-Ref: ORG_GTD_DEPENDS_ON274072
-Ref: ORG_GTD_BLOCKS275751
-Ref: ORG_GTD_PROJECT_IDS276503
-Node: Calendar and Time Properties276816
-Ref: ORG_GTD_TIMESTAMP277071
-Node: Delegation Properties277911
-Ref: DELEGATED_TO278142
-Node: Habit Properties278967
-Ref: STYLE279184
-Node: Area of Focus Properties279583
-Ref: CATEGORY279834
-Node: Standard Org Properties Used by org-gtd280583
-Ref: ID280839
-Ref: keyword281086
-Ref: SCHEDULED (org-mode standard)281676
-Ref: DEADLINE (org-mode standard)281926
-Node: Troubleshooting Projects282149
-Node: Fixing Broken Dependencies282777
-Node: When Manual Property Editing is Needed284132
-Node: Common Problems and Solutions285961
-Ref: Project Shows No NEXT Tasks (Stuck Project)286179
-Ref: Too Many NEXT Tasks286939
-Ref: Task Won't Advance to NEXT287363
-Ref: Task States Inconsistent After External Edits287997
-Node: View DSL Filter Reference289100
-Node: Your First Custom View in 60 Seconds290006
-Node: Understanding View Specs290693
-Ref: Combining Filters291431
-Ref: Multi-Block Views291816
-Node: Common Patterns (2)292372
-Ref: Weekly Review View292564
-Ref: Morning Planning View293069
-Ref: Area of Focus View293690
-Node: Filter Reference294253
-Ref: View Structure294535
-Ref: Multi-Block Views (1)294835
-Ref: Block Types295508
-Node: Type Filters295906
-Ref: (type delegated)296105
-Ref: (type calendar)296350
-Ref: (type project)296575
-Ref: (type active-project)296786
-Ref: (type completed-project)297035
-Ref: (type stuck-project)297306
-Ref: (type tickler)297576
-Ref: (type someday)297828
-Ref: (type habit)298087
-Ref: (type next-action)298279
-Ref: (type tickler-project)298561
-Ref: (type incubated-project)298973
-Ref: (type stuck-delegated)299401
-Ref: (type stuck-calendar)299732
-Ref: (type stuck-tickler)299985
-Ref: (type stuck-habit)300238
-Node: Time-based Filters300464
-Ref: Semantic Time (when VALUE)300703
-Ref: Deadline (deadline VALUE)301564
-Ref: Scheduled (scheduled VALUE)301779
-Node: Keyword Filters302002
-Ref: (todo ("KEYWORD1" "KEYWORD2"))302462
-Ref: (done VALUE)302841
-Node: Area of Focus Filters303954
-Ref: (area-of-focus "AREA")304168
-Node: Tag Filters304533
-Ref: (tags ("TAG1" "TAG2"))304727
-Ref: (tags-match "PATTERN")305015
-Node: Property Filters305483
-Ref: (property (("PROP" "VALUE")))305702
-Node: Structural Filters305984
-Ref: (level N)306208
-Node: Special Filters306561
-Ref: (not-habit t)306755
-Ref: (invalid-timestamp t)306999
-Node: View Configuration Options307298
-Ref: (block-type TYPE)307574
-Ref: (blocks BLOCK-LIST)308332
-Ref: Prefix DSL Customizing the Task Prefix Column308933
-Ref: Your First Prefix in 60 Seconds309388
-Ref: (prefix (ELEMENT ))309962
-Ref: (prefix-width N)311159
-Ref: Prefix Inheritance in Multi-Block Views311674
-Ref: Low-Level (prefix-format FORMAT-STRING)312757
-Ref: (view-type agenda)313291
-Ref: (agenda-span N)313581
-Node: Simplified Multi-Block Views313725
-Ref: The Problem Verbose Block Definitions314189
-Ref: The Solution Implicit Blocks315006
-Ref: Try It Now315612
-Ref: Smart Type Defaults316184
-Ref: Top-Level Inheritance317057
-Ref: The Four-Tier Precedence Model317401
-Ref: When to Use Explicit Blocks318460
-Ref: Quick Reference319083
-Node: Saving Your Custom Views319475
-Node: Hooks Framework Reference320146
-Node: What Are Organize Hooks?320584
-Node: Your First Hook in 2 Minutes321246
-Node: The org-gtd-organize-hooks Variable322381
-Node: Built-in Hooks322880
-Ref: org-set-tags-command323080
-Ref: org-gtd-set-area-of-focus323323
-Node: Writing Custom Hooks323842
-Ref: Basic Hook Structure324234
-Ref: Using org-gtd-organize-type-member-p324568
-Node: Example Custom Hooks325707
-Ref: Selective Tagging with Unless325910
-Ref: Add Effort Estimation326627
-Ref: Add Priority326960
-Ref: Auto-Set Property Based on Keywords327256
-Ref: Add Custom Property327724
-Ref: Integration with Org-Roam328155
-Ref: Set Effort from Keywords328518
-Node: Hook Execution Order329238
-Node: Best Practices329748
-Node: Complete Example Comprehensive Hook Setup330731
-Node: Troubleshooting332860
-Node: Finding lost tasks333318
-Node: Projects without a NEXT item334323
-Node: I can't create a project when clarifying an inbox item!335579
-Node: Configuration problems336537
-Node: Keywords not working336857
-Node: Items not showing in engage view337671
-Node: Tasks still showing after tickler'ing project338419
-Node: Still stuck?339534
+Node: Summary8405
+Node: What's new in 4012130
+Node: Flexible project dependencies (the big one!)12882
+Node: Simplified keyword configuration13998
+Node: Data-driven configuration15018
+Node: Declarative view language15603
+Node: Better project modification16189
+Node: Updated terminology Review → Reflect16664
+Node: Updated terminology Incubate → Tickler + Someday/Maybe17255
+Node: Enhanced reflect capabilities18623
+Node: Simplified configuration19095
+Node: Per-type refile prompting19573
+Node: Capture timestamps20358
+Node: What you need to do21047
+Node: Previous versions21722
+Node: Setting up Org GTD21952
+Node: Upgrading22348
+Node: 400 <- 3xx22631
+Ref: Required Configuration changes22985
+Ref: Required Data migration24632
+Ref: Why these changes?26358
+Ref: org-gtd-mode has a new purpose26999
+Node: Installing27679
+Node: use-package27974
+Node: Manually28186
+Node: Configuring28552
+Node: Basic setup28902
+Node: Complete Configuration Examples29552
+Ref: Example 1 Vanilla Emacs (Minimal Configuration)29920
+Ref: Example 2 Doom Emacs Configuration31972
+Ref: Example 3 Spacemacs Configuration33542
+Ref: What These Configurations Do35172
+Ref: Testing Your Configuration36608
+Ref: Common Configuration Problems37811
+Ref: Working with Your Existing Org Setup41127
+Node: Understanding Keybindings43055
+Ref: Global Keybindings43375
+Ref: Clarify Map Keybindings43970
+Node: Required configuration of sub-packages45099
+Ref: Configuring org-edna45360
+Ref: Adding org-gtd files to your agenda45659
+Node: configuration options for org-gtd46054
+Ref: I don't care just let me start using it46304
+Ref: Tell me all the levers I can pull46891
+Ref: Required keyword configuration47054
+Ref: Optional configuration48910
+Node: Recommended key bindings53804
+Ref: Command Center54575
+Node: Sample Doom Emacs Config55375
+Node: Getting Started with Org GTD56652
+Node: Quick Start Reference57108
+Node: Tutorial Your First Project57646
+Node: What You'll Learn58416
+Node: The Project58816
+Node: Step 1 Capture the Project59250
+Node: Step 2 Process the Inbox59876
+Node: Step 3 Organize as a Project60453
+Node: Step 4 View in Engage61179
+Node: Step 5 Complete the First Task61854
+Node: Step 6 Refresh and See the Change62385
+Node: What Just Happened?62944
+Node: Continue the Project64029
+Node: Key Takeaways64598
+Node: What's Next?65224
+Node: Tutorial Creating Your First Custom View65959
+Node: What You'll Learn (1)66788
+Node: Why This View?67145
+Node: Understanding the View DSL67677
+Node: Creating the View Function68346
+Node: Using Your View68971
+Node: Binding to a Key69279
+Node: What You'll See70005
+Node: Experiment Modify the View70558
+Node: Available Filters71630
+Node: Key Takeaways (1)73713
+Node: What's Next? (1)74260
+Node: Tutorial Quick Wins and Focus Work Views74864
+Node: Why This Matters75617
+Node: Your First Quick Wins View (30 seconds)76223
+Node: The Effort Filter Explained76931
+Node: Building a Focus Work View77801
+Node: The Priority Filter Explained78495
+Node: Finding Tasks to Triage79326
+Node: Bonus The Clocked Filter80071
+Node: Putting It All Together80905
+Node: Key Takeaways (2)82130
+Node: Where to Go From Here82687
+Node: Using Org GTD83930
+Node: Your Daily Workflow84550
+Node: Quick command reference85437
+Node: The GTD Flow in Depth86910
+Node: Adding things to the inbox87316
+Node: Processing the inbox88694
+Node: Clarifying each item89539
+Ref: How to start clarifying90062
+Ref: data shape requirements90565
+Ref: Options and commands related to clarification91122
+Node: Organizing an item into the system93323
+Ref: Refiling to the appropriate area94249
+Ref: Understanding Refiling in V494295
+Ref: Refile Target System94711
+Ref: Controlling Refile Prompts by Item Type95797
+Ref: Creating New Refile Targets97711
+Ref: Using Your Own Refile Targets98534
+Ref: Migration from V399213
+Node: Engaging with your GTD items99815
+Ref: Quick Task Actions from the Agenda100481
+Ref: First Contact Why This Feature?100529
+Ref: Black Triangle Your First Quick Action101185
+Ref: Understanding the Actions101939
+Ref: State Changes102083
+Ref: Time Adjustments (Conditional)102588
+Ref: Clocking103258
+Ref: Metadata103451
+Ref: Clarify103934
+Ref: Command Reference104255
+Ref: Suggested Keybinding105495
+Node: Understanding GTD Item Types105840
+Node: Single Action [S]106599
+Node: Project [P]107249
+Node: Add to existing project [A]108244
+Node: Calendar [C]109105
+Node: Delegate [D]109944
+Node: Quick Action [Q]111243
+Node: Tickler [I]111877
+Node: Someday/Maybe [y]113445
+Node: Habit [H]115573
+Node: Knowledge [K]116267
+Node: Trash [T]117014
+Node: Working with the GTD Horizons117870
+Ref: Areas of focus118563
+Ref: Longer-term horizons119848
+Node: Working with Projects (Advanced)121019
+Node: Quick Navigation122423
+Node: First Contact Why Visual Project Management?123693
+Node: Black Triangle Your First Project Graph View124707
+Ref: Step 1 Find a project125066
+Ref: Step 2 Open the graph view125244
+Ref: Step 3 Explore125402
+Node: Understanding Project Dependencies125887
+Ref: The Dependency Graph (DAG)126266
+Ref: What You See in Graph View126803
+Ref: Sequential vs Parallel vs Mixed127450
+Node: Tutorial Parallel Tasks with Graph View128357
+Ref: The Scenario128728
+Ref: Step 1 Capture and Organize129139
+Ref: Step 2 Open Graph View129497
+Ref: Step 3 Add Orthopedist Appointment as Root Task130068
+Ref: Step 3 (Revised) Build with Graph View Commands130721
+Ref: What Graph View CAN Do131170
+Ref: Building Our Parallel Structure131743
+Ref: The Diamond Pattern in Action132534
+Ref: Alternative Approach Add Blockers133029
+Node: Tutorial Complex Dependencies with Graph View133565
+Ref: The Scenario (1)133896
+Ref: The Dependency Graph134462
+Ref: Building with Graph View135020
+Ref: Creating the Convergence Point135475
+Ref: Building the Rest135908
+Ref: The Complete Graph136409
+Ref: Key Patterns This Example Shows137020
+Node: Common Dependency Patterns (Visual Reference)137428
+Ref: Sequential Chain (A → B → C)137803
+Ref: Parallel Independent (A B C all start together)138209
+Ref: Fan-out (A → B A → C A → D)138565
+Ref: Fan-in / Convergence (A → C B → C)139018
+Ref: Diamond (A → B → D A → C → D)139436
+Node: Graph View Command Reference140020
+Ref: Opening Graph View140426
+Ref: Direct Keybindings (Always Available)140694
+Ref: Transient Menu Commands (Press ? first)141752
+Ref: Visual Indicators144055
+Ref: Operations Not Available in Graph View144335
+Ref: Text-Based Alternatives144997
+Node: Graph Rendering Modes145594
+Ref: SVG Mode (Default)145974
+Ref: ASCII Mode146290
+Ref: Toggling Modes146630
+Ref: Troubleshooting ASCII Rendering146741
+Node: Complete Keyboard Reference147057
+Ref: Navigation147372
+Ref: Modification (via transient menu ?)147982
+Ref: Information148520
+Ref: View Control148745
+Node: Auto-Refresh on File Changes149032
+Node: Technical Details149691
+Ref: Graph Data Structure149919
+Ref: Layout Algorithm150269
+Ref: Properties Used150590
+Ref: Undo/Redo Support151456
+Node: Practical Tips for Project Management151783
+Ref: When to Use Graph View152047
+Ref: When to Use Sequential (Default)152404
+Ref: When to Create Parallel Structures152785
+Ref: Managing Complexity153120
+Ref: Growing Projects Over Time153519
+Node: Exporting Project Graphs153917
+Ref: First Contact What is Graph Export?154178
+Ref: Tutorial Export Your First Graph154848
+Ref: Progressive Learning Choosing Export Formats155360
+Ref: When Exports Differ from Display157040
+Ref: Reference Export Commands157594
+Ref: Troubleshooting Exports158248
+Node: Troubleshooting Projects with Graph View158947
+Ref: Project is Stuck (has TODO tasks but no NEXT)159211
+Ref: Task Should Be NEXT But Shows as TODO160057
+Ref: Too Many Tasks Are NEXT160637
+Ref: Graph Won't Open161088
+Ref: Graph Shows No Tasks161453
+Ref: Task Shows Wrong State (NEXT vs TODO)161848
+Ref: Can't Modify Dependencies162306
+Node: See Also162701
+Node: Tickler Projects Pausing Work You're Not Ready For163340
+Ref: First Contact Why Tickler Projects?163640
+Ref: Black Triangle Tickler Your First Project in 30 Seconds164627
+Ref: Understanding Tickler What Actually Happens165450
+Ref: Tutorial Managing Seasonal Projects167159
+Ref: Common Patterns and Scenarios169392
+Ref: Advanced External Dependencies and Warnings171423
+Ref: Technical Details How Tickler Works Under the Hood173524
+Node: NEXT Task 1 Research options173827
+Node: Task 1 Research options174141
+Ref: Troubleshooting Tickler176807
+Ref: See Also (1)179603
+Node: Project Progress Cookies See Your Progress at a Glance180166
+Ref: First Contact What Are Progress Cookies?180503
+Ref: Black Triangle See Progress in 30 Seconds181004
+Ref: Tutorial Watch Cookies Update Automatically181446
+Ref: Understanding How Cookies Work182185
+Ref: Configuring Cookie Position183132
+Ref: Common Scenarios183886
+Ref: Technical Reference184648
+Node: Cleaning up / archiving completed work185490
+Node: Commands you can call on org-agenda186402
+Node: Defining your own agenda views187329
+Node: Adding your own hooks when organizing188208
+Node: Automating through emacs189588
+Node: Reference190887
+Node: Configuration Variables Reference192323
+Node: Required Configuration193108
+Ref: org-todo-keywords (org-mode variable)193308
+Ref: org-gtd-keyword-mapping194296
+Node: Directory and File Configuration195313
+Ref: org-gtd-directory195563
+Ref: org-gtd-additional-inbox-files196253
+Ref: org-gtd-horizons-file197126
+Node: Capture Configuration197507
+Ref: org-gtd-capture-templates197747
+Node: Organize and Process Configuration198885
+Ref: org-gtd-organize-hooks199142
+Ref: org-gtd-save-after-organize200475
+Ref: org-gtd-refile-to-any-target (deprecated)200786
+Ref: org-gtd-refile-prompt-for-types201823
+Node: Mode-Line Configuration203116
+Ref: org-gtd-mode-update-interval203357
+Node: Clarification Configuration204146
+Ref: org-gtd-clarify-show-horizons204389
+Ref: org-gtd-clarify-show-organize-help205048
+Ref: org-gtd-clarify-display-helper-buffer206047
+Ref: org-gtd-clarify-project-templates206631
+Node: Areas of Focus Configuration207730
+Ref: org-gtd-areas-of-focus207977
+Node: View Prefix Configuration208552
+Ref: org-gtd-prefix-width208787
+Node: Archive Configuration209633
+Ref: org-gtd-archive-location209871
+Node: Missed Engagements Review Configuration211373
+Ref: org-gtd-reflect-missed-custom-views211651
+Node: Advanced Item Configuration212889
+Ref: org-gtd-user-types213150
+Node: Agenda Display Configuration216242
+Ref: org-gtd-agenda-property-list216708
+Ref: org-gtd-agenda-property-position217208
+Ref: org-gtd-agenda-property-column217750
+Ref: org-gtd-agenda-property-separator218156
+Node: Graph View Configuration218474
+Ref: org-gtd-graph-render-mode218775
+Ref: org-gtd-graph-ui-split-ratio219427
+Node: Projects Configuration220118
+Ref: org-gtd-project-progress-cookie-position220352
+Node: Obsolete Variables (Do Not Use)222300
+Ref: org-gtd-todo-keyword (obsolete)222610
+Ref: org-gtd-next-keyword (obsolete)222728
+Ref: org-gtd-wait-keyword (obsolete)222846
+Ref: org-gtd-canceled-keyword (obsolete)222964
+Node: Commands Reference223083
+Node: Core GTD Workflow Commands223893
+Ref: org-gtd-command-center224074
+Ref: org-gtd-capture225212
+Ref: org-gtd-process-inbox225776
+Ref: org-gtd-organize226536
+Ref: org-gtd-engage227382
+Ref: org-gtd-show-all-next228088
+Node: Reflect Commands228439
+Ref: org-gtd-reflect-stuck-projects228635
+Ref: org-gtd-reflect-area-of-focus229138
+Ref: org-gtd-reflect-completed-items229669
+Ref: org-gtd-reflect-completed-projects230164
+Ref: org-gtd-reflect-missed-items230388
+Node: Stuck Item Review Commands230645
+Ref: org-gtd-reflect-stuck-calendar-items230946
+Ref: org-gtd-reflect-stuck-tickler-items231060
+Ref: org-gtd-reflect-stuck-habit-items231174
+Ref: org-gtd-reflect-stuck-delegated-items231276
+Ref: org-gtd-reflect-stuck-single-action-items231399
+Node: Reflect Commands (Missed Engagements)231503
+Ref: What Are Missed Engagements?231773
+Ref: Your First Review in 30 Seconds232515
+Ref: Understanding the Review Workflow232941
+Ref: Tutorial Daily Review Workflow233584
+Ref: Common Patterns234337
+Ref: Command Reference (1)234804
+Ref: Backward Compatibility Note235524
+Node: Reflect Commands (Upcoming Delegated)236119
+Ref: What Are Upcoming Delegated Check-ins?236383
+Ref: Your First Review in 30 Seconds (1)237136
+Ref: Understanding Proactive Delegation Management237589
+Ref: Tutorial Weekly Planning Workflow238173
+Ref: Common Patterns (1)239206
+Ref: Understanding What You See239922
+Ref: Comparison Missed vs Upcoming240618
+Ref: Command Reference (2)241093
+Node: Custom View Commands241496
+Ref: org-gtd-view-show241711
+Node: Clarification Commands249831
+Ref: org-gtd-clarify-item250029
+Ref: org-gtd-clarify-agenda-item250465
+Ref: org-gtd-clarify-toggle-horizons-window250723
+Ref: org-gtd-clarify-toggle-organize-help251054
+Ref: org-gtd-clarify-project-insert-template251557
+Ref: Updating Items Without Refiling251855
+Node: Archive Commands256419
+Ref: org-gtd-archive-completed-items256609
+Node: Agenda-Specific Commands257077
+Ref: org-gtd-delegate-agenda-item257347
+Ref: org-gtd-project-cancel-from-agenda257670
+Node: Project Management Commands257956
+Ref: org-gtd-projects-fix-todo-keywords-for-project-at-point258183
+Ref: org-gtd-projects-fix-all-todo-keywords258773
+Ref: org-gtd-project-update-all-cookies261494
+Ref: org-gtd-tickler262965
+Ref: org-gtd-reactivate264587
+Node: Task Dependency Commands266472
+Ref: org-gtd-task-add-blockers267377
+Ref: org-gtd-task-remove-blockers268103
+Ref: org-gtd-task-add-dependent268369
+Ref: org-gtd-task-add-dependents269012
+Ref: org-gtd-task-clear-relationships269254
+Ref: org-gtd-task-show-relationships269577
+Ref: org-gtd-validate-project-dependencies269922
+Ref: org-gtd-remove-task-from-project270351
+Node: Area of Focus Commands270688
+Ref: org-gtd-area-of-focus-set-on-item-at-point270906
+Ref: org-gtd-area-of-focus-set-on-agenda-item271273
+Node: Programmatic Creation Commands271611
+Ref: org-gtd-habit-create271932
+Ref: org-gtd-calendar-create272168
+Ref: org-gtd-delegate-create272407
+Ref: org-gtd-tickler-create273061
+Ref: org-gtd-someday-create273324
+Ref: org-gtd-single-action-create273543
+Node: Utility Commands273737
+Ref: org-gtd-setup-keywords-wizard273943
+Ref: org-gtd-inbox-path274255
+Node: Migration and Upgrade Commands274612
+Ref: org-gtd-upgrade-v3-to-v4274837
+Node: Mode-Line Integration275362
+Ref: org-gtd-mode275570
+Ref: org-gtd-inbox-count276041
+Node: Obsolete Commands276298
+Ref: org-gtd-delegate-item-at-point (removed in 40)276459
+Node: Properties Reference (Internal Implementation)277241
+Node: Core GTD Properties278360
+Ref: ORG_GTD278550
+Ref: ORG_GTD_REFILE279488
+Node: Project Properties281158
+Ref: ORG_GTD_FIRST_TASKS281381
+Node: Task Dependency Properties282207
+Ref: ORG_GTD_DEPENDS_ON282455
+Ref: ORG_GTD_BLOCKS284134
+Ref: ORG_GTD_PROJECT_IDS284886
+Node: Calendar and Time Properties285199
+Ref: ORG_GTD_TIMESTAMP285454
+Node: Delegation Properties286294
+Ref: DELEGATED_TO286525
+Node: Habit Properties287350
+Ref: STYLE287567
+Node: Area of Focus Properties287966
+Ref: CATEGORY288217
+Node: Standard Org Properties Used by org-gtd288966
+Ref: ID289222
+Ref: keyword289469
+Ref: SCHEDULED (org-mode standard)290059
+Ref: DEADLINE (org-mode standard)290309
+Node: Troubleshooting Projects290532
+Node: Fixing Broken Dependencies291160
+Node: When Manual Property Editing is Needed292515
+Node: Common Problems and Solutions294344
+Ref: Project Shows No NEXT Tasks (Stuck Project)294562
+Ref: Too Many NEXT Tasks295322
+Ref: Task Won't Advance to NEXT295746
+Ref: Task States Inconsistent After External Edits296380
+Node: View DSL Filter Reference297483
+Node: Your First Custom View in 60 Seconds298467
+Node: Understanding View Specs299154
+Ref: Combining Filters299892
+Ref: Multi-Block Views300277
+Node: Common Patterns (2)300833
+Ref: Weekly Review View301025
+Ref: Morning Planning View301530
+Ref: Area of Focus View302151
+Node: Filter Reference302714
+Ref: View Structure302996
+Ref: Multi-Block Views (1)303296
+Ref: Block Types303969
+Node: Type Filters304367
+Ref: (type delegated)304566
+Ref: (type calendar)304811
+Ref: (type project)305036
+Ref: (type active-project)305247
+Ref: (type completed-project)305496
+Ref: (type stuck-project)305767
+Ref: (type tickler)306037
+Ref: (type someday)306289
+Ref: (type habit)306548
+Ref: (type next-action)306740
+Ref: (type tickler-project)307022
+Ref: (type incubated-project)307434
+Ref: (type stuck-delegated)307862
+Ref: (type stuck-calendar)308193
+Ref: (type stuck-tickler)308446
+Ref: (type stuck-habit)308699
+Node: Time-based Filters308925
+Ref: Semantic Time (when VALUE)309164
+Ref: Deadline (deadline VALUE)310025
+Ref: Scheduled (scheduled VALUE)310240
+Node: Keyword Filters310463
+Ref: (todo ("KEYWORD1" "KEYWORD2"))310923
+Ref: (done VALUE)311302
+Node: Area of Focus Filters312415
+Ref: (area-of-focus "AREA")312629
+Node: Tag Filters312994
+Ref: (tags ("TAG1" "TAG2"))313207
+Ref: (tags-match "PATTERN")313495
+Node: Priority Effort and Clocked Filters313963
+Ref: (priority VALUE)314285
+Ref: (effort SPEC)315444
+Ref: (clocked SPEC)316489
+Node: Property Filters317470
+Ref: (property (("PROP" "VALUE")))317713
+Node: Structural Filters317995
+Ref: (level N)318219
+Node: Special Filters318572
+Ref: (not-habit t)318766
+Ref: (invalid-timestamp t)319010
+Node: View Configuration Options319309
+Ref: (block-type TYPE)319585
+Ref: (blocks BLOCK-LIST)320343
+Ref: Prefix DSL Customizing the Task Prefix Column320944
+Ref: Your First Prefix in 60 Seconds321399
+Ref: (prefix (ELEMENT ))321973
+Ref: (prefix-width N)323170
+Ref: Prefix Inheritance in Multi-Block Views323685
+Ref: Low-Level (prefix-format FORMAT-STRING)324768
+Ref: (view-type agenda)325302
+Ref: (agenda-span N)325592
+Node: Simplified Multi-Block Views325736
+Ref: The Problem Verbose Block Definitions326200
+Ref: The Solution Implicit Blocks327017
+Ref: Try It Now327623
+Ref: Smart Type Defaults328195
+Ref: Top-Level Inheritance329068
+Ref: The Four-Tier Precedence Model329412
+Ref: When to Use Explicit Blocks330471
+Ref: Quick Reference331094
+Node: Saving Your Custom Views331486
+Node: Hooks Framework Reference332157
+Node: What Are Organize Hooks?332595
+Node: Your First Hook in 2 Minutes333257
+Node: The org-gtd-organize-hooks Variable334392
+Node: Built-in Hooks334891
+Ref: org-set-tags-command335091
+Ref: org-gtd-set-area-of-focus335334
+Node: Writing Custom Hooks335853
+Ref: Basic Hook Structure336245
+Ref: Using org-gtd-organize-type-member-p336579
+Node: Example Custom Hooks337718
+Ref: Selective Tagging with Unless337921
+Ref: Add Effort Estimation338638
+Ref: Add Priority338971
+Ref: Auto-Set Property Based on Keywords339267
+Ref: Add Custom Property339735
+Ref: Integration with Org-Roam340166
+Ref: Set Effort from Keywords340529
+Node: Hook Execution Order341249
+Node: Best Practices341759
+Node: Complete Example Comprehensive Hook Setup342742
+Node: Troubleshooting344871
+Node: Finding lost tasks345329
+Node: Projects without a NEXT item346334
+Node: I can't create a project when clarifying an inbox item!347590
+Node: Configuration problems348548
+Node: Keywords not working348868
+Node: Items not showing in engage view349682
+Node: Tasks still showing after tickler'ing project350430
+Node: Still stuck?351545
 
 End Tag Table
 
