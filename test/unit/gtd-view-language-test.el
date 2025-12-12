@@ -1779,6 +1779,32 @@
       ;; 1d2h30min > 1:00, should include
       (assert-nil result))))
 
+;;; Clocked Filter Tests
+
+(deftest view-lang/clocked-less-than ()
+  "Translates clocked=(< \"0:30\") to clocked comparison."
+  (let ((view-spec '((name . "Low Investment")
+                     (type . next-action)
+                     (clocked . (< "0:30")))))
+    (let ((query (org-gtd-view-lang--translate-to-org-ql view-spec)))
+      (assert-true (cl-find 'clocked-< (flatten-list query))))))
+
+(deftest view-lang/clocked-greater-than ()
+  "Translates clocked=(> \"2:00\") to clocked comparison."
+  (let ((view-spec '((name . "High Investment")
+                     (type . next-action)
+                     (clocked . (> "2:00")))))
+    (let ((query (org-gtd-view-lang--translate-to-org-ql view-spec)))
+      (assert-true (cl-find 'clocked-> (flatten-list query))))))
+
+(deftest view-lang/clocked-nil-zero ()
+  "Translates clocked=nil to zero clocked time."
+  (let ((view-spec '((name . "Not Started")
+                     (type . next-action)
+                     (clocked . nil))))
+    (let ((query (org-gtd-view-lang--translate-to-org-ql view-spec)))
+      (assert-true (cl-find 'clocked-zero (flatten-list query))))))
+
 (provide 'gtd-view-language-test)
 
 ;;; gtd-view-language-test.el ends here

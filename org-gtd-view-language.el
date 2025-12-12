@@ -329,6 +329,8 @@ Multi-block specs have a \\='blocks key containing a list of block specs."
       (org-gtd-view-lang--translate-priority-filter filter-value))
      ((eq filter-type 'effort)
       (org-gtd-view-lang--translate-effort-filter filter-value))
+     ((eq filter-type 'clocked)
+      (org-gtd-view-lang--translate-clocked-filter filter-value))
      ((keywordp filter-type)
       (org-gtd-view-lang--translate-semantic-property-filter filter-type filter-value))
      (t (error "Unknown GTD filter: %s" filter-type)))))
@@ -429,6 +431,24 @@ VALUE can be:
    ((and (listp value) (eq (car value) 'between))
     (list `(effort-between ,(cadr value) ,(caddr value))))
    (t (user-error "Invalid effort filter value: %S" value))))
+
+(defun org-gtd-view-lang--translate-clocked-filter (value)
+  "Translate clocked VALUE to org-ql filter.
+VALUE can be:
+  - (< \"0:30\") - less than 30 minutes clocked
+  - (> \"2:00\") - more than 2 hours clocked
+  - (between \"0:30\" \"2:00\") - range (inclusive)
+  - nil - zero time clocked"
+  (cond
+   ((null value)
+    (list '(clocked-zero)))
+   ((and (listp value) (eq (car value) '<))
+    (list `(clocked-< ,(cadr value))))
+   ((and (listp value) (eq (car value) '>))
+    (list `(clocked-> ,(cadr value))))
+   ((and (listp value) (eq (car value) 'between))
+    (list `(clocked-between ,(cadr value) ,(caddr value))))
+   (t (user-error "Invalid clocked filter value: %S" value))))
 
 (defun org-gtd-view-lang--translate-deadline-filter (time-spec)
   "Translate deadline TIME-SPEC to org-ql deadline filter."
