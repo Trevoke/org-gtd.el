@@ -136,6 +136,38 @@ VALUE can be:
           (equal item-priority
                  (if (symbolp value) (symbol-name value) value))))))))
 
+;;;; Clocked Time Predicates
+
+(defun org-gtd-pred--clocked-matches (value)
+  "Return predicate checking if item clocked time matches VALUE.
+VALUE can be:
+  - (< \"0:30\") - less than 30 minutes
+  - (> \"2:00\") - more than 2 hours
+  - (between \"0:30\" \"2:00\") - range (inclusive)
+  - nil - zero time clocked"
+  (lambda ()
+    (let ((clocked-mins (save-excursion
+                          (org-clock-sum-current-item))))
+      (cond
+       ;; nil = match zero clocked time
+       ((null value)
+        (or (null clocked-mins) (= clocked-mins 0)))
+       ;; Have clocked time, compare
+       (t
+        (let ((mins (or clocked-mins 0)))
+          (pcase (car value)
+            ('<
+             (let ((threshold (org-duration-to-minutes (cadr value))))
+               (< mins threshold)))
+            ('>
+             (let ((threshold (org-duration-to-minutes (cadr value))))
+               (> mins threshold)))
+            ('between
+             (let ((low (org-duration-to-minutes (cadr value)))
+                   (high (org-duration-to-minutes (caddr value))))
+               (and (>= mins low) (<= mins high))))
+            (_ nil))))))))
+
 ;;;; Effort Predicates
 
 (defun org-gtd-pred--effort-matches (value)

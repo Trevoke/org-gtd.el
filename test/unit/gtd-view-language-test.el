@@ -1805,6 +1805,36 @@
     (let ((query (org-gtd-view-lang--translate-to-org-ql view-spec)))
       (assert-true (cl-find 'clocked-zero (flatten-list query))))))
 
+;;; Clocked Skip Predicate Tests
+
+(deftest view-lang/skip-clocked-nil-matches-zero ()
+  "Skip predicate with clocked=nil matches items with zero clock time."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Test\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action)
+                        (clocked . nil)))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; No clock entries = zero time, should match
+      (assert-nil result))))
+
+(deftest view-lang/skip-clocked-greater-skips-zero ()
+  "Skip predicate with clocked=(> \"0:30\") skips items with zero time."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Test\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action)
+                        (clocked . (> "0:30"))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; No clock = 0 time, should skip
+      (assert-true (numberp result)))))
+
 (provide 'gtd-view-language-test)
 
 ;;; gtd-view-language-test.el ends here

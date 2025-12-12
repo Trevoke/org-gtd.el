@@ -1029,6 +1029,13 @@ The function composes predicates from the view spec filters."
         (when (and (assq 'effort gtd-view-spec)
                    (null (alist-get 'effort gtd-view-spec)))
           (push (org-gtd-pred--effort-matches nil) predicates))
+        ;; Add clocked predicate
+        (when-let ((clocked-filter (alist-get 'clocked gtd-view-spec)))
+          (push (org-gtd-pred--clocked-matches clocked-filter) predicates))
+        ;; Handle clocked=nil explicitly
+        (when (and (assq 'clocked gtd-view-spec)
+                   (null (alist-get 'clocked gtd-view-spec)))
+          (push (org-gtd-pred--clocked-matches nil) predicates))
         ;; Always exclude done items from native blocks
         (push (org-gtd-pred--not-done) predicates)
         ;; Compose predicates into skip function
