@@ -1221,6 +1221,9 @@ Here are common filters you can use in your views:
 - ~(area-of-focus . "Work")~ :: Filter by area of focus
 - ~(todo . ("NEXT" "TODO"))~ :: Filter by TODO keywords
 - ~(level . 2)~ :: Filter by heading level
+- ~(priority . A)~ :: Filter by priority (also supports lists and comparisons)
+- ~(effort . (< "30min"))~ :: Filter by effort estimate
+- ~(clocked . (> "1:00"))~ :: Filter by time clocked
 
 You can combine multiple filters - they all must match (AND logic).
 
@@ -1238,7 +1241,7 @@ Now that you understand views, you can create:
 - *Review views* - For your weekly/monthly reviews
 - *Context views* - Show work items, home items, errands, etc.
 - *Time-based views* - Overdue items, upcoming deadlines, this week's schedule
-- *Focus views* - Deep work items, quick wins, waiting-for items
+- *Focus views* - Deep work items (~priority~, ~clocked~), quick wins (~effort~)
 
 See [[#view-dsl-reference][View DSL Filter Reference]] for the complete filter documentation with all available options and many more examples.
 
@@ -6660,6 +6663,123 @@ Filter by org tags:
 - ~"tag1|tag2"~ :: Has tag1 OR tag2
 - ~"tag1&tag2"~ :: Has tag1 AND tag2
 - ~"{^@}"~ :: Has any tag starting with @
+
+*** Priority, Effort, and Clocked Filters
+
+Filter by task metadata useful for "quick wins", "deep work", and triage views.
+
+**** ~(priority . VALUE)~
+
+*Matches*: Items with matching priority
+
+*Forms*:
+- ~(priority . A)~ :: Single value---matches priority A
+- ~(priority . (A B))~ :: List---matches priority A OR B
+- ~(priority . (>= B))~ :: Comparison---matches B or higher (A, B)
+- ~(priority . nil)~ :: Items with no priority set
+
+*Comparison operators*: ~<~, ~>~, ~<=~, ~>=~
+
+*Note*: A is highest priority (A > B > C). Respects ~org-priority-highest~ and ~org-priority-lowest~ for custom ranges.
+
+*Example*: High priority actions:
+#+begin_src emacs-lisp
+'((name . "High Priority")
+  (type . next-action)
+  (priority . A))
+#+end_src
+
+*Example*: Important items (A or B):
+#+begin_src emacs-lisp
+'((name . "Important Tasks")
+  (type . next-action)
+  (priority . (A B)))
+#+end_src
+
+*Example*: All items B or higher:
+#+begin_src emacs-lisp
+'((name . "Priority B+")
+  (type . next-action)
+  (priority . (>= B)))
+#+end_src
+
+*Example*: Triage items missing priority:
+#+begin_src emacs-lisp
+'((name . "Needs Priority")
+  (type . next-action)
+  (priority . nil))
+#+end_src
+
+**** ~(effort . SPEC)~
+
+*Matches*: Items with matching Effort property
+
+*Forms*:
+- ~(effort . (< "0:30"))~ :: Under 30 minutes
+- ~(effort . (> "1:00"))~ :: Over 1 hour
+- ~(effort . (between "0:15" "1:00"))~ :: Range (inclusive)
+- ~(effort . nil)~ :: Items with no effort estimate
+
+*Duration formats* (all org-mode formats supported):
+- ~"3:12"~ :: H:MM
+- ~"1:23:45"~ :: H:MM:SS
+- ~"1d3h5min"~ :: Units (d, h, min)
+- ~"30"~ :: Bare number (minutes)
+
+*Example*: Quick wins (under 15 minutes):
+#+begin_src emacs-lisp
+'((name . "Quick Wins")
+  (type . next-action)
+  (effort . (< "15min")))
+#+end_src
+
+*Example*: Deep work items (1-2 hours):
+#+begin_src emacs-lisp
+'((name . "Deep Work")
+  (type . next-action)
+  (effort . (between "1:00" "2:00")))
+#+end_src
+
+*Example*: Triage items missing effort:
+#+begin_src emacs-lisp
+'((name . "Needs Effort Estimate")
+  (type . next-action)
+  (effort . nil))
+#+end_src
+
+**** ~(clocked . SPEC)~
+
+*Matches*: Items with matching total clocked time
+
+*Forms*:
+- ~(clocked . (< "0:30"))~ :: Less than 30 minutes clocked
+- ~(clocked . (> "2:00"))~ :: More than 2 hours invested
+- ~(clocked . (between "0:30" "2:00"))~ :: Range (inclusive)
+- ~(clocked . nil)~ :: Items with no time clocked (0 minutes)
+
+*Use case*: Find items you've already invested time in, or items you haven't started yet.
+
+*Example*: Items with significant time invested:
+#+begin_src emacs-lisp
+'((name . "Deep in Progress")
+  (type . next-action)
+  (clocked . (> "1:00")))
+#+end_src
+
+*Example*: Not started yet:
+#+begin_src emacs-lisp
+'((name . "Not Started")
+  (type . next-action)
+  (clocked . nil))
+#+end_src
+
+*Example*: Focus work (high priority, time invested):
+#+begin_src emacs-lisp
+'((name . "Focus Work")
+  (type . next-action)
+  (priority . (>= B))
+  (clocked . (> "0:30")))
+#+end_src
 
 *** Property Filters
 
