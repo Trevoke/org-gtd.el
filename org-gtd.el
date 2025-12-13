@@ -77,6 +77,7 @@
 (require 'org-gtd-process)
 (require 'org-gtd-mode)
 (require 'org-gtd-reflect)
+(require 'org-gtd-someday-review)
 (require 'org-gtd-view-language)
 (require 'org-gtd-upgrades)
 (require 'org-gtd-command-center)
