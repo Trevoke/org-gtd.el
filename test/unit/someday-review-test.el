@@ -100,6 +100,38 @@
   ;; Cleanup
   (org-gtd-someday-review--end-session))
 
+;;; Review Buffer Tests
+
+(deftest someday-review/creates-wip-buffer-with-review-mode ()
+  "Creates WIP buffer with review mode active."
+  (org-gtd-someday-create "Review me")
+  (org-gtd-someday-review--start-session nil)
+  (org-gtd-someday-review--display-current-item)
+  ;; Should use WIP buffer infrastructure
+  (let ((bufs (org-gtd-wip--get-buffers)))
+    (assert-true (> (length bufs) 0))
+    (with-current-buffer (car bufs)
+      (assert-true (eq major-mode 'org-gtd-someday-review-mode))
+      (assert-true buffer-read-only)
+      (assert-match "Review me" (buffer-string))))
+  ;; Cleanup
+  (org-gtd-someday-review--cleanup-current-buffer)
+  (org-gtd-someday-review--end-session))
+
+(deftest someday-review/shows-keybindings-in-header-line ()
+  "Shows available keybindings in header-line."
+  (org-gtd-someday-create "Review me")
+  (org-gtd-someday-review--start-session nil)
+  (org-gtd-someday-review--display-current-item)
+  (let ((bufs (org-gtd-wip--get-buffers)))
+    (with-current-buffer (car bufs)
+      (assert-match "\\[d\\]" header-line-format)
+      (assert-match "\\[c\\]" header-line-format)
+      (assert-match "\\[q\\]" header-line-format)))
+  ;; Cleanup
+  (org-gtd-someday-review--cleanup-current-buffer)
+  (org-gtd-someday-review--end-session))
+
 (provide 'someday-review-test)
 
 ;;; someday-review-test.el ends here

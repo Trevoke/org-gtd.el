@@ -28,6 +28,7 @@
 
 (require 'org)
 (require 'org-gtd-core)
+(require 'org-gtd-wip)
 
 ;;;; Variables
 
@@ -39,6 +40,9 @@
 Plist with :queue (list of org-ids), :position (current index),
 :list-name (which list being reviewed), :reviewed (count),
 :clarified (count).")
+
+(defvar-local org-gtd-someday-review--current-item-id nil
+  "ID of the item currently being reviewed in this buffer.")
 
 ;;;; Functions
 
@@ -109,6 +113,57 @@ LIST-FILTER is nil (match all), a string (match exact), or `unassigned'."
           (insert ":END:\n")))
       (insert (format "- Reviewed %s\n"
                       (format-time-string "[%Y-%m-%d %a %H:%M]"))))))
+
+;;;; Modes
+
+;;;###autoload
+(define-derived-mode org-gtd-someday-review-mode org-mode "GTD-Review"
+  "Major mode for reviewing someday/maybe items.
+Derived from `org-mode' and provides read-only review interface
+with keybindings for defer, clarify, and quit actions."
+  :group 'org-gtd
+  (setq buffer-read-only t))
+
+;;;;; Buffer Display
+
+(defun org-gtd-someday-review--display-current-item ()
+  "Display the current item in a WIP review buffer."
+  (let* ((queue (plist-get org-gtd-someday-review--state :queue))
+         (pos (plist-get org-gtd-someday-review--state :position))
+         (item-id (nth pos queue))
+         (marker (org-id-find item-id 'marker)))
+    (when marker
+      ;; Clean up previous review buffer if exists
+      (org-gtd-someday-review--cleanup-current-buffer)
+      ;; Get WIP buffer for this item
+      (let ((buf (org-gtd-wip--get-buffer item-id)))
+        (org-gtd-someday-review--initialize-buffer marker buf)
+        (with-current-buffer buf
+          (org-gtd-someday-review-mode)
+          (setq org-gtd-someday-review--current-item-id item-id)
+          (plist-put org-gtd-someday-review--state :current-buffer-id item-id)
+          (setq buffer-read-only t)
+          (setq header-line-format
+                (format "[d] Defer  [c] Clarify  [q] Quit  (%d/%d)"
+                        (1+ pos) (length queue))))
+        (pop-to-buffer buf)))))
+
+(defun org-gtd-someday-review--initialize-buffer (marker buffer)
+  "Initialize BUFFER with content from item at MARKER."
+  (when (= (buffer-size buffer) 0)
+    (let ((last-command nil))
+      (org-with-point-at marker
+        (org-copy-subtree))
+      (with-current-buffer buffer
+        (let ((inhibit-read-only t))
+          (org-paste-subtree)
+          (goto-char (point-min)))))))
+
+(defun org-gtd-someday-review--cleanup-current-buffer ()
+  "Clean up the current review WIP buffer."
+  (when-let ((item-id (plist-get org-gtd-someday-review--state :current-buffer-id)))
+    (org-gtd-wip--cleanup-temp-file item-id)
+    (plist-put org-gtd-someday-review--state :current-buffer-id nil)))
 
 ;;;; Footer
 
