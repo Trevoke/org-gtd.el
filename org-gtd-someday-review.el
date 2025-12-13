@@ -33,6 +33,35 @@
 
 ;;;;; Private
 
+(defun org-gtd-someday-review--find-items (list-filter)
+  "Find someday items, optionally filtered by LIST-FILTER.
+LIST-FILTER can be:
+  - nil: find all someday items
+  - a string: find items with matching ORG_GTD_SOMEDAY_LIST
+  - symbol `unassigned': find items without ORG_GTD_SOMEDAY_LIST"
+  (let ((items '()))
+    (dolist (file (org-agenda-files))
+      (when (file-exists-p file)
+        (with-current-buffer (find-file-noselect file)
+          (org-with-wide-buffer
+           (goto-char (point-min))
+           (while (re-search-forward "^\\*+ " nil t)
+             (when (string= (org-entry-get (point) "ORG_GTD") org-gtd-someday)
+               (let ((item-list (org-entry-get (point) org-gtd-prop-someday-list)))
+                 (when (org-gtd-someday-review--item-matches-filter-p item-list list-filter)
+                   (push (org-id-get-create) items)))))))))
+    (nreverse items)))
+
+(defun org-gtd-someday-review--item-matches-filter-p (item-list list-filter)
+  "Return t if ITEM-LIST matches LIST-FILTER.
+ITEM-LIST is the value of ORG_GTD_SOMEDAY_LIST property (or nil).
+LIST-FILTER is nil (match all), a string (match exact), or `unassigned'."
+  (cond
+   ((null list-filter) t)
+   ((eq list-filter 'unassigned) (null item-list))
+   ((stringp list-filter) (equal item-list list-filter))
+   (t nil)))
+
 (defun org-gtd-someday-review--add-reviewed-entry ()
   "Add a 'Reviewed' entry to the LOGBOOK drawer at point."
   (save-excursion
