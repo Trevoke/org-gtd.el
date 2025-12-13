@@ -29,6 +29,7 @@
 (require 'org)
 (require 'org-gtd-core)
 (require 'org-gtd-wip)
+(require 'org-gtd-reactivate)
 
 ;;;; Variables
 
@@ -181,14 +182,24 @@ with keybindings for defer, clarify, and quit actions.
 (defun org-gtd-someday-review-clarify ()
   "Clarify (reactivate) the current item and advance to next."
   (interactive)
-  ;; TODO: implement in Task 10
-  (message "Clarify not yet implemented"))
+  (let* ((queue (plist-get org-gtd-someday-review--state :queue))
+         (pos (plist-get org-gtd-someday-review--state :position))
+         (item-id (nth pos queue))
+         (marker (org-id-find item-id 'marker)))
+    ;; Reactivate the item
+    (when marker
+      (org-with-point-at marker
+        (org-gtd-reactivate)))
+    ;; Update statistics
+    (plist-put org-gtd-someday-review--state :clarified
+               (1+ (plist-get org-gtd-someday-review--state :clarified)))
+    ;; Advance to next
+    (org-gtd-someday-review--advance)))
 
 (defun org-gtd-someday-review-quit ()
   "Quit the review session."
   (interactive)
-  ;; TODO: implement in Task 11
-  (message "Quit not yet implemented"))
+  (org-gtd-someday-review--cleanup-and-end))
 
 ;;;;; Buffer Display
 
