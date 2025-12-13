@@ -93,12 +93,18 @@ TOPIC is the string you want to see when reviewing someday/maybe items."
   "Configure item at point as someday/maybe.
 
 Saves current state to PREVIOUS_* properties, then sets ORG_GTD
-property to Someday, clears TODO keyword, and removes any timestamp properties."
+property to Someday, clears TODO keyword, and removes any timestamp properties.
+If `org-gtd-someday-lists' is configured, prompts for list selection."
   ;; Save current state before changing type
   (org-gtd-save-state)
 
   ;; Configure as someday type (no properties needed - no timestamps!)
   (org-gtd-configure-as-type 'someday)
+
+  ;; Prompt for list if configured
+  (when org-gtd-someday-lists
+    (let ((list (completing-read "Someday list: " org-gtd-someday-lists nil t)))
+      (org-entry-put nil org-gtd-prop-someday-list list)))
 
   ;; Clear TODO keyword - someday items are not actionable
   (org-todo "")

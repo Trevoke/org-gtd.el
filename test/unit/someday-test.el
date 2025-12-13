@@ -31,6 +31,27 @@
   "org-gtd-someday-lists variable exists and defaults to nil."
   (assert-nil org-gtd-someday-lists))
 
+;;; List Prompt Tests
+
+(deftest someday/prompts-for-list-when-lists-configured ()
+  "Prompts for list selection when org-gtd-someday-lists is configured."
+  (let ((org-gtd-someday-lists '("Work Ideas" "Personal")))
+    (ogt--with-temp-org-buffer
+     "* Test item"
+     (org-back-to-heading t)
+     (with-simulated-input "Work SPC Ideas TAB RET"
+       (org-gtd-someday--configure))
+     (assert-equal "Work Ideas" (org-entry-get (point) "ORG_GTD_SOMEDAY_LIST")))))
+
+(deftest someday/skips-list-prompt-when-no-lists-configured ()
+  "Skips list prompt when org-gtd-someday-lists is nil."
+  (let ((org-gtd-someday-lists nil))
+    (ogt--with-temp-org-buffer
+     "* Test item"
+     (org-back-to-heading t)
+     (org-gtd-someday--configure)
+     (assert-nil (org-entry-get (point) "ORG_GTD_SOMEDAY_LIST")))))
+
 ;;; Someday/Maybe Organization Tests
 
 (deftest someday/has-no-timestamp-properties ()
