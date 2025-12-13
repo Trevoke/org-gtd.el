@@ -132,6 +132,70 @@
   (org-gtd-someday-review--cleanup-current-buffer)
   (org-gtd-someday-review--end-session))
 
+;;; Review Mode Keybinding Tests
+
+(deftest someday-review/mode-has-defer-keybinding ()
+  "Review mode has 'd' bound to defer command."
+  (assert-equal 'org-gtd-someday-review-defer
+                (lookup-key org-gtd-someday-review-mode-map (kbd "d"))))
+
+(deftest someday-review/mode-has-clarify-keybinding ()
+  "Review mode has 'c' bound to clarify command."
+  (assert-equal 'org-gtd-someday-review-clarify
+                (lookup-key org-gtd-someday-review-mode-map (kbd "c"))))
+
+(deftest someday-review/mode-has-quit-keybinding ()
+  "Review mode has 'q' bound to quit command."
+  (assert-equal 'org-gtd-someday-review-quit
+                (lookup-key org-gtd-someday-review-mode-map (kbd "q"))))
+
+(deftest someday-review/mode-is-derived-from-org-mode ()
+  "Review mode is derived from org-mode."
+  (with-temp-buffer
+    (org-gtd-someday-review-mode)
+    (assert-true (derived-mode-p 'org-mode))))
+
+;;; Defer Command Tests
+
+(deftest someday-review/defer-adds-logbook-entry ()
+  "Defer command adds reviewed entry to item's LOGBOOK."
+  (org-gtd-someday-create "Defer me")
+  (org-gtd-someday-review--start-session nil)
+  (let ((item-id (car (plist-get org-gtd-someday-review--state :queue))))
+    (org-gtd-someday-review--display-current-item)
+    (org-gtd-someday-review-defer)
+    ;; Check the source item has LOGBOOK entry - get fresh marker after defer
+    (let ((marker (org-id-find item-id 'marker)))
+      (when marker
+        (with-current-buffer (marker-buffer marker)
+          (goto-char marker)
+          (org-back-to-heading t)
+          (let ((subtree-end (save-excursion (org-end-of-subtree t))))
+            (assert-match ":LOGBOOK:" (buffer-substring (point) subtree-end)))))))
+  ;; Cleanup - session already ended by defer on last item
+  )
+
+(deftest someday-review/defer-advances-to-next-item ()
+  "Defer command advances to the next item."
+  (org-gtd-someday-create "First item")
+  (org-gtd-someday-create "Second item")
+  (org-gtd-someday-review--start-session nil)
+  (org-gtd-someday-review--display-current-item)
+  (org-gtd-someday-review-defer)
+  (assert-equal 1 (plist-get org-gtd-someday-review--state :position))
+  (assert-equal 1 (plist-get org-gtd-someday-review--state :reviewed))
+  ;; Cleanup
+  (org-gtd-someday-review--cleanup-current-buffer)
+  (org-gtd-someday-review--end-session))
+
+(deftest someday-review/defer-ends-session-when-done ()
+  "Defer ends session when last item is deferred."
+  (org-gtd-someday-create "Only item")
+  (org-gtd-someday-review--start-session nil)
+  (org-gtd-someday-review--display-current-item)
+  (org-gtd-someday-review-defer)
+  (assert-nil org-gtd-someday-review--session-active))
+
 (provide 'someday-review-test)
 
 ;;; someday-review-test.el ends here

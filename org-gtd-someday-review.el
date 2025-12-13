@@ -44,6 +44,17 @@ Plist with :queue (list of org-ids), :position (current index),
 (defvar-local org-gtd-someday-review--current-item-id nil
   "ID of the item currently being reviewed in this buffer.")
 
+;;;; Keymaps
+
+(defvar org-gtd-someday-review-mode-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map org-mode-map)
+    (define-key map (kbd "d") #'org-gtd-someday-review-defer)
+    (define-key map (kbd "c") #'org-gtd-someday-review-clarify)
+    (define-key map (kbd "q") #'org-gtd-someday-review-quit)
+    map)
+  "Keymap for `org-gtd-someday-review-mode'.")
+
 ;;;; Functions
 
 ;;;;; Session Management
@@ -65,7 +76,9 @@ Plist with :queue (list of org-ids), :position (current index),
         (clarified (plist-get org-gtd-someday-review--state :clarified)))
     (setq org-gtd-someday-review--session-active nil
           org-gtd-someday-review--state nil)
-    (message "Review complete. %d items reviewed, %d clarified." reviewed clarified)))
+    ;; Make sure we're not in a read-only buffer when displaying message
+    (with-temp-buffer
+      (message "Review complete. %d items reviewed, %d clarified." reviewed clarified))))
 
 ;;;;; Private
 
@@ -114,15 +127,68 @@ LIST-FILTER is nil (match all), a string (match exact), or `unassigned'."
       (insert (format "- Reviewed %s\n"
                       (format-time-string "[%Y-%m-%d %a %H:%M]"))))))
 
+(defun org-gtd-someday-review--advance ()
+  "Advance to the next item or end session if done."
+  (let* ((queue (plist-get org-gtd-someday-review--state :queue))
+         (pos (plist-get org-gtd-someday-review--state :position))
+         (next-pos (1+ pos)))
+    (if (< next-pos (length queue))
+        (progn
+          (plist-put org-gtd-someday-review--state :position next-pos)
+          (org-gtd-someday-review--display-current-item))
+      ;; No more items
+      (org-gtd-someday-review--cleanup-and-end))))
+
+(defun org-gtd-someday-review--cleanup-and-end ()
+  "Clean up review buffer and end session."
+  (org-gtd-someday-review--cleanup-current-buffer)
+  (org-gtd-someday-review--end-session))
+
 ;;;; Modes
 
 ;;;###autoload
 (define-derived-mode org-gtd-someday-review-mode org-mode "GTD-Review"
   "Major mode for reviewing someday/maybe items.
 Derived from `org-mode' and provides read-only review interface
-with keybindings for defer, clarify, and quit actions."
+with keybindings for defer, clarify, and quit actions.
+
+\\{org-gtd-someday-review-mode-map}"
   :group 'org-gtd
-  (setq buffer-read-only t))
+  ;; Note: buffer is made read-only in display function, not here
+  )
+
+;;;; Commands
+
+(defun org-gtd-someday-review-defer ()
+  "Defer the current item and advance to next."
+  (interactive)
+  (let* ((queue (plist-get org-gtd-someday-review--state :queue))
+         (pos (plist-get org-gtd-someday-review--state :position))
+         (item-id (nth pos queue))
+         (marker (org-id-find item-id 'marker)))
+    ;; Add LOGBOOK entry to source item
+    (when marker
+      (let ((inhibit-read-only t))
+        (org-with-point-at marker
+          (org-gtd-someday-review--add-reviewed-entry)
+          (save-buffer))))
+    ;; Update statistics
+    (plist-put org-gtd-someday-review--state :reviewed
+               (1+ (plist-get org-gtd-someday-review--state :reviewed)))
+    ;; Advance to next
+    (org-gtd-someday-review--advance)))
+
+(defun org-gtd-someday-review-clarify ()
+  "Clarify (reactivate) the current item and advance to next."
+  (interactive)
+  ;; TODO: implement in Task 10
+  (message "Clarify not yet implemented"))
+
+(defun org-gtd-someday-review-quit ()
+  "Quit the review session."
+  (interactive)
+  ;; TODO: implement in Task 11
+  (message "Quit not yet implemented"))
 
 ;;;;; Buffer Display
 
