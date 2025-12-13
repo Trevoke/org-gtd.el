@@ -35,6 +35,16 @@
 (require 'org-gtd-reactivate)
 (require 'org-gtd-organize-core)
 
+;;;; Customization
+
+(defcustom org-gtd-someday-lists nil
+  "List of someday/maybe list names for review grouping.
+When nil, all someday items are reviewed together without prompting.
+When populated, user is prompted to select which list to review."
+  :group 'org-gtd
+  :package-version '(org-gtd . "4.0")
+  :type '(repeat string))
+
 ;;;; Constants
 
 (defconst org-gtd-someday-func #'org-gtd-someday--apply

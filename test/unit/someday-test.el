@@ -25,6 +25,12 @@
   (ogt-eunit-with-mock-gtd
     (funcall proceed context)))
 
+;;; Someday Lists Configuration Tests
+
+(deftest someday/lists-variable-exists ()
+  "org-gtd-someday-lists variable exists and defaults to nil."
+  (assert-nil org-gtd-someday-lists))
+
 ;;; Someday/Maybe Organization Tests
 
 (deftest someday/has-no-timestamp-properties ()
