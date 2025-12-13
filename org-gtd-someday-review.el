@@ -30,6 +30,7 @@
 (require 'org-gtd-core)
 (require 'org-gtd-wip)
 (require 'org-gtd-reactivate)
+(require 'org-gtd-someday)
 
 ;;;; Variables
 
@@ -157,6 +158,30 @@ with keybindings for defer, clarify, and quit actions.
   :group 'org-gtd
   ;; Note: buffer is made read-only in display function, not here
   )
+
+;;;; Entry Point
+
+;;;###autoload
+(defun org-gtd-reflect-someday-review (&optional list)
+  "Review someday/maybe items one at a time.
+With optional LIST argument, review only items in that list.
+When `org-gtd-someday-lists' is configured, prompts for list selection.
+Adds 'Unassigned' option for items without a list."
+  (interactive
+   (list (when org-gtd-someday-lists
+           (completing-read "Review which list? "
+                            (append org-gtd-someday-lists '("Unassigned"))
+                            nil t))))
+  (let ((list-filter (cond
+                      ((equal list "Unassigned") 'unassigned)
+                      ((and list (not (string-empty-p list))) list)
+                      (t nil))))
+    (org-gtd-someday-review--start-session list-filter)
+    (if (zerop (length (plist-get org-gtd-someday-review--state :queue)))
+        (progn
+          (org-gtd-someday-review--end-session)
+          (message "No someday items to review."))
+      (org-gtd-someday-review--display-current-item))))
 
 ;;;; Commands
 

@@ -246,6 +246,34 @@
     ;; WIP buffer should be cleaned up
     (assert-equal 0 (length (org-gtd-wip--get-buffers)))))
 
+;;; Entry Point Tests
+
+(deftest someday-review/entry-point-starts-session ()
+  "org-gtd-reflect-someday-review starts a review session."
+  (org-gtd-someday-create "Item")
+  (org-gtd-reflect-someday-review)
+  (assert-true org-gtd-someday-review--session-active)
+  ;; Should create a WIP buffer
+  (assert-true (> (length (org-gtd-wip--get-buffers)) 0))
+  ;; Cleanup
+  (org-gtd-someday-review-quit))
+
+(deftest someday-review/entry-point-shows-message-when-no-items ()
+  "Shows message when no items to review."
+  ;; No items created - just start session
+  (org-gtd-reflect-someday-review)
+  (assert-nil org-gtd-someday-review--session-active))
+
+(deftest someday-review/entry-point-accepts-list-argument ()
+  "Entry point accepts optional list argument to skip prompt."
+  (let ((org-gtd-someday-lists '("Work" "Personal")))
+    (with-simulated-input "Work RET"
+      (org-gtd-someday-create "Work item"))
+    (org-gtd-reflect-someday-review "Work")
+    (assert-equal "Work" (plist-get org-gtd-someday-review--state :list-name)))
+  ;; Cleanup
+  (org-gtd-someday-review-quit))
+
 (provide 'someday-review-test)
 
 ;;; someday-review-test.el ends here
