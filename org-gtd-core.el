@@ -367,6 +367,9 @@ This property also controls the prefix displayed in agenda views.")
 (defconst org-gtd-prop-previous-category "PREVIOUS_ORG_GTD"
   "Property storing the original ORG_GTD value for tickler items.")
 
+(defconst org-gtd-prop-someday-list "ORG_GTD_SOMEDAY_LIST"
+  "Property for categorizing someday/maybe items into lists.")
+
 ;;;; Variables
 
 (defvar-local org-gtd--loading-p nil

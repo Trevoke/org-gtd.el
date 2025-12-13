@@ -93,6 +93,10 @@
   (assert-equal "Reference" org-gtd-knowledge)
   (assert-equal "Trash" org-gtd-trash))
 
+(deftest core/someday-list-property-constant-exists ()
+  "org-gtd-prop-someday-list constant exists."
+  (assert-equal "ORG_GTD_SOMEDAY_LIST" org-gtd-prop-someday-list))
+
 (provide 'core-test)
 
 ;;; core-test.el ends here
