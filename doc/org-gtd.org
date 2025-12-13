@@ -158,7 +158,7 @@ This clarifies the distinction between "remind me on a specific date" (Tickler) 
 Changes:
 - ~org-gtd-incubate~ → ~org-gtd-tickler~ (creates tickler items with timestamps)
 - New ~org-gtd-someday~ command (creates someday items without timestamps)
-- New ~org-gtd-reflect-someday-maybe~ command for reviewing someday items
+- New ~org-gtd-reflect-someday-review~ command - Walk through someday items one-by-one with single-keystroke defer/clarify/quit actions. Optionally group items into named lists for focused reviews. See [[#someday-review][Reviewing Someday/Maybe Items]].
 - Property value: ~ORG_GTD: Incubated~ → ~ORG_GTD: Tickler~ or ~ORG_GTD: Someday~
 
 The old ~org-gtd-incubate~ command still works as an alias to ~org-gtd-tickler~ but is marked obsolete.
@@ -1472,6 +1472,7 @@ These are the commands you'll use most:
 | ~org-gtd-engage~ | See actionable items | Daily (your "work from" view) |
 | ~org-gtd-show-all-next~ | See only NEXT actions | When you want to focus on actions |
 | ~org-gtd-reflect-stuck-projects~ | Find stuck projects | Weekly review |
+| ~org-gtd-reflect-someday-review~ | Review someday items one-by-one | Weekly/monthly review |
 | ~org-gtd-projects-fix-all-todo-keywords~ | Fix task states after external edits | After mobile/web edits |
 | ~org-gtd-archive-completed-items~ | Archive finished items | Weekly/monthly cleanup |
 
@@ -2011,7 +2012,7 @@ This ensures your waiting-for list always has the context GTD requires: who has 
 - Refiles to a someday/maybe category
 - Stays out of active views until you explicitly review it
 
-*How to review*: Use ~org-gtd-reflect-someday-maybe~ to periodically review all someday items and decide if any are ready to become active projects or actions.
+*How to review*: Use ~org-gtd-reflect-someday-review~ to walk through your someday items one by one and decide whether to keep deferring or reactivate them. See [[#someday-review][Reviewing Someday/Maybe Items]] for details.
 
 *Key difference from Tickler*: Someday items have NO review date. They don't appear in your agenda automatically. You choose when to review them (typically during weekly/monthly reviews).
 
@@ -4677,6 +4678,144 @@ Finds delegated items with missing delegate or date information.
 **** ~org-gtd-reflect-stuck-single-action-items~
 
 Finds single actions that aren't marked as NEXT.
+
+*** Reviewing Someday/Maybe Items
+:PROPERTIES:
+:CUSTOM_ID: someday-review
+:END:
+
+Someday/maybe items are the graveyard of dreams—or the incubator of future greatness. The difference? Regular review. This feature helps you stay connected to your possibilities without letting them become forgotten fossils.
+
+*What is it*: A wizard-style workflow that shows you each someday item one at a time, letting you quickly defer it (keep for later) or clarify it (reactivate and make it actionable).
+
+*Who needs it*: Anyone with someday/maybe items who wants to periodically review them during their GTD reflect process.
+
+**** Your First Review in 60 Seconds
+
+Try this right now:
+
+1. Run ~M-x org-gtd-reflect-someday-review~
+2. You'll see your first someday item in a read-only buffer
+3. Press ~d~ to defer (keeps the item, logs that you reviewed it)
+4. Or press ~c~ to clarify (reactivates the item)
+5. Press ~q~ anytime to quit
+
+That's it. You're reviewing your possibilities.
+
+**** Understanding the Review Workflow
+
+When you see a someday item during review, you're asking yourself one question: "Is now the time to pursue this?"
+
+#+begin_example
+Someday item: "Learn to play piano"
+
+Is now the time?
+  YES → Press 'c' (clarify) → Item becomes active, you organize it fresh
+  NO  → Press 'd' (defer) → Item stays in someday, with timestamp logged
+#+end_example
+
+*Why defer logs a timestamp*: The LOGBOOK entry creates a history. During future reviews, you can see how long items have been sitting. An item deferred 50 times over 3 years might be ready to trash—or finally pursue.
+
+**** Tutorial: Weekly Someday Review
+
+Here's how to incorporate this into your weekly review:
+
+*Basic flow*:
+#+begin_example
+M-x org-gtd-reflect-someday-review
+
+For each item:
+- Read it
+- Decide: defer or clarify?
+- Press d or c
+- Repeat until "Review complete"
+#+end_example
+
+*What happens when you clarify*:
+1. The item's previous state is restored (if it was a delegated action, it remembers the delegate)
+2. You go through the organize flow
+3. After organizing, review automatically continues with the next item
+
+*What happens when you defer*:
+1. A "Reviewed [timestamp]" entry is added to the item's LOGBOOK
+2. Review advances to the next item
+3. The item stays in someday/maybe
+
+**** Organizing Your Someday Items (Optional)
+
+If your someday list grows large, you can group items into named lists:
+
+#+begin_src elisp
+;; Optional: Define someday lists for focused reviews
+(setq org-gtd-someday-lists '("Work Ideas" "Personal Projects" "Learning" "Travel"))
+#+end_src
+
+With this configured:
+
+1. *When organizing items as someday*: You'll be prompted to choose a list
+2. *When reviewing*: You'll be prompted which list to review (or "Unassigned")
+3. *Programmatic access*: Call ~(org-gtd-reflect-someday-review "Work Ideas")~ directly
+
+This is entirely optional. Without configuration, all someday items are reviewed together.
+
+**** Common Patterns
+
+*Monthly Deep Review*:
+#+begin_example
+;; Review everything, no list filter
+M-x org-gtd-reflect-someday-review
+
+;; Go through each item thoughtfully
+;; This might take 15-30 minutes for 50 items
+#+end_example
+
+*Focused Category Review*:
+#+begin_example
+;; With org-gtd-someday-lists configured:
+M-x org-gtd-reflect-someday-review → "Learning"
+
+;; Only see learning-related someday items
+#+end_example
+
+*Finding Stale Items*:
+Look at items during review that have many LOGBOOK entries spanning years. Ask yourself: "Am I ever actually going to do this?" If not, trash it. If yes, this might be the time to clarify it.
+
+**** Command Reference
+
+| Key | Command | What it does |
+|-----|---------|--------------|
+| ~d~ | Defer | Log "Reviewed" entry, advance to next |
+| ~c~ | Clarify | Reactivate item, triggers organize flow |
+| ~q~ | Quit | End review, show statistics |
+
+*Statistics*: When you quit or finish, you'll see: "Review complete. X items reviewed, Y clarified."
+
+**** ~org-gtd-reflect-someday-review~
+
+*Arguments*: Optional LIST (string)
+
+*When to use*: During weekly/monthly reviews, or anytime you want to reconnect with your possibilities
+
+*What it does*:
+- If ~org-gtd-someday-lists~ is configured: prompts for which list to review
+- Shows each someday item in a read-only buffer
+- Single-keystroke actions: ~d~ (defer), ~c~ (clarify), ~q~ (quit)
+- Tracks statistics (items reviewed, items clarified)
+
+*Configuration*:
+#+begin_src elisp
+;; Optional: Group someday items into lists
+(setq org-gtd-someday-lists '("Work Ideas" "Personal" "Learning"))
+#+end_src
+
+*Example*:
+#+begin_example
+;; Interactive (will prompt for list if configured)
+M-x org-gtd-reflect-someday-review
+
+;; Programmatic (skip list prompt)
+(org-gtd-reflect-someday-review "Work Ideas")
+#+end_example
 
 *** Reflect Commands (Missed Engagements)
 
