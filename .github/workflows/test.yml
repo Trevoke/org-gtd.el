@@ -31,4 +31,4 @@ jobs:
 
     - name: Test the project
       run: |
-        eldev -p -dtT gtd-etest
+        eldev -p -dtT gtd-etest --reporter=dot

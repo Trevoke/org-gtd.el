@@ -41,7 +41,14 @@
       (progn
         (capture-inbox-item "Medical Appointment")
         (org-gtd-process-inbox)
-        (execute-kbd-macro (kbd "C-c c s H e a l t h RET"))
+        ;; Use direct function call with simulated input instead of execute-kbd-macro
+        ;; which doesn't work reliably with transient menus in CI batch mode
+        (with-wip-buffer
+          (goto-char (point-min))
+          (when (org-before-first-heading-p)
+            (org-next-visible-heading 1))
+          (with-simulated-input "Health RET"
+            (org-gtd-single-action)))
         (org-gtd-engage)
         (assert-match "Health.*Medical"
                       (ogt--buffer-string org-agenda-buffer)))
