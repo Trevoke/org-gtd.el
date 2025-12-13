@@ -78,6 +78,28 @@
   (let ((unassigned (org-gtd-someday-review--find-items 'unassigned)))
     (assert-equal 1 (length unassigned))))
 
+;;; Review Session State Tests
+
+(deftest someday-review/initializes-session-state ()
+  "Initializes review session state with item queue."
+  (org-gtd-someday-create "Item one")
+  (org-gtd-someday-create "Item two")
+  (org-gtd-someday-review--start-session nil)
+  (assert-true org-gtd-someday-review--session-active)
+  (assert-equal 2 (length (plist-get org-gtd-someday-review--state :queue)))
+  (assert-equal 0 (plist-get org-gtd-someday-review--state :position))
+  ;; Cleanup
+  (org-gtd-someday-review--end-session))
+
+(deftest someday-review/tracks-statistics ()
+  "Tracks review statistics (reviewed count, clarified count)."
+  (org-gtd-someday-create "Item one")
+  (org-gtd-someday-review--start-session nil)
+  (assert-equal 0 (plist-get org-gtd-someday-review--state :reviewed))
+  (assert-equal 0 (plist-get org-gtd-someday-review--state :clarified))
+  ;; Cleanup
+  (org-gtd-someday-review--end-session))
+
 (provide 'someday-review-test)
 
 ;;; someday-review-test.el ends here

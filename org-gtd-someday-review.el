@@ -29,7 +29,39 @@
 (require 'org)
 (require 'org-gtd-core)
 
+;;;; Variables
+
+(defvar org-gtd-someday-review--session-active nil
+  "Non-nil when a someday review session is active.")
+
+(defvar org-gtd-someday-review--state nil
+  "State for active someday review session.
+Plist with :queue (list of org-ids), :position (current index),
+:list-name (which list being reviewed), :reviewed (count),
+:clarified (count).")
+
 ;;;; Functions
+
+;;;;; Session Management
+
+(defun org-gtd-someday-review--start-session (list-filter)
+  "Start a review session for items matching LIST-FILTER."
+  (let ((items (org-gtd-someday-review--find-items list-filter)))
+    (setq org-gtd-someday-review--session-active t
+          org-gtd-someday-review--state
+          (list :queue items
+                :position 0
+                :list-name list-filter
+                :reviewed 0
+                :clarified 0))))
+
+(defun org-gtd-someday-review--end-session ()
+  "End the current review session."
+  (let ((reviewed (plist-get org-gtd-someday-review--state :reviewed))
+        (clarified (plist-get org-gtd-someday-review--state :clarified)))
+    (setq org-gtd-someday-review--session-active nil
+          org-gtd-someday-review--state nil)
+    (message "Review complete. %d items reviewed, %d clarified." reviewed clarified)))
 
 ;;;;; Private
 
