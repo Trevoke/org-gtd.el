@@ -1,0 +1,352 @@
+#+TITLE: Org GTD for Org-Mode Power Users
+#+AUTHOR: org-gtd
+#+DESCRIPTION: A fast-track guide for experienced org-mode users who want GTD without re-learning what they already know.
+
+* What This Is
+
+You already know org-mode. You've built capture templates, customized agenda views, mastered properties and tags. You might have even rolled your own GTD-ish system.
+
+org-gtd provides a complete GTD implementation that leverages your org-mode expertise rather than hiding it. It handles the GTD workflow logic so you can focus on getting things done.
+
+*What org-gtd adds*:
+- Opinionated capture → clarify → organize → engage workflow
+- Project management with DAG-based dependencies
+- Automatic NEXT/TODO state transitions
+- GTD-specific agenda views
+- Type-driven item organization
+
+*What org-gtd respects*:
+- Your existing org-mode configuration
+- Standard org properties, tags, and timestamps
+- Your agenda customizations
+- The full power of org-mode underneath
+
+*This guide assumes*: You're comfortable with org-capture, org-agenda, properties, and basic elisp configuration.
+
+* Your First Cycle in 60 Seconds
+
+You know these patterns. Here's how they connect:
+
+#+begin_example
+C-c d c              ; Capture (uses org-capture under the hood)
+#+end_example
+
+Type something, ~C-c C-c~. Standard capture, goes to your inbox.
+
+#+begin_example
+C-c d p              ; Process inbox
+#+end_example
+
+First item appears in a clarify buffer. Edit if needed. Then:
+
+#+begin_example
+C-c c                ; Organize (transient menu)
+s                    ; → Single action
+#+end_example
+
+Item gets ~ORG_GTD: Actions~, state becomes ~NEXT~, refiles automatically.
+
+#+begin_example
+C-c d e              ; Engage view (agenda)
+#+end_example
+
+Shows your NEXT items. That's the core loop.
+
+* The Architecture (What You Actually Want to Know)
+
+** File Structure
+
+By default, org-gtd uses files in ~org-gtd-directory~ (default: =~/gtd/=):
+
+| File | Purpose |
+|------|---------|
+| ~inbox.org~ | Capture target |
+| ~org-gtd-tasks.org~ | Main GTD file (actions, projects) |
+| ~org-gtd-calendar.org~ | Calendar items |
+| ~org-gtd-incubate.org~ | Tickler and Someday/Maybe |
+
+You can customize this. The files are standard org files with no magic.
+
+** The ORG_GTD Property
+
+Every organized item gets an ~ORG_GTD~ property indicating its type:
+
+| Value | Meaning |
+|-------|---------|
+| ~Actions~ | Single action (NEXT state) |
+| ~Projects~ | Project container |
+| ~Calendar~ | Scheduled item |
+| ~Delegated~ | Waiting for someone |
+| ~Tickler~ | Remind on specific date |
+| ~Someday~ | No specific timeframe |
+| ~Knowledge~ | Reference (immediately archived) |
+
+This is how org-gtd queries work. All standard org-ql compatible.
+
+** Project Architecture
+
+This is where org-gtd gets interesting.
+
+Projects aren't just nested headings—they're directed acyclic graphs (DAGs). Each task can have explicit dependencies:
+
+#+begin_example
+* My Project
+:PROPERTIES:
+:ORG_GTD: Projects
+:ID: proj-123
+:END:
+** TODO Task A
+:PROPERTIES:
+:ID: task-a
+:ORG_GTD: project-task
+:ORG_GTD_PROJECT_IDS: proj-123
+:ORG_GTD_BLOCKS: task-b task-c
+:END:
+** TODO Task B
+:PROPERTIES:
+:ID: task-b
+:ORG_GTD: project-task
+:ORG_GTD_PROJECT_IDS: proj-123
+:ORG_GTD_DEPENDS_ON: task-a
+:END:
+** TODO Task C
+:PROPERTIES:
+:ID: task-c
+:ORG_GTD: project-task
+:ORG_GTD_PROJECT_IDS: proj-123
+:ORG_GTD_DEPENDS_ON: task-a
+:END:
+#+end_example
+
+Here, Task A blocks both B and C. When A completes, B and C both become NEXT (parallel work).
+
+The key properties:
+- ~ORG_GTD_DEPENDS_ON~: IDs of tasks that must complete first
+- ~ORG_GTD_BLOCKS~: IDs of tasks blocked by this task
+- ~ORG_GTD_FIRST_TASKS~: (on project heading) IDs of entry-point tasks
+
+By default, org-gtd creates sequential dependencies. You can modify them with ~org-gtd-dependencies-create~ and related commands.
+
+** State Management
+
+org-gtd uses org-edna for automatic state transitions. When you complete a task:
+
+1. org-edna triggers on state change
+2. Blocked tasks check if all dependencies are DONE
+3. If yes, task transitions to NEXT
+
+You configure which keywords map to which GTD states:
+
+#+begin_src emacs-lisp
+(setq org-gtd-keyword-mapping
+      '((next . "NEXT")
+        (todo . "TODO")
+        (done . "DONE")
+        (canceled . "CNCL")
+        (wait . "WAIT")))
+#+end_src
+
+This separates your org-todo-keywords from GTD semantics.
+
+* Integration Points
+
+** Hooks
+
+The main extension point is ~org-gtd-organize-hooks~:
+
+#+begin_src emacs-lisp
+(add-hook 'org-gtd-organize-hooks #'my-custom-decoration)
+#+end_src
+
+Runs after each item is organized. Common uses:
+- Add custom properties
+- Prompt for tags
+- Set areas of focus
+- Add effort estimates
+
+Example—prompt for area of focus:
+
+#+begin_src emacs-lisp
+(add-hook 'org-gtd-organize-hooks #'org-gtd-set-area-of-focus)
+#+end_src
+
+** Capture Templates
+
+org-gtd sets up default capture templates under the "d" prefix. You can add your own:
+
+#+begin_src emacs-lisp
+(with-eval-after-load 'org-gtd
+  (add-to-list 'org-capture-templates
+               '("dm" "Meeting notes" entry
+                 (file org-gtd-inbox-file-path)
+                 "* Meeting: %?\n:PROPERTIES:\n:CAPTURED_AT: %U\n:END:")))
+#+end_src
+
+Just target ~org-gtd-inbox-file-path~ and org-gtd will process it.
+
+** Custom Views
+
+org-gtd uses a declarative view language built on org-ql:
+
+#+begin_src emacs-lisp
+(org-gtd-view-show
+ '((name . "High Priority Work")
+   (filters . ((todo . "NEXT")
+               (tags . "@work")
+               (priority . "A")))))
+#+end_src
+
+Available filters:
+- ~todo~ - keyword match
+- ~tags~ - tag expression (supports ~|~ for OR)
+- ~priority~ - priority level
+- ~area-of-focus~ - GTD area
+- ~type~ - item type (action, project, delegated, etc.)
+
+** Agenda Integration
+
+~org-gtd-engage~ is an agenda command. The mode-line indicator (~GTD[5]~) shows inbox count.
+
+org-gtd doesn't override your agenda. It adds views. You can still use ~org-agenda~ directly.
+
+* Configuration Essentials
+
+Minimal config for someone who knows what they're doing:
+
+#+begin_src emacs-lisp
+;; Keywords (must match your org-todo-keywords)
+(setq org-todo-keywords
+      '((sequence "TODO(t)" "NEXT(n)" "WAIT(w)" "|" "DONE(d)" "CNCL(c)")))
+
+(setq org-gtd-keyword-mapping
+      '((next . "NEXT")
+        (todo . "TODO")
+        (done . "DONE")
+        (canceled . "CNCL")
+        (wait . "WAIT")))
+
+;; Where your GTD files live
+(setq org-gtd-directory "~/gtd/")
+
+;; Areas of focus (optional but recommended)
+(setq org-gtd-areas-of-focus
+      '("Work" "Health" "Family" "Finances"))
+
+;; Enable mode-line indicator
+(org-gtd-mode 1)
+#+end_src
+
+** Key Bindings
+
+org-gtd uses the ~C-c d~ prefix by default. Change it if that conflicts:
+
+#+begin_src emacs-lisp
+(setq org-gtd-command-map-prefix (kbd "C-c g"))
+#+end_src
+
+* Advanced Features
+
+** Modifying Project Dependencies
+
+While clarifying a project:
+
+#+begin_example
+M-x org-gtd-dependencies-create    ; Create A → B dependency
+M-x org-gtd-dependencies-remove    ; Remove dependency
+#+end_example
+
+Or use the graph visualization:
+
+#+begin_example
+M-x org-gtd-show-project-graph     ; Visual DAG display
+#+end_example
+
+** Refile Control
+
+By default, org-gtd prompts for refile location. Customize per type:
+
+#+begin_src emacs-lisp
+;; Types that auto-refile without prompting
+(setq org-gtd-refile-prompt-for-types
+      '(single-action project calendar delegate tickler someday))
+;; Remove types from list to auto-refile them
+#+end_src
+
+** The Clarify Buffer
+
+The clarify buffer (~org-gtd-clarify-mode~) is where you edit items before organizing. It's backed by a temp file (crash protection via auto-save).
+
+Key bindings in clarify mode:
+| Key | Action |
+|-----|--------|
+| ~C-c c~ | Organize (transient menu) |
+| ~C-c C-k~ | Cancel clarification |
+
+** Programmatic Access
+
+Create items programmatically:
+
+#+begin_src emacs-lisp
+(org-gtd-single-action)     ; Organize at point as single action
+(org-gtd-project-new)       ; Organize as new project
+(org-gtd-calendar)          ; Prompts for date
+(org-gtd-delegate)          ; Prompts for person and date
+#+end_src
+
+Query items:
+
+#+begin_src emacs-lisp
+;; Using org-ql
+(org-ql-select (org-agenda-files)
+  '(and (property "ORG_GTD" "Actions")
+        (todo "NEXT")))
+#+end_src
+
+* What's Different from Rolling Your Own
+
+If you've built GTD in org-mode before, here's what org-gtd handles that's annoying to DIY:
+
+1. *State transitions* - org-edna integration for automatic NEXT advancement
+2. *Project tracking* - DAG dependencies with cycle detection
+3. *Inbox processing loop* - One-at-a-time workflow with easy cancellation
+4. *Refile targets* - Automatic target management by item type
+5. *Engage view* - Pre-built agenda showing actionable items only
+6. *Stuck project detection* - Identifies projects without NEXT actions
+
+You can still customize everything—org-gtd is org-mode, not a replacement.
+
+* Quick Reference
+
+| Command | Keys | Purpose |
+|---------|------|---------|
+| ~org-gtd-capture~ | ~C-c d c~ | Capture to inbox |
+| ~org-gtd-process-inbox~ | ~C-c d p~ | Process items |
+| ~org-gtd-engage~ | ~C-c d e~ | Show actionable items |
+| ~org-gtd-organize~ | ~C-c c~ (in clarify) | Organize current item |
+| ~org-gtd-clarify-item~ | ~C-c d C~ | Clarify item at point |
+
+Organize types (transient keys):
+| Key | Type | ORG_GTD value |
+|-----|------|---------------|
+| ~s~ | Single action | ~Actions~ |
+| ~p~ | Project | ~Projects~ |
+| ~c~ | Calendar | ~Calendar~ |
+| ~d~ | Delegate | ~Delegated~ |
+| ~t~ | Tickler | ~Tickler~ |
+| ~y~ | Someday/Maybe | ~Someday~ |
+| ~k~ | Knowledge | ~Knowledge~ |
+| ~q~ | Quick action | (done immediately) |
+| ~x~ | Trash | (deleted) |
+
+Properties reference:
+| Property | Purpose |
+|----------|---------|
+| ~ORG_GTD~ | Item type |
+| ~ORG_GTD_DEPENDS_ON~ | IDs of blocking tasks |
+| ~ORG_GTD_BLOCKS~ | IDs of tasks this blocks |
+| ~ORG_GTD_PROJECT_IDS~ | Project(s) this task belongs to |
+| ~ORG_GTD_FIRST_TASKS~ | Entry points (on project heading) |
+| ~DELEGATED_TO~ | Person delegated to |
+| ~ORG_GTD_TIMESTAMP~ | Tickler/calendar date |
+
+For complete documentation: ~C-h i m org gtd RET~

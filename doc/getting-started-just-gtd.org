@@ -1,0 +1,292 @@
+#+TITLE: Getting Things Done with org-gtd
+#+AUTHOR: org-gtd
+#+DESCRIPTION: A gentle guide for people who just want to do GTD, regardless of Emacs experience.
+
+* What This Guide Is For
+
+You've heard about GTD (Getting Things Done). You want to try it. org-gtd is your tool.
+
+This guide teaches you exactly what you need to do GTD—nothing more. You don't need to become an Emacs expert. You just need to learn a few key combos.
+
+*Prerequisites*:
+- Emacs is installed
+- org-gtd is installed and configured (see [[info:org-gtd#Installing][Installation]] if not)
+- You've read (or skimmed) the GTD book, or at least understand the basic idea: capture everything, decide what it is, organize it, review regularly, do the work
+
+* The Only Keys You Need
+
+org-gtd uses keyboard shortcuts. Here's how to read them:
+
+| Notation | What to press |
+|----------|---------------|
+| ~C-c~ | Hold Ctrl, press c |
+| ~C-c d c~ | Hold Ctrl, press c, release, press d, press c |
+| ~RET~ | Press Enter |
+
+That's the whole system. Every org-gtd action starts with ~C-c d~.
+
+* The Core Loop
+
+GTD has a simple loop. org-gtd maps directly to it:
+
+| GTD Step | What You Do | Key |
+|----------|-------------|-----|
+| *Capture* | Get it out of your head | ~C-c d c~ |
+| *Clarify* | Decide what it is | (automatic during Process) |
+| *Organize* | Put it where it belongs | ~C-c c~ then choose |
+| *Engage* | See what's actionable | ~C-c d e~ |
+| *Do* | Complete the work | (that's on you!) |
+
+That's four key combos. Let's learn each one.
+
+* Step 1: Capture
+
+Something pops into your head. Don't think about it—capture it.
+
+#+begin_example
+C-c d c
+#+end_example
+
+A text box appears. Type what's on your mind:
+
+#+begin_example
+Call mom about birthday plans
+#+end_example
+
+Press ~C-c C-c~ to save it.
+
+Done. It's in your inbox now. You'll deal with it later.
+
+*Key insight*: Capture is about speed. Don't organize, don't categorize, just get it out of your head. You can capture 10 things in 2 minutes.
+
+* Step 2: Process Your Inbox
+
+You've captured some things. Now you need to decide what each one actually is.
+
+#+begin_example
+C-c d p
+#+end_example
+
+Your first inbox item appears. You can edit it if the wording isn't clear.
+
+When you're ready to decide what kind of thing it is, press:
+
+#+begin_example
+C-c c
+#+end_example
+
+A menu appears with your choices:
+
+#+begin_example
+[s] Single action    [p] Project    [c] Calendar
+[d] Delegate         [t] Tickler    [y] Someday/Maybe
+[k] Knowledge        [q] Quick action    [x] Trash
+#+end_example
+
+** Which One Do I Pick?
+
+| If it's... | Press |
+|------------|-------|
+| One thing I need to do, whenever | ~s~ (Single action) |
+| Multiple steps to complete | ~p~ (Project) |
+| Tied to a specific date/time | ~c~ (Calendar) |
+| Someone else should do it | ~d~ (Delegate) |
+| I want a reminder on a specific date | ~t~ (Tickler) |
+| Maybe someday, no commitment | ~y~ (Someday/Maybe) |
+| Reference info, not actionable | ~k~ (Knowledge) |
+| I can do this in under 2 minutes right now | ~q~ (Quick action) |
+| Nevermind, delete it | ~x~ (Trash) |
+
+Most things are single actions. When in doubt, press ~s~.
+
+After you choose, the next inbox item appears. Repeat until your inbox is empty.
+
+*Key insight*: Process means making quick decisions. Don't agonize. You can always change things later.
+
+* Step 3: Engage
+
+Your inbox is empty. Everything is organized. Now: what should you work on?
+
+#+begin_example
+C-c d e
+#+end_example
+
+This shows your "engage view"—all the things you can do right now:
+
+#+begin_example
+Headlines with NEXT keyword:
+  NEXT Call mom about birthday plans
+  NEXT Review quarterly report
+  NEXT Order new running shoes
+
+Calendar items for today:
+  TODO Team meeting at 2pm    Scheduled: <today>
+#+end_example
+
+Pick something and do it.
+
+*Key insight*: This view shows only actionable items. Not "someday" things, not blocked tasks, not reference material. Just things you can do now.
+
+* Step 4: Mark Things Done
+
+When you finish something, you need to mark it complete.
+
+In the engage view, navigate to the item (use arrow keys) and press:
+
+#+begin_example
+t
+#+end_example
+
+Select ~DONE~ from the menu.
+
+The item disappears from your list. You did it!
+
+* That's the Whole System
+
+Seriously. Those four things are 90% of GTD:
+
+1. ~C-c d c~ — Capture (get stuff out of your head)
+2. ~C-c d p~ — Process (decide what things are)
+3. ~C-c d e~ — Engage (see what you can work on)
+4. ~t~ — Done (mark things complete)
+
+If you do nothing else, this system will change your life.
+
+* Projects: When Something Has Multiple Steps
+
+Some things aren't single actions. "Plan vacation" has steps:
+- Research destinations
+- Book flights
+- Reserve hotel
+- Plan activities
+
+When you capture, you can write the steps:
+
+#+begin_example
+C-c d c
+#+end_example
+
+#+begin_example
+Plan vacation
+- Research destinations
+- Book flights
+- Reserve hotel
+- Plan activities
+#+end_example
+
+When processing, choose ~p~ for Project.
+
+org-gtd will:
+- Make "Research destinations" your next action
+- Keep the other tasks waiting until you complete each step
+- Automatically advance to the next task when you're done
+
+You don't have to manage the sequence. Just complete tasks and the system advances.
+
+* Someday/Maybe: Ideas for Later
+
+Not everything is actionable. Some things are just ideas:
+
+- "Learn to play guitar"
+- "Visit Japan"
+- "Start a podcast"
+
+These go in Someday/Maybe (~y~ when organizing).
+
+They won't show up in your engage view. They're safely stored for your weekly review, when you decide if any of them are ready to become real.
+
+* Calendar: Time-Specific Items
+
+Some things must happen at a specific time:
+
+- Doctor appointment on Tuesday
+- Project deadline on Friday
+- Meeting at 3pm
+
+These go in Calendar (~c~ when organizing). You'll be prompted for the date.
+
+They show up in your engage view on the relevant day.
+
+* The Weekly Review
+
+GTD works because you maintain it. Once a week (maybe Sunday evening):
+
+1. *Empty your inbox* - Process anything that accumulated
+2. *Check your calendar* - What's coming up?
+3. *Review your projects* - Are they all moving forward?
+4. *Look at Someday/Maybe* - Ready to activate anything?
+
+org-gtd has commands to help:
+
+| Command | Purpose |
+|---------|---------|
+| ~M-x org-gtd-reflect-stuck-projects~ | Find projects without next actions |
+| ~M-x org-gtd-reflect-someday-review~ | Review your someday items |
+| ~M-x org-gtd-archive-completed-items~ | Clean up done items |
+
+*Key insight*: The weekly review is what makes GTD trustworthy. If you review regularly, you can trust that nothing falls through the cracks.
+
+* Quick Reference Card
+
+Print this and keep it nearby:
+
+** Daily Use
+
+| Action | Keys | When |
+|--------|------|------|
+| Capture something | ~C-c d c~ | Something pops in your head |
+| Process inbox | ~C-c d p~ | After capturing, clear your inbox |
+| See what to do | ~C-c d e~ | When deciding what to work on |
+| Mark done | ~t~ → ~DONE~ | When you finish something |
+
+** When Organizing (after ~C-c c~)
+
+| Key | Category | Use when... |
+|-----|----------|-------------|
+| ~s~ | Single action | One thing, do whenever |
+| ~p~ | Project | Multiple steps needed |
+| ~c~ | Calendar | Must happen at specific time |
+| ~d~ | Delegate | Someone else should do it |
+| ~t~ | Tickler | Remind me on a date |
+| ~y~ | Someday/Maybe | Maybe later, no commitment |
+| ~k~ | Knowledge | Just reference, not a task |
+| ~q~ | Quick action | Do it right now (< 2 min) |
+| ~x~ | Trash | Delete it |
+
+** Weekly Review
+
+| Action | Command |
+|--------|---------|
+| Find stuck projects | ~M-x org-gtd-reflect-stuck-projects~ |
+| Review someday items | ~M-x org-gtd-reflect-someday-review~ |
+| Archive completed | ~M-x org-gtd-archive-completed-items~ |
+
+* Troubleshooting
+
+** "I pressed the wrong key"
+
+Press ~C-g~ to cancel whatever is happening. Start over.
+
+** "I organized something wrong"
+
+Find the item in your files, change its properties, or delete it and capture it again. Nothing is permanent.
+
+** "My inbox won't clear"
+
+Keep pressing ~C-c c~ and choosing a category for each item. They'll disappear one by one.
+
+** "The engage view is empty"
+
+Either you have nothing to do (congratulations!) or everything is in Someday/Maybe or blocked waiting for other tasks. Check your someday list and projects.
+
+* Next Steps
+
+You now know enough to use org-gtd effectively. Use it for a week before learning more.
+
+When you're ready:
+- [[info:org-gtd#sams-gtd-journey][Sam's GTD Journey]] — See how features connect over time
+- [[info:org-gtd][Full Manual]] — Complete documentation
+
+But honestly? Capture, process, engage, done. That's GTD. Everything else is refinement.
+
+Welcome to stress-free productivity.

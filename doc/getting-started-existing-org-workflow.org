@@ -1,0 +1,347 @@
+#+TITLE: Adding org-gtd to Your Existing Org-Mode Workflow
+#+AUTHOR: org-gtd
+#+DESCRIPTION: A guide for org-mode users with established workflows who want to add GTD structure without starting over.
+
+* What This Guide Is For
+
+You already have a working org-mode setup. Maybe you've been using org-capture for years. You have org-agenda views you've refined over time. Your org-refile-targets are configured just the way you like. You use org-archive to keep old stuff out of the way.
+
+Now you want to try GTD. But you don't want to throw away everything and start over.
+
+Good news: org-gtd is designed to work alongside your existing setup. It adds GTD semantics on top of standard org-mode—it doesn't replace the foundations you've built.
+
+*This guide covers*:
+- How org-gtd interacts with your existing org-agenda-files
+- Keeping your refile targets while using org-gtd
+- Running both systems side-by-side during transition
+- Migrating existing items when you're ready
+
+* Try It Without Changing Anything (5 Minutes)
+
+Before changing your configuration, let's see org-gtd in action alongside your existing setup.
+
+** Step 1: Minimal Configuration
+
+Add this to your config (don't change your existing settings yet):
+
+#+begin_src emacs-lisp
+;; Just add org-gtd-directory to your existing agenda files
+(add-to-list 'org-agenda-files org-gtd-directory)
+
+;; Required for project dependencies
+(org-edna-mode 1)
+
+;; Use your existing TODO keywords if they include NEXT
+;; Or add this mapping to use different keywords
+(setq org-gtd-keyword-mapping
+      '((todo . "TODO")
+        (next . "NEXT")
+        (wait . "WAIT")
+        (done . "DONE")
+        (canceled . "CNCL")))
+#+end_src
+
+Restart Emacs or evaluate the code.
+
+** Step 2: Capture Something New
+
+#+begin_example
+M-x org-gtd-capture RET
+#+end_example
+
+Type "Test the org-gtd workflow" and press ~C-c C-c~.
+
+This goes to org-gtd's inbox (separate from your existing files).
+
+** Step 3: Process It
+
+#+begin_example
+M-x org-gtd-process-inbox RET
+#+end_example
+
+The item appears. Press ~C-c c~ to organize, then ~s~ for single action.
+
+** Step 4: See It in the GTD View
+
+#+begin_example
+M-x org-gtd-engage RET
+#+end_example
+
+Your test item appears as NEXT.
+
+*Key insight*: This didn't touch your existing files. org-gtd created its own files in =~/gtd/=. Your existing org-agenda still works exactly as before.
+
+* How org-gtd Coexists With Your Setup
+
+** Your org-agenda-files
+
+org-gtd v4 uses standard ~org-agenda-files~. It doesn't create a shadow configuration.
+
+*What this means*:
+- Your existing agenda commands work unchanged
+- org-gtd's views also see your existing files
+- Items in your old files appear in org-gtd views IF they have matching keywords
+
+*Configuration options*:
+
+#+begin_src emacs-lisp
+;; Option A: Keep systems separate
+;; Your files stay separate, GTD files in their directory
+(setq org-agenda-files
+      (append '("~/org/work.org" "~/org/personal.org")  ; your existing files
+              (list org-gtd-directory)))                 ; org-gtd files
+
+;; Option B: Let org-gtd manage everything
+;; Point org-agenda-files at one directory
+(setq org-agenda-files (list "~/org/"))  ; put org-gtd-directory inside this
+(setq org-gtd-directory "~/org/gtd/")
+
+;; Option C: Directory-based (if you use a directory)
+;; org-gtd appends its directory to whatever you have
+(setq org-agenda-files '("~/org/"))
+;; org-gtd-directory defaults to ~/gtd/ and gets added automatically
+#+end_src
+
+** Your org-refile-targets
+
+org-gtd *merges* your refile targets with its own. Your targets appear first in completion.
+
+#+begin_src emacs-lisp
+;; Your existing refile targets continue to work
+(setq org-refile-targets
+      '(("~/org/work.org" :maxlevel . 2)
+        ("~/org/personal.org" :maxlevel . 2)
+        ("~/org/archive.org" :maxlevel . 1)))
+
+;; When org-gtd refiles, it adds its targets AFTER yours
+;; You'll see: your-work.org, your-personal.org, org-gtd's Actions, etc.
+#+end_src
+
+If you want org-gtd to prompt for refile location (so you can choose your targets):
+
+#+begin_src emacs-lisp
+;; Make org-gtd prompt for refile target instead of auto-refiling
+(setq org-gtd-refile-to-any-target nil)
+
+;; Then specify which GTD types should prompt
+(setq org-gtd-refile-prompt-for-types
+      '(single-action project-heading calendar someday delegated))
+#+end_src
+
+** Your org-archive Setup
+
+org-gtd has archive commands, but they're separate from org-archive:
+
+| Command | What it archives |
+|---------|------------------|
+| ~org-gtd-archive-completed-items~ | Items with ORG_GTD property that are DONE |
+| ~org-archive-subtree~ | Whatever you run it on (unchanged) |
+
+Your existing archive workflow keeps working. org-gtd's archive only touches GTD-managed items.
+
+** Your Capture Templates
+
+org-gtd adds its templates under the "d" prefix (for "do" or "gtd"):
+
+#+begin_example
+d i  → GTD inbox item
+d q  → GTD quick inbox item
+#+end_example
+
+Your existing templates are untouched. Run ~org-capture~ and you'll see both your templates and org-gtd's.
+
+If you want to customize org-gtd's templates:
+
+#+begin_src emacs-lisp
+(with-eval-after-load 'org-gtd
+  ;; Add your own GTD-style template
+  (add-to-list 'org-capture-templates
+               '("d m" "Meeting followup" entry
+                 (file org-gtd-inbox-file-path)
+                 "* Meeting: %?\n:PROPERTIES:\n:ORG_GTD_CAPTURED_AT: %U\n:END:")))
+#+end_src
+
+* Running Both Systems Side-by-Side
+
+During transition, you can use both approaches:
+
+** Your Existing Items
+
+Items in your existing files continue to work in your existing agenda views. They don't have ~ORG_GTD~ properties, so they won't appear in org-gtd-specific views like ~org-gtd-engage~.
+
+That's fine. You can:
+1. Keep using them as-is in your regular agenda
+2. Gradually migrate them to org-gtd (see below)
+3. Leave them forever—org-gtd doesn't require you to migrate
+
+** New Items via org-gtd
+
+New things you capture via ~org-gtd-capture~ go through the GTD workflow:
+- Inbox → Process → Organize → Engage
+
+These items get ~ORG_GTD~ properties and appear in org-gtd views.
+
+** Hybrid Approach
+
+A practical transition:
+
+1. *Week 1*: Use org-gtd only for new captures. Keep working from your existing agenda.
+2. *Week 2*: Start using ~org-gtd-engage~ as your primary "what to do next" view.
+3. *Week 3+*: As existing items complete, don't recreate them in old files. Capture new versions via org-gtd.
+4. *Eventually*: Old files wind down naturally as items complete or become irrelevant.
+
+* Migrating Existing Items
+
+When you're ready to move existing items into org-gtd:
+
+** Option A: Re-capture (Recommended for Most)
+
+The cleanest approach—treat existing items as "stuff" that needs processing:
+
+1. Open your existing file
+2. Look at an item you want to migrate
+3. ~M-x org-gtd-capture~, write a cleaner version
+4. Delete or archive the old one
+5. Process via ~org-gtd-process-inbox~
+
+*Why this works*: GTD is about deciding what things are. Re-capturing forces that decision.
+
+** Option B: Add Properties Manually
+
+For items you want to keep in place:
+
+#+begin_src org
+;; Before:
+,* TODO Call dentist about appointment
+
+;; After:
+,* NEXT Call dentist about appointment
+:PROPERTIES:
+:ORG_GTD: Actions
+:ID: <auto-generated>
+:END:
+#+end_src
+
+Required properties for single actions:
+- ~ORG_GTD: Actions~
+- ~ID~ (use ~M-x org-id-get-create~)
+
+Then the item will appear in ~org-gtd-engage~.
+
+** Option C: Bulk Migration Script
+
+For power users with many items:
+
+#+begin_src emacs-lisp
+(defun my-migrate-heading-to-gtd ()
+  "Add GTD properties to heading at point, making it a single action."
+  (interactive)
+  (org-entry-put (point) "ORG_GTD" "Actions")
+  (org-id-get-create)
+  (org-todo "NEXT")
+  (message "Migrated to GTD single action"))
+#+end_src
+
+Run this on headings you want to migrate. Customize for other GTD types as needed.
+
+* Configuration for Existing Org Users
+
+Here's a complete configuration that respects your existing setup:
+
+#+begin_src emacs-lisp
+;; ============================================================
+;; org-gtd configuration for existing org-mode users
+;; ============================================================
+
+;; Keep your existing org-agenda-files, just add org-gtd
+(add-to-list 'org-agenda-files org-gtd-directory t)
+
+;; Keep your existing refile targets
+;; org-gtd will merge its targets with yours
+;; Set this to get prompted for where to refile (see your targets)
+(setq org-gtd-refile-to-any-target nil)
+
+;; Map to your existing keywords (adjust to match yours)
+(setq org-gtd-keyword-mapping
+      '((todo . "TODO")      ; your "not started" keyword
+        (next . "NEXT")      ; your "ready to do" keyword (add if you don't have)
+        (wait . "WAIT")      ; your "blocked/waiting" keyword
+        (done . "DONE")      ; your completion keyword
+        (canceled . "CNCL"))) ; your cancellation keyword
+
+;; If you don't have NEXT in your keywords, add it:
+;; (setq org-todo-keywords
+;;       '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+
+;; Required for project dependencies
+(org-edna-mode 1)
+
+;; Optional: mode-line inbox indicator
+(org-gtd-mode 1)
+
+;; Keybindings (customize prefix if C-c d conflicts)
+(global-set-key (kbd "C-c d c") 'org-gtd-capture)
+(global-set-key (kbd "C-c d e") 'org-gtd-engage)
+(global-set-key (kbd "C-c d p") 'org-gtd-process-inbox)
+
+(with-eval-after-load 'org-gtd
+  (define-key org-gtd-clarify-mode-map (kbd "C-c c") 'org-gtd-organize))
+#+end_src
+
+* What Changes, What Doesn't
+
+| Feature | Changes? | Details |
+|---------|----------|---------|
+| Your org files | No | org-gtd creates its own files |
+| org-agenda-files | Added to | org-gtd-directory added, yours unchanged |
+| org-refile-targets | Merged | Your targets appear first, org-gtd adds more |
+| org-capture-templates | Added to | Your templates unchanged, org-gtd adds under "d" |
+| org-archive | No | org-gtd has separate archive, yours works as before |
+| org-todo-keywords | Maybe | Need NEXT keyword; can map to existing |
+| Existing items | No | They stay as-is unless you migrate them |
+
+* Common Questions
+
+** "Do I have to migrate all my existing items?"
+
+No. Items without ~ORG_GTD~ properties simply don't appear in GTD-specific views. They still work in your regular org-agenda.
+
+** "Can I use org-gtd for work and keep personal stuff in my old system?"
+
+Yes. Capture work items via ~org-gtd-capture~, keep personal items in your existing files. Both appear in ~org-agenda~ if you want, or use separate views.
+
+** "What if I don't like org-gtd?"
+
+Remove the package. Your existing files are untouched. Delete =~/gtd/= if you want. Everything goes back to how it was.
+
+** "Will org-gtd mess with my agenda custom commands?"
+
+No. org-gtd adds its own views (~org-gtd-engage~, etc.) but doesn't modify ~org-agenda-custom-commands~. Your existing agenda commands work unchanged.
+
+** "I have complex project structures. Will org-gtd handle them?"
+
+org-gtd has its own project model with DAG dependencies. You can:
+- Keep existing projects in your old files (they work in regular agenda)
+- Create new projects via org-gtd (they get dependency tracking)
+- Mix both (each system handles its own items)
+
+* Quick Reference
+
+| You want to... | Command |
+|----------------|---------|
+| Capture something new | ~M-x org-gtd-capture~ or ~C-c d c~ |
+| Process your GTD inbox | ~M-x org-gtd-process-inbox~ or ~C-c d p~ |
+| See GTD next actions | ~M-x org-gtd-engage~ or ~C-c d e~ |
+| Use your regular agenda | ~M-x org-agenda~ (unchanged) |
+| Refile with your targets | Set ~org-gtd-refile-to-any-target~ to nil |
+| Archive GTD items | ~M-x org-gtd-archive-completed-items~ |
+| Archive other items | ~M-x org-archive-subtree~ (unchanged) |
+
+* Next Steps
+
+Once you're comfortable with the basics:
+- [[info:org-gtd#Projects][Project Management]] — org-gtd's DAG-based project dependencies
+- [[info:org-gtd#sams-gtd-journey][Sam's GTD Journey]] — See how GTD features connect over time
+- [[info:org-gtd][Full Manual]] — Complete reference
+
+Welcome to GTD—without giving up what you've built.

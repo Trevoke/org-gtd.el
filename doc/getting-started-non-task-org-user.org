@@ -1,0 +1,367 @@
+#+TITLE: Adding Task Management to Your Org-Mode Setup
+#+AUTHOR: org-gtd
+#+DESCRIPTION: A guide for org-mode users who use it for notes, writing, or research—not tasks—and want to add GTD.
+
+* What This Guide Is For
+
+You use org-mode, but not for task management. Maybe you:
+
+- Take notes or build a personal knowledge base (org-roam, Zettelkasten, etc.)
+- Write documents, papers, or books
+- Do literate programming with org-babel
+- Maintain a personal wiki
+- Keep a journal
+- Manage your Emacs config with tangled org files
+
+You know org syntax—headings, links, properties, maybe even source blocks. But you've never touched org-agenda, org-capture for tasks, or TODO keywords beyond the occasional checkbox.
+
+Now you want to manage tasks too, using GTD. This guide shows you how to add task management alongside your existing org usage—without touching your notes, writing, or other files.
+
+*Key insight*: org-gtd creates its own files. Your existing org files stay exactly as they are.
+
+* The 3-Minute Setup
+
+You need exactly three things configured:
+
+** 1. TODO Keywords
+
+Add this to your config:
+
+#+begin_src emacs-lisp
+(setq org-todo-keywords
+      '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+#+end_src
+
+This tells org-mode what task states exist. Don't worry—this won't add TODO to your notes files unless you type it.
+
+** 2. org-gtd Configuration
+
+#+begin_src emacs-lisp
+;; Where GTD files live (separate from your notes)
+(setq org-gtd-directory "~/gtd/")
+
+;; Map GTD concepts to keywords
+(setq org-gtd-keyword-mapping
+      '((todo . "TODO")
+        (next . "NEXT")
+        (wait . "WAIT")
+        (done . "DONE")
+        (canceled . "CNCL")))
+
+;; Tell org-agenda to only look at GTD files (not your notes)
+(setq org-agenda-files (list org-gtd-directory))
+
+;; Required for project dependencies
+(org-edna-mode 1)
+#+end_src
+
+** 3. Key Bindings
+
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-c d c") 'org-gtd-capture)
+(global-set-key (kbd "C-c d e") 'org-gtd-engage)
+(global-set-key (kbd "C-c d p") 'org-gtd-process-inbox)
+
+(with-eval-after-load 'org-gtd
+  (define-key org-gtd-clarify-mode-map (kbd "C-c c") 'org-gtd-organize))
+#+end_src
+
+Restart Emacs. You're ready.
+
+* Your First Task (2 Minutes)
+
+** Capture Something
+
+#+begin_example
+C-c d c
+#+end_example
+
+Type: "Try out org-gtd"
+
+Press ~C-c C-c~ to save.
+
+** Process It
+
+#+begin_example
+C-c d p
+#+end_example
+
+Your task appears. Press ~C-c c~ to organize it, then ~s~ for "single action."
+
+** See Your Tasks
+
+#+begin_example
+C-c d e
+#+end_example
+
+Your task appears in the "engage" view—a list of things you can work on.
+
+*That's GTD*: Capture → Process → Engage. Everything else is refinement.
+
+* How This Stays Separate From Your Notes
+
+** Different Files
+
+org-gtd creates files in =~/gtd/= (or wherever you set ~org-gtd-directory~):
+
+| File | Purpose |
+|------|---------|
+| ~inbox.org~ | Where captures land |
+| ~org-gtd-tasks.org~ | Organized tasks and projects |
+| ~org-gtd-calendar.org~ | Time-specific items |
+| ~org-gtd-incubate.org~ | Someday/maybe items |
+
+Your notes stay in your notes directory. org-gtd never touches them.
+
+** Different Agenda
+
+~org-agenda-files~ controls what org-agenda scans. We set it to only include org-gtd-directory:
+
+#+begin_src emacs-lisp
+(setq org-agenda-files (list org-gtd-directory))
+#+end_src
+
+This means:
+- ~C-c d e~ (org-gtd-engage) shows only GTD tasks
+- ~M-x org-agenda~ shows only GTD tasks
+- Your notes files are never scanned for TODOs
+
+** Different Capture
+
+~org-gtd-capture~ has its own templates that target the GTD inbox. Your notes might have their own capture templates—those are separate:
+
+#+begin_src emacs-lisp
+;; Your notes capture (if you have one)
+(setq org-capture-templates
+      '(("n" "Note" entry (file "~/notes/inbox.org")
+         "* %?\n%U")))
+
+;; org-gtd adds its own templates under "d" prefix
+;; They don't interfere with each other
+#+end_src
+
+* Understanding the GTD Workflow
+
+If you're new to GTD itself, here's the mental model:
+
+** The Problem GTD Solves
+
+You have stuff floating in your head:
+- "I should call the dentist"
+- "Need to review that paper"
+- "Buy groceries"
+- "That project idea I had"
+
+This creates mental clutter. You can't relax because you're trying to remember everything.
+
+** The GTD Solution
+
+1. *Capture* everything into a trusted system (not your head)
+2. *Clarify* what each thing actually is
+3. *Organize* it by type (task, project, someday idea, reference)
+4. *Reflect* regularly to keep the system current
+5. *Engage* by working from your organized lists
+
+org-gtd implements this workflow.
+
+** The Daily Loop
+
+#+begin_example
+Something pops in your head
+    ↓
+C-c d c (capture it)
+    ↓
+Later: C-c d p (process inbox)
+    ↓
+Choose what it is (single action, project, someday, etc.)
+    ↓
+C-c d e (see what to work on)
+    ↓
+Do the work, mark done
+#+end_example
+
+* Types of Things in GTD
+
+When you process an item (~C-c c~), you choose what type it is:
+
+| Key | Type | Use when... |
+|-----|------|-------------|
+| ~s~ | Single action | One task, do whenever |
+| ~p~ | Project | Multiple steps needed |
+| ~c~ | Calendar | Must happen at specific date/time |
+| ~d~ | Delegate | Someone else should do it |
+| ~t~ | Tickler | Remind me on a specific date |
+| ~y~ | Someday/Maybe | Maybe later, no commitment |
+| ~k~ | Knowledge | Reference info (goes to archive) |
+| ~q~ | Quick action | Do it right now (< 2 min) |
+| ~x~ | Trash | Never mind, delete it |
+
+*Most things are single actions*. When in doubt, press ~s~.
+
+* Connecting Tasks to Your Notes (Optional)
+
+You might want to link tasks to your notes. This is easy with org links.
+
+** Link a Task to a Note
+
+When capturing or clarifying a task, add a link:
+
+#+begin_example
+Review [[file:~/notes/papers/smith2024.org][Smith 2024 paper]]
+#+end_example
+
+The task lives in GTD files; the link points to your note.
+
+** Link a Note to a Task
+
+In your notes, you can link to GTD tasks using org-id:
+
+#+begin_example
+See also: [[id:abc123][Related project task]]
+#+end_example
+
+(Get the ID from the task's properties with ~M-x org-id-copy~)
+
+** Keep Them Separate
+
+The key insight: tasks and notes serve different purposes.
+
+- *Notes* = knowledge, reference, writing (permanent or long-lived)
+- *Tasks* = actions, commitments, projects (temporary—they get done)
+
+org-gtd manages the temporary action layer. Your notes remain your knowledge layer.
+
+* If You Use org-roam
+
+org-roam users often wonder how GTD fits. Here's the model:
+
+#+begin_example
+┌─────────────────────────────────────┐
+│           Your Brain                │
+├──────────────────┬──────────────────┤
+│   Knowledge      │    Actions       │
+│   (org-roam)     │    (org-gtd)     │
+│                  │                  │
+│   • Notes        │   • Tasks        │
+│   • Ideas        │   • Projects     │
+│   • References   │   • Commitments  │
+│   • Connections  │   • Calendar     │
+└──────────────────┴──────────────────┘
+#+end_example
+
+They're complementary:
+- org-roam captures what you *know*
+- org-gtd captures what you need to *do*
+
+Keep them in separate directories. Link between them when useful.
+
+* If You Use org-babel / Literate Config
+
+Your literate programming files stay untouched. org-gtd:
+- Doesn't scan your config files for TODOs
+- Doesn't modify files outside ~org-gtd-directory~
+- Uses its own capture templates
+
+If a task relates to your config ("refactor init.el"), capture it in org-gtd. The task might link to your config file, but the task itself lives in GTD.
+
+* Weekly Maintenance
+
+GTD works because you maintain it. Once a week (10-15 minutes):
+
+1. *Empty inbox*: Process any remaining captures (~C-c d p~)
+2. *Review tasks*: Scan your engage view (~C-c d e~)—anything outdated?
+3. *Check projects*: ~M-x org-gtd-reflect-stuck-projects~—any stuck?
+4. *Review someday*: ~M-x org-gtd-reflect-someday-review~—activate anything?
+
+This keeps the system trustworthy. If you review weekly, you can trust that nothing falls through the cracks.
+
+* Quick Reference
+
+** Daily Commands
+
+| Keys | Action |
+|------|--------|
+| ~C-c d c~ | Capture something |
+| ~C-c d p~ | Process inbox |
+| ~C-c d e~ | See what to work on |
+| ~t~ (in engage view) | Mark item done |
+
+** When Organizing (~C-c c~)
+
+| Key | Type |
+|-----|------|
+| ~s~ | Single action (most common) |
+| ~p~ | Project (multi-step) |
+| ~c~ | Calendar (specific date) |
+| ~y~ | Someday/Maybe |
+| ~x~ | Trash |
+
+** Weekly Review
+
+| Command | Purpose |
+|---------|---------|
+| ~M-x org-gtd-reflect-stuck-projects~ | Find stalled projects |
+| ~M-x org-gtd-reflect-someday-review~ | Review someday items |
+| ~M-x org-gtd-archive-completed-items~ | Clean up done tasks |
+
+* Complete Configuration
+
+Here's everything in one block:
+
+#+begin_src emacs-lisp
+;; ============================================================
+;; org-gtd for non-task org-mode users
+;; ============================================================
+
+;; TODO keywords (won't affect your existing files)
+(setq org-todo-keywords
+      '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+
+;; GTD configuration
+(setq org-gtd-directory "~/gtd/")  ; Keep separate from notes
+(setq org-gtd-keyword-mapping
+      '((todo . "TODO")
+        (next . "NEXT")
+        (wait . "WAIT")
+        (done . "DONE")
+        (canceled . "CNCL")))
+
+;; IMPORTANT: Only scan GTD directory for tasks
+;; This keeps your notes out of org-agenda
+(setq org-agenda-files (list org-gtd-directory))
+
+;; Required for project dependencies
+(org-edna-mode 1)
+
+;; Key bindings
+(global-set-key (kbd "C-c d c") 'org-gtd-capture)
+(global-set-key (kbd "C-c d e") 'org-gtd-engage)
+(global-set-key (kbd "C-c d p") 'org-gtd-process-inbox)
+
+(with-eval-after-load 'org-gtd
+  (define-key org-gtd-clarify-mode-map (kbd "C-c c") 'org-gtd-organize))
+
+;; Optional: mode-line inbox count
+(org-gtd-mode 1)
+#+end_src
+
+* What Stays the Same
+
+| Your current usage | Affected? |
+|--------------------|-----------|
+| Notes files | No—org-gtd never touches them |
+| org-roam database | No—completely separate |
+| org-babel tangling | No—GTD files don't tangle |
+| Journal files | No—separate capture templates |
+| Writing projects | No—unless you add them to agenda-files |
+| Config files | No—not in agenda-files |
+
+* Next Steps
+
+Use org-gtd for a week with just capture → process → engage. Once that's comfortable:
+
+- [[info:org-gtd#Projects][Projects]] — Multi-step work with automatic sequencing
+- [[info:org-gtd#sams-gtd-journey][Sam's GTD Journey]] — See how features connect
+- [[info:org-gtd][Full Manual]] — Complete reference
+
+The goal is simple: get actions out of your head so you can focus on your actual work—writing, research, or whatever you use org-mode for.
