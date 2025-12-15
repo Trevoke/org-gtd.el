@@ -955,8 +955,8 @@ Optional PREFIX-FORMAT is applied for display formatting."
          ;; Match any ORG_GTD item at level > 0
          (match-string "LEVEL>0+ORG_GTD<>\"\"")
          (settings `((org-agenda-overriding-header ,name))))
-    ;; Add skip function
-    (push `(org-agenda-skip-function ,skip-fn) settings)
+    ;; Add skip function (quoted for Emacs 29 compatibility - closures aren't self-evaluating)
+    (push `(org-agenda-skip-function ',skip-fn) settings)
     ;; Add prefix format if provided
     (when prefix-format
       (push `(org-agenda-prefix-format '((tags . ,prefix-format)
@@ -1050,8 +1050,8 @@ Optional PREFIX-FORMAT is applied for project name display."
          (match-string (org-gtd-view-lang--build-match-string gtd-view-spec))
          (skip-fn (org-gtd-view-lang--build-skip-function gtd-view-spec))
          (settings `((org-agenda-overriding-header ,name))))
-    ;; Add skip function - always needed for native blocks
-    (push `(org-agenda-skip-function ,skip-fn) settings)
+    ;; Add skip function (quoted for Emacs 29 compatibility - closures aren't self-evaluating)
+    (push `(org-agenda-skip-function ',skip-fn) settings)
     ;; Add prefix format if provided
     (when prefix-format
       (push `(org-agenda-prefix-format '((tags . ,prefix-format)
