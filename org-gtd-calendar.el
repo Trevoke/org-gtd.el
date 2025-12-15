@@ -50,7 +50,7 @@ You can pass APPOINTMENT-DATE as a YYYY-MM-DD string if you want to use this
 non-interactively."
   (interactive)
   (let ((config-override (when appointment-date
-                           `(('active-timestamp . ,(lambda (_x) (format "<%s>" appointment-date)))))))
+                           `((:when . ,(format "<%s>" appointment-date))))))
     (org-gtd-organize--call
      (lambda () (org-gtd-calendar--apply config-override)))))
 
@@ -76,11 +76,8 @@ APPOINTMENT-DATE as a YYYY-MM-DD string."
 (defun org-gtd-calendar--configure (&optional config-override)
   "Configure item at point as a calendar item.
 
-CONFIG-OVERRIDE can provide input configuration to override default
-prompting behavior."
-  (org-gtd-configure-as-type 'calendar
-                             (when config-override
-                               `((:when . ,(funcall (alist-get '(quote active-timestamp) config-override nil nil #'equal) nil))))))
+CONFIG-OVERRIDE is an alist with :when key for non-interactive use."
+  (org-gtd-configure-as-type 'calendar config-override))
 
 (defun org-gtd-calendar--finalize ()
   "Finalize calendar item organization and refile."

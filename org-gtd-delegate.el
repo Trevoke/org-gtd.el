@@ -53,8 +53,8 @@ and CHECKIN-DATE as the YYYY-MM-DD string of when you want `org-gtd' to remind
 you if you want to call this non-interactively."
   (interactive)
   (let ((config-override (when (or delegated-to checkin-date)
-                           `(,@(when delegated-to `(('text . ,(lambda (_x) delegated-to))))
-                             ,@(when checkin-date `(('active-timestamp . ,(lambda (_x) (format "<%s>" checkin-date)))))))))
+                           `(,@(when delegated-to `((:who . ,delegated-to)))
+                             ,@(when checkin-date `((:when . ,(format "<%s>" checkin-date))))))))
     (org-gtd-organize--call
      (lambda () (org-gtd-delegate--apply config-override)))))
 
@@ -101,14 +101,8 @@ you."
 (defun org-gtd-delegate--configure (&optional config-override)
   "Configure item at point as a delegated item.
 
-CONFIG-OVERRIDE can provide input configuration to override default
-prompting behavior."
-  (org-gtd-configure-as-type 'delegated
-                             (when config-override
-                               (let ((who-fn (alist-get '(quote text) config-override nil nil #'equal))
-                                     (when-fn (alist-get '(quote active-timestamp) config-override nil nil #'equal)))
-                                 `(,@(when who-fn `((:who . ,(funcall who-fn nil))))
-                                   ,@(when when-fn `((:when . ,(funcall when-fn nil)))))))))
+CONFIG-OVERRIDE is an alist with :who and/or :when keys for non-interactive use."
+  (org-gtd-configure-as-type 'delegated config-override))
 
 (defun org-gtd-delegate--add-delegation-note ()
   "Add delegation note with person's name from the delegated type's :who property."

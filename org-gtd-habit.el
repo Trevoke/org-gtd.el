@@ -54,7 +54,7 @@ REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
 determine how often you'll be reminded of this habit."
   (interactive)
   (let ((config-override (when repeater
-                           `(('active-timestamp-with-repeater . ,(lambda (_x) (format "<%s %s>" (format-time-string "%Y-%m-%d") repeater)))))))
+                           `((:when . ,(format "<%s %s>" (format-time-string "%Y-%m-%d") repeater))))))
     (org-gtd-organize--call
      (lambda () (org-gtd-habit--apply config-override)))))
 
@@ -81,11 +81,8 @@ determine how often you'll be reminded of this habit."
 (defun org-gtd-habit--configure (&optional config-override)
   "Configure item at point as a habit.
 
-CONFIG-OVERRIDE can provide input configuration to override default
-prompting behavior."
-  (org-gtd-configure-as-type 'habit
-                             (when config-override
-                               `((:when . ,(funcall (alist-get '(quote active-timestamp-with-repeater) config-override nil nil #'equal) nil))))))
+CONFIG-OVERRIDE is an alist with :when key for non-interactive use."
+  (org-gtd-configure-as-type 'habit config-override))
 
 (defun org-gtd-habit--finalize ()
   "Finalize habit organization and refile."

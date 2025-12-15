@@ -94,7 +94,7 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
          ;; Case 3: Single item - use existing logic
          (t
           (let ((config-override (when reminder-date
-                                   `(('active-timestamp . ,(lambda (_x) (format "<%s>" reminder-date)))))))
+                                   `((:when . ,(format "<%s>" reminder-date))))))
             (org-gtd-organize--call
              (lambda () (org-gtd-tickler--apply config-override))))))))))
 
@@ -122,13 +122,10 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
 
 Saves current state to PREVIOUS_* properties before setting type,
 then clears TODO keyword since tickler items are not actionable.
-CONFIG-OVERRIDE can provide input configuration to override default
-prompting behavior."
+CONFIG-OVERRIDE is an alist with :when key for non-interactive use."
   ;; Save current state before changing type
   (org-gtd-save-state)
-  (org-gtd-configure-as-type 'tickler
-                             (when config-override
-                               `((:when . ,(funcall (alist-get '(quote active-timestamp) config-override nil nil #'equal) nil)))))
+  (org-gtd-configure-as-type 'tickler config-override)
   ;; Clear TODO keyword - tickler items are not actionable
   (org-todo ""))
 
