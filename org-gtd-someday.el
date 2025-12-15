@@ -83,8 +83,7 @@ TOPIC is the string you want to see when reviewing someday/maybe items."
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
-      (org-gtd-clarify-item)
-      (org-gtd-someday--apply))
+      (org-gtd-someday))
     (kill-buffer buffer)))
 
 ;;;;; Private

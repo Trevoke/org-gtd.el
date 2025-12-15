@@ -60,7 +60,7 @@
 ;;;;; Public
 
 (defun org-gtd-single-action-create (topic)
-  "Automatically create a delegated task in the GTD flow.
+  "Automatically create a single action in the GTD flow.
 
 TOPIC is what you want to see in the agenda view."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
@@ -68,7 +68,6 @@ TOPIC is what you want to see in the agenda view."
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
-      (org-gtd-clarify-item)
       (org-gtd-single-action))
     (kill-buffer buffer)))
 

@@ -89,14 +89,11 @@ DELEGATED-TO is the name of the person to whom this was delegated.
 CHECKIN-DATE is the YYYY-MM-DD string of when you want `org-gtd' to remind
 you."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd")
-        (config-override `(('text . ,(lambda (_x) delegated-to))
-                           ('active-timestamp . ,(lambda (_x) (format "<%s>" checkin-date))))))
+        (org-id-overriding-file-name "org-gtd"))
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
-      (org-gtd-clarify-item)
-      (org-gtd-delegate--apply config-override))
+      (org-gtd-delegate delegated-to checkin-date))
     (kill-buffer buffer)))
 
 ;;;;; Private

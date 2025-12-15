@@ -69,13 +69,11 @@ TOPIC is the string you want to see in the `org-agenda' view.
 REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
 determine how often you'll be reminded of this habit."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd")
-        (config-override `(('active-timestamp-with-repeater . ,(lambda (_x) (format "<%s %s>" (format-time-string "%Y-%m-%d") repeater))))))
+        (org-id-overriding-file-name "org-gtd"))
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
-      (org-gtd-clarify-item)
-      (org-gtd-habit--apply config-override))
+      (org-gtd-habit repeater))
     (kill-buffer buffer)))
 
 ;;;;; Private

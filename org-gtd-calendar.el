@@ -64,13 +64,11 @@ non-interactively."
 Takes TOPIC as the string from which to make the heading to add to `org-gtd' and
 APPOINTMENT-DATE as a YYYY-MM-DD string."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd")
-        (config-override `(('active-timestamp . ,(lambda (_x) (format "<%s>" appointment-date))))))
+        (org-id-overriding-file-name "org-gtd"))
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
-      (org-gtd-clarify-item)
-      (org-gtd-calendar--apply config-override))
+      (org-gtd-calendar appointment-date))
     (kill-buffer buffer)))
 
 ;;;;; Private

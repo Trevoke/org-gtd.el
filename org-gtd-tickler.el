@@ -108,13 +108,11 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
 TOPIC is the string you want to see in the `org-agenda' view.
 REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd")
-        (config-override `(('active-timestamp . ,(lambda (_x) (format "<%s>" reminder-date))))))
+        (org-id-overriding-file-name "org-gtd"))
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
-      (org-gtd-clarify-item)
-      (org-gtd-tickler--apply config-override))
+      (org-gtd-tickler reminder-date))
     (kill-buffer buffer)))
 
 ;;;;; Private
