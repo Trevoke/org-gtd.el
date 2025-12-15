@@ -113,23 +113,11 @@ otherwise calls `org-gtd-archive-location'."
                      'agenda)))
 
 (defun org-gtd-archive-item-at-point ()
-  "Dirty hack to force archiving where I know I can."
+  "Archive the subtree at point to the GTD archive location.
+Moves the subtree to the archive file and removes it from current buffer."
   (interactive)
-  (with-temp-message ""
-    (let* ((last-command nil)
-           (temp-file (make-temp-file org-gtd-directory nil ".org"))
-           (buffer (find-file-noselect temp-file))
-           ;; v4: Bind org-archive-location locally instead of using with-org-gtd-context
-           (org-archive-location (funcall org-gtd-archive-location)))
-      (org-copy-subtree)
-      (org-gtd-core-prepare-buffer buffer)
-      (with-current-buffer buffer
-        (org-paste-subtree)
-        (goto-char (point-min))
-        (org-archive-subtree)
-        (basic-save-buffer)
-        (kill-buffer))
-      (delete-file temp-file))))
+  (let ((org-archive-location (org-gtd--effective-archive-location)))
+    (org-archive-subtree)))
 
 ;;;; Functions
 
