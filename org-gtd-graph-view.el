@@ -91,21 +91,26 @@ Can be toggled with `org-gtd-graph-toggle-render-mode'.")
          (buffer-name (org-gtd-graph-view--buffer-name proj-name))
          (buffer (get-buffer-create buffer-name)))
 
+    ;; Initialize buffer settings (but don't render yet)
     (with-current-buffer buffer
       (org-gtd-graph-view-mode)
       (setq org-gtd-graph-view--project-marker project-marker)
       ;; Initialize render mode from customization variable
       (unless org-gtd-graph-view--render-mode
         (setq org-gtd-graph-view--render-mode org-gtd-graph-render-mode))
-      (org-gtd-graph-view-refresh)
 
       (org-gtd-graph-view--setup-file-watch)
       (add-hook 'kill-buffer-hook #'org-gtd-graph-view--cleanup-file-watch nil t)
       (add-hook 'kill-buffer-hook #'org-gtd-graph-ui-cleanup-windows nil t))
 
+    ;; Display buffer and setup split BEFORE rendering
     (switch-to-buffer buffer)
-    ;; Setup split-window layout after buffer is displayed
     (org-gtd-graph-ui-setup-windows buffer)
+
+    ;; Ensure graph window is selected, then render with correct dimensions
+    (when-let ((graph-window (get-buffer-window buffer)))
+      (select-window graph-window)
+      (org-gtd-graph-view-refresh))
 
     ;; Auto-select first actionable task (or project heading if none)
     (when org-gtd-graph-view--graph
@@ -186,16 +191,9 @@ _EVENT is the file-notify event (unused)."
 
 (defun org-gtd-graph-view--display-svg (svg _displayed-graph)
   "Display SVG in the current buffer showing DISPLAYED-GRAPH."
-  (let ((inhibit-read-only t)
-        (image (org-gtd-svg-to-image svg)))
+  (let* ((inhibit-read-only t)
+         (image (org-gtd-svg-to-image svg)))
     (erase-buffer)
-
-    ;; Insert centered image
-    (let ((window-width (window-body-width nil t))
-          (image-width (car (image-size image t))))
-      (when (> window-width image-width)
-        (insert (make-string (/ (- window-width image-width) 2) ?\s))))
-
     (insert-image image)
     (insert "\n\n")
 
