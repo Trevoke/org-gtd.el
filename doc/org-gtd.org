@@ -3316,7 +3316,7 @@ Tickler uses properties, not file movement. The project and its tasks stay in th
 
 Before tickler (Task 1 of a project):
 #+begin_example
-*** NEXT Task 1: Research options
+,*** NEXT Task 1: Research options
 :PROPERTIES:
 :ID: task-1-id
 :ORG_GTD: Actions
@@ -3328,7 +3328,7 @@ Before tickler (Task 1 of a project):
 
 After tickler:
 #+begin_example
-*** Task 1: Research options
+,*** Task 1: Research options
 :PROPERTIES:
 :ID: task-1-id
 :ORG_GTD: Tickler
