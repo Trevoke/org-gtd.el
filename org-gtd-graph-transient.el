@@ -44,36 +44,36 @@
   [:description
    (lambda () (org-gtd-graph-transient--show-selected-context))
    :class transient-row]
-  ["Insert Tasks"
-   ("a r" "Add root task" org-gtd-graph-transient-add-root)
-   ("a s" "Add successor (blocks)" org-gtd-graph-add-successor)
-   ("a b" "Add blocker (blocked by)" org-gtd-graph-add-blocker)]
-  ["Modify Relationships"
-   ("m b" "Modify blockers" org-gtd-graph-modify-blockers)
-   ("m d" "Modify dependents" org-gtd-graph-modify-successors)]
-  ["Task Operations"
-   ("r" "Remove from project" org-gtd-graph-remove-task)
-   ("T" "Trash task" org-gtd-graph-trash-task)
-   ("e" "Edit in org file" org-gtd-graph-ui-jump-to-task)
-   ("t" "Change TODO state" org-gtd-graph-change-state)
-   ("i" "Show relationships" org-gtd-graph-view-show-relationships)
-   ("I" "Incubate this project" org-gtd-graph-incubate-project)]
-  ["Navigation"
-   ("n" "Next successor" org-gtd-graph-nav-down-dependency :transient t)
-   ("p" "Previous blocker" org-gtd-graph-nav-up-dependency :transient t)
-   ("TAB" "Next sibling" org-gtd-graph-nav-next-sibling :transient t)
-   ("g" "Goto task" org-gtd-graph-nav-goto)]
-  ["View"
-   ("v" "Toggle ASCII/SVG" org-gtd-graph-toggle-render-mode :transient t)
-   ("z" "Zoom" org-gtd-graph-transient-zoom)
-   ("R" "Refresh" org-gtd-graph-view-refresh :transient t)]
-  ["Export"
-   ("E s" "Export as SVG" org-gtd-graph-export-svg)
-   ("E d" "Export as DOT" org-gtd-graph-export-dot)
-   ("E a" "Export as ASCII" org-gtd-graph-export-ascii)]
-  ["Quit"
-   ("q" "Quit" transient-quit-one)
-   ("Q" "Quit and kill" org-gtd-graph-quit-and-kill)])
+  [["Insert Tasks"
+    ("a r" "Add root task" org-gtd-graph-transient-add-root)
+    ("a s" "Add successor (blocks)" org-gtd-graph-add-successor)
+    ("a b" "Add blocker (blocked by)" org-gtd-graph-add-blocker)]
+   ["Modify Relationships"
+    ("m b" "Modify blockers" org-gtd-graph-modify-blockers)
+    ("m d" "Modify dependents" org-gtd-graph-modify-successors)]
+   ["Task Operations"
+    ("r" "Remove from project" org-gtd-graph-remove-task)
+    ("T" "Trash task" org-gtd-graph-trash-task)
+    ("e" "Edit in org file" org-gtd-graph-ui-jump-to-task)
+    ("t" "Change TODO state" org-gtd-graph-change-state)
+    ("i" "Show relationships" org-gtd-graph-view-show-relationships)
+    ("I" "Incubate this project" org-gtd-graph-incubate-project)]]
+  [["Navigation"
+    ("n" "Next successor" org-gtd-graph-nav-down-dependency :transient t)
+    ("p" "Previous blocker" org-gtd-graph-nav-up-dependency :transient t)
+    ("TAB" "Next sibling" org-gtd-graph-nav-next-sibling :transient t)
+    ("g" "Goto task" org-gtd-graph-nav-goto)]
+   ["View"
+    ("v" "Toggle ASCII/SVG" org-gtd-graph-toggle-render-mode :transient t)
+    ("z" "Zoom" org-gtd-graph-transient-zoom)
+    ("R" "Refresh" org-gtd-graph-view-refresh :transient t)]
+   ["Export"
+    ("E s" "Export as SVG" org-gtd-graph-export-svg)
+    ("E d" "Export as DOT" org-gtd-graph-export-dot)
+    ("E a" "Export as ASCII" org-gtd-graph-export-ascii)]
+   ["Quit"
+    ("q" "Quit" transient-quit-one)
+    ("Q" "Quit and kill" org-gtd-graph-quit-and-kill)]])
 
 ;;;; Context Display
 
