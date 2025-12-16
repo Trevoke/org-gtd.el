@@ -148,6 +148,46 @@
     (with-wip-buffer
       (assert-true org-gtd-clarify--skip-refile))))
 
+(deftest clarify/agenda-converts-single-action-to-calendar ()
+  "Converts single action to calendar item via clarify-agenda-item."
+  (create-single-action "schedule-me")
+  (ogt--save-all-buffers)
+  (org-gtd-engage)
+  (with-current-buffer org-agenda-buffer
+    (goto-char (point-min))
+    (search-forward "schedule-me")
+    (org-gtd-clarify-agenda-item))
+  ;; Reorganize as calendar
+  (with-wip-buffer
+    (with-simulated-input "2025-06-20 RET"
+      (org-gtd-calendar)))
+  ;; Verify the item is now a calendar item
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "schedule-me")
+    (assert-equal "Calendar" (org-entry-get (point) "ORG_GTD"))
+    (assert-match "2025-06-20" (org-entry-get (point) org-gtd-timestamp))))
+
+(deftest clarify/agenda-converts-single-action-to-habit ()
+  "Converts single action to habit via clarify-agenda-item."
+  (create-single-action "habitize-me")
+  (ogt--save-all-buffers)
+  (org-gtd-engage)
+  (with-current-buffer org-agenda-buffer
+    (goto-char (point-min))
+    (search-forward "habitize-me")
+    (org-gtd-clarify-agenda-item))
+  ;; Reorganize as habit
+  (with-wip-buffer
+    (with-simulated-input "2025-01-01 RET .+1d RET"
+      (org-gtd-habit)))
+  ;; Verify the item is now a habit
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "habitize-me")
+    (assert-equal "Habit" (org-entry-get (point) "ORG_GTD"))
+    (assert-true (org-get-scheduled-time (point)))))
+
 (provide 'clarify-test)
 
 ;;; clarify-test.el ends here

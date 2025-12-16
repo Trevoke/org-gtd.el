@@ -183,6 +183,84 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
   (org-gtd-engage)
   (refute-match "Git commands cheatsheet" (agenda-raw-text)))
 
+;;; Tickler Workflow
+
+(deftest workflow/tickler-via-keyboard ()
+  "Defers item via keyboard with date input."
+  ;; 1. CAPTURE
+  (org-gtd-capture nil "i")
+  (insert "Review insurance policy")
+  (org-capture-finalize)
+
+  ;; 2. PROCESS
+  (org-gtd-process-inbox)
+
+  ;; 3. ORGANIZE via keyboard - tickler with date
+  (with-wip-buffer
+    (goto-char (point-min))
+    (when (org-before-first-heading-p)
+      (org-next-visible-heading 1))
+    ;; Use direct function call with date
+    (with-simulated-input "2025-06-20 RET"
+      (org-gtd-tickler)))
+
+  ;; 4. VERIFY tickler properties
+  (with-current-buffer (org-gtd--default-file)
+    (assert-match "Review insurance policy" (current-buffer-raw-text))
+    (assert-match "2025-06-20" (current-buffer-raw-text))))
+
+;;; Habit Workflow
+
+(deftest workflow/habit-via-keyboard ()
+  "Creates habit via keyboard with repeater input."
+  ;; 1. CAPTURE
+  (org-gtd-capture nil "i")
+  (insert "Morning exercise")
+  (org-capture-finalize)
+
+  ;; 2. PROCESS
+  (org-gtd-process-inbox)
+
+  ;; 3. ORGANIZE via keyboard - habit with repeater
+  (with-wip-buffer
+    (goto-char (point-min))
+    (when (org-before-first-heading-p)
+      (org-next-visible-heading 1))
+    ;; Use direct function call with repeater
+    (with-simulated-input "2025-01-01 RET .+1d RET"
+      (org-gtd-habit)))
+
+  ;; 4. VERIFY habit properties
+  (with-current-buffer (org-gtd--default-file)
+    (let ((content (current-buffer-raw-text)))
+      (assert-match "Morning exercise" content)
+      (assert-match "\\.\\+1d" content))))
+
+;;; Someday Workflow
+
+(deftest workflow/someday-via-keyboard ()
+  "Moves item to someday/maybe via keyboard."
+  ;; 1. CAPTURE
+  (org-gtd-capture nil "i")
+  (insert "Learn Haskell")
+  (org-capture-finalize)
+
+  ;; 2. PROCESS
+  (org-gtd-process-inbox)
+
+  ;; 3. ORGANIZE via keyboard - someday
+  (with-wip-buffer
+    (goto-char (point-min))
+    (when (org-before-first-heading-p)
+      (org-next-visible-heading 1))
+    (org-gtd-someday))
+
+  ;; 4. VERIFY someday properties
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "Learn Haskell")
+    (assert-equal "Someday" (org-entry-get (point) "ORG_GTD"))))
+
 ;;; Multiple Items Workflow
 
 (deftest workflow/multiple-items-sequential-processing ()

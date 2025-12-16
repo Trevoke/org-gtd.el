@@ -183,5 +183,18 @@ cluttering your system."
     (org-gtd-process-inbox)
     (discard-item)))
 
+(defun create-someday-item (description)
+  "Create a someday/maybe item through the full GTD workflow.
+
+DESCRIPTION is what the item is about.
+
+In GTD, someday/maybe items are things you might want to do eventually,
+but with no specific timeframe. They are reviewed periodically during
+your weekly review to decide if they should become active."
+  (let ((inhibit-message t))
+    (capture-inbox-item description)
+    (org-gtd-process-inbox)
+    (organize-as-someday)))
+
 ;; End load guard and provide feature
 (provide 'org-gtd-test-helper-processing))

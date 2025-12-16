@@ -18,8 +18,8 @@ curl -fsSL https://raw.github.com/doublep/eldev/master/webinstall/github-eldev |
 # Run all tests (standard - minimal output)
 eldev etest -B
 
-# Run all tests for a specific version of emacs
-eldev docker 30 etest
+# Run all tests for a specific version of emacs (uses silex/emacs images)
+eldev docker silex/emacs:30.1-ci etest
 
 # Run all tests with backtraces (debugging)
 eldev etest

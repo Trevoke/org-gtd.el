@@ -200,6 +200,72 @@
   (org-gtd-engage)
   (refute-match "Git commands reference" (agenda-raw-text)))
 
+;;; Someday/Maybe Workflow
+
+(deftest someday-workflow ()
+  "Captures, processes, and organizes as someday/maybe item."
+  ;; 1. CAPTURE
+  (capture-inbox-item "Learn woodworking")
+
+  ;; 2. PROCESS
+  (org-gtd-process-inbox)
+
+  ;; 3. ORGANIZE (someday/maybe)
+  (with-wip-buffer
+    (organize-as-someday))
+
+  ;; 4. VERIFY stored in main GTD file under Someday
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "Learn woodworking")
+    (assert-equal "Someday" (org-entry-get (point) "ORG_GTD")))
+
+  ;; Someday items don't show in daily engage agenda (no timestamp)
+  (org-gtd-engage)
+  (refute-match "Learn woodworking" (agenda-raw-text)))
+
+;;; Quick Action Workflow
+
+(deftest quick-action-workflow ()
+  "Captures, processes, and organizes as quick action."
+  ;; 1. CAPTURE
+  (capture-inbox-item "Reply to email")
+
+  ;; 2. PROCESS
+  (org-gtd-process-inbox)
+
+  ;; 3. ORGANIZE (quick action) - these are done immediately and archived
+  (with-wip-buffer
+    (organize-as-quick-action))
+
+  ;; 4. VERIFY quick action is archived immediately
+  (assert-true (archive-contains? "Reply to email"))
+
+  ;; Quick action should NOT be in main GTD file (archived immediately)
+  (with-current-buffer (org-gtd--default-file)
+    (refute-match "Reply to email" (current-buffer-raw-text))))
+
+;;; Trash Workflow
+
+(deftest trash-workflow ()
+  "Captures, processes, and discards item to trash."
+  ;; 1. CAPTURE
+  (capture-inbox-item "Old meeting notes to discard")
+
+  ;; 2. PROCESS
+  (org-gtd-process-inbox)
+
+  ;; 3. ORGANIZE (trash)
+  (with-wip-buffer
+    (discard-item))
+
+  ;; 4. VERIFY item is archived with Trash type
+  (assert-true (archive-contains? "Old meeting notes to discard"))
+
+  ;; Item should NOT be in main GTD file (trashed)
+  (with-current-buffer (org-gtd--default-file)
+    (refute-match "Old meeting notes to discard" (current-buffer-raw-text))))
+
 ;;; Multiple Item Processing
 
 (deftest multiple-item-processing ()

@@ -120,5 +120,15 @@ cluttering your system with items that don't matter."
   (let ((inhibit-message t))
     (org-gtd-trash)))
 
+(defun organize-as-someday ()
+  "Organize the item at point as someday/maybe.
+
+In GTD, someday/maybe items are things you might want to do eventually,
+but with no specific timeframe. Unlike tickler items which have a review
+date, someday items have no timestamps and are simply stored for
+periodic review."
+  (let ((inhibit-message t))
+    (org-gtd-someday)))
+
 ;; End load guard and provide feature
 (provide 'org-gtd-test-helper-clarifying))
