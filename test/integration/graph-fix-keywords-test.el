@@ -23,6 +23,8 @@
                   (or load-file-name byte-compile-current-file buffer-file-name))
                  "../helpers/prelude.el"))
 
+(require 'org-gtd-projects)
+
 ;;; Test Setup
 
 (around-each (proceed context)
@@ -238,43 +240,91 @@ since root tasks have no blockers."
                                           :tasks '("Task A"))))
     (let ((project-marker (alist-get 'project-marker project-data)))
 
-      ;; Action: Add root task using the transient internal logic
-      ;; (simulating what org-gtd-graph-transient-add-root does)
-      (let ((project-id (org-with-point-at project-marker
-                          (org-entry-get (point) "ID")))
-            new-task-id)
+      ;; Action: Add root task using the internal function
+      ;; (this is what org-gtd-graph-transient-add-root uses internally)
+      (org-gtd-graph--add-root-internal "Root Task" project-marker)
 
-        ;; Create new task at project
-        (with-current-buffer (org-gtd--default-file)
-          (goto-char (marker-position project-marker))
-          (org-end-of-subtree t t)
-          (unless (bolp) (insert "\n"))
-          (insert "** Root Task\n")
-          (forward-line -1)
-          (org-back-to-heading t)
-          (setq new-task-id (org-id-get-create))
-          (org-todo "TODO")
-          (org-entry-put (point) "ORG_GTD" "Actions")
-          (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
-          (save-buffer))
+      ;; Assert: Root Task should be NEXT (this will FAIL until we add fix-keywords call)
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Root Task")
+        (org-back-to-heading t)
+        (assert-equal "NEXT" (org-entry-get (point) "TODO"))))))
 
-        ;; Add task to project's FIRST_TASKS
-        (org-with-point-at project-marker
-          (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" new-task-id)
-          (save-buffer))
+(deftest graph-fix/remove-task-unblocks-successors ()
+  "Removing a blocker task should unblock its successors.
+When we remove a task from a project using org-gtd-graph--remove-from-project,
+its successors should become NEXT if they have no other blockers."
 
-        ;; This simulates what the graph operation SHOULD do but doesn't yet:
-        ;; Call fix-keywords to update TODO states
-        ;; (org-gtd-projects-fix-todo-keywords project-marker)
-        ;; We DON'T call it here because we're testing that the operation itself
-        ;; should call it.
+  ;; Setup: Create project with A → B chain (simpler case)
+  (let ((project-data (make-chain-project "Test Project"
+                                          :tasks '("Task A" "Task B"))))
+    (let ((task-a-id (alist-get 'task-1-id project-data))
+          (task-b-id (alist-get 'task-2-id project-data))
+          (project-marker (alist-get 'project-marker project-data))
+          (project-id (alist-get 'project-id project-data)))
 
-        ;; Assert: Root Task should be NEXT (this will FAIL until we fix the code)
-        (with-current-buffer (org-gtd--default-file)
-          (goto-char (point-min))
-          (search-forward "Root Task")
-          (org-back-to-heading t)
-          (assert-equal "NEXT" (org-entry-get (point) "TODO")))))))
+      ;; Fix keywords to set initial state - A is NEXT, B is TODO
+      (org-gtd-projects-fix-todo-keywords project-marker)
+
+      ;; Verify initial state
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Task A")
+        (org-back-to-heading t)
+        (assert-equal "NEXT" (org-entry-get (point) "TODO"))
+
+        (goto-char (point-min))
+        (search-forward "Task B")
+        (org-back-to-heading t)
+        (assert-equal "TODO" (org-entry-get (point) "TODO")))
+
+      ;; Action: Remove Task A from project (the blocker)
+      (org-gtd-graph--remove-from-project task-a-id project-id)
+
+      ;; Assert: Task B should now be NEXT (no longer blocked by A)
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Task B")
+        (org-back-to-heading t)
+        (assert-equal "NEXT" (org-entry-get (point) "TODO"))))))
+
+(deftest graph-fix/trash-task-unblocks-successors ()
+  "Trashing a blocker task should unblock its successors.
+When we trash a task using org-gtd-graph--trash-task,
+its successors should become NEXT if they have no other blockers."
+
+  ;; Setup: Create project with A → B chain
+  (let ((project-data (make-chain-project "Test Project"
+                                          :tasks '("Task A" "Task B"))))
+    (let ((task-a-id (alist-get 'task-1-id project-data))
+          (task-b-id (alist-get 'task-2-id project-data))
+          (project-marker (alist-get 'project-marker project-data)))
+
+      ;; Fix keywords to set initial state - A is NEXT, B is TODO
+      (org-gtd-projects-fix-todo-keywords project-marker)
+
+      ;; Verify initial state
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Task A")
+        (org-back-to-heading t)
+        (assert-equal "NEXT" (org-entry-get (point) "TODO"))
+
+        (goto-char (point-min))
+        (search-forward "Task B")
+        (org-back-to-heading t)
+        (assert-equal "TODO" (org-entry-get (point) "TODO")))
+
+      ;; Action: Trash Task A (the blocker)
+      (org-gtd-graph--trash-task task-a-id)
+
+      ;; Assert: Task B should now be NEXT (no longer blocked by A)
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (search-forward "Task B")
+        (org-back-to-heading t)
+        (assert-equal "NEXT" (org-entry-get (point) "TODO"))))))
 
 (provide 'graph-fix-keywords-test)
 

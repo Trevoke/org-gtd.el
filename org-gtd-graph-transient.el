@@ -1126,6 +1126,34 @@ Returns the ID of the newly created task."
 
     new-task-id))
 
+(defun org-gtd-graph--add-root-internal (task-title project-marker)
+  "Internal function to add a root task to a project.
+TASK-TITLE is the title for the new task.
+PROJECT-MARKER is the project marker.
+Returns the ID of the newly created task."
+  (let ((project-id (org-with-point-at project-marker
+                      (org-entry-get (point) "ID")))
+        new-task-id)
+    ;; Create new task
+    (org-with-point-at project-marker
+      (org-end-of-subtree t t)
+      (unless (bolp) (insert "\n"))
+      (insert "** " task-title "\n")
+      (forward-line -1)
+      (org-back-to-heading t)
+      (setq new-task-id (org-id-get-create))
+      (org-todo "TODO")
+      (org-entry-put (point) "ORG_GTD" "Actions")
+      (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
+      (save-buffer))
+
+    ;; Add task to project's FIRST_TASKS
+    (org-with-point-at project-marker
+      (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" new-task-id)
+      (save-buffer))
+
+    new-task-id))
+
 ;;;; Footer
 
 (provide 'org-gtd-graph-transient)
