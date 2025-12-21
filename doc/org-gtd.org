@@ -349,6 +349,8 @@ You need to configure three things for org-gtd to work:
 2. *Keyword mapping*: Map GTD semantic states to your keywords with ~org-gtd-keyword-mapping~
 3. *org-edna*: Enable org-edna with inheritance for project dependencies to work
 
+*Important for existing org-mode users*: If you already have custom ~org-todo-keywords~, add a separate sequence for GTD keywords rather than mixing them into your existing sequences. See [[#required-keyword-configuration][Required keyword configuration]] for details.
+
 See the configuration sections below for details.
 
 *Optional*: Enable ~org-gtd-mode~ if you want to see your inbox count in the mode-line (e.g., =GTD[5]=).
@@ -759,13 +761,23 @@ The configuration options will also be mentioned in the relevant subsections of 
 Make sure you also read about sub-package configuration: [[#configuring-sub-packages][Required configuration of sub-packages]].
 
 ***** Required keyword configuration
+:PROPERTIES:
+:CUSTOM_ID: required-keyword-configuration
+:END:
 
 These settings are *required* for Org GTD to work properly:
 
-- ~org-todo-keywords~ :: (=org-mode= variable) Define your TODO keyword sequences here. All GTD keywords (TODO, NEXT, WAIT, DONE, CNCL or your custom versions) *must* be in the same sequence. Example.
+- ~org-todo-keywords~ :: (=org-mode= variable) Define your TODO keyword sequences here. All GTD keywords (TODO, NEXT, WAIT, DONE, CNCL or your custom versions) *must* be in the same sequence. Example:
   #+begin_src emacs-lisp
   (setq org-todo-keywords
         '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+  #+end_src
+
+  *Power users note:* If you already have ~org-todo-keywords~ configured with your own workflows (e.g., BACKLOG, DOING, REVIEW), don't merge GTD keywords into those sequences. Instead, add a *separate* GTD sequence. Your org-gtd items could end up in an unhandled state otherwise (always fixable, but annoying). Example with multiple sequences:
+  #+begin_src emacs-lisp
+  (setq org-todo-keywords
+        '((sequence "BACKLOG(b)" "DOING(o)" "REVIEW(r)" "|" "DONE(d)" "ARCHIVED(a)")
+          (sequence "TODO(t)" "NEXT(n)" "WAIT(w)" "|" "DONE(D)" "CNCL(c)")))  ; GTD
   #+end_src
 
 - ~org-gtd-keyword-mapping~ :: Map GTD semantic states to your chosen keywords. This tells Org GTD which keyword means what. The five required mappings are.

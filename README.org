@@ -92,6 +92,8 @@ If you use ~use-package~, copy this entire block into your init file - it includ
    ("C-c ." . org-gtd-agenda-transient)))
 #+end_src
 
+*Existing org-mode users*: If you already have ~org-todo-keywords~ configured, add a separate sequence for GTD keywords rather than mixing them into existing sequences. See the full documentation for details.
+
 ** Alternative: Manual Configuration
 
 If you don't use ~use-package~, copy this into your init file and restart Emacs:

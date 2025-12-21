@@ -224,7 +224,40 @@ Minimal config for someone who knows what they're doing:
         (done . "DONE")
         (canceled . "CNCL")
         (wait . "WAIT")))
+#+end_src
 
+** If You Already Have org-todo-keywords
+
+Most power users have existing keyword sequences. *Don't merge GTD keywords into them*—create a separate sequence.
+
+*Why?* Your org-gtd items might otherwise end up in an undefined state. It's fixable but you don't need that.
+
+#+begin_src emacs-lisp
+;; WRONG: Mixing GTD keywords into existing sequence
+(setq org-todo-keywords
+      '((sequence "BACKLOG" "TODO" "DOING" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+;; Problems: BACKLOG/DOING confuse the state machine, REVIEW is missing
+
+;; RIGHT: Keep your sequences, add a dedicated GTD sequence
+(setq org-todo-keywords
+      '((sequence "BACKLOG(b)" "DOING(o)" "REVIEW(r)" "|" "DONE(d)" "ARCHIVED(a)")
+        (sequence "BUG(B)" "FIXING(F)" "|" "FIXED(X)" "WONTFIX(W)")
+        (sequence "TODO(t)" "NEXT(n)" "WAIT(w)" "|" "DONE(D)" "CNCL(c)")))  ; GTD sequence
+
+;; Then map GTD to your GTD sequence keywords
+(setq org-gtd-keyword-mapping
+      '((todo . "TODO")
+        (next . "NEXT")
+        (wait . "WAIT")
+        (done . "DONE")
+        (canceled . "CNCL")))
+#+end_src
+
+*Key insight:* When you cycle keywords with ~S-LEFT/RIGHT~ on a GTD file, you'll only see GTD keywords because org-mode respects per-file sequences when they're configured. Your non-GTD files continue using their own keywords.
+
+** Directory and Mode
+
+#+begin_src emacs-lisp
 ;; Where your GTD files live
 (setq org-gtd-directory "~/gtd/")
 
