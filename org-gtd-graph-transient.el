@@ -35,6 +35,7 @@
 (require 'org-gtd-archive)
 (require 'org-gtd-accessors)
 (require 'org-gtd-tickler)
+(require 'org-gtd-projects)
 
 ;;;; Main Transient Menu
 
@@ -237,6 +238,7 @@ ORG_GTD_FIRST_TASKS property."
         (save-buffer))
 
       (message "Added root task: %s" title)
+      (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
       (org-gtd-graph-view-refresh))))
 
 ;;;; Navigation Commands - using implementations from org-gtd-graph-navigation.el
@@ -356,7 +358,10 @@ Steps:
           (when (null common-projects)
             ;; No common projects, remove dependency
             (org-gtd-remove-from-multivalued-property task-id org-gtd-prop-blocks succ)
-            (org-gtd-remove-from-multivalued-property succ org-gtd-prop-depends-on task-id)))))))
+            (org-gtd-remove-from-multivalued-property succ org-gtd-prop-depends-on task-id))))
+
+      ;; Fix TODO keywords
+      (org-gtd-projects-fix-todo-keywords project-marker))))
 
 (defun org-gtd-graph--keep-as-independent (task-id)
   "Remove TASK-ID from all projects but keep it as independent task.
@@ -454,6 +459,25 @@ Steps:
     (dolist (succ all-successors)
       (org-gtd-remove-from-multivalued-property task-id org-gtd-prop-blocks succ))
 
+    ;; Add unblocked successors to FIRST_TASKS for each project
+    ;; This is needed because after dependency cleanup, some successors may have no blockers
+    (dolist (succ all-successors)
+      (let ((succ-projects (org-gtd-get-task-projects succ))
+            (succ-deps (org-gtd-get-task-dependencies succ)))
+        (when (null succ-deps)
+          ;; Successor has no blockers, add to FIRST_TASKS for all its projects
+          (dolist (proj-id succ-projects)
+            (when-let ((proj-marker (org-id-find proj-id t)))
+              (org-with-point-at proj-marker
+                (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" succ)
+                (save-buffer)))))))
+
+    ;; Step 3: Fix TODO keywords for all affected projects
+    ;; Must be done AFTER dependency cleanup so tasks see correct blocker state
+    (dolist (project-id projects)
+      (when-let ((project-marker (org-id-find project-id t)))
+        (org-gtd-projects-fix-todo-keywords project-marker)))
+
     ;; Mark as canceled
     (when-let ((marker (org-id-find task-id t)))
       (org-with-point-at marker
@@ -484,7 +508,10 @@ If NEW-BLOCKER-IDS is empty, adds task to project's FIRST_TASKS."
           (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" task-id)
         ;; Has blockers: remove from FIRST_TASKS
         (org-entry-remove-from-multivalued-property (point) "ORG_GTD_FIRST_TASKS" task-id))
-      (save-buffer))))
+      (save-buffer))
+
+    ;; Fix TODO keywords
+    (org-gtd-projects-fix-todo-keywords project-marker)))
 
 ;; State for transient toggle menus
 (defvar org-gtd-graph--modify-state nil
@@ -556,6 +583,7 @@ If NEW-BLOCKER-IDS is empty, adds task to project's FIRST_TASKS."
                               (seq-filter #'cdr org-gtd-graph--modify-state))))
     (org-gtd-graph--modify-blockers-internal selected-id new-blockers org-gtd-graph-view--project-marker)
     (message "Updated blockers")
+    (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
     (org-gtd-graph-view-refresh)
     (transient-quit-one)))
 
@@ -610,7 +638,10 @@ Updates FIRST_TASKS for affected successors based on their blocker status."
           ;; Successor has no blockers, add to FIRST_TASKS in current project
           (org-with-point-at project-marker
             (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" successor-id)
-            (save-buffer)))))))
+            (save-buffer)))))
+
+    ;; Fix TODO keywords
+    (org-gtd-projects-fix-todo-keywords project-marker)))
 
 (transient-define-prefix org-gtd-graph-modify-successors-menu ()
   "Toggle which tasks are blocked by the selected task."
@@ -677,6 +708,7 @@ Updates FIRST_TASKS for affected successors based on their blocker status."
                                 (seq-filter #'cdr org-gtd-graph--modify-state))))
     (org-gtd-graph--modify-successors-internal selected-id new-successors org-gtd-graph-view--project-marker)
     (message "Updated successors")
+    (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
     (org-gtd-graph-view-refresh)
     (transient-quit-one)))
 
@@ -759,6 +791,7 @@ Offers context-appropriate choices:
        (message "Removed '%s' from all projects (kept as independent)" task-title)))
 
     ;; Refresh the graph view
+    (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
     (org-gtd-graph-view-refresh)))
 
 (defun org-gtd-graph-trash-task ()
@@ -777,6 +810,7 @@ Prompts for confirmation before trashing."
     (when (yes-or-no-p (format "Trash task '%s'?  This will remove it from all projects and mark it as canceled.  Are you sure?" task-title))
       (org-gtd-graph--trash-task task-id)
       (message "Trashed task '%s'" task-title)
+      (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
       (org-gtd-graph-view-refresh))))
 
 (defun org-gtd-graph-change-state ()
@@ -942,13 +976,14 @@ Pre-selects the currently selected node if one exists."
 
     (message "Added successor '%s' blocking %d task(s)"
              org-gtd-graph--add-task-title (length blocked-task-ids))
+    (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
     (org-gtd-graph-view-refresh)
     (transient-quit-one)))
 
 (defun org-gtd-graph-add-blocker ()
-  "Add a blocker task that is blocked by project task(s).
+  "Add a blocker task that blocks project task(s).
 Step 1: Select existing task or create new one.
-Step 2: Select which project tasks should block the new task."
+Step 2: Select which project tasks the new task should block."
   (interactive)
   (require 'org-gtd-graph-view)
   (require 'org-gtd-graph-data)
@@ -998,7 +1033,7 @@ Pre-selects the currently selected node if one exists."
 
 (defun org-gtd-graph--add-blocker-description ()
   "Generate description for add-blocker menu."
-  (format "Select tasks that should block '%s':" org-gtd-graph--add-task-title))
+  (format "Select tasks that '%s' should block:" org-gtd-graph--add-task-title))
 
 (defun org-gtd-graph--add-blocker-setup (_)
   "Setup children for add-blocker transient."
@@ -1034,7 +1069,7 @@ Pre-selects the currently selected node if one exists."
 (defun org-gtd-graph--add-blocker-apply (&rest _)
   "Apply the add-blocker changes."
   (interactive)
-  (let* ((blocker-task-ids (mapcar #'car (seq-filter #'cdr org-gtd-graph--add-edge-state)))
+  (let* ((blocked-task-ids (mapcar #'car (seq-filter #'cdr org-gtd-graph--add-edge-state)))
          (project-id (org-with-point-at org-gtd-graph-view--project-marker
                        (org-entry-get (point) "ID")))
          (new-task-id org-gtd-graph--add-task-id))
@@ -1053,9 +1088,9 @@ Pre-selects the currently selected node if one exists."
         (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
         (save-buffer)))
 
-    ;; Create dependencies: each blocker blocks new-task
-    (dolist (blocker-id blocker-task-ids)
-      (org-gtd-dependencies-create blocker-id new-task-id))
+    ;; Create dependencies: new-task blocks each specified task
+    (dolist (blocked-id blocked-task-ids)
+      (org-gtd-dependencies-create new-task-id blocked-id))
 
     ;; Link to project if existing external task
     (when org-gtd-graph--add-task-id
@@ -1063,8 +1098,9 @@ Pre-selects the currently selected node if one exists."
       (org-with-point-at (org-id-find new-task-id t)
         (save-buffer)))
 
-    (message "Added blocker '%s' blocked by %d task(s)"
-             org-gtd-graph--add-task-title (length blocker-task-ids))
+    (message "Added blocker '%s' blocking %d task(s)"
+             org-gtd-graph--add-task-title (length blocked-task-ids))
+    (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
     (org-gtd-graph-view-refresh)
     (transient-quit-one)))
 
@@ -1096,12 +1132,20 @@ Returns the ID of the newly created task."
     (dolist (blocked-id blocked-task-ids)
       (org-gtd-dependencies-create new-task-id blocked-id))
 
+    ;; Add new task to FIRST_TASKS since it has no blockers
+    (org-with-point-at project-marker
+      (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" new-task-id)
+      (save-buffer))
+
+    ;; Fix TODO keywords
+    (org-gtd-projects-fix-todo-keywords project-marker)
+
     new-task-id))
 
-(defun org-gtd-graph--add-blocker-internal (task-title blocker-task-ids project-marker)
+(defun org-gtd-graph--add-blocker-internal (task-title blocked-task-ids project-marker)
   "Internal function to add a blocker task.
 TASK-TITLE is the title for the new task.
-BLOCKER-TASK-IDS is list of task IDs that should block the new task.
+BLOCKED-TASK-IDS is list of task IDs that the new task should block.
 PROJECT-MARKER is the project marker.
 Returns the ID of the newly created task."
   (let ((project-id (org-with-point-at project-marker
@@ -1120,9 +1164,17 @@ Returns the ID of the newly created task."
       (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
       (save-buffer))
 
-    ;; Create dependencies: each blocker blocks new-task
-    (dolist (blocker-id blocker-task-ids)
-      (org-gtd-dependencies-create blocker-id new-task-id))
+    ;; Create dependencies: new-task blocks each specified task
+    (dolist (blocked-id blocked-task-ids)
+      (org-gtd-dependencies-create new-task-id blocked-id))
+
+    ;; Add new task to FIRST_TASKS since it has no blockers
+    (org-with-point-at project-marker
+      (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" new-task-id)
+      (save-buffer))
+
+    ;; Fix TODO keywords
+    (org-gtd-projects-fix-todo-keywords project-marker)
 
     new-task-id))
 
@@ -1151,6 +1203,9 @@ Returns the ID of the newly created task."
     (org-with-point-at project-marker
       (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" new-task-id)
       (save-buffer))
+
+    ;; Fix TODO keywords
+    (org-gtd-projects-fix-todo-keywords project-marker)
 
     new-task-id))
 

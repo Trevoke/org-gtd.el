@@ -490,7 +490,7 @@ Unified command for adding tasks that block existing tasks."
 ;;; Unified Add-Blocker Command Tests
 
 (deftest graph-transient/add-blocker-creates-dependency-relationship ()
-  "Add-blocker creates new task that is blocked by selected task(s).
+  "Add-blocker creates new task that blocks selected task(s).
 Unified command replacing insert-before and add-blocker."
   (let* ((project-marker (ogt-graph-transient-test--create-project "Add Blocker Project"))
          selected-task-id new-task-id)
@@ -515,9 +515,9 @@ Unified command replacing insert-before and add-blocker."
       (org-back-to-heading t)
       (assert-equal new-task-id (org-entry-get (point) "ID")))
 
-    ;; Verify dependency: selected-task blocks new-task
-    ;; So new-task depends on selected-task
-    (assert-true (member selected-task-id (org-gtd-get-task-dependencies new-task-id)))))
+    ;; Verify dependency: new-task blocks selected-task
+    ;; So selected-task depends on new-task
+    (assert-true (member new-task-id (org-gtd-get-task-dependencies selected-task-id)))))
 
 (provide 'graph-transient-test)
 

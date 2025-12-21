@@ -1,0 +1,146 @@
+python3 melpazoid/melpazoid.py
+make[1]: Entering directory '/home/stag/src/vendor/melpazoid'
+sha256:1b090243ef686e91d917a8e595d17f9a47764eaffbe6adf612e5582e8174bce0
+make[1]: Leaving directory '/home/stag/src/vendor/melpazoid'
+Using local repository at /home/stag/src/projects/dag-draw.el
+<!-- Building container for dag-draw... 🐳 -->[0m
+
+<!-- Running tests... -->[0m
+make[1]: Entering directory '/home/stag/src/vendor/melpazoid'
+sha256:1ba13518f4a6cc183c596c6b04a954eb8e3f906a4433467e326d18f0690e78ea
+
+⸺ `dag-draw-svg.el` with byte-compile using Emacs 30.2:
+```
+dag-draw-svg.el:300:2: Warning: docstring wider than 80 characters
+```
+
+⸺ `test-visual-ascii-properties.el` with package-lint 20251205.1720 and `package-lint-main-file` = "dag-draw.el":
+```
+1 issue found:
+1:0:[31m error:[0m There is no `provide' form.
+```
+
+⸺ `dag-draw.el` with [melpazoid](https://github.com/riscy/melpazoid):
+```
+- `;;; Commentary` should usually not redirect to README
+```
+
+⸺ `test-visual-ascii-properties.el` with checkdoc 0.6.2 (fix *within reason*):
+```
+test-visual-ascii-properties.el:0: You should have a section marked ";;; Commentary:"
+test-visual-ascii-properties.el:9: You should have a section marked ";;; Code:"
+```
+
+⸺ `dag-draw-svg.el` with checkdoc 0.6.2 (fix *within reason*):
+```
+dag-draw-svg.el:279: Open parenthesis in column 0 should be escaped
+dag-draw-svg.el:301: Some lines are over 80 columns wide
+```
+
+⸺ `dag-draw-ascii-edges.el` with checkdoc 0.6.2 (fix *within reason*):
+```
+dag-draw-ascii-edges.el:582: Argument `grid' should appear (as GRID) in the doc string
+dag-draw-ascii-edges.el:645: Argument `grid' should appear (as GRID) in the doc string
+dag-draw-ascii-edges.el:676: Argument `grid' should appear (as GRID) in the doc string
+dag-draw-ascii-edges.el:718: Argument `grid' should appear (as GRID) in the doc string
+dag-draw-ascii-edges.el:764: Argument `grid' should appear (as GRID) in the doc string
+```
+
+Stderr output while compiling/loading:
+```
+=== ASCII VISUAL PROPERTIES DEMO ===
+
+TEST 1: :ascii-highlight attribute
+--------------------------------------
+┌─────────────┐
+│ Normal Node │
+└─────────────┘
+       │       
+       │       
+╔══════▼══════╗
+║ Highlighted ║
+╚═════════════╝
+               
+               
+               
+               
+               
+
+Expected: 'Normal Node' should have single-line borders (┌┐└┘─│)
+         'Highlighted' should have double-line borders (╔╗╚╝═║)
+
+
+TEST 2: :ascii-marker attribute
+--------------------------------------
+┌────────────┐                  
+│ Plain Task │                  
+└────────────┘                  
+       │                        
+      ┌└─────────────────┐      
+┌─────▼─────┐      ┌─────▼─────┐
+│* Important│      │[X] Complet│
+└───────────┘      └───────────┘
+                                
+                                
+                                
+                                
+                                
+
+Expected: First node has no marker
+         Second node shows '* Important'
+         Third node shows '[X] Completed'
+
+
+TEST 3: Combined :ascii-highlight and :ascii-marker
+----------------------------------------------------
+╔═══════════════╗
+║! Critical Task║
+╚═══════════════╝
+        │        
+       ┌─        
+┌──────▼──────┐  
+│ Normal Task │  
+└─────────────┘  
+                 
+                 
+                 
+                 
+                 
+
+Expected: 'Critical Task' has double-line borders AND '! ' prefix
+         'Normal Task' has single-line borders and no prefix
+
+=== END OF ASCII VISUAL PROPERTIES DEMO ===
+```
+
+⸺ Package and license:
+- LICENSE excerpt: `GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007`...
+[31m- test-visual-ascii-properties.el needs *formal* license boilerplate and/or an [SPDX-License-Identifier](https://spdx.dev/ids/)[0m
+[31m- test-visual-ascii-properties.el -- not in package namespace `dag-draw-`[0m
+- pkg/dag-draw-pass3-positioning.el: GPL*
+- pkg/dag-draw-ascii-grid.el: GPL*
+- pkg/dag-draw-quality.el: GPL*
+- pkg/dag-draw-ascii-edges.el: GPL*
+- pkg/dag-draw-ports.el: GPL*
+- pkg/dag-draw-cycle-breaking.el: GPL*
+- pkg/dag-draw-ascii-splines.el: GPL*
+- pkg/dag-draw-ascii-junctions.el: GPL*
+- pkg/dag-draw-ascii-nodes.el: GPL*
+- pkg/dag-draw-svg.el: GPL*
+- pkg/dag-draw-aesthetic-principles.el: GPL*
+- pkg/dag-draw-topological.el: GPL*
+- pkg/test-visual-ascii-properties.el: license unknown
+- pkg/dag-draw.el: GPL*
+- pkg/dir: license unknown
+- pkg/dag-draw.info: GNU General Public License v3.0 only
+- pkg/dag-draw-render-gknv-compliant.el: GPL*
+- pkg/dag-draw-pass1-ranking.el: GPL*
+- pkg/dag-draw-render.el: GPL*
+- pkg/dag-draw-dot.el: GPL*
+- pkg/dag-draw-algorithms.el: GPL*
+- pkg/dag-draw-pass2-ordering.el: GPL*
+- pkg/dag-draw-rank-balancing.el: GPL*
+- pkg/dag-draw-core.el: GPL*
+- pkg/dag-draw-coord-transform.el: GPL*
+- pkg/dag-draw-pass4-splines.el: GPL*
+- pkg/doc/dag-draw.texi: GNU General Public License v3.0 only
