@@ -117,7 +117,7 @@ Can be toggled with `org-gtd-graph-toggle-render-mode'.")
       (let ((initial-node (or (org-gtd-graph-data-find-first-actionable
                                org-gtd-graph-view--graph)
                               (org-gtd-graph-project-id org-gtd-graph-view--graph))))
-        (org-gtd-graph-ui-select-node initial-node t)))  ; t = no history
+        (org-gtd-graph-ui-select-node initial-node)))
 
     buffer))
 
@@ -199,12 +199,14 @@ _EVENT is the file-notify event (unused)."
 
     ;; Insert legend
     (insert (propertize "Graph View Controls:\n" 'face 'bold))
-    (insert "  Quick Keys:      ? - Show all commands (transient menu) v - Toggle ASCII/SVG\n")
-    (insert "  Navigation:      n/p - Down/up dependency | TAB - Next sibling | g - Go to node\n")
-    (insert "  View:            z - Zoom\n")
-    (insert "  Actions:         r - Refresh | q - Quit\n")
+    (insert "  ? - All commands    v - Toggle ASCII/SVG    r - Refresh    q - Quit\n")
     (insert "\n")
-    (insert "  Press ? to see all commands including: add child/root/blocker tasks\n")
+    (insert "  Navigation:\n")
+    (insert "    n - A task this blocks       p - A task that blocks this\n")
+    (insert "    TAB - Next sibling task      S-TAB - Previous sibling task\n")
+    (insert "    g - Go to task by name\n")
+    (insert "\n")
+    (insert "  Press ? to see all commands including: add/remove tasks, modify relationships\n")
     (insert (format "\n  Render mode: SVG (press 'v' to toggle)\n"))
 
     (goto-char (point-min))))
@@ -220,12 +222,14 @@ _EVENT is the file-notify event (unused)."
 
     ;; Insert legend
     (insert (propertize "Graph View Controls:\n" 'face 'bold))
-    (insert "  Quick Keys:      ? - Show all commands (transient menu) | v - Toggle ASCII/SVG\n")
-    (insert "  Navigation:      n/p - Down/up dependency | TAB - Next sibling | g - Go to node\n")
-    (insert "  View:            z - Zoom\n")
-    (insert "  Actions:         r - Refresh | q - Quit\n")
+    (insert "  ? - All commands    v - Toggle ASCII/SVG    r - Refresh    q - Quit\n")
     (insert "\n")
-    (insert "  Press ? to see all commands including: add child/root/blocker tasks\n")
+    (insert "  Navigation:\n")
+    (insert "    n - A task this blocks       p - A task that blocks this\n")
+    (insert "    TAB - Next sibling task      S-TAB - Previous sibling task\n")
+    (insert "    g - Go to task by name\n")
+    (insert "\n")
+    (insert "  Press ? to see all commands including: add/remove tasks, modify relationships\n")
     (insert (format "\n  Render mode: ASCII (press 'v' to toggle)\n"))
 
     (goto-char (point-min))))

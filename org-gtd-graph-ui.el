@@ -53,12 +53,6 @@
 (defvar-local org-gtd-graph-ui--details-buffer nil
   "Buffer displaying task details.")
 
-(defvar-local org-gtd-graph-ui--navigation-history nil
-  "Stack of previously visited node IDs for back navigation.")
-
-(defvar-local org-gtd-graph-ui--navigation-future nil
-  "Stack of node IDs for forward navigation (after going back).")
-
 (defvar-local org-gtd-graph-ui--traversal-order nil
   "Cached list of node IDs in breadth-first traversal order.")
 
@@ -118,51 +112,11 @@ Closes details window and restores single-window state."
     (setq org-gtd-graph-ui--details-buffer nil
           org-gtd-graph-ui--selected-node-id nil)))
 
-;;;; Navigation History
-
-(defun org-gtd-graph-ui-push-history (node-id)
-  "Add NODE-ID to navigation history.
-Pushes current selection to history before changing."
-  (when (and org-gtd-graph-ui--selected-node-id
-             (not (equal org-gtd-graph-ui--selected-node-id node-id)))
-    (push org-gtd-graph-ui--selected-node-id org-gtd-graph-ui--navigation-history)
-    ;; Limit history to 50 nodes
-    (when (> (length org-gtd-graph-ui--navigation-history) 50)
-      (setq org-gtd-graph-ui--navigation-history
-            (butlast org-gtd-graph-ui--navigation-history)))))
-
-(defun org-gtd-graph-ui-back ()
-  "Navigate to previous node in history."
-  (interactive)
-  (when org-gtd-graph-ui--navigation-history
-    (let ((previous-node (pop org-gtd-graph-ui--navigation-history)))
-      (when org-gtd-graph-ui--selected-node-id
-        (push org-gtd-graph-ui--selected-node-id org-gtd-graph-ui--navigation-future))
-      (setq org-gtd-graph-ui--selected-node-id previous-node)
-      (org-gtd-graph-ui-update-details)
-      (message "Back to: %s" previous-node))))
-
-(defun org-gtd-graph-ui-forward ()
-  "Navigate to next node in future stack."
-  (interactive)
-  (when org-gtd-graph-ui--navigation-future
-    (let ((next-node (pop org-gtd-graph-ui--navigation-future)))
-      (when org-gtd-graph-ui--selected-node-id
-        (push org-gtd-graph-ui--selected-node-id org-gtd-graph-ui--navigation-history))
-      (setq org-gtd-graph-ui--selected-node-id next-node)
-      (org-gtd-graph-ui-update-details)
-      (message "Forward to: %s" next-node))))
-
 ;;;; Task Details Panel
 
-(defun org-gtd-graph-ui-select-node (node-id &optional no-history)
+(defun org-gtd-graph-ui-select-node (node-id)
   "Select NODE-ID and update details panel.
-Updates the details buffer to show task information.
-If NO-HISTORY is non-nil, don't add to navigation history."
-  (unless no-history
-    (org-gtd-graph-ui-push-history node-id)
-    ;; Clear future stack when navigating normally (not via back/forward)
-    (setq org-gtd-graph-ui--navigation-future nil))
+Updates the details buffer to show task information."
   (setq org-gtd-graph-ui--selected-node-id node-id)
   (org-gtd-graph-ui-update-details)
   ;; Refresh graph to show selection highlight

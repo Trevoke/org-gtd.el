@@ -135,7 +135,7 @@
 
 (deftest graph-transient/view-commands-defined ()
   "View commands are defined and callable."
-  (assert-true (commandp 'org-gtd-graph-transient-zoom)))
+  (assert-true (commandp 'org-gtd-graph-toggle-render-mode)))
 
 (deftest graph-transient/quit-command-defined ()
   "Quit command is defined and callable."

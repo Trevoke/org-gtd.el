@@ -116,8 +116,7 @@
     (assert-nil (org-gtd-graph-filter-todo-states filter))
     (assert-nil (org-gtd-graph-filter-priorities filter))
     (assert-nil (org-gtd-graph-filter-tags filter))
-    (assert-nil (org-gtd-graph-filter-scheduled filter))
-    (assert-nil (org-gtd-graph-filter-zoom-node-id filter))))
+    (assert-nil (org-gtd-graph-filter-scheduled filter))))
 
 ;;; Filter by TODO State Tests
 
@@ -278,48 +277,6 @@
                   :priorities '("A")))
          (visible-ids (org-gtd-graph-filter-apply graph filter)))
     (assert-equal 0 (length visible-ids))))
-
-;;; Zoom Tests
-
-(deftest graph-filter/zoom-subtree ()
-  "Zoom to subtree shows only node and descendants."
-  (let* ((graph (graph-filter-eunit--create-test-graph))
-         (filter (org-gtd-graph-filter-create :zoom-node-id "node-1"))
-         (visible-ids (org-gtd-graph-filter-apply graph filter)))
-    ;; node-1 and all its descendants: node-2, node-3, node-4
-    (assert-equal 4 (length visible-ids))
-    (assert-true (member "node-1" visible-ids))
-    (assert-true (member "node-2" visible-ids))
-    (assert-true (member "node-3" visible-ids))
-    (assert-true (member "node-4" visible-ids))
-    (assert-nil (member "node-5" visible-ids))))
-
-(deftest graph-filter/zoom-leaf-node ()
-  "Zoom to leaf node shows only that node."
-  (let* ((graph (graph-filter-eunit--create-test-graph))
-         (filter (org-gtd-graph-filter-create :zoom-node-id "node-3"))
-         (visible-ids (org-gtd-graph-filter-apply graph filter)))
-    (assert-equal 1 (length visible-ids))
-    (assert-true (member "node-3" visible-ids))))
-
-(deftest graph-filter/zoom-nil-shows-all ()
-  "Zoom with nil node-id shows all nodes."
-  (let* ((graph (graph-filter-eunit--create-test-graph))
-         (filter (org-gtd-graph-filter-create :zoom-node-id nil))
-         (visible-ids (org-gtd-graph-filter-apply graph filter)))
-    (assert-equal 5 (length visible-ids))))
-
-(deftest graph-filter/zoom-combined-with-filters ()
-  "Combines zoom with other filters."
-  (let* ((graph (graph-filter-eunit--create-test-graph))
-         (filter (org-gtd-graph-filter-create
-                  :zoom-node-id "node-1"
-                  :todo-states '("TODO")))
-         (visible-ids (org-gtd-graph-filter-apply graph filter)))
-    ;; Zoomed to node-1 subtree, but only TODO tasks
-    (assert-equal 2 (length visible-ids))
-    (assert-true (member "node-1" visible-ids))
-    (assert-true (member "node-4" visible-ids))))
 
 (provide 'graph-filter-test)
 

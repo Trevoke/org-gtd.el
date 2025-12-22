@@ -1,4 +1,4 @@
-;;; org-gtd-graph-filter.el --- Zoom functionality for graph views -*- lexical-binding: t; coding: utf-8 -*-
+;;; org-gtd-graph-filter.el --- Filter functionality for graph views -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
@@ -20,8 +20,8 @@
 
 ;;; Commentary:
 ;;
-;; This module provides zoom functionality for graph views, allowing
-;; users to focus on subtrees of the project dependency graph.
+;; This module provides filter functionality for graph views, allowing
+;; users to filter by TODO states, priorities, tags, and scheduling.
 ;;
 ;;; Code:
 
@@ -49,13 +49,11 @@ Fields:
   todo-states  - List of TODO states to show (nil = all)
   priorities   - List of priorities to show (nil = all)
   tags         - List of tags to show (nil = all)
-  scheduled    - Scheduled filter: 'overdue, 'today, 'week, 'unscheduled, or nil
-  zoom-node-id - Node ID for zoom focus, or nil for full view"
+  scheduled    - Scheduled filter: 'overdue, 'today, 'week, 'unscheduled, or nil"
   (todo-states nil)
   (priorities nil)
   (tags nil)
-  (scheduled nil)
-  (zoom-node-id nil))
+  (scheduled nil))
 
 ;;;; Filter Application
 
@@ -63,20 +61,12 @@ Fields:
   "Return list of node IDs that pass FILTER in GRAPH.
 
 Applies all active filters using AND logic. If a filter field is nil,
-that filter is not applied (all nodes pass that criterion).
-
-For zoom, returns the zoomed node and all its descendants."
+that filter is not applied (all nodes pass that criterion)."
   (let ((all-node-ids nil))
     ;; Collect all node IDs
     (maphash (lambda (node-id _node)
                (push node-id all-node-ids))
              (org-gtd-graph-nodes graph))
-
-    ;; Apply zoom filter first if active
-    (when (org-gtd-graph-filter-zoom-node-id filter)
-      (setq all-node-ids (org-gtd-graph-filter--get-subtree-ids
-                          graph
-                          (org-gtd-graph-filter-zoom-node-id filter))))
 
     ;; Apply each filter criterion
     (let ((visible-ids all-node-ids))
@@ -243,38 +233,6 @@ and edges between visible nodes."
     (let (tags-list)
       (maphash (lambda (tag _val) (push tag tags-list)) tags-set)
       (sort tags-list #'string<))))
-
-;;;; Zoom Commands
-
-(defun org-gtd-graph-zoom-to-subtree ()
-  "Zoom to selected node and descendants."
-  (interactive)
-  (require 'org-gtd-graph-view)
-  (require 'org-gtd-graph-ui)
-  (if-let ((selected-id org-gtd-graph-ui--selected-node-id))
-      (let* ((current-filter (or org-gtd-graph-view--filter
-                                 (org-gtd-graph-filter-create)))
-             (new-filter (copy-org-gtd-graph-filter current-filter)))
-        (setf (org-gtd-graph-filter-zoom-node-id new-filter) selected-id)
-        (setq org-gtd-graph-view--filter new-filter)
-        (org-gtd-graph-view-refresh)
-        (message "Zoomed to subtree: %s"
-                 (org-gtd-graph-node-title
-                  (org-gtd-graph-data-get-node org-gtd-graph-view--graph selected-id))))
-    (message "No node selected")))
-
-(defun org-gtd-graph-zoom-out-full ()
-  "Return to full graph view."
-  (interactive)
-  (require 'org-gtd-graph-view)
-  (if org-gtd-graph-view--filter
-      (let* ((current-filter org-gtd-graph-view--filter)
-             (new-filter (copy-org-gtd-graph-filter current-filter)))
-        (setf (org-gtd-graph-filter-zoom-node-id new-filter) nil)
-        (setq org-gtd-graph-view--filter new-filter)
-        (org-gtd-graph-view-refresh)
-        (message "Zoomed out to full view"))
-    (message "No zoom active")))
 
 ;;;; Footer
 

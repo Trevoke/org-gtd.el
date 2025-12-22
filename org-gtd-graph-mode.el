@@ -61,15 +61,9 @@
     ;; Layer-based navigation
     (define-key map (kbd "TAB") #'org-gtd-graph-nav-next-sibling)
     (define-key map (kbd "<backtab>") #'org-gtd-graph-nav-previous-sibling)
-    (define-key map (kbd "<") #'org-gtd-graph-nav-first-in-layer)
-    (define-key map (kbd ">") #'org-gtd-graph-nav-last-in-layer)
 
     ;; Goto navigation
     (define-key map (kbd "g") #'org-gtd-graph-nav-goto)
-
-    ;; Navigation history
-    (define-key map (kbd "[") #'org-gtd-graph-ui-back)
-    (define-key map (kbd "]") #'org-gtd-graph-ui-forward)
 
     map)
   "Keymap for `org-gtd-graph-view-mode'.")
@@ -94,10 +88,6 @@ The graph is interactive:
 - Use keyboard commands to add/remove dependencies
 - Create and delete tasks
 - All changes are immediately saved to the org file
-
-Navigation history:
-- Press \\[org-gtd-graph-ui-back] to go back to previously selected node
-- Press \\[org-gtd-graph-ui-forward] to go forward after going back
 
 The graph auto-updates when you refresh (\\[org-gtd-graph-view-refresh])."
   :group 'org-gtd

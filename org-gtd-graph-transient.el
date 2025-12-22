@@ -66,7 +66,6 @@
     ("g" "Goto task" org-gtd-graph-nav-goto)]
    ["View"
     ("v" "Toggle ASCII/SVG" org-gtd-graph-toggle-render-mode :transient t)
-    ("z" "Zoom" org-gtd-graph-transient-zoom)
     ("R" "Refresh" org-gtd-graph-view-refresh :transient t)]
    ["Export"
     ("E s" "Export as SVG" org-gtd-graph-export-svg)
@@ -277,14 +276,6 @@ ORG_GTD_FIRST_TASKS property."
         (princ "  (none)\n")))))
 
 ;;;; View Commands
-
-;;;###autoload (autoload 'org-gtd-graph-transient-zoom "org-gtd-graph-transient" nil t)
-(transient-define-prefix org-gtd-graph-transient-zoom ()
-  "Zoom graph view focus."
-  ["Zoom Graph View"
-   ["Zoom"
-    ("z" "zoom to selected subtree" org-gtd-graph-zoom-to-subtree)
-    ("o" "zoom out to full view" org-gtd-graph-zoom-out-full)]])
 
 ;;;; Quit Commands
 
