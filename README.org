@@ -55,6 +55,9 @@ If you use ~use-package~, copy this entire block into your init file - it includ
   :ensure t
   :after org
   :demand t
+  :init
+  ;; Suppress upgrade warnings (must be set before package loads)
+  (setq org-gtd-update-ack "4.0.0")
   :custom
   ;; Where org-gtd will keep its files (defaults to ~/gtd/)
   ;; (org-gtd-directory "~/my-gtd/")
@@ -99,6 +102,9 @@ If you use ~use-package~, copy this entire block into your init file - it includ
 If you don't use ~use-package~, copy this into your init file and restart Emacs:
 
 #+begin_src emacs-lisp
+;; Suppress upgrade warnings (set BEFORE org-gtd loads)
+(setq org-gtd-update-ack "4.0.0")
+
 ;; Configure org-mode TODO keywords
 ;; All GTD keywords must be in the same sequence
 ;; Standard options like "TODO(t)" or "DONE(d!)" are fine - org-gtd ignores them

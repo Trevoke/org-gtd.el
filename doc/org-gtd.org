@@ -283,6 +283,33 @@ The migration performs three steps automatically:
 - You can now customize dependencies for individual projects if you want parallel tasks
 - Safe to run multiple times if needed
 
+**** Required: Acknowledge the upgrade
+
+After completing the upgrade, you must set ~org-gtd-update-ack~ to suppress the upgrade warning. *This setting must be evaluated before org-gtd loads*—otherwise the warning appears during package loading, before your config runs.
+
+*Why before loading?* The warning is intentionally triggered at load time so you can't miss it. Once you've completed the upgrade steps, you acknowledge by setting this variable in the `:init` section (for use-package) or before the ~require~ statement.
+
+*use-package:*
+#+begin_src emacs-lisp
+(use-package org-gtd
+  :after org
+  :init
+  ;; Acknowledge upgrade BEFORE package loads
+  (setq org-gtd-update-ack "4.0.0")
+  :config
+  ;; Rest of your configuration...
+  (org-edna-mode 1))
+#+end_src
+
+*Without use-package:*
+#+begin_src emacs-lisp
+;; Set BEFORE requiring org-gtd
+(setq org-gtd-update-ack "4.0.0")
+(require 'org-gtd)
+#+end_src
+
+*What version to use:* Always set it to the major version you've upgraded to (e.g., "4.0.0"). Minor version updates (4.0.1, 4.1.0) generally don't require acknowledgment—only major upgrades with breaking changes do.
+
 **** Why these changes?
 
 *Keyword configuration:*
@@ -367,6 +394,10 @@ See the configuration sections below for details.
 This is the simplest possible configuration for org-gtd. Copy this entire block into your init file:
 
 #+begin_src emacs-lisp
+;; Suppress upgrade warnings (set BEFORE org-gtd loads)
+;; After upgrading, set to the version you upgraded to
+(setq org-gtd-update-ack "4.0.0")
+
 ;; Configure org-mode TODO keywords
 ;; All GTD keywords MUST be in the same sequence
 ;; Standard options like "TODO(t)" or "DONE(d!)" are fine - org-gtd ignores them
@@ -424,6 +455,9 @@ Then add this to your ~config.el~:
 #+begin_src emacs-lisp
 (use-package! org-gtd
   :after org
+  :init
+  ;; Suppress upgrade warnings (must be set before package loads)
+  (setq org-gtd-update-ack "4.0.0")
   :custom
   (org-gtd-directory "~/gtd/")
   (org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
@@ -464,6 +498,8 @@ If you use Spacemacs, add this to your ~dotspacemacs/user-config~ function:
   :ensure t
   :after org
   :init
+  ;; Suppress upgrade warnings (must be set before package loads)
+  (setq org-gtd-update-ack "4.0.0")
   ;; Configure org-mode TODO keywords
   (setq org-todo-keywords
         '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
