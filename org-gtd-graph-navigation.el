@@ -33,6 +33,25 @@
 (require 'org-gtd-graph-view)
 (require 'org-gtd-graph-ui)
 
+;;;; Customization
+
+(defcustom org-gtd-graph-sibling-mode 'any-same-blocker
+  "How to determine sibling tasks for TAB/S-TAB navigation.
+
+- `any-same-blocker': Tasks sharing at least one blocker (default).
+  Two tasks are siblings if they have any blocker in common.
+
+- `all-same-blockers': Tasks with exactly the same set of blockers.
+  Two tasks are siblings only if their blocker sets are identical.
+
+- `dag-level': Tasks at the same depth in the dependency graph.
+  Two tasks are siblings if they have the same layer number,
+  regardless of their actual blockers."
+  :type '(choice (const :tag "Any same blocker (default)" any-same-blocker)
+                 (const :tag "All same blockers" all-same-blockers)
+                 (const :tag "DAG level (depth)" dag-level))
+  :group 'org-gtd)
+
 ;;;; Traversal Order Calculation
 
 (defun org-gtd-graph-nav--get-traversal-order ()
@@ -88,6 +107,71 @@ Prefers non-project parents over the project heading."
             (org-gtd-graph-view-refresh))
         (message "No parent node")))))
 
+;;;; Sibling Calculation by Mode
+
+(defun org-gtd-graph-nav--get-current-blockers ()
+  "Get list of blocker IDs for currently selected node."
+  (when org-gtd-graph-ui--selected-node-id
+    (org-gtd-graph-data-get-predecessors
+     org-gtd-graph-view--graph
+     org-gtd-graph-ui--selected-node-id)))
+
+(defun org-gtd-graph-nav--get-siblings-any-same-blocker ()
+  "Get sibling nodes that share at least one blocker with current node.
+Returns list of node IDs in traversal order, excluding current node."
+  (when-let* ((current-blockers (org-gtd-graph-nav--get-current-blockers))
+              ((not (null current-blockers))))
+    (let ((current-id org-gtd-graph-ui--selected-node-id)
+          (current-blocker-set (make-hash-table :test 'equal))
+          (siblings '()))
+      ;; Build set of current node's blockers
+      (dolist (blocker current-blockers)
+        (puthash blocker t current-blocker-set))
+      ;; Find all nodes sharing any blocker
+      (maphash
+       (lambda (node-id _node)
+         (unless (string= node-id current-id)
+           (let ((node-blockers (org-gtd-graph-data-get-predecessors
+                                 org-gtd-graph-view--graph node-id)))
+             (when (cl-some (lambda (b) (gethash b current-blocker-set))
+                            node-blockers)
+               (push node-id siblings)))))
+       (org-gtd-graph-nodes org-gtd-graph-view--graph))
+      ;; Return in traversal order
+      (let ((order (org-gtd-graph-nav--get-traversal-order)))
+        (seq-filter (lambda (id) (member id siblings)) order)))))
+
+(defun org-gtd-graph-nav--get-siblings-all-same-blockers ()
+  "Get sibling nodes that have exactly the same blockers as current node.
+Returns list of node IDs in traversal order, excluding current node."
+  (when-let* ((current-blockers (org-gtd-graph-nav--get-current-blockers)))
+    (let ((current-id org-gtd-graph-ui--selected-node-id)
+          (current-blocker-set (sort (copy-sequence current-blockers) #'string<))
+          (siblings '()))
+      ;; Find all nodes with identical blocker set
+      (maphash
+       (lambda (node-id _node)
+         (unless (string= node-id current-id)
+           (let* ((node-blockers (org-gtd-graph-data-get-predecessors
+                                  org-gtd-graph-view--graph node-id))
+                  (node-blocker-set (sort (copy-sequence node-blockers) #'string<)))
+             (when (equal current-blocker-set node-blocker-set)
+               (push node-id siblings)))))
+       (org-gtd-graph-nodes org-gtd-graph-view--graph))
+      ;; Return in traversal order
+      (let ((order (org-gtd-graph-nav--get-traversal-order)))
+        (seq-filter (lambda (id) (member id siblings)) order)))))
+
+(defun org-gtd-graph-nav--get-siblings ()
+  "Get sibling nodes based on `org-gtd-graph-sibling-mode'.
+Returns list of node IDs in traversal order."
+  (pcase org-gtd-graph-sibling-mode
+    ('any-same-blocker (org-gtd-graph-nav--get-siblings-any-same-blocker))
+    ('all-same-blockers (org-gtd-graph-nav--get-siblings-all-same-blockers))
+    ('dag-level (org-gtd-graph-nav--get-nodes-in-layer
+                 (org-gtd-graph-nav--get-current-layer)))
+    (_ (org-gtd-graph-nav--get-siblings-any-same-blocker))))
+
 ;;;; Layer-Based Navigation
 
 (defun org-gtd-graph-nav--get-current-layer ()
@@ -110,54 +194,34 @@ Prefers non-project parents over the project heading."
     (nreverse result)))
 
 (defun org-gtd-graph-nav-next-sibling ()
-  "Move to next sibling node (same layer)."
+  "Move to next sibling node based on `org-gtd-graph-sibling-mode'."
   (interactive)
-  (when-let* ((current-layer (org-gtd-graph-nav--get-current-layer))
-              (layer-nodes (org-gtd-graph-nav--get-nodes-in-layer current-layer))
-              ((> (length layer-nodes) 1)))
-    (let* ((current-pos (cl-position org-gtd-graph-ui--selected-node-id layer-nodes :test 'equal))
-           (next-pos (1+ current-pos)))
-      (if (< next-pos (length layer-nodes))
-          (let ((next-node-id (nth next-pos layer-nodes)))
+  (when-let* ((sibling-nodes (org-gtd-graph-nav--get-siblings))
+              ((> (length sibling-nodes) 0)))
+    (let* ((current-pos (cl-position org-gtd-graph-ui--selected-node-id
+                                     sibling-nodes :test 'equal))
+           (next-pos (if current-pos (1+ current-pos) 0)))
+      (if (< next-pos (length sibling-nodes))
+          (let ((next-node-id (nth next-pos sibling-nodes)))
             (setq org-gtd-graph-ui--selected-node-id next-node-id)
             (org-gtd-graph-ui-update-details)
             (org-gtd-graph-view-refresh))
         (message "No next sibling")))))
 
 (defun org-gtd-graph-nav-previous-sibling ()
-  "Move to previous sibling node (same layer)."
+  "Move to previous sibling node based on `org-gtd-graph-sibling-mode'."
   (interactive)
-  (when-let* ((current-layer (org-gtd-graph-nav--get-current-layer))
-              (layer-nodes (org-gtd-graph-nav--get-nodes-in-layer current-layer))
-              ((> (length layer-nodes) 1)))
-    (let* ((current-pos (cl-position org-gtd-graph-ui--selected-node-id layer-nodes :test 'equal))
-           (prev-pos (1- current-pos)))
+  (when-let* ((sibling-nodes (org-gtd-graph-nav--get-siblings))
+              ((> (length sibling-nodes) 0)))
+    (let* ((current-pos (cl-position org-gtd-graph-ui--selected-node-id
+                                     sibling-nodes :test 'equal))
+           (prev-pos (if current-pos (1- current-pos) -1)))
       (if (>= prev-pos 0)
-          (let ((prev-node-id (nth prev-pos layer-nodes)))
+          (let ((prev-node-id (nth prev-pos sibling-nodes)))
             (setq org-gtd-graph-ui--selected-node-id prev-node-id)
             (org-gtd-graph-ui-update-details)
             (org-gtd-graph-view-refresh))
         (message "No previous sibling")))))
-
-(defun org-gtd-graph-nav-first-in-layer ()
-  "Jump to first node in current layer."
-  (interactive)
-  (when-let* ((current-layer (org-gtd-graph-nav--get-current-layer))
-              (layer-nodes (org-gtd-graph-nav--get-nodes-in-layer current-layer))
-              (first-node-id (car layer-nodes)))
-    (setq org-gtd-graph-ui--selected-node-id first-node-id)
-    (org-gtd-graph-ui-update-details)
-    (org-gtd-graph-view-refresh)))
-
-(defun org-gtd-graph-nav-last-in-layer ()
-  "Jump to last node in current layer."
-  (interactive)
-  (when-let* ((current-layer (org-gtd-graph-nav--get-current-layer))
-              (layer-nodes (org-gtd-graph-nav--get-nodes-in-layer current-layer))
-              (last-node-id (car (last layer-nodes))))
-    (setq org-gtd-graph-ui--selected-node-id last-node-id)
-    (org-gtd-graph-ui-update-details)
-    (org-gtd-graph-view-refresh)))
 
 ;;;; Dependency-Based Navigation
 
