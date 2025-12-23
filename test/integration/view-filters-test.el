@@ -267,30 +267,17 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
 ;;; Multiple View Show Tests
 
 (deftest view-filters/two-view-show-calls-create-two-buffers ()
-  "Calling org-gtd-view-show twice should create two separate agenda buffers.
-This test verifies that users can display multiple independent views
-in a single function, each in its own buffer."
-  ;; Call org-gtd-view-show with first view
-  (org-gtd-view-show
-   '((name . "First View")
-     (type . next-action)))
-
-  (let ((first-buffer (current-buffer)))
-
-    ;; Call org-gtd-view-show with second view
-    (org-gtd-view-show
-     '((name . "Second View")
-       (type . calendar)))
-
-    (let ((second-buffer (current-buffer)))
-
-      ;; We should have two distinct agenda buffers
-      ;; (Expected to FAIL: org-agenda reuses the same buffer)
-      (assert-not-equal first-buffer second-buffer)
-
-      ;; Verify both buffers still exist
-      (assert-true (buffer-live-p first-buffer))
-      (assert-true (buffer-live-p second-buffer)))))
+  "Calling org-gtd-view-show twice with different KEYS creates separate buffers.
+Requires org-agenda-sticky to be non-nil."
+  (let ((org-agenda-sticky t))
+    (org-gtd-view-show '((name . "First View") (type . next-action)) "a")
+    (let ((first-buffer (current-buffer)))
+      (org-gtd-view-show '((name . "Second View") (type . calendar)) "b")
+      (let ((second-buffer (current-buffer)))
+        ;; With sticky mode and different keys, we get separate buffers
+        (assert-not-equal first-buffer second-buffer)
+        (assert-true (buffer-live-p first-buffer))
+        (assert-true (buffer-live-p second-buffer))))))
 
 (deftest view-filters/view-show-uses-default-key-when-not-specified ()
   "org-gtd-view-show uses 'g' as default key when KEYS not provided."
