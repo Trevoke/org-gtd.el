@@ -50,6 +50,13 @@ one function: setting org tags on the item.  Some built-in examples are
 provided as options here.  You can create your own functions to further organize
 the items once they have been processed and add them to that list.
 
+To run a hook only for specific item types, use
+`org-gtd-organize-type-member-p' in your hook function.  For example:
+
+  (defun my-add-effort ()
+    (when (org-gtd-organize-type-member-p \\='(single-action project-heading))
+      (call-interactively #\\='org-set-effort)))
+
 Once you have your ground items managed, you might like to set the variable
 `org-gtd-areas-of-focus' and add `org-gtd-set-area-of-focus' to these hooks."
   :group 'org-gtd-organize
