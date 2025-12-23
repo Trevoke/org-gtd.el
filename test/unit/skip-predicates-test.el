@@ -16,6 +16,48 @@
 ;; Initialize e-unit short syntax
 (e-unit-initialize)
 
+;;;; org-gtd--compare-values tests
+
+(deftest skip-pred/compare-values-less-than-true ()
+  "Compare-values returns t when actual < reference."
+  (assert-true (org-gtd--compare-values '< 5 10)))
+
+(deftest skip-pred/compare-values-less-than-false ()
+  "Compare-values returns nil when actual >= reference."
+  (assert-nil (org-gtd--compare-values '< 10 5))
+  (assert-nil (org-gtd--compare-values '< 10 10)))
+
+(deftest skip-pred/compare-values-greater-than-true ()
+  "Compare-values returns t when actual > reference."
+  (assert-true (org-gtd--compare-values '> 10 5)))
+
+(deftest skip-pred/compare-values-greater-than-false ()
+  "Compare-values returns nil when actual <= reference."
+  (assert-nil (org-gtd--compare-values '> 5 10))
+  (assert-nil (org-gtd--compare-values '> 10 10)))
+
+(deftest skip-pred/compare-values-less-than-or-equal-true ()
+  "Compare-values returns t when actual <= reference."
+  (assert-true (org-gtd--compare-values '<= 5 10))
+  (assert-true (org-gtd--compare-values '<= 10 10)))
+
+(deftest skip-pred/compare-values-less-than-or-equal-false ()
+  "Compare-values returns nil when actual > reference."
+  (assert-nil (org-gtd--compare-values '<= 10 5)))
+
+(deftest skip-pred/compare-values-greater-than-or-equal-true ()
+  "Compare-values returns t when actual >= reference."
+  (assert-true (org-gtd--compare-values '>= 10 5))
+  (assert-true (org-gtd--compare-values '>= 10 10)))
+
+(deftest skip-pred/compare-values-greater-than-or-equal-false ()
+  "Compare-values returns nil when actual < reference."
+  (assert-nil (org-gtd--compare-values '>= 5 10)))
+
+(deftest skip-pred/compare-values-invalid-operator ()
+  "Compare-values returns nil for invalid operator."
+  (assert-nil (org-gtd--compare-values 'invalid 5 10)))
+
 ;;;; org-gtd--parse-timestamp tests
 
 (deftest skip-pred/parse-timestamp-valid-active ()

@@ -42,6 +42,17 @@
 
 ;;;; Functions
 
+(defun org-gtd--compare-values (op actual-value reference-value)
+  "Compare ACTUAL-VALUE with REFERENCE-VALUE using OP.
+OP should be one of: <, >, <=, >=.
+Returns t if comparison passes, nil otherwise."
+  (pcase op
+    ('< (< actual-value reference-value))
+    ('> (> actual-value reference-value))
+    ('<= (<= actual-value reference-value))
+    ('>= (>= actual-value reference-value))
+    (_ nil)))
+
 (defun org-gtd-skip-unless-in-progress ()
   "Skip-function: only keep if it's not one of the DONE keywords."
   (org-agenda-skip-entry-if 'todo org-done-keywords))
@@ -189,16 +200,13 @@ For project headings, checks all tasks in the project."
         (null last-clock))
        ;; Have a clock time, compare
        (last-clock
-        (let* ((op (car value))
-               (duration-str (cadr value))
-               (threshold-seconds (org-gtd--parse-relative-time duration-str))
-               (age-seconds (float-time (time-subtract (current-time) last-clock))))
-          (pcase op
-            ('> (> age-seconds threshold-seconds))
-            ('< (< age-seconds threshold-seconds))
-            ('>= (>= age-seconds threshold-seconds))
-            ('<= (<= age-seconds threshold-seconds))
-            (_ nil))))
+        (condition-case nil
+            (let* ((op (car value))
+                   (duration-str (cadr value))
+                   (threshold-seconds (org-gtd--parse-relative-time duration-str))
+                   (age-seconds (float-time (time-subtract (current-time) last-clock))))
+              (org-gtd--compare-values op age-seconds threshold-seconds))
+          (error nil)))  ; Invalid time format, skip item
        ;; No clock time but value specified - doesn't match
        (t nil)))))
 
