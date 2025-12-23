@@ -382,4 +382,4 @@ Properties reference:
 | ~DELEGATED_TO~ | Person delegated to |
 | ~ORG_GTD_TIMESTAMP~ | Tickler/calendar date |
 
-For complete documentation: ~C-h i m org gtd RET~
+For complete documentation: ~C-h i m org gtd RET~ or ~M-x info-display-manual RET org-gtd~

@@ -170,7 +170,7 @@ Key testing dependencies: `with-simulated-input`, `dash`
 
 ## Documentation
 
-- Info manual: `C-h i m org gtd RET`
+- Info manual: `C-h i m org gtd RET` or `M-x info-display-manual RET org-gtd`
 - Source: `doc/org-gtd.org` (exports to Texinfo)
 - Comprehensive README.org with quick tour
 

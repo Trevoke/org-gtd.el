@@ -224,7 +224,7 @@ The two remaining GTD steps:
 
 ** Complete Tutorial
 
-See ~doc/org-gtd.org~ (or ~C-h i m org gtd RET~ in Emacs) for:
+See ~doc/org-gtd.org~ (or ~C-h i m org gtd RET~ / ~M-x info-display-manual RET org-gtd~) for:
 - Full 15-minute tutorial with projects and dependencies
 - Custom agenda views with the declarative DSL
 - Configuration examples for Doom Emacs and Spacemacs
@@ -238,7 +238,7 @@ If you're new to GTD, read [[https://gettingthingsdone.com/][David Allen's book]
 
 ** Get Help
 
-- *Documentation*: ~C-h i m org gtd RET~ (info manual)
+- *Documentation*: ~C-h i m org gtd RET~ or ~M-x info-display-manual RET org-gtd~ (info manual)
 - *Issues*: [[https://github.com/Trevoke/org-gtd.el/issues][GitHub Issues]]
 - *Community*: [[https://discord.gg/2kAK6TfqJq][Discord Server]]
 - *Sponsor*: [[https://github.com/sponsors/Trevoke/][GitHub Sponsors]]

@@ -109,7 +109,7 @@ See the changelog for a full set of changes.
 
 See the documentation for complete upgrade information:
 
-=> `C-h i m org gtd RET'
+=> `C-h i m org gtd RET' or `M-x info-display-manual RET org-gtd'
 
 Important notices involve:
 - run `org-gtd-upgrade-v2-to-v3'
