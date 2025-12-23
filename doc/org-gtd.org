@@ -2633,15 +2633,16 @@ This is the complete command reference for expert users.
 
 *Navigation:*
 
-| Key     | Command                    | Description                                           |
-|---------+----------------------------+-------------------------------------------------------|
-| n / j   | Down dependency            | Move to a task this one blocks                        |
-| p / k   | Up dependency              | Move to a task that blocks this one                   |
-| TAB     | Next sibling               | Next task in same layer (same dependency depth)       |
-| g       | Goto node                  | Jump to task by name (with completion)                |
-| [       | Back                       | Navigate to previous node in history                  |
-| ]       | Forward                    | Navigate to next node in history                      |
-| RET     | Jump to task in org file   | Opens the org file at the task's location             |
+| Key       | Command                    | Description                                           |
+|-----------+----------------------------+-------------------------------------------------------|
+| n         | Down dependency            | Move to a task this one blocks                        |
+| p         | Up dependency              | Move to a task that blocks this one                   |
+| TAB       | Next sibling               | Next sibling task (see ~org-gtd-graph-sibling-mode~)  |
+| S-TAB     | Previous sibling           | Previous sibling task                                 |
+| g         | Goto node                  | Jump to task by name (with completion)                |
+| RET       | Jump to task in org file   | Opens the org file at the task's location             |
+
+*What counts as a "sibling"?* By default, siblings are tasks that share at least one blocker (tasks blocked by the same thing). You can customize this with ~org-gtd-graph-sibling-mode~. See [[#org-gtd-graph-sibling-mode][Sibling Mode Configuration]].
 
 *View:*
 
@@ -2697,7 +2698,6 @@ These commands open a checkbox menu showing all project tasks. Toggle checkboxes
 | Key   | Command          | Description                                                  |
 |-------+------------------+--------------------------------------------------------------|
 | Q     | Quit and kill    | Close graph view and kill buffer                             |
-| z     | Zoom             | Zoom/filter submenu (not yet implemented)                    |
 
 **** Visual Indicators
 
@@ -4422,6 +4422,46 @@ The graph view displays two panels: the dependency graph and a details panel sho
 ;; Give more space to the details panel
 (setq org-gtd-graph-ui-split-ratio 0.6)
 #+end_src
+
+**** ~org-gtd-graph-sibling-mode~
+:PROPERTIES:
+:CUSTOM_ID: org-gtd-graph-sibling-mode
+:END:
+
+*Type*: Symbol
+
+*Default*: ~'any-same-blocker~
+
+*Description*: How to determine sibling tasks for TAB/S-TAB navigation in graph view.
+
+When you press TAB or S-TAB in graph view, you move between "sibling" tasks. This variable controls what counts as a sibling:
+
+Values:
+- ~'any-same-blocker~ :: Tasks sharing at least one blocker (default). Two tasks are siblings if they have any blocker in common. This groups tasks that are conceptually related through shared prerequisites.
+- ~'all-same-blockers~ :: Tasks with exactly the same set of blockers. Two tasks are siblings only if their blocker sets are identical. This is stricter and shows only tasks that are truly parallel alternatives.
+- ~'dag-level~ :: Tasks at the same depth in the dependency graph. Two tasks are siblings if they have the same layer number, regardless of their actual blockers. This gives a visual/structural grouping.
+
+*Example*:
+#+begin_src emacs-lisp
+;; Default: share any blocker
+(setq org-gtd-graph-sibling-mode 'any-same-blocker)
+
+;; Strict: exact same blockers only
+(setq org-gtd-graph-sibling-mode 'all-same-blockers)
+
+;; Structural: same depth in graph
+(setq org-gtd-graph-sibling-mode 'dag-level)
+#+end_src
+
+*When to use each mode*:
+
+- *any-same-blocker (default)*: Best for most users. When you're on "Write tests" and press TAB, you'll see other tasks that also depend on "Set up project"—tasks you could work on in parallel after finishing the blocker.
+
+- *all-same-blockers*: Use when you want strict parallelism. Only shows tasks that are truly equivalent alternatives—same prerequisites, same position in the workflow.
+
+- *dag-level*: Use when you think visually about your project. Groups all tasks at the same "layer" or depth, regardless of their actual dependencies.
+
+*See also*: [[#graph-view-command-reference][Graph View Command Reference]] for navigation keybindings.
 
 *** Projects Configuration
 
