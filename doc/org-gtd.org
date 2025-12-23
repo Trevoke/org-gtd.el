@@ -7196,6 +7196,38 @@ Filter by task metadata useful for "quick wins", "deep work", and triage views.
   (clocked . (> "0:30")))
 #+end_src
 
+**** ~(last-clocked-out . SPEC)~
+
+*Matches*: Items based on when they were last clocked out
+
+*Forms*:
+- ~(last-clocked-out . (> "2d"))~ :: Not worked on in 2+ days
+- ~(last-clocked-out . (< "1w"))~ :: Worked on within past week
+- ~(last-clocked-out . nil)~ :: Never clocked
+
+*Duration formats*:
+- ~"2d"~ :: 2 days
+- ~"1w"~ :: 1 week
+- ~"3h"~ :: 3 hours
+- ~"30m"~ :: 30 minutes
+
+*Project handling*: For project headings, automatically checks all tasks
+in the project and uses the most recent clock-out time.
+
+*Example*: Find stale projects not worked on in a week:
+#+begin_src emacs-lisp
+'((name . "Stale Projects")
+  (type . project)
+  (last-clocked-out . (> "1w")))
+#+end_src
+
+*Example*: Find items never started:
+#+begin_src emacs-lisp
+'((name . "Never Started")
+  (type . next-action)
+  (last-clocked-out . nil))
+#+end_src
+
 *** Property Filters
 
 Filter by arbitrary org properties:
@@ -7934,6 +7966,70 @@ This order matters if one hook depends on another's results.
 #+end_src
 
 This creates a comprehensive metadata capture workflow during organization.
+
+* Extending org-gtd
+:PROPERTIES:
+:CUSTOM_ID: extending-org-gtd
+:END:
+
+org-gtd provides public API functions for building custom functionality.
+
+** Project Traversal Functions
+
+*** ~org-gtd-project-map-tasks~
+
+Apply a function to each task in a project's dependency graph.
+
+#+begin_src emacs-lisp
+(org-gtd-project-map-tasks FN PROJECT-MARKER)
+#+end_src
+
+- ~FN~ :: Function called with point at each task heading
+- ~PROJECT-MARKER~ :: Marker to the project heading
+- Returns :: List of non-nil results from FN
+
+*Example*: Collect all task headlines in a project:
+#+begin_src emacs-lisp
+(org-gtd-project-map-tasks
+ (lambda () (org-get-heading t t t t))
+ project-marker)
+#+end_src
+
+*Example*: Sum effort estimates:
+#+begin_src emacs-lisp
+(apply #'+ (org-gtd-project-map-tasks
+            (lambda ()
+              (or (org-duration-to-minutes
+                   (org-entry-get nil "Effort")) 0))
+            project-marker))
+#+end_src
+
+*** ~org-gtd-projects-map~
+
+Apply a function to each project in your GTD system.
+
+#+begin_src emacs-lisp
+(org-gtd-projects-map FN)
+#+end_src
+
+- ~FN~ :: Function called with point at each project heading
+- Returns :: Alist of ~(marker . result)~ for non-nil results
+
+*Example*: Find projects missing effort estimates:
+#+begin_src emacs-lisp
+(org-gtd-projects-map
+ (lambda ()
+   (unless (org-entry-get nil "Effort")
+     (org-get-heading t t t t))))
+#+end_src
+
+*Example*: Get clock totals for all projects:
+#+begin_src emacs-lisp
+(org-gtd-projects-map
+ (lambda ()
+   (cons (org-get-heading t t t t)
+         (org-clock-sum-current-item))))
+#+end_src
 
 * Troubleshooting
 :PROPERTIES:
