@@ -7202,7 +7202,9 @@ Filter by task metadata useful for "quick wins", "deep work", and triage views.
 
 *Forms*:
 - ~(last-clocked-out . (> "2d"))~ :: Not worked on in 2+ days
+- ~(last-clocked-out . (>= "2d"))~ :: Not worked on in 2+ days (inclusive)
 - ~(last-clocked-out . (< "1w"))~ :: Worked on within past week
+- ~(last-clocked-out . (<= "1w"))~ :: Worked on in past week (inclusive)
 - ~(last-clocked-out . nil)~ :: Never clocked
 
 *Duration formats*:
