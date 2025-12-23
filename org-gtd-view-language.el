@@ -1199,7 +1199,7 @@ If SPEC has multiple type keys, expands to blocks structure."
 ;;;; Public API
 
 ;;;###autoload
-(defun org-gtd-view-show (view-spec-or-specs)
+(defun org-gtd-view-show (view-spec-or-specs &optional keys)
   "Display an org-gtd agenda view from VIEW-SPEC-OR-SPECS.
 
 VIEW-SPEC-OR-SPECS can be either:
@@ -1234,11 +1234,25 @@ Implicit blocks example - multiple type keys auto-expand to blocks:
      (type . calendar)
      (type . next-action)))
 
+KEYS is an optional string used as the agenda dispatch key.
+Defaults to \"g\".  When `org-agenda-sticky' is non-nil, using
+different KEYS values allows multiple independent agenda views
+to be displayed simultaneously, each in its own buffer named
+*Org Agenda(KEYS)*.
+
+Example with multiple views:
+
+  (setq org-agenda-sticky t)
+  (org-gtd-view-show \\='((name . \"Actions\") (type . next-action)) \"a\")
+  (org-gtd-view-show \\='((name . \"Calendar\") (type . calendar)) \"c\")
+  ;; Creates buffers *Org Agenda(a)* and *Org Agenda(c)*
+
 See the module commentary or Info manual for complete filter
 documentation including type, time, area-of-focus, done, and tag filters."
   (interactive)
   ;; v4: Users configure org-agenda-files directly
-  (let* ((view-specs (if (and (listp view-spec-or-specs)
+  (let* ((key (or keys "g"))
+         (view-specs (if (and (listp view-spec-or-specs)
                               (listp (car view-spec-or-specs))
                               (symbolp (caar view-spec-or-specs)))
                          ;; Single view-spec (first element is a cons like (name . "..."))
@@ -1251,9 +1265,9 @@ documentation including type, time, area-of-focus, done, and tag filters."
          (org-agenda-custom-commands
           (org-gtd-view-lang--create-custom-commands
            expanded-specs
-           "g"
+           key
            title)))
-    (org-agenda nil "g")
+    (org-agenda nil key)
     (goto-char (point-min))))
 
 ;;;; Footer
