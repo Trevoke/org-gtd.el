@@ -5318,11 +5318,12 @@ Common filters include:
 
 *Function signature:*
 #+begin_src emacs-lisp
-(org-gtd-view-show VIEW-SPEC-OR-SPECS)
+(org-gtd-view-show VIEW-SPEC-OR-SPECS &optional KEYS)
 #+end_src
 
 *Arguments:*
 - ~VIEW-SPEC-OR-SPECS~ :: Either a single view specification (alist) or list of view specifications
+- ~KEYS~ :: Optional string used as the agenda dispatch key (defaults to "g"). When ~org-agenda-sticky~ is non-nil, different KEYS values allow multiple independent agenda views to be displayed simultaneously
 
 *View specification structure:*
 #+begin_src emacs-lisp
@@ -5356,6 +5357,29 @@ Common filters include:
    ((name . "Stuck Projects")
     (type . stuck-project))))
 #+end_src
+
+**Using Multiple Concurrent Views:**
+
+By default, calling ~org-gtd-view-show~ multiple times replaces the previous agenda buffer. To display multiple views simultaneously:
+
+1. Enable sticky agenda buffers:
+   #+begin_src emacs-lisp
+   (setq org-agenda-sticky t)
+   #+end_src
+
+2. Pass different KEYS to each call:
+   #+begin_src emacs-lisp
+   (defun my-dashboard ()
+     "Show my GTD dashboard with multiple views."
+     (interactive)
+     (delete-other-windows)
+     (org-gtd-view-show '((name . "Next Actions") (type . next-action)) "a")
+     (split-window-right)
+     (other-window 1)
+     (org-gtd-view-show '((name . "Calendar") (type . calendar)) "c"))
+   #+end_src
+
+Each view will appear in its own buffer: ~*Org Agenda(a)*~, ~*Org Agenda(c)*~, etc.
 
 *** Clarification Commands
 
