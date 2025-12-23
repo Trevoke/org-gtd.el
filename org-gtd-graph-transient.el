@@ -37,11 +37,32 @@
 (require 'org-gtd-tickler)
 (require 'org-gtd-projects)
 
+;;;; Sticky Mode
+
+(defvar-local org-gtd-graph-transient-sticky nil
+  "When non-nil, keep transient menu open after commands.")
+
+(transient-define-infix org-gtd-graph-transient--sticky ()
+  "Toggle sticky mode for graph transient menu."
+  :class 'transient-lisp-variable
+  :variable 'org-gtd-graph-transient-sticky
+  :description (lambda () (if org-gtd-graph-transient-sticky
+                              "[X] Sticky mode"
+                            "[ ] Sticky mode"))
+  :key "s")
+
+(defun org-gtd-graph-transient--resume-if-sticky ()
+  "Re-open main transient if sticky mode is enabled.
+Call this at the end of sub-transient apply functions."
+  (when org-gtd-graph-transient-sticky
+    (run-at-time 0 nil #'org-gtd-graph-transient-main)))
+
 ;;;; Main Transient Menu
 
 ;;;###autoload (autoload 'org-gtd-graph-transient-main "org-gtd-graph-transient" nil t)
 (transient-define-prefix org-gtd-graph-transient-main ()
   "Main command menu for GTD project graph view."
+  :transient-suffix (lambda () org-gtd-graph-transient-sticky)
   [:description
    (lambda () (org-gtd-graph-transient--show-selected-context))
    :class transient-row]
@@ -55,10 +76,10 @@
    ["Task Operations"
     ("r" "Remove from project" org-gtd-graph-remove-task)
     ("T" "Trash task" org-gtd-graph-trash-task)
-    ("e" "Edit in org file" org-gtd-graph-ui-jump-to-task)
+    ("e" "Edit in org file" org-gtd-graph-ui-jump-to-task :transient nil)
     ("t" "Change TODO state" org-gtd-graph-change-state)
     ("i" "Show relationships" org-gtd-graph-view-show-relationships)
-    ("I" "Incubate this project" org-gtd-graph-incubate-project)]]
+    ("I" "Incubate this project" org-gtd-graph-incubate-project :transient nil)]]
   [["Navigation"
     ("n" "Next successor" org-gtd-graph-nav-down-dependency :transient t)
     ("p" "Previous blocker" org-gtd-graph-nav-up-dependency :transient t)
@@ -72,8 +93,9 @@
     ("E d" "Export as DOT" org-gtd-graph-export-dot)
     ("E a" "Export as ASCII" org-gtd-graph-export-ascii)]
    ["Quit"
-    ("q" "Quit" transient-quit-one)
-    ("Q" "Quit and kill" org-gtd-graph-quit-and-kill)]])
+    ("q" "Quit" transient-quit-one :transient nil)
+    ("Q" "Quit and kill" org-gtd-graph-quit-and-kill :transient nil)
+    (org-gtd-graph-transient--sticky)]])
 
 ;;;; Context Display
 
@@ -576,7 +598,8 @@ If NEW-BLOCKER-IDS is empty, adds task to project's FIRST_TASKS."
     (message "Updated blockers")
     (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
     (org-gtd-graph-view-refresh)
-    (transient-quit-one)))
+    (transient-quit-one)
+    (org-gtd-graph-transient--resume-if-sticky)))
 
 (defun org-gtd-graph-modify-blockers ()
   "Modify tasks that block the selected task (transient menu)."
@@ -701,7 +724,8 @@ Updates FIRST_TASKS for affected successors based on their blocker status."
     (message "Updated successors")
     (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
     (org-gtd-graph-view-refresh)
-    (transient-quit-one)))
+    (transient-quit-one)
+    (org-gtd-graph-transient--resume-if-sticky)))
 
 (defun org-gtd-graph-modify-successors ()
   "Modify tasks that the selected task blocks (transient menu)."
@@ -969,7 +993,8 @@ Pre-selects the currently selected node if one exists."
              org-gtd-graph--add-task-title (length blocked-task-ids))
     (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
     (org-gtd-graph-view-refresh)
-    (transient-quit-one)))
+    (transient-quit-one)
+    (org-gtd-graph-transient--resume-if-sticky)))
 
 (defun org-gtd-graph-add-blocker ()
   "Add a blocker task that blocks project task(s).
@@ -1093,7 +1118,8 @@ Pre-selects the currently selected node if one exists."
              org-gtd-graph--add-task-title (length blocked-task-ids))
     (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
     (org-gtd-graph-view-refresh)
-    (transient-quit-one)))
+    (transient-quit-one)
+    (org-gtd-graph-transient--resume-if-sticky)))
 
 ;;;; Internal Functions for Testing
 

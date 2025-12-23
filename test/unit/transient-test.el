@@ -141,6 +141,21 @@
   "Quit command is defined and callable."
   (assert-true (commandp 'org-gtd-graph-quit-and-kill)))
 
+;;; Sticky Mode Tests
+
+(deftest graph-transient/sticky-variable-defined ()
+  "Sticky mode variable is defined."
+  (assert-true (boundp 'org-gtd-graph-transient-sticky)))
+
+(deftest graph-transient/sticky-defaults-to-nil ()
+  "Sticky mode defaults to nil."
+  (with-temp-buffer
+    (assert-nil org-gtd-graph-transient-sticky)))
+
+(deftest graph-transient/resume-function-defined ()
+  "Resume-if-sticky function is defined."
+  (assert-true (fboundp 'org-gtd-graph-transient--resume-if-sticky)))
+
 (provide 'transient-test)
 
 ;;; transient-test.el ends here
