@@ -230,6 +230,117 @@
       (when (file-exists-p temp-file)
         (delete-file temp-file)))))
 
+;;; org-gtd-project-last-clock-out-time Tests
+
+(deftest project-map/last-clock-out-time-returns-nil-when-no-clocks ()
+  "org-gtd-project-last-clock-out-time returns nil when no tasks have clocks."
+  (let* ((temp-file (make-temp-file "clock-test-no-clocks" nil ".org"))
+         (buf (find-file-noselect temp-file)))
+    (unwind-protect
+        (with-current-buffer buf
+          (org-mode)
+          ;; Project with 2 tasks but no clock entries
+          (make-project "Test Project"
+                        :id "proj-id"
+                        :first-tasks '("task-1"))
+
+          (make-task "Task 1"
+                     :id "task-1"
+                     :level 2
+                     :project-ids '("proj-id")
+                     :blocks '("task-2"))
+
+          (make-task "Task 2"
+                     :id "task-2"
+                     :level 2
+                     :project-ids '("proj-id")
+                     :depends-on '("task-1"))
+
+          (org-mode-restart)
+          (basic-save-buffer)
+          (org-id-update-id-locations (list temp-file))
+
+          ;; Get project marker
+          (goto-char (point-min))
+          (search-forward "Test Project")
+          (org-back-to-heading t)
+          (let* ((project-marker (point-marker))
+                 (result (org-gtd-project-last-clock-out-time project-marker)))
+            ;; Should return nil since no tasks have clocks
+            (assert-nil result)))
+      (when (buffer-live-p buf)
+        (kill-buffer buf))
+      (when (file-exists-p temp-file)
+        (delete-file temp-file)))))
+
+(deftest project-map/last-clock-out-time-returns-most-recent ()
+  "org-gtd-project-last-clock-out-time returns most recent clock-out time."
+  (let* ((temp-file (make-temp-file "clock-test-with-clocks" nil ".org"))
+         (buf (find-file-noselect temp-file)))
+    (unwind-protect
+        (with-current-buffer buf
+          (org-mode)
+          ;; Project with 3 tasks, each with different clock times
+          (make-project "Test Project"
+                        :id "proj-id"
+                        :first-tasks '("task-1"))
+
+          (make-task "Task 1"
+                     :id "task-1"
+                     :level 2
+                     :project-ids '("proj-id")
+                     :blocks '("task-2"))
+
+          ;; Add LOGBOOK with old clock entry to Task 1
+          (insert ":LOGBOOK:\n")
+          (insert "CLOCK: [2025-12-20 Fri 14:30]--[2025-12-20 Fri 15:45] =>  1:15\n")
+          (insert ":END:\n")
+
+          (make-task "Task 2"
+                     :id "task-2"
+                     :level 2
+                     :project-ids '("proj-id")
+                     :depends-on '("task-1")
+                     :blocks '("task-3"))
+
+          ;; Add LOGBOOK with most recent clock entry to Task 2
+          (insert ":LOGBOOK:\n")
+          (insert "CLOCK: [2025-12-22 Sun 10:00]--[2025-12-22 Sun 11:30] =>  1:30\n")
+          (insert ":END:\n")
+
+          (make-task "Task 3"
+                     :id "task-3"
+                     :level 2
+                     :project-ids '("proj-id")
+                     :depends-on '("task-2"))
+
+          ;; Add LOGBOOK with middle clock entry to Task 3
+          (insert ":LOGBOOK:\n")
+          (insert "CLOCK: [2025-12-21 Sat 16:00]--[2025-12-21 Sat 17:00] =>  1:00\n")
+          (insert ":END:\n")
+
+          (org-mode-restart)
+          (basic-save-buffer)
+          (org-id-update-id-locations (list temp-file))
+
+          ;; Get project marker
+          (goto-char (point-min))
+          (search-forward "Test Project")
+          (org-back-to-heading t)
+          (let* ((project-marker (point-marker))
+                 (result (org-gtd-project-last-clock-out-time project-marker))
+                 ;; Expected result: most recent time from Task 2
+                 (expected-time (encode-time 0 30 11 22 12 2025)))
+            ;; Should return the most recent clock-out time
+            (assert-true result)
+            ;; Compare times (allowing for timezone/DST differences)
+            (assert-equal (format-time-string "%Y-%m-%d %H:%M" expected-time)
+                         (format-time-string "%Y-%m-%d %H:%M" result))))
+      (when (buffer-live-p buf)
+        (kill-buffer buf))
+      (when (file-exists-p temp-file)
+        (delete-file temp-file)))))
+
 (provide 'project-map-test)
 
 ;;; project-map-test.el ends here

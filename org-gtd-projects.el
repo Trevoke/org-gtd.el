@@ -882,6 +882,17 @@ Example - find projects with no effort estimates:
      'agenda)
     (nreverse results)))
 
+;;;###autoload
+(defun org-gtd-project-last-clock-out-time (project-marker)
+  "Return most recent clock-out time across all tasks in project.
+Uses `org-clock-get-last-clock-out-time' on each task.
+Returns Emacs time value, or nil if no tasks have been clocked."
+  (let ((times (org-gtd-project-map-tasks
+                #'org-clock-get-last-clock-out-time
+                project-marker)))
+    (when times
+      (car (last (sort times #'time-less-p))))))
+
 (defun org-gtd-project--check-external-dependencies (project-marker)
   "Check for external tasks depending on PROJECT-MARKER's tasks.
 
