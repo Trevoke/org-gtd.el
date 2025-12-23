@@ -4,7 +4,7 @@
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; Homepage: https://github.com/Trevoke/org-gtd.el
-;; Package-Requires: ((emacs "28.1") (compat "30.0.0.0") (org-edna "1.1.2") (f "0.20.0") (org "9.6") (transient "0.3.7") (org-ql "0.8.10") (dag-draw "1.0.1"))
+;; Package-Requires: ((emacs "28.1") (compat "30.0.0.0") (org-edna "1.1.2") (f "0.20.0") (org "9.6") (transient "0.11.0") (dag-draw "1.0.4"))
 ;; Package-Version: 4.0.0beta1
 
 ;; This file is not part of GNU Emacs.
