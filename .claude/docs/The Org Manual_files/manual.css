@@ -1,0 +1,24 @@
+/* Style-sheet to use for Emacs manuals  */
+
+/* Copyright (C) 2013-2022 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.  This file is offered as-is,
+without any warranty.
+*/
+
+@import url('/style.css');
+
+/* makeinfo convert @deffn and similar functions to something inside
+   <blockquote>.  style.css uses italic for blockquote.  This looks poor
+   in the Emacs manuals, which make extensive use of @defun (etc).
+   In particular, references to function arguments appear as <var>
+   inside <blockquote>.  Since <var> is also italic, it makes it
+   impossible to distinguish variables.  We could change <var> to
+   e.g. bold-italic, or normal, or a different color, but that does
+   not look as good IMO.  So we just override blockquote to be non-italic.
+   */
+blockquote { font-style: normal; }
+
+var { font-style: italic; }

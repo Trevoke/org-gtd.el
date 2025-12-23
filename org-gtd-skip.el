@@ -30,6 +30,7 @@
 
 (require 'org)
 (require 'org-agenda)
+(require 'org-clock)
 (require 'org-duration)
 (require 'org-gtd-types)
 (require 'org-gtd-core)
@@ -37,6 +38,7 @@
 ;; Forward declarations to avoid circular dependency
 (declare-function org-gtd-projects--has-active-tasks-p "org-gtd-projects")
 (declare-function org-gtd-projects--is-stuck-p "org-gtd-projects")
+(declare-function org-gtd-project-last-clock-out-time "org-gtd-projects")
 
 ;;;; Functions
 
@@ -168,6 +170,38 @@ VALUE can be:
                (and (>= mins low) (<= mins high))))
             (_ nil))))))))
 
+(defun org-gtd-pred--last-clocked-out-matches (value)
+  "Return predicate checking if item's last clock-out matches VALUE.
+VALUE can be:
+  - (> \"2d\") - last clocked out more than 2 days ago
+  - (< \"1w\") - last clocked out within the past week
+  - nil - never clocked out
+
+For project headings, checks all tasks in the project."
+  (lambda ()
+    (let* ((is-project (equal (org-entry-get (point) "ORG_GTD") org-gtd-projects))
+           (last-clock (if is-project
+                           (org-gtd-project-last-clock-out-time (point-marker))
+                         (org-clock-get-last-clock-out-time))))
+      (cond
+       ;; nil = match items never clocked
+       ((null value)
+        (null last-clock))
+       ;; Have a clock time, compare
+       (last-clock
+        (let* ((op (car value))
+               (duration-str (cadr value))
+               (threshold-seconds (org-gtd--parse-relative-time duration-str))
+               (age-seconds (float-time (time-subtract (current-time) last-clock))))
+          (pcase op
+            ('> (> age-seconds threshold-seconds))
+            ('< (< age-seconds threshold-seconds))
+            ('>= (>= age-seconds threshold-seconds))
+            ('<= (<= age-seconds threshold-seconds))
+            (_ nil))))
+       ;; No clock time but value specified - doesn't match
+       (t nil)))))
+
 ;;;; Effort Predicates
 
 (defun org-gtd-pred--effort-matches (value)
@@ -294,6 +328,18 @@ REF can be:
       (time-add (current-time) (days-to-time days))))
    (t
     (org-time-string-to-time ref))))
+
+(defun org-gtd--parse-relative-time (duration-str)
+  "Parse DURATION-STR like \"2d\", \"1w\", \"3h\" to seconds.
+Supports: d (days), w (weeks), h (hours), m (minutes)."
+  (let ((num (string-to-number duration-str))
+        (unit (substring duration-str -1)))
+    (pcase unit
+      ("d" (* num 86400))      ; days
+      ("w" (* num 604800))     ; weeks
+      ("h" (* num 3600))       ; hours
+      ("m" (* num 60))         ; minutes
+      (_ (error "Unknown time unit in %s" duration-str)))))
 
 ;;;; Skip Function Composition
 
