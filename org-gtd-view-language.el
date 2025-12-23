@@ -80,6 +80,11 @@
 ;;   (who . "Alice")            - Delegated to specific person
 ;;   (who . nil)                - Missing delegation recipient
 ;;
+;; Clock Time Filters:
+;;   (last-clocked-out . (> "2d"))  - Not worked on in 2+ days
+;;   (last-clocked-out . (< "1w"))  - Worked on within past week
+;;   (last-clocked-out . nil)       - Never clocked
+;;
 ;; Tag Filters:
 ;;   (tags . ("@work"))         - Match specific tags
 ;;   (tags-match . "{^@}")      - Tag expression match
@@ -331,6 +336,8 @@ Multi-block specs have a \\='blocks key containing a list of block specs."
       (org-gtd-view-lang--translate-effort-filter filter-value))
      ((eq filter-type 'clocked)
       (org-gtd-view-lang--translate-clocked-filter filter-value))
+     ((eq filter-type 'last-clocked-out)
+      (org-gtd-view-lang--translate-last-clocked-out-filter filter-value))
      ((keywordp filter-type)
       (org-gtd-view-lang--translate-semantic-property-filter filter-type filter-value))
      (t (error "Unknown GTD filter: %s" filter-type)))))
@@ -449,6 +456,19 @@ VALUE can be:
    ((and (listp value) (eq (car value) 'between))
     (list `(clocked-between ,(cadr value) ,(caddr value))))
    (t (user-error "Invalid clocked filter value: %S" value))))
+
+(defun org-gtd-view-lang--translate-last-clocked-out-filter (value)
+  "Translate last-clocked-out VALUE to org-ql filter.
+VALUE can be:
+  - (> \"2d\") - last clocked out more than 2 days ago
+  - (< \"1w\") - last clocked out less than 1 week ago
+  - nil - never clocked out"
+  (cond
+   ((null value)
+    (list '(last-clocked-out-nil)))
+   ((and (listp value) (memq (car value) '(< > <= >=)))
+    (list `(last-clocked-out ,(car value) ,(cadr value))))
+   (t (user-error "Invalid last-clocked-out filter value: %S" value))))
 
 (defun org-gtd-view-lang--translate-deadline-filter (time-spec)
   "Translate deadline TIME-SPEC to org-ql deadline filter."
@@ -1036,6 +1056,13 @@ The function composes predicates from the view spec filters."
         (when (and (assq 'clocked gtd-view-spec)
                    (null (alist-get 'clocked gtd-view-spec)))
           (push (org-gtd-pred--clocked-matches nil) predicates))
+        ;; Add last-clocked-out predicate
+        (when-let ((last-clocked-filter (alist-get 'last-clocked-out gtd-view-spec)))
+          (push (org-gtd-pred--last-clocked-out-matches last-clocked-filter) predicates))
+        ;; Handle last-clocked-out=nil explicitly
+        (when (and (assq 'last-clocked-out gtd-view-spec)
+                   (null (alist-get 'last-clocked-out gtd-view-spec)))
+          (push (org-gtd-pred--last-clocked-out-matches nil) predicates))
         ;; Always exclude done items from native blocks
         (push (org-gtd-pred--not-done) predicates)
         ;; Compose predicates into skip function
