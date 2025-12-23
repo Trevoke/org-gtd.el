@@ -3923,7 +3923,7 @@ The default value prompts for tags. Built-in options:
 #+begin_src emacs-lisp
 (defun my-add-effort ()
   "Prompt for effort when organizing."
-  (when (org-gtd-organize-type-member-p '(action project))
+  (when (org-gtd-organize-type-member-p '(single-action project-heading))
     (org-set-effort)))
 
 (setq org-gtd-organize-hooks
@@ -3935,7 +3935,7 @@ The default value prompts for tags. Built-in options:
 *Helper function*: ~org-gtd-organize-type-member-p~
 - Takes a list of item types to check against
 - Returns t if current item matches one of the types
-- Available types: ~action~, ~project~, ~project-task~, ~calendar~, ~delegate~, ~tickler~, ~someday~, ~habit~, ~knowledge~, ~quick~, ~trash~
+- Available types: ~single-action~, ~project-heading~, ~project-task~, ~calendar~, ~delegated~, ~tickler~, ~someday~, ~habit~, ~knowledge~, ~quick-action~, ~trash~, ~everything~
 
 **** ~org-gtd-save-after-organize~
 
@@ -7638,7 +7638,7 @@ Let's add automatic creation timestamps to all tasks except trash and quick acti
    #+begin_src emacs-lisp
    (defun my-track-creation-date ()
      "Add CREATED property with current timestamp."
-     (unless (org-gtd-organize-type-member-p '(trash quick))
+     (unless (org-gtd-organize-type-member-p '(trash quick-action))
        (org-set-property "CREATED"
                          (format-time-string "[%Y-%m-%d %a %H:%M]"))))
 
@@ -7732,22 +7732,23 @@ This helper function lets you run code only for specific item types.
 *Returns*: ~t~ if current item matches one of the types, ~nil~ otherwise
 
 *Available types*:
-- ~'action~ :: Single actions
-- ~'project~ :: Project headings
+- ~'single-action~ :: Single actions (do when possible)
+- ~'project-heading~ :: Project headings (top-level project info)
 - ~'project-task~ :: Tasks within projects
-- ~'calendar~ :: Calendar items
-- ~'delegate~ :: Delegated items
-- ~'tickler~ :: Tickler items (time-based reminders)
-- ~'someday~ :: Someday/maybe items
-- ~'habit~ :: Habits
-- ~'knowledge~ :: Reference items
-- ~'quick~ :: Quick actions (<2 min)
+- ~'calendar~ :: Calendar items (do at a given time)
+- ~'delegated~ :: Delegated items (done by someone else)
+- ~'tickler~ :: Tickler items (remind me later - has a specific date)
+- ~'someday~ :: Someday/maybe items (no specific timeframe)
+- ~'habit~ :: Habits (recurring actions)
+- ~'knowledge~ :: Reference items (stored as reference)
+- ~'quick-action~ :: Quick actions (<2 min)
 - ~'trash~ :: Trashed items
+- ~'everything~ :: Special value: if in the list, always return t
 
-*Example*: Only run for actions and projects:
+*Example*: Only run for single actions and project headings:
 #+begin_src emacs-lisp
 (defun my-hook ()
-  (when (org-gtd-organize-type-member-p '(action project))
+  (when (org-gtd-organize-type-member-p '(single-action project-heading))
     ;; do something
     ))
 #+end_src
@@ -7773,8 +7774,8 @@ This replaces the default ~org-set-tags-command~ with selective tagging. The ~un
 
 #+begin_src emacs-lisp
 (defun my-add-effort ()
-  "Prompt for effort estimation when organizing actions and projects."
-  (when (org-gtd-organize-type-member-p '(action project))
+  "Prompt for effort estimation when organizing single actions and projects."
+  (when (org-gtd-organize-type-member-p '(single-action project-heading))
     (call-interactively #'org-set-effort)))
 
 (add-to-list 'org-gtd-organize-hooks 'my-add-effort)
@@ -7784,8 +7785,8 @@ This replaces the default ~org-set-tags-command~ with selective tagging. The ~un
 
 #+begin_src emacs-lisp
 (defun my-add-priority ()
-  "Prompt for priority when organizing actions."
-  (when (org-gtd-organize-type-member-p '(action))
+  "Prompt for priority when organizing single actions."
+  (when (org-gtd-organize-type-member-p '(single-action))
     (call-interactively #'org-priority)))
 
 (add-to-list 'org-gtd-organize-hooks 'my-add-priority)
@@ -7796,7 +7797,7 @@ This replaces the default ~org-set-tags-command~ with selective tagging. The ~un
 #+begin_src emacs-lisp
 (defun my-auto-tag-urgent ()
   "Automatically tag items with 'urgent' in their heading."
-  (when (org-gtd-organize-type-member-p '(action project))
+  (when (org-gtd-organize-type-member-p '(single-action project-heading))
     (let ((heading (org-get-heading t t t t)))
       (when (string-match-p (regexp-quote "URGENT") heading)
         (org-set-tags ":urgent:")))))
@@ -7809,7 +7810,7 @@ This replaces the default ~org-set-tags-command~ with selective tagging. The ~un
 #+begin_src emacs-lisp
 (defun my-add-client ()
   "Prompt for client name on work-related items."
-  (when (org-gtd-organize-type-member-p '(action project))
+  (when (org-gtd-organize-type-member-p '(single-action project-heading))
     (when (y-or-n-p "Is this for a client? ")
       (let ((client (read-string "Client name: ")))
         (org-set-property "CLIENT" client)))))
@@ -7822,7 +7823,7 @@ This replaces the default ~org-set-tags-command~ with selective tagging. The ~un
 #+begin_src emacs-lisp
 (defun my-link-to-roam-project ()
   "Link GTD project to Org-Roam note."
-  (when (org-gtd-organize-type-member-p '(project))
+  (when (org-gtd-organize-type-member-p '(project-heading))
     (when (y-or-n-p "Link to Org-Roam note? ")
       (org-roam-node-insert))))
 
@@ -7834,7 +7835,7 @@ This replaces the default ~org-set-tags-command~ with selective tagging. The ~un
 #+begin_src emacs-lisp
 (defun my-auto-set-effort ()
   "Automatically set effort based on keywords in heading."
-  (when (org-gtd-organize-type-member-p '(action))
+  (when (org-gtd-organize-type-member-p '(single-action))
     (let ((heading (downcase (org-get-heading t t t t))))
       (cond
        ((string-match-p "quick\\|call\\|email" heading)
@@ -7893,18 +7894,18 @@ This order matters if one hook depends on another's results.
 #+begin_src emacs-lisp
 ;; Custom hooks for org-gtd
 (defun my-add-effort ()
-  "Prompt for effort on actions and projects."
-  (when (org-gtd-organize-type-member-p '(action project))
+  "Prompt for effort on single actions and projects."
+  (when (org-gtd-organize-type-member-p '(single-action project-heading))
     (call-interactively #'org-set-effort)))
 
 (defun my-add-priority ()
-  "Prompt for priority on actions."
-  (when (org-gtd-organize-type-member-p '(action))
+  "Prompt for priority on single actions."
+  (when (org-gtd-organize-type-member-p '(single-action))
     (call-interactively #'org-priority)))
 
 (defun my-auto-tag-contexts ()
   "Automatically suggest context tags based on heading keywords."
-  (when (org-gtd-organize-type-member-p '(action))
+  (when (org-gtd-organize-type-member-p '(single-action))
     (let* ((heading (downcase (org-get-heading t t t t)))
            (suggested-tags '()))
       (when (string-match-p "\\(phone\\|call\\)" heading)
@@ -7918,7 +7919,7 @@ This order matters if one hook depends on another's results.
 
 (defun my-track-creation-date ()
   "Add CREATED property with current timestamp."
-  (unless (org-gtd-organize-type-member-p '(trash quick))
+  (unless (org-gtd-organize-type-member-p '(trash quick-action))
     (org-set-property "CREATED"
                       (format-time-string "[%Y-%m-%d %a %H:%M]"))))
 
