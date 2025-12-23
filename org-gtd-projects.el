@@ -840,6 +840,48 @@ Uses existing org-gtd-projects--collect-tasks-by-graph to traverse
 the project's dependency graph and collect all task markers."
   (org-gtd-projects--collect-tasks-by-graph project-marker))
 
+;;;###autoload
+(defun org-gtd-project-map-tasks (fn project-marker)
+  "Apply FN to each task in project at PROJECT-MARKER.
+FN is called with point at each task heading.
+Returns list of non-nil results from FN.
+
+Traverses the project's dependency graph in breadth-first order,
+respecting DAG structure and project boundaries.
+
+Example - collect all task headlines:
+  (org-gtd-project-map-tasks
+   (lambda () (org-get-heading t t t t))
+   project-marker)"
+  (let ((task-markers (org-gtd-projects--collect-tasks-by-graph project-marker))
+        (results '()))
+    (dolist (task-marker task-markers)
+      (org-with-point-at task-marker
+        (when-let ((result (funcall fn)))
+          (push result results))))
+    (nreverse results)))
+
+;;;###autoload
+(defun org-gtd-projects-map (fn)
+  "Apply FN to each project heading, return alist of (marker . result).
+FN is called with point at each project heading.
+Only includes results where FN returns non-nil.
+
+Example - find projects with no effort estimates:
+  (org-gtd-projects-map
+   (lambda ()
+     (unless (org-entry-get nil \"Effort\")
+       (org-get-heading t t t t))))"
+  (let ((results '()))
+    (org-map-entries
+     (lambda ()
+       (let ((marker (point-marker)))
+         (when-let ((result (funcall fn)))
+           (push (cons marker result) results))))
+     org-gtd-project-headings
+     'agenda)
+    (nreverse results)))
+
 (defun org-gtd-project--check-external-dependencies (project-marker)
   "Check for external tasks depending on PROJECT-MARKER's tasks.
 
