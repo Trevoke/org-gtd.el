@@ -62,6 +62,7 @@ Call this at the end of sub-transient apply functions."
 ;;;###autoload (autoload 'org-gtd-graph-transient-main "org-gtd-graph-transient" nil t)
 (transient-define-prefix org-gtd-graph-transient-main ()
   "Main command menu for GTD project graph view."
+  :transient-suffix (lambda () org-gtd-graph-transient-sticky)
   [:description
    (lambda () (org-gtd-graph-transient--show-selected-context))
    :class transient-row]
