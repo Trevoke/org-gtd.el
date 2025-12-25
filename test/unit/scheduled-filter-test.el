@@ -71,5 +71,35 @@
     (let ((pred (org-gtd-pred--scheduled-matches 'future)))
       (assert-nil (funcall pred)))))
 
+(deftest scheduled-pred/today-matches-scheduled-today ()
+  "Today scheduled predicate matches items scheduled for today."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Task scheduled today\n")
+    (insert (format "SCHEDULED: <%s>\n" (format-time-string "%Y-%m-%d %a")))
+    (goto-char (point-min))
+    (let ((pred (org-gtd-pred--scheduled-matches 'today)))
+      (assert-true (funcall pred)))))
+
+(deftest scheduled-pred/today-no-match-past-scheduled ()
+  "Today scheduled predicate does not match past scheduled dates."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Past scheduled task\n")
+    (insert "SCHEDULED: <2020-01-01 Wed>\n")
+    (goto-char (point-min))
+    (let ((pred (org-gtd-pred--scheduled-matches 'today)))
+      (assert-nil (funcall pred)))))
+
+(deftest scheduled-pred/today-no-match-future-scheduled ()
+  "Today scheduled predicate does not match future scheduled dates."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Future scheduled task\n")
+    (insert "SCHEDULED: <2099-12-31 Wed>\n")
+    (goto-char (point-min))
+    (let ((pred (org-gtd-pred--scheduled-matches 'today)))
+      (assert-nil (funcall pred)))))
+
 (provide 'scheduled-filter-test)
 ;;; scheduled-filter-test.el ends here

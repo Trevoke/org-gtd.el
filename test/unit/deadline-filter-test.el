@@ -71,5 +71,35 @@
     (let ((pred (org-gtd-pred--deadline-matches 'future)))
       (assert-nil (funcall pred)))))
 
+(deftest deadline-pred/today-matches-deadline-today ()
+  "Today deadline predicate matches items with deadline today."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Task due today\n")
+    (insert (format "DEADLINE: <%s>\n" (format-time-string "%Y-%m-%d %a")))
+    (goto-char (point-min))
+    (let ((pred (org-gtd-pred--deadline-matches 'today)))
+      (assert-true (funcall pred)))))
+
+(deftest deadline-pred/today-no-match-past-deadline ()
+  "Today deadline predicate does not match past deadlines."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Overdue task\n")
+    (insert "DEADLINE: <2020-01-01 Wed>\n")
+    (goto-char (point-min))
+    (let ((pred (org-gtd-pred--deadline-matches 'today)))
+      (assert-nil (funcall pred)))))
+
+(deftest deadline-pred/today-no-match-future-deadline ()
+  "Today deadline predicate does not match future deadlines."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Future task\n")
+    (insert "DEADLINE: <2099-12-31 Wed>\n")
+    (goto-char (point-min))
+    (let ((pred (org-gtd-pred--deadline-matches 'today)))
+      (assert-nil (funcall pred)))))
+
 (provide 'deadline-filter-test)
 ;;; deadline-filter-test.el ends here

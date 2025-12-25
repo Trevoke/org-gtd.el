@@ -59,6 +59,8 @@
 ;;   (when . future)            - Type's timestamp in the future
 ;;   (when . today)             - Type's timestamp is today
 ;;   (deadline . past)          - Deadline in the past
+;;   (deadline . future)        - Deadline in the future
+;;   (deadline . today)         - Deadline is today
 ;;   (scheduled . past)         - Scheduled in the past
 ;;   (scheduled . future)       - Scheduled in the future
 ;;   (scheduled . today)        - Scheduled for today
@@ -469,6 +471,10 @@ VALUE can be:
   (cond
    ((eq time-spec 'past)
     (list '(deadline :to "today") '(not (done))))
+   ((eq time-spec 'future)
+    (list '(deadline :from "today")))
+   ((eq time-spec 'today)
+    (list '(deadline :on "today")))
    (t (error "Unknown deadline spec: %s" time-spec))))
 
 (defun org-gtd-view-lang--translate-scheduled-filter (time-spec)
