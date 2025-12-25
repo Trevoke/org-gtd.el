@@ -409,6 +409,43 @@ CLOSED: ")
         ;; Should NOT include Bob's task
         (assert-no-match "Task for Bob" content)))))
 
+;;; Deadline Filter Integration Tests
+
+(deftest view-lang-int/deadline-filter-shows-overdue-items ()
+  "View with deadline=past filter shows items with overdue deadlines."
+  (with-current-buffer (org-gtd--default-file)
+    (insert "* TODO Overdue task
+DEADLINE: <2020-01-01 Wed>
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+* TODO Future task
+DEADLINE: <2099-12-31 Wed>
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+* TODO No deadline task
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+")
+    (basic-save-buffer))
+
+  (org-gtd-view-show
+   '((name . "Overdue Tasks")
+     (type . next-action)
+     (deadline . past)))
+
+  (let ((agenda-buffer (get-buffer org-agenda-buffer-name)))
+    (assert-true agenda-buffer)
+    (with-current-buffer agenda-buffer
+      (let ((content (buffer-string)))
+        ;; Should include overdue task
+        (assert-match "Overdue task" content)
+        ;; Should NOT include future or no-deadline tasks
+        (assert-no-match "Future task" content)
+        (assert-no-match "No deadline task" content)))))
+
 (provide 'gtd-view-language-integration-test)
 
 ;;; gtd-view-language-test.el ends here
