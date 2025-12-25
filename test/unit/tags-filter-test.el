@@ -67,5 +67,22 @@
     (let ((pred (org-gtd-pred--tags-matches '("urgent"))))
       (assert-true (funcall pred)))))
 
+;;; Skip Function Integration
+
+(deftest tags-filter/skip-function-includes-tags ()
+  "Skip function builder includes tags filter predicate."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* NEXT Next Action :@work:\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((spec '((type . next-action)
+                   (tags . ("@work" "@home"))))
+           (skip-fn (org-gtd-view-lang--build-skip-function spec)))
+      ;; Skip function should be a lambda (closure)
+      (assert-true (functionp skip-fn))
+      ;; Should NOT skip entry with matching tag
+      (assert-nil (funcall skip-fn)))))
+
 (provide 'tags-filter-test)
 ;;; tags-filter-test.el ends here

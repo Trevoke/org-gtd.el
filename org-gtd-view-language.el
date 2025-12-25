@@ -1049,6 +1049,9 @@ The function composes predicates from the view spec filters."
         (when (and (assq 'last-clocked-out gtd-view-spec)
                    (null (alist-get 'last-clocked-out gtd-view-spec)))
           (push (org-gtd-pred--last-clocked-out-matches nil) predicates))
+        ;; Add tags predicate
+        (when-let ((tags-filter (alist-get 'tags gtd-view-spec)))
+          (push (org-gtd-pred--tags-matches tags-filter) predicates))
         ;; Always exclude done items from native blocks
         (push (org-gtd-pred--not-done) predicates)
         ;; Compose predicates into skip function
