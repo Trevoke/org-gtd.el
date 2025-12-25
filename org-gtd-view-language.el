@@ -1052,6 +1052,16 @@ The function composes predicates from the view spec filters."
         ;; Add tags predicate
         (when-let ((tags-filter (alist-get 'tags gtd-view-spec)))
           (push (org-gtd-pred--tags-matches tags-filter) predicates))
+        ;; Add who predicate (requires type for property lookup)
+        (when (assq 'who gtd-view-spec)
+          (let ((who-filter (alist-get 'who gtd-view-spec)))
+            (when type-filter
+              (when-let ((who-prop (org-gtd-type-property type-filter :who)))
+                (if (or (null who-filter) (and (stringp who-filter) (string-empty-p who-filter)))
+                    ;; nil or "" means find items with missing/empty :who
+                    (push (org-gtd-pred--property-empty-or-missing who-prop) predicates)
+                  ;; Otherwise filter by specific value
+                  (push (org-gtd-pred--property-equals who-prop who-filter) predicates))))))
         ;; Always exclude done items from native blocks
         (push (org-gtd-pred--not-done) predicates)
         ;; Compose predicates into skip function
