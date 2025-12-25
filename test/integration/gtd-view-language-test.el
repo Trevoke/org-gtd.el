@@ -312,6 +312,69 @@ CLOSED: ")
     (with-current-buffer agenda-buffer
       (assert-match "Completed Task" (buffer-string)))))
 
+;;; Tags Filter Integration Tests
+
+(deftest view-lang-int/tags-filter-includes-matching-items ()
+  "View with tags filter shows items with matching tags."
+  (with-current-buffer (org-gtd--default-file)
+    (insert "* NEXT Work task :@work:
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+* NEXT Home task :@home:
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+* NEXT Errands task :@errands:
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+")
+    (basic-save-buffer))
+
+  (org-gtd-view-show
+   '((name . "Work and Home Tasks")
+     (type . next-action)
+     (tags . ("@work" "@home"))))
+
+  (let ((agenda-buffer (get-buffer org-agenda-buffer-name)))
+    (assert-true agenda-buffer)
+    (with-current-buffer agenda-buffer
+      (let ((content (buffer-string)))
+        ;; Should include work and home tasks
+        (assert-match "Work task" content)
+        (assert-match "Home task" content)
+        ;; Should NOT include errands task
+        (assert-nil (string-match-p "Errands task" content))))))
+
+(deftest view-lang-int/tags-filter-excludes-non-matching-items ()
+  "View with tags filter excludes items without matching tags."
+  (with-current-buffer (org-gtd--default-file)
+    (insert "* NEXT Tagged task :@work:
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+* NEXT Untagged task
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+")
+    (basic-save-buffer))
+
+  (org-gtd-view-show
+   '((name . "Work Tasks Only")
+     (type . next-action)
+     (tags . ("@work"))))
+
+  (let ((agenda-buffer (get-buffer org-agenda-buffer-name)))
+    (assert-true agenda-buffer)
+    (with-current-buffer agenda-buffer
+      (let ((content (buffer-string)))
+        ;; Should include tagged task
+        (assert-match "Tagged task" content)
+        ;; Should NOT include untagged task
+        (assert-nil (string-match-p "Untagged task" content))))))
+
 (provide 'gtd-view-language-integration-test)
 
 ;;; gtd-view-language-test.el ends here
