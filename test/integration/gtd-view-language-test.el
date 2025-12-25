@@ -375,6 +375,40 @@ CLOSED: ")
         ;; Should NOT include untagged task
         (assert-nil (string-match-p "Untagged task" content))))))
 
+;;; Who Filter Integration Tests
+
+(deftest view-lang-int/who-filter-shows-delegated-to-person ()
+  "View with who filter shows items delegated to specified person."
+  (with-current-buffer (org-gtd--default-file)
+    (insert "* WAIT Task for Alice
+:PROPERTIES:
+:ORG_GTD: Delegated
+:DELEGATED_TO: Alice
+:ORG_GTD_TIMESTAMP: <2025-01-15 Wed>
+:END:
+* WAIT Task for Bob
+:PROPERTIES:
+:ORG_GTD: Delegated
+:DELEGATED_TO: Bob
+:ORG_GTD_TIMESTAMP: <2025-01-15 Wed>
+:END:
+")
+    (basic-save-buffer))
+
+  (org-gtd-view-show
+   '((name . "Alice's Tasks")
+     (type . delegated)
+     (who . "Alice")))
+
+  (let ((agenda-buffer (get-buffer org-agenda-buffer-name)))
+    (assert-true agenda-buffer)
+    (with-current-buffer agenda-buffer
+      (let ((content (buffer-string)))
+        ;; Should include Alice's task
+        (assert-match "Task for Alice" content)
+        ;; Should NOT include Bob's task
+        (assert-no-match "Task for Bob" content)))))
+
 (provide 'gtd-view-language-integration-test)
 
 ;;; gtd-view-language-test.el ends here
