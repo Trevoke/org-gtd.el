@@ -50,8 +50,7 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
          '((name . "Actions by Context")
            (view-type . tags-grouped)
            (group-by . context)
-           (filters . ((tags-match . "{^@}")
-                       (todo . ("NEXT")))))))
+           (filters . ((todo . ("NEXT")))))))
     (assert-equal
      '(("@work" . ((tags "+@work+TODO=\"NEXT\""
                          ((org-agenda-overriding-header "@work")))))

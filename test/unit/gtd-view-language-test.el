@@ -35,20 +35,6 @@
            (not (done)))
      (org-gtd-view-lang--translate-to-org-ql gtd-view-spec))))
 
-(deftest view-lang/calendar-past-with-level ()
-  "Translates calendar type with level and past timestamp."
-  (let ((gtd-view-spec
-         '((name . "Missed Appointments")
-           (type . calendar)
-           (level . 2)
-           (when . past))))
-    (assert-equal
-     '(and (property "ORG_GTD" "Calendar")
-           (level 2)
-           (property-ts< "ORG_GTD_TIMESTAMP" "today")
-           (not (done)))
-     (org-gtd-view-lang--translate-to-org-ql gtd-view-spec))))
-
 (deftest view-lang/simple-next-action-type ()
   "Translates next-action type filter."
   (let ((gtd-view-spec
@@ -117,12 +103,10 @@
   (let ((gtd-view-spec
          '((name . "Complex View")
            (filters . ((type . project)
-                       (level . 2)
                        (deadline . past)
                        (scheduled . future))))))
     (assert-equal
      '(and (property "ORG_GTD" "Projects")
-           (level 2)
            (deadline :to "today")
            (scheduled :from "today"))
      (org-gtd-view-lang--translate-to-org-ql gtd-view-spec))))
@@ -232,17 +216,6 @@
      '(and (tags "@work" "@computer")
            (todo "NEXT"))
      (org-gtd-view-lang--translate-to-org-ql tag-view-spec))))
-
-(deftest view-lang/tags-match-pattern ()
-  "Filters items by tag patterns."
-  (let ((tag-match-spec
-         '((name . "Context Pattern View")
-           (filters . ((tags-match . "{^@}")
-                       (todo . ("NEXT")))))))
-    (assert-equal
-     '(and (tags "{^@}")
-           (todo "NEXT"))
-     (org-gtd-view-lang--translate-to-org-ql tag-match-spec))))
 
 (deftest view-lang/grouped-views-by-context ()
   "Creates simple grouped views by pre-defined contexts."

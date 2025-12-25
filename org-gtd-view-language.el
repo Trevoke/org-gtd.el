@@ -64,7 +64,6 @@
 ;;   (scheduled . today)        - Scheduled for today
 ;;
 ;; Structural Filters:
-;;   (level . N)                - Heading level N
 ;;   (todo . ("TODO" "NEXT"))   - Specific TODO keywords
 ;;   (done . t)                 - Any completed item
 ;;   (done . recent)            - Completed in last 7 days
@@ -87,7 +86,6 @@
 ;;
 ;; Tag Filters:
 ;;   (tags . ("@work"))         - Match specific tags
-;;   (tags-match . "{^@}")      - Tag expression match
 ;;
 ;; Examples:
 ;;
@@ -318,12 +316,8 @@ Multi-block specs have a \\='blocks key containing a list of block specs."
       (org-gtd-view-lang--translate-who-filter filter-value))
      ((eq filter-type 'tags)
       (org-gtd-view-lang--translate-tags-filter filter-value))
-     ((eq filter-type 'tags-match)
-      (org-gtd-view-lang--translate-tags-match-filter filter-value))
      ((eq filter-type 'property)
       (org-gtd-view-lang--translate-property-filter filter-value))
-     ((eq filter-type 'level)
-      (org-gtd-view-lang--translate-level-filter filter-value))
      ((eq filter-type 'type)
       (org-gtd-view-lang--translate-type-filter filter-value))
      ((eq filter-type 'previous-type)
@@ -558,10 +552,6 @@ Requires a type filter to be present for property resolution."
   "Translate tags TAGS to org-ql tags filter."
   (list `(tags ,@tags)))
 
-(defun org-gtd-view-lang--translate-tags-match-filter (pattern)
-  "Translate tags-match PATTERN to org-ql tags filter."
-  (list `(tags ,pattern)))
-
 (defun org-gtd-view-lang--translate-property-filter (property-spec)
   "Translate property PROPERTY-SPEC to org-ql property filter.
 PROPERTY-SPEC should be an alist with property name and value pairs,
@@ -569,10 +559,6 @@ e.g., \\='((\"ORG_GTD\" . \"Actions\"))."
   (mapcar (lambda (prop-pair)
             `(property ,(car prop-pair) ,(cdr prop-pair)))
           property-spec))
-
-(defun org-gtd-view-lang--translate-level-filter (level-num)
-  "Translate level LEVEL-NUM to org-ql level filter."
-  (list `(level ,level-num)))
 
 (defun org-gtd-view-lang--translate-type-filter (type-name)
   "Translate TYPE-NAME to org-ql property filter using org-gtd-types.
@@ -670,7 +656,7 @@ GTD-VIEW-SPEC should be an alist with \\='name and either:
          ;; Reserved keys that are not filters
          (reserved-keys '(name blocks block-type prefix prefix-width view-type
                           agenda-span show-habits additional-blocks
-                          group-contexts group-by tags-match))
+                          group-contexts group-by))
          ;; Extract filters: either from 'filters key or from top-level keys
          (filters (or explicit-filters
                       (seq-filter (lambda (pair)
@@ -1134,7 +1120,7 @@ Otherwise use INHERITED-PREFIX-FORMAT if provided."
 (defconst org-gtd-view-lang--reserved-keys
   '(name blocks block-type prefix prefix-width view-type
     agenda-span show-habits additional-blocks
-    group-contexts group-by tags-match todo-keyword filters)
+    group-contexts group-by todo-keyword filters)
   "Keys that are processed specially and not inherited to blocks.")
 
 (defun org-gtd-view-lang--extract-type-keys (spec)
