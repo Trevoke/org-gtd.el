@@ -159,6 +159,25 @@ Uses OR semantics: returns t if entry has ANY of the specified tags."
     (let ((entry-tags (org-get-tags nil t)))  ; nil=current, t=local only
       (cl-some (lambda (tag) (member tag entry-tags)) tags))))
 
+;;;; Deadline/Scheduled Predicates
+
+(defun org-gtd-pred--deadline-matches (time-spec)
+  "Return predicate checking if item's deadline matches TIME-SPEC.
+TIME-SPEC can be:
+  - \\='past - deadline is before today
+  - \\='today - deadline is today
+  - \\='future - deadline is after today
+Returns nil if item has no deadline."
+  (lambda ()
+    (when-let ((deadline-time (org-get-deadline-time (point))))
+      (let* ((today (org-today))
+             (deadline-day (time-to-days deadline-time)))
+        (pcase time-spec
+          ('past (< deadline-day today))
+          ('today (= deadline-day today))
+          ('future (> deadline-day today))
+          (_ nil))))))
+
 ;;;; Clocked Time Predicates
 
 (defun org-gtd-pred--clocked-matches (value)
