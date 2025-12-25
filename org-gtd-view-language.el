@@ -1065,6 +1065,9 @@ The function composes predicates from the view spec filters."
         ;; Add deadline predicate
         (when-let ((deadline-filter (alist-get 'deadline gtd-view-spec)))
           (push (org-gtd-pred--deadline-matches deadline-filter) predicates))
+        ;; Add scheduled predicate
+        (when-let ((scheduled-filter (alist-get 'scheduled gtd-view-spec)))
+          (push (org-gtd-pred--scheduled-matches scheduled-filter) predicates))
         ;; Always exclude done items from native blocks
         (push (org-gtd-pred--not-done) predicates)
         ;; Compose predicates into skip function

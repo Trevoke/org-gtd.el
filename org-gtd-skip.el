@@ -178,6 +178,23 @@ Returns nil if item has no deadline."
           ('future (> deadline-day today))
           (_ nil))))))
 
+(defun org-gtd-pred--scheduled-matches (time-spec)
+  "Return predicate checking if item's scheduled date matches TIME-SPEC.
+TIME-SPEC can be:
+  - \\='past - scheduled before today
+  - \\='today - scheduled for today
+  - \\='future - scheduled after today
+Returns nil if item has no scheduled date."
+  (lambda ()
+    (when-let ((scheduled-time (org-get-scheduled-time (point))))
+      (let* ((today (org-today))
+             (scheduled-day (time-to-days scheduled-time)))
+        (pcase time-spec
+          ('past (< scheduled-day today))
+          ('today (= scheduled-day today))
+          ('future (> scheduled-day today))
+          (_ nil))))))
+
 ;;;; Clocked Time Predicates
 
 (defun org-gtd-pred--clocked-matches (value)

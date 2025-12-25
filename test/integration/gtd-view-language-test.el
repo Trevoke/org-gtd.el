@@ -446,6 +446,43 @@ DEADLINE: <2099-12-31 Wed>
         (assert-no-match "Future task" content)
         (assert-no-match "No deadline task" content)))))
 
+;;; Scheduled Filter Integration Tests
+
+(deftest view-lang-int/scheduled-filter-shows-past-scheduled ()
+  "View with scheduled=past filter shows items scheduled in the past."
+  (with-current-buffer (org-gtd--default-file)
+    (insert "* TODO Past scheduled task
+SCHEDULED: <2020-01-01 Wed>
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+* TODO Future scheduled task
+SCHEDULED: <2099-12-31 Wed>
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+* TODO No scheduled task
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+")
+    (basic-save-buffer))
+
+  (org-gtd-view-show
+   '((name . "Past Scheduled")
+     (type . next-action)
+     (scheduled . past)))
+
+  (let ((agenda-buffer (get-buffer org-agenda-buffer-name)))
+    (assert-true agenda-buffer)
+    (with-current-buffer agenda-buffer
+      (let ((content (buffer-string)))
+        ;; Should include past scheduled task
+        (assert-match "Past scheduled task" content)
+        ;; Should NOT include future or no-scheduled tasks
+        (assert-no-match "Future scheduled task" content)
+        (assert-no-match "No scheduled task" content)))))
+
 (provide 'gtd-view-language-integration-test)
 
 ;;; gtd-view-language-test.el ends here
