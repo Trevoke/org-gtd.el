@@ -156,6 +156,27 @@
   "Resume-if-sticky function is defined."
   (assert-true (fboundp 'org-gtd-graph-transient--resume-if-sticky)))
 
+(deftest graph-transient/do-sticky-function-defined ()
+  "Pre-command function for sticky mode is defined."
+  (assert-true (fboundp 'org-gtd-graph-transient--do-sticky)))
+
+(deftest graph-transient/do-sticky-returns-exit-when-nil ()
+  "Pre-command returns transient--exit when sticky mode is off."
+  (with-temp-buffer
+    (setq-local org-gtd-graph-transient-sticky nil)
+    (assert-equal transient--exit (org-gtd-graph-transient--do-sticky))))
+
+(deftest graph-transient/do-sticky-returns-stay-when-t ()
+  "Pre-command returns transient--stay when sticky mode is on."
+  (with-temp-buffer
+    (setq-local org-gtd-graph-transient-sticky t)
+    (assert-equal transient--stay (org-gtd-graph-transient--do-sticky))))
+
+(deftest graph-transient/main-prefix-can-be-loaded ()
+  "The main transient prefix can be loaded without error."
+  ;; This will error if :transient-suffix has an invalid value
+  (assert-true (get 'org-gtd-graph-transient-main 'transient--prefix)))
+
 (provide 'transient-test)
 
 ;;; transient-test.el ends here

@@ -57,12 +57,20 @@ Call this at the end of sub-transient apply functions."
   (when org-gtd-graph-transient-sticky
     (run-at-time 0 nil #'org-gtd-graph-transient-main)))
 
+(defun org-gtd-graph-transient--do-sticky ()
+  "Pre-command that stays in transient if sticky mode is enabled.
+Returns `transient--stay' when sticky mode is on, `transient--exit' otherwise.
+Named with \"--do-\" so transient.el recognizes it as a pre-command function."
+  (if org-gtd-graph-transient-sticky
+      transient--stay
+    transient--exit))
+
 ;;;; Main Transient Menu
 
 ;;;###autoload (autoload 'org-gtd-graph-transient-main "org-gtd-graph-transient" nil t)
 (transient-define-prefix org-gtd-graph-transient-main ()
   "Main command menu for GTD project graph view."
-  :transient-suffix (lambda () org-gtd-graph-transient-sticky)
+  :transient-suffix 'org-gtd-graph-transient--do-sticky
   [:description
    (lambda () (org-gtd-graph-transient--show-selected-context))
    :class transient-row]
