@@ -1062,6 +1062,9 @@ The function composes predicates from the view spec filters."
                     (push (org-gtd-pred--property-empty-or-missing who-prop) predicates)
                   ;; Otherwise filter by specific value
                   (push (org-gtd-pred--property-equals who-prop who-filter) predicates))))))
+        ;; Add deadline predicate
+        (when-let ((deadline-filter (alist-get 'deadline gtd-view-spec)))
+          (push (org-gtd-pred--deadline-matches deadline-filter) predicates))
         ;; Always exclude done items from native blocks
         (push (org-gtd-pred--not-done) predicates)
         ;; Compose predicates into skip function
