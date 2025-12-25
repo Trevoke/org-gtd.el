@@ -149,6 +149,16 @@ VALUE can be:
           (equal item-priority
                  (if (symbolp value) (symbol-name value) value))))))))
 
+;;;; Tag Predicates
+
+(defun org-gtd-pred--tags-matches (tags)
+  "Return predicate checking if item has any of TAGS.
+TAGS is a list of tag strings (e.g., (\"@work\" \"@home\")).
+Uses OR semantics: returns t if entry has ANY of the specified tags."
+  (lambda ()
+    (let ((entry-tags (org-get-tags nil t)))  ; nil=current, t=local only
+      (cl-some (lambda (tag) (member tag entry-tags)) tags))))
+
 ;;;; Clocked Time Predicates
 
 (defun org-gtd-pred--clocked-matches (value)
