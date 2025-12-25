@@ -790,6 +790,7 @@ Returns nil for types that need OR logic (handled by skip function)."
 The match string is used with tags agenda blocks.
 Returns a string like \"LEVEL>0+ORG_GTD=\\\"Calendar\\\"/TODO=\\\"NEXT\\\"\"."
   (let* ((type-filter (alist-get 'type gtd-view-spec))
+         (todo-filter (alist-get 'todo gtd-view-spec))
          ;; For simple types, use org-gtd-type-org-gtd-value
          ;; For complex types, use the base property lookup
          (org-gtd-val (cond
@@ -802,13 +803,17 @@ Returns a string like \"LEVEL>0+ORG_GTD=\\\"Calendar\\\"/TODO=\\\"NEXT\\\"\"."
                            (format "LEVEL>0+ORG_GTD=\"%s\"" org-gtd-val)
                          "LEVEL>0+ORG_GTD<>\"\""))
          (todo-part nil))
-    (when type-filter
-      ;; Add TODO keyword for types that have implied keywords
+    (cond
+     ;; Explicit todo filter overrides implicit type-based TODO keyword
+     (todo-filter
+      nil)  ; Don't add todo-part - let skip function handle it
+     ;; Add TODO keyword for types that have implied keywords
+     (type-filter
       (cond
        ((eq type-filter 'next-action)
         (setq todo-part (org-gtd-keywords--next)))
        ((eq type-filter 'delegated)
-        (setq todo-part (org-gtd-keywords--wait)))))
+        (setq todo-part (org-gtd-keywords--wait))))))
     ;; Build match string:
     ;; - Use LEVEL>0 as base (matches all headlines)
     ;; - Use ORG_GTD="value" to filter to specific type
@@ -1068,6 +1073,9 @@ The function composes predicates from the view spec filters."
         ;; Add scheduled predicate
         (when-let ((scheduled-filter (alist-get 'scheduled gtd-view-spec)))
           (push (org-gtd-pred--scheduled-matches scheduled-filter) predicates))
+        ;; Add todo keyword predicate
+        (when-let ((todo-filter (alist-get 'todo gtd-view-spec)))
+          (push (org-gtd-pred--todo-matches todo-filter) predicates))
         ;; Always exclude done items from native blocks
         (push (org-gtd-pred--not-done) predicates)
         ;; Compose predicates into skip function

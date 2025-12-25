@@ -483,6 +483,39 @@ SCHEDULED: <2099-12-31 Wed>
         (assert-no-match "Future scheduled task" content)
         (assert-no-match "No scheduled task" content)))))
 
+;;; Todo Keyword Filter Integration Tests
+
+(deftest view-lang-int/todo-filter-shows-specific-keywords ()
+  "View with todo filter shows only items with specified keywords."
+  (with-current-buffer (org-gtd--default-file)
+    (insert "* TODO Task in TODO state
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+* NEXT Task in NEXT state
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+* WAIT Task in WAIT state
+:PROPERTIES:
+:ORG_GTD: Actions
+:END:
+")
+    (basic-save-buffer))
+
+  (org-gtd-view-show
+   '((name . "TODO and NEXT only")
+     (type . next-action)
+     (todo . ("TODO" "NEXT"))))
+
+  (let ((agenda-buffer (get-buffer org-agenda-buffer-name)))
+    (assert-true agenda-buffer)
+    (with-current-buffer agenda-buffer
+      (let ((content (buffer-string)))
+        (assert-match "Task in TODO state" content)
+        (assert-match "Task in NEXT state" content)
+        (assert-nil (string-match-p "Task in WAIT state" content))))))
+
 (provide 'gtd-view-language-integration-test)
 
 ;;; gtd-view-language-test.el ends here

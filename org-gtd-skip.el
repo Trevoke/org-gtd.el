@@ -195,6 +195,16 @@ Returns nil if item has no scheduled date."
           ('future (> scheduled-day today))
           (_ nil))))))
 
+;;;; Todo Keyword Predicates
+
+(defun org-gtd-pred--todo-matches (keywords)
+  "Return predicate checking if item's TODO state is in KEYWORDS.
+KEYWORDS is a list of TODO keyword strings (e.g., (\"TODO\" \"NEXT\")).
+Uses OR semantics: returns t if entry has ANY of the specified keywords."
+  (lambda ()
+    (when-let ((todo-state (org-get-todo-state)))
+      (member todo-state keywords))))
+
 ;;;; Clocked Time Predicates
 
 (defun org-gtd-pred--clocked-matches (value)
