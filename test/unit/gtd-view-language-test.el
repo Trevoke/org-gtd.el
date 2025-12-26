@@ -973,6 +973,47 @@
       ;; Past timestamp should be included
       (assert-nil result))))
 
+(deftest view-lang/skip-function-when-without-type-errors ()
+  "Skip function errors when 'when' is used without 'type'."
+  (assert-raises 'user-error
+    (org-gtd-view-lang--build-skip-function '((when . past)))))
+
+(deftest view-lang/skip-function-when-unsupported-type-errors ()
+  "Skip function errors when 'when' is used with unsupported type."
+  (assert-raises 'user-error
+    (org-gtd-view-lang--build-skip-function '((type . next-action) (when . past)))))
+
+(deftest view-lang/skip-function-when-today-includes-match ()
+  "Skip function includes items with today timestamp for when=today."
+  (with-temp-buffer
+    (org-mode)
+    ;; Today's timestamp should be included for when=today
+    (insert (format "* Test\n:PROPERTIES:\n:ORG_GTD: Delegated\n:ORG_GTD_TIMESTAMP: <%s>\n:END:\n"
+                    (format-time-string "%Y-%m-%d %a")))
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . delegated)
+                        (when . today)))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Today's timestamp should be included
+      (assert-nil result))))
+
+(deftest view-lang/skip-function-when-future-includes-match ()
+  "Skip function includes items with future timestamp for when=future."
+  (with-temp-buffer
+    (org-mode)
+    ;; Future timestamp should be included for when=future
+    (insert "* Test\n:PROPERTIES:\n:ORG_GTD: Delegated\n:ORG_GTD_TIMESTAMP: <2099-01-01 Wed>\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . delegated)
+                        (when . future)))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Future timestamp should be included
+      (assert-nil result))))
+
 (deftest view-lang/skip-function-includes-matching-area-of-focus ()
   "Skip function includes items matching area-of-focus filter."
   (with-temp-buffer

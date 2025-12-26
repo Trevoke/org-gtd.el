@@ -988,6 +988,12 @@ The function composes predicates from the view spec filters."
   (let* ((type-filter (alist-get 'type gtd-view-spec))
          (when-filter (alist-get 'when gtd-view-spec))
          (area-filter (alist-get 'area-of-focus gtd-view-spec)))
+    ;; Validate when filter requirements
+    (when when-filter
+      (unless type-filter
+        (user-error "The 'when' filter requires a 'type' filter"))
+      (unless (org-gtd-type-property type-filter :when)
+        (user-error "Type '%s' does not support the 'when' filter" type-filter)))
     ;; Handle complex types with specialized skip functions
     (cond
      ;; Stuck types - need OR logic for missing metadata
