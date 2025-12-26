@@ -122,6 +122,15 @@
 ;; Note: org-gtd-prefix-width is defined in org-gtd-core.el
 ;; and serves as the default width for prefix elements
 
+(defconst org-gtd-view-lang--known-filter-keys
+  '(name type when deadline scheduled todo done not-done
+    area-of-focus who tags priority effort clocked last-clocked-out
+    blocks prefix prefix-width view-type agenda-span show-habits
+    additional-blocks filters not-habit property previous-type
+    block-type group-contexts group-by todo-keyword prefix-format)
+  "Known filter keys in view specs.
+Includes both filter keys and reserved structural keys.")
+
 (defconst org-gtd-view-lang--type-defaults
   '((calendar . ((when . today) (name . "Calendar")))
     (delegated . ((when . today) (name . "Delegated")))
@@ -985,6 +994,12 @@ Optional PREFIX-FORMAT is applied for display formatting."
   "Build a skip function from GTD-VIEW-SPEC.
 Returns a function suitable for `org-agenda-skip-function'.
 The function composes predicates from the view spec filters."
+  ;; Validate filter keys
+  (let ((unknown-keys (cl-set-difference
+                       (mapcar #'car gtd-view-spec)
+                       org-gtd-view-lang--known-filter-keys)))
+    (when unknown-keys
+      (user-error "Unknown filter key(s): %s" unknown-keys)))
   (let* ((type-filter (alist-get 'type gtd-view-spec))
          (when-filter (alist-get 'when gtd-view-spec))
          (area-filter (alist-get 'area-of-focus gtd-view-spec)))

@@ -1891,6 +1891,14 @@
       ;; No clock = 0 time, should skip
       (assert-true (numberp result)))))
 
+;;; Unknown Filter Key Error Handling Tests
+
+(deftest view-lang/skip-function-errors-on-unknown-filter ()
+  "Skip function errors on unknown filter keys."
+  (assert-raises 'user-error
+    (org-gtd-view-lang--build-skip-function
+     '((type . next-action) (invalid-filter . "bad")))))
+
 (provide 'gtd-view-language-test)
 
 ;;; gtd-view-language-test.el ends here
