@@ -973,6 +973,48 @@
       ;; Past timestamp should be included
       (assert-nil result))))
 
+(deftest view-lang/skip-function-includes-matching-area-of-focus ()
+  "Skip function includes items matching area-of-focus filter."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* NEXT Task\n:PROPERTIES:\n:ORG_GTD: Actions\n:CATEGORY: Work\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action)
+                        (area-of-focus . "Work")))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Matching area-of-focus should be included
+      (assert-nil result))))
+
+(deftest view-lang/skip-function-excludes-non-matching-area-of-focus ()
+  "Skip function excludes items with non-matching area-of-focus."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* NEXT Task\n:PROPERTIES:\n:ORG_GTD: Actions\n:CATEGORY: Personal\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action)
+                        (area-of-focus . "Work")))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Non-matching area-of-focus should be skipped
+      (assert-true (numberp result)))))
+
+(deftest view-lang/skip-function-excludes-missing-area-of-focus ()
+  "Skip function excludes items without CATEGORY property."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* NEXT Task\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action)
+                        (area-of-focus . "Work")))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; Missing CATEGORY should be skipped
+      (assert-true (numberp result)))))
+
 ;;; Native Block Translator Tests
 
 (deftest view-lang/translate-to-native-block-uses-tags ()
