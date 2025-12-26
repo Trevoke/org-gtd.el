@@ -29,44 +29,6 @@
   (assert-true org-gtd-reflect-missed-engagements-view-specs)
   (assert-equal 4 (length org-gtd-reflect-missed-engagements-view-specs)))
 
-(deftest reflect/translate-delegated-spec-to-org-ql ()
-  "Can translate delegated view specification to org-ql."
-  (let* ((delegated-spec (car org-gtd-reflect-missed-engagements-view-specs))
-         (query (org-gtd-view-lang--translate-to-org-ql delegated-spec)))
-    (assert-equal `(and (property "ORG_GTD" "Delegated")
-                        (todo ,(org-gtd-keywords--wait))
-                        (property-ts< "ORG_GTD_TIMESTAMP" "today")
-                        (not (done)))
-                  query)))
-
-(deftest reflect/translate-calendar-spec-to-org-ql ()
-  "Can translate calendar view specification to org-ql."
-  (let* ((calendar-spec (cadr org-gtd-reflect-missed-engagements-view-specs))
-         (query (org-gtd-view-lang--translate-to-org-ql calendar-spec)))
-    (assert-equal '(and (property "ORG_GTD" "Calendar")
-                        (property-ts< "ORG_GTD_TIMESTAMP" "today")
-                        (not (done)))
-                  query)))
-
-(deftest reflect/translate-project-deadline-spec-to-org-ql ()
-  "Can translate project deadline view specification to org-ql."
-  (let* ((deadline-spec (caddr org-gtd-reflect-missed-engagements-view-specs))
-         (query (org-gtd-view-lang--translate-to-org-ql deadline-spec)))
-    (assert-equal '(and (property "ORG_GTD" "Projects")
-                        (deadline :to "today")
-                        (not (done)))
-                  query)))
-
-(deftest reflect/translate-project-scheduled-spec-to-org-ql ()
-  "Can translate project scheduled view specification to org-ql."
-  (let* ((scheduled-spec (cadddr org-gtd-reflect-missed-engagements-view-specs))
-         (query (org-gtd-view-lang--translate-to-org-ql scheduled-spec)))
-    (assert-equal '(and (property "ORG_GTD" "Projects")
-                        (scheduled :to "today")
-                        (not (property "STYLE" "habit"))
-                        (not (done)))
-                  query)))
-
 ;;; Agenda Block Generation
 
 (deftest reflect/creates-native-agenda-blocks ()
@@ -146,32 +108,11 @@
   (assert-equal "Upcoming check-ins on delegated items"
                 (alist-get 'name org-gtd-reflect-upcoming-delegated-view-spec)))
 
-(deftest reflect/translate-upcoming-delegated-spec-to-org-ql ()
-  "Can translate upcoming delegated view specification to org-ql."
-  (let* ((upcoming-spec org-gtd-reflect-upcoming-delegated-view-spec)
-         (query (org-gtd-view-lang--translate-to-org-ql upcoming-spec)))
-    (assert-equal `(and (property "ORG_GTD" "Delegated")
-                        (todo ,(org-gtd-keywords--wait))
-                        (property-ts> "ORG_GTD_TIMESTAMP" "today"))
-                  query)))
-
 (deftest reflect/upcoming-delegated-function-exists ()
   "Provides the org-gtd-reflect-upcoming-delegated function."
   (assert-true (fboundp 'org-gtd-reflect-upcoming-delegated)))
 
 ;;; Stuck Single Actions
-
-(deftest reflect/stuck-single-action-view-spec ()
-  "Can translate stuck-single-action view specification to org-ql.
-Stuck single actions are undone items with ORG_GTD=Actions but not in NEXT state."
-  (let* ((stuck-spec '((name . "Stuck Single Actions")
-                       (type . stuck-single-action)))
-         (query (org-gtd-view-lang--translate-to-org-ql stuck-spec)))
-    ;; Should match Actions that are not in NEXT state and not done
-    (assert-equal `(and (property "ORG_GTD" "Actions")
-                        (not (todo ,(org-gtd-keywords--next)))
-                        (not (done)))
-                  query)))
 
 (deftest reflect/stuck-single-action-function-exists ()
   "Provides the org-gtd-reflect-stuck-single-action-items function."

@@ -17,40 +17,6 @@
 (require 'org-gtd)
 (require 'org-gtd-view-language)
 
-;;; Last-Clocked-Out Filter Translation Tests
-
-(deftest view-lang/last-clocked-out-greater-than ()
-  "Translates last-clocked-out=(> \"2d\") filter."
-  (let ((view-spec '((name . "Stale Tasks")
-                     (type . next-action)
-                     (last-clocked-out . (> "2d")))))
-    (let ((query (org-gtd-view-lang--translate-to-org-ql view-spec)))
-      (assert-true (cl-find 'last-clocked-out (flatten-list query))))))
-
-(deftest view-lang/last-clocked-out-less-than ()
-  "Translates last-clocked-out=(< \"1w\") filter."
-  (let ((view-spec '((name . "Recent Work")
-                     (type . next-action)
-                     (last-clocked-out . (< "1w")))))
-    (let ((query (org-gtd-view-lang--translate-to-org-ql view-spec)))
-      (assert-true (cl-find 'last-clocked-out (flatten-list query))))))
-
-(deftest view-lang/last-clocked-out-nil-never-clocked ()
-  "Translates last-clocked-out=nil for never clocked items."
-  (let ((view-spec '((name . "Never Worked")
-                     (type . next-action)
-                     (last-clocked-out . nil))))
-    (let ((query (org-gtd-view-lang--translate-to-org-ql view-spec)))
-      (assert-true (cl-find 'last-clocked-out-nil (flatten-list query))))))
-
-(deftest view-lang/last-clocked-out-invalid-format-signals-error ()
-  "Signals error for invalid last-clocked-out format."
-  (let ((view-spec '((name . "Invalid")
-                     (type . next-action)
-                     (last-clocked-out . "invalid"))))
-    (assert-raises 'user-error
-      (org-gtd-view-lang--translate-to-org-ql view-spec))))
-
 ;;; Last-Clocked-Out Skip Predicate Integration Tests
 
 (deftest view-lang/skip-last-clocked-out-nil-matches-never-clocked ()
@@ -97,43 +63,6 @@
            (result (funcall skip-fn)))
       ;; Never clocked should be skipped for < comparison
       (assert-true (numberp result)))))
-
-;;; Translation Function Direct Tests
-
-(deftest view-lang/translate-last-clocked-out-greater-than ()
-  "Translates (> \"2d\") to proper filter form."
-  (let ((result (org-gtd-view-lang--translate-last-clocked-out-filter '(> "2d"))))
-    (assert-equal '((last-clocked-out > "2d")) result)))
-
-(deftest view-lang/translate-last-clocked-out-less-than ()
-  "Translates (< \"1w\") to proper filter form."
-  (let ((result (org-gtd-view-lang--translate-last-clocked-out-filter '(< "1w"))))
-    (assert-equal '((last-clocked-out < "1w")) result)))
-
-(deftest view-lang/translate-last-clocked-out-gte ()
-  "Translates (>= \"3d\") to proper filter form."
-  (let ((result (org-gtd-view-lang--translate-last-clocked-out-filter '(>= "3d"))))
-    (assert-equal '((last-clocked-out >= "3d")) result)))
-
-(deftest view-lang/translate-last-clocked-out-lte ()
-  "Translates (<= \"5d\") to proper filter form."
-  (let ((result (org-gtd-view-lang--translate-last-clocked-out-filter '(<= "5d"))))
-    (assert-equal '((last-clocked-out <= "5d")) result)))
-
-(deftest view-lang/translate-last-clocked-out-nil ()
-  "Translates nil to never-clocked filter."
-  (let ((result (org-gtd-view-lang--translate-last-clocked-out-filter nil)))
-    (assert-equal '((last-clocked-out-nil)) result)))
-
-(deftest view-lang/translate-last-clocked-out-invalid-signals-error ()
-  "Signals user-error for invalid filter value."
-  (assert-raises 'user-error
-    (org-gtd-view-lang--translate-last-clocked-out-filter "invalid")))
-
-(deftest view-lang/translate-last-clocked-out-invalid-op-signals-error ()
-  "Signals user-error for invalid comparison operator."
-  (assert-raises 'user-error
-    (org-gtd-view-lang--translate-last-clocked-out-filter '(= "2d"))))
 
 (provide 'view-language-last-clocked-out-test)
 

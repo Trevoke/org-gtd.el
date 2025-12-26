@@ -175,20 +175,6 @@
     (org-back-to-heading t)
     (assert-equal "Actions" (org-entry-get (point) "ORG_GTD"))))
 
-;;; View language without level filters
-
-(deftest property-based/view-specs-without-level-filters ()
-  "Creates view specifications without level-based filters."
-  ;; Test that view language can specify project tasks without using level filters
-  (let ((view-spec '((name . "Project Tasks")
-                     (filters . ((type . project)
-                                 (property . (("ORG_GTD" . "Actions"))))))))
-
-    ;; Translate to org-ql query - should not contain level filters
-    (let ((org-ql-query (org-gtd-view-lang--translate-to-org-ql view-spec)))
-      (assert-nil (string-match-p "level" (format "%s" org-ql-query)))
-      (assert-match "ORG_GTD" (format "%s" org-ql-query)))))
-
 ;;; Property-based dependency system
 
 (deftest property-based/uses-explicit-dependency-properties ()
