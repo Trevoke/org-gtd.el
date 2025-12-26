@@ -126,7 +126,7 @@
   '(name type when deadline scheduled todo done not-done
     area-of-focus who tags priority effort clocked last-clocked-out
     blocks prefix prefix-width view-type agenda-span show-habits
-    additional-blocks filters not-habit property previous-type
+    additional-blocks filters not-habit property
     block-type group-contexts group-by todo-keyword prefix-format)
   "Known filter keys in view specs.
 Includes both filter keys and reserved structural keys.")
@@ -331,8 +331,6 @@ Multi-block specs have a \\='blocks key containing a list of block specs."
       (org-gtd-view-lang--translate-property-filter filter-value))
      ((eq filter-type 'type)
       (org-gtd-view-lang--translate-type-filter filter-value))
-     ((eq filter-type 'previous-type)
-      (org-gtd-view-lang--translate-previous-type-filter filter-value))
      ((eq filter-type 'when)
       (org-gtd-view-lang--translate-when-filter filter-value))
      ((eq filter-type 'priority)
@@ -652,15 +650,6 @@ missing semantic properties like :who for delegated items)."
                     ,(car conditions)))
       (list `(and (property "ORG_GTD" ,org-gtd-val)
                   (or ,@conditions))))))
-
-(defun org-gtd-view-lang--translate-previous-type-filter (type-name)
-  "Translate previous-type TYPE-NAME to PREVIOUS_ORG_GTD property filter.
-TYPE-NAME should be a symbol like \\='delegated, \\='next-action, \\='project, etc.
-This is used for tickler items to filter by their original type."
-  (let ((org-gtd-val (org-gtd-type-org-gtd-value type-name)))
-    (unless org-gtd-val
-      (user-error "Unknown GTD type: %s" type-name))
-    (list `(property "PREVIOUS_ORG_GTD" ,org-gtd-val))))
 
 (defun org-gtd-view-lang--translate-to-org-ql (gtd-view-spec)
   "Translate GTD-VIEW-SPEC to an org-ql query expression.

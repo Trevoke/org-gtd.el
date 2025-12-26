@@ -643,41 +643,6 @@
     (assert-raises 'user-error
       (org-gtd-view-lang--translate-to-org-ql gtd-view-spec))))
 
-;;; Previous-Type Filter for Tickler Items
-
-(deftest view-lang/previous-type-delegated ()
-  "Translates previous-type=delegated."
-  (let ((view-spec
-         '((name . "Tickler Delegated")
-           (filters . ((type . tickler)
-                       (previous-type . delegated))))))
-    (assert-equal
-     '(and (property "ORG_GTD" "Tickler")
-           (property "PREVIOUS_ORG_GTD" "Delegated"))
-     (org-gtd-view-lang--translate-to-org-ql view-spec))))
-
-(deftest view-lang/previous-type-next-action ()
-  "Translates previous-type=next-action."
-  (let ((view-spec
-         '((name . "Tickler Actions")
-           (filters . ((type . tickler)
-                       (previous-type . next-action))))))
-    (assert-equal
-     '(and (property "ORG_GTD" "Tickler")
-           (property "PREVIOUS_ORG_GTD" "Actions"))
-     (org-gtd-view-lang--translate-to-org-ql view-spec))))
-
-(deftest view-lang/previous-type-project ()
-  "Translates previous-type=project."
-  (let ((view-spec
-         '((name . "Tickler Projects")
-           (filters . ((type . tickler)
-                       (previous-type . project))))))
-    (assert-equal
-     '(and (property "ORG_GTD" "Tickler")
-           (property "PREVIOUS_ORG_GTD" "Projects"))
-     (org-gtd-view-lang--translate-to-org-ql view-spec))))
-
 ;;; Multi-Block View Support
 
 (deftest view-lang/multi-block-creates-blocks ()
