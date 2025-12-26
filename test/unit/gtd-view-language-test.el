@@ -7,10 +7,9 @@
 
 ;;; Commentary:
 ;;
-;; Pure unit tests for org-gtd view language translation functions.
-;; These tests verify the translation from GTD view specs to org-ql queries.
+;; Unit tests for org-gtd view language.
+;; Tests the native skip function building from GTD view specs.
 ;;
-;; Migrated from test/gtd-view-language-test.el (buttercup).
 ;; Integration tests that require file system are in a separate file.
 ;;
 
@@ -146,7 +145,7 @@
 
 ;;; Native Block Translation Tests
 ;;
-;; Tests for the native org-agenda block translation layer that replaces org-ql.
+;; Tests for the native org-agenda block translation layer.
 
 (deftest view-lang/build-match-string-next-action ()
   "Builds match string for next-action type with TODO filter."

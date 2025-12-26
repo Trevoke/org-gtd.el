@@ -20,9 +20,9 @@
 
 ;;; Commentary:
 ;;
-;; Skip functions for org-agenda views.  Most filtering in org-gtd v4 is
-;; handled by the view-language module using org-ql, but these functions
-;; remain for specific use cases.
+;; Skip functions and predicates for org-agenda views.  The view-language
+;; module uses these predicates to build skip functions for native org-agenda
+;; blocks based on declarative view specifications.
 
 ;;; Code:
 

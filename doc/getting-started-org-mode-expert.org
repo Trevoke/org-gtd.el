@@ -81,7 +81,7 @@ Every organized item gets an ~ORG_GTD~ property indicating its type:
 | ~Someday~ | No specific timeframe |
 | ~Knowledge~ | Reference (immediately archived) |
 
-This is how org-gtd queries work. All standard org-ql compatible.
+This is how org-gtd categorizes items using the ~ORG_GTD~ property.
 
 ** Project Architecture
 
@@ -186,7 +186,7 @@ Just target ~org-gtd-inbox-file-path~ and org-gtd will process it.
 
 ** Custom Views
 
-org-gtd uses a declarative view language built on org-ql:
+org-gtd uses a declarative view language for custom agenda views:
 
 #+begin_src emacs-lisp
 (org-gtd-view-show
@@ -326,13 +326,14 @@ Create items programmatically:
 (org-gtd-delegate)          ; Prompts for person and date
 #+end_src
 
-Query items:
+Query items (using org-element directly):
 
 #+begin_src emacs-lisp
-;; Using org-ql
-(org-ql-select (org-agenda-files)
-  '(and (property "ORG_GTD" "Actions")
-        (todo "NEXT")))
+;; Direct org-element query
+(org-map-entries
+  (lambda () (org-entry-get nil "ORG_GTD"))
+  "+TODO=\"NEXT\"+ORG_GTD=\"Actions\""
+  'agenda)
 #+end_src
 
 * What's Different from Rolling Your Own

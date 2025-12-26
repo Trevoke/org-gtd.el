@@ -5,7 +5,7 @@
 ;;; Commentary:
 ;;
 ;; E-unit tests for org-gtd-skip predicates module.
-;; Native replacements for org-ql predicates.
+;; These predicates are used by the view language to build skip functions.
 ;;
 
 ;;; Code:

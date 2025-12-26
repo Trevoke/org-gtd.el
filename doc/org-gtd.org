@@ -132,7 +132,7 @@ New configuration system allows you to customize item properties declaratively:
 Creating custom agenda views is now much easier with a declarative syntax:
 
 - *Specify what you want, not how to get it* - Define views using simple filters instead of complex skip functions
-- *Built on org-ql* - Leverages the powerful org-ql query language for performance
+- *Native org-agenda integration* - Uses org-agenda's built-in skip functions for performance
 - *More maintainable* - View definitions are data structures, not code
 
 ** Better project modification
@@ -321,7 +321,7 @@ After completing the upgrade, you must set ~org-gtd-update-ack~ to suppress the 
 *Property-based system:*
 - More robust: Properties work reliably across different org-mode features
 - More flexible: Enables features like multi-project tasks
-- Better performance: Faster queries using org-ql
+- Better performance: Efficient skip functions for native org-agenda
 
 **** org-gtd-mode has a new purpose
 
@@ -1133,7 +1133,7 @@ Let's break this down:
 - ~name~ :: What displays in the view header
 - ~type . active-project~ :: Show projects with at least one active task
 
-That's it! The View DSL translates this into an org-ql query and shows results.
+That's it! The View DSL translates this into an org-agenda view and shows results.
 
 *** Creating the View Function
 
@@ -1281,7 +1281,7 @@ You can combine multiple filters - they all must match (AND logic).
 - *The View DSL is readable* - it's data, not complex code
 - *Views are easy to create and modify* - just change the filter list
 - *You can create unlimited views* - for different contexts and needs
-- *Views leverage org-ql* - fast and powerful queries
+- *Native org-agenda* - efficient skip functions without external dependencies
 
 *** What's Next?
 
@@ -5132,7 +5132,7 @@ Both are valuable. Missed helps you catch problems. Upcoming helps you prevent t
 
 **** ~org-gtd-view-show~
 
-**What it is:** Create custom GTD agenda views using a declarative language instead of learning org-ql or org-agenda internals.
+**What it is:** Create custom GTD agenda views using a declarative language instead of learning org-agenda skip function internals.
 
 **Why you'd use it:** The built-in views (engage, review-stuck-projects, etc.) cover common needs, but you have unique workflows. Maybe you only want to see work-related NEXT actions, or projects in a specific area, or items tagged "urgent". This lets you create exactly the view you need.
 
@@ -6700,7 +6700,7 @@ Special ~block-type~ values control how blocks are rendered:
 
 - ~calendar-day~ :: Native org-agenda day view filtered to Calendar and Habit items only
 - ~todo~ :: Native org-agenda todo block (requires ~todo-keyword~)
-- /default/ :: org-ql query block (when no block-type specified)
+- /default/ :: tags block with skip function (when no block-type specified)
 
 *** Type Filters
 
@@ -7304,7 +7304,7 @@ These options control how the view is displayed:
 *Values*:
 - ~calendar-day~ :: Native org-agenda day view filtered to Calendar and Habit items
 - ~todo~ :: Native org-agenda todo block (requires ~todo-keyword~)
-- /omit/ :: Default org-ql query block
+- /omit/ :: Default tags block with skip function
 
 *Use case*: When you need native agenda features (time grid, habits, etc.)
 
@@ -7457,7 +7457,7 @@ Most users should use ~(prefix . ...)~ instead.
 
 **** ~(view-type . agenda)~
 
-*Purpose*: Create a native org-agenda view instead of org-ql block
+*Purpose*: Create a day/week org-agenda view instead of a tags block
 
 *Use case*: When you want a standard day/week agenda view
 
