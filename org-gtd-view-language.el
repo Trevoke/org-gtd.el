@@ -21,7 +21,7 @@
 ;;; Commentary:
 ;;
 ;; This module provides a declarative language for specifying GTD views
-;; that translate to performant org-ql queries.
+;; that translate to native org-agenda blocks.
 ;;
 ;; GTD View Language Specification:
 ;;
@@ -115,9 +115,6 @@
 (require 'org-gtd-skip)
 (require 'org-gtd-types)
 (require 'org-gtd-agenda)
-
-(defvar org-gtd-view-lang--current-type nil
-  "Track the current type filter for semantic property resolution.")
 
 ;; Note: org-gtd-prefix-width is defined in org-gtd-core.el
 ;; and serves as the default width for prefix elements
@@ -304,399 +301,26 @@ Multi-block specs have a \\='blocks key containing a list of block specs."
                          view-specs)))
     `((,command-key ,command-title ,blocks))))
 
-(defun org-gtd-view-lang--translate-filter (filter)
-  "Translate a single FILTER specification to org-ql syntax."
-  (let ((filter-type (car filter))
-        (filter-value (cdr filter)))
-    (cond
-     ((eq filter-type 'deadline)
-      (org-gtd-view-lang--translate-deadline-filter filter-value))
-     ((eq filter-type 'scheduled)
-      (org-gtd-view-lang--translate-scheduled-filter filter-value))
-     ((eq filter-type 'not-habit)
-      (org-gtd-view-lang--translate-not-habit-filter filter-value))
-     ((eq filter-type 'area-of-focus)
-      (org-gtd-view-lang--translate-area-of-focus-filter filter-value))
-     ((eq filter-type 'todo)
-      (org-gtd-view-lang--translate-todo-filter filter-value))
-     ((eq filter-type 'done)
-      (org-gtd-view-lang--translate-done-filter filter-value))
-     ((eq filter-type 'not-done)
-      (org-gtd-view-lang--translate-not-done-filter filter-value))
-     ((eq filter-type 'who)
-      (org-gtd-view-lang--translate-who-filter filter-value))
-     ((eq filter-type 'tags)
-      (org-gtd-view-lang--translate-tags-filter filter-value))
-     ((eq filter-type 'property)
-      (org-gtd-view-lang--translate-property-filter filter-value))
-     ((eq filter-type 'type)
-      (org-gtd-view-lang--translate-type-filter filter-value))
-     ((eq filter-type 'when)
-      (org-gtd-view-lang--translate-when-filter filter-value))
-     ((eq filter-type 'priority)
-      (org-gtd-view-lang--translate-priority-filter filter-value))
-     ((eq filter-type 'effort)
-      (org-gtd-view-lang--translate-effort-filter filter-value))
-     ((eq filter-type 'clocked)
-      (org-gtd-view-lang--translate-clocked-filter filter-value))
-     ((eq filter-type 'last-clocked-out)
-      (org-gtd-view-lang--translate-last-clocked-out-filter filter-value))
-     ((keywordp filter-type)
-      (org-gtd-view-lang--translate-semantic-property-filter filter-type filter-value))
-     (t (error "Unknown GTD filter: %s" filter-type)))))
 
-(defun org-gtd-view-lang--translate-when-filter (time-spec)
-  "Translate when TIME-SPEC using semantic property lookup.
-Requires a type filter to be present for property resolution."
-  (unless org-gtd-view-lang--current-type
-    (user-error "The 'when' filter requires a 'type' filter"))
-  (let ((org-prop (org-gtd-type-property org-gtd-view-lang--current-type :when)))
-    (unless org-prop
-      (user-error "Type %s does not have a :when property" org-gtd-view-lang--current-type))
-    (cond
-     ((eq time-spec 'past)
-      (list `(property-ts< ,org-prop "today") '(not (done))))
-     ((eq time-spec 'today)
-      (list `(property-ts= ,org-prop ,(format-time-string "%Y-%m-%d"))))
-     ((eq time-spec 'future)
-      (list `(property-ts> ,org-prop "today")))
-     (t (user-error "Unknown when spec: %s" time-spec)))))
 
-(defun org-gtd-view-lang--priority-to-number (priority)
-  "Convert PRIORITY letter to numeric value for comparison.
-A=1, B=2, C=3, etc. Lower number = higher priority.
-Respects `org-priority-highest' and `org-priority-lowest'."
-  (let ((highest (or org-priority-highest ?A))
-        (char (if (symbolp priority)
-                  (aref (symbol-name priority) 0)
-                (aref priority 0))))
-    (1+ (- char highest))))
 
-(defun org-gtd-view-lang--priorities-in-range (op reference)
-  "Return list of priority letters matching OP compared to REFERENCE.
- OP is one of <, >, <=, >=.  REFERENCE is a priority symbol like B.
-Returns list like (\"A\" \"B\") for (>= B)."
-  (let* ((highest (or org-priority-highest ?A))
-         (lowest (or org-priority-lowest ?C))
-         (ref-num (org-gtd-view-lang--priority-to-number reference))
-         (result '()))
-    (cl-loop for char from highest to lowest
-             for num from 1
-             when (pcase op
-                    ('< (< num ref-num))
-                    ('> (> num ref-num))
-                    ('<= (<= num ref-num))
-                    ('>= (<= num ref-num)))  ; >= B means A,B (lower numbers)
-             do (push (char-to-string char) result))
-    (nreverse result)))
 
-(defun org-gtd-view-lang--translate-priority-filter (value)
-  "Translate priority VALUE to org-ql filter.
-VALUE can be:
-  - A symbol like A, B, C (single priority)
-  - A list of symbols like (A B) (OR match)
-  - A comparison like (>= B) (range match)
-  - nil (missing priority)"
-  (cond
-   ;; nil = missing priority
-   ((null value)
-    (list '(property-empty-or-missing "PRIORITY")))
-   ;; Comparison: (>= B), (< C), etc.
-   ((and (listp value)
-         (memq (car value) '(< > <= >=)))
-    (let* ((op (car value))
-           (ref (cadr value))
-           (priorities (org-gtd-view-lang--priorities-in-range op ref)))
-      (if (= (length priorities) 1)
-          (list `(property "PRIORITY" ,(car priorities)))
-        (list `(or ,@(mapcar (lambda (p) `(property "PRIORITY" ,p)) priorities))))))
-   ;; List of priorities: (A B)
-   ((and (listp value) (not (memq (car value) '(< > <= >=))))
-    (let ((priorities (mapcar (lambda (p) (if (symbolp p) (symbol-name p) p)) value)))
-      (if (= (length priorities) 1)
-          (list `(property "PRIORITY" ,(car priorities)))
-        (list `(or ,@(mapcar (lambda (p) `(property "PRIORITY" ,p)) priorities))))))
-   ;; Single priority symbol: A
-   ((symbolp value)
-    (list `(property "PRIORITY" ,(symbol-name value))))
-   ;; Single priority string: "A"
-   ((stringp value)
-    (list `(property "PRIORITY" ,value)))
-   (t (user-error "Invalid priority filter value: %S" value))))
 
-(defun org-gtd-view-lang--translate-effort-filter (value)
-  "Translate effort VALUE to org-ql filter.
-VALUE can be:
-  - (< \"0:30\") - less than 30 minutes
-  - (> \"1:00\") - more than 1 hour
-  - (between \"0:15\" \"1:00\") - range (inclusive)
-  - nil - missing effort estimate"
-  (cond
-   ((null value)
-    (list '(property-empty-or-missing "Effort")))
-   ((and (listp value) (eq (car value) '<))
-    (list `(effort-< ,(cadr value))))
-   ((and (listp value) (eq (car value) '>))
-    (list `(effort-> ,(cadr value))))
-   ((and (listp value) (eq (car value) 'between))
-    (list `(effort-between ,(cadr value) ,(caddr value))))
-   (t (user-error "Invalid effort filter value: %S" value))))
 
-(defun org-gtd-view-lang--translate-clocked-filter (value)
-  "Translate clocked VALUE to org-ql filter.
-VALUE can be:
-  - (< \"0:30\") - less than 30 minutes clocked
-  - (> \"2:00\") - more than 2 hours clocked
-  - (between \"0:30\" \"2:00\") - range (inclusive)
-  - nil - zero time clocked"
-  (cond
-   ((null value)
-    (list '(clocked-zero)))
-   ((and (listp value) (eq (car value) '<))
-    (list `(clocked-< ,(cadr value))))
-   ((and (listp value) (eq (car value) '>))
-    (list `(clocked-> ,(cadr value))))
-   ((and (listp value) (eq (car value) 'between))
-    (list `(clocked-between ,(cadr value) ,(caddr value))))
-   (t (user-error "Invalid clocked filter value: %S" value))))
 
-(defun org-gtd-view-lang--translate-last-clocked-out-filter (value)
-  "Translate last-clocked-out VALUE to org-ql filter.
-VALUE can be:
-  - (> \"2d\") - last clocked out more than 2 days ago
-  - (< \"1w\") - last clocked out less than 1 week ago
-  - nil - never clocked out"
-  (cond
-   ((null value)
-    (list '(last-clocked-out-nil)))
-   ((and (listp value) (memq (car value) '(< > <= >=)))
-    (list `(last-clocked-out ,(car value) ,(cadr value))))
-   (t (user-error "Invalid last-clocked-out filter value: %S" value))))
 
-(defun org-gtd-view-lang--translate-deadline-filter (time-spec)
-  "Translate deadline TIME-SPEC to org-ql deadline filter."
-  (cond
-   ((eq time-spec 'past)
-    (list '(deadline :to "today") '(not (done))))
-   ((eq time-spec 'future)
-    (list '(deadline :from "today")))
-   ((eq time-spec 'today)
-    (list '(deadline :on "today")))
-   (t (error "Unknown deadline spec: %s" time-spec))))
 
-(defun org-gtd-view-lang--translate-scheduled-filter (time-spec)
-  "Translate scheduled TIME-SPEC to org-ql scheduled filter."
-  (cond
-   ((eq time-spec 'past)
-    (list '(scheduled :to "today") '(not (done))))
-   ((eq time-spec 'future)
-    (list '(scheduled :from "today")))
-   ((eq time-spec 'today)
-    (list '(scheduled :on "today")))
-   (t (error "Unknown scheduled spec: %s" time-spec))))
 
-(defun org-gtd-view-lang--translate-done-filter (value)
-  "Translate done VALUE to org-ql done filter.
-VALUE can be:
-  t          - any done item
-  NUMBER     - done in last NUMBER days (e.g., 14 for 14 days)
-  recent     - done in last 7 days
-  today      - done today
-  past-day   - done in last day
-  past-week  - done in last week
-  past-month - done in last month
-  past-year  - done in last year
 
-Note: org-ql expects numeric relative days (e.g., -7 for 7 days ago),
-not string formats like \"-7d\"."
-  (cond
-   ((eq value t)
-    (list '(done)))
-   ((numberp value)
-    (list `(closed :from ,(- value))))
-   ((eq value 'recent)
-    (list '(closed :from -7)))
-   ((eq value 'today)
-    (list '(closed :on "today")))
-   ((eq value 'past-day)
-    (list '(closed :from -1)))
-   ((eq value 'past-week)
-    (list '(closed :from -7)))
-   ((eq value 'past-month)
-    (list '(closed :from -30)))
-   ((eq value 'past-year)
-    (list '(closed :from -365)))
-   (t (error "Unknown done spec: %s" value))))
 
-(defun org-gtd-view-lang--translate-not-done-filter (value)
-  "Translate not-done VALUE to org-ql not-done filter."
-  (when value
-    (list '(not (done)))))
 
-(defun org-gtd-view-lang--translate-who-filter (value)
-  "Translate who VALUE to org-ql filter.
-When VALUE is nil or empty string, finds items with missing :who property.
-Requires a type filter to be present for property resolution."
-  (unless org-gtd-view-lang--current-type
-    (user-error "The 'who' filter requires a 'type' filter"))
-  (let ((who-prop (org-gtd-type-property org-gtd-view-lang--current-type :who)))
-    (unless who-prop
-      (user-error "Type %s does not have a :who property" org-gtd-view-lang--current-type))
-    (if (or (null value) (and (stringp value) (string-empty-p value)))
-        ;; nil or "" means find items with missing/empty :who
-        (list `(property-empty-or-missing ,who-prop))
-      ;; Otherwise filter by specific value
-      (list `(property ,who-prop ,value)))))
 
-(defun org-gtd-view-lang--translate-not-habit-filter (value)
-  "Translate not-habit VALUE to org-ql filter."
-  (when value
-    (list `(not (property ,org-gtd-prop-style ,org-gtd-prop-style-value-habit)))))
 
-(defun org-gtd-view-lang--translate-area-of-focus-filter (area)
-  "Translate area-of-focus AREA to org-ql category filter."
-  (list `(property ,org-gtd-prop-area-of-focus ,area)))
 
-(defun org-gtd-view-lang--translate-todo-filter (keywords)
-  "Translate todo KEYWORDS to org-ql todo filter."
-  (list `(todo ,@keywords)))
 
-(defun org-gtd-view-lang--translate-tags-filter (tags)
-  "Translate tags TAGS to org-ql tags filter."
-  (list `(tags ,@tags)))
 
-(defun org-gtd-view-lang--translate-property-filter (property-spec)
-  "Translate property PROPERTY-SPEC to org-ql property filter.
-PROPERTY-SPEC should be an alist with property name and value pairs,
-e.g., \\='((\"ORG_GTD\" . \"Actions\"))."
-  (mapcar (lambda (prop-pair)
-            `(property ,(car prop-pair) ,(cdr prop-pair)))
-          property-spec))
 
-(defun org-gtd-view-lang--translate-type-filter (type-name)
-  "Translate TYPE-NAME to org-ql property filter using org-gtd-types.
-TYPE-NAME should be a symbol like \\='next-action, \\='delegated, \\='calendar, etc.
-Also supports computed types:
-  - \\='stuck-project - Projects with no NEXT/WAIT tasks
-  - \\='active-project - Projects with at least one active task
-  - \\='completed-project - Projects with all tasks done
-  - \\='tickler-project - Tickler items that were projects
-  - \\='incubated-project - Projects in Tickler or Someday/Maybe
-  - \\='stuck-delegated - Delegated items missing timestamp or who
-  - \\='stuck-calendar - Calendar items missing timestamp
-  - \\='stuck-tickler - Tickler items missing timestamp
-  - \\='stuck-habit - Habit items missing timestamp"
-  (cond
-   ;; Computed project types
-   ((eq type-name 'stuck-project)
-    (list `(and (property ,org-gtd-prop-category ,org-gtd-projects)
-                (project-is-stuck))))
-   ((eq type-name 'active-project)
-    (list `(and (property ,org-gtd-prop-category ,org-gtd-projects)
-                (project-has-active-tasks))))
-   ((eq type-name 'completed-project)
-    (list `(and (property ,org-gtd-prop-category ,org-gtd-projects)
-                (not (project-has-active-tasks)))))
-   ((eq type-name 'tickler-project)
-    (list `(and (property ,org-gtd-prop-category ,org-gtd-tickler)
-                (property ,org-gtd-prop-previous-category ,org-gtd-projects))))
-   ((eq type-name 'incubated-project)
-    (list `(and (or (property ,org-gtd-prop-category ,org-gtd-tickler)
-                    (property ,org-gtd-prop-category ,org-gtd-someday))
-                (property ,org-gtd-prop-previous-category ,org-gtd-projects))))
-   ;; Computed stuck types - items missing required metadata
-   ((eq type-name 'stuck-delegated)
-    (org-gtd-view-lang--stuck-type-query 'delegated))
-   ((eq type-name 'stuck-calendar)
-    (org-gtd-view-lang--stuck-type-query 'calendar))
-   ((eq type-name 'stuck-tickler)
-    (org-gtd-view-lang--stuck-type-query 'tickler))
-   ((eq type-name 'stuck-habit)
-    (org-gtd-view-lang--stuck-type-query 'habit))
-   ;; Stuck single actions - Actions not in NEXT state
-   ((eq type-name 'stuck-single-action)
-    (list `(property "ORG_GTD" ,(org-gtd-type-org-gtd-value 'next-action))
-          `(not (todo ,(org-gtd-keywords--next)))
-          '(not (done))))
-   ;; Types with implied TODO keywords
-   ((eq type-name 'next-action)
-    (list `(property "ORG_GTD" ,(org-gtd-type-org-gtd-value 'next-action))
-          `(todo ,(org-gtd-keywords--next))))
-   ((eq type-name 'delegated)
-    (list `(property "ORG_GTD" ,(org-gtd-type-org-gtd-value 'delegated))
-          `(todo ,(org-gtd-keywords--wait))))
-   ;; Standard types from org-gtd-types
-   (t
-    (let ((org-gtd-val (org-gtd-type-org-gtd-value type-name)))
-      (unless org-gtd-val
-        (user-error "Unknown GTD type: %s" type-name))
-      (list `(property "ORG_GTD" ,org-gtd-val))))))
 
-(defun org-gtd-view-lang--stuck-type-query (base-type)
-  "Generate org-ql query for stuck items of BASE-TYPE.
-Stuck items are those missing required metadata (invalid timestamp or
-missing semantic properties like :who for delegated items)."
-  (let ((org-gtd-val (org-gtd-type-org-gtd-value base-type))
-        (conditions '()))
-    ;; Check for invalid timestamp if type has :when property
-    (when-let ((when-prop (org-gtd-type-property base-type :when)))
-      (push `(property-invalid-timestamp ,when-prop) conditions))
-    ;; Check for missing :who if type has :who property
-    (when-let ((who-prop (org-gtd-type-property base-type :who)))
-      (push `(property-empty-or-missing ,who-prop) conditions))
-    ;; Build the query: type match AND (condition1 OR condition2 ...)
-    (if (= (length conditions) 1)
-        (list `(and (property "ORG_GTD" ,org-gtd-val)
-                    ,(car conditions)))
-      (list `(and (property "ORG_GTD" ,org-gtd-val)
-                  (or ,@conditions))))))
-
-(defun org-gtd-view-lang--translate-to-org-ql (gtd-view-spec)
-  "Translate GTD-VIEW-SPEC to an org-ql query expression.
-GTD-VIEW-SPEC should be an alist with \\='name and either:
-- \\='filters key containing filter alist (legacy format)
-- Filter keys directly at top level (new flat format)"
-  (let* ((explicit-filters (alist-get 'filters gtd-view-spec))
-         ;; Reserved keys that are not filters
-         (reserved-keys '(name blocks block-type prefix prefix-width view-type
-                          agenda-span show-habits additional-blocks
-                          group-contexts group-by))
-         ;; Extract filters: either from 'filters key or from top-level keys
-         (filters (or explicit-filters
-                      (seq-filter (lambda (pair)
-                                    (not (memq (car pair) reserved-keys)))
-                                  gtd-view-spec)))
-         ;; Extract type filter for semantic property resolution
-         (type-filter (seq-find (lambda (f) (eq (car f) 'type)) filters))
-         (org-gtd-view-lang--current-type (when type-filter (cdr type-filter)))
-         (has-future-time-filter (seq-some (lambda (filter)
-                                             (and (memq (car filter) '(deadline scheduled))
-                                                  (eq (cdr filter) 'future)))
-                                           filters))
-         (all-conditions (apply #'append (mapcar #'org-gtd-view-lang--translate-filter filters)))
-         (not-done-conditions (seq-filter (lambda (cond) (equal cond '(not (done)))) all-conditions))
-         (other-conditions (seq-remove (lambda (cond) (equal cond '(not (done)))) all-conditions)))
-    (if has-future-time-filter
-        `(and ,@other-conditions)
-      `(and ,@other-conditions ,@not-done-conditions))))
-
-(defun org-gtd-view-lang--translate-semantic-property-filter (semantic-name time-spec)
-  "Translate SEMANTIC-NAME (like :when) with TIME-SPEC for current type.
-Uses org-gtd-types to resolve the semantic property to the actual org property."
-  (unless org-gtd-view-lang--current-type
-    (user-error "Semantic property filter %s requires a type filter" semantic-name))
-  (let ((org-prop (org-gtd-type-property org-gtd-view-lang--current-type semantic-name)))
-    (unless org-prop
-      (user-error "Type %s does not have semantic property %s"
-                  org-gtd-view-lang--current-type semantic-name))
-    (cond
-     ((eq time-spec 'past)
-      (list `(property-ts< ,org-prop "today") '(not (done))))
-     ((eq time-spec 'future)
-      (list `(property-ts> ,org-prop "today")))
-     ((eq time-spec 'within-week)
-      (list `(property-ts< ,org-prop "+1w")))
-     (t (user-error "Unknown time spec: %s" time-spec)))))
 
 (defun org-gtd-view-lang--create-grouped-views (gtd-view-spec)
   "Create grouped views from GTD-VIEW-SPEC.
