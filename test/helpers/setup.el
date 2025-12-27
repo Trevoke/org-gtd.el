@@ -101,6 +101,14 @@ Sets up org-gtd to use the virtual filesystem."
   ;; v4: Users must configure org-agenda-files to include GTD directory
   (setq org-agenda-files (list org-gtd-directory))
 
+  ;; Configure refile targets for tests (needed for add-to-project flow)
+  (setq org-refile-targets '((org-agenda-files :maxlevel . 9)))
+
+  ;; Disable project-task refile prompt in tests (use direct refile to project)
+  ;; This simplifies test simulated input - only one prompt for project selection
+  (setq org-gtd-refile-prompt-for-types
+        '(single-action project-heading calendar someday delegated tickler habit))
+
   ;; Enable org-edna for dependency management
   (org-edna-mode 1)
 

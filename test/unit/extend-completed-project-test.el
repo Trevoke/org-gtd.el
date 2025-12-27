@@ -142,7 +142,7 @@
   ;; Step 4: Extend the completed project with a new task
   (add-task-to-existing-project
    "New Task"
-   "Projects/Completed SPC Project TAB RET")
+   "Completed SPC Project RET")
 
   ;; Step 5: Verify the new task was added to the project
   (with-current-buffer (org-gtd--default-file)
@@ -185,7 +185,7 @@
   ;; Step 2: Extend with new task
   (add-task-to-existing-project
    "Extension Task"
-   "Projects/Project SPC To SPC Extend TAB RET")
+   "Project SPC To SPC Extend RET")
 
   ;; Step 3: Run archive
   (org-gtd-archive-completed-items)
@@ -221,7 +221,7 @@
   ;; Step 2: Extend with new task
   (add-task-to-existing-project
    "Final Task"
-   "Projects/Full SPC Cycle SPC Project TAB RET")
+   "Full SPC Cycle SPC Project RET")
 
   ;; Step 3: Complete the extension task
   (with-current-buffer (org-gtd--default-file)

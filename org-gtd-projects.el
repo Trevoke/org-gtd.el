@@ -1050,32 +1050,47 @@ Sets project name on task, recalculates root tasks, and updates states."
 ;;;;; Main Command: Extend Project
 
 (defun org-gtd-project-extend--apply ()
-  "Refile the org heading at point under a chosen heading in the agenda files.
+  "Add current task to an existing project.
 
-Orchestrates adding a new task to an existing project:
-1. Configure task for project
-2. Refile to chosen project
-3. Update project metadata
-4. Recalculate task states"
-  (org-gtd-project--configure-single-task)
+Flow:
+1. Prompt for project selection
+2. Configure task for project membership
+3. Set ORG_GTD_PROJECT_IDS explicitly
+4. Add to project's FIRST_TASKS
+5. Refile based on settings:
+   - skip-refile: leave in place
+   - project-task in refile-prompt-for-types: prompt with user targets
+   - otherwise: move under project heading
+6. Fix TODO keywords"
 
-  (if org-gtd-clarify--skip-refile
-      (org-gtd-organize--update-in-place)
-    (progn
-      (org-gtd-refile--do-project-task)
+  ;; Step 1: Select project FIRST
+  (let* ((selection (org-gtd-project-extend--select-project))
+         (project-id (car selection))
+         (project-marker (cdr selection))
+         (task-id (org-id-get-create)))
 
-      ;; Find the project marker using ORG_GTD_PROJECT_IDS if available (multi-file DAG)
-      ;; otherwise use outline hierarchy (same-file refile)
-      (let ((project-marker (save-excursion
-                              (org-refile-goto-last-stored)
-                              (let ((project-ids (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids)))
-                                (if project-ids
-                                    ;; Use first project ID to find project (multi-file DAG)
-                                    (org-id-find (car project-ids) t)
-                                  ;; Fallback: task is outline child of project (standard refile)
-                                  (org-up-heading-safe)
-                                  (point-marker))))))
-        (org-gtd-project--update-after-task-addition project-marker)))))
+    ;; Step 2: Configure task
+    (org-gtd-project--configure-single-task)
+
+    ;; Step 3: Set project membership explicitly
+    (org-entry-put (point) org-gtd-prop-project-ids project-id)
+
+    ;; Step 4: Set project name on task
+    (org-gtd-projects--set-project-name-on-task)
+
+    ;; Step 5: Add to FIRST_TASKS (no dependencies when added this way)
+    (org-with-point-at project-marker
+      (org-entry-add-to-multivalued-property
+       (point) "ORG_GTD_FIRST_TASKS" task-id))
+
+    ;; Step 6: Handle refile
+    (unless org-gtd-clarify--skip-refile
+      (if (memq 'project-task org-gtd-refile-prompt-for-types)
+          (org-gtd-refile--with-user-targets)
+        (org-gtd-project-extend--move-to-project project-marker)))
+
+    ;; Step 7: Fix keywords
+    (org-gtd-projects-fix-todo-keywords project-marker)))
 
 (defun org-gtd-projects--apply-organize-hooks-to-tasks ()
   "Decorate tasks for project at point."
