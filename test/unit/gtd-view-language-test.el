@@ -1090,7 +1090,7 @@
     (assert-equal 'tags-todo (car first-block))
     (assert-equal "+@work/NEXT" (cadr first-block))
     (let ((settings (caddr first-block)))
-      (assert-equal '(priority-down) (cadr (assoc 'org-agenda-sorting-strategy settings)))
+      (assert-equal ''(priority-down) (cadr (assoc 'org-agenda-sorting-strategy settings)))
       (assert-equal "Work" (cadr (assoc 'org-agenda-overriding-header settings))))))
 
 (deftest view-lang/native-block-with-sorting ()
@@ -1103,7 +1103,7 @@
          (blocks (caddr (car commands)))
          (first-block (car blocks)))
     (let ((settings (caddr first-block)))
-      (assert-equal '(priority-down effort-up)
+      (assert-equal ''(priority-down effort-up)
                     (cadr (assoc 'org-agenda-sorting-strategy settings))))))
 
 (deftest view-lang/native-block-ignores-other-keys ()
@@ -1170,7 +1170,7 @@
     (assert-equal 'todo (car first-block))
     (assert-equal "NEXT|WAIT" (cadr first-block))
     (let ((settings (caddr first-block)))
-      (assert-equal '(priority-down) (cadr (assoc 'org-agenda-sorting-strategy settings)))
+      (assert-equal ''(priority-down) (cadr (assoc 'org-agenda-sorting-strategy settings)))
       (assert-equal "Active Tasks" (cadr (assoc 'org-agenda-overriding-header settings))))))
 
 (provide 'gtd-view-language-test)

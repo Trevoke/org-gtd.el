@@ -191,30 +191,36 @@ If view-type is \\='tags-grouped, creates grouped views.
 If type filter is present, creates a native tags-todo block.
 If done filter is present, creates a native tags block for completed items.
 INHERITED-PREFIX-FORMAT is optionally passed from parent view spec."
-  (let* ((name (alist-get 'name gtd-view-spec))
-         (block-type (alist-get 'block-type gtd-view-spec))
-         (view-type (alist-get 'view-type gtd-view-spec))
-         (type-filter (alist-get 'type gtd-view-spec))
-         (done-filter (alist-get 'done gtd-view-spec))
-         ;; Use new prefix DSL or fall back to inherited format
-         (prefix-format (org-gtd-view-lang--get-prefix-format gtd-view-spec inherited-prefix-format)))
-    (cond
-     ((eq block-type 'calendar-day)
-      (org-gtd-view-lang--create-calendar-day-block gtd-view-spec))
-     ((eq block-type 'todo)
-      (org-gtd-view-lang--create-todo-block gtd-view-spec prefix-format))
-     ((eq view-type 'agenda)
-      (org-gtd-view-lang--create-native-agenda-block gtd-view-spec))
-     ((eq view-type 'tags-grouped)
-      (org-gtd-view-lang--create-grouped-views gtd-view-spec))
-     ;; Route type filters to native blocks (both simple and complex)
-     ((and type-filter (org-gtd-view-lang--native-type-p type-filter))
-      (org-gtd-view-lang--translate-to-native-block gtd-view-spec prefix-format))
-     ;; Route done filters to native blocks
-     (done-filter
-      (org-gtd-view-lang--create-done-filter-block gtd-view-spec prefix-format))
-     (t
-      (user-error "Unsupported view spec: %S" gtd-view-spec)))))
+  ;; Check for native escape hatch first
+  (let ((native-block (alist-get 'native gtd-view-spec)))
+    (if native-block
+        ;; Pass through the raw org-agenda block tuple unchanged
+        native-block
+      ;; Existing DSL processing (wrap existing body in this else branch)
+      (let* ((name (alist-get 'name gtd-view-spec))
+             (block-type (alist-get 'block-type gtd-view-spec))
+             (view-type (alist-get 'view-type gtd-view-spec))
+             (type-filter (alist-get 'type gtd-view-spec))
+             (done-filter (alist-get 'done gtd-view-spec))
+             ;; Use new prefix DSL or fall back to inherited format
+             (prefix-format (org-gtd-view-lang--get-prefix-format gtd-view-spec inherited-prefix-format)))
+        (cond
+         ((eq block-type 'calendar-day)
+          (org-gtd-view-lang--create-calendar-day-block gtd-view-spec))
+         ((eq block-type 'todo)
+          (org-gtd-view-lang--create-todo-block gtd-view-spec prefix-format))
+         ((eq view-type 'agenda)
+          (org-gtd-view-lang--create-native-agenda-block gtd-view-spec))
+         ((eq view-type 'tags-grouped)
+          (org-gtd-view-lang--create-grouped-views gtd-view-spec))
+         ;; Route type filters to native blocks (both simple and complex)
+         ((and type-filter (org-gtd-view-lang--native-type-p type-filter))
+          (org-gtd-view-lang--translate-to-native-block gtd-view-spec prefix-format))
+         ;; Route done filters to native blocks
+         (done-filter
+          (org-gtd-view-lang--create-done-filter-block gtd-view-spec prefix-format))
+         (t
+          (user-error "Unsupported view spec: %S" gtd-view-spec)))))))
 
 (defun org-gtd-view-lang--skip-unless-calendar-or-habit ()
   "Skip function to filter agenda to only Calendar and Habit items.
