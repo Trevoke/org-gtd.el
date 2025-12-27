@@ -1075,6 +1075,104 @@
     (org-gtd-view-lang--build-skip-function
      '((type . next-action) (invalid-filter . "bad")))))
 
+;;; Native Block Escape Hatch Tests
+
+(deftest view-lang/native-block-passes-through-unchanged ()
+  "Native blocks are passed through without transformation."
+  (let* ((view-spec '((name . "Mixed View")
+                      (blocks . (((native . (tags-todo "+@work/NEXT"
+                                             ((org-agenda-sorting-strategy '(priority-down))
+                                              (org-agenda-overriding-header "Work")))))))))
+         (commands (org-gtd-view-lang--create-custom-commands (list view-spec)))
+         (blocks (caddr (car commands)))
+         (first-block (car blocks)))
+    ;; Native block should be passed through exactly as specified
+    (assert-equal 'tags-todo (car first-block))
+    (assert-equal "+@work/NEXT" (cadr first-block))
+    (let ((settings (caddr first-block)))
+      (assert-equal '(priority-down) (cadr (assoc 'org-agenda-sorting-strategy settings)))
+      (assert-equal "Work" (cadr (assoc 'org-agenda-overriding-header settings))))))
+
+(deftest view-lang/native-block-with-sorting ()
+  "Native blocks support custom sorting strategies."
+  (let* ((view-spec '((name . "Sorted Native View")
+                      (blocks . (((native . (tags "+PROJECT"
+                                             ((org-agenda-sorting-strategy '(priority-down effort-up))
+                                              (org-agenda-overriding-header "Projects by Priority")))))))))
+         (commands (org-gtd-view-lang--create-custom-commands (list view-spec)))
+         (blocks (caddr (car commands)))
+         (first-block (car blocks)))
+    (let ((settings (caddr first-block)))
+      (assert-equal '(priority-down effort-up)
+                    (cadr (assoc 'org-agenda-sorting-strategy settings))))))
+
+(deftest view-lang/native-block-ignores-other-keys ()
+  "When native is present, other keys are ignored."
+  (let* ((view-spec '((name . "Mixed View")
+                      (blocks . (((native . (tags "+TEST" ((org-agenda-overriding-header "Native"))))
+                                  (type . next-action)
+                                  (when . past)
+                                  (area-of-focus . "Work"))))))
+         (commands (org-gtd-view-lang--create-custom-commands (list view-spec)))
+         (blocks (caddr (car commands)))
+         (first-block (car blocks)))
+    ;; Should be native block, not DSL-generated
+    (assert-equal 'tags (car first-block))
+    (assert-equal "+TEST" (cadr first-block))
+    ;; Should only have native settings, not DSL-generated ones
+    (let ((settings (caddr first-block)))
+      (assert-equal "Native" (cadr (assoc 'org-agenda-overriding-header settings))))))
+
+(deftest view-lang/mixed-dsl-and-native-blocks ()
+  "DSL and native blocks can be mixed."
+  (let* ((view-spec '((name . "Mixed View")
+                      (blocks . (((type . next-action))
+                                 ((native . (tags "+PROJECT" ((org-agenda-overriding-header "Projects")))))
+                                 ((type . delegated))))))
+         (commands (org-gtd-view-lang--create-custom-commands (list view-spec)))
+         (blocks (caddr (car commands))))
+    ;; Should have 3 blocks
+    (assert-equal 3 (length blocks))
+    ;; First block is DSL-generated
+    (assert-equal 'tags-todo (car (nth 0 blocks)))
+    ;; Second block is native
+    (assert-equal 'tags (car (nth 1 blocks)))
+    (assert-equal "+PROJECT" (cadr (nth 1 blocks)))
+    ;; Third block is DSL-generated
+    (assert-equal 'tags-todo (car (nth 2 blocks)))))
+
+(deftest view-lang/native-agenda-block ()
+  "Native agenda blocks work correctly."
+  (let* ((view-spec '((name . "Custom Agenda")
+                      (blocks . (((native . (agenda ""
+                                             ((org-agenda-span 7)
+                                              (org-agenda-start-on-weekday 1)
+                                              (org-agenda-overriding-header "Weekly View")))))))))
+         (commands (org-gtd-view-lang--create-custom-commands (list view-spec)))
+         (blocks (caddr (car commands)))
+         (first-block (car blocks)))
+    (assert-equal 'agenda (car first-block))
+    (assert-equal "" (cadr first-block))
+    (let ((settings (caddr first-block)))
+      (assert-equal 7 (cadr (assoc 'org-agenda-span settings)))
+      (assert-equal 1 (cadr (assoc 'org-agenda-start-on-weekday settings)))
+      (assert-equal "Weekly View" (cadr (assoc 'org-agenda-overriding-header settings))))))
+
+(deftest view-lang/native-todo-block ()
+  "Native todo blocks work correctly."
+  (let* ((view-spec '((name . "Custom TODO")
+                      (blocks . (((native . (todo "NEXT|WAIT"
+                                             ((org-agenda-sorting-strategy '(priority-down))
+                                              (org-agenda-overriding-header "Active Tasks")))))))))
+         (commands (org-gtd-view-lang--create-custom-commands (list view-spec)))
+         (blocks (caddr (car commands)))
+         (first-block (car blocks)))
+    (assert-equal 'todo (car first-block))
+    (assert-equal "NEXT|WAIT" (cadr first-block))
+    (let ((settings (caddr first-block)))
+      (assert-equal '(priority-down) (cadr (assoc 'org-agenda-sorting-strategy settings)))
+      (assert-equal "Active Tasks" (cadr (assoc 'org-agenda-overriding-header settings))))))
+
 (provide 'gtd-view-language-test)
 
 ;;; gtd-view-language-test.el ends here
