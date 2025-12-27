@@ -167,6 +167,13 @@ Returns cons of (project-id . project-marker)."
            (project-marker (org-id-find project-id t)))
       (cons project-id project-marker))))
 
+(defun org-gtd-project-extend--move-to-project (project-marker)
+  "Move current heading under PROJECT-MARKER using programmatic refile."
+  (let* ((project-file (buffer-file-name (marker-buffer project-marker)))
+         (project-pos (marker-position project-marker))
+         (rfloc (list nil project-file nil project-pos)))
+    (org-refile nil nil rfloc)))
+
 (defun org-gtd-projects-fix-todo-keywords-for-project-at-point ()
   "Ensure keywords for subheadings of project at point are sane.
 
