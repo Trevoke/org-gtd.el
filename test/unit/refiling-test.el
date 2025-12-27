@@ -195,6 +195,24 @@
       (org-gtd-refile--should-prompt-p 'calendar)
       (assert-equal 1 (length warnings)))))
 
+(deftest refile/with-user-targets-uses-only-user-config ()
+  "Refile with user targets does not merge org-gtd targets."
+  ;; This test verifies the function exists and uses correct settings
+  (let ((org-refile-use-outline-path nil)
+        (org-outline-path-complete-in-steps t)
+        (refile-called nil)
+        (captured-use-outline-path nil)
+        (captured-complete-in-steps nil))
+    (cl-letf (((symbol-function 'org-refile)
+               (lambda (&rest _)
+                 (setq refile-called t
+                       captured-use-outline-path org-refile-use-outline-path
+                       captured-complete-in-steps org-outline-path-complete-in-steps))))
+      (org-gtd-refile--with-user-targets)
+      (assert-true refile-called)
+      (assert-true captured-use-outline-path)
+      (assert-nil captured-complete-in-steps))))
+
 (provide 'refiling-test)
 
 ;;; refiling-test.el ends here
