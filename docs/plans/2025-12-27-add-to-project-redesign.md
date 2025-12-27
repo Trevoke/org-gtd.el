@@ -45,19 +45,19 @@ Issues:
 1. Prompt: "Select project" → get project-id and project-marker
 2. Configure task (ORG_GTD, TRIGGER)
 3. Set ORG_GTD_PROJECT_IDS = project-id
-4. Add task-id to project's FIRST_TASKS
-5. Handle refile:
+4. Set ORG_GTD_PROJECT = project name
+5. Add task-id to project's FIRST_TASKS
+6. Handle refile:
    - If skip-refile: leave task in place
-   - If 'project-task in org-gtd-refile-prompt-for-types: prompt with user's targets
    - Otherwise: move under project heading
-6. Fix TODO keywords
+7. Fix TODO keywords
 ```
 
 Key changes:
 - Project selection moves to **step 1** (before any configuration)
 - `ORG_GTD_PROJECT_IDS` set **explicitly** (not derived from hierarchy)
 - `FIRST_TASKS` updated immediately (task has no dependencies when added this way)
-- Refile respects both `skip-refile` and `org-gtd-refile-prompt-for-types`
+- Refile simplified: either skip or move to selected project
 
 ---
 
@@ -104,26 +104,7 @@ Returns cons of (project-id . project-marker)."
 
 ---
 
-### Task 3: Add refile-with-user-targets helper
-
-**Files:**
-- Modify: `org-gtd-refile.el`
-
-**Implementation:**
-```elisp
-(defun org-gtd-refile--with-user-targets ()
-  "Refile current heading using user's org-refile-targets.
-Does not merge with org-gtd targets—uses only what user configured."
-  (let ((org-refile-use-outline-path t)
-        (org-outline-path-complete-in-steps nil))
-    (org-refile)))
-```
-
-**Commit:** `feat: add refile helper that uses only user targets`
-
----
-
-### Task 4: Rewrite org-gtd-project-extend--apply
+### Task 3: Rewrite org-gtd-project-extend--apply
 
 **Files:**
 - Modify: `org-gtd-projects.el`
@@ -137,12 +118,10 @@ Flow:
 1. Prompt for project selection
 2. Configure task for project membership
 3. Set ORG_GTD_PROJECT_IDS explicitly
-4. Add to project's FIRST_TASKS
-5. Refile based on settings:
-   - skip-refile: leave in place
-   - project-task in refile-prompt-for-types: prompt with user targets
-   - otherwise: move under project heading
-6. Fix TODO keywords"
+4. Set ORG_GTD_PROJECT (name)
+5. Add to project's FIRST_TASKS
+6. Refile to project (unless skip-refile)
+7. Fix TODO keywords"
 
   ;; Step 1: Select project FIRST
   (let* ((selection (org-gtd-project-extend--select-project))
@@ -156,18 +135,19 @@ Flow:
     ;; Step 3: Set project membership explicitly
     (org-entry-put (point) org-gtd-prop-project-ids project-id)
 
-    ;; Step 4: Add to FIRST_TASKS (no dependencies)
+    ;; Step 4: Set project name
+    (org-gtd-projects--set-project-name-on-task)
+
+    ;; Step 5: Add to FIRST_TASKS (no dependencies)
     (org-with-point-at project-marker
       (org-entry-add-to-multivalued-property
         (point) "ORG_GTD_FIRST_TASKS" task-id))
 
-    ;; Step 5: Handle refile
+    ;; Step 6: Handle refile
     (unless org-gtd-clarify--skip-refile
-      (if (memq 'project-task org-gtd-refile-prompt-for-types)
-          (org-gtd-refile--with-user-targets)
-        (org-gtd-project-extend--move-to-project project-marker)))
+      (org-gtd-project-extend--move-to-project project-marker))
 
-    ;; Step 6: Fix keywords
+    ;; Step 7: Fix keywords
     (org-gtd-projects-fix-todo-keywords project-marker)))
 ```
 
@@ -175,7 +155,7 @@ Flow:
 
 ---
 
-### Task 5: Remove dead code
+### Task 4: Remove dead code
 
 **Files:**
 - Modify: `org-gtd-projects.el`
@@ -189,7 +169,7 @@ Flow:
 
 ---
 
-### Task 6: Update tests
+### Task 5: Update tests
 
 **Files:**
 - Modify: `test/acceptance/project-task-operations-test.el`
@@ -198,7 +178,6 @@ Flow:
 **Tests to add/update:**
 - Test that `ORG_GTD_PROJECT_IDS` is set before refile
 - Test skip-refile leaves task in place with correct properties
-- Test refile-prompt-for-types behavior
 - Test automatic refile moves under project
 
 **Commit:** `test: update tests for new add-to-project flow`
@@ -212,5 +191,5 @@ Flow:
 | Project selection | During org-refile | Step 1, before configuration |
 | ORG_GTD_PROJECT_IDS | Derived from hierarchy after refile | Set explicitly before refile |
 | FIRST_TASKS | Set after refile | Set immediately after selection |
-| Refile behavior | Always prompts with merged targets | Respects skip-refile and prompt-for-types |
+| Refile behavior | Always prompts with merged targets | Skip or auto-refile to selected project |
 | Matches graph view | No | Yes |

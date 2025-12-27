@@ -160,13 +160,6 @@ list, prompts for target; otherwise auto-refiles to the first project."
         (org-refile 3 nil nil "Which project should this task go to? ")
       (org-refile nil nil (car (org-refile-get-targets))))))
 
-(defun org-gtd-refile--with-user-targets ()
-  "Refile current heading using user's org-refile-targets.
-Does not merge with org-gtd targets—uses only what user configured."
-  (let ((org-refile-use-outline-path t)
-        (org-outline-path-complete-in-steps nil))
-    (org-refile)))
-
 (defun org-gtd-refile--get-targets (type)
   "Get refile targets for TYPE, merging user's targets with org-gtd's.
 

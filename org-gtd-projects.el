@@ -1057,10 +1057,7 @@ Flow:
 2. Configure task for project membership
 3. Set ORG_GTD_PROJECT_IDS explicitly
 4. Add to project's FIRST_TASKS
-5. Refile based on settings:
-   - skip-refile: leave in place
-   - project-task in refile-prompt-for-types: prompt with user targets
-   - otherwise: move under project heading
+5. Refile to project (unless skip-refile)
 6. Fix TODO keywords"
 
   ;; Step 1: Select project FIRST
@@ -1085,9 +1082,7 @@ Flow:
 
     ;; Step 6: Handle refile
     (unless org-gtd-clarify--skip-refile
-      (if (memq 'project-task org-gtd-refile-prompt-for-types)
-          (org-gtd-refile--with-user-targets)
-        (org-gtd-project-extend--move-to-project project-marker)))
+      (org-gtd-project-extend--move-to-project project-marker))
 
     ;; Step 7: Fix keywords
     (org-gtd-projects-fix-todo-keywords project-marker)))
