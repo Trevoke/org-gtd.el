@@ -675,22 +675,20 @@ dependencies aren't set up properly."
     (and has-todo-tasks (not has-actionable-task))))
 
 (defun org-gtd-projects--create-dependency-relationship (blocker-marker dependent-marker)
-  "Create bidirectional dependency: BLOCKER-MARKER blocks DEPENDENT-MARKER."
-  (let ((blocker-id (save-excursion
-                      (goto-char blocker-marker)
+  "Create bidirectional dependency: BLOCKER-MARKER blocks DEPENDENT-MARKER.
+Sets ORG_GTD_BLOCKS on blocker and ORG_GTD_DEPENDS_ON on dependent.
+Handles cross-buffer markers correctly."
+  (let ((blocker-id (org-with-point-at blocker-marker
                       (or (org-entry-get (point) "ID")
                           (org-gtd-id-get-create))))
-        (dependent-id (save-excursion
-                        (goto-char dependent-marker)
+        (dependent-id (org-with-point-at dependent-marker
                         (or (org-entry-get (point) "ID")
                             (org-gtd-id-get-create)))))
     ;; Add ORG_GTD_BLOCKS property to blocker task
-    (save-excursion
-      (goto-char blocker-marker)
+    (org-with-point-at blocker-marker
       (org-entry-add-to-multivalued-property (point) "ORG_GTD_BLOCKS" dependent-id))
     ;; Add ORG_GTD_DEPENDS_ON property to dependent task
-    (save-excursion
-      (goto-char dependent-marker)
+    (org-with-point-at dependent-marker
       (org-entry-add-to-multivalued-property (point) "ORG_GTD_DEPENDS_ON" blocker-id))))
 
 (defun org-gtd-projects--add-progress-cookie ()
@@ -1033,6 +1031,20 @@ Returns marker to configured task."
   (org-gtd-organize-apply-hooks)
   (point-marker))
 
+;;;;; Command: Find Leaf Task
+
+(defun org-gtd-project-extend--find-leaf-task (project-marker)
+  "Find a leaf task in project at PROJECT-MARKER.
+A leaf task has no ORG_GTD_BLOCKS property (doesn't block anything).
+Uses depth-first traversal, returns first leaf found.
+Returns marker to leaf task, or nil if project has no tasks."
+  (let ((tasks (org-gtd-projects--collect-tasks-by-graph project-marker)))
+    (cl-find-if
+     (lambda (task-marker)
+       (org-with-point-at task-marker
+         (not (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS"))))
+     tasks)))
+
 ;;;;; Main Command: Extend Project
 
 (defun org-gtd-project-extend--apply ()
@@ -1042,15 +1054,17 @@ Flow:
 1. Prompt for project selection
 2. Configure task for project membership
 3. Set ORG_GTD_PROJECT_IDS explicitly
-4. Add to project's FIRST_TASKS
-5. Refile to project (unless skip-refile)
-6. Fix TODO keywords"
+4. Set project name on task
+5. Chain task after a leaf task (or add to FIRST_TASKS if no tasks)
+6. Refile to project (unless skip-refile)
+7. Fix TODO keywords"
 
   ;; Step 1: Select project FIRST
   (let* ((selection (org-gtd-project-extend--select-project))
          (project-id (car selection))
          (project-marker (cdr selection))
-         (task-id (org-id-get-create)))
+         (task-id (org-id-get-create))
+         (task-marker (point-marker)))
 
     ;; Step 2: Configure task
     (org-gtd-project--configure-single-task)
@@ -1061,10 +1075,15 @@ Flow:
     ;; Step 4: Set project name on task
     (org-gtd-projects--set-project-name-on-task)
 
-    ;; Step 5: Add to FIRST_TASKS (no dependencies when added this way)
-    (org-with-point-at project-marker
-      (org-entry-add-to-multivalued-property
-       (point) "ORG_GTD_FIRST_TASKS" task-id))
+    ;; Step 5: Chain after leaf task, or add to FIRST_TASKS if empty project
+    (let ((leaf-task-marker (org-gtd-project-extend--find-leaf-task project-marker)))
+      (if leaf-task-marker
+          ;; Create dependency: leaf blocks new task
+          (org-gtd-projects--create-dependency-relationship leaf-task-marker task-marker)
+        ;; No existing tasks - add as first task
+        (org-with-point-at project-marker
+          (org-entry-add-to-multivalued-property
+           (point) "ORG_GTD_FIRST_TASKS" task-id))))
 
     ;; Step 6: Handle refile
     (unless org-gtd-clarify--skip-refile
