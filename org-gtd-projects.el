@@ -148,6 +148,25 @@ Marks all incomplete tasks in the project as canceled."
   (interactive)
   (org-gtd-organize--call org-gtd-add-to-project-func))
 
+(defun org-gtd-project-extend--select-project ()
+  "Prompt user to select a project.
+Returns cons of (project-id . project-marker)."
+  (let ((projects '()))
+    ;; Collect all projects
+    (org-map-entries
+     (lambda ()
+       (let ((id (org-id-get-create))
+             (name (org-get-heading t t t t)))
+         (push (cons name id) projects)))
+     "+ORG_GTD=\"Projects\""
+     'agenda)
+    ;; Prompt for selection
+    (let* ((project-names (mapcar #'car projects))
+           (chosen-name (completing-read "Add to project: " project-names nil t))
+           (project-id (cdr (assoc chosen-name projects)))
+           (project-marker (org-id-find project-id t)))
+      (cons project-id project-marker))))
+
 (defun org-gtd-projects-fix-todo-keywords-for-project-at-point ()
   "Ensure keywords for subheadings of project at point are sane.
 

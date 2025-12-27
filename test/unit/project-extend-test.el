@@ -19,5 +19,32 @@
 ;; Initialize e-unit short syntax
 (e-unit-initialize)
 
+(deftest project-extend/select-project-returns-id-and-marker ()
+  "Selection helper returns cons of (project-id . project-marker)."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* Test Project\n:PROPERTIES:\n:ORG_GTD: Projects\n:ID: fake-project-id\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((project-id "fake-project-id")
+           (expected-marker (point-marker)))
+      ;; Mock completing-read to return "Test Project"
+      (cl-letf (((symbol-function 'completing-read)
+                 (lambda (&rest _) "Test Project"))
+                ((symbol-function 'org-map-entries)
+                 (lambda (fn match scope)
+                   (when (string= match "+ORG_GTD=\"Projects\"")
+                     (save-excursion
+                       (goto-char (point-min))
+                       (org-next-visible-heading 1)
+                       (funcall fn)))))
+                ((symbol-function 'org-id-find)
+                 (lambda (id &optional markerp)
+                   (when (and markerp (string= id "fake-project-id"))
+                     expected-marker))))
+        (let ((result (org-gtd-project-extend--select-project)))
+          (assert-equal project-id (car result))
+          (assert-true (markerp (cdr result))))))))
+
 (provide 'project-extend-test)
 ;;; project-extend-test.el ends here
