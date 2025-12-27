@@ -125,5 +125,37 @@
     (assert-true (< project-ids-set-at first-tasks-updated-at))
     (assert-true (< first-tasks-updated-at refile-called-at))))
 
+(deftest project-extend/apply-respects-skip-refile ()
+  "When skip-refile is set, task stays in place with correct properties."
+  (let ((refile-called nil))
+    (cl-letf (((symbol-function 'org-gtd-project-extend--select-project)
+               (lambda ()
+                 (cons "fake-project-id" (point-marker))))
+              ((symbol-function 'org-gtd-project--configure-single-task)
+               #'ignore)
+              ((symbol-function 'org-entry-put)
+               #'ignore)
+              ((symbol-function 'org-gtd-projects--set-project-name-on-task)
+               #'ignore)
+              ((symbol-function 'org-entry-add-to-multivalued-property)
+               #'ignore)
+              ((symbol-function 'org-gtd-project-extend--move-to-project)
+               (lambda (_) (setq refile-called t)))
+              ((symbol-function 'org-gtd-projects-fix-todo-keywords)
+               #'ignore)
+              ((symbol-function 'org-id-get-create)
+               (lambda () "fake-task-id"))
+              ((symbol-function 'org-with-point-at)
+               (lambda (marker &rest body) nil))
+              (org-gtd-clarify--skip-refile t))  ; Skip refile enabled
+      (with-temp-buffer
+        (org-mode)
+        (insert "* Task\n")
+        (goto-char (point-min))
+        (org-next-visible-heading 1)
+        (org-gtd-project-extend--apply)))
+    ;; Refile should NOT have been called
+    (assert-nil refile-called)))
+
 (provide 'project-extend-test)
 ;;; project-extend-test.el ends here
