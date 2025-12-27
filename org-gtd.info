@@ -8754,6 +8754,116 @@ build the exact view you need.
                tags block with skip function (when no block-type
                specified)
 
+        • Native Blocks (Escape Hatch)
+
+          Have you ever wanted your NEXT actions sorted by priority?  Or
+          needed a custom skip function for a specialized workflow?  The
+          DSL handles most cases, but org-agenda has decades of
+          features.  When you hit its limits, ‘native’ blocks let you
+          drop down to raw org-agenda syntax--without abandoning the DSL
+          entirely.
+
+             • When You'll Need This
+
+               You're building a view and think: "I wish I could sort
+               these by effort" or "I need my custom skip function
+               here."  The DSL doesn't support sorting yet.  What do you
+               do?
+
+               You have two choices:
+                 1. Write the whole view in ‘org-agenda-custom-commands’
+                    (losing DSL benefits)
+                 2. Use a ‘native’ block for just that section (keeping
+                    DSL for the rest)
+
+               Option 2 is what this section teaches.
+
+             • Your First Native Block
+
+               Start with something you know.  This DSL block shows NEXT
+               actions:
+
+                    ((type . next-action))
+
+               Here's the equivalent as a native block:
+
+                    ((native . (tags-todo "LEVEL>0+ORG_GTD=\"Actions\"/NEXT" nil)))
+
+               The format is ‘(BLOCK-TYPE MATCH-STRING
+               SETTINGS)’--exactly what ‘org-agenda-custom-commands’
+               uses.  Try evaluating both in a multi-block view:
+
+                    (org-gtd-view-show
+                     '((name . "Comparing DSL and Native")
+                       (blocks . (((name . "DSL Version")
+                                   (type . next-action))
+                                  ((native . (tags-todo "LEVEL>0+ORG_GTD=\"Actions\"/NEXT"
+                                              ((org-agenda-overriding-header "Native Version")))))))))
+
+               They show the same items.  The native block is more
+               verbose, but it unlocks org-agenda's full power.
+
+             • Adding Custom Sorting
+
+               Now the payoff.  Want priority sorting?  Add it to the
+               settings list:
+
+                    ((native . (tags-todo "+@work/NEXT"
+                                ((org-agenda-sorting-strategy '(priority-down effort-up))
+                                 (org-agenda-overriding-header "Work by Priority")))))
+
+               The settings list can include any org-agenda variable.
+               Common ones:
+                  • ‘org-agenda-sorting-strategy’ -- Sort by priority,
+                    effort, alphabetically
+                  • ‘org-agenda-skip-function’ -- Your custom skip logic
+                  • ‘org-agenda-prefix-format’ -- Custom prefix display
+
+             • Mixing DSL and Native
+
+               The real power is mixing them.  Use DSL for simple
+               blocks, native for complex ones:
+
+                    (org-gtd-view-show
+                     '((name . "Mixed Dashboard")
+                       (blocks . (((type . delegated)                               ; DSL: simple
+                                   (when . past))
+                                  ((native . (tags-todo "+urgent"                   ; Native: sorted
+                                              ((org-agenda-sorting-strategy '(effort-up))
+                                               (org-agenda-overriding-header "Urgent by Effort")))))
+                                  ((type . next-action))))))                        ; DSL: simple
+
+               Each block is independent.  Use whatever syntax fits that
+               block's needs.
+
+             • Native Block Types
+
+               The BLOCK-TYPE (first element) determines what kind of
+               agenda block you get:
+
+               Block Type    What It Shows
+               -------------------------------------------------------
+               ‘agenda’      Calendar/timeline (like daily view)
+               ‘todo’        TODO items by keyword
+               ‘tags’        Items matching tag/property expression
+               ‘tags-todo’   Like ‘tags’ but only TODO items
+               ‘search’      Full-text search results
+
+             • Quick Reference
+
+               *Syntax*:
+                    ((native . (BLOCK-TYPE MATCH-STRING SETTINGS)))
+
+               *Rules*:
+                  • Only valid inside a ‘blocks’ list
+                  • Other DSL keys in the same block spec are ignored
+                  • Settings is an alist of ‘(org-agenda-variable
+                    value)’ pairs
+
+               *When to use*: Custom sorting, skip functions,
+               specialized org-agenda settings, or migrating complex
+               views incrementally
+
 
 File: org-gtd.info,  Node: Type Filters,  Next: Time-based Filters,  Prev: Filter Reference,  Up: View DSL Filter Reference
 
@@ -10787,102 +10897,109 @@ Node: Filter Reference315051
 Ref: View Structure315333
 Ref: Multi-Block Views (1)315633
 Ref: Block Types316306
-Node: Type Filters316730
-Ref: (type delegated)316929
-Ref: (type calendar)317174
-Ref: (type project)317399
-Ref: (type active-project)317610
-Ref: (type completed-project)317859
-Ref: (type stuck-project)318130
-Ref: (type tickler)318400
-Ref: (type someday)318652
-Ref: (type habit)318911
-Ref: (type next-action)319103
-Ref: (type tickler-project)319385
-Ref: (type incubated-project)319797
-Ref: (type stuck-delegated)320225
-Ref: (type stuck-calendar)320556
-Ref: (type stuck-tickler)320809
-Ref: (type stuck-habit)321062
-Node: Time-based Filters321288
-Ref: Semantic Time (when VALUE)321527
-Ref: Deadline (deadline VALUE)322388
-Ref: Scheduled (scheduled VALUE)322603
-Node: Keyword Filters322826
-Ref: (todo ("KEYWORD1" "KEYWORD2"))323286
-Ref: (done VALUE)323665
-Node: Area of Focus Filters324778
-Ref: (area-of-focus "AREA")324992
-Node: Tag Filters325357
-Ref: (tags ("TAG1" "TAG2"))325570
-Ref: (tags-match "PATTERN")325858
-Node: Priority Effort and Clocked Filters326326
-Ref: (priority VALUE)326648
-Ref: (effort SPEC)327807
-Ref: (clocked SPEC)328852
-Ref: (last-clocked-out SPEC)329840
-Node: Property Filters330969
-Ref: (property (("PROP" "VALUE")))331212
-Node: Structural Filters331494
-Ref: (level N)331718
-Node: Special Filters332071
-Ref: (not-habit t)332265
-Ref: (invalid-timestamp t)332509
-Node: View Configuration Options332808
-Ref: (block-type TYPE)333084
-Ref: (blocks BLOCK-LIST)333853
-Ref: Prefix DSL Customizing the Task Prefix Column334454
-Ref: Your First Prefix in 60 Seconds334909
-Ref: (prefix (ELEMENT ))335483
-Ref: (prefix-width N)336680
-Ref: Prefix Inheritance in Multi-Block Views337195
-Ref: Low-Level (prefix-format FORMAT-STRING)338278
-Ref: (view-type agenda)338812
-Ref: (agenda-span N)339109
-Node: Simplified Multi-Block Views339253
-Ref: The Problem Verbose Block Definitions339717
-Ref: The Solution Implicit Blocks340534
-Ref: Try It Now341140
-Ref: Smart Type Defaults341712
-Ref: Top-Level Inheritance342585
-Ref: The Four-Tier Precedence Model342929
-Ref: When to Use Explicit Blocks343988
-Ref: Quick Reference344611
-Node: Saving Your Custom Views345003
-Node: Hooks Framework Reference345674
-Node: What Are Organize Hooks?346112
-Node: Your First Hook in 2 Minutes346774
-Node: The org-gtd-organize-hooks Variable347916
-Node: Built-in Hooks348415
-Ref: org-set-tags-command348615
-Ref: org-gtd-set-area-of-focus348858
-Node: Writing Custom Hooks349377
-Ref: Basic Hook Structure349769
-Ref: Using org-gtd-organize-type-member-p350103
-Node: Example Custom Hooks351546
-Ref: Selective Tagging with Unless351749
-Ref: Add Effort Estimation352466
-Ref: Add Priority352821
-Ref: Auto-Set Property Based on Keywords353131
-Ref: Add Custom Property353614
-Ref: Integration with Org-Roam354060
-Ref: Set Effort from Keywords354431
-Node: Hook Execution Order355158
-Node: Best Practices355668
-Node: Complete Example Comprehensive Hook Setup356651
-Node: Extending org-gtd358830
-Node: Project Traversal Functions359087
-Node: org-gtd-project-map-tasks359299
-Node: org-gtd-projects-map360173
-Node: Troubleshooting360936
-Node: Finding lost tasks361402
-Node: Projects without a NEXT item362407
-Node: I can't create a project when clarifying an inbox item!363663
-Node: Configuration problems364621
-Node: Keywords not working364941
-Node: Items not showing in engage view365755
-Node: Tasks still showing after tickler'ing project366503
-Node: Still stuck?367618
+Ref: Native Blocks (Escape Hatch)316742
+Ref: When You'll Need This317167
+Ref: Your First Native Block317763
+Ref: Adding Custom Sorting318827
+Ref: Mixing DSL and Native319578
+Ref: Native Block Types320465
+Ref: Quick Reference321048
+Node: Type Filters321589
+Ref: (type delegated)321788
+Ref: (type calendar)322033
+Ref: (type project)322258
+Ref: (type active-project)322469
+Ref: (type completed-project)322718
+Ref: (type stuck-project)322989
+Ref: (type tickler)323259
+Ref: (type someday)323511
+Ref: (type habit)323770
+Ref: (type next-action)323962
+Ref: (type tickler-project)324244
+Ref: (type incubated-project)324656
+Ref: (type stuck-delegated)325084
+Ref: (type stuck-calendar)325415
+Ref: (type stuck-tickler)325668
+Ref: (type stuck-habit)325921
+Node: Time-based Filters326147
+Ref: Semantic Time (when VALUE)326386
+Ref: Deadline (deadline VALUE)327247
+Ref: Scheduled (scheduled VALUE)327462
+Node: Keyword Filters327685
+Ref: (todo ("KEYWORD1" "KEYWORD2"))328145
+Ref: (done VALUE)328524
+Node: Area of Focus Filters329637
+Ref: (area-of-focus "AREA")329851
+Node: Tag Filters330216
+Ref: (tags ("TAG1" "TAG2"))330429
+Ref: (tags-match "PATTERN")330717
+Node: Priority Effort and Clocked Filters331185
+Ref: (priority VALUE)331507
+Ref: (effort SPEC)332666
+Ref: (clocked SPEC)333711
+Ref: (last-clocked-out SPEC)334699
+Node: Property Filters335828
+Ref: (property (("PROP" "VALUE")))336071
+Node: Structural Filters336353
+Ref: (level N)336577
+Node: Special Filters336930
+Ref: (not-habit t)337124
+Ref: (invalid-timestamp t)337368
+Node: View Configuration Options337667
+Ref: (block-type TYPE)337943
+Ref: (blocks BLOCK-LIST)338712
+Ref: Prefix DSL Customizing the Task Prefix Column339313
+Ref: Your First Prefix in 60 Seconds339768
+Ref: (prefix (ELEMENT ))340342
+Ref: (prefix-width N)341539
+Ref: Prefix Inheritance in Multi-Block Views342054
+Ref: Low-Level (prefix-format FORMAT-STRING)343137
+Ref: (view-type agenda)343671
+Ref: (agenda-span N)343968
+Node: Simplified Multi-Block Views344112
+Ref: The Problem Verbose Block Definitions344576
+Ref: The Solution Implicit Blocks345393
+Ref: Try It Now345999
+Ref: Smart Type Defaults346571
+Ref: Top-Level Inheritance347444
+Ref: The Four-Tier Precedence Model347788
+Ref: When to Use Explicit Blocks348847
+Ref: Quick Reference (1)349470
+Node: Saving Your Custom Views349862
+Node: Hooks Framework Reference350533
+Node: What Are Organize Hooks?350971
+Node: Your First Hook in 2 Minutes351633
+Node: The org-gtd-organize-hooks Variable352775
+Node: Built-in Hooks353274
+Ref: org-set-tags-command353474
+Ref: org-gtd-set-area-of-focus353717
+Node: Writing Custom Hooks354236
+Ref: Basic Hook Structure354628
+Ref: Using org-gtd-organize-type-member-p354962
+Node: Example Custom Hooks356405
+Ref: Selective Tagging with Unless356608
+Ref: Add Effort Estimation357325
+Ref: Add Priority357680
+Ref: Auto-Set Property Based on Keywords357990
+Ref: Add Custom Property358473
+Ref: Integration with Org-Roam358919
+Ref: Set Effort from Keywords359290
+Node: Hook Execution Order360017
+Node: Best Practices360527
+Node: Complete Example Comprehensive Hook Setup361510
+Node: Extending org-gtd363689
+Node: Project Traversal Functions363946
+Node: org-gtd-project-map-tasks364158
+Node: org-gtd-projects-map365032
+Node: Troubleshooting365795
+Node: Finding lost tasks366261
+Node: Projects without a NEXT item367266
+Node: I can't create a project when clarifying an inbox item!368522
+Node: Configuration problems369480
+Node: Keywords not working369800
+Node: Items not showing in engage view370614
+Node: Tasks still showing after tickler'ing project371362
+Node: Still stuck?372477
 
 End Tag Table
 
