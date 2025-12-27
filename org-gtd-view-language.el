@@ -89,6 +89,25 @@
 ;; Tag Filters:
 ;;   (tags . ("@work"))         - Match specific tags
 ;;
+;; Native Blocks (Escape Hatch):
+;;
+;; For features not yet abstracted by the DSL, you can embed raw
+;; org-agenda blocks using the `native' keyword:
+;;
+;;   ((native . (BLOCK-TYPE MATCH-STRING SETTINGS)))
+;;
+;; The value is passed directly to org-agenda without transformation.
+;; This is useful for:
+;; - Custom sorting: ((org-agenda-sorting-strategy '(priority-down)))
+;; - Advanced skip functions
+;; - Any org-agenda settings the DSL doesn't abstract
+;;
+;; Native blocks can be mixed with DSL blocks:
+;;
+;;   '((blocks . (((type . next-action))                  ; DSL
+;;                ((native . (tags-todo "+urgent"         ; Native
+;;                            ((org-agenda-sorting-strategy '(effort-up)))))))))
+;;
 ;; Examples:
 ;;
 ;;   ;; All next actions
