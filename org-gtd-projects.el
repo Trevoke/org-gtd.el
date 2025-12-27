@@ -1033,20 +1033,6 @@ Returns marker to configured task."
   (org-gtd-organize-apply-hooks)
   (point-marker))
 
-;;;;; Command: Update Project After Task Addition
-
-(defun org-gtd-project--update-after-task-addition (project-marker)
-  "Update project at PROJECT-MARKER after new task has been added.
-Sets project name on task, recalculates root tasks, and updates states."
-  (save-excursion
-    (org-refile-goto-last-stored)
-    (org-gtd-projects--set-project-name-on-task))
-
-  (org-with-point-at project-marker
-    (org-gtd-projects--set-first-tasks))
-
-  (org-gtd-projects-fix-todo-keywords project-marker))
-
 ;;;;; Main Command: Extend Project
 
 (defun org-gtd-project-extend--apply ()

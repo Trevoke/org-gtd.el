@@ -130,36 +130,6 @@ files outside are accepted without filtering."
         (org-refile nil nil nil "Finish organizing task under: ")
       (org-refile nil nil (car (org-refile-get-targets))))))
 
-(defun org-gtd-refile--do-project-task ()
-  "Refile a task into an existing project.
-
-Merges user's `org-refile-targets' with org-gtd's project targets.
-User's targets appear first, then level-2 headings with ORG_GTD=Projects.
-Files in `org-gtd-directory' are filtered for project headings;
-files outside are accepted without filtering.
-
-Respects `org-gtd-refile-prompt-for-types': if \\='project-task is in the
-list, prompts for target; otherwise auto-refiles to the first project."
-  (let ((org-refile-use-outline-path t)
-        (org-outline-path-complete-in-steps nil)
-        (org-refile-allow-creating-parent-nodes nil)
-        ;; MERGE: user's targets first, then org-gtd's project targets
-        (org-refile-targets (append org-refile-targets
-                                    '((org-agenda-files :level . 2))))
-        (org-refile-target-verify-function
-         (lambda ()
-           (let* ((file (buffer-file-name))
-                  (gtd-dir (expand-file-name org-gtd-directory))
-                  (in-gtd-dir (and file (string-prefix-p gtd-dir (expand-file-name file)))))
-             (if in-gtd-dir
-                 ;; GTD files: require ORG_GTD=Projects
-                 (string-equal org-gtd-projects (org-entry-get nil "ORG_GTD"))
-               ;; Non-GTD files: allow all (user's targets)
-               t)))))
-    (if (org-gtd-refile--should-prompt-p 'project-task)
-        (org-refile 3 nil nil "Which project should this task go to? ")
-      (org-refile nil nil (car (org-refile-get-targets))))))
-
 (defun org-gtd-refile--get-targets (type)
   "Get refile targets for TYPE, merging user's targets with org-gtd's.
 
