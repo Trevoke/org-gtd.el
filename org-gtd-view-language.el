@@ -124,7 +124,8 @@
     area-of-focus who tags priority effort clocked last-clocked-out
     blocks prefix prefix-width view-type agenda-span show-habits
     additional-blocks filters not-habit property
-    block-type group-contexts group-by todo-keyword prefix-format)
+    block-type group-contexts group-by todo-keyword prefix-format
+    native)
   "Known filter keys in view specs.
 Includes both filter keys and reserved structural keys.")
 
