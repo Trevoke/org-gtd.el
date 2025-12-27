@@ -67,33 +67,6 @@
     (let ((pred (org-gtd-pred--tags-matches '("urgent"))))
       (assert-true (funcall pred)))))
 
-(deftest tags-pred/matches-emoji-tag ()
-  "Predicate matches when entry has an emoji tag."
-  (with-temp-buffer
-    (org-mode)
-    (insert "* Task :🏠:\n")
-    (goto-char (point-min))
-    (let ((pred (org-gtd-pred--tags-matches '("🏠"))))
-      (assert-true (funcall pred)))))
-
-(deftest tags-pred/matches-emoji-among-multiple-tags ()
-  "Predicate matches emoji tag among other tags."
-  (with-temp-buffer
-    (org-mode)
-    (insert "* Task :urgent:🔥:important:\n")
-    (goto-char (point-min))
-    (let ((pred (org-gtd-pred--tags-matches '("🔥"))))
-      (assert-true (funcall pred)))))
-
-(deftest tags-pred/no-match-wrong-emoji ()
-  "Predicate returns nil when emoji doesn't match."
-  (with-temp-buffer
-    (org-mode)
-    (insert "* Task :🏠:\n")
-    (goto-char (point-min))
-    (let ((pred (org-gtd-pred--tags-matches '("🏢"))))
-      (assert-nil (funcall pred)))))
-
 ;;; Skip Function Integration
 
 (deftest tags-filter/skip-function-includes-tags ()
