@@ -18,7 +18,7 @@
 ;; When e-unit is on MELPA, replace with: (eldev-add-extra-dependencies 'test 'e-unit)
 ;; :setup disables info file processing (avoids install-info requirement)
 (eldev-use-vc-repository 'e-unit :git "https://codeberg.org/Trevoke/e-unit.el.git"
-                         :rev "0.13.1"
+                         :rev "0.13.2"
                          :setup '(setq eldev-info-sources nil))
 (eldev-add-extra-dependencies 'test 'e-unit)
 
