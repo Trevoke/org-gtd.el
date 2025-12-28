@@ -243,24 +243,25 @@ Safe to run multiple times - only updates items still marked as \"Actions\"."
     (message "Migrated %d delegated items to ORG_GTD=\"Delegated\"" migrated-count)))
 
 (defun org-gtd-upgrade--migrate-habits ()
-  "Add ORG_GTD=Habit to items with STYLE=habit (Step 3 of migration).
+  "Set ORG_GTD=Habit for all items with STYLE=habit (Step 3 of migration).
 
 In v3, habits were identified solely by STYLE=\"habit\" property.
-In v4, habits also have ORG_GTD=\"Habit\" for unified type discovery.
+In v4, habits have ORG_GTD=\"Habit\" for unified type discovery.
 
-This function finds all items with STYLE=\"habit\" and adds ORG_GTD=\"Habit\"
-if not already present.
+This function finds all items with STYLE=\"habit\" and sets ORG_GTD=\"Habit\".
+Also fixes items from v2->v3 migration that incorrectly have ORG_GTD=\"Habits\"
+\(plural) instead of the correct v4 value \"Habit\" (singular).
 
-Safe to run multiple times - only updates items missing ORG_GTD property."
+Safe to run multiple times - only updates items needing correction."
   (let ((org-agenda-files (org-gtd-core--agenda-files))
         (migrated-count 0))
     (org-map-entries
      (lambda ()
        (let ((org-gtd-value (org-entry-get (point) "ORG_GTD"))
              (style (org-entry-get (point) "STYLE")))
-         ;; Only migrate if: has STYLE="habit" AND no ORG_GTD property
+         ;; Migrate if: has STYLE="habit" AND ORG_GTD is missing or wrong
          (when (and (string= style "habit")
-                    (not org-gtd-value))
+                    (not (string= org-gtd-value "Habit")))
            (org-entry-put (point) "ORG_GTD" "Habit")
            (setq migrated-count (1+ migrated-count))
            (message "  Migrated habit: %s" (org-get-heading t t t t)))))

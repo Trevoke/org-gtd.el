@@ -247,17 +247,27 @@ Steps:
 3. Add the global keyword configuration to your Emacs init file
 4. Ensure all GTD keywords appear in the *same sequence* in ~org-todo-keywords~
 
+**** Required: Configure org-agenda-files
+
+Before running the migration, ensure your GTD files are in ~org-agenda-files~. The migration command scans these files to find items to upgrade:
+
+#+begin_src emacs-lisp
+(setq org-agenda-files (list org-gtd-directory))
+#+end_src
+
+If ~org-agenda-files~ is not configured, the migration won't find anything to migrate.
+
 **** Required: Data migration
 
 Version 4.0 changes how projects work internally. *The old TRIGGER-based system no longer functions* - v4 uses dependency properties instead. You MUST run the migration for your existing projects to continue working.
+
+*Make a backup first!* The migration modifies your GTD files.
 
 *Run the migration command:*
 
 #+begin_src emacs-lisp
 M-x org-gtd-upgrade-v3-to-v4
 #+end_src
-
-*Make a backup first!* The migration modifies your GTD files.
 
 *What the migration does:*
 
@@ -335,12 +345,6 @@ The ~org-gtd-mode~ minor mode has been redesigned in version 4.0. It no longer w
 *To enable:*
 #+begin_src emacs-lisp
 (org-gtd-mode 1)
-#+end_src
-
-*Note*: You still need to configure ~org-agenda-files~ and ~org-edna~ separately:
-#+begin_src emacs-lisp
-(setq org-agenda-files (list org-gtd-directory))
-(org-edna-mode 1)
 #+end_src
 
 ** Installing

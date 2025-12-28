@@ -653,6 +653,57 @@ Content here.
     (org-back-to-heading t)
     (assert-equal "self org-gtd-update-project-after-task-done!" (org-entry-get (point) "TRIGGER"))))
 
+(deftest upgrade-v3-to-v4/fixes-habits-plural-to-singular ()
+  "Fixes habits with ORG_GTD=Habits (plural) to ORG_GTD=Habit (singular).
+The v2->v3 migration set ORG_GTD to the constant `org-gtd-habit' which is
+\"Habits\" (plural), but the v4 type system expects \"Habit\" (singular)."
+  (with-current-buffer (org-gtd--default-file)
+    (insert "
+* Habits
+:PROPERTIES:
+:ORG_GTD:  Habits
+:END:
+** NEXT Morning meditation
+SCHEDULED: <2023-12-23 Sat 07:20 ++1d>
+:PROPERTIES:
+:STYLE:    habit
+:ORG_GTD:  Habits
+:END:
+")
+    (basic-save-buffer))
+
+  ;; Run the habit migration
+  (org-gtd-upgrade--migrate-habits)
+
+  ;; Verify habit now has singular "Habit"
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "Morning meditation")
+    (org-back-to-heading t)
+    (assert-equal "Habit" (org-entry-get (point) "ORG_GTD"))))
+
+(deftest upgrade-v3-to-v4/adds-habit-property-when-missing ()
+  "Adds ORG_GTD=Habit to habits that have STYLE=habit but no ORG_GTD property."
+  (with-current-buffer (org-gtd--default-file)
+    (insert "
+** NEXT Evening exercise
+SCHEDULED: <2023-12-23 Sat 19:00 ++1d>
+:PROPERTIES:
+:STYLE:    habit
+:END:
+")
+    (basic-save-buffer))
+
+  ;; Run the habit migration
+  (org-gtd-upgrade--migrate-habits)
+
+  ;; Verify habit now has ORG_GTD="Habit"
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "Evening exercise")
+    (org-back-to-heading t)
+    (assert-equal "Habit" (org-entry-get (point) "ORG_GTD"))))
+
 (provide 'upgrades-test)
 
 ;;; upgrades-test.el ends here
