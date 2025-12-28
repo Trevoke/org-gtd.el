@@ -271,17 +271,25 @@ M-x org-gtd-upgrade-v3-to-v4
 
 *What the migration does:*
 
-The migration performs three steps automatically:
+The migration performs five steps automatically:
 
-1. *Adds ORG_GTD properties* to identify items:
+1. *Migrates Incubated items* to Tickler or Someday:
+   - Items with ~ORG_GTD_TIMESTAMP~: Sets ~ORG_GTD="Tickler"~
+   - Items without timestamp: Sets ~ORG_GTD="Someday"~
+   - Level 1 heading gets ~ORG_GTD_REFILE~ based on first child's type
+
+2. *Adds ORG_GTD properties* to identify items:
    - Adds ~ORG_GTD="Projects"~ to project headings
    - Adds ~ORG_GTD="Actions"~ to project tasks
 
-2. *Migrates delegated items* to use their own type:
+3. *Migrates delegated items* to use their own type:
    - Changes ~ORG_GTD~ from "Actions" to "Delegated" for items with ~DELEGATED_TO~ property
    - This separates delegated items from regular single actions
 
-3. *Converts projects to dependency-based system*:
+4. *Migrates habits* to use consistent property value:
+   - Sets ~ORG_GTD="Habit"~ on all items with ~STYLE="habit"~
+
+5. *Converts projects to dependency-based system*:
    - Adds ~ORG_GTD_DEPENDS_ON~ and ~ORG_GTD_BLOCKS~ properties to create sequential task chains
    - Adds ~ORG_GTD_FIRST_TASKS~ property to project headings
    - Updates task states (NEXT/TODO) based on the new dependency graph

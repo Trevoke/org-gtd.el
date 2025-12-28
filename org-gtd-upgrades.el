@@ -151,25 +151,30 @@ planning keyword in `org-mode'."
 (defun org-gtd-upgrade-v3-to-v4 ()
   "Migrate from org-gtd v3 to v4 property-based and dependency system.
 
-This migration performs FOUR required steps:
+This migration performs FIVE required steps:
 
-STEP 1: Migrate ORG_GTD properties
+STEP 1: Migrate Incubated items to Tickler/Someday
+  - Items with ORG_GTD_TIMESTAMP: Sets ORG_GTD=\"Tickler\"
+  - Items without timestamp: Sets ORG_GTD=\"Someday\"
+  - Level 1 heading: Gets ORG_GTD_REFILE based on first child's type
+
+STEP 2: Migrate ORG_GTD properties
   - Level 1 category headings: Renames ORG_GTD → ORG_GTD_REFILE
     (preserves them as refile targets for org-gtd's refile system)
   - Level 2+ items: Adds ORG_GTD property to mark item type
   - Project tasks: Adds ORG_GTD=\"Actions\" property
 
-STEP 2: Migrate delegated items to new type
+STEP 3: Migrate delegated items to new type
   - Items with DELEGATED_TO property: Changes ORG_GTD from
     \"Actions\" to \"Delegated\"
   - This separates delegated items from regular single actions
 
-STEP 3: Migrate habits to have ORG_GTD property
+STEP 4: Migrate habits to have ORG_GTD property
   - Items with STYLE=\"habit\": Adds ORG_GTD=\"Habit\"
   - This ensures habits are discoverable via the unified type
     system
 
-STEP 4: Add dependency properties to projects
+STEP 5: Add dependency properties to projects
   - Adds ORG_GTD_DEPENDS_ON and ORG_GTD_BLOCKS for sequential
     dependencies
   - Adds ORG_GTD_FIRST_TASKS to project headings
@@ -198,20 +203,25 @@ Make a backup before running! Safe to run multiple times."
   (when (yes-or-no-p "This will modify your GTD files. Have you made a backup? ")
     (message "Migrating to org-gtd v4...")
 
-    ;; Step 1: Add ORG_GTD properties
-    (message "Step 1/4: Adding ORG_GTD properties...")
+    ;; Step 1: Migrate Incubated items to Tickler/Someday
+    ;; Must run before Step 2 so that Incubated headings are processed specially
+    (message "Step 1/5: Migrating incubated items...")
+    (org-gtd-upgrade--migrate-incubated-items)
+
+    ;; Step 2: Add ORG_GTD properties
+    (message "Step 2/5: Adding ORG_GTD properties...")
     (org-gtd-upgrade--add-org-gtd-properties)
 
-    ;; Step 2: Migrate delegated items to new ORG_GTD value
-    (message "Step 2/4: Migrating delegated items...")
+    ;; Step 3: Migrate delegated items to new ORG_GTD value
+    (message "Step 3/5: Migrating delegated items...")
     (org-gtd-upgrade--migrate-delegated-items)
 
-    ;; Step 3: Migrate habits to have ORG_GTD property
-    (message "Step 3/4: Migrating habits...")
+    ;; Step 4: Migrate habits to have ORG_GTD property
+    (message "Step 4/5: Migrating habits...")
     (org-gtd-upgrade--migrate-habits)
 
-    ;; Step 4: Add dependency properties
-    (message "Step 4/4: Adding project dependencies...")
+    ;; Step 5: Add dependency properties
+    (message "Step 5/5: Adding project dependencies...")
     (org-gtd-upgrade--add-project-dependencies)
 
     (message "Migration complete! Your projects now use the dependency system.")))
@@ -268,6 +278,59 @@ Safe to run multiple times - only updates items needing correction."
      "+STYLE=\"habit\""
      'agenda)
     (message "Migrated %d habits to ORG_GTD=\"Habit\"" migrated-count)))
+
+(defun org-gtd-upgrade--migrate-incubated-items ()
+  "Migrate Incubated items to Tickler or Someday based on timestamp.
+
+In v3, Incubated was used for both:
+- Someday/maybe items (no specific date)
+- Tickler items (remind me on a specific date)
+
+In v4, these are separate types:
+- Tickler: Items with ORG_GTD_TIMESTAMP property
+- Someday: Items without a timestamp
+
+This function:
+1. Finds level 1 headings with ORG_GTD=\"Incubated\"
+2. Sets ORG_GTD on each level 2 child based on timestamp presence
+3. Sets ORG_GTD_REFILE on level 1 based on first child's type
+4. Removes ORG_GTD from level 1 heading
+
+Safe to run multiple times."
+  (let ((org-agenda-files (org-gtd-core--agenda-files))
+        (org-use-property-inheritance "ORG_GTD")
+        (migrated-count 0))
+    (org-map-entries
+     (lambda ()
+       (let ((category-level (org-current-level))
+             (first-child-type nil))
+         ;; Process all level 2 children
+         (save-excursion
+           (outline-next-heading)
+           (while (and (not (eobp))
+                       (> (org-current-level) category-level))
+             (when (= (org-current-level) (1+ category-level))
+               ;; Determine type based on timestamp
+               (let ((has-timestamp (org-entry-get (point) org-gtd-timestamp))
+                     (item-type nil))
+                 (setq item-type (if has-timestamp "Tickler" "Someday"))
+                 ;; Track first child's type for ORG_GTD_REFILE
+                 (unless first-child-type
+                   (setq first-child-type item-type))
+                 ;; Set ORG_GTD on the child
+                 (org-entry-put (point) "ORG_GTD" item-type)
+                 (setq migrated-count (1+ migrated-count))
+                 (message "  Migrated incubated item to %s: %s"
+                          item-type (org-get-heading t t t t))))
+             (outline-next-heading)))
+         ;; Set ORG_GTD_REFILE on level 1 heading based on first child
+         (when first-child-type
+           (org-entry-put (point) "ORG_GTD_REFILE" first-child-type))
+         ;; Remove ORG_GTD from level 1 heading
+         (org-entry-delete (point) "ORG_GTD")))
+     "+LEVEL=1+ORG_GTD=\"Incubated\""
+     'agenda)
+    (message "Migrated %d incubated items to Tickler/Someday" migrated-count)))
 
 (defun org-gtd-upgrade--add-org-gtd-properties ()
   "Add ORG_GTD properties to existing items (Step 1 of migration)."

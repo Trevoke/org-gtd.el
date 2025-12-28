@@ -653,6 +653,76 @@ Content here.
     (org-back-to-heading t)
     (assert-equal "self org-gtd-update-project-after-task-done!" (org-entry-get (point) "TRIGGER"))))
 
+(deftest upgrade-v3-to-v4/migrates-incubated-with-timestamp-to-tickler ()
+  "Migrates Incubated items with ORG_GTD_TIMESTAMP to Tickler."
+  (with-current-buffer (org-gtd--default-file)
+    (insert "
+* Incubated
+:PROPERTIES:
+:ORG_GTD: Incubated
+:END:
+** Check on investment
+:PROPERTIES:
+:ORG_GTD_TIMESTAMP: <2024-06-01>
+:END:
+** Someday learn piano
+:PROPERTIES:
+:END:
+")
+    (basic-save-buffer))
+
+  ;; Run the incubated migration
+  (org-gtd-upgrade--migrate-incubated-items)
+
+  (with-current-buffer (org-gtd--default-file)
+    ;; Level 1 heading should have ORG_GTD_REFILE (first child has timestamp)
+    (goto-char (point-min))
+    (re-search-forward "^\\* Incubated$")
+    (org-back-to-heading t)
+    (assert-equal "Tickler" (org-entry-get (point) "ORG_GTD_REFILE"))
+    (assert-nil (org-entry-get (point) "ORG_GTD"))
+
+    ;; Item with timestamp should be Tickler
+    (goto-char (point-min))
+    (search-forward "Check on investment")
+    (org-back-to-heading t)
+    (assert-equal "Tickler" (org-entry-get (point) "ORG_GTD"))
+
+    ;; Item without timestamp should be Someday
+    (goto-char (point-min))
+    (search-forward "Someday learn piano")
+    (org-back-to-heading t)
+    (assert-equal "Someday" (org-entry-get (point) "ORG_GTD"))))
+
+(deftest upgrade-v3-to-v4/migrates-incubated-first-child-no-timestamp ()
+  "Sets ORG_GTD_REFILE to Someday when first child has no timestamp."
+  (with-current-buffer (org-gtd--default-file)
+    (insert "
+* Incubated
+:PROPERTIES:
+:ORG_GTD: Incubated
+:END:
+** Someday learn guitar
+:PROPERTIES:
+:END:
+** Check on savings
+:PROPERTIES:
+:ORG_GTD_TIMESTAMP: <2024-12-01>
+:END:
+")
+    (basic-save-buffer))
+
+  ;; Run the incubated migration
+  (org-gtd-upgrade--migrate-incubated-items)
+
+  (with-current-buffer (org-gtd--default-file)
+    ;; Level 1 heading should have ORG_GTD_REFILE: Someday (first child has no timestamp)
+    (goto-char (point-min))
+    (re-search-forward "^\\* Incubated$")
+    (org-back-to-heading t)
+    (assert-equal "Someday" (org-entry-get (point) "ORG_GTD_REFILE"))
+    (assert-nil (org-entry-get (point) "ORG_GTD"))))
+
 (deftest upgrade-v3-to-v4/fixes-habits-plural-to-singular ()
   "Fixes habits with ORG_GTD=Habits (plural) to ORG_GTD=Habit (singular).
 The v2->v3 migration set ORG_GTD to the constant `org-gtd-habit' which is
