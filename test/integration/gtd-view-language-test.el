@@ -407,7 +407,7 @@ CLOSED: ")
         ;; Should include Alice's task
         (assert-match "Task for Alice" content)
         ;; Should NOT include Bob's task
-        (assert-no-match "Task for Bob" content)))))
+        (refute-match "Task for Bob" content)))))
 
 ;;; Deadline Filter Integration Tests
 
@@ -443,8 +443,8 @@ DEADLINE: <2099-12-31 Wed>
         ;; Should include overdue task
         (assert-match "Overdue task" content)
         ;; Should NOT include future or no-deadline tasks
-        (assert-no-match "Future task" content)
-        (assert-no-match "No deadline task" content)))))
+        (refute-match "Future task" content)
+        (refute-match "No deadline task" content)))))
 
 ;;; Scheduled Filter Integration Tests
 
@@ -480,8 +480,8 @@ SCHEDULED: <2099-12-31 Wed>
         ;; Should include past scheduled task
         (assert-match "Past scheduled task" content)
         ;; Should NOT include future or no-scheduled tasks
-        (assert-no-match "Future scheduled task" content)
-        (assert-no-match "No scheduled task" content)))))
+        (refute-match "Future scheduled task" content)
+        (refute-match "No scheduled task" content)))))
 
 ;;; Todo Keyword Filter Integration Tests
 
