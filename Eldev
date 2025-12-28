@@ -59,6 +59,9 @@ E-unit tests are in the test/ directory with subdirectories:
   :aliases    (etest)
   :category   testing
 
+  ;; Suppress version upgrade warnings (must be set before org-gtd loads)
+  (setq org-gtd-update-ack "4.0.0")
+
   (eldev-load-project-dependencies 'test)
   (require 'e-unit)
 

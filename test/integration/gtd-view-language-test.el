@@ -414,17 +414,17 @@ CLOSED: ")
 (deftest view-lang-int/deadline-filter-shows-overdue-items ()
   "View with deadline=past filter shows items with overdue deadlines."
   (with-current-buffer (org-gtd--default-file)
-    (insert "* TODO Overdue task
+    (insert "* NEXT Overdue task
 DEADLINE: <2020-01-01 Wed>
 :PROPERTIES:
 :ORG_GTD: Actions
 :END:
-* TODO Future task
+* NEXT Future task
 DEADLINE: <2099-12-31 Wed>
 :PROPERTIES:
 :ORG_GTD: Actions
 :END:
-* TODO No deadline task
+* NEXT No deadline task
 :PROPERTIES:
 :ORG_GTD: Actions
 :END:
@@ -451,17 +451,17 @@ DEADLINE: <2099-12-31 Wed>
 (deftest view-lang-int/scheduled-filter-shows-past-scheduled ()
   "View with scheduled=past filter shows items scheduled in the past."
   (with-current-buffer (org-gtd--default-file)
-    (insert "* TODO Past scheduled task
+    (insert "* NEXT Past scheduled task
 SCHEDULED: <2020-01-01 Wed>
 :PROPERTIES:
 :ORG_GTD: Actions
 :END:
-* TODO Future scheduled task
+* NEXT Future scheduled task
 SCHEDULED: <2099-12-31 Wed>
 :PROPERTIES:
 :ORG_GTD: Actions
 :END:
-* TODO No scheduled task
+* NEXT No scheduled task
 :PROPERTIES:
 :ORG_GTD: Actions
 :END:

@@ -29,6 +29,10 @@
 
 (require 'e-unit)
 (require 'mock-fs)
+
+;; Suppress version upgrade warnings - must be set BEFORE loading org-gtd
+(setq org-gtd-update-ack "4.0.0")
+
 (require 'org-gtd)
 
 ;;; Custom Assertions
@@ -86,7 +90,6 @@ Sets up org-gtd to use the virtual filesystem."
         org-gtd-areas-of-focus nil
         org-gtd-organize-hooks '()
         org-gtd-refile-to-any-target t
-        org-gtd-update-ack "3.0.0"
         ;; Show DELEGATED_TO property in agenda views (for delegation tests)
         org-gtd-agenda-property-list '("DELEGATED_TO"))
 
