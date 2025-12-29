@@ -385,26 +385,26 @@ Steps:
       (org-gtd-projects-fix-todo-keywords project-marker))))
 
 (defun org-gtd-graph--keep-as-independent (task-id)
-  "Remove TASK-ID from all projects but keep it as independent task.
-Dependencies are preserved (orphaned) for potential future project membership.
+  "Remove TASK-ID from all projects and clear all project-related properties.
+The task becomes a standalone item with no project associations or dependencies."
+  (let ((projects (org-gtd-get-task-projects task-id))
+        (all-blockers (org-gtd-get-task-blockers task-id))
+        (all-dependencies (org-gtd-get-task-dependencies task-id)))
 
-Unlike remove-from-project, this does NOT clean up dependencies."
-  (let ((projects (org-gtd-get-task-projects task-id)))
+    ;; For each project: rewire graph and update FIRST_TASKS
     (dolist (project-id projects)
-      ;; Get project marker
       (when-let ((project-marker (org-id-find project-id t)))
-        ;; Extract graph to get predecessors and successors
         (let* ((graph (org-gtd-graph-data--extract-from-project project-marker))
                (predecessors (org-gtd-graph-data-get-predecessors graph task-id))
                (successors (org-gtd-graph-data-get-successors graph task-id)))
 
-          ;; Rewire: connect all predecessors to all successors
+          ;; Rewire: connect predecessors to successors
           (dolist (pred predecessors)
             (dolist (succ successors)
               (unless (member succ (org-gtd-get-task-blockers pred))
                 (org-gtd-dependencies-create pred succ))))
 
-          ;; Check if successors should become root tasks
+          ;; Promote successors to root if they have no other predecessors
           (dolist (succ successors)
             (let* ((succ-preds (org-gtd-graph-data-get-predecessors graph succ))
                    (other-preds (cl-remove task-id succ-preds :test 'equal)))
@@ -416,11 +416,24 @@ Unlike remove-from-project, this does NOT clean up dependencies."
           ;; Remove task from project's FIRST_TASKS
           (org-gtd-remove-from-multivalued-property project-id "ORG_GTD_FIRST_TASKS" task-id)
 
-          ;; Remove project-id from task's PROJECT_IDS
-          (org-gtd-remove-from-multivalued-property task-id "ORG_GTD_PROJECT_IDS" project-id)
+          ;; Fix TODO keywords for this project
+          (org-gtd-projects-fix-todo-keywords project-marker))))
 
-          ;; DO NOT clean up dependencies - preserve them for future use
-          )))))
+    ;; Clear task from all its blockers' DEPENDS_ON
+    (dolist (blocker-id all-blockers)
+      (org-gtd-remove-from-multivalued-property blocker-id org-gtd-prop-depends-on task-id))
+
+    ;; Clear task from all its dependencies' BLOCKS
+    (dolist (dep-id all-dependencies)
+      (org-gtd-remove-from-multivalued-property dep-id org-gtd-prop-blocks task-id))
+
+    ;; Clear all project-related properties from the task itself
+    (when-let ((marker (org-id-find task-id t)))
+      (org-with-point-at marker
+        (org-entry-delete (point) org-gtd-prop-project-ids)
+        (org-entry-delete (point) org-gtd-prop-blocks)
+        (org-entry-delete (point) org-gtd-prop-depends-on)
+        (save-buffer)))))
 
 (defun org-gtd-graph--trash-task (task-id)
   "Remove TASK-ID from all projects, clean ALL dependencies, and archive it.

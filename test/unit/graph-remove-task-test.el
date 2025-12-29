@@ -184,9 +184,15 @@ Returns alist with keys: project-marker, project-id, task-a-id, task-b-id, task-
     (assert-true (member task-c-id (org-gtd-get-task-blockers task-a-id)))
     (assert-true (member task-a-id (org-gtd-get-task-dependencies task-c-id)))
 
-    ;; Verify B's dependencies PRESERVED (orphaned but kept for future)
-    (assert-true (member task-a-id (org-gtd-get-task-dependencies task-b-id)))
-    (assert-true (member task-c-id (org-gtd-get-task-blockers task-b-id)))))
+    ;; Verify B's dependencies CLEANED UP (no longer in any project with A or C)
+    (let ((b-deps (org-gtd-get-task-dependencies task-b-id))
+          (b-blocks (org-gtd-get-task-blockers task-b-id)))
+      (assert-true (or (null b-deps) (equal b-deps '())))
+      (assert-true (or (null b-blocks) (equal b-blocks '()))))
+
+    ;; Verify A and C no longer reference B
+    (assert-nil (member task-b-id (org-gtd-get-task-blockers task-a-id)))
+    (assert-nil (member task-b-id (org-gtd-get-task-dependencies task-c-id)))))
 
 ;;;; Test 5: Trash Task
 
