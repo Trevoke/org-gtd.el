@@ -65,31 +65,33 @@
 ;;   (scheduled . future)       - Scheduled in the future
 ;;   (scheduled . today)        - Scheduled for today
 ;;
-;; Time Filter Comparison Expressions:
-;;   (when . (< "14d"))         - Within next 14 days
-;;   (when . (> "-7d"))         - More than 7 days ago (timestamp)
-;;   (when . (= "today"))       - Exactly today
-;;   (deadline . (< "3d"))      - Deadline within 3 days
-;;   (deadline . (> "1w"))      - Deadline more than 1 week away
-;;   (scheduled . (< "7d"))     - Scheduled within next 7 days
-;;   (done . (< "7d"))          - Completed within past 7 days
-;;   (done . (> "1M"))          - Completed more than 1 month ago
+;; Time Windows (Comparison Expressions):
 ;;
-;; Duration Syntax:
-;;   Format: [+-]?[0-9]+[mhdwMy]
+;; Sometimes `past', `today', and `future' aren't precise enough. You might
+;; want "delegated items due within the next week" or "tasks I finished this
+;; month for my weekly review."
+;;
+;; Comparison expressions let you define these time windows. The syntax is:
+;;
+;;   (FILTER . (OPERATOR "DURATION"))
+;;
+;; where OPERATOR is <, >, or = and DURATION specifies a point in time.
+;; Think of it as: "include items whose timestamp is [< > =] DURATION from now."
+;;
+;;   (when . (< "7d"))          - Timestamp within the next 7 days
+;;   (deadline . (< "3d"))      - Deadline within 3 days (urgent!)
+;;   (scheduled . (> "1M"))     - Scheduled more than a month out
+;;   (done . (< "7d"))          - Completed within the past week
+;;
+;; Duration format: NUMBER + UNIT, with optional sign for direction.
 ;;   Units: m (minutes), h (hours), d (days), w (weeks), M (months), y (years)
-;;   Sign: + or no sign = future, - = past
-;;   Special: "today" = current date
+;;   Sign: "7d" or "+7d" = 7 days from now, "-7d" = 7 days ago
+;;   Special: "today" works as a duration, e.g., (when . (= "today"))
 ;;
-;; Duration Examples:
-;;   "14d" or "+14d" = 14 days from now
-;;   "-7d" = 7 days ago
-;;   "2w" = 2 weeks from now
-;;   "-1M" = 1 month ago
-;;   "1y" = 1 year from now
-;;
-;; Note: For done and last-clocked-out filters, durations are implicitly past.
-;; Using explicit positive durations (+7d) with these filters produces an error.
+;; For `done' and `last-clocked-out' filters, time flows backward - you're
+;; asking about the past. So (done . (< "30d")) means "completed within the
+;; last 30 days", not "completed before 30 days from now." Using explicit
+;; future durations like "+7d" with these filters produces an error.
 ;;
 ;; Structural Filters:
 ;;   (todo . ("TODO" "NEXT"))   - Specific TODO keywords
@@ -154,6 +156,15 @@
 ;;   ;; Stuck delegated items (missing timestamp or who)
 ;;   '((name . "Stuck Delegated")
 ;;     (type . stuck-delegated))
+;;
+;;   ;; Delegated items due within the next week (for follow-up)
+;;   '((name . "Follow Up This Week")
+;;     (type . delegated)
+;;     (when . (< "7d")))
+;;
+;;   ;; Recently completed items (for weekly review)
+;;   '((name . "Completed This Week")
+;;     (done . (< "7d")))
 ;;
 ;;; Code:
 (require 'org-gtd-core)
