@@ -1266,6 +1266,38 @@
            (result (funcall skip-fn)))
       (assert-nil result))))
 
+;;;; Deadline/Scheduled Comparison Expression Tests
+
+(deftest view-lang/skip-function-deadline-comparison-less-than ()
+  "Skip function handles deadline=(< \"3d\") filter."
+  (with-temp-buffer
+    (org-mode)
+    ;; Item with deadline 2 days from now should match (< "3d")
+    (let ((deadline-ts (format-time-string "<%Y-%m-%d %a>"
+                         (time-add (current-time) (days-to-time 2)))))
+      (insert (format "* TODO Test\nDEADLINE: %s\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n" deadline-ts)))
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action) (deadline . (< "3d"))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      (assert-nil result))))
+
+(deftest view-lang/skip-function-scheduled-comparison-less-than ()
+  "Skip function handles scheduled=(< \"7d\") filter."
+  (with-temp-buffer
+    (org-mode)
+    ;; Item scheduled 3 days from now should match (< "7d")
+    (let ((scheduled-ts (format-time-string "<%Y-%m-%d %a>"
+                          (time-add (current-time) (days-to-time 3)))))
+      (insert (format "* TODO Test\nSCHEDULED: %s\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n" scheduled-ts)))
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action) (scheduled . (< "7d"))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      (assert-nil result))))
+
 (provide 'gtd-view-language-test)
 
 ;;; gtd-view-language-test.el ends here

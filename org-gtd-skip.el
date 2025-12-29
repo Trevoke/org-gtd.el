@@ -195,6 +195,62 @@ Returns nil if item has no scheduled date."
           ('future (> scheduled-day today))
           (_ nil))))))
 
+(defun org-gtd-pred--deadline-ts< (reference-date)
+  "Return predicate checking if item's deadline is before REFERENCE-DATE.
+REFERENCE-DATE can be \"today\", \"14d\", \"-7d\", etc."
+  (lambda ()
+    (when-let ((deadline-time (org-get-deadline-time (point))))
+      (let ((ref-time (org-gtd--duration-to-reference-time reference-date)))
+        (time-less-p deadline-time ref-time)))))
+
+(defun org-gtd-pred--deadline-ts> (reference-date)
+  "Return predicate checking if item's deadline is after REFERENCE-DATE.
+REFERENCE-DATE can be \"today\", \"14d\", \"-7d\", etc."
+  (lambda ()
+    (when-let ((deadline-time (org-get-deadline-time (point))))
+      (let ((ref-time (org-gtd--duration-to-reference-time reference-date)))
+        (time-less-p ref-time deadline-time)))))
+
+(defun org-gtd-pred--deadline-ts= (reference-date)
+  "Return predicate checking if item's deadline equals REFERENCE-DATE (same day).
+REFERENCE-DATE can be \"today\", \"14d\", \"-7d\", etc."
+  (lambda ()
+    (when-let ((deadline-time (org-get-deadline-time (point))))
+      (let ((ref-time (org-gtd--duration-to-reference-time reference-date)))
+        (let ((dl-decoded (decode-time deadline-time))
+              (ref-decoded (decode-time ref-time)))
+          (and (= (nth 3 dl-decoded) (nth 3 ref-decoded))
+               (= (nth 4 dl-decoded) (nth 4 ref-decoded))
+               (= (nth 5 dl-decoded) (nth 5 ref-decoded))))))))
+
+(defun org-gtd-pred--scheduled-ts< (reference-date)
+  "Return predicate checking if item's scheduled is before REFERENCE-DATE.
+REFERENCE-DATE can be \"today\", \"14d\", \"-7d\", etc."
+  (lambda ()
+    (when-let ((scheduled-time (org-get-scheduled-time (point))))
+      (let ((ref-time (org-gtd--duration-to-reference-time reference-date)))
+        (time-less-p scheduled-time ref-time)))))
+
+(defun org-gtd-pred--scheduled-ts> (reference-date)
+  "Return predicate checking if item's scheduled is after REFERENCE-DATE.
+REFERENCE-DATE can be \"today\", \"14d\", \"-7d\", etc."
+  (lambda ()
+    (when-let ((scheduled-time (org-get-scheduled-time (point))))
+      (let ((ref-time (org-gtd--duration-to-reference-time reference-date)))
+        (time-less-p ref-time scheduled-time)))))
+
+(defun org-gtd-pred--scheduled-ts= (reference-date)
+  "Return predicate checking if item's scheduled equals REFERENCE-DATE (same day).
+REFERENCE-DATE can be \"today\", \"14d\", \"-7d\", etc."
+  (lambda ()
+    (when-let ((scheduled-time (org-get-scheduled-time (point))))
+      (let ((ref-time (org-gtd--duration-to-reference-time reference-date)))
+        (let ((sched-decoded (decode-time scheduled-time))
+              (ref-decoded (decode-time ref-time)))
+          (and (= (nth 3 sched-decoded) (nth 3 ref-decoded))
+               (= (nth 4 sched-decoded) (nth 4 ref-decoded))
+               (= (nth 5 sched-decoded) (nth 5 ref-decoded))))))))
+
 ;;;; Todo Keyword Predicates
 
 (defun org-gtd-pred--todo-matches (keywords)
@@ -373,23 +429,14 @@ Returns nil if TS-STRING is nil, empty, or not a valid org timestamp."
   "Parse reference date REF to internal time representation.
 REF can be:
   - \"today\" for current date
-  - \"+Nd\" for N days from now (e.g., \"+7d\")
-  - \"+Nw\" for N weeks from now (e.g., \"+1w\")
-  - \"+Nm\" for N months from now (e.g., \"+1m\")
-  - \"+Ny\" for N years from now (e.g., \"+1y\")
+  - Duration string like \"14d\", \"+7d\", \"-1w\", \"2M\", \"1y\"
   - A date string like \"2025-01-15\""
   (cond
    ((string-equal ref "today")
     (org-time-string-to-time (format-time-string "%Y-%m-%d")))
-   ((string-match "^\\+\\([0-9]+\\)\\([dwmy]\\)$" ref)
-    (let* ((n (string-to-number (match-string 1 ref)))
-           (unit (match-string 2 ref))
-           (days (* n (pcase unit
-                        ("d" 1)
-                        ("w" 7)
-                        ("m" 30)
-                        ("y" 365)))))
-      (time-add (current-time) (days-to-time days))))
+   ;; Match duration format: optional sign, digits, unit letter
+   ((string-match "^[+-]?[0-9]+[mhdwMy]$" ref)
+    (org-gtd--duration-to-reference-time ref))
    (t
     (org-time-string-to-time ref))))
 

@@ -765,10 +765,32 @@ The function composes predicates from the view spec filters."
                   (push (org-gtd-pred--property-equals who-prop who-filter) predicates))))))
         ;; Add deadline predicate
         (when-let ((deadline-filter (alist-get 'deadline gtd-view-spec)))
-          (push (org-gtd-pred--deadline-matches deadline-filter) predicates))
+          (cond
+           ;; Comparison expression: (< "3d"), (> "-1w"), (= "today")
+           ((and (listp deadline-filter) (memq (car deadline-filter) '(< > =)))
+            (org-gtd-view-lang--validate-comparison-expr deadline-filter)
+            (let ((op (car deadline-filter))
+                  (duration (cadr deadline-filter)))
+              (pcase op
+                ('< (push (org-gtd-pred--deadline-ts< duration) predicates))
+                ('> (push (org-gtd-pred--deadline-ts> duration) predicates))
+                ('= (push (org-gtd-pred--deadline-ts= duration) predicates)))))
+           ;; Symbol: past, today, future
+           (t (push (org-gtd-pred--deadline-matches deadline-filter) predicates))))
         ;; Add scheduled predicate
         (when-let ((scheduled-filter (alist-get 'scheduled gtd-view-spec)))
-          (push (org-gtd-pred--scheduled-matches scheduled-filter) predicates))
+          (cond
+           ;; Comparison expression: (< "7d"), (> "-1w"), (= "today")
+           ((and (listp scheduled-filter) (memq (car scheduled-filter) '(< > =)))
+            (org-gtd-view-lang--validate-comparison-expr scheduled-filter)
+            (let ((op (car scheduled-filter))
+                  (duration (cadr scheduled-filter)))
+              (pcase op
+                ('< (push (org-gtd-pred--scheduled-ts< duration) predicates))
+                ('> (push (org-gtd-pred--scheduled-ts> duration) predicates))
+                ('= (push (org-gtd-pred--scheduled-ts= duration) predicates)))))
+           ;; Symbol: past, today, future
+           (t (push (org-gtd-pred--scheduled-matches scheduled-filter) predicates))))
         ;; Add todo keyword predicate
         (when-let ((todo-filter (alist-get 'todo gtd-view-spec)))
           (push (org-gtd-pred--todo-matches todo-filter) predicates))
