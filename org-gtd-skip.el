@@ -395,7 +395,7 @@ REF can be:
 
 (defun org-gtd--parse-relative-time (duration-str)
   "Parse DURATION-STR like \"2d\", \"1w\", \"3h\" to seconds.
-Supports: d (days), w (weeks), h (hours), m (minutes)."
+Supports: d (days), w (weeks), h (hours), m (minutes), M (months), y (years)."
   (let ((num (string-to-number duration-str))
         (unit (substring duration-str -1)))
     (pcase unit
@@ -403,6 +403,8 @@ Supports: d (days), w (weeks), h (hours), m (minutes)."
       ("w" (* num 604800))     ; weeks
       ("h" (* num 3600))       ; hours
       ("m" (* num 60))         ; minutes
+      ("M" (* num 2592000))    ; months (~30 days)
+      ("y" (* num 31536000))   ; years (~365 days)
       (_ (error "Unknown time unit in %s" duration-str)))))
 
 ;;;; Skip Function Composition
