@@ -54,6 +54,53 @@
   "Parses 2y correctly."
   (assert-equal 63072000 (org-gtd--parse-relative-time "2y")))
 
+;;;; Signed durations
+
+(deftest duration/parse-positive-explicit ()
+  "Parses explicit positive sign (+14d)."
+  (assert-equal 1209600 (org-gtd--parse-relative-time "+14d")))
+
+(deftest duration/parse-negative ()
+  "Parses negative duration (-7d) as negative seconds."
+  (assert-equal -604800 (org-gtd--parse-relative-time "-7d")))
+
+(deftest duration/parse-negative-weeks ()
+  "Parses negative weeks (-2w)."
+  (assert-equal -1209600 (org-gtd--parse-relative-time "-2w")))
+
+(deftest duration/parse-positive-months ()
+  "Parses positive months (+1M)."
+  (assert-equal 2592000 (org-gtd--parse-relative-time "+1M")))
+
+(deftest duration/parse-negative-months ()
+  "Parses negative months (-1M)."
+  (assert-equal -2592000 (org-gtd--parse-relative-time "-1M")))
+
+;;;; Duration to reference time
+
+(deftest duration/reference-time-future ()
+  "Converts +14d to a time 14 days from now."
+  (let* ((now (current-time))
+         (ref (org-gtd--duration-to-reference-time "14d"))
+         (diff-days (/ (float-time (time-subtract ref now)) 86400)))
+    ;; Should be approximately 14 days in the future
+    (assert-true (and (> diff-days 13.9) (< diff-days 14.1)))))
+
+(deftest duration/reference-time-past ()
+  "Converts -7d to a time 7 days ago."
+  (let* ((now (current-time))
+         (ref (org-gtd--duration-to-reference-time "-7d"))
+         (diff-days (/ (float-time (time-subtract now ref)) 86400)))
+    ;; Should be approximately 7 days in the past
+    (assert-true (and (> diff-days 6.9) (< diff-days 7.1)))))
+
+(deftest duration/reference-time-today ()
+  "Handles 'today' as a special case."
+  (let* ((ref (org-gtd--duration-to-reference-time "today"))
+         (today-str (format-time-string "%Y-%m-%d"))
+         (ref-str (format-time-string "%Y-%m-%d" ref)))
+    (assert-equal today-str ref-str)))
+
 (provide 'duration-parsing-test)
 
 ;;; duration-parsing-test.el ends here

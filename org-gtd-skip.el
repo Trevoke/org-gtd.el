@@ -394,8 +394,9 @@ REF can be:
     (org-time-string-to-time ref))))
 
 (defun org-gtd--parse-relative-time (duration-str)
-  "Parse DURATION-STR like \"2d\", \"1w\", \"3h\" to seconds.
-Supports: d (days), w (weeks), h (hours), m (minutes), M (months), y (years)."
+  "Parse DURATION-STR like \"2d\", \"+14d\", \"-7d\" to seconds.
+Supports: m (minutes), h (hours), d (days), w (weeks), M (months), y (years).
+Sign: + or no sign = positive, - = negative (returns negative seconds)."
   (let ((num (string-to-number duration-str))
         (unit (substring duration-str -1)))
     (pcase unit
@@ -406,6 +407,19 @@ Supports: d (days), w (weeks), h (hours), m (minutes), M (months), y (years)."
       ("M" (* num 2592000))    ; months (~30 days)
       ("y" (* num 31536000))   ; years (~365 days)
       (_ (error "Unknown time unit in %s" duration-str)))))
+
+(defun org-gtd--duration-to-reference-time (duration-str)
+  "Convert DURATION-STR to a reference time for comparison.
+DURATION-STR can be:
+  - \"today\" for current date at start of day
+  - \"14d\" or \"+14d\" for 14 days from now
+  - \"-7d\" for 7 days ago
+  - Any format supported by `org-gtd--parse-relative-time'
+Returns an Emacs time value."
+  (if (string-equal duration-str "today")
+      (org-time-string-to-time (format-time-string "%Y-%m-%d"))
+    (let ((seconds (org-gtd--parse-relative-time duration-str)))
+      (time-add (current-time) seconds))))
 
 ;;;; Skip Function Composition
 
