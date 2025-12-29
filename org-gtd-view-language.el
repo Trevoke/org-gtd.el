@@ -629,6 +629,26 @@ Optional PREFIX-FORMAT is applied for display formatting."
     ;; Use 'tags' block since done items match any TODO state in org-done-keywords
     `(tags ,match-string ,settings)))
 
+(defconst org-gtd-view-lang--valid-comparison-ops '(< > =)
+  "Valid comparison operators for duration expressions.")
+
+(defconst org-gtd-view-lang--duration-regexp "^[+-]?[0-9]+[mhdwMy]$"
+  "Regexp matching valid duration strings.")
+
+(defun org-gtd-view-lang--validate-comparison-expr (expr)
+  "Validate comparison expression EXPR like (< \"14d\").
+Returns nil if valid, signals user-error if invalid."
+  (unless (and (listp expr) (>= (length expr) 2))
+    (user-error "Comparison expression must be (OP DURATION), got: %S" expr))
+  (let ((op (car expr))
+        (duration (cadr expr)))
+    (unless (memq op org-gtd-view-lang--valid-comparison-ops)
+      (user-error "Invalid comparison operator '%s', must be one of: < > =" op))
+    (unless (or (string-equal duration "today")
+                (string-match org-gtd-view-lang--duration-regexp duration))
+      (user-error "Invalid duration format '%s', expected pattern like '14d', '-7d', '2w'" duration)))
+  nil)
+
 (defun org-gtd-view-lang--build-skip-function (gtd-view-spec)
   "Build a skip function from GTD-VIEW-SPEC.
 Returns a function suitable for `org-agenda-skip-function'.

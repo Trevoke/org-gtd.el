@@ -1173,6 +1173,35 @@
       (assert-equal ''(priority-down) (cadr (assoc 'org-agenda-sorting-strategy settings)))
       (assert-equal "Active Tasks" (cadr (assoc 'org-agenda-overriding-header settings))))))
 
+;;;; Comparison Expression Validation Tests
+
+(deftest view-lang/validate-comparison-valid ()
+  "Valid comparison expression passes validation."
+  (assert-nil (org-gtd-view-lang--validate-comparison-expr '(< "14d"))))
+
+(deftest view-lang/validate-comparison-valid-negative ()
+  "Valid negative duration passes validation."
+  (assert-nil (org-gtd-view-lang--validate-comparison-expr '(> "-7d"))))
+
+(deftest view-lang/validate-comparison-valid-equals ()
+  "Valid equals comparison passes validation."
+  (assert-nil (org-gtd-view-lang--validate-comparison-expr '(= "today"))))
+
+(deftest view-lang/validate-comparison-invalid-operator ()
+  "Invalid operator fails validation."
+  (assert-raises 'user-error
+    (org-gtd-view-lang--validate-comparison-expr '(? "14d"))))
+
+(deftest view-lang/validate-comparison-invalid-duration ()
+  "Invalid duration format fails validation."
+  (assert-raises 'user-error
+    (org-gtd-view-lang--validate-comparison-expr '(< "invalid"))))
+
+(deftest view-lang/validate-comparison-missing-duration ()
+  "Missing duration fails validation."
+  (assert-raises 'user-error
+    (org-gtd-view-lang--validate-comparison-expr '(<))))
+
 (provide 'gtd-view-language-test)
 
 ;;; gtd-view-language-test.el ends here
