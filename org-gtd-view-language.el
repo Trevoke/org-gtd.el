@@ -65,6 +65,32 @@
 ;;   (scheduled . future)       - Scheduled in the future
 ;;   (scheduled . today)        - Scheduled for today
 ;;
+;; Time Filter Comparison Expressions:
+;;   (when . (< "14d"))         - Within next 14 days
+;;   (when . (> "-7d"))         - More than 7 days ago (timestamp)
+;;   (when . (= "today"))       - Exactly today
+;;   (deadline . (< "3d"))      - Deadline within 3 days
+;;   (deadline . (> "1w"))      - Deadline more than 1 week away
+;;   (scheduled . (< "7d"))     - Scheduled within next 7 days
+;;   (done . (< "7d"))          - Completed within past 7 days
+;;   (done . (> "1M"))          - Completed more than 1 month ago
+;;
+;; Duration Syntax:
+;;   Format: [+-]?[0-9]+[mhdwMy]
+;;   Units: m (minutes), h (hours), d (days), w (weeks), M (months), y (years)
+;;   Sign: + or no sign = future, - = past
+;;   Special: "today" = current date
+;;
+;; Duration Examples:
+;;   "14d" or "+14d" = 14 days from now
+;;   "-7d" = 7 days ago
+;;   "2w" = 2 weeks from now
+;;   "-1M" = 1 month ago
+;;   "1y" = 1 year from now
+;;
+;; Note: For done and last-clocked-out filters, durations are implicitly past.
+;; Using explicit positive durations (+7d) with these filters produces an error.
+;;
 ;; Structural Filters:
 ;;   (todo . ("TODO" "NEXT"))   - Specific TODO keywords
 ;;   (done . t)                 - Any completed item
@@ -588,28 +614,71 @@ Returns nil for (done . t) which means any done item."
    ((eq done-value 'past-year) 365)
    (t nil)))
 
+(defun org-gtd-view-lang--validate-done-comparison (expr)
+  "Validate done filter comparison expression EXPR.
+For done filters, durations are implicitly past - positive durations error."
+  (org-gtd-view-lang--validate-comparison-expr expr)
+  (let ((duration (cadr expr)))
+    (when (and (not (string-equal duration "today"))
+               (string-prefix-p "+" duration))
+      (user-error "Done filter cannot use positive duration '%s' (done items are in the past)" duration)))
+  nil)
+
 (defun org-gtd-view-lang--build-skip-function-for-done-filter (done-value)
   "Build a skip function for done filter with DONE-VALUE.
-Matches items that are done and closed within the time range."
-  (let ((days-back (org-gtd-view-lang--done-filter-days done-value)))
-    (lambda ()
-      (let ((end (org-entry-end-position)))
-        ;; Must have a done TODO state
-        (if (not (org-entry-is-done-p))
-            end  ; Skip - not done
-          ;; If no time constraint, include all done items
-          (if (not days-back)
-              nil  ; Include - any done item
-            ;; Check CLOSED timestamp is within range
-            (let ((closed-ts (org-entry-get (point) "CLOSED")))
-              (if (not closed-ts)
-                  end  ; Skip - no CLOSED timestamp
-                (let ((closed-time (org-time-string-to-time closed-ts))
-                      (cutoff-time (time-subtract (current-time)
-                                                  (days-to-time days-back))))
-                  (if (time-less-p cutoff-time closed-time)
-                      nil    ; Include - closed within range
-                    end))))))))))  ; Skip - closed too long ago
+Matches items that are done and closed within the time range.
+DONE-VALUE can be:
+- Symbol: t, recent, today, past-day, past-week, past-month, past-year
+- Comparison: (< \"7d\") - closed within 7 days"
+  (cond
+   ;; Comparison expression: (< "7d"), (> "14d")
+   ((and (listp done-value) (memq (car done-value) '(< > =)))
+    (org-gtd-view-lang--validate-done-comparison done-value)
+    (let ((op (car done-value))
+          (duration (cadr done-value)))
+      ;; For done, duration is implicitly negative (looking backward)
+      ;; "7d" means "within the past 7 days"
+      (let ((ref-duration (if (or (string-prefix-p "-" duration)
+                                  (string-equal duration "today"))
+                              duration
+                            (concat "-" duration))))
+        (lambda ()
+          (let ((end (org-entry-end-position)))
+            (if (not (org-entry-is-done-p))
+                end  ; Skip - not done
+              (let ((closed-ts (org-entry-get (point) "CLOSED")))
+                (if (not closed-ts)
+                    end  ; Skip - no CLOSED
+                  (let ((closed-time (org-time-string-to-time closed-ts))
+                        (ref-time (org-gtd--duration-to-reference-time ref-duration)))
+                    (if (pcase op
+                          ('< (time-less-p ref-time closed-time))  ; closed after ref (more recent)
+                          ('> (time-less-p closed-time ref-time))  ; closed before ref (older)
+                          ('= (let ((cl-dec (decode-time closed-time))
+                                    (ref-dec (decode-time ref-time)))
+                                (and (= (nth 3 cl-dec) (nth 3 ref-dec))
+                                     (= (nth 4 cl-dec) (nth 4 ref-dec))
+                                     (= (nth 5 cl-dec) (nth 5 ref-dec))))))
+                        nil    ; Include
+                      end))))))))))  ; Skip
+   ;; Existing symbol handling
+   (t
+    (let ((days-back (org-gtd-view-lang--done-filter-days done-value)))
+      (lambda ()
+        (let ((end (org-entry-end-position)))
+          (if (not (org-entry-is-done-p))
+              end
+            (if (not days-back)
+                nil
+              (let ((closed-ts (org-entry-get (point) "CLOSED")))
+                (if (not closed-ts)
+                    end
+                  (let ((closed-time (org-time-string-to-time closed-ts))
+                        (cutoff-time (time-subtract (current-time)
+                                                    (days-to-time days-back))))
+                    (if (time-less-p cutoff-time closed-time)
+                        nil
+                      end))))))))))))  ; Skip - closed too long ago
 
 (defun org-gtd-view-lang--create-done-filter-block (gtd-view-spec &optional prefix-format)
   "Create a native block for done filter from GTD-VIEW-SPEC.
