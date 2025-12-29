@@ -1298,6 +1298,45 @@
            (result (funcall skip-fn)))
       (assert-nil result))))
 
+;;;; Done Filter Comparison Expression Tests
+
+(deftest view-lang/done-filter-comparison-includes-recent ()
+  "Done filter with (< \"7d\") includes items closed within 7 days."
+  (with-temp-buffer
+    (org-mode)
+    ;; Item closed 3 days ago should match (< "7d")
+    (let ((closed-ts (format-time-string "[%Y-%m-%d %a %H:%M]"
+                       (time-subtract (current-time) (days-to-time 3)))))
+      (insert (format "* DONE Test\nCLOSED: %s\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n" closed-ts)))
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((skip-fn (org-gtd-view-lang--build-skip-function-for-done-filter '(< "7d")))
+           (result (funcall skip-fn)))
+      (assert-nil result))))
+
+(deftest view-lang/done-filter-comparison-rejects-old ()
+  "Done filter with (< \"7d\") rejects items closed more than 7 days ago."
+  (with-temp-buffer
+    (org-mode)
+    ;; Item closed 10 days ago should NOT match (< "7d")
+    (let ((closed-ts (format-time-string "[%Y-%m-%d %a %H:%M]"
+                       (time-subtract (current-time) (days-to-time 10)))))
+      (insert (format "* DONE Test\nCLOSED: %s\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n" closed-ts)))
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((skip-fn (org-gtd-view-lang--build-skip-function-for-done-filter '(< "7d")))
+           (result (funcall skip-fn)))
+      (assert-true (numberp result)))))
+
+(deftest view-lang/done-filter-rejects-positive-duration ()
+  "Done filter with positive duration (+7d) signals error."
+  (assert-raises 'user-error
+    (org-gtd-view-lang--validate-done-comparison '(< "+7d"))))
+
+(deftest view-lang/done-filter-accepts-implicit-negative ()
+  "Done filter accepts implicit negative (no sign means past)."
+  (assert-nil (org-gtd-view-lang--validate-done-comparison '(< "7d"))))
+
 (provide 'gtd-view-language-test)
 
 ;;; gtd-view-language-test.el ends here

@@ -301,6 +301,60 @@
     (assert-true result)
     (assert-true (listp result))))
 
+;;;; Duration-based timestamp comparisons
+
+(deftest skip-pred/property-ts-less-than-duration-14d ()
+  "Property ts< with '14d' matches timestamps within 14 days."
+  (with-temp-buffer
+    (org-mode)
+    ;; Timestamp 7 days from now should match (< "14d")
+    (let ((future-ts (format-time-string "<%Y-%m-%d %a>"
+                       (time-add (current-time) (days-to-time 7)))))
+      (insert (format "* Test\n:PROPERTIES:\n:ORG_GTD_TIMESTAMP: %s\n:END:\n" future-ts)))
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let ((pred (org-gtd-pred--property-ts< "ORG_GTD_TIMESTAMP" "14d")))
+      (assert-true (funcall pred)))))
+
+(deftest skip-pred/property-ts-less-than-duration-14d-reject ()
+  "Property ts< with '14d' rejects timestamps beyond 14 days."
+  (with-temp-buffer
+    (org-mode)
+    ;; Timestamp 20 days from now should NOT match (< "14d")
+    (let ((future-ts (format-time-string "<%Y-%m-%d %a>"
+                       (time-add (current-time) (days-to-time 20)))))
+      (insert (format "* Test\n:PROPERTIES:\n:ORG_GTD_TIMESTAMP: %s\n:END:\n" future-ts)))
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let ((pred (org-gtd-pred--property-ts< "ORG_GTD_TIMESTAMP" "14d")))
+      (assert-nil (funcall pred)))))
+
+(deftest skip-pred/property-ts-less-than-negative-duration ()
+  "Property ts< with '-7d' matches timestamps older than 7 days ago."
+  (with-temp-buffer
+    (org-mode)
+    ;; -7d = 7 days ago. 10 days ago is before that, so (< "-7d") should match
+    (let ((past-ts (format-time-string "<%Y-%m-%d %a>"
+                     (time-subtract (current-time) (days-to-time 10)))))
+      (insert (format "* Test\n:PROPERTIES:\n:ORG_GTD_TIMESTAMP: %s\n:END:\n" past-ts)))
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let ((pred (org-gtd-pred--property-ts< "ORG_GTD_TIMESTAMP" "-7d")))
+      (assert-true (funcall pred)))))
+
+(deftest skip-pred/property-ts-greater-than-duration ()
+  "Property ts> with '7d' matches timestamps beyond 7 days."
+  (with-temp-buffer
+    (org-mode)
+    ;; Timestamp 14 days from now should match (> "7d")
+    (let ((future-ts (format-time-string "<%Y-%m-%d %a>"
+                       (time-add (current-time) (days-to-time 14)))))
+      (insert (format "* Test\n:PROPERTIES:\n:ORG_GTD_TIMESTAMP: %s\n:END:\n" future-ts)))
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let ((pred (org-gtd-pred--property-ts> "ORG_GTD_TIMESTAMP" "7d")))
+      (assert-true (funcall pred)))))
+
 ;;;; Skip Function Composition tests
 
 (deftest skip-pred/compose-returns-nil-when-all-pass ()
