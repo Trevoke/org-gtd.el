@@ -198,7 +198,7 @@ This is REQUIRED for org-gtd v4 to work correctly. The old
 TRIGGER-based project system no longer works - v4 uses dependency
 properties instead.
 
-Make a backup before running! Safe to run multiple times."
+Make a backup before running!"
   (interactive)
   (when (yes-or-no-p "This will modify your GTD files. Have you made a backup? ")
     (message "Migrating to org-gtd v4...")
