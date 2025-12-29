@@ -220,10 +220,13 @@
                      :id "task-1"
                      :level 1)
 
-          ;; Add LOGBOOK with clock entry from yesterday
-          (insert ":LOGBOOK:\n")
-          (insert "CLOCK: [2025-12-22 Sun 10:00]--[2025-12-22 Sun 11:30] =>  1:30\n")
-          (insert ":END:\n")
+          ;; Add LOGBOOK with clock entry from yesterday (dynamically calculated)
+          (let ((yesterday (time-subtract (current-time) 86400))) ; 1 day ago
+            (insert ":LOGBOOK:\n")
+            (insert (format "CLOCK: [%s]--[%s] =>  1:30\n"
+                           (format-time-string "%Y-%m-%d %a 10:00" yesterday)
+                           (format-time-string "%Y-%m-%d %a 11:30" yesterday)))
+            (insert ":END:\n"))
 
           (org-mode-restart)
           (basic-save-buffer)
