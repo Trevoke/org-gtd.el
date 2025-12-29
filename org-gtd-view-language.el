@@ -706,6 +706,16 @@ The function composes predicates from the view spec filters."
           (let ((when-prop (org-gtd-type-property type-filter :when)))
             (when when-prop
               (cond
+               ;; Comparison expression: (< "14d"), (> "-7d"), (= "today")
+               ((and (listp when-filter) (memq (car when-filter) '(< > =)))
+                (org-gtd-view-lang--validate-comparison-expr when-filter)
+                (let ((op (car when-filter))
+                      (duration (cadr when-filter)))
+                  (pcase op
+                    ('< (push (org-gtd-pred--property-ts< when-prop duration) predicates))
+                    ('> (push (org-gtd-pred--property-ts> when-prop duration) predicates))
+                    ('= (push (org-gtd-pred--property-ts= when-prop duration) predicates)))))
+               ;; Symbol: past, today, future
                ((eq when-filter 'past)
                 (push (org-gtd-pred--property-ts< when-prop "today") predicates))
                ((eq when-filter 'today)

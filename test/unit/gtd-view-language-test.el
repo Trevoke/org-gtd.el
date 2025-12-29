@@ -1202,6 +1202,70 @@
   (assert-raises 'user-error
     (org-gtd-view-lang--validate-comparison-expr '(<))))
 
+;;;; When Filter Comparison Expression Tests
+
+(deftest view-lang/skip-function-when-comparison-less-than ()
+  "Skip function handles when=(< \"14d\") filter."
+  (with-temp-buffer
+    (org-mode)
+    ;; Timestamp 7 days from now should match (< "14d")
+    (let ((future-ts (format-time-string "<%Y-%m-%d %a>"
+                       (time-add (current-time) (days-to-time 7)))))
+      (insert (format "* Test\n:PROPERTIES:\n:ORG_GTD: Delegated\n:ORG_GTD_TIMESTAMP: %s\n:END:\n" future-ts)))
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . delegated) (when . (< "14d"))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      (assert-nil result))))
+
+(deftest view-lang/skip-function-when-comparison-rejects ()
+  "Skip function rejects items outside comparison range."
+  (with-temp-buffer
+    (org-mode)
+    ;; Timestamp 20 days from now should NOT match (< "14d")
+    (let ((future-ts (format-time-string "<%Y-%m-%d %a>"
+                       (time-add (current-time) (days-to-time 20)))))
+      (insert (format "* Test\n:PROPERTIES:\n:ORG_GTD: Delegated\n:ORG_GTD_TIMESTAMP: %s\n:END:\n" future-ts)))
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . delegated) (when . (< "14d"))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      (assert-true (numberp result)))))
+
+(deftest view-lang/skip-function-when-comparison-greater-rejects ()
+  "Skip function with (> \"-7d\") rejects items more recent than 7 days ago."
+  (with-temp-buffer
+    (org-mode)
+    ;; Timestamp 10 days ago: since -10d < -7d, this does NOT match (> "-7d")
+    ;; (> "-7d") means timestamp > reference, but -10d ago is BEFORE -7d ago
+    (let ((past-ts (format-time-string "<%Y-%m-%d %a>"
+                     (time-subtract (current-time) (days-to-time 10)))))
+      (insert (format "* Test\n:PROPERTIES:\n:ORG_GTD: Delegated\n:ORG_GTD_TIMESTAMP: %s\n:END:\n" past-ts)))
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . delegated) (when . (> "-7d"))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      ;; 10 days ago is BEFORE 7 days ago, so it does NOT match (> "-7d")
+      (assert-true (numberp result)))))
+
+(deftest view-lang/skip-function-when-comparison-greater-includes ()
+  "Skip function includes items matching (> \"-7d\")."
+  (with-temp-buffer
+    (org-mode)
+    ;; Timestamp 3 days ago should match (> "-7d") - it's more recent than 7 days ago
+    (let ((past-ts (format-time-string "<%Y-%m-%d %a>"
+                     (time-subtract (current-time) (days-to-time 3)))))
+      (insert (format "* Test\n:PROPERTIES:\n:ORG_GTD: Delegated\n:ORG_GTD_TIMESTAMP: %s\n:END:\n" past-ts)))
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . delegated) (when . (> "-7d"))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      (assert-nil result))))
+
 (provide 'gtd-view-language-test)
 
 ;;; gtd-view-language-test.el ends here
