@@ -74,10 +74,10 @@ it should become TODO since it now has dependencies."
         (org-back-to-heading t)
         (assert-equal "NEXT" (org-entry-get (point) "TODO"))))))
 
-(deftest graph-fix/add-successor-changes-blocked-to-todo ()
-  "Adding a successor that blocks an existing NEXT task changes it to TODO.
-When we add a new task that blocks an existing NEXT task,
-the blocked task should become TODO."
+(deftest graph-fix/add-successor-changes-successor-to-todo ()
+  "Adding a successor after an existing NEXT task makes the successor TODO.
+When we add a new task that depends on an existing NEXT task,
+the successor should become TODO (blocked by the existing task)."
 
   ;; Setup: Create project with Task A (NEXT, no blockers)
   (let ((project-data (make-chain-project "Test Project"
@@ -95,22 +95,22 @@ the blocked task should become TODO."
         (org-back-to-heading t)
         (assert-equal "NEXT" (org-entry-get (point) "TODO")))
 
-      ;; Action: Add Task B as successor that blocks Task A
+      ;; Action: Add Task B as successor after Task A (A blocks B)
       (org-gtd-graph--add-successor-internal "Task B" (list task-a-id) project-marker)
 
-      ;; Assert: Task A should now be TODO (blocked by B)
+      ;; Assert: Task A should still be NEXT (still has no blockers)
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-min))
         (search-forward "Task A")
         (org-back-to-heading t)
-        (assert-equal "TODO" (org-entry-get (point) "TODO")))
+        (assert-equal "NEXT" (org-entry-get (point) "TODO")))
 
-      ;; Assert: Task B should be NEXT (no blockers)
+      ;; Assert: Task B should be TODO (blocked by A)
       (with-current-buffer (org-gtd--default-file)
         (goto-char (point-min))
         (search-forward "Task B")
         (org-back-to-heading t)
-        (assert-equal "NEXT" (org-entry-get (point) "TODO"))))))
+        (assert-equal "TODO" (org-entry-get (point) "TODO"))))))
 
 (deftest graph-fix/modify-blockers-remove-all-changes-to-next ()
   "Removing all blockers from a TODO task should change it to NEXT.

@@ -458,8 +458,8 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
 ;;; Unified Add-Successor Command Tests
 
 (deftest graph-transient/add-successor-creates-blocking-relationship ()
-  "Add-successor creates new task that blocks selected task(s).
-Unified command for adding tasks that block existing tasks."
+  "Add-successor creates new task that is blocked by selected task(s).
+The new successor depends on the selected predecessors."
   (let* ((project-marker (ogt-graph-transient-test--create-project "Add Successor Project"))
          selected-task-id new-task-id)
 
@@ -483,9 +483,9 @@ Unified command for adding tasks that block existing tasks."
       (org-back-to-heading t)
       (assert-equal new-task-id (org-entry-get (point) "ID")))
 
-    ;; Verify dependency: new-task blocks selected-task
-    ;; So selected-task depends on new-task
-    (assert-true (member new-task-id (org-gtd-get-task-dependencies selected-task-id)))))
+    ;; Verify dependency: selected-task blocks new-task
+    ;; So new-task depends on selected-task
+    (assert-true (member selected-task-id (org-gtd-get-task-dependencies new-task-id)))))
 
 ;;; Unified Add-Blocker Command Tests
 

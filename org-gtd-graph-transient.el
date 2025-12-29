@@ -934,7 +934,7 @@ Pre-selects the currently selected node if one exists."
                   valid-candidates))))
 
 (transient-define-prefix org-gtd-graph-add-successor-menu ()
-  "Select which tasks the new successor should block."
+  "Select which tasks should block the new successor (predecessors)."
   :refresh-suffixes t
   [:description org-gtd-graph--add-successor-description
    :class transient-columns
@@ -945,7 +945,7 @@ Pre-selects the currently selected node if one exists."
 
 (defun org-gtd-graph--add-successor-description ()
   "Generate description for add-successor menu."
-  (format "Select tasks that '%s' should block:" org-gtd-graph--add-task-title))
+  (format "Select predecessors for '%s':" org-gtd-graph--add-task-title))
 
 (defun org-gtd-graph--add-successor-setup (_)
   "Setup children for add-successor transient."
@@ -1000,9 +1000,9 @@ Pre-selects the currently selected node if one exists."
         (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
         (save-buffer)))
 
-    ;; Create dependencies: new-task blocks each selected task
-    (dolist (blocked-id blocked-task-ids)
-      (org-gtd-dependencies-create new-task-id blocked-id))
+    ;; Create dependencies: each selected task blocks new-task (new task is successor)
+    (dolist (predecessor-id blocked-task-ids)
+      (org-gtd-dependencies-create predecessor-id new-task-id))
 
     ;; Link to project if existing external task
     (when org-gtd-graph--add-task-id
@@ -1010,7 +1010,9 @@ Pre-selects the currently selected node if one exists."
       (org-with-point-at (org-id-find new-task-id t)
         (save-buffer)))
 
-    (message "Added successor '%s' blocking %d task(s)"
+    ;; Note: new successor is NOT added to FIRST_TASKS because it has blockers
+
+    (message "Added successor '%s' after %d task(s)"
              org-gtd-graph--add-task-title (length blocked-task-ids))
     (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
     (org-gtd-graph-view-refresh)
@@ -1135,6 +1137,11 @@ Pre-selects the currently selected node if one exists."
       (org-with-point-at (org-id-find new-task-id t)
         (save-buffer)))
 
+    ;; Add new task to FIRST_TASKS since it has no blockers
+    (org-with-point-at org-gtd-graph-view--project-marker
+      (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" new-task-id)
+      (save-buffer))
+
     (message "Added blocker '%s' blocking %d task(s)"
              org-gtd-graph--add-task-title (length blocked-task-ids))
     (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
@@ -1144,10 +1151,10 @@ Pre-selects the currently selected node if one exists."
 
 ;;;; Internal Functions for Testing
 
-(defun org-gtd-graph--add-successor-internal (task-title blocked-task-ids project-marker)
+(defun org-gtd-graph--add-successor-internal (task-title predecessor-ids project-marker)
   "Internal function to add a successor task.
 TASK-TITLE is the title for the new task.
-BLOCKED-TASK-IDS is list of task IDs that the new task should block.
+PREDECESSOR-IDS is list of task IDs that should block the new task.
 PROJECT-MARKER is the project marker.
 Returns the ID of the newly created task."
   (let ((project-id (org-with-point-at project-marker
@@ -1166,14 +1173,11 @@ Returns the ID of the newly created task."
       (org-entry-put (point) "ORG_GTD_PROJECT_IDS" project-id)
       (save-buffer))
 
-    ;; Create dependencies: new-task blocks each selected task
-    (dolist (blocked-id blocked-task-ids)
-      (org-gtd-dependencies-create new-task-id blocked-id))
+    ;; Create dependencies: each predecessor blocks new-task (new task is successor)
+    (dolist (predecessor-id predecessor-ids)
+      (org-gtd-dependencies-create predecessor-id new-task-id))
 
-    ;; Add new task to FIRST_TASKS since it has no blockers
-    (org-with-point-at project-marker
-      (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" new-task-id)
-      (save-buffer))
+    ;; Note: new successor is NOT added to FIRST_TASKS because it has blockers
 
     ;; Fix TODO keywords
     (org-gtd-projects-fix-todo-keywords project-marker)
