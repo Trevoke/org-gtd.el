@@ -68,6 +68,14 @@
     map)
   "Keymap for `org-gtd-graph-view-mode'.")
 
+;;;; Evil-mode Integration
+
+;; When evil-mode is loaded, start graph-view-mode in emacs state.
+;; This avoids C-z conflicts between evil-toggle-key and transient's C-z,
+;; and provides better UX since graph navigation uses emacs-style bindings.
+(with-eval-after-load 'evil
+  (evil-set-initial-state 'org-gtd-graph-view-mode 'emacs))
+
 ;;;; Mode Definition
 
 ;;;###autoload
@@ -75,7 +83,7 @@
   "Major mode for visualizing and editing org-gtd project dependency graphs.
 
 This mode displays a project's task dependency structure as an interactive
-DAG (Directed Acyclic Graph) using SVG rendering. Tasks are shown as nodes
+DAG (Directed Acyclic Graph) using SVG rendering.  Tasks are shown as nodes
 and dependencies as directed edges.
 
 \\<org-gtd-graph-view-mode-map>
