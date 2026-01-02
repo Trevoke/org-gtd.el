@@ -34,9 +34,96 @@
 (require 'org-gtd-backward-compatibility)
 (require 'org-gtd-types)
 
+;;;; Constants
+;; NOTE: These constants are defined early in the file to ensure they are
+;; available when other modules are byte-compiled. Some package managers
+;; (e.g., quelpa) may compile files in an order where dependent modules
+;; need these values at compile time.
+
+(defconst org-gtd-timestamp "ORG_GTD_TIMESTAMP"
+  "Org property storing timestamps for `org-gtd' logic.")
+
+;;;;; GTD Category Constants
+
+(defconst org-gtd-action "Actions"
+  "GTD category for single action tasks.")
+
+(defconst org-gtd-projects "Projects"
+  "GTD category for multi-step projects.")
+
+(defconst org-gtd-calendar "Calendar"
+  "GTD category for calendar/time-specific items.")
+
+(defconst org-gtd-habit "Habits"
+  "GTD category for recurring habits.")
+
+;; Backward compatibility alias - must come before referent
+(define-obsolete-variable-alias 'org-gtd-incubate 'org-gtd-tickler "4.0")
+
+(defconst org-gtd-tickler "Tickler"
+  "GTD category for tickler items (time-based reminders).")
+
+(defconst org-gtd-someday "Someday"
+  "GTD category for someday/maybe items (no specific timeframe).")
+
+(defconst org-gtd-knowledge "Reference"
+  "GTD category for reference materials/knowledge.")
+
+(defconst org-gtd-trash "Trash"
+  "GTD category for discarded items.")
+
+(defconst org-gtd-delegated "Delegated"
+  "GTD category for delegated/waiting-for items.")
+
+(defconst org-gtd-quick "Quick"
+  "GTD category for quick actions (2-minute rule).")
+
+;;;;; Org-mode Special Property Names
+
+(defconst org-gtd-prop-todo "TODO"
+  "Org-mode property name that stores the TODO keyword state.")
+
+(defconst org-gtd-prop-style "STYLE"
+  "Org-mode STYLE property name, used for habits and other styling.")
+
+(defconst org-gtd-prop-style-value-habit "habit"
+  "Value for STYLE property to mark an item as a habit.")
+
+(defconst org-gtd-prop-area-of-focus "CATEGORY"
+  "Org-mode CATEGORY property, used in org-gtd for Areas of Focus (GTD Horizons).
+This property also controls the prefix displayed in agenda views.")
+
+;;;;; Org-gtd Property Names
+
+(defconst org-gtd-prop-depends-on "ORG_GTD_DEPENDS_ON"
+  "Property storing task IDs this task depends on.")
+
+(defconst org-gtd-prop-blocks "ORG_GTD_BLOCKS"
+  "Property storing task IDs this task blocks.")
+
+(defconst org-gtd-prop-first-tasks "ORG_GTD_FIRST_TASKS"
+  "Property storing root task IDs for a project.")
+
+(defconst org-gtd-prop-project-ids "ORG_GTD_PROJECT_IDS"
+  "Property storing project IDs this task belongs to.")
+
+(defconst org-gtd-prop-category "ORG_GTD"
+  "Property storing org-gtd category (Actions, Projects, etc.).")
+
+(defconst org-gtd-prop-project "ORG_GTD_PROJECT"
+  "Property storing the primary project name for a task.")
+
+(defconst org-gtd-prop-refile "ORG_GTD_REFILE"
+  "Property storing the refile target category.")
+
+(defconst org-gtd-prop-previous-category "PREVIOUS_ORG_GTD"
+  "Property storing the original ORG_GTD value for tickler items.")
+
+(defconst org-gtd-prop-someday-list "ORG_GTD_SOMEDAY_LIST"
+  "Property for categorizing someday/maybe items into lists.")
+
 ;;;; Forward declarations
 (defvar org-gtd-archive-location)
-(defvar org-gtd-projects)
 
 ;;;; Customization
 
@@ -285,90 +372,6 @@ without validation, use `setq' but ensure the mapping is valid."
   :group 'org-gtd
   :package-version '(org-gtd . "4.0"))
 (make-obsolete-variable 'org-gtd-canceled-keyword 'org-gtd-keyword-mapping "4.0")
-
-;;;; Constants
-
-(defconst org-gtd-timestamp "ORG_GTD_TIMESTAMP"
-  "Org property storing timestamps for `org-gtd' logic.")
-
-;;;;; GTD Category Constants
-
-(defconst org-gtd-action "Actions"
-  "GTD category for single action tasks.")
-
-(defconst org-gtd-projects "Projects"
-  "GTD category for multi-step projects.")
-
-(defconst org-gtd-calendar "Calendar"
-  "GTD category for calendar/time-specific items.")
-
-(defconst org-gtd-habit "Habits"
-  "GTD category for recurring habits.")
-
-;; Backward compatibility alias - must come before referent
-(define-obsolete-variable-alias 'org-gtd-incubate 'org-gtd-tickler "4.0")
-
-(defconst org-gtd-tickler "Tickler"
-  "GTD category for tickler items (time-based reminders).")
-
-(defconst org-gtd-someday "Someday"
-  "GTD category for someday/maybe items (no specific timeframe).")
-
-(defconst org-gtd-knowledge "Reference"
-  "GTD category for reference materials/knowledge.")
-
-(defconst org-gtd-trash "Trash"
-  "GTD category for discarded items.")
-
-(defconst org-gtd-delegated "Delegated"
-  "GTD category for delegated/waiting-for items.")
-
-(defconst org-gtd-quick "Quick"
-  "GTD category for quick actions (2-minute rule).")
-
-;;;;; Org-mode Special Property Names
-
-(defconst org-gtd-prop-todo "TODO"
-  "Org-mode property name that stores the TODO keyword state.")
-
-(defconst org-gtd-prop-style "STYLE"
-  "Org-mode STYLE property name, used for habits and other styling.")
-
-(defconst org-gtd-prop-style-value-habit "habit"
-  "Value for STYLE property to mark an item as a habit.")
-
-(defconst org-gtd-prop-area-of-focus "CATEGORY"
-  "Org-mode CATEGORY property, used in org-gtd for Areas of Focus (GTD Horizons).
-This property also controls the prefix displayed in agenda views.")
-
-;;;;; Org-gtd Property Names
-
-(defconst org-gtd-prop-depends-on "ORG_GTD_DEPENDS_ON"
-  "Property storing task IDs this task depends on.")
-
-(defconst org-gtd-prop-blocks "ORG_GTD_BLOCKS"
-  "Property storing task IDs this task blocks.")
-
-(defconst org-gtd-prop-first-tasks "ORG_GTD_FIRST_TASKS"
-  "Property storing root task IDs for a project.")
-
-(defconst org-gtd-prop-project-ids "ORG_GTD_PROJECT_IDS"
-  "Property storing project IDs this task belongs to.")
-
-(defconst org-gtd-prop-category "ORG_GTD"
-  "Property storing org-gtd category (Actions, Projects, etc.).")
-
-(defconst org-gtd-prop-project "ORG_GTD_PROJECT"
-  "Property storing the primary project name for a task.")
-
-(defconst org-gtd-prop-refile "ORG_GTD_REFILE"
-  "Property storing the refile target category.")
-
-(defconst org-gtd-prop-previous-category "PREVIOUS_ORG_GTD"
-  "Property storing the original ORG_GTD value for tickler items.")
-
-(defconst org-gtd-prop-someday-list "ORG_GTD_SOMEDAY_LIST"
-  "Property for categorizing someday/maybe items into lists.")
 
 ;;;; Variables
 
