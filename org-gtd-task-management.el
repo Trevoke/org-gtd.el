@@ -340,7 +340,7 @@ Returns a list of selected IDs or nil if cancelled/empty."
               (push selected-id selected-ids)
               ;; Remove selected item from future selections
               (setq id-alist (remove (assoc selection id-alist) id-alist))
-              (setq prompt (format "%s (selected: %d, complete with empty): " 
+              (setq prompt (format "%s (selected: %d, complete with empty): "
                                    (car (split-string prompt " ("))
                                    (length selected-ids))))))))
     (reverse selected-ids)))
@@ -349,9 +349,9 @@ Returns a list of selected IDs or nil if cancelled/empty."
   "Prompt user to select multiple task IDs from CURRENT-BLOCKERS using PROMPT.
 Returns a list of selected IDs or nil if cancelled/empty."
   (let* ((id-alist (mapcar (lambda (id)
-                            (cons (format "%s (%s)" 
+                            (cons (format "%s (%s)"
                                          (org-gtd-task-management--get-heading-for-id id)
-                                         id) 
+                                         id)
                                   id))
                           current-blockers))
          (selected-ids '())
@@ -367,13 +367,13 @@ Returns a list of selected IDs or nil if cancelled/empty."
               (push selected-id selected-ids)
               ;; Remove selected item from future selections
               (setq id-alist (remove (assoc selection id-alist) id-alist))
-              (setq prompt (format "%s (selected: %d, complete with empty): " 
+              (setq prompt (format "%s (selected: %d, complete with empty): "
                                    (car (split-string prompt " ("))
                                    (length selected-ids))))))))
     (reverse selected-ids)))
 
 (defun org-gtd-task-management--collect-all-task-info ()
-  "Collect all undone task information from current buffer and org-agenda-files.
+  "Collect all undone task information from current buffer and agenda files.
 Returns a list of plists with :id, :heading, :project, :file properties."
   (let ((task-info-list '()))
     ;; Collect from current buffer
@@ -422,13 +422,13 @@ Creates ID automatically if task doesn't have one (lazy ID creation)."
       ;; Create ID if it doesn't exist (lazy ID creation for Story 9)
       (unless id
         (setq id (org-gtd-id-get-create)))
-      (list :id id 
+      (list :id id
             :heading (nth 4 (org-heading-components))
             :project (org-gtd-task-management--find-project-heading)
             :file file-name))))
 
 (defun org-gtd-task-management--collect-all-task-ids ()
-  "Collect all undone task IDs from current buffer and org-agenda-files.
+  "Collect all undone task IDs from current buffer and agenda files.
 This function is kept for backward compatibility."
   (mapcar (lambda (task-info) (plist-get task-info :id))
           (org-gtd-task-management--collect-all-task-info)))
@@ -555,7 +555,7 @@ ORG_GTD_DEPENDS_ON property are DONE."
 
 (defun org-gtd-task-management--task-is-done-p (task-id)
   "Check if TASK-ID is marked as DONE.
-First tries current buffer, then falls back to org-id-find."
+First tries current buffer, then falls back to `org-id-find'."
   (let ((marker (or
                  ;; Try current buffer first (for temp buffer tests)
                  (save-excursion
@@ -700,6 +700,7 @@ Returns a list of task IDs."
 
 (defun org-gtd-validate-project-dependencies--check-all-files (all-existing-ids)
   "Check all agenda files for broken references and orphaned tasks.
+ALL-EXISTING-IDS is a list of valid task IDs to check against.
 Returns a cons cell (BROKEN-REFERENCES . ORPHANED-TASKS)."
   (let ((broken-references '())
         (orphaned-tasks '()))
@@ -727,6 +728,7 @@ Returns a cons cell (BROKEN-REFERENCES . ORPHANED-TASKS)."
 
 (defun org-gtd-validate-project-dependencies--check-buffer (all-existing-ids)
   "Check current buffer for broken references and orphaned tasks.
+ALL-EXISTING-IDS is a list of valid task IDs to check against.
 Returns a cons cell (BROKEN-REFERENCES . ORPHANED-TASKS)."
   (let ((broken-references '())
         (orphaned-tasks '()))

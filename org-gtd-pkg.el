@@ -26,14 +26,14 @@
 
 ;;; Code:
 
-(define-package "org-gtd" "4.0.0beta1"
+(define-package "org-gtd" "4.0.0"
   "An implementation of GTD."
   '((emacs "28.1")
     (compat "30.0.0.0")
     (org-edna "1.1.2")
     (f "0.20.0")
     (org "9.6")
-    (transient "0.3.7")
-    (dag-draw "1.0.0")))
+    (transient "0.11.0")
+    (dag-draw "1.0.4")))
 
 ;;; org-gtd-pkg.el ends here

@@ -644,8 +644,7 @@ If NEW-BLOCKER-IDS is empty, adds task to project's FIRST_TASKS."
           (mapcar (lambda (task-id)
                    (cons task-id (and (member task-id current-blockers) t)))
                  valid-candidates)))
-  (with-no-warnings
-    (org-gtd-graph-modify-blockers-menu)))
+  (call-interactively #'org-gtd-graph-modify-blockers-menu))
 
 (defun org-gtd-graph--modify-successors-internal (task-id new-successor-ids project-marker)
   "Set TASK-ID's successors in PROJECT-MARKER's context to NEW-SUCCESSOR-IDS.
@@ -769,8 +768,7 @@ Updates FIRST_TASKS for affected successors based on their blocker status."
           (mapcar (lambda (task-id)
                    (cons task-id (and (member task-id current-successors) t)))
                  valid-candidates)))
-  (with-no-warnings
-    (org-gtd-graph-modify-successors-menu)))
+  (call-interactively #'org-gtd-graph-modify-successors-menu))
 
 (defun org-gtd-graph-remove-task ()
   "Remove task from project with intelligent rewiring.
@@ -861,7 +859,7 @@ Prompts for confirmation before trashing."
       (user-error "Cannot find task with ID: %s" task-id))
 
     (org-with-point-at marker
-      (call-interactively 'org-todo)
+      (call-interactively #'org-todo)
       (save-buffer))
 
     (message "Changed TODO state")
@@ -870,12 +868,11 @@ Prompts for confirmation before trashing."
 (defun org-gtd-graph-incubate-project ()
   "Incubate the current project being viewed in graph mode.
 
-Calls org-gtd-tickler which will detect it's on a project heading
+Calls command `org-gtd-tickler' which will detect it's on a project heading
 and move the entire project with all its tasks to the tickler."
   (interactive)
   (org-with-point-at org-gtd-graph-view--project-marker
-    (with-no-warnings
-      (call-interactively #'org-gtd-tickler))))
+    (call-interactively #'org-gtd-tickler)))
 
 ;;;; Unified Add Commands
 
@@ -916,7 +913,7 @@ Step 2: Select which project tasks the new task should block."
 
     ;; Step 2: Open transient menu to select which tasks this should block
     (org-gtd-graph--init-add-successor-state)
-    (org-gtd-graph-add-successor-menu)))
+    (call-interactively #'org-gtd-graph-add-successor-menu)))
 
 (defun org-gtd-graph--init-add-successor-state ()
   "Initialize edge state for add-successor menu.
@@ -1044,7 +1041,7 @@ Step 2: Select which project tasks the new task should block."
 
     ;; Step 2: Open transient menu to select which tasks should block this one
     (org-gtd-graph--init-add-blocker-state)
-    (org-gtd-graph-add-blocker-menu)))
+    (call-interactively #'org-gtd-graph-add-blocker-menu)))
 
 (defun org-gtd-graph--init-add-blocker-state ()
   "Initialize edge state for add-blocker menu.

@@ -110,7 +110,7 @@ PLIST can contain:
 - :state - Override the TODO state semantic (rarely needed)
 
 Property definitions support these attributes:
-- :org-property - The org-mode property name (string)
+- :org-property - The `org-mode' property name (string)
 - :type - Input type: text, timestamp, repeating-timestamp
 - :required - Whether property is required (t or nil)
 - :prompt - Prompt string for interactive input
@@ -202,13 +202,13 @@ Returns nil if type has no properties or type not found."
 
 (defun org-gtd-type-property (type-name semantic-name)
   "Get org property name for SEMANTIC-NAME in TYPE-NAME.
-Returns the org-mode property name string, or nil if not found."
+Returns the `org-mode' property name string, or nil if not found."
   (when-let ((props (org-gtd-type-properties type-name)))
     (when-let ((prop (seq-find (lambda (p) (eq (car p) semantic-name)) props)))
       (plist-get (cdr prop) :org-property))))
 
 (defun org-gtd-type-from-org-gtd-value (org-gtd-value)
-  "Get type name for ORG_GTD property value.
+  "Get type name for ORG_GTD property ORG-GTD-VALUE.
 Returns the type symbol or nil if not found."
   (car (seq-find (lambda (type)
                    (equal (plist-get (cdr type) :org-gtd) org-gtd-value))

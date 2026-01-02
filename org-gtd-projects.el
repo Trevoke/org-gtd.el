@@ -78,7 +78,7 @@ instead.")
 
 ;;;###autoload
 (defun org-gtd-stuck-projects ()
-  "Get org-agenda configuration for finding stuck projects.
+  "Get `org-agenda' configuration for finding stuck projects.
 Returns a list suitable for `org-stuck-projects' that defines what
 constitutes a stuck project in the GTD system."
   `(,org-gtd-project-headings
@@ -578,7 +578,7 @@ Returns list of markers pointing to task headings with ORG_GTD=Actions."
 Starting from the project heading at PROJECT-MARKER, reads
 ORG_GTD_FIRST_TASKS property to find root task IDs, then traverses
 the graph by following ORG_GTD_BLOCKS/ORG_GTD_DEPENDS_ON
-relationships using org-id-find.
+relationships using `org-id-find'.
 
 Only includes tasks that have the current project's ID in their
 ORG_GTD_PROJECT_IDS property, respecting project boundaries.
@@ -860,7 +860,7 @@ Removes PREVIOUS_* properties."
 (defun org-gtd-project--get-all-tasks (project-marker)
   "Return list of markers for all tasks in project at PROJECT-MARKER.
 
-Uses existing org-gtd-projects--collect-tasks-by-graph to traverse
+Uses `org-gtd-projects--collect-tasks-by-graph' to traverse
 the project's dependency graph and collect all task markers."
   (org-gtd-projects--collect-tasks-by-graph project-marker))
 
@@ -908,7 +908,7 @@ Example - find projects with no effort estimates:
 
 ;;;###autoload
 (defun org-gtd-project-last-clock-out-time (project-marker)
-  "Return most recent clock-out time across all tasks in project.
+  "Return most recent clock-out time across all tasks in project at PROJECT-MARKER.
 Uses `org-clock-get-last-clock-out-time' on each task.
 Returns Emacs time value, or nil if no tasks have been clocked."
   (let ((times (org-gtd-project-map-tasks
@@ -957,7 +957,7 @@ Ticklers the project by:
 3. Marking everything as Tickler
 
 Does not check for external dependencies or multi-project tasks yet
-(those validations added in later tasks)."
+\\(those validations added in later tasks)."
   (interactive
    (list (point-marker)
          (org-read-date nil nil nil "Review date: ")))

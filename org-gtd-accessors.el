@@ -140,7 +140,7 @@ Returns t if successful, signals error if task not found."
 (defun org-gtd-find-task-marker (task-id)
   "Find marker for task with TASK-ID.
 First tries current buffer (for performance and test support),
-then falls back to org-id-find for cross-file lookup.
+then falls back to `org-id-find' for cross-file lookup.
 Returns marker or nil if not found."
   (or
    (org-gtd-find-task-in-current-buffer task-id)

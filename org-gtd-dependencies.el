@@ -160,7 +160,8 @@ Returns nil if no path exists."
 
 (defun org-gtd-dependencies--dfs-find-path (current-id target-id visited)
   "Depth-first search to find path from CURRENT-ID to TARGET-ID.
-Returns path as list of IDs, or nil if no path exists."
+Uses VISITED hash table to avoid cycles.  Returns path as list of IDs,
+or nil if no path exists."
   (if (gethash current-id visited)
       nil
     (puthash current-id t visited)

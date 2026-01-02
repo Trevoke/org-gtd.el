@@ -254,7 +254,7 @@ INHERITED-PREFIX-FORMAT is optionally passed from parent view spec."
         ;; Pass through the raw org-agenda block tuple unchanged
         native-block
       ;; Existing DSL processing (wrap existing body in this else branch)
-      (let* ((name (alist-get 'name gtd-view-spec))
+      (let* ((_name (alist-get 'name gtd-view-spec))
              (block-type (alist-get 'block-type gtd-view-spec))
              (view-type (alist-get 'view-type gtd-view-spec))
              (type-filter (alist-get 'type gtd-view-spec))
@@ -292,7 +292,7 @@ Returns nil to include item, or end of entry point to skip."
 
 (defun org-gtd-view-lang--create-calendar-day-block (_gtd-view-spec)
   "Create a calendar-day agenda block from GTD-VIEW-SPEC.
-This is a native org-agenda day view filtered to show only Calendar and
+This is a native `org-agenda' day view filtered to show only Calendar and
 Habit items."
   (let ((settings '((org-agenda-span 1)
                     (org-agenda-start-day nil)
@@ -477,7 +477,7 @@ Returns nil for types that need OR logic (handled by skip function)."
    (t nil)))
 
 (defun org-gtd-view-lang--build-match-string (gtd-view-spec)
-  "Build an org-agenda match string from GTD-VIEW-SPEC.
+  "Build an `org-agenda' match string from GTD-VIEW-SPEC.
 The match string is used with tags agenda blocks.
 Returns a string like \"LEVEL>0+ORG_GTD=\\\"Calendar\\\"/TODO=\\\"NEXT\\\"\"."
   (let* ((type-filter (alist-get 'type gtd-view-spec))
@@ -880,7 +880,7 @@ The function composes predicates from the view spec filters."
         (org-gtd-skip--compose (nreverse predicates)))))))
 
 (defun org-gtd-view-lang--translate-to-native-block (gtd-view-spec &optional prefix-format)
-  "Translate GTD-VIEW-SPEC to a native org-agenda block.
+  "Translate GTD-VIEW-SPEC to a native `org-agenda' block.
 Returns a tags block with match string and skip function.
 Optional PREFIX-FORMAT is applied for project name display."
   (let* ((name (alist-get 'name gtd-view-spec))
@@ -904,7 +904,7 @@ Optional PREFIX-FORMAT is applied for project name display."
 ;;;; Prefix DSL Expansion
 
 (defun org-gtd-view-lang--expand-prefix (prefix-elements width)
-  "Expand PREFIX-ELEMENTS fallback chain to org-agenda-prefix-format string.
+  "Expand PREFIX-ELEMENTS fallback chain to `org-agenda-prefix-format' string.
 PREFIX-ELEMENTS is a list of symbols and/or strings, tried in order.
 WIDTH is the column width for the prefix.
 Returns a format string suitable for `org-agenda-prefix-format'."

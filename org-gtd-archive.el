@@ -49,7 +49,7 @@ When nil, org-gtd uses org-mode's standard `org-archive-location'
 variable.
 When a function, calls it to get the archive location string.
 
-Set to nil if you want org-gtd to respect your org-mode archive
+Set to nil if you want org-gtd to respect your Org archive
 configuration.
 The default function generates gtd_archive_<year>::datetree/ in
 `org-gtd-directory'.

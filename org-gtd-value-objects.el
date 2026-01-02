@@ -27,8 +27,8 @@
 ;;
 ;; TODO State Predicates:
 ;; - org-gtd-todo-state-is-ready-p: Can this task be worked on?
-;; - org-gtd-todo-state-blocks-others-p: Does this state prevent dependent tasks from becoming NEXT?
-;; - org-gtd-todo-state-should-reset-p: Should this state be reset to TODO during project updates?
+;; - org-gtd-todo-state-blocks-others-p: Does this state block dependent tasks?
+;; - org-gtd-todo-state-should-reset-p: Should state reset during updates?
 ;;
 ;; Task Dependency Value Object:
 ;; - org-gtd-task-deps: Struct wrapping dependency and blocker lists

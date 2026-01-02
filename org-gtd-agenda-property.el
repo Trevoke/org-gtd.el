@@ -4,7 +4,6 @@
 
 ;; Author: Artur Malabarba <bruce.connor.am@gmail.com>
 ;; URL: https://github.com/Trevoke/org-gtd.el
-;; Package-Requires: ((emacs "24.2"))
 ;; Keywords: calendar
 ;; Separator: -
 ;; ShortName: org-gtd-agenda-property
@@ -68,7 +67,7 @@ For comparing versions.")
 
 (defun org-gtd-agenda-property-bug-report ()
   "Opens github issues page in a web browser.
-Please send me any bugs you find, and please inclue your emacs and
+Please send me any bugs you find, and please include your Emacs and
 your package versions."
   (interactive)
   (browse-url "https://github.com/Bruce-Connor/org-gtd-agenda-property/issues/new")
@@ -100,7 +99,7 @@ your package versions."
 
 \\='same-line means in the same line as the item it belongs to,
 starting at `org-gtd-agenda-property-column'.  \\='next-line means on the
-next-line.  \\='where-it-fits means \\='same-line if it fits in the
+line below.  \\='where-it-fits means \\='same-line if it fits in the
 window, otherwise \\='next-line."
   :type 'symbol
    :group 'org-gtd-agenda-property)
@@ -154,7 +153,7 @@ Uses `org-agenda-locations-column'."
   "Prepare PROPS for property display lines, adding MARKER for interactivity.
 
 Adds:
-- `org-marker' MARKER so org-agenda commands work on property lines
+- `org-marker' MARKER so agenda commands work on property lines
 - `org-gtd-property-line' so the processing loop skips these lines
 
 This allows users to interact with agenda items even when their cursor
@@ -164,7 +163,7 @@ See: https://github.com/Malabarba/org-agenda-property/issues/6"
   (append props (list 'org-marker marker 'org-gtd-property-line t)))
 
 (defun org-gtd-agenda-property-create-string (marker)
-  "Creates a string of properties to be inserted in the agenda buffer."
+  "Create a string of properties for MARKER to insert in the agenda buffer."
   (let ((out " [")
         (first t))
     (dolist (cur org-gtd-agenda-property-list)

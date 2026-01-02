@@ -157,6 +157,9 @@ Called by `org-gtd-organize--call' when non-nil.")
 
 ;;;;; Keymaps
 
+;; Forward-declare obsolete alias for byte-compiler ordering
+(defvar org-gtd-clarify-map)
+
 (defvar org-gtd-clarify-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-k") #'org-gtd-clarify-stop)
@@ -232,7 +235,7 @@ WINDOW-CONFIG is the window config to set after clarification finishes."
          (processing-buffer (org-gtd-wip--get-buffer clarify-id)))
     (org-gtd-clarify--initialize-buffer-contents source-heading-marker processing-buffer)
     (with-current-buffer processing-buffer
-      (unless (eq major-mode 'org-gtd-clarify-mode)
+      (unless (derived-mode-p 'org-gtd-clarify-mode)
         (org-gtd-clarify-mode))
       (setq-local org-gtd-clarify--window-config window-config
                   org-gtd-clarify--source-heading-marker source-heading-marker

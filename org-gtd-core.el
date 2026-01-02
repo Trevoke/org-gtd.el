@@ -189,8 +189,8 @@ areas of focus are displayed on the left side of agenda items."
 ;;;; GTD Semantic Keyword Mapping
 
 (defun org-gtd--extract-keyword-name (keyword-string)
-  "Extract base keyword name from org-todo-keywords DSL syntax.
-Handles formats like \"NEXT\", \"NEXT(n)\", \"NEXT(n/@)\", \"NEXT(n/!)\".
+  "Extract base keyword name from KEYWORD-STRING.
+Handles `org-todo-keywords' DSL formats like \"NEXT(n)\", \"NEXT(n/@)\".
 Returns just the keyword name without shortcut or logging configuration."
   (if (string-match "^\\([^(]+\\)" keyword-string)
       (match-string 1 keyword-string)
@@ -215,7 +215,8 @@ Only sets the value if validation passes."
     (org-gtd--validate-and-set-keyword-mapping-runtime symbol value)))
 
 (defun org-gtd--validate-and-set-keyword-mapping-runtime (symbol value)
-  "Runtime validation for org-gtd keyword mapping."
+  "Runtime validation for org-gtd keyword mapping.
+SYMBOL is the custom variable being set, VALUE is the new mapping."
   (let ((todo-kw (alist-get 'todo value))
         (next-kw (alist-get 'next value))
         (wait-kw (alist-get 'wait value))
@@ -274,7 +275,7 @@ Only sets the value if validation passes."
 
     ;; Only set the value if validation passed
     (if errors
-        (user-error "org-gtd keyword configuration errors:\n%s\n\nExample valid configuration:\n(setq org-todo-keywords '((sequence \"TODO\" \"NEXT\" \"WAIT\" \"|\" \"DONE\" \"CNCL\")))\n(setopt org-gtd-keyword-mapping\n        '((todo . \"TODO\") (next . \"NEXT\") (wait . \"WAIT\") (done . \"DONE\") (canceled . \"CNCL\")))"
+        (user-error "Org-gtd keyword configuration errors:\n%s\n\nExample valid configuration:\n(setq org-todo-keywords '((sequence \"TODO\" \"NEXT\" \"WAIT\" \"|\" \"DONE\" \"CNCL\")))\n(setopt org-gtd-keyword-mapping\n        '((todo . \"TODO\") (next . \"NEXT\") (wait . \"WAIT\") (done . \"DONE\") (canceled . \"CNCL\")))"
                     (string-join (reverse errors) "\n"))
       (set-default symbol value))))
 
@@ -317,9 +318,9 @@ like TODO, NEXT, WAIT, and CANCELED."
     (wait . "WAIT")
     (done . "DONE")
     (canceled . "CNCL"))
-  "Mapping of GTD semantic states to org-todo-keywords.
+  "Mapping of GTD semantic states to `org-todo-keywords'.
 
-Each entry maps a GTD semantic state to a keyword from your `org-todo-keywords':
+Each entry maps a GTD semantic state to a keyword from your todo keywords:
 - \\='todo\\=' - tasks not ready to be acted upon
 - \\='next\\=' - tasks ready to be acted upon immediately
 - \\='wait\\=' - tasks waiting for someone else or blocked
@@ -400,10 +401,10 @@ without validation, use `setq' but ensure the mapping is valid."
 
 ;;;###autoload
 (defmacro with-org-gtd-context (&rest body)
-  "DEPRECATED: No-op in org-gtd v4.
+  "DEPRECATED: No-op in org-gtd v4.  Execute BODY without context setup.
 
-In v4, configure org-mode directly instead:
-- Add `org-gtd-directory' to `org-agenda-files'
+In v4, configure Org directly instead:
+- Add `org-gtd-directory' to your agenda files
 - Configure `org-archive-location' as needed
 
 This macro is a no-op and will be removed in a future version."
@@ -511,7 +512,7 @@ If BUFFER is nil, use current buffer."
  'user-error)
 
 (defun org-gtd-core--agenda-files ()
-  "Concatenate `org-agenda-files' variable with `org-gtd-directory' contents."
+  "Concatenate agenda files variable with `org-gtd-directory' contents."
   (seq-uniq (if (stringp org-agenda-files)
                 (append (org-read-agenda-file-list)
                         (ensure-list org-gtd-directory))
@@ -519,6 +520,7 @@ If BUFFER is nil, use current buffer."
                       (ensure-list org-gtd-directory)))))
 
 (defun org-gtd-core--uniq (list)
+  "Remove duplicates from LIST."
   (seq-uniq list))
 
 ;;;;; Note: Using native org-mode multivalued property functions

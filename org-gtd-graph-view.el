@@ -250,7 +250,7 @@ _EVENT is the file-notify event (unused)."
 
 (defun org-gtd-graph-view-add-dependency ()
   "Add a dependency between two tasks.
-Prompts for blocker task from ALL tasks in org-agenda-files.
+Prompts for blocker task from ALL tasks in agenda files.
 Prompts for blocked task from current project tasks.
 If blocker is external to project, adds project ID and TRIGGER property."
   (interactive)
@@ -288,7 +288,7 @@ If blocker is external to project, adds project ID and TRIGGER property."
 
 (defun org-gtd-graph-view-add-blocker ()
   "Add a blocker task and make it a root task of the project.
-Prompts for blocker task from ALL tasks in org-agenda-files.
+Prompts for blocker task from ALL tasks in agenda files.
 Prompts for blocked task from current project tasks.
 Adds blocker to project's ORG_GTD_FIRST_TASKS.
 If blocker is external to project, adds project ID and TRIGGER property."
@@ -459,7 +459,7 @@ Removes both blockers (depends on) and dependents (blocks)."
 ;;;; Helper Functions
 
 (defun org-gtd-graph-view--get-all-tasks ()
-  "Get all tasks from `org-agenda-files' as completion list.
+  "Get all tasks from agenda files as completion list.
 Returns list of (title . id) cons cells for tasks with IDs."
   (let (tasks)
     (org-map-entries

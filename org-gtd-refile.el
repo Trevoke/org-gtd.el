@@ -134,7 +134,7 @@ files outside are accepted without filtering."
   "Get refile targets for TYPE, merging user's targets with org-gtd's.
 
 Returns the list of refile targets that would be available when refiling
-an item of TYPE (e.g., `org-gtd-projects', `org-gtd-tickler')."
+an item of TYPE (e.g., `org-gtd-projects', variable `org-gtd-tickler')."
   (let ((org-refile-target-verify-function
          (lambda ()
            (let* ((file (buffer-file-name))
@@ -155,7 +155,7 @@ an item of TYPE (e.g., `org-gtd-projects', `org-gtd-tickler')."
 
 REFILE-TARGET-ELEMENT is a string version of a valid org-heading target.
 
-Creates the target in org-gtd--default-file to ensure consistent location.
+Creates the target in `org-gtd--default-file' to ensure consistent location.
 In future, this could be enhanced to prompt for file location when multiple
 org-gtd files exist."
   (with-current-buffer (org-gtd--default-file)

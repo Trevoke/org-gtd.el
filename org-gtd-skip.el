@@ -88,7 +88,7 @@ The predicate returns t if property is missing or empty/whitespace-only."
 (defun org-gtd-pred--property-invalid-timestamp (property)
   "Return predicate checking PROPERTY is missing or not a valid timestamp.
 The predicate returns t if property is missing, empty, or not a valid
-org-mode timestamp."
+`org-mode' timestamp."
   (lambda ()
     (let ((prop-value (org-entry-get (point) property)))
       (or (not prop-value)
@@ -433,7 +433,7 @@ REF can be:
   - A date string like \"2025-01-15\""
   (cond
    ((string-equal ref "today")
-    (org-time-string-to-time (format-time-string "%Y-%m-%d")))
+    (org-time-string-to-time (format-time-string "%F")))
    ;; Match duration format: optional sign, digits, unit letter
    ((string-match "^[+-]?[0-9]+[mhdwMy]$" ref)
     (org-gtd--duration-to-reference-time ref))
@@ -464,7 +464,7 @@ DURATION-STR can be:
   - Any format supported by `org-gtd--parse-relative-time'
 Returns an Emacs time value."
   (if (string-equal duration-str "today")
-      (org-time-string-to-time (format-time-string "%Y-%m-%d"))
+      (org-time-string-to-time (format-time-string "%F"))
     (let ((seconds (org-gtd--parse-relative-time duration-str)))
       (time-add (current-time) seconds))))
 

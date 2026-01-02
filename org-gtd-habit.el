@@ -54,7 +54,7 @@ REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
 determine how often you'll be reminded of this habit."
   (interactive)
   (let ((config-override (when repeater
-                           `((:when . ,(format "<%s %s>" (format-time-string "%Y-%m-%d") repeater))))))
+                           `((:when . ,(format "<%s %s>" (format-time-string "%F") repeater))))))
     (org-gtd-organize--call
      (lambda () (org-gtd-habit--apply config-override)))))
 

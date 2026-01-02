@@ -114,7 +114,7 @@ LIST-FILTER is nil (match all), a string (match exact), or `unassigned'."
    (t nil)))
 
 (defun org-gtd-someday-review--add-reviewed-entry ()
-  "Add a 'Reviewed' entry to the LOGBOOK drawer at point."
+  "Add a \\='Reviewed\\=' entry to the LOGBOOK drawer at point."
   (save-excursion
     (org-back-to-heading t)
     (let* ((drawer-pos (org-log-beginning t))
@@ -127,7 +127,7 @@ LIST-FILTER is nil (match all), a string (match exact), or `unassigned'."
         (save-excursion
           (insert ":END:\n")))
       (insert (format "- Reviewed %s\n"
-                      (format-time-string "[%Y-%m-%d %a %H:%M]"))))))
+                      (format-time-string "[%F %a %R]"))))))
 
 (defun org-gtd-someday-review--advance ()
   "Advance to the next item or end session if done."
@@ -166,7 +166,7 @@ with keybindings for defer, clarify, and quit actions.
   "Review someday/maybe items one at a time.
 With optional LIST argument, review only items in that list.
 When `org-gtd-someday-lists' is configured, prompts for list selection.
-Adds 'Unassigned' option for items without a list."
+Adds \\='Unassigned\\=' option for items without a list."
   (interactive
    (list (when org-gtd-someday-lists
            (completing-read "Review which list? "

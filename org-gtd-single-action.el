@@ -35,6 +35,7 @@
 
 ;;;; Variables
 
+(defvar org-state)  ; dynamically bound by org-mode during state changes
 
 ;;;; Constants
 
