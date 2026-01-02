@@ -98,7 +98,7 @@ For instance:
 If org-gtd is 2.0.0, use \"2.0.0\".
 If org-gtd is 2.3.5, use \"2.3.5\".")
 
-(if (version< org-gtd-update-ack "3.0.0")
+(if (version< org-gtd-update-ack "4.0.0")
     (lwarn 'org-gtd :warning "
 
 |-------------------------|
@@ -112,43 +112,16 @@ See the documentation for complete upgrade information:
 => `C-h i m org gtd RET' or `M-x info-display-manual RET org-gtd'
 
 Important notices involve:
-- run `org-gtd-upgrade-v2-to-v3'
-- this moves all your habits to a new sub-heading in the default
-  org-gtd file
-- it will create this file if you don't have it
-- as long you respect the Habits structure, move them where you want
-
-- some of the key commands have changed, e.g.
-- `org-gtd-choose' is now `org-gtd-organize'
-- `org-gtd-process-item-hooks' is now `org-gtd-organize-hooks'
+- required (but simple) changes to the configuration
+- running `org-gtd-upgrade-v3-to-v4'
 
 So do review this, and join the discord in the readme if you want to
 meet more users!
 
 To make this warning go away, add the following setting to your config
-file (BEFORE ORG-GTD LOADS)
+file (BEFORE ORG-GTD LOADS):
 
-(setq org-gtd-update-ack \"3.0.0\"
-
-"))
-
-(if (version< org-gtd-update-ack "2.1.0")
-    (lwarn 'org-gtd :warning "
-
-|--------------------------|
-| WARNING: action required |
-|--------------------------|
-
-Upgrading to 2.1.0 requires changing the org-edna triggers for the
-project categories. Failure to do so means your projects will end up
-in inconsistent states.
-
-See the documentation for instructions to upgrade (C-h i, then find
-org-gtd), then add the following setting to your config file
-(BEFORE ORG-GTD LOADS) to disable this warning.
-
-(setq org-gtd-update-ack \"2.1.0\")
-
+(setq org-gtd-update-ack \"4.0.0\")
 "))
 
 ;;;; Footer
