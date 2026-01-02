@@ -101,9 +101,9 @@ If org-gtd is 2.3.5, use \"2.3.5\".")
 (if (version< org-gtd-update-ack "4.0.0")
     (lwarn 'org-gtd :warning "
 
-|-------------------------|
-| WARNING: MAJOR VERSION  |
-|-------------------------|
+|---------------------------------------|
+| WARNING: ORG GTD MAJOR VERSION CHANGE |
+|---------------------------------------|
 
 See the changelog for a full set of changes.
 
@@ -118,8 +118,8 @@ Important notices involve:
 So do review this, and join the discord in the readme if you want to
 meet more users!
 
-To make this warning go away, add the following setting to your config
-file (BEFORE ORG-GTD LOADS):
+To make this warning go away on further loads, add the following setting
+to your config file (BEFORE ORG-GTD LOADS):
 
 (setq org-gtd-update-ack \"4.0.0\")
 "))
