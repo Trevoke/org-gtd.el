@@ -189,6 +189,12 @@ _EVENT is the file-notify event (unused)."
         (let ((svg (org-gtd-dag-draw-render graph 'svg org-gtd-graph-ui--selected-node-id)))
           (org-gtd-graph-view--display-svg svg graph))))))
 
+(defun org-gtd-graph-view--insert-legend ()
+  "Insert the keybinding legend at point."
+  (insert (propertize "Keys: " 'face 'bold))
+  (insert "r/s/b add  B/S modify  n/p/G navigate  g refresh  v SVG/ASCII  t.. task ops  q quit\n")
+  (insert "  ? opens command menu (more commands available)\n"))
+
 (defun org-gtd-graph-view--display-svg (svg _displayed-graph)
   "Display SVG in the current buffer showing DISPLAYED-GRAPH."
   (let* ((inhibit-read-only t)
@@ -196,26 +202,16 @@ _EVENT is the file-notify event (unused)."
     (erase-buffer)
     (insert-image image)
     (insert "\n\n")
-
-    ;; Insert legend
-    (insert (propertize "Keys: " 'face 'bold))
-    (insert "r/s/b add  B/S modify  n/p/G navigate  g refresh  v toggle  t task ops  ? help  q quit\n")
-
+    (org-gtd-graph-view--insert-legend)
     (goto-char (point-min))))
 
 (defun org-gtd-graph-view--display-ascii (ascii-text _displayed-graph)
   "Display ASCII-TEXT in the current buffer showing DISPLAYED-GRAPH."
   (let ((inhibit-read-only t))
     (erase-buffer)
-
-    ;; Insert ASCII graph
     (insert ascii-text)
     (insert "\n\n")
-
-    ;; Insert legend
-    (insert (propertize "Keys: " 'face 'bold))
-    (insert "r/s/b add  B/S modify  n/p/G navigate  g refresh  v toggle  t task ops  ? help  q quit\n")
-
+    (org-gtd-graph-view--insert-legend)
     (goto-char (point-min))))
 
 ;;;; Render Mode Toggle
