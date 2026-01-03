@@ -354,74 +354,71 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
 
 ;;; org-gtd-graph-remove-task Tests
 
-(deftest graph-transient/remove-task-no-trash-option-single-project ()
-  "Does not offer trash option when task in one project."
+(deftest graph-transient/remove-task-confirms-before-removing ()
+  "Remove task asks for confirmation before removing from project."
   (let* ((project-marker (ogt-graph-transient-test--create-project "Remove Test"))
          (buffer (get-buffer-create "*Org GTD Graph: remove-test*"))
-         task-id)
+         task-id
+         project-id)
 
-    ;; Create a task in the project
-    (with-current-buffer (org-gtd--default-file)
-      (goto-char (point-min))
-      (search-forward "Task 1")
-      (org-back-to-heading t)
-      (setq task-id (org-entry-get (point) "ID")))
-
-    ;; Spy on completing-read to capture choices
-    (with-spy completing-read calls "Remove from this project and keep as independent item"
-      (with-current-buffer buffer
-        (org-gtd-graph-view-mode)
-        (setq org-gtd-graph-view--project-marker project-marker)
-        (setq org-gtd-graph-ui--selected-node-id task-id)
-        (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
-          (org-gtd-graph-remove-task)))
-
-      ;; Verify completing-read was called
-      (assert-true (spy-called-p calls))
-
-      ;; Get the COLLECTION argument (2nd argument to completing-read)
-      (let* ((first-call-args (spy-first-call calls))
-             (collection (nth 1 first-call-args)))
-        (assert-true collection)
-        ;; Should NOT contain "Trash" in any option
-        (dolist (option collection)
-          (assert-nil (string-match-p "Trash\\|trash\\|delete" option)))))))
-
-(deftest graph-transient/remove-task-no-trash-option-multi-project ()
-  "Does not offer trash option when task in multiple projects."
-  (let* ((project-marker (ogt-graph-transient-test--create-project "Multi Remove Test"))
-         (buffer (get-buffer-create "*Org GTD Graph: multi-remove-test*"))
-         task-id)
-
-    ;; Create a task in the project
+    ;; Get task and project IDs
     (with-current-buffer (org-gtd--default-file)
       (goto-char (point-min))
       (search-forward "Task 1")
       (org-back-to-heading t)
       (setq task-id (org-entry-get (point) "ID"))
-      ;; Add task to another project
-      (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" "fake-other-project-id")
-      (basic-save-buffer))
+      (org-with-point-at project-marker
+        (setq project-id (org-entry-get (point) "ID"))))
 
-    ;; Spy on completing-read to capture choices
-    (with-spy completing-read calls "Remove from this project only"
-      (with-current-buffer buffer
-        (org-gtd-graph-view-mode)
-        (setq org-gtd-graph-view--project-marker project-marker)
-        (setq org-gtd-graph-ui--selected-node-id task-id)
-        (cl-letf (((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
-          (org-gtd-graph-remove-task)))
+    ;; Mock yes-or-no-p to return t (confirm removal)
+    (with-current-buffer buffer
+      (org-gtd-graph-view-mode)
+      (setq org-gtd-graph-view--project-marker project-marker)
+      (setq org-gtd-graph-ui--selected-node-id task-id)
+      (cl-letf (((symbol-function 'yes-or-no-p) (lambda (_) t))
+                ((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
+        (org-gtd-graph-remove-task)))
 
-      ;; Verify completing-read was called
-      (assert-true (spy-called-p calls))
+    ;; Verify task was removed from project
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Task 1")
+      (org-back-to-heading t)
+      (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+        (assert-nil (member project-id project-ids))))))
 
-      ;; Get the COLLECTION argument (2nd argument to completing-read)
-      (let* ((first-call-args (spy-first-call calls))
-             (collection (nth 1 first-call-args)))
-        (assert-true collection)
-        ;; Should NOT contain "Trash" in any option
-        (dolist (option collection)
-          (assert-nil (string-match-p "Trash\\|trash\\|delete" option)))))))
+(deftest graph-transient/remove-task-preserves-task-when-denied ()
+  "Remove task preserves project membership when user denies."
+  (let* ((project-marker (ogt-graph-transient-test--create-project "Deny Remove Test"))
+         (buffer (get-buffer-create "*Org GTD Graph: deny-remove-test*"))
+         task-id
+         project-id)
+
+    ;; Get task and project IDs
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Task 1")
+      (org-back-to-heading t)
+      (setq task-id (org-entry-get (point) "ID"))
+      (org-with-point-at project-marker
+        (setq project-id (org-entry-get (point) "ID"))))
+
+    ;; Mock yes-or-no-p to return nil (deny removal)
+    (with-current-buffer buffer
+      (org-gtd-graph-view-mode)
+      (setq org-gtd-graph-view--project-marker project-marker)
+      (setq org-gtd-graph-ui--selected-node-id task-id)
+      (cl-letf (((symbol-function 'yes-or-no-p) (lambda (_) nil))
+                ((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
+        (org-gtd-graph-remove-task)))
+
+    ;; Verify task is still in project
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Task 1")
+      (org-back-to-heading t)
+      (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+        (assert-true (member project-id project-ids))))))
 
 ;;; org-gtd-graph-trash-task Tests
 
