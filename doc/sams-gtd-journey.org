@@ -495,8 +495,8 @@ Sam creates a custom view:
   (interactive)
   (org-gtd-view-show
    '((name . "Evening @home")
-     (filters . ((todo . "NEXT")
-                 (tags . "@home|@computer"))))))
+     (type . next-action)
+     (tags . ("@home" "@computer")))))
 #+end_src
 
 Now ~M-x my-evening-tasks~ shows only relevant items.
@@ -513,8 +513,8 @@ Sam creates a few more:
   (interactive)
   (org-gtd-view-show
    '((name . "Work Focus")
-     (filters . ((todo . "NEXT")
-                 (tags . "@work"))))))
+     (type . next-action)
+     (tags . ("@work")))))
 #+end_src
 
 *Phone calls* (batch these during business hours):
@@ -525,8 +525,8 @@ Sam creates a few more:
   (interactive)
   (org-gtd-view-show
    '((name . "Phone Calls")
-     (filters . ((todo . "NEXT")
-                 (tags . "@phone"))))))
+     (type . next-action)
+     (tags . ("@phone")))))
 #+end_src
 
 *Quick wins* (when you have 10 minutes between meetings):
@@ -537,8 +537,8 @@ Sam creates a few more:
   (interactive)
   (org-gtd-view-show
    '((name . "Quick Wins")
-     (filters . ((todo . "NEXT")
-                 (tags . "@quick"))))))
+     (type . next-action)
+     (tags . ("@quick")))))
 #+end_src
 
 ** Using Context in Daily Workflow
@@ -654,7 +654,7 @@ Sam goes through existing items and adds area tags:
 On Sunday, Sam sits down for a weekly review. Part of this is checking each area of focus:
 
 #+begin_example
-M-x org-gtd-reflect-on-areas-of-focus
+M-x org-gtd-reflect-area-of-focus
 #+end_example
 
 This shows each area and whether it has active tasks:
@@ -724,7 +724,7 @@ Sam creates views for periodic reflection:
   (interactive)
   (org-gtd-view-show
    '((name . "Health Review")
-     (filters . ((area-of-focus . "Health"))))))
+     (area-of-focus . "Health"))))
 #+end_src
 
 *What projects am I running at work?*
@@ -735,8 +735,8 @@ Sam creates views for periodic reflection:
   (interactive)
   (org-gtd-view-show
    '((name . "Work Projects")
-     (filters . ((type . project)
-                 (area-of-focus . "Work"))))))
+     (type . project)
+     (area-of-focus . "Work"))))
 #+end_src
 
 ** Sam's Weekly Reflect Routine
@@ -832,7 +832,7 @@ The commands Sam uses most:
 | ~org-gtd-process-inbox~ | ~C-c d p~ | Process inbox items one by one |
 | ~org-gtd-engage~ | ~C-c d e~ | See all actionable items |
 | ~org-gtd-archive-completed-items~ | - | Clean up done items |
-| ~org-gtd-reflect-on-areas-of-focus~ | - | Check life balance |
+| ~org-gtd-reflect-area-of-focus~ | - | Check life balance |
 
 Organization options (during processing):
 

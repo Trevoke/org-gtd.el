@@ -191,17 +191,17 @@ org-gtd uses a declarative view language for custom agenda views:
 #+begin_src emacs-lisp
 (org-gtd-view-show
  '((name . "High Priority Work")
-   (filters . ((todo . "NEXT")
-               (tags . "@work")
-               (priority . "A")))))
+   (type . next-action)
+   (tags . ("@work"))
+   (priority . "A")))
 #+end_src
 
-Available filters:
-- ~todo~ - keyword match
-- ~tags~ - tag expression (supports ~|~ for OR)
+Available filters (all at top level, not nested):
+- ~type~ - item type (~next-action~, ~project~, ~delegated~, ~calendar~, etc.)
+- ~tags~ - list of tags to match (e.g., ~("@work" "@home")~)
 - ~priority~ - priority level
 - ~area-of-focus~ - GTD area
-- ~type~ - item type (action, project, delegated, etc.)
+- ~todo~ - list of TODO keywords (e.g., ~("NEXT" "WAIT")~)
 
 ** Agenda Integration
 

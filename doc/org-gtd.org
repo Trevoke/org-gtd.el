@@ -355,6 +355,32 @@ The ~org-gtd-mode~ minor mode has been redesigned in version 4.0. It no longer w
 (org-gtd-mode 1)
 #+end_src
 
+**** org-agenda-property has been vendored
+
+If you were using ~org-agenda-property~ configuration variables to show properties in the agenda, you need to update them. The package has been vendored into org-gtd with a new prefix.
+
+*OLD (org-agenda-property package):*
+#+begin_src emacs-lisp
+(setq org-agenda-property-list '("LOCATION" "DELEGATED_TO"))
+(setq org-agenda-property-position 'where-it-fits)
+(setq org-agenda-property-column 60)
+(setq org-agenda-property-separator "|")
+#+end_src
+
+*NEW (org-gtd-agenda-property):*
+#+begin_src emacs-lisp
+(setq org-gtd-agenda-property-list '("LOCATION" "DELEGATED_TO"))
+(setq org-gtd-agenda-property-position 'where-it-fits)
+(setq org-gtd-agenda-property-column 60)
+(setq org-gtd-agenda-property-separator "|")
+#+end_src
+
+Steps:
+1. Remove ~org-agenda-property~ from your package dependencies (no longer needed)
+2. Rename any ~org-agenda-property-*~ variables to ~org-gtd-agenda-property-*~
+
+The functionality is identical—only the naming has changed.
+
 ** Installing
 :PROPERTIES:
 :DESCRIPTION: Get Org GTD in your emacs
