@@ -116,8 +116,12 @@ Can be toggled with `org-gtd-graph-toggle-render-mode'.")
     (when org-gtd-graph-view--graph
       (let ((initial-node (or (org-gtd-graph-data-find-first-actionable
                                org-gtd-graph-view--graph)
-                              (org-gtd-graph-project-id org-gtd-graph-view--graph))))
-        (org-gtd-graph-ui-select-node initial-node)))
+                              (org-gtd-graph-project-id org-gtd-graph-view--graph)
+                              ;; Fallback: select any node from the graph
+                              (car (hash-table-keys
+                                    (org-gtd-graph-nodes org-gtd-graph-view--graph))))))
+        (when initial-node
+          (org-gtd-graph-ui-select-node initial-node))))
 
     buffer))
 

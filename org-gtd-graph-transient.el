@@ -36,6 +36,7 @@
 (require 'org-gtd-accessors)
 (require 'org-gtd-tickler)
 (require 'org-gtd-projects)
+(require 'org-gtd-context)
 
 ;;;; Sticky Mode
 
@@ -107,6 +108,7 @@ Named with \"--do-\" so transient.el recognizes it as a pre-command function."
     ("x a" "Export as ASCII" org-gtd-graph-export-ascii)]
    ["Session"
     ("I" "Incubate project" org-gtd-graph-incubate-project :transient nil)
+    ("C" "Cancel project" org-gtd-graph-cancel-project :transient nil)
     ("q" "Quit menu" transient-quit-one :transient nil)
     ("Q" "Quit and kill buffer" org-gtd-graph-quit-and-kill :transient nil)
     (org-gtd-graph-transient--sticky)]])
@@ -274,7 +276,9 @@ ORG_GTD_FIRST_TASKS property."
 
       (message "Added root task: %s" title)
       (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
-      (org-gtd-graph-view-refresh))))
+      ;; Only refresh if we're actually in graph view mode
+      (when (eq major-mode 'org-gtd-graph-view-mode)
+        (org-gtd-graph-view-refresh)))))
 
 ;;;; Navigation Commands - using implementations from org-gtd-graph-navigation.el
 
@@ -553,104 +557,110 @@ If NEW-BLOCKER-IDS is empty, adds task to project's FIRST_TASKS."
     ;; Fix TODO keywords
     (org-gtd-projects-fix-todo-keywords project-marker)))
 
-;; State for transient toggle menus
-(defvar org-gtd-graph--modify-state nil
-  "Alist of (TASK-ID . ENABLED) for transient modify menus.")
+;; Buffer-local edge selection for add-successor/add-blocker/modify operations
+(defvar-local org-gtd-graph--edge-selection nil
+  "Alist of (TASK-ID . SELECTED-P) for multi-select operations.
+Buffer-local to graph view, cleaned up after operation.")
 
-(transient-define-prefix org-gtd-graph-modify-blockers-menu ()
-  "Toggle which tasks block the selected task."
-  :refresh-suffixes t  ;; Recreate suffixes after every toggle to update checkboxes
-  [:description org-gtd-graph--modify-blockers-description
-   :class transient-columns
-   :setup-children org-gtd-graph--modify-blockers-setup]
-  ["Actions"
-   ("RET" "Apply changes" org-gtd-graph--modify-blockers-apply)
-   ("q" "Quit without saving" transient-quit-one)])
-
-(defun org-gtd-graph--modify-blockers-description ()
-  "Generate description for modify-blockers menu."
-  (let* ((selected-id org-gtd-graph-ui--selected-node-id)
-         (graph (org-gtd-graph-data--extract-from-project org-gtd-graph-view--project-marker))
-         (node (org-gtd-graph-data-get-node graph selected-id)))
-    (format "Modify blockers for: %s" (org-gtd-graph-node-title node))))
-
-(defun org-gtd-graph--modify-blockers-setup (_)
-  "Setup children for modify-blockers transient."
-  (let* ((selected-id org-gtd-graph-ui--selected-node-id)
-         (graph (org-gtd-graph-data--extract-from-project org-gtd-graph-view--project-marker))
-         (project-id (org-with-point-at org-gtd-graph-view--project-marker
-                       (org-entry-get (point) "ID")))
-         (all-task-ids (cl-remove selected-id
-                                  (hash-table-keys (org-gtd-graph-nodes graph))
-                                  :test 'string=))
-         (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids))
-         (key-char ?a))
-
-    ;; Create toggle suffixes - return list of group vectors for transient-columns
-    ;; Note: State is initialized in org-gtd-graph-modify-blockers, not here
-    ;; Pass lambda function objects directly - transient will handle creating gensyms
-    (transient-parse-suffixes
-     'org-gtd-graph-modify-blockers-menu
-     (list
-      (vconcat
-       (mapcar (lambda (task-id)
-                (let* ((node (org-gtd-graph-data-get-node graph task-id))
-                       (title (org-gtd-graph-node-title node))
-                       (key (char-to-string key-char))
-                       (enabled (cdr (assoc task-id org-gtd-graph--modify-state)))
-                       (display (if enabled
-                                   (format "[X] %s" title)
-                                 (format "[ ] %s" title)))
-                       ;; Create closure that captures task-id
-                       ;; :transient t and :refresh-suffixes t will handle staying open and refreshing
-                       (toggle-fn (let ((id task-id))
-                                    (lambda ()
-                                      (interactive)
-                                      (let ((current (cdr (assoc id org-gtd-graph--modify-state))))
-                                        (setf (alist-get id org-gtd-graph--modify-state nil nil #'equal)
-                                              (not current)))))))
-                  (setq key-char (1+ key-char))
-                  ;; Pass the lambda function object directly, with :transient t to stay open
-                  (list key display toggle-fn :transient t)))
-              valid-candidates))))))
-
-
-(defun org-gtd-graph--modify-blockers-apply (&rest _)
-  "Apply the blocker changes from transient state."
-  (interactive)
-  (let* ((selected-id org-gtd-graph-ui--selected-node-id)
-         (new-blockers (mapcar #'car
-                              (seq-filter #'cdr org-gtd-graph--modify-state))))
-    (org-gtd-graph--modify-blockers-internal selected-id new-blockers org-gtd-graph-view--project-marker)
-    (message "Updated blockers")
-    (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
-    (org-gtd-graph-view-refresh)
-    (transient-quit-one)
-    (org-gtd-graph-transient--resume-if-sticky)))
+(defun org-gtd-graph--cleanup-edge-selection ()
+  "Clean up edge selection state after operation."
+  (when (eq major-mode 'org-gtd-graph-view-mode)
+    (setq org-gtd-graph--edge-selection nil)))
 
 (defun org-gtd-graph-modify-blockers ()
   "Modify tasks that block the selected task (transient menu)."
   (interactive)
   (require 'org-gtd-graph-view)
   (require 'org-gtd-graph-data)
-  (unless org-gtd-graph-ui--selected-node-id
-    (user-error "No node selected"))
-  ;; Initialize state before opening transient
-  (let* ((selected-id org-gtd-graph-ui--selected-node-id)
-         (graph (org-gtd-graph-data--extract-from-project org-gtd-graph-view--project-marker))
-         (project-id (org-with-point-at org-gtd-graph-view--project-marker
-                       (org-entry-get (point) "ID")))
-         (current-blockers (seq-remove (lambda (id) (string= id project-id))
-                                       (org-gtd-graph-data-get-predecessors graph selected-id)))
-         (all-task-ids (cl-remove selected-id
+  (require 'org-gtd-context)
+  (let ((ctx (org-gtd-context-at-point)))
+    (unless (eq (org-gtd-context-mode ctx) 'graph-view)
+      (user-error "This command requires graph view"))
+    (unless (org-gtd-context-task-id ctx)
+      (user-error "No task selected"))
+
+    (let ((task-id (org-gtd-context-task-id ctx)))
+      ;; Build edge selection state (buffer-local)
+      (setq org-gtd-graph--edge-selection
+            (org-gtd-graph--build-modify-blockers-selection ctx task-id))
+
+      ;; Invoke transient with scope
+      (transient-setup 'org-gtd-graph-modify-blockers-menu nil nil
+                       :scope (list :ctx ctx
+                                    :task-id task-id)))))
+
+(transient-define-prefix org-gtd-graph-modify-blockers-menu ()
+  "Toggle which tasks block the selected task."
+  :refresh-suffixes t
+  [:description
+   (lambda ()
+     (let* ((scope (transient-scope))
+            (ctx (plist-get scope :ctx))
+            (task-id (plist-get scope :task-id))
+            (project-marker (org-gtd-context-project-marker ctx))
+            (graph (org-gtd-graph-data--extract-from-project project-marker))
+            (node (org-gtd-graph-data-get-node graph task-id)))
+       (format "Modify blockers for: %s"
+               (propertize (org-gtd-graph-node-title node) 'face 'bold))))
+   :class transient-columns
+   :setup-children org-gtd-graph--modify-blockers-setup]
+  [["Actions"
+    ("RET" "Apply changes" org-gtd-graph--modify-blockers-apply)
+    ("q" "Quit without saving" transient-quit-one)]])
+
+(defun org-gtd-graph--modify-blockers-setup (_)
+  "Setup children for modify-blockers transient.
+Reads from transient scope and buffer-local edge-selection."
+  (let* ((scope (transient-scope))
+         (ctx (plist-get scope :ctx))
+         (task-id (plist-get scope :task-id))
+         (project-marker (org-gtd-context-project-marker ctx))
+         (project-id (org-gtd-context-project-id ctx))
+         (graph (org-gtd-graph-data--extract-from-project project-marker))
+         (all-task-ids (cl-remove task-id
                                   (hash-table-keys (org-gtd-graph-nodes graph))
                                   :test 'string=))
-         (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids)))
-    (setq org-gtd-graph--modify-state
-          (mapcar (lambda (task-id)
-                   (cons task-id (and (member task-id current-blockers) t)))
-                 valid-candidates)))
-  (call-interactively #'org-gtd-graph-modify-blockers-menu))
+         (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids))
+         (key-char ?a))
+
+    (transient-parse-suffixes
+     'org-gtd-graph-modify-blockers-menu
+     (list
+      (vconcat
+       (mapcar (lambda (candidate-id)
+                 (let* ((node (org-gtd-graph-data-get-node graph candidate-id))
+                        (title (org-gtd-graph-node-title node))
+                        (key (char-to-string key-char))
+                        (enabled (cdr (assoc candidate-id org-gtd-graph--edge-selection)))
+                        (display (if enabled
+                                     (format "[X] %s" title)
+                                   (format "[ ] %s" title)))
+                        (toggle-fn (let ((id candidate-id))
+                                     (lambda ()
+                                       (interactive)
+                                       (let ((current (cdr (assoc id org-gtd-graph--edge-selection))))
+                                         (setf (alist-get id org-gtd-graph--edge-selection nil nil #'equal)
+                                               (not current)))))))
+                   (setq key-char (1+ key-char))
+                   (list key display toggle-fn :transient t)))
+               valid-candidates))))))
+
+(defun org-gtd-graph--modify-blockers-apply ()
+  "Apply the blocker changes using transient scope."
+  (interactive)
+  (let* ((scope (transient-scope))
+         (ctx (plist-get scope :ctx))
+         (task-id (plist-get scope :task-id))
+         (project-marker (org-gtd-context-project-marker ctx))
+         (new-blockers (mapcar #'car (seq-filter #'cdr org-gtd-graph--edge-selection))))
+    (org-gtd-graph--modify-blockers-internal task-id new-blockers project-marker)
+    ;; Cleanup and refresh
+    (org-gtd-graph--cleanup-edge-selection)
+    (message "Updated blockers")
+    (org-gtd-projects-fix-todo-keywords project-marker)
+    (org-gtd-graph-view-refresh)
+    (transient-quit-one)
+    (org-gtd-graph-transient--resume-if-sticky)))
 
 (defun org-gtd-graph--modify-successors-internal (task-id new-successor-ids project-marker)
   "Set TASK-ID's successors in PROJECT-MARKER's context to NEW-SUCCESSOR-IDS.
@@ -683,214 +693,200 @@ Updates FIRST_TASKS for affected successors based on their blocker status."
     ;; Fix TODO keywords
     (org-gtd-projects-fix-todo-keywords project-marker)))
 
-(transient-define-prefix org-gtd-graph-modify-successors-menu ()
-  "Toggle which tasks are blocked by the selected task."
-  :refresh-suffixes t  ;; Recreate suffixes after every toggle to update checkboxes
-  [:description org-gtd-graph--modify-successors-description
-   :class transient-columns
-   :setup-children org-gtd-graph--modify-successors-setup]
-  ["Actions"
-   ("RET" "Apply changes" org-gtd-graph--modify-successors-apply)
-   ("q" "Quit without saving" transient-quit-one)])
-
-(defun org-gtd-graph--modify-successors-description ()
-  "Generate description for modify-successors menu."
-  (let* ((selected-id org-gtd-graph-ui--selected-node-id)
-         (graph (org-gtd-graph-data--extract-from-project org-gtd-graph-view--project-marker))
-         (node (org-gtd-graph-data-get-node graph selected-id)))
-    (format "Modify tasks blocked by: %s" (org-gtd-graph-node-title node))))
-
-(defun org-gtd-graph--modify-successors-setup (_)
-  "Setup children for modify-successors transient."
-  (let* ((selected-id org-gtd-graph-ui--selected-node-id)
-         (graph (org-gtd-graph-data--extract-from-project org-gtd-graph-view--project-marker))
-         (project-id (org-with-point-at org-gtd-graph-view--project-marker
-                       (org-entry-get (point) "ID")))
-         (all-task-ids (cl-remove selected-id
-                                  (hash-table-keys (org-gtd-graph-nodes graph))
-                                  :test 'string=))
-         (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids))
-         (key-char ?a))
-
-    ;; Create toggle suffixes - return list of group vectors for transient-columns
-    ;; Note: State is initialized in org-gtd-graph-modify-successors, not here
-    ;; Pass lambda function objects directly - transient will handle creating gensyms
-    (transient-parse-suffixes
-     'org-gtd-graph-modify-successors-menu
-     (list
-      (vconcat
-       (mapcar (lambda (task-id)
-                (let* ((node (org-gtd-graph-data-get-node graph task-id))
-                       (title (org-gtd-graph-node-title node))
-                       (key (char-to-string key-char))
-                       (enabled (cdr (assoc task-id org-gtd-graph--modify-state)))
-                       (display (if enabled
-                                   (format "[X] %s" title)
-                                 (format "[ ] %s" title)))
-                       ;; Create closure that captures task-id
-                       ;; :transient t and :refresh-suffixes t will handle staying open and refreshing
-                       (toggle-fn (let ((id task-id))
-                                    (lambda ()
-                                      (interactive)
-                                      (let ((current (cdr (assoc id org-gtd-graph--modify-state))))
-                                        (setf (alist-get id org-gtd-graph--modify-state nil nil #'equal)
-                                              (not current)))))))
-                  (setq key-char (1+ key-char))
-                  ;; Pass the lambda function object directly, with :transient t to stay open
-                  (list key display toggle-fn :transient t)))
-              valid-candidates))))))
-
-(defun org-gtd-graph--modify-successors-apply (&rest _)
-  "Apply the successor changes from transient state."
-  (interactive)
-  (let* ((selected-id org-gtd-graph-ui--selected-node-id)
-         (new-successors (mapcar #'car
-                                (seq-filter #'cdr org-gtd-graph--modify-state))))
-    (org-gtd-graph--modify-successors-internal selected-id new-successors org-gtd-graph-view--project-marker)
-    (message "Updated successors")
-    (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
-    (org-gtd-graph-view-refresh)
-    (transient-quit-one)
-    (org-gtd-graph-transient--resume-if-sticky)))
-
 (defun org-gtd-graph-modify-successors ()
   "Modify tasks that the selected task blocks (transient menu)."
   (interactive)
   (require 'org-gtd-graph-view)
   (require 'org-gtd-graph-data)
-  (unless org-gtd-graph-ui--selected-node-id
-    (user-error "No node selected"))
-  ;; Initialize state before opening transient
-  (let* ((selected-id org-gtd-graph-ui--selected-node-id)
-         (graph (org-gtd-graph-data--extract-from-project org-gtd-graph-view--project-marker))
-         (project-id (org-with-point-at org-gtd-graph-view--project-marker
-                       (org-entry-get (point) "ID")))
-         (current-successors (org-gtd-graph-data-get-successors graph selected-id))
-         (all-task-ids (cl-remove selected-id
+  (require 'org-gtd-context)
+  (let ((ctx (org-gtd-context-at-point)))
+    (unless (eq (org-gtd-context-mode ctx) 'graph-view)
+      (user-error "This command requires graph view"))
+    (unless (org-gtd-context-task-id ctx)
+      (user-error "No task selected"))
+
+    (let ((task-id (org-gtd-context-task-id ctx)))
+      ;; Build edge selection state (buffer-local)
+      (setq org-gtd-graph--edge-selection
+            (org-gtd-graph--build-modify-successors-selection ctx task-id))
+
+      ;; Invoke transient with scope
+      (transient-setup 'org-gtd-graph-modify-successors-menu nil nil
+                       :scope (list :ctx ctx
+                                    :task-id task-id)))))
+
+(transient-define-prefix org-gtd-graph-modify-successors-menu ()
+  "Toggle which tasks are blocked by the selected task."
+  :refresh-suffixes t
+  [:description
+   (lambda ()
+     (let* ((scope (transient-scope))
+            (ctx (plist-get scope :ctx))
+            (task-id (plist-get scope :task-id))
+            (project-marker (org-gtd-context-project-marker ctx))
+            (graph (org-gtd-graph-data--extract-from-project project-marker))
+            (node (org-gtd-graph-data-get-node graph task-id)))
+       (format "Modify tasks blocked by: %s"
+               (propertize (org-gtd-graph-node-title node) 'face 'bold))))
+   :class transient-columns
+   :setup-children org-gtd-graph--modify-successors-setup]
+  [["Actions"
+    ("RET" "Apply changes" org-gtd-graph--modify-successors-apply)
+    ("q" "Quit without saving" transient-quit-one)]])
+
+(defun org-gtd-graph--modify-successors-setup (_)
+  "Setup children for modify-successors transient.
+Reads from transient scope and buffer-local edge-selection."
+  (let* ((scope (transient-scope))
+         (ctx (plist-get scope :ctx))
+         (task-id (plist-get scope :task-id))
+         (project-marker (org-gtd-context-project-marker ctx))
+         (project-id (org-gtd-context-project-id ctx))
+         (graph (org-gtd-graph-data--extract-from-project project-marker))
+         (all-task-ids (cl-remove task-id
                                   (hash-table-keys (org-gtd-graph-nodes graph))
                                   :test 'string=))
-         (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids)))
-    (setq org-gtd-graph--modify-state
-          (mapcar (lambda (task-id)
-                   (cons task-id (and (member task-id current-successors) t)))
-                 valid-candidates)))
-  (call-interactively #'org-gtd-graph-modify-successors-menu))
+         (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids))
+         (key-char ?a))
+
+    (transient-parse-suffixes
+     'org-gtd-graph-modify-successors-menu
+     (list
+      (vconcat
+       (mapcar (lambda (candidate-id)
+                 (let* ((node (org-gtd-graph-data-get-node graph candidate-id))
+                        (title (org-gtd-graph-node-title node))
+                        (key (char-to-string key-char))
+                        (enabled (cdr (assoc candidate-id org-gtd-graph--edge-selection)))
+                        (display (if enabled
+                                     (format "[X] %s" title)
+                                   (format "[ ] %s" title)))
+                        (toggle-fn (let ((id candidate-id))
+                                     (lambda ()
+                                       (interactive)
+                                       (let ((current (cdr (assoc id org-gtd-graph--edge-selection))))
+                                         (setf (alist-get id org-gtd-graph--edge-selection nil nil #'equal)
+                                               (not current)))))))
+                   (setq key-char (1+ key-char))
+                   (list key display toggle-fn :transient t)))
+               valid-candidates))))))
+
+(defun org-gtd-graph--modify-successors-apply ()
+  "Apply the successor changes using transient scope."
+  (interactive)
+  (let* ((scope (transient-scope))
+         (ctx (plist-get scope :ctx))
+         (task-id (plist-get scope :task-id))
+         (project-marker (org-gtd-context-project-marker ctx))
+         (new-successors (mapcar #'car (seq-filter #'cdr org-gtd-graph--edge-selection))))
+    (org-gtd-graph--modify-successors-internal task-id new-successors project-marker)
+    ;; Cleanup and refresh
+    (org-gtd-graph--cleanup-edge-selection)
+    (message "Updated successors")
+    (org-gtd-projects-fix-todo-keywords project-marker)
+    (org-gtd-graph-view-refresh)
+    (transient-quit-one)
+    (org-gtd-graph-transient--resume-if-sticky)))
 
 (defun org-gtd-graph-remove-task ()
-  "Remove task from project with intelligent rewiring.
+  "Remove task from current project with intelligent rewiring.
 Connects predecessors to successors before removal.
-
-Offers context-appropriate choices:
-- If task only in current project: remove and keep independent
-- If task in multiple projects: remove from current only, or all projects"
+Prompts for confirmation before removing."
   (interactive)
+  (require 'org-gtd-context)
+  (let ((ctx (org-gtd-context-at-point)))
+    (org-gtd-graph-remove-task-from-context ctx)))
+
+(defun org-gtd-graph-remove-task-from-context (ctx)
+  "Remove task from project using context CTX.
+Graph-view specific: refreshes view after removal."
   (require 'org-gtd-graph-view)
-  (unless org-gtd-graph-ui--selected-node-id
-    (user-error "No node selected"))
-
-  (let* ((task-id org-gtd-graph-ui--selected-node-id)
-         (task-title (when-let ((graph org-gtd-graph-view--graph)
-                                (node (org-gtd-graph-data-get-node graph task-id)))
-                       (org-gtd-graph-node-title node)))
-         (projects (org-gtd-get-task-projects task-id))
-         (project-count (length projects))
-         (current-project-id (when org-gtd-graph-view--project-marker
-                               (org-with-point-at org-gtd-graph-view--project-marker
-                                 (org-entry-get (point) "ID"))))
-         choice)
-
-    (cond
-     ;; Task only in one project (current one)
-     ((= project-count 1)
-      (setq choice (completing-read
-                    (format "Task '%s' only in this project: " task-title)
-                    '("Remove from this project and keep as independent item")
-                    nil t)))
-
-     ;; Task in multiple projects
-     ((> project-count 1)
-      (setq choice (completing-read
-                    (format "Task '%s' is in %d projects: " task-title project-count)
-                    '("Remove from this project only"
-                      "Remove from all projects and keep as independent item")
-                    nil t)))
-
-     ;; Task not in any project (shouldn't happen, but handle gracefully)
-     (t
-      (user-error "Task '%s' is not part of any project" task-title)))
-
-    ;; Execute chosen operation
-    (pcase choice
-      ("Remove from this project only"
-       (org-gtd-graph--remove-from-project task-id current-project-id)
-       (message "Removed '%s' from current project" task-title))
-
-      ((or "Remove from this project and keep as independent item"
-           "Remove from all projects and keep as independent item")
-       (org-gtd-graph--keep-as-independent task-id)
-       (message "Removed '%s' from all projects (kept as independent)" task-title)))
-
-    ;; Refresh the graph view
-    (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
-    (org-gtd-graph-view-refresh)))
+  (let ((task-id (org-gtd-context-task-id ctx))
+        (project-id (org-gtd-context-project-id ctx))
+        (project-marker (org-gtd-context-project-marker ctx)))
+    (unless task-id
+      (user-error "No task selected"))
+    (let ((task-title (when-let ((graph org-gtd-graph-view--graph)
+                                 (node (org-gtd-graph-data-get-node graph task-id)))
+                        (org-gtd-graph-node-title node))))
+      (when (yes-or-no-p (format "Remove '%s' from this project? " task-title))
+        (org-gtd-graph--remove-from-project task-id project-id)
+        (message "Removed '%s' from project" task-title)
+        ;; Refresh the graph view
+        (org-gtd-projects-fix-todo-keywords project-marker)
+        (when (eq major-mode 'org-gtd-graph-view-mode)
+          (org-gtd-graph-view-refresh))))))
 
 (defun org-gtd-graph-trash-task ()
   "Trash selected task: remove from all projects and mark as canceled.
 Prompts for confirmation before trashing."
   (interactive)
+  (require 'org-gtd-context)
+  (let ((ctx (org-gtd-context-at-point)))
+    (org-gtd-graph-trash-task-from-context ctx)))
+
+(defun org-gtd-graph-trash-task-from-context (ctx)
+  "Trash task using context CTX.
+Graph-view specific: refreshes view after trashing."
   (require 'org-gtd-graph-view)
-  (unless org-gtd-graph-ui--selected-node-id
-    (user-error "No node selected"))
-
-  (let* ((task-id org-gtd-graph-ui--selected-node-id)
-         (task-title (when-let ((graph org-gtd-graph-view--graph)
-                                (node (org-gtd-graph-data-get-node graph task-id)))
-                       (org-gtd-graph-node-title node))))
-
-    (when (yes-or-no-p (format "Trash task '%s'?  This will remove it from all projects and mark it as canceled.  Are you sure?" task-title))
-      (org-gtd-graph--trash-task task-id)
-      (message "Trashed task '%s'" task-title)
-      (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
-      (org-gtd-graph-view-refresh))))
+  (let ((task-id (org-gtd-context-task-id ctx))
+        (project-marker (org-gtd-context-project-marker ctx)))
+    (unless task-id
+      (user-error "No task selected"))
+    (let ((task-title (when-let ((graph org-gtd-graph-view--graph)
+                                 (node (org-gtd-graph-data-get-node graph task-id)))
+                        (org-gtd-graph-node-title node))))
+      (when (yes-or-no-p (format "Trash task '%s'? This will remove it from all projects and mark it as canceled. " task-title))
+        (org-gtd-graph--trash-task task-id)
+        (message "Trashed task '%s'" task-title)
+        (org-gtd-projects-fix-todo-keywords project-marker)
+        (when (eq major-mode 'org-gtd-graph-view-mode)
+          (org-gtd-graph-view-refresh))))))
 
 (defun org-gtd-graph-change-state ()
   "Change TODO state of selected task."
   (interactive)
-  (unless org-gtd-graph-ui--selected-node-id
-    (user-error "No node selected"))
+  (require 'org-gtd-context)
+  (let ((ctx (org-gtd-context-at-point)))
+    (org-gtd-graph-change-state-from-context ctx)))
 
-  (let* ((task-id org-gtd-graph-ui--selected-node-id)
-         (marker (org-id-find task-id t)))
-    (unless marker
-      (user-error "Cannot find task with ID: %s" task-id))
-
-    (org-with-point-at marker
-      (call-interactively #'org-todo)
-      (save-buffer))
-
-    (message "Changed TODO state")
-    (org-gtd-graph-view-refresh)))
+(defun org-gtd-graph-change-state-from-context (ctx)
+  "Change TODO state of task using context CTX.
+Graph-view specific: refreshes view after state change."
+  (let ((task-id (org-gtd-context-task-id ctx)))
+    (unless task-id
+      (user-error "No task selected"))
+    (let ((marker (org-id-find task-id t)))
+      (unless marker
+        (user-error "Cannot find task with ID: %s" task-id))
+      (org-with-point-at marker
+        (call-interactively #'org-todo)
+        (save-buffer))
+      (message "Changed TODO state")
+      (when (eq major-mode 'org-gtd-graph-view-mode)
+        (org-gtd-graph-view-refresh)))))
 
 (defun org-gtd-graph-incubate-project ()
   "Incubate the current project being viewed in graph mode.
-
-Calls command `org-gtd-tickler' which will detect it's on a project heading
-and move the entire project with all its tasks to the tickler."
+Prompts for a review date, then closes the graph view."
   (interactive)
-  (org-with-point-at org-gtd-graph-view--project-marker
-    (call-interactively #'org-gtd-tickler)))
+  (org-gtd-project-incubate-from-context)
+  ;; Clean up details pane before quitting
+  (org-gtd-graph-ui-cleanup-windows)
+  (quit-window))
+
+(defun org-gtd-graph-cancel-project ()
+  "Cancel the current project being viewed in graph mode.
+Prompts for confirmation, then closes the graph view."
+  (interactive)
+  (org-gtd-project-cancel-from-context)
+  ;; Clean up details pane before quitting
+  (org-gtd-graph-ui-cleanup-windows)
+  (quit-window))
 
 ;;;; Unified Add Commands
 
-;; State for add-successor/add-blocker transient menus
-(defvar org-gtd-graph--add-task-id nil
-  "Task ID being added as successor or blocker.")
-
-(defvar org-gtd-graph--add-task-title nil
-  "Title of task being added.")
-
-(defvar org-gtd-graph--add-edge-state nil
-  "Alist of (TASK-ID . ENABLED) for edge selection in add commands.")
+;; Note: add-successor and add-blocker both use :scope pattern now
 
 (defun org-gtd-graph-add-successor ()
   "Add a successor task that blocks project task(s).
@@ -899,62 +895,114 @@ Step 2: Select which project tasks the new task should block."
   (interactive)
   (require 'org-gtd-graph-view)
   (require 'org-gtd-graph-data)
+  (require 'org-gtd-context)
+  (let ((ctx (org-gtd-context-at-point)))
+    (unless (eq (org-gtd-context-mode ctx) 'graph-view)
+      (user-error "This command requires graph view for multi-select"))
 
-  ;; Step 1: Select or create task
-  (let* ((choices (org-gtd-graph--select-or-create-task-prioritizing-current
-                   "Select successor task: "
-                   org-gtd-graph-view--project-marker))
-         (selected (completing-read "Select or create successor task: " choices nil nil))
-         (match (assoc-string selected choices))
-         (existing-id (if match (cdr match) nil))
-         (title (if match selected selected)))
+    ;; Step 1: Select or create task
+    (let* ((choices (org-gtd-graph--select-or-create-task-prioritizing-current
+                     "Select successor task: "
+                     (org-gtd-context-project-marker ctx)))
+           (selected (completing-read "Select or create successor task: " choices nil nil))
+           (match (assoc-string selected choices))
+           (existing-id (when match (cdr match)))
+           (title (if match selected selected)))
 
-    (if existing-id
-        ;; Existing task selected
-        (setq org-gtd-graph--add-task-id existing-id
-              org-gtd-graph--add-task-title title)
-      ;; New task to be created
-      (setq org-gtd-graph--add-task-id nil
-            org-gtd-graph--add-task-title title))
+      ;; Build edge selection state (buffer-local)
+      (setq org-gtd-graph--edge-selection
+            (org-gtd-graph--build-predecessor-selection ctx))
 
-    ;; Step 2: Open transient menu to select which tasks this should block
-    (org-gtd-graph--init-add-successor-state)
-    (call-interactively #'org-gtd-graph-add-successor-menu)))
+      ;; Invoke transient with scope
+      (transient-setup 'org-gtd-graph-add-successor-menu nil nil
+                       :scope (list :ctx ctx
+                                    :task-id existing-id
+                                    :task-title title)))))
 
-(defun org-gtd-graph--init-add-successor-state ()
-  "Initialize edge state for add-successor menu.
-Pre-selects the currently selected node if one exists."
-  (let* ((graph (org-gtd-graph-data--extract-from-project org-gtd-graph-view--project-marker))
-         (project-id (org-with-point-at org-gtd-graph-view--project-marker
-                       (org-entry-get (point) "ID")))
+(defun org-gtd-graph--build-predecessor-selection (ctx)
+  "Build edge selection alist for predecessor selection.
+CTX is the context struct.
+Pre-selects the currently selected task if any."
+  (let* ((project-marker (org-gtd-context-project-marker ctx))
+         (project-id (org-gtd-context-project-id ctx))
+         (graph (org-gtd-graph-data--extract-from-project project-marker))
          (all-task-ids (hash-table-keys (org-gtd-graph-nodes graph)))
          (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids))
-         (selected-id org-gtd-graph-ui--selected-node-id))
-    (setq org-gtd-graph--add-edge-state
-          (mapcar (lambda (task-id)
-                    ;; Pre-select the currently selected node
-                    (cons task-id (and selected-id (string= task-id selected-id))))
-                  valid-candidates))))
+         (selected-id (org-gtd-context-task-id ctx)))
+    (mapcar (lambda (task-id)
+              (cons task-id (and selected-id (string= task-id selected-id))))
+            valid-candidates)))
+
+(defun org-gtd-graph--build-blocked-task-selection (ctx)
+  "Build edge selection alist for blocked task selection.
+CTX is the context struct.
+Pre-selects the currently selected task if any."
+  (let* ((project-marker (org-gtd-context-project-marker ctx))
+         (project-id (org-gtd-context-project-id ctx))
+         (graph (org-gtd-graph-data--extract-from-project project-marker))
+         (all-task-ids (hash-table-keys (org-gtd-graph-nodes graph)))
+         (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids))
+         (selected-id (org-gtd-context-task-id ctx)))
+    (mapcar (lambda (task-id)
+              (cons task-id (and selected-id (string= task-id selected-id))))
+            valid-candidates)))
+
+(defun org-gtd-graph--build-modify-blockers-selection (ctx task-id)
+  "Build edge selection alist for modifying blockers of TASK-ID.
+CTX is the context struct.
+Pre-selects current blockers of the task."
+  (let* ((project-marker (org-gtd-context-project-marker ctx))
+         (project-id (org-gtd-context-project-id ctx))
+         (graph (org-gtd-graph-data--extract-from-project project-marker))
+         (all-task-ids (cl-remove task-id
+                                  (hash-table-keys (org-gtd-graph-nodes graph))
+                                  :test 'string=))
+         (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids))
+         (current-blockers (seq-remove (lambda (id) (string= id project-id))
+                                       (org-gtd-graph-data-get-predecessors graph task-id))))
+    (mapcar (lambda (candidate-id)
+              (cons candidate-id (and (member candidate-id current-blockers) t)))
+            valid-candidates)))
+
+(defun org-gtd-graph--build-modify-successors-selection (ctx task-id)
+  "Build edge selection alist for modifying successors of TASK-ID.
+CTX is the context struct.
+Pre-selects current successors of the task."
+  (let* ((project-marker (org-gtd-context-project-marker ctx))
+         (project-id (org-gtd-context-project-id ctx))
+         (graph (org-gtd-graph-data--extract-from-project project-marker))
+         (all-task-ids (cl-remove task-id
+                                  (hash-table-keys (org-gtd-graph-nodes graph))
+                                  :test 'string=))
+         (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids))
+         (current-successors (org-gtd-graph-data-get-successors graph task-id)))
+    (mapcar (lambda (candidate-id)
+              (cons candidate-id (and (member candidate-id current-successors) t)))
+            valid-candidates)))
 
 (transient-define-prefix org-gtd-graph-add-successor-menu ()
   "Select which tasks should block the new successor (predecessors)."
   :refresh-suffixes t
-  [:description org-gtd-graph--add-successor-description
+  [:description
+   (lambda ()
+     (let* ((scope (transient-scope))
+            (title (plist-get scope :task-title)))
+       (format "Adding successor: %s\nSelect predecessors (tasks that must complete first):"
+               (propertize title 'face 'bold))))
    :class transient-columns
    :setup-children org-gtd-graph--add-successor-setup]
-  ["Actions"
-   ("RET" "Apply" org-gtd-graph--add-successor-apply)
-   ("q" "Cancel" transient-quit-one)])
-
-(defun org-gtd-graph--add-successor-description ()
-  "Generate description for add-successor menu."
-  (format "Select predecessors for '%s':" org-gtd-graph--add-task-title))
+  [["Actions"
+    ("RET" "Confirm" org-gtd-graph--add-successor-apply)
+    ("q" "Cancel" transient-quit-one)]])
 
 (defun org-gtd-graph--add-successor-setup (_)
-  "Setup children for add-successor transient."
-  (let* ((graph (org-gtd-graph-data--extract-from-project org-gtd-graph-view--project-marker))
-         (project-id (org-with-point-at org-gtd-graph-view--project-marker
-                       (org-entry-get (point) "ID")))
+  "Setup children for add-successor transient.
+Reads from transient scope and buffer-local edge-selection."
+  (let* ((scope (transient-scope))
+         (ctx (plist-get scope :ctx))
+         (project-marker (org-gtd-context-project-marker ctx))
+         (project-id (org-gtd-context-project-id ctx))
+         (graph (org-gtd-graph-data--extract-from-project project-marker))
          (all-task-ids (hash-table-keys (org-gtd-graph-nodes graph)))
          (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids))
          (key-char ?a))
@@ -967,34 +1015,38 @@ Pre-selects the currently selected node if one exists."
                  (let* ((node (org-gtd-graph-data-get-node graph task-id))
                         (title (org-gtd-graph-node-title node))
                         (key (char-to-string key-char))
-                        (enabled (cdr (assoc task-id org-gtd-graph--add-edge-state)))
+                        (enabled (cdr (assoc task-id org-gtd-graph--edge-selection)))
                         (display (if enabled
                                      (format "[X] %s" title)
                                    (format "[ ] %s" title)))
                         (toggle-fn (let ((id task-id))
                                      (lambda ()
                                        (interactive)
-                                       (let ((current (cdr (assoc id org-gtd-graph--add-edge-state))))
-                                         (setf (alist-get id org-gtd-graph--add-edge-state nil nil #'equal)
+                                       (let ((current (cdr (assoc id org-gtd-graph--edge-selection))))
+                                         (setf (alist-get id org-gtd-graph--edge-selection nil nil #'equal)
                                                (not current)))))))
                    (setq key-char (1+ key-char))
                    (list key display toggle-fn :transient t)))
                valid-candidates))))))
 
-(defun org-gtd-graph--add-successor-apply (&rest _)
-  "Apply the add-successor changes."
+(defun org-gtd-graph--add-successor-apply ()
+  "Apply add-successor using transient scope."
   (interactive)
-  (let* ((blocked-task-ids (mapcar #'car (seq-filter #'cdr org-gtd-graph--add-edge-state)))
-         (project-id (org-with-point-at org-gtd-graph-view--project-marker
-                       (org-entry-get (point) "ID")))
-         (new-task-id org-gtd-graph--add-task-id))
+  (let* ((scope (transient-scope))
+         (ctx (plist-get scope :ctx))
+         (task-id (plist-get scope :task-id))
+         (task-title (plist-get scope :task-title))
+         (project-marker (org-gtd-context-project-marker ctx))
+         (project-id (org-gtd-context-project-id ctx))
+         (predecessor-ids (mapcar #'car (seq-filter #'cdr org-gtd-graph--edge-selection)))
+         (new-task-id task-id))
 
     ;; Create new task if needed
     (unless new-task-id
-      (org-with-point-at org-gtd-graph-view--project-marker
+      (org-with-point-at project-marker
         (org-end-of-subtree t t)
         (unless (bolp) (insert "\n"))
-        (insert "** " org-gtd-graph--add-task-title "\n")
+        (insert "** " task-title "\n")
         (forward-line -1)
         (org-back-to-heading t)
         (setq new-task-id (org-id-get-create))
@@ -1004,20 +1056,21 @@ Pre-selects the currently selected node if one exists."
         (save-buffer)))
 
     ;; Create dependencies: each selected task blocks new-task (new task is successor)
-    (dolist (predecessor-id blocked-task-ids)
+    (dolist (predecessor-id predecessor-ids)
       (org-gtd-dependencies-create predecessor-id new-task-id))
 
-    ;; Link to project if existing external task
-    (when org-gtd-graph--add-task-id
+    ;; Link existing external task to project
+    (when task-id
       (org-gtd-add-to-multivalued-property new-task-id "ORG_GTD_PROJECT_IDS" project-id)
       (org-with-point-at (org-id-find new-task-id t)
         (save-buffer)))
 
     ;; Note: new successor is NOT added to FIRST_TASKS because it has blockers
 
-    (message "Added successor '%s' after %d task(s)"
-             org-gtd-graph--add-task-title (length blocked-task-ids))
-    (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
+    ;; Cleanup and refresh
+    (org-gtd-graph--cleanup-edge-selection)
+    (message "Added successor '%s' after %d task(s)" task-title (length predecessor-ids))
+    (org-gtd-projects-fix-todo-keywords project-marker)
     (org-gtd-graph-view-refresh)
     (transient-quit-one)
     (org-gtd-graph-transient--resume-if-sticky)))
@@ -1029,59 +1082,53 @@ Step 2: Select which project tasks the new task should block."
   (interactive)
   (require 'org-gtd-graph-view)
   (require 'org-gtd-graph-data)
+  (require 'org-gtd-context)
+  (let ((ctx (org-gtd-context-at-point)))
+    (unless (eq (org-gtd-context-mode ctx) 'graph-view)
+      (user-error "This command requires graph view for multi-select"))
 
-  ;; Step 1: Select or create task
-  (let* ((choices (org-gtd-graph--select-or-create-task-prioritizing-current
-                   "Select blocker task: "
-                   org-gtd-graph-view--project-marker))
-         (selected (completing-read "Select or create blocker task: " choices nil nil))
-         (match (assoc-string selected choices))
-         (existing-id (if match (cdr match) nil))
-         (title (if match selected selected)))
+    ;; Step 1: Select or create task
+    (let* ((choices (org-gtd-graph--select-or-create-task-prioritizing-current
+                     "Select blocker task: "
+                     (org-gtd-context-project-marker ctx)))
+           (selected (completing-read "Select or create blocker task: " choices nil nil))
+           (match (assoc-string selected choices))
+           (existing-id (when match (cdr match)))
+           (title (if match selected selected)))
 
-    (if existing-id
-        (setq org-gtd-graph--add-task-id existing-id
-              org-gtd-graph--add-task-title title)
-      (setq org-gtd-graph--add-task-id nil
-            org-gtd-graph--add-task-title title))
+      ;; Build edge selection state (buffer-local)
+      (setq org-gtd-graph--edge-selection
+            (org-gtd-graph--build-blocked-task-selection ctx))
 
-    ;; Step 2: Open transient menu to select which tasks should block this one
-    (org-gtd-graph--init-add-blocker-state)
-    (call-interactively #'org-gtd-graph-add-blocker-menu)))
-
-(defun org-gtd-graph--init-add-blocker-state ()
-  "Initialize edge state for add-blocker menu.
-Pre-selects the currently selected node if one exists."
-  (let* ((graph (org-gtd-graph-data--extract-from-project org-gtd-graph-view--project-marker))
-         (project-id (org-with-point-at org-gtd-graph-view--project-marker
-                       (org-entry-get (point) "ID")))
-         (all-task-ids (hash-table-keys (org-gtd-graph-nodes graph)))
-         (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids))
-         (selected-id org-gtd-graph-ui--selected-node-id))
-    (setq org-gtd-graph--add-edge-state
-          (mapcar (lambda (task-id)
-                    (cons task-id (and selected-id (string= task-id selected-id))))
-                  valid-candidates))))
+      ;; Invoke transient with scope
+      (transient-setup 'org-gtd-graph-add-blocker-menu nil nil
+                       :scope (list :ctx ctx
+                                    :task-id existing-id
+                                    :task-title title)))))
 
 (transient-define-prefix org-gtd-graph-add-blocker-menu ()
-  "Select which tasks should block the new task."
+  "Select which tasks the new blocker should block."
   :refresh-suffixes t
-  [:description org-gtd-graph--add-blocker-description
+  [:description
+   (lambda ()
+     (let* ((scope (transient-scope))
+            (title (plist-get scope :task-title)))
+       (format "Adding blocker: %s\nSelect tasks that this blocker will block:"
+               (propertize title 'face 'bold))))
    :class transient-columns
    :setup-children org-gtd-graph--add-blocker-setup]
-  ["Actions"
-   ("RET" "Apply" org-gtd-graph--add-blocker-apply)
-   ("q" "Cancel" transient-quit-one)])
-
-(defun org-gtd-graph--add-blocker-description ()
-  "Generate description for add-blocker menu."
-  (format "Select tasks that '%s' should block:" org-gtd-graph--add-task-title))
+  [["Actions"
+    ("RET" "Confirm" org-gtd-graph--add-blocker-apply)
+    ("q" "Cancel" transient-quit-one)]])
 
 (defun org-gtd-graph--add-blocker-setup (_)
-  "Setup children for add-blocker transient."
-  (let* ((graph (org-gtd-graph-data--extract-from-project org-gtd-graph-view--project-marker))
-         (project-id (org-with-point-at org-gtd-graph-view--project-marker
-                       (org-entry-get (point) "ID")))
+  "Setup children for add-blocker transient.
+Reads from transient scope and buffer-local edge-selection."
+  (let* ((scope (transient-scope))
+         (ctx (plist-get scope :ctx))
+         (project-marker (org-gtd-context-project-marker ctx))
+         (project-id (org-gtd-context-project-id ctx))
+         (graph (org-gtd-graph-data--extract-from-project project-marker))
          (all-task-ids (hash-table-keys (org-gtd-graph-nodes graph)))
          (valid-candidates (seq-remove (lambda (id) (string= id project-id)) all-task-ids))
          (key-char ?a))
@@ -1094,34 +1141,38 @@ Pre-selects the currently selected node if one exists."
                  (let* ((node (org-gtd-graph-data-get-node graph task-id))
                         (title (org-gtd-graph-node-title node))
                         (key (char-to-string key-char))
-                        (enabled (cdr (assoc task-id org-gtd-graph--add-edge-state)))
+                        (enabled (cdr (assoc task-id org-gtd-graph--edge-selection)))
                         (display (if enabled
                                      (format "[X] %s" title)
                                    (format "[ ] %s" title)))
                         (toggle-fn (let ((id task-id))
                                      (lambda ()
                                        (interactive)
-                                       (let ((current (cdr (assoc id org-gtd-graph--add-edge-state))))
-                                         (setf (alist-get id org-gtd-graph--add-edge-state nil nil #'equal)
+                                       (let ((current (cdr (assoc id org-gtd-graph--edge-selection))))
+                                         (setf (alist-get id org-gtd-graph--edge-selection nil nil #'equal)
                                                (not current)))))))
                    (setq key-char (1+ key-char))
                    (list key display toggle-fn :transient t)))
                valid-candidates))))))
 
-(defun org-gtd-graph--add-blocker-apply (&rest _)
-  "Apply the add-blocker changes."
+(defun org-gtd-graph--add-blocker-apply ()
+  "Apply add-blocker using transient scope."
   (interactive)
-  (let* ((blocked-task-ids (mapcar #'car (seq-filter #'cdr org-gtd-graph--add-edge-state)))
-         (project-id (org-with-point-at org-gtd-graph-view--project-marker
-                       (org-entry-get (point) "ID")))
-         (new-task-id org-gtd-graph--add-task-id))
+  (let* ((scope (transient-scope))
+         (ctx (plist-get scope :ctx))
+         (task-id (plist-get scope :task-id))
+         (task-title (plist-get scope :task-title))
+         (project-marker (org-gtd-context-project-marker ctx))
+         (project-id (org-gtd-context-project-id ctx))
+         (blocked-task-ids (mapcar #'car (seq-filter #'cdr org-gtd-graph--edge-selection)))
+         (new-task-id task-id))
 
     ;; Create new task if needed
     (unless new-task-id
-      (org-with-point-at org-gtd-graph-view--project-marker
+      (org-with-point-at project-marker
         (org-end-of-subtree t t)
         (unless (bolp) (insert "\n"))
-        (insert "** " org-gtd-graph--add-task-title "\n")
+        (insert "** " task-title "\n")
         (forward-line -1)
         (org-back-to-heading t)
         (setq new-task-id (org-id-get-create))
@@ -1134,20 +1185,21 @@ Pre-selects the currently selected node if one exists."
     (dolist (blocked-id blocked-task-ids)
       (org-gtd-dependencies-create new-task-id blocked-id))
 
-    ;; Link to project if existing external task
-    (when org-gtd-graph--add-task-id
+    ;; Link existing external task to project
+    (when task-id
       (org-gtd-add-to-multivalued-property new-task-id "ORG_GTD_PROJECT_IDS" project-id)
       (org-with-point-at (org-id-find new-task-id t)
         (save-buffer)))
 
     ;; Add new task to FIRST_TASKS since it has no blockers
-    (org-with-point-at org-gtd-graph-view--project-marker
+    (org-with-point-at project-marker
       (org-entry-add-to-multivalued-property (point) "ORG_GTD_FIRST_TASKS" new-task-id)
       (save-buffer))
 
-    (message "Added blocker '%s' blocking %d task(s)"
-             org-gtd-graph--add-task-title (length blocked-task-ids))
-    (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
+    ;; Cleanup and refresh
+    (org-gtd-graph--cleanup-edge-selection)
+    (message "Added blocker '%s' blocking %d task(s)" task-title (length blocked-task-ids))
+    (org-gtd-projects-fix-todo-keywords project-marker)
     (org-gtd-graph-view-refresh)
     (transient-quit-one)
     (org-gtd-graph-transient--resume-if-sticky)))

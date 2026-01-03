@@ -83,8 +83,9 @@
     (define-key map (kbd "t e") #'org-gtd-graph-ui-jump-to-task)
     (define-key map (kbd "t i") #'org-gtd-graph-view-show-relationships)
 
-    ;; Project operation
+    ;; Project operations
     (define-key map (kbd "I") #'org-gtd-graph-incubate-project)
+    (define-key map (kbd "C") #'org-gtd-graph-cancel-project)
 
     ;; Graph view operations
     (define-key map (kbd "Q") #'org-gtd-graph-quit-and-kill)
@@ -169,14 +170,16 @@ If PROJECT-MARKER is nil, use the project at point or prompt for one."
 (defun org-gtd-graph-mode--get-all-projects ()
   "Get all projects as alist of (title . marker)."
   (let (projects)
-    (with-current-buffer (org-gtd--default-file)
-      (org-map-entries
-       (lambda ()
-         (when (string= (org-entry-get nil "ORG_GTD") "Projects")
-           (push (cons (org-get-heading t t t t) (point-marker))
-                 projects)))
-       nil
-       'file))
+    (dolist (file (org-agenda-files))
+      (when (file-exists-p file)
+        (with-current-buffer (find-file-noselect file)
+          (org-map-entries
+           (lambda ()
+             (when (string= (org-entry-get nil "ORG_GTD") "Projects")
+               (push (cons (org-get-heading t t t t) (point-marker))
+                     projects)))
+           nil
+           'file))))
     (nreverse projects)))
 
 ;;;; Footer

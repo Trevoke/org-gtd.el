@@ -107,20 +107,26 @@ Restores the item to its previous GTD state, prompting to confirm
 or update each type-specific property (dates, delegated-to, etc.).
 
 For projects, uses `org-gtd-project-reactivate' which iterates over
-all tasks and recalculates dependencies."
+all tasks and recalculates dependencies.
+
+Works from both org buffers and agenda view."
   (interactive)
-  (let ((org-gtd-value (org-entry-get (point) "ORG_GTD")))
-    (unless (member org-gtd-value (list org-gtd-someday org-gtd-tickler))
-      (user-error "Item is not someday/tickler (ORG_GTD: %s)" org-gtd-value))
-    ;; Check if this was a project
-    (let ((previous-org-gtd (org-entry-get (point) "PREVIOUS_ORG_GTD")))
-      (if (string= previous-org-gtd "Projects")
-          ;; Projects need special handling for task iteration + dependencies
-          (progn
-            (require 'org-gtd-projects)
-            (org-gtd-project-reactivate (point-marker)))
-        ;; Non-project items use generic restore
-        (org-gtd-restore-state)))))
+  ;; Get marker - works from both org buffers and agenda
+  (let* ((marker (or (org-get-at-bol 'org-marker)
+                     (point-marker))))
+    (org-with-point-at marker
+      (let ((org-gtd-value (org-entry-get (point) "ORG_GTD")))
+        (unless (member org-gtd-value (list org-gtd-someday org-gtd-tickler))
+          (user-error "Item is not someday/tickler (ORG_GTD: %s)" org-gtd-value))
+        ;; Check if this was a project
+        (let ((previous-org-gtd (org-entry-get (point) "PREVIOUS_ORG_GTD")))
+          (if (string= previous-org-gtd "Projects")
+              ;; Projects need special handling for task iteration + dependencies
+              (progn
+                (require 'org-gtd-projects)
+                (org-gtd-project-reactivate (point-marker)))
+            ;; Non-project items use generic restore
+            (org-gtd-restore-state)))))))
 
 ;;;; Footer
 

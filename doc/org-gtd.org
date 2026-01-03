@@ -2366,31 +2366,17 @@ You'll see a sequential graph (the default):
 
 We need to make tasks 1 and 3 parallel.
 
-**** Step 3: Add Orthopedist Appointment as Root Task
+**** Step 3: Modify Dependencies to Create Parallel Tasks
 
-Click on (or navigate to) the "Find place to get MRI" task.
+We need to make "Make orthopedist appointment" a root task (parallel to "Find place to get MRI").
 
-Press ~r~ (add root task)
+In graph view, you can modify existing dependencies:
 
-At the prompt, type: ~Make orthopedist appointment~
+1. Select "Make orthopedist appointment" in the graph (use navigation keys)
+2. Press ~B~ to modify blockers (remove the blocker that makes it sequential)
+3. Press ~S~ to modify successors (connect it to "Get diagnosis")
 
-*Wait!* We already have that task. So instead, we'll restructure.
-
-Actually, let's do this differently. We need to:
-1. Make "Make orthopedist appointment" a root task (no dependencies)
-2. Remove it from the sequential chain
-
-*CURRENT LIMITATION*: The graph view can ADD tasks but can't MODIFY existing dependencies. So we'll build this from scratch using graph view commands.
-
-**** Step 3 (Revised): Build with Graph View Commands
-
-Let me show you the INTENDED workflow (this reveals what features are still needed):
-
-1. Delete "Make orthopedist appointment" from the middle of the chain
-2. Add it as a new root task
-3. Make "Get diagnosis" depend on BOTH appointments
-
-But our graph view doesn't have delete/modify yet. Let's note this and continue with what we CAN do.
+Alternatively, use ~t r~ to remove a task from the project and re-add it where you need it.
 
 **** What Graph View CAN Do
 
@@ -2740,18 +2726,27 @@ These commands are used less frequently and use key prefixes for organization.
 Some operations are standard org-mode functionality and must be done in the org file:
 
 *Changing task properties*:
-- TODO state: ~C-c C-t~ in org file
+- TODO state: Use ~t t~ in graph view, or ~C-c C-t~ in org file
 - Deadlines/schedules: ~C-c C-d~, ~C-c C-s~ in org file
 - Task title/description: edit in org file
 - Tags/properties: edit in org file
 
-*Deleting tasks*: Mark task DONE or CNCL in the org file. Completed tasks still show in graph view (green boxes) to maintain project history.
+*Task removal*: Use ~t r~ to remove a task from the project (keeps task) or ~t d~ to trash it (marks canceled). Completed tasks still show in graph view to maintain project history.
 
 *Access org file*: Press ~RET~ on any task in graph view to jump to it in the org file.
 
 **** Text-Based Alternatives
 
-Most users will find the graph view intuitive for dependency management. However, text-based task management commands are available:
+Most users will find the graph view intuitive for dependency management. However, DWIM (Do What I Mean) commands work from any context (org buffer, agenda, or graph view):
+
+- ~org-gtd-project-add-successor~ - Add a task that depends on current task
+- ~org-gtd-project-add-blocker~ - Add a task that blocks current task
+- ~org-gtd-project-add-root-task~ - Add a task with no dependencies
+- ~org-gtd-project-remove-task~ - Remove task from project (keeps task)
+- ~org-gtd-project-trash-task~ - Remove and cancel task
+- ~org-gtd-project-change-state~ - Change TODO state
+
+For lower-level dependency manipulation:
 
 - ~org-gtd-task-add-blockers~ - Add blockers via text interface
 - ~org-gtd-task-remove-blockers~ - Remove blockers via text interface
@@ -2848,6 +2843,7 @@ This is a comprehensive quick reference for all graph view keybindings.
 | Key   | Action                                |
 |-------+---------------------------------------|
 | ~I~   | Incubate project (move to someday)    |
+| ~C~   | Cancel project (cancel all tasks)     |
 | ~Q~   | Quit and kill buffer                  |
 | ~x s~ | Export as SVG                         |
 | ~x d~ | Export as DOT                         |
@@ -5594,6 +5590,69 @@ These commands only work when point is on an agenda item:
 - Finds the project containing the agenda item
 - Marks all remaining tasks as CNCL
 - Updates project status
+
+*** Project Task Commands (DWIM)
+
+These commands work from any context: org buffer, agenda view, or graph view. They automatically detect where you are and do the right thing.
+
+**** ~org-gtd-project-add-successor~
+
+*When to use*: To add a new task that depends on the current task
+
+*What it does*:
+- In graph view: opens multi-select transient for choosing predecessors
+- In org/agenda: task at point becomes the predecessor, prompts for new task title
+- Creates dependency relationships automatically
+- Updates TODO states
+
+**** ~org-gtd-project-add-blocker~
+
+*When to use*: To add a new task that must complete before the current task
+
+*What it does*:
+- In graph view: opens multi-select transient for choosing blocked tasks
+- In org/agenda: task at point becomes the blocked task, prompts for new blocker title
+- Creates dependency relationships automatically
+- Updates TODO states
+
+**** ~org-gtd-project-add-root-task~
+
+*When to use*: To add a new task with no dependencies (can start immediately)
+
+*What it does*:
+- In graph view: opens transient for task creation
+- In org/agenda: prompts for task title directly
+- Adds task as a root task (no blockers)
+- Updates TODO states
+
+**** ~org-gtd-project-remove-task~
+
+*When to use*: To remove a task from its project while keeping the task
+
+*What it does*:
+- Removes task from project structure
+- Rewires dependencies: predecessors are connected to successors
+- Keeps the task itself (does not delete it)
+- Updates TODO states
+
+**** ~org-gtd-project-trash-task~
+
+*When to use*: To completely remove a task from all projects
+
+*What it does*:
+- Removes task from ALL projects it belongs to
+- Cleans up ALL dependency relationships
+- Marks the task as canceled (CNCL)
+- Updates TODO states in affected projects
+
+**** ~org-gtd-project-change-state~
+
+*When to use*: To change the TODO state of a task
+
+*What it does*:
+- Prompts for new TODO state
+- Updates the task state
+- Works from any context (org buffer, agenda, graph view)
 
 *** Project Management Commands
 

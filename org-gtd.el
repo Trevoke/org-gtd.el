@@ -53,6 +53,7 @@
 (require 'org-edna)
 
 (require 'org-gtd-core)
+(require 'org-gtd-context)
 (require 'org-gtd-id)
 (require 'org-gtd-files)
 (require 'org-gtd-horizons)
