@@ -159,6 +159,20 @@ with keybindings for defer, clarify, and quit actions.
   ;; Note: buffer is made read-only in display function, not here
   )
 
+;;;; Evil-mode Integration
+
+;; When evil-mode is loaded, start someday-review-mode in emacs state.
+;; This mode is for read-only review with simple keybindings (d/c/q),
+;; so emacs state provides better UX than normal state.
+;;
+;; We use both evil-set-initial-state AND a mode hook for robustness:
+;; - evil-set-initial-state: handles new buffers entering this mode
+;; - mode hook: forces emacs state even if evil-collection or user config
+;;   has set a different state for org-mode (our parent)
+(with-eval-after-load 'evil
+  (evil-set-initial-state 'org-gtd-someday-review-mode 'emacs)
+  (add-hook 'org-gtd-someday-review-mode-hook #'evil-emacs-state))
+
 ;;;; Entry Point
 
 ;;;###autoload

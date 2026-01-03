@@ -274,6 +274,28 @@
   ;; Cleanup
   (org-gtd-someday-review-quit))
 
+;;; Evil-mode Integration Tests
+
+(deftest someday-review/evil-integration-registered ()
+  "Verifies evil-set-initial-state is registered for someday-review-mode.
+This ensures evil users get emacs state by default for better UX."
+  (let ((evil-entry (assq 'evil after-load-alist)))
+    (assert-true evil-entry)
+    ;; The entry should contain code that references org-gtd-someday-review-mode
+    ;; (may be byte-compiled, so check string representation)
+    (let ((forms (cdr evil-entry)))
+      (assert-true
+       (cl-some (lambda (form)
+                  (string-match-p "org-gtd-someday-review-mode"
+                                  (format "%S" form)))
+                forms)))))
+
+(deftest someday-review/mode-has-essential-keybindings ()
+  "Someday review mode keymap should have essential bindings."
+  (assert-true (lookup-key org-gtd-someday-review-mode-map (kbd "d")))
+  (assert-true (lookup-key org-gtd-someday-review-mode-map (kbd "c")))
+  (assert-true (lookup-key org-gtd-someday-review-mode-map (kbd "q"))))
+
 (provide 'someday-review-test)
 
 ;;; someday-review-test.el ends here

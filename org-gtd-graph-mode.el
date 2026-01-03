@@ -73,8 +73,14 @@
 ;; When evil-mode is loaded, start graph-view-mode in emacs state.
 ;; This avoids C-z conflicts between evil-toggle-key and transient's C-z,
 ;; and provides better UX since graph navigation uses emacs-style bindings.
+;;
+;; We use both evil-set-initial-state AND a mode hook for robustness:
+;; - evil-set-initial-state: handles new buffers entering this mode
+;; - mode hook: forces emacs state even if evil-collection or user config
+;;   has set a different state for special-mode (our parent)
 (with-eval-after-load 'evil
-  (evil-set-initial-state 'org-gtd-graph-view-mode 'emacs))
+  (evil-set-initial-state 'org-gtd-graph-view-mode 'emacs)
+  (add-hook 'org-gtd-graph-view-mode-hook #'evil-emacs-state))
 
 ;;;; Mode Definition
 
