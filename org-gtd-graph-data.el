@@ -30,7 +30,7 @@
 ;;;; Requirements
 
 (require 'cl-lib)
-(require 'org-gtd-projects)
+(require 'org-gtd-dependencies)
 (require 'org-gtd-id)
 
 ;;;; Data Structures
@@ -122,7 +122,7 @@ extracted from the project's task tree and dependency relationships."
             project-scheduled (org-entry-get (point) "SCHEDULED")
             project-deadline (org-entry-get (point) "DEADLINE")
             first-task-ids (org-entry-get-multivalued-property (point) "ORG_GTD_FIRST_TASKS")
-            task-markers (org-gtd-projects--collect-tasks-by-graph project-marker)))
+            task-markers (org-gtd-dependencies-collect-project-tasks project-marker)))
 
     ;; Convert markers to task plists
     (dolist (marker task-markers)

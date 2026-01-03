@@ -7,17 +7,15 @@
 
 ;;; Commentary:
 ;;
-;; Tests for org-gtd-projects--collect-tasks-by-graph function.
+;; Tests for org-gtd-dependencies-collect-project-tasks function.
 ;; Tests graph traversal for project tasks including dependency chains,
 ;; circular dependencies, and multi-project boundaries.
-;;
-;; Migrated from test/graph-traversal-test.el (buttercup).
 ;;
 
 ;;; Code:
 
 (require 'ogt-eunit-prelude "test/helpers/prelude.el")
-(require 'org-gtd-projects)
+(require 'org-gtd-dependencies)
 
 ;; Initialize e-unit short syntax
 (e-unit-initialize)
@@ -36,11 +34,11 @@
       ;; Save cleared state to disk to prevent test pollution
       (org-id-locations-save))))
 
-;;; org-gtd-projects--collect-tasks-by-graph Tests
+;;; org-gtd-dependencies-collect-project-tasks Tests
 
 (deftest graph-traversal/function-exists ()
   "Test that the function exists."
-  (assert-true (fboundp 'org-gtd-projects--collect-tasks-by-graph)))
+  (assert-true (fboundp 'org-gtd-dependencies-collect-project-tasks)))
 
 (deftest graph-traversal/collects-tasks-by-dependency-chains ()
   "Collects tasks by following ID dependency chains from FIRST_TASKS."
@@ -83,7 +81,7 @@
           (goto-char (point-min))
           (search-forward "Test Project")
           (org-back-to-heading t)
-          (let ((connected-tasks (org-gtd-projects--collect-tasks-by-graph (point-marker))))
+          (let ((connected-tasks (org-gtd-dependencies-collect-project-tasks (point-marker))))
             ;; Should find Task A and Task B (via FIRST_TASKS -> BLOCKS chain)
             ;; but not Task C (not in graph)
             (assert-equal 2 (length connected-tasks))))
@@ -137,7 +135,7 @@
           (goto-char (point-min))
           (search-forward "Circular Project")
           (org-back-to-heading t)
-          (let ((connected-tasks (org-gtd-projects--collect-tasks-by-graph (point-marker))))
+          (let ((connected-tasks (org-gtd-dependencies-collect-project-tasks (point-marker))))
             ;; Should find all 3 tasks in the circular graph by following BLOCKS from A
             (assert-equal 3 (length connected-tasks))))
       (when (buffer-live-p buf)
@@ -154,7 +152,7 @@
 
     (goto-char (point-min))
     (org-back-to-heading t)
-    (let ((connected-tasks (org-gtd-projects--collect-tasks-by-graph (point-marker))))
+    (let ((connected-tasks (org-gtd-dependencies-collect-project-tasks (point-marker))))
       (assert-nil connected-tasks))))
 
 (deftest graph-traversal/uses-org-gtd-first-tasks-property ()
@@ -192,7 +190,7 @@
           (goto-char (point-min))
           (search-forward "New Property Project")
           (org-back-to-heading t)
-          (let ((connected-tasks (org-gtd-projects--collect-tasks-by-graph (point-marker))))
+          (let ((connected-tasks (org-gtd-dependencies-collect-project-tasks (point-marker))))
             ;; Should find both tasks via ORG_GTD_FIRST_TASKS
             (assert-equal 2 (length connected-tasks))))
       (when (buffer-live-p buf)
@@ -279,7 +277,7 @@
           (goto-char (point-min))
           (search-forward "Project A")
           (org-back-to-heading t)
-          (let* ((proj-a-tasks (org-gtd-projects--collect-tasks-by-graph (point-marker)))
+          (let* ((proj-a-tasks (org-gtd-dependencies-collect-project-tasks (point-marker)))
                  (proj-a-task-ids (mapcar (lambda (marker)
                                             (org-with-point-at marker
                                               (org-entry-get (point) "ID")))
@@ -298,7 +296,7 @@
           (goto-char (point-min))
           (search-forward "Project B")
           (org-back-to-heading t)
-          (let* ((proj-b-tasks (org-gtd-projects--collect-tasks-by-graph (point-marker)))
+          (let* ((proj-b-tasks (org-gtd-dependencies-collect-project-tasks (point-marker)))
                  (proj-b-task-ids (mapcar (lambda (marker)
                                             (org-with-point-at marker
                                               (org-entry-get (point) "ID")))
@@ -354,7 +352,7 @@
           (goto-char (point-min))
           (search-forward "Project A")
           (org-back-to-heading t)
-          (let* ((proj-a-tasks (org-gtd-projects--collect-tasks-by-graph (point-marker)))
+          (let* ((proj-a-tasks (org-gtd-dependencies-collect-project-tasks (point-marker)))
                  (proj-a-task-ids (mapcar (lambda (marker)
                                             (org-with-point-at marker
                                               (org-entry-get (point) "ID")))
@@ -404,7 +402,7 @@
           (goto-char (point-min))
           (search-forward "Project A")
           (org-back-to-heading t)
-          (let* ((proj-a-tasks (org-gtd-projects--collect-tasks-by-graph (point-marker)))
+          (let* ((proj-a-tasks (org-gtd-dependencies-collect-project-tasks (point-marker)))
                  (proj-a-task-ids (mapcar (lambda (marker)
                                             (org-with-point-at marker
                                               (org-entry-get (point) "ID")))

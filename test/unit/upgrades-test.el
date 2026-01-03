@@ -331,7 +331,7 @@ Do that thing.
     (goto-char (point-min))
     (search-forward "Build a webapp")
     (org-back-to-heading t)
-    (let ((tasks (org-gtd-projects--collect-tasks-by-graph (point-marker))))
+    (let ((tasks (org-gtd-dependencies-collect-project-tasks (point-marker))))
       ;; Should find all 4 tasks regardless of their level
       (assert-equal 4 (length tasks))
       ;; Verify we can access all tasks by their properties

@@ -28,6 +28,8 @@
 ;;;; Requirements
 
 (require 'cl-lib)
+(require 'org)
+(require 'org-id)
 (require 'org-macs)
 
 ;;;; External Variable Declarations
@@ -63,7 +65,7 @@ Fields:
 Returns `org-gtd-context' struct with mode, markers, and IDs.
 Signals `user-error' if not in a supported context."
   (cond
-   ((eq major-mode 'org-gtd-graph-view-mode)
+   ((derived-mode-p 'org-gtd-graph-view-mode)
     (org-gtd-context--from-graph-view))
    ((derived-mode-p 'org-agenda-mode)
     (org-gtd-context--from-agenda))

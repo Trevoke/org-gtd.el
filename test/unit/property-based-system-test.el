@@ -120,7 +120,7 @@
     ;; Test graph traversal
     (with-current-buffer gtd-file
       (goto-char project-marker)
-      (let ((project-tasks (org-gtd-projects--collect-tasks-by-graph (point-marker))))
+      (let ((project-tasks (org-gtd-dependencies-collect-project-tasks (point-marker))))
         (assert-equal 3 (length project-tasks))))))
 
 ;;; Migration from level-based to property-based

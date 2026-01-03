@@ -237,7 +237,7 @@ Creates or selects task to add as root (no dependencies)."
       (user-error "No task at point"))
     (let ((task-title (org-with-point-at (org-id-find task-id t)
                         (org-get-heading t t t t))))
-      (when (yes-or-no-p (format "Trash task '%s'? This will remove it from all projects and mark it as canceled. " task-title))
+      (when (yes-or-no-p (format "Trash task '%s'? This removes it from all projects and marks it as canceled. " task-title))
         (org-gtd-graph--trash-task task-id)
         (message "Trashed task '%s'" task-title)))))
 

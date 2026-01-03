@@ -32,6 +32,12 @@
 (require 'org-gtd-reactivate)
 (require 'org-gtd-someday)
 
+;;;; External Function Declarations
+
+;; Evil functions (only called inside with-eval-after-load 'evil)
+(declare-function evil-set-initial-state "evil-core")
+(declare-function evil-emacs-state "evil-states")
+
 ;;;; Variables
 
 (defvar org-gtd-someday-review--session-active nil

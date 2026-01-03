@@ -28,6 +28,7 @@
 
 (require 'f)
 (require 'org)
+(require 'org-clock)
 (require 'org-element)
 (require 'org-edna)
 
@@ -46,6 +47,34 @@
 ;; variables, ensuring `let' bindings work correctly with lexical-binding: t.
 (defvar org-gtd-graph-view--project-marker)
 (defvar org-gtd-graph-view--graph)
+
+;;;; External Function Declarations
+
+;; Functions from org-gtd-context.el (loaded lazily in DWIM commands)
+(declare-function org-gtd-context-at-point "org-gtd-context")
+(declare-function org-gtd-context-mode "org-gtd-context")
+
+;; Functions from org-gtd-project-operations.el (loaded lazily in DWIM commands)
+(declare-function org-gtd-add-successor--simple-with-context "org-gtd-project-operations")
+(declare-function org-gtd-add-blocker--simple-with-context "org-gtd-project-operations")
+(declare-function org-gtd-add-root--simple-with-context "org-gtd-project-operations")
+(declare-function org-gtd-remove-task--simple-with-context "org-gtd-project-operations")
+(declare-function org-gtd-trash-task--simple-with-context "org-gtd-project-operations")
+(declare-function org-gtd-change-state--simple-with-context "org-gtd-project-operations")
+
+;; Functions from org-gtd-graph-transient.el (loaded lazily in DWIM commands)
+(declare-function org-gtd-graph-add-successor "org-gtd-graph-transient")
+(declare-function org-gtd-graph-add-blocker "org-gtd-graph-transient")
+(declare-function org-gtd-graph-transient-add-root "org-gtd-graph-transient")
+(declare-function org-gtd-graph-remove-task-from-context "org-gtd-graph-transient")
+(declare-function org-gtd-graph-trash-task-from-context "org-gtd-graph-transient")
+(declare-function org-gtd-graph-change-state-from-context "org-gtd-graph-transient")
+
+;; Functions from org-gtd-graph-view.el (loaded lazily via org-gtd-graph-mode)
+(declare-function org-gtd-show-project-graph "org-gtd-graph-view")
+
+;; Functions from org-gtd-tickler.el (loaded lazily - cycle with org-gtd-projects)
+(declare-function org-gtd-tickler "org-gtd-tickler")
 
 ;;;; Constants
 
@@ -132,7 +161,7 @@ Otherwise: signal error.
 PROMPT is passed to `org-gtd-project--get-marker-at-point' for multi-project selection."
   (cond
    ;; Graph view - use buffer-local marker
-   ((and (eq major-mode 'org-gtd-graph-view-mode)
+   ((and (derived-mode-p 'org-gtd-graph-view-mode)
          (bound-and-true-p org-gtd-graph-view--project-marker))
     org-gtd-graph-view--project-marker)
 
@@ -300,7 +329,7 @@ constitutes a stuck project in the GTD system."
   (interactive)
   (org-edna-mode -1)
   ;; v4: No need for with-org-gtd-context - operation doesn't need macro bindings
-  (let ((task-markers (org-gtd-projects--collect-tasks-by-graph (point-marker))))
+  (let ((task-markers (org-gtd-dependencies-collect-project-tasks (point-marker))))
     (dolist (task-marker task-markers)
       (org-with-point-at task-marker
         (when (org-gtd-projects--incomplete-task-p)
@@ -387,7 +416,7 @@ This is useful for:
     (let ((all-tasks (make-hash-table :test 'equal)))
       ;; Collect unique tasks across all projects
       (dolist (project-marker project-markers)
-        (dolist (task-marker (org-gtd-projects--collect-tasks-by-graph project-marker))
+        (dolist (task-marker (org-gtd-dependencies-collect-project-tasks project-marker))
           (let ((task-id (org-with-point-at task-marker (org-id-get))))
             (puthash task-id task-marker all-tasks))))
 
@@ -452,7 +481,7 @@ This is useful for:
 (defun org-gtd-project--reset-all-task-states (project-marker)
   "Set all undone tasks in project at PROJECT-MARKER to TODO state.
 Only resets states that should be recalculated (preserves WAIT, DONE, CNCL)."
-  (let ((all-task-markers (org-gtd-projects--collect-tasks-by-graph project-marker)))
+  (let ((all-task-markers (org-gtd-dependencies-collect-project-tasks project-marker)))
     (dolist (task-marker all-task-markers)
       (org-with-point-at task-marker
         (when (string= (org-entry-get (point) org-gtd-prop-category) org-gtd-action)
@@ -680,7 +709,7 @@ Works cross-file by combining graph traversal with tree search."
 
     ;; Part 1: Try graph traversal for cross-file tasks
     (let ((graph-task-markers (condition-case nil
-                                   (org-gtd-projects--collect-tasks-by-graph project-marker)
+                                   (org-gtd-dependencies-collect-project-tasks project-marker)
                                  (error nil))))
       (dolist (task-marker graph-task-markers)
         (org-with-point-at task-marker
@@ -752,60 +781,6 @@ Returns list of markers pointing to task headings with ORG_GTD=Actions."
     ;; Return tasks in document order (reverse since we pushed)
     (nreverse tasks)))
 
-(defun org-gtd-projects--collect-tasks-by-graph (project-marker)
-  "Collect all project tasks by traversing the dependency graph.
-
-Starting from the project heading at PROJECT-MARKER, reads
-ORG_GTD_FIRST_TASKS property to find root task IDs, then traverses
-the graph by following ORG_GTD_BLOCKS/ORG_GTD_DEPENDS_ON
-relationships using `org-id-find'.
-
-Only includes tasks that have the current project's ID in their
-ORG_GTD_PROJECT_IDS property, respecting project boundaries.
-
-Returns list of task markers in breadth-first order."
-  (org-with-point-at project-marker
-    (let* ((project-id (org-entry-get (point) "ID"))
-           (first-tasks-str (org-entry-get (point) "ORG_GTD_FIRST_TASKS"))
-           (first-task-ids (when first-tasks-str (split-string first-tasks-str)))
-           (queue '())
-           (visited-ids (make-hash-table :test 'equal))
-           (result-tasks '()))
-
-      ;; Initialize queue with first tasks
-      (dolist (task-id first-task-ids)
-        (push task-id queue))
-      (setq queue (nreverse queue))
-
-      ;; Breadth-first traversal
-      (while queue
-        (let* ((current-id (pop queue))
-               ;; Try org-id-find first, fall back to searching current buffer
-               (task-location (or (org-id-find current-id t)
-                                  (save-excursion
-                                    (goto-char (point-min))
-                                    (when-let ((pos (org-find-entry-with-id current-id)))
-                                      (goto-char pos)
-                                      (point-marker))))))
-
-          (when (and task-location (not (gethash current-id visited-ids)))
-            (puthash current-id t visited-ids)
-
-            ;; Include task if it has current project ID in ORG_GTD_PROJECT_IDS
-            (org-with-point-at task-location
-              (let ((task-project-ids (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids)))
-                (when (member project-id task-project-ids)
-                  (push task-location result-tasks)
-
-                  ;; Find tasks this one blocks (children in the graph)
-                  (let ((blocks-list (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
-                    (dolist (blocked-id blocks-list)
-                      (unless (gethash blocked-id visited-ids)
-                        (setq queue (append queue (list blocked-id))))))))))))
-
-      ;; Return in breadth-first order
-      (nreverse result-tasks))))
-
 (defun org-gtd-projects--has-active-tasks-p (project-marker)
   "Return t if project at PROJECT-MARKER has active task.
 
@@ -814,7 +789,7 @@ Uses early exit - stops checking as soon as active task is found.
 
 This function is for use in agenda views and filters to identify
 projects that have work remaining to be done."
-  (let ((tasks (org-gtd-projects--collect-tasks-by-graph project-marker))
+  (let ((tasks (org-gtd-dependencies-collect-project-tasks project-marker))
         (has-active nil))
     ;; Check each task until we find an active one
     (while (and tasks (not has-active))
@@ -834,7 +809,7 @@ A stuck project is one that has active tasks (work remaining) but no tasks
 that are immediately actionable (NEXT) or waiting (WAIT). This typically
 means all tasks are in TODO state, indicating planning is incomplete or
 dependencies aren't set up properly."
-  (let ((tasks (org-gtd-projects--collect-tasks-by-graph project-marker))
+  (let ((tasks (org-gtd-dependencies-collect-project-tasks project-marker))
         (has-todo-tasks nil)
         (has-actionable-task nil))
     ;; Check each task to see if we have any TODO tasks and any actionable tasks
@@ -898,7 +873,7 @@ Returns cons cell (COMPLETED . TOTAL)."
         (total 0)
         (project-marker (org-id-find project-id t)))
     (when project-marker
-      (let ((task-markers (org-gtd-projects--collect-tasks-by-graph project-marker)))
+      (let ((task-markers (org-gtd-dependencies-collect-project-tasks project-marker)))
         (dolist (task-marker task-markers)
           (org-with-point-at task-marker
             (setq total (1+ total))
@@ -1040,9 +1015,9 @@ Removes PREVIOUS_* properties."
 (defun org-gtd-project--get-all-tasks (project-marker)
   "Return list of markers for all tasks in project at PROJECT-MARKER.
 
-Uses `org-gtd-projects--collect-tasks-by-graph' to traverse
+Uses `org-gtd-dependencies-collect-project-tasks' to traverse
 the project's dependency graph and collect all task markers."
-  (org-gtd-projects--collect-tasks-by-graph project-marker))
+  (org-gtd-dependencies-collect-project-tasks project-marker))
 
 ;;;###autoload
 (defun org-gtd-project-map-tasks (fn project-marker)
@@ -1057,7 +1032,7 @@ Example - collect all task headlines:
   (org-gtd-project-map-tasks
    (lambda () (org-get-heading t t t t))
    project-marker)"
-  (let ((task-markers (org-gtd-projects--collect-tasks-by-graph project-marker))
+  (let ((task-markers (org-gtd-dependencies-collect-project-tasks project-marker))
         (results '()))
     (dolist (task-marker task-markers)
       (org-with-point-at task-marker
@@ -1224,7 +1199,7 @@ Returns marker to configured task."
 A leaf task has no ORG_GTD_BLOCKS property (doesn't block anything).
 Uses depth-first traversal, returns first leaf found.
 Returns marker to leaf task, or nil if project has no tasks."
-  (let ((tasks (org-gtd-projects--collect-tasks-by-graph project-marker)))
+  (let ((tasks (org-gtd-dependencies-collect-project-tasks project-marker)))
     (cl-find-if
      (lambda (task-marker)
        (org-with-point-at task-marker

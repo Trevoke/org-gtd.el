@@ -277,7 +277,7 @@ ORG_GTD_FIRST_TASKS property."
       (message "Added root task: %s" title)
       (org-gtd-projects-fix-todo-keywords org-gtd-graph-view--project-marker)
       ;; Only refresh if we're actually in graph view mode
-      (when (eq major-mode 'org-gtd-graph-view-mode)
+      (when (derived-mode-p 'org-gtd-graph-view-mode)
         (org-gtd-graph-view-refresh)))))
 
 ;;;; Navigation Commands - using implementations from org-gtd-graph-navigation.el
@@ -564,7 +564,7 @@ Buffer-local to graph view, cleaned up after operation.")
 
 (defun org-gtd-graph--cleanup-edge-selection ()
   "Clean up edge selection state after operation."
-  (when (eq major-mode 'org-gtd-graph-view-mode)
+  (when (derived-mode-p 'org-gtd-graph-view-mode)
     (setq org-gtd-graph--edge-selection nil)))
 
 (defun org-gtd-graph-modify-blockers ()
@@ -814,7 +814,7 @@ Graph-view specific: refreshes view after removal."
         (message "Removed '%s' from project" task-title)
         ;; Refresh the graph view
         (org-gtd-projects-fix-todo-keywords project-marker)
-        (when (eq major-mode 'org-gtd-graph-view-mode)
+        (when (derived-mode-p 'org-gtd-graph-view-mode)
           (org-gtd-graph-view-refresh))))))
 
 (defun org-gtd-graph-trash-task ()
@@ -836,11 +836,11 @@ Graph-view specific: refreshes view after trashing."
     (let ((task-title (when-let ((graph org-gtd-graph-view--graph)
                                  (node (org-gtd-graph-data-get-node graph task-id)))
                         (org-gtd-graph-node-title node))))
-      (when (yes-or-no-p (format "Trash task '%s'? This will remove it from all projects and mark it as canceled. " task-title))
+      (when (yes-or-no-p (format "Trash task '%s'? This removes it from all projects and marks it as canceled. " task-title))
         (org-gtd-graph--trash-task task-id)
         (message "Trashed task '%s'" task-title)
         (org-gtd-projects-fix-todo-keywords project-marker)
-        (when (eq major-mode 'org-gtd-graph-view-mode)
+        (when (derived-mode-p 'org-gtd-graph-view-mode)
           (org-gtd-graph-view-refresh))))))
 
 (defun org-gtd-graph-change-state ()
@@ -863,7 +863,7 @@ Graph-view specific: refreshes view after state change."
         (call-interactively #'org-todo)
         (save-buffer))
       (message "Changed TODO state")
-      (when (eq major-mode 'org-gtd-graph-view-mode)
+      (when (derived-mode-p 'org-gtd-graph-view-mode)
         (org-gtd-graph-view-refresh)))))
 
 (defun org-gtd-graph-incubate-project ()

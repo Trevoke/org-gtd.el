@@ -32,6 +32,12 @@
 (require 'org-gtd-graph-navigation)
 (require 'org-gtd-graph-ui)
 
+;;;; External Function Declarations
+
+;; Evil functions (only called inside with-eval-after-load 'evil)
+(declare-function evil-set-initial-state "evil-core")
+(declare-function evil-emacs-state "evil-states")
+
 ;;;; Commands
 
 (defun org-gtd-graph-quit ()

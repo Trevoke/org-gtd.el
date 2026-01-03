@@ -95,7 +95,7 @@
 If the task belongs to multiple projects, prompt user to choose which project."
   (require 'org-gtd-projects)
   (let* ((project-marker (org-gtd-project--get-marker-at-point))
-         (task-markers (org-gtd-projects--collect-tasks-by-graph project-marker))
+         (task-markers (org-gtd-dependencies-collect-project-tasks project-marker))
          (chosen-area (completing-read
                        "Which area of focus does this project belong to? "
                        org-gtd-areas-of-focus

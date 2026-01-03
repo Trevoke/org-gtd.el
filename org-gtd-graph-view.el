@@ -34,7 +34,6 @@
 (require 'org-gtd-graph-ui)
 (require 'org-gtd-svg-render)  ; For color helpers and svg-to-image
 (require 'org-gtd-dag-draw)
-(require 'org-gtd-projects)
 (require 'org-gtd-dependencies)
 (require 'org-gtd-accessors)
 (require 'org-gtd-id)
