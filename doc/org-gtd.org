@@ -2183,6 +2183,14 @@ A variable, ~org-gtd-clarify-show-horizons~, determines whether/where to display
 
 Regardless of the value of this variable, you can use the function ~org-gtd-clarify-toggle-horizons-window~ to display or hide the side window. If the above variable is nil, then the horizons window will be toggled on the right side of the screen.
 
+If your Emacs configuration or distribution doesn't enable ~global-visual-line-mode~ by default, you may consider adding the following line at the beginning of the file containing your longer-term horizons:
+
+#+begin_src org
+# -*- eval: (visual-line-mode 1); -*-
+#+end_src
+
+The horizons window is narrow and enabling ~visual-line-mode~ locally will make sure that your horizons are easily readable during the clarification process.
+
 *See also*:
 - [[#config-vars-reference][Configuration Variables Reference]] for ~org-gtd-areas-of-focus~, ~org-gtd-horizons-file~, and ~org-gtd-clarify-show-horizons~
 - [[#commands-reference][Commands Reference]] for all horizon-related commands
