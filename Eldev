@@ -6,8 +6,133 @@
 
 (eldev-use-plugin 'autoloads)
 (eldev-use-plugin 'maintainer)
+(eldev-use-plugin 'undercover)
 
-(setq eldev-test-framework 'buttercup)
-
+;; Test framework dependencies
 (eldev-add-extra-dependencies 'test 'with-simulated-input)
 (eldev-add-extra-dependencies 'test 'dash)
+
+;;; E-Unit Integration
+;;
+;; Fetch e-unit from git repository (works in CI and development)
+;; When e-unit is on MELPA, replace with: (eldev-add-extra-dependencies 'test 'e-unit)
+;; :setup disables info file processing (avoids install-info requirement)
+(eldev-use-vc-repository 'e-unit :git "https://codeberg.org/Trevoke/e-unit.el.git"
+                         :rev "0.14.0"
+                         :setup '(setq eldev-info-sources nil))
+(eldev-add-extra-dependencies 'test 'e-unit)
+
+;; Mock filesystem for testing
+;; :setup disables info file processing (avoids install-info requirement)
+(eldev-use-vc-repository 'mock-fs :git "https://codeberg.org/Trevoke/mock-fs.el.git"
+                         :setup '(setq eldev-info-sources nil))
+(eldev-add-extra-dependencies 'test 'mock-fs)
+
+;;; Custom test command for e-unit
+;;
+;; Use `eldev gtd-etest` (or `eldev etest`) to run e-unit tests from test/ directory
+
+;; Variables for etest options
+(defvar org-gtd-etest-reporter 'console
+  "Reporter to use for e-unit tests.")
+(defvar org-gtd-etest-verbose nil
+  "Whether to show verbose output.")
+(defvar org-gtd-etest-stop-on-failure nil
+  "Whether to stop on first failure.")
+
+(defun org-gtd-etest--find-test-dirs (root-dir)
+  "Recursively find directories containing *-test.el files under ROOT-DIR."
+  (let ((dirs '()))
+    (dolist (file (directory-files-recursively root-dir ".*-test\\.el$"))
+      (let ((dir (file-name-directory file)))
+        (unless (member dir dirs)
+          (push dir dirs))))
+    (nreverse dirs)))
+
+(eldev-defcommand org-gtd-etest (&rest _parameters)
+  "Run e-unit tests.
+
+E-unit tests are in the test/ directory with subdirectories:
+  - test/unit/       Unit tests
+  - test/integration/ Integration tests
+  - test/acceptance/  Acceptance tests"
+  :aliases    (etest)
+  :category   testing
+
+  ;; Suppress version upgrade warnings (must be set before org-gtd loads)
+  (setq org-gtd-update-ack "4.0.0")
+
+  (eldev-load-project-dependencies 'test)
+  (require 'e-unit)
+
+  (let ((root-dir "test"))
+
+    ;; Configure e-unit
+    (e-unit-configure :verbose org-gtd-etest-verbose
+                      :stop-on-failure org-gtd-etest-stop-on-failure)
+
+    ;; Set reporter
+    (e-unit-set-reporter org-gtd-etest-reporter)
+
+    ;; Check if test directory exists
+    (if (not (file-directory-p root-dir))
+        (message "No test directory found (%s). Create it and add *-test.el files to run e-unit tests." root-dir)
+
+      ;; Find all directories with test files
+      (let ((test-dirs (org-gtd-etest--find-test-dirs root-dir))
+            (all-results '()))
+
+        (if (null test-dirs)
+            (message "No e-unit tests found in %s" root-dir)
+
+          ;; Run tests in each directory
+          (dolist (test-dir test-dirs)
+            (message "\n=== Running tests in %s ===" test-dir)
+            (let ((results (e-unit-run-directory test-dir)))
+              (when results
+                (setq all-results (append all-results results)))))
+
+          (if (null all-results)
+              (message "No e-unit tests executed")
+            (let* ((total (length all-results))
+                   (passed (length (cl-remove-if-not
+                                    (lambda (r) (eq (plist-get r :status) 'pass))
+                                    all-results)))
+                   (failed (length (cl-remove-if-not
+                                    (lambda (r) (memq (plist-get r :status) '(fail error)))
+                                    all-results))))
+
+              ;; Print summary
+              (message "\n%d/%d e-unit tests passed" passed total)
+
+              ;; Update Eldev counters
+              (setq eldev-test-num-passed passed)
+              (setq eldev-test-num-failed failed)
+
+              ;; Fail if tests failed
+              (when (> failed 0)
+                (signal 'eldev-error
+                        `(:hint "Run with -v for verbose output"
+                                "%d e-unit test(s) failed" ,failed))))))))))
+
+;; Define options for etest command
+;; Note: command name is gtd-etest (eldev strips "org-" prefix)
+(eldev-defoption org-gtd-etest-set-reporter (type)
+  "Select reporter: console, dot, compilation"
+  :options        (-r --reporter)
+  :for-command    gtd-etest
+  :value          TYPE
+  :default-value  'console
+  (setf org-gtd-etest-reporter (intern type)))
+
+(eldev-defoption org-gtd-etest-set-verbose ()
+  "Show all test names"
+  :options        (-v --verbose)
+  :for-command    gtd-etest
+  (setf org-gtd-etest-verbose t))
+
+(eldev-defoption org-gtd-etest-set-stop ()
+  "Stop on first failure"
+  :options        (-s --stop)
+  :for-command    gtd-etest
+  (setf org-gtd-etest-stop-on-failure t))

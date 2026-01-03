@@ -1,6 +1,6 @@
 ;;; org-gtd-capture.el --- capturing items to the inbox -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -39,13 +39,15 @@
 
 (defcustom org-gtd-capture-templates
   `(("i" "Inbox"
-     entry  (file ,#'org-gtd-inbox-path)
+     entry (file ,#'org-gtd-inbox-path)
      "* %?\n%U\n\n  %i"
-     :kill-buffer t)
+     :kill-buffer t
+     :before-finalize org-gtd-capture--add-captured-at-timestamp)
     ("l" "Inbox with link"
      entry (file ,#'org-gtd-inbox-path)
      "* %?\n%U\n\n  %i\n  %a"
-     :kill-buffer t))
+     :kill-buffer t
+     :before-finalize org-gtd-capture--add-captured-at-timestamp))
   "Capture templates to be used when adding something to the inbox.
 
 See `org-capture-templates' for the format of each capture template.
@@ -72,8 +74,7 @@ This is the inbox. Everything goes in here when you capture it.
   "Wrap BODY... with let-bound `org-gtd' variables for capture purposes."
   (declare (debug t) (indent 2))
   `(let ((org-capture-templates org-gtd-capture-templates))
-     (unwind-protect
-         (progn ,@body))))
+     ,@body))
 
 ;;;; Commands
 
@@ -89,6 +90,15 @@ same name."
    (org-capture goto keys)))
 
 ;;;; Functions
+
+;;;; Private
+
+(defun org-gtd-capture--add-captured-at-timestamp ()
+  "Add ORG_GTD_CAPTURED_AT property with inactive timestamp.
+Used as :before-finalize hook in `org-gtd-capture-templates'."
+  (org-back-to-heading t)
+  (org-entry-put nil "ORG_GTD_CAPTURED_AT"
+                 (format-time-string (org-time-stamp-format t t))))
 
 ;;;; Public
 

@@ -2,43 +2,142 @@
 
 * Projects
 :PROPERTIES:
-:TRIGGER: org-gtd-next-project-action org-gtd-update-project-task!
 :ORG_GTD:  Projects
 :END:
 
 ** [0/3] Fix the roof
 :PROPERTIES:
+:ID: fix-roof-project-id
+:ORG_GTD: Projects
+:ORG_GTD_FIRST_TASKS: clean-gutters-id
 :CATEGORY: Home
 :END:
 *** NEXT Clean gutters
+:PROPERTIES:
+:ID: clean-gutters-id
+:ORG_GTD: Actions
+:ORG_GTD_BLOCKS: replace-tiles-id
+:ORG_GTD_PROJECT: Fix the roof
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 
 *** TODO Replace broken tiles
+:PROPERTIES:
+:ID: replace-tiles-id
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: clean-gutters-id
+:ORG_GTD_BLOCKS: cat-trampoline-id
+:ORG_GTD_PROJECT: Fix the roof
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 
 *** TODO Get cat trampoline
+:PROPERTIES:
+:ID: cat-trampoline-id
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: replace-tiles-id
+:ORG_GTD_PROJECT: Fix the roof
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 
 
 ** [1/3] Get promotion
 :PROPERTIES:
+:ID: get-promotion-project-id
+:ORG_GTD: Projects
+:ORG_GTD_FIRST_TASKS: accomplishments-id
 :CATEGORY: Career
 :END:
 *** DONE Make list of accomplishments
+:PROPERTIES:
+:ID: accomplishments-id
+:ORG_GTD: Actions
+:ORG_GTD_BLOCKS: raise-id
+:ORG_GTD_PROJECT: Get promotion
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 *** NEXT Figure out desired raise
+:PROPERTIES:
+:ID: raise-id
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: accomplishments-id
+:ORG_GTD_BLOCKS: kidnap-id
+:ORG_GTD_PROJECT: Get promotion
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 *** TODO Kidnap boss
+:PROPERTIES:
+:ID: kidnap-id
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: raise-id
+:ORG_GTD_PROJECT: Get promotion
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 
 ** [3/3] Get pregnant
 :PROPERTIES:
+:ID: get-pregnant-project-id
+:ORG_GTD: Projects
+:ORG_GTD_FIRST_TASKS: doctor-appt-id
 :CATEGORY: Health
 :END:
 *** DONE Get doctor's appointment
+:PROPERTIES:
+:ID: doctor-appt-id
+:ORG_GTD: Actions
+:ORG_GTD_BLOCKS: partner-id
+:ORG_GTD_PROJECT: Get pregnant
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 *** CNCL Find partner
+:PROPERTIES:
+:ID: partner-id
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: doctor-appt-id
+:ORG_GTD_BLOCKS: child-id
+:ORG_GTD_PROJECT: Get pregnant
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 *** CNCL Have child
+:PROPERTIES:
+:ID: child-id
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: partner-id
+:ORG_GTD_PROJECT: Get pregnant
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 ** [1/3] Be happy in kitchen
 :PROPERTIES:
+:ID: happy-kitchen-project-id
+:ORG_GTD: Projects
+:ORG_GTD_FIRST_TASKS: throw-boxes-id
 :CATEGORY: Home
 :END:
 *** DONE Throw away boxes
+:PROPERTIES:
+:ID: throw-boxes-id
+:ORG_GTD: Actions
+:ORG_GTD_BLOCKS: think-joy-id
+:ORG_GTD_PROJECT: Be happy in kitchen
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 *** NEXT think of something that will make me enjoy being in the kitchen
+:PROPERTIES:
+:ID: think-joy-id
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: throw-boxes-id
+:ORG_GTD_BLOCKS: make-change-id
+:ORG_GTD_PROJECT: Be happy in kitchen
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 *** TODO Make the change and be happy
+:PROPERTIES:
+:ID: make-change-id
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: think-joy-id
+:ORG_GTD_PROJECT: Be happy in kitchen
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 * Calendar
 :PROPERTIES:
 :ORG_GTD:  Calendar
@@ -46,6 +145,7 @@
 
 ** Meet plumber
 :PROPERTIES:
+:ORG_GTD: Calendar
 :ORG_GTD_TIMESTAMP: <2021-11-20 10:00-12:00 Sat>
 :CATEGORY: Home
 :END:
@@ -54,12 +154,14 @@
 ** some scheduled item
 SCHEDULED: <2021-11-20 Sat>
 :PROPERTIES:
+:ORG_GTD: Calendar
 :ORG_GTD_TIMESTAMP: <2021-11-18 Thu>
 :END:
 
 ** Sweep the floor
 SCHEDULED: <2021-11-20 9:00-9:15 .+1d>
 :PROPERTIES:
+:ORG_GTD:  Habit
 :STYLE:    habit
 :CATEGORY: Home
 :END:
@@ -91,17 +193,19 @@ SCHEDULED: <2021-11-20 9:00-9:15 .+1d>
 ** DONE this is done
 ** CNCL this is canceled
 
-* Incubate
+* Tickler
 :PROPERTIES:
-:ORG_GTD:  Incubated
+:ORG_GTD:  Tickler
 :END:
 ** For later
 :PROPERTIES:
+:ORG_GTD: Tickler
 :ORG_GTD_TIMESTAMP: <2037-02-19 Thu>
 :CATEGORY: Home
 :END:
 
 ** CNCL not worth thinking about
 :PROPERTIES:
+:ORG_GTD: Tickler
 :ORG_GTD_TIMESTAMP: <2021-11-21 Sun>
 :END:

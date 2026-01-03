@@ -1,14 +1,14 @@
 ;;; org-gtd-trash.el --- Define trash items in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
 
 ;; This file is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 3, or (at your option)
-;; any later version.
+;; it under the terms of the GNU General Public License as published
+;; by the Free Software Foundation; either version 3, or
+;; (at your option) any later version.
 
 ;; This file is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -28,8 +28,8 @@
 
 (require 'org-gtd-core)
 (require 'org-gtd-archive)
-
-(declare-function 'org-gtd-organize--call 'org-gtd-organize)
+(require 'org-gtd-configure)
+(require 'org-gtd-organize-core)
 
 ;;;; Constants
 
@@ -49,7 +49,7 @@
 
 (defun org-gtd-trash--apply ()
   "Mark GTD inbox item as cancelled and move it to the org-gtd task archives."
-  (org-todo org-gtd-canceled)
+  (org-gtd-configure-as-type 'trash)
   (setq-local org-gtd--organize-type 'trash)
   (org-gtd-organize-apply-hooks)
   (org-gtd-archive-item-at-point))

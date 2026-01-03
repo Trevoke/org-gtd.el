@@ -1,6 +1,6 @@
 ;;; org-gtd-habit.el --- Define habits in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -29,13 +29,10 @@
 (require 'org-gtd-core)
 (require 'org-gtd-clarify)
 (require 'org-gtd-refile)
-
-(declare-function 'org-gtd-organize--call 'org-gtd-organize)
-(declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
+(require 'org-gtd-configure)
+(require 'org-gtd-organize-core)
 
 ;;;; Constants
-
-(defconst org-gtd-habit "Habits")
 
 (defconst org-gtd-habit-func #'org-gtd-habit--apply
   "Function called when organizing item as a habit.")
@@ -43,9 +40,9 @@
 (defconst org-gtd-habit-template
   (format "* Habits
 :PROPERTIES:
-:ORG_GTD: %s
+:%s: %s
 :END:
-" org-gtd-habit))
+" org-gtd-prop-refile org-gtd-habit))
 
 ;;;; Commands
 
@@ -56,9 +53,10 @@ If you want to call this non-interactively,
 REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
 determine how often you'll be reminded of this habit."
   (interactive)
-  (org-gtd-organize--call
-   (apply-partially org-gtd-habit-func
-                    repeater)))
+  (let ((config-override (when repeater
+                           `((:when . ,(format "<%s %s>" (format-time-string "%F") repeater))))))
+    (org-gtd-organize--call
+     (lambda () (org-gtd-habit--apply config-override)))))
 
 ;;;; Functions
 
@@ -75,26 +73,36 @@ determine how often you'll be reminded of this habit."
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
-      (org-gtd-clarify-item)
       (org-gtd-habit repeater))
     (kill-buffer buffer)))
 
 ;;;;; Private
 
-(defun org-gtd-habit--apply (&optional repeater)
-  "Add a repeater to this item and store in org gtd.
+(defun org-gtd-habit--configure (&optional config-override)
+  "Configure item at point as a habit.
 
-If you want to call this non-interactively,
-REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
-determine how often you'll be reminded of this habit."
-  (let ((repeater (or repeater
-                      (read-from-minibuffer "How do you want this to repeat? ")))
-        (today (format-time-string "%Y-%m-%d")))
-    (org-schedule nil (format "<%s %s>" today repeater))
-    (org-entry-put (point) "STYLE" "habit"))
+CONFIG-OVERRIDE is an alist with :when key for non-interactive use."
+  (org-gtd-configure-as-type 'habit config-override))
+
+(defun org-gtd-habit--finalize ()
+  "Finalize habit organization and refile."
   (setq-local org-gtd--organize-type 'habit)
   (org-gtd-organize-apply-hooks)
-  (org-gtd-refile--do org-gtd-habit org-gtd-habit-template))
+  (if org-gtd-clarify--skip-refile
+      (org-gtd-organize--update-in-place)
+    (org-gtd-refile--do org-gtd-habit org-gtd-habit-template)))
+
+(defun org-gtd-habit--apply (&optional config-override)
+  "Process GTD inbox item by transforming it into a habit.
+
+Orchestrates the habit organization workflow:
+1. Configure with habit settings
+2. Finalize and refile to habits file
+
+CONFIG-OVERRIDE can provide input configuration to override default
+prompting behavior."
+  (org-gtd-habit--configure config-override)
+  (org-gtd-habit--finalize))
 
 ;;;; Footer
 

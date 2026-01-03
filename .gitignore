@@ -3,9 +3,16 @@
 /Eldev-local
 /dev/.emacs.d
 /dev/.emacs~
+/dev/eln-cache/
 /dev/.cache
 /dev/.config/
 /doc/org-gtd.info
+/doc/org-gtd.texi
 /dev/gtd
+/gtd-test
 dist/
 org-gtd-autoloads.el
+.idea
+*.elc
+.claude/settings.local.json
+org-gtd.log

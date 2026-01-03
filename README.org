@@ -1,77 +1,290 @@
-* NOTICE
-This is org-gtd 3.0.0.
+#+TITLE: Org GTD - Get Things Done with Emacs
 
-Check documentation in [[doc/]] (and the info manual within emacs itself) if you're upgrading. Please report all defects as Github issues.
+* First Contact
 
-Use existing tags if you'd rather stick to a pre-3.0 version.
+** The Problem
 
-* Sponsorship
-I've put many hours of reading, research, and coding, to put this together. If it delivers value to you, helps you manage your life, please consider sponsoring ([[https://github.com/sponsors/Trevoke/][Github sponsors]] or [[https://www.patreon.com/LokiConsulting][Patreon]]) and allowing me to continue putting work into this package and other projects.
+You know GTD. You want to practice it in Emacs.
 
-* Org GTD
-This package tries to replicate as closely as possible the GTD workflow.
-This package assumes familiarity with GTD.
+org-mode is incredibly powerful... and incredibly complex.
 
-This package provides a system that allows you to capture incoming things into an inbox, then process the inbox and categorize each item based on the GTD categories.  It leverages org-agenda to show today's items as well as the NEXT items.  It also has a simple project management system, which currently assumes all tasks in a project are sequential.
+Do you really need to master org-agenda's custom views, org-capture templates, and org-mode's keyword workflows just to implement David Allen's methodology?
 
-For a comprehensive instruction manual, see the documentation:
-- Either the info file (within emacs, ~C-h i m org gtd RET~)
-- or in the [[doc/]] directory of the repository, there is a ~.org~ file you can peruse.
+** The Solution
 
-The documentation also details how to upgrade from one version to another.
+*org-gtd treats Emacs and org-mode as infrastructure.*
 
-** Whirlwind tour of the package
-What follows is an incomplete description of the package. It is useful if you just want to take it for a test run. Read the full documentation for the full set of features and customizability.
-*** GTD Meta
-Modes:
-- ~org-gtd-mode~ :: If you want to be able to refresh the org-agenda views and have all the ~org-gtd~ files included in your ~org-agenda-files~, you'll need this to be enabled.
+You focus on GTD. org-gtd handles the org-mode complexity.
 
-Customizable variables:
-- ~org-gtd-directory~ :: Directory where org-gtd will look for its files
-- ~org-gtd-areas-of-focus~ :: List of strings representing Horizon 3. See Steps 4 and 6 for further details.
-*** GTD Step 1/6 : Capture
-Functions:
-- ~org-gtd-capture~ :: A wrapper around ~org-capture~. Use it to capture items into the GTD inbox. Will create the inbox file if it does not exist.
+- Turnkey GTD workflow matching the book
+- Automatic project dependency management
+- Built-in views for capture/clarify/organize/engage/review
+- Hooks for your customizations (effort, tags, integrations)
+- Extensible for email, code tools, external sources
 
-Customizable variables:
-- ~org-gtd-capture-templates~ :: Defines behavior for ~org-gtd-capture~.
+** Who This Is For
 
-*** GTD Step 2/6 : Process
-Functions:
-- ~org-gtd-process-inbox~ :: Start a loop around step 3 (Clarify) for every item in the inbox.
-*** GTD Step 3/6 : Clarify
-Functions:
-- ~org-gtd-clarify-item~ :: Call this from any org heading to clarify this item as a one-off and organize it into org-gtd.
-- ~org-gtd-clarify-agenda-item~ :: Call this from any item in the agenda to clarify this item and organize it into org-gtd.
-- ~org-gtd-clarify-switch-to-buffer~ :: Call this to switch back to any existing clarify buffer. Use this instead of switching back through the normal flow, as this manages some state.
+- You practice GTD (or want to start)
+- You use Emacs (beginner to expert - we'll explain what you need)
+- You want to DO work, not configure systems
 
-Keymaps:
-- ~org-gtd-clarify-map~ :: Sparse keymap for minor mode used in the clarify buffer.
-*** GTD Step 4/6 : Organize
-Functions:
-- ~org-gtd-organize~ :: Pop up a menu asking how to organize (e.g. single action, appointment, etc.) the item at point. Great function to bind on ~org-gtd-clarify-map~.
+* Quick Start (5 Minutes)
 
-Hooks:
-- ~org-gtd-organize-hooks~ :: Series of functions that get called to decorate each item (e.g. org tags, org effort, etc.). Add ~org-gtd-set-area-of-focus~ to this one to set areas of focus on each item.
-*** GTD Step 5/6 : Engage daily
-Functions:
-- ~org-gtd-engage~ :: Your daily view.
-- ~org-gtd-engage-grouped-by-context~ :: All NEXT actions, grouped by tags beginning with =@=. This may not work if you remove ~org-set-tags-command~ from ~org-gtd-organize-hooks~.
-*** GTD Step 6/6 : Review
-Functions:
-- ~org-gtd-oops~ :: Show all the missed appointments. Oops!
-- ~org-gtd-review-area-of-focus~ :: Show an agenda view designed for one of your areas of focus.
-- ~org-gtd-review-stuck-*~ :: The =*= here is any of the action types; you can find any of the ones that have fallen through the cracks.
+Get org-gtd working end-to-end: capture an item, organize it, and see it in your daily view.
+
+** Prerequisites
+
+- Emacs 28.1 or higher
+- org-mode (included with Emacs)
+
+** Installation
+
+Install from MELPA:
+
+#+begin_src emacs-lisp
+;; Manually
+M-x package-install RET org-gtd RET
+#+end_src
+
+** Complete Configuration (use-package)
+
+If you use ~use-package~, copy this entire block into your init file - it includes installation, configuration, and keybindings:
+
+#+begin_src emacs-lisp
+(use-package org-gtd
+  :ensure t
+  :after org
+  :demand t
+  :init
+  ;; Suppress upgrade warnings (must be set before package loads)
+  (setq org-gtd-update-ack "4.0.0")
+  :custom
+  ;; Where org-gtd will keep its files (defaults to ~/gtd/)
+  ;; (org-gtd-directory "~/my-gtd/")
+
+  ;; Configure TODO keyword states (options like "TODO(t)" or "DONE(d!)" are fine)
+  (org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+
+  ;; Map GTD semantic states to your keywords
+  (org-gtd-keyword-mapping '((todo . "TODO")
+                             (next . "NEXT")
+                             (wait . "WAIT")
+                             (canceled . "CNCL")))
+
+  ;; Add org-gtd files to your agenda
+  (org-agenda-files (list org-gtd-directory))
+
+  :config
+  ;; REQUIRED: Enable org-edna for project dependencies
+  (org-edna-mode 1)
+
+  :bind
+  ;; Global keybindings (work anywhere in Emacs)
+  (("C-c d c" . org-gtd-capture)
+   ("C-c d e" . org-gtd-engage)
+   ("C-c d p" . org-gtd-process-inbox)
+   ("C-c d n" . org-gtd-show-all-next)
+   ("C-c d s" . org-gtd-reflect-stuck-projects)
+
+   ;; Keybinding for organizing items (only works in clarify buffers)
+   :map org-gtd-clarify-mode-map
+   ("C-c c" . org-gtd-organize)
+
+   ;; Quick actions on tasks in agenda views (optional but recommended)
+   :map org-agenda-mode-map
+   ("C-c ." . org-gtd-agenda-transient)))
+#+end_src
+
+*Existing org-mode users*: If you already have ~org-todo-keywords~ configured, add a separate sequence for GTD keywords rather than mixing them into existing sequences. See the full documentation for details.
+
+** Alternative: Manual Configuration
+
+If you don't use ~use-package~, copy this into your init file and restart Emacs:
+
+#+begin_src emacs-lisp
+;; Suppress upgrade warnings (set BEFORE org-gtd loads)
+(setq org-gtd-update-ack "4.0.0")
+
+;; Configure org-mode TODO keywords
+;; All GTD keywords must be in the same sequence
+;; Standard options like "TODO(t)" or "DONE(d!)" are fine - org-gtd ignores them
+(setq org-todo-keywords
+      '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+
+;; Map GTD semantic states to your keywords
+(setq org-gtd-keyword-mapping
+      '((todo . "TODO")      ; tasks not ready to act on
+        (next . "NEXT")      ; tasks ready to act on immediately
+        (wait . "WAIT")      ; tasks blocked or delegated
+        (canceled . "CNCL"))) ; tasks that won't be completed
+
+;; Optional: Set GTD directory (defaults to ~/gtd/)
+;; (setq org-gtd-directory "~/gtd/")
+
+;; Add org-gtd files to your agenda
+(setq org-agenda-files (list org-gtd-directory))
+
+;; REQUIRED: Enable org-edna for project dependencies
+(org-edna-mode 1)
+
+;; Global keybindings (work anywhere in Emacs)
+(global-set-key (kbd "C-c d c") 'org-gtd-capture)
+(global-set-key (kbd "C-c d e") 'org-gtd-engage)
+(global-set-key (kbd "C-c d p") 'org-gtd-process-inbox)
+(global-set-key (kbd "C-c d n") 'org-gtd-show-all-next)
+(global-set-key (kbd "C-c d s") 'org-gtd-reflect-stuck-projects)
+
+;; Keybinding for organizing items (only works in clarify buffers)
+(with-eval-after-load 'org-gtd
+  (define-key org-gtd-clarify-mode-map (kbd "C-c c") 'org-gtd-organize))
+
+;; Quick actions on tasks in agenda views (optional but recommended)
+(with-eval-after-load 'org-agenda
+  (define-key org-agenda-mode-map (kbd "C-c .") 'org-gtd-agenda-transient))
+#+end_src
+
+** Performance
+
+*** Native Compilation
+
+org-gtd supports native compilation for improved performance. If you have
+Emacs built with native compilation support (--with-native-compilation):
+
+1. Enable automatic native compilation:
+   #+begin_src emacs-lisp
+   (setq package-native-compile t)
+   #+end_src
+
+2. Reinstall or recompile org-gtd:
+   #+begin_src emacs-lisp
+   M-x package-reinstall RET org-gtd RET
+   #+end_src
+
+3. Packages will be natively compiled on installation
+
+4. Expected performance improvement: 10-20% in large GTD datasets (500+ tasks)
+
+*** Performance Characteristics
+
+org-gtd is optimized for Emacs 28.1+ primitives:
+- Fast literal string matching (string-search)
+- Lexical binding throughout
+- Efficient property access
+
+Tested with GTD datasets up to 500+ tasks without performance issues.
+
+** Your First GTD Cycle
+
+*** 1. Capture Something
+
+Press ~C-c d c~ (or ~M-x org-gtd-capture~).
+
+Type: "Buy birthday gift for Alex"
+
+Press ~C-c C-c~ to save and close.
+
+*** 2. Process Your Inbox
+
+Press ~C-c d p~ (or ~M-x org-gtd-process-inbox~).
+
+You'll see a buffer with your captured item. This is the *clarify* step - edit the item to make it clear and actionable.
+
+*** 3. Organize the Item
+
+When you're ready to organize, press ~C-c c~ (or ~M-x org-gtd-organize~).
+
+A menu appears asking what type of item this is. For our example:
+
+Press ~s~ for "Single action" (a one-off task to do when possible).
+
+org-gtd will prompt you to add tags if you want (press RET to skip).
+
+The item is now filed into your GTD system!
+
+*** 4. See It in Your Daily View
+
+Press ~C-c d e~ (or ~M-x org-gtd-engage~).
+
+You'll see an agenda view showing all your NEXT actions and scheduled items. Your item "Buy birthday gift for Alex" should be there with a NEXT state.
+
+** What Just Happened?
+
+You just completed the core GTD cycle:
+
+1. *Capture* - Got something out of your head (~org-gtd-capture~)
+2. *Clarify* - Made it clear and actionable (editing in the WIP buffer)
+3. *Organize* - Categorized it (~org-gtd-organize~)
+4. *Engage* - Saw it in your action list (~org-gtd-engage~)
+
+The two remaining GTD steps:
+- *Process* - Loop through your inbox (we did this with ~org-gtd-process-inbox~)
+- *Review* - Regularly check your system (commands like ~org-gtd-reflect-stuck-projects~)
+
+* What's Next
+
+** Complete Tutorial
+
+See ~doc/org-gtd.org~ (or ~C-h i m org gtd RET~ / ~M-x info-display-manual RET org-gtd~) for:
+- Full 15-minute tutorial with projects and dependencies
+- Custom agenda views with the declarative DSL
+- Configuration examples for Doom Emacs and Spacemacs
+- Complete command reference
+- Hooks and customization guide
+- Integration with email and other tools
+
+** Learn More About GTD
+
+If you're new to GTD, read [[https://gettingthingsdone.com/][David Allen's book]]. org-gtd implements the methodology faithfully, so understanding GTD itself will help you use the tool effectively.
+
+** Get Help
+
+- *Documentation*: ~C-h i m org gtd RET~ or ~M-x info-display-manual RET org-gtd~ (info manual)
+- *Issues*: [[https://github.com/Trevoke/org-gtd.el/issues][GitHub Issues]]
+- *Community*: [[https://discord.gg/2kAK6TfqJq][Discord Server]]
+- *Sponsor*: [[https://github.com/sponsors/Trevoke/][GitHub Sponsors]]
+
+** Next Steps in Your Learning
+
+1. *Create a project* - Learn how projects with multiple tasks work
+2. *Use dependencies* - Make tasks parallel or create custom blocking
+3. *Create custom views* - Define your own weekly review using the view DSL
+4. *Add hooks* - Customize what happens when you organize items
+5. *Integrate* - Connect org-gtd to email, code tools, etc.
+
+All of this is covered in the full documentation.
 
 
-* Directory tree
-- =dev= :: used as a jail environment. Copy somewhere else and spin up with ~$ HOME="dev/" emacs~.
-- =doc= :: where the documentation lives
-- =test= :: where the tests are
-* Community
-If you want help, you can open an issue right on Github.
+* Version Notice
 
-You're also welcome to join my [[https://discord.gg/2kAK6TfqJq][discord server]] for all conversations related to org-gtd in particular and GTD in general. Many of the ideas for org-gtd came out of my reading the GTD book, and then reading some sections multiple times, but I am in no way an expert. Defining the GTD domain, which is to say, getting to clear nomenclature with clear actions, is still a work in progress.
-* Animated demos of org-gtd
-** Projects
-[[doc/project.gif]]
+** Upgrading to 4.0?
+
+This is org-gtd 4.0.0 - a major release with flexible project dependencies and simplified configuration.
+
+If you're upgrading from version 3.x, see the [[file:doc/org-gtd.org#upgrading][Upgrading section]] in the documentation for:
+- Required configuration changes (keyword mapping)
+- Required data migration command (~M-x org-gtd-upgrade-v3-to-v4~)
+- What's new in 4.0
+
+*Important*: Version 4.0 changes how projects work internally. You must run the migration for existing projects to continue working.
+
+** What's New in 4.0
+
+*** Flexible project dependencies!
+Projects can now have parallel tasks and custom dependency relationships, not just sequential execution.
+
+*** Simplified keyword configuration
+Use ~org-gtd-keyword-mapping~ instead of multiple individual variables.
+
+*** Declarative view language
+Create custom agenda views with simple filter specifications instead of complex skip functions.
+
+*** Better project modification
+Add tasks to projects anywhere, create custom dependencies, manage complex structures.
+
+See the full documentation for complete details.
+
+* Directory Structure
+
+- ~dev/~ :: Development jail environment
+- ~doc/~ :: Complete documentation and info manual
+- ~test/~ :: Test suite

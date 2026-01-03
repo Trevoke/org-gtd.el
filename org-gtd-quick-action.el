@@ -1,6 +1,6 @@
 ;;; org-gtd-quick-action.el --- Define quick-action items in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -28,9 +28,8 @@
 
 (require 'org-gtd-core)
 (require 'org-gtd-archive)
-
-(declare-function 'org-gtd-organize--call 'org-gtd-organize)
-(declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
+(require 'org-gtd-configure)
+(require 'org-gtd-organize-core)
 
 ;;;; Constants
 
@@ -48,12 +47,24 @@
 
 ;;;;; Private
 
-(defun org-gtd-quick-action--apply ()
-  "Process GTD inbox item by doing it now."
-  (org-todo org-gtd-done)
+(defun org-gtd-quick-action--configure ()
+  "Configure item at point as a quick action."
+  (org-gtd-configure-as-type 'quick-action))
+
+(defun org-gtd-quick-action--finalize ()
+  "Finalize quick action organization and archive."
   (setq-local org-gtd--organize-type 'quick-action)
   (org-gtd-organize-apply-hooks)
   (org-gtd-archive-item-at-point))
+
+(defun org-gtd-quick-action--apply ()
+  "Process GTD inbox item by doing it now.
+
+Orchestrates the quick action organization workflow:
+1. Configure as quick action
+2. Finalize and archive"
+  (org-gtd-quick-action--configure)
+  (org-gtd-quick-action--finalize))
 
 ;;;; Footer
 

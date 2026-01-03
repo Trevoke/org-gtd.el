@@ -1,6 +1,6 @@
-;;; org-gtd-agenda.el --- Manage the agenda view -*- lexical-binding: t; coding: utf-8 -*-
+;;; org-gtd-agenda.el --- Agenda utilities for org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -20,7 +20,8 @@
 
 ;;; Commentary:
 ;;
-;; Agenda management for org-gtd.
+;; Shared agenda utilities for org-gtd.
+;; For the engage views, see org-gtd-engage.el.
 ;;
 ;;; Code:
 
@@ -30,111 +31,86 @@
 (require 'org-agenda)
 
 (require 'org-gtd-core)
-(require 'org-gtd-backward-compatibility)
-
-(defgroup org-gtd-engage nil
-  "Customize the engage views in the org-gtd package."
-  :group 'org-gtd
-  :package-version '(org-gtd . "3.1"))
-
-(defcustom org-gtd-engage-prefix-width 12
-  "How many characters to dedicate to the agenda prefix in the engage view.
-
-This is where the project name is displayed, on the left side."
-  :group 'org-gtd-engage
-  :package-version '(org-gtd . "3.1")
-  :type 'integer)
-
-;;;; Commands
-
-;;;###autoload
-(defun org-gtd-engage ()
-  "Display `org-agenda' customized by org-gtd."
-  (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-  (with-org-gtd-context
-      (let* ((project-format-prefix
-              (format " %%i %%-%d:(org-gtd-agenda--prefix-format) "
-                      org-gtd-engage-prefix-width))
-             (org-agenda-custom-commands
-             `(("g" "Scheduled today and all NEXT items"
-                ((agenda ""
-                         ((org-agenda-span 1)
-                          (org-agenda-start-day nil)
-                          (org-agenda-skip-additional-timestamps-same-entry t)))
-                 (todo org-gtd-next
-                       ((org-agenda-overriding-header "All actions ready to be executed.")
-                        (org-agenda-prefix-format
-                         '((todo . ,project-format-prefix))))))))))
-        (org-agenda nil "g")
-        (goto-char (point-min)))))
-
-;;;###autoload
-(defun org-gtd-engage-grouped-by-context ()
-  "Show all `org-gtd-next' actions grouped by context (tag prefixed with @)."
-  (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-  (with-org-gtd-context
-      (let* ((contexts (seq-map
-                        (lambda (x) (substring-no-properties x))
-                        (seq-uniq
-                         (flatten-list
-                          (org-map-entries
-                           (lambda () org-scanner-tags)
-                           (format "{^@}+TODO=\"%s\"" org-gtd-next)
-                           'agenda)))))
-             (blocks (seq-map
-                      (lambda (x) `(tags ,(format "+%s+TODO=\"%s\"" x org-gtd-next)
-                                         ((org-agenda-overriding-header ,x))))
-                      contexts))
-             (org-agenda-custom-commands `(("g" "actions by context" ,blocks))))
-        (org-agenda nil "g"))))
-
-;;;###autoload
-(defun org-gtd-show-all-next ()
-  "Show all next actions from all agenda files in a single list.
-This assumes all GTD files are also agenda files."
-  (interactive)
-  (org-gtd-core-prepare-agenda-buffers)
-  (with-org-gtd-context
-      (org-todo-list org-gtd-next)))
 
 ;;;; Functions
 
-;;;;; Private
+;;;;; Public
 
-(defun org-gtd--replace-link-with-description (text)
-  "Replace all org-mode links in the given text with their descriptions."
-    (replace-regexp-in-string org-link-bracket-re "\\2" text))
+(defun org-gtd-agenda-replace-link-with-description (text)
+  "Replace all `org-mode' links in TEXT with their descriptions."
+  (replace-regexp-in-string org-link-bracket-re "\\2" text))
 
-  ;; (while (string-match org-link-bracket-re text)
-  ;;   (let ((description (match-string 3 text)))
-  ;;     (setq text (replace-match description nil t text))))
-  ;; text)
+(defun org-gtd-agenda-get-category-for-task ()
+  "Get CATEGORY for task at point, looking up project if needed.
+In v4, project tasks may not have a direct CATEGORY property.
+This function looks up the project heading's CATEGORY via ORG_GTD_PROJECT_IDS."
+  (or (org-entry-get (point) "CATEGORY")
+      (when-let* ((project-ids (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids))
+                  (first-id (car project-ids))
+                  (project-marker (org-id-find first-id 'marker)))
+        (org-with-point-at project-marker
+          (org-entry-get (point) "CATEGORY")))))
 
-(defun org-gtd--truncate-project-to-width (st)
-  "Truncates the string to the width indicated by org-gtd-engage-prefix-width."
-  (truncate-string-to-width (string-trim st) org-gtd-engage-prefix-width nil ?\s  "…"))
-
-(defun org-gtd-agenda--prefix-format ()
-  "Format prefix for items in agenda buffer."
-  (let* ((elt (org-element-at-point))
-         (level (org-element-property :level elt))
-         (category (org-entry-get (point) "CATEGORY" t))
-         (parent-title (org-element-property
-                        :raw-value
-                        (org-element-property :parent elt)))
+(defun org-gtd-agenda--prefix-format (width)
+  "Format prefix for items in agenda buffer, truncated to WIDTH.
+Uses project name if available, otherwise CATEGORY, otherwise \"no project\"."
+  (let* ((proj-name (org-entry-get (point) org-gtd-prop-project))
+         (category (org-gtd-agenda-get-category-for-task))
          (tally-cookie-regexp "\[[[:digit:]]+/[[:digit:]]+\][[:space:]]*"))
-    (org-gtd--truncate-project-to-width
-     ;; if level 3, use the parent
-     ;; otherwise if it has category, use category
-     ;; else "no project" so we avoid failing
-     (org-gtd--replace-link-with-description
-      (cond
-       ((eq level 3) (replace-regexp-in-string tally-cookie-regexp "" parent-title))
-       (category     category)
-       (t  "no project")
-       )))))
+    (truncate-string-to-width
+     (string-trim
+      (org-gtd-agenda-replace-link-with-description
+       (cond
+        (proj-name (replace-regexp-in-string tally-cookie-regexp "" proj-name))
+        (category     category)
+        (t  "no project"))))
+     width nil ?\s "…")))
+
+;;;;; Prefix Element Resolvers
+
+(defun org-gtd-agenda--resolve-project ()
+  "Return parent project headline for item at point, or nil if none."
+  (when-let ((proj-name (org-entry-get (point) org-gtd-prop-project)))
+    (let ((tally-cookie-regexp "\[[[:digit:]]+/[[:digit:]]+\][[:space:]]*"))
+      (string-trim
+       (org-gtd-agenda-replace-link-with-description
+        (replace-regexp-in-string tally-cookie-regexp "" proj-name))))))
+
+(defun org-gtd-agenda--resolve-area-of-focus ()
+  "Return explicitly set CATEGORY property for item at point, or nil if none.
+Unlike `org-entry-get' with CATEGORY, this only returns user-set values,
+not org-mode's computed default category."
+  (let ((category (org-entry-get (point) "CATEGORY")))
+    ;; Filter out org-mode's default "???" category
+    (unless (or (null category) (string= category "???"))
+      category)))
+
+(defun org-gtd-agenda--resolve-file-name ()
+  "Return base file name for current buffer, or nil if no file."
+  (when buffer-file-name
+    (file-name-base buffer-file-name)))
+
+(defun org-gtd-agenda--resolve-prefix-element (element)
+  "Resolve ELEMENT to a string value at point, or nil if unavailable.
+ELEMENT can be:
+- \\='project - parent project headline
+- \\='area-of-focus - CATEGORY property
+- \\='file-name - buffer file base name
+- a string - returned as-is (literal)"
+  (pcase element
+    ('project (org-gtd-agenda--resolve-project))
+    ('area-of-focus (org-gtd-agenda--resolve-area-of-focus))
+    ('file-name (org-gtd-agenda--resolve-file-name))
+    ((pred stringp) element)
+    (_ nil)))
+
+(defun org-gtd-agenda--resolve-prefix-chain (elements width)
+  "Try each element in ELEMENTS, return first non-nil truncated to WIDTH.
+ELEMENTS is a list of prefix element specifiers (symbols or strings).
+The first element that resolves to a non-nil value is used.
+Result is truncated with ellipsis if too long, padded with spaces if too short."
+  (let ((result (cl-some #'org-gtd-agenda--resolve-prefix-element elements)))
+    (truncate-string-to-width (or result "") width nil ?\s "…")))
 
 ;;;; Footer
 

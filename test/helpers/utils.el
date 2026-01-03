@@ -1,5 +1,10 @@
+;; Load guard to prevent redundant loading
+(unless (featurep 'org-gtd-test-helper-utils)
+
 (defun create-additional-project-target (filename)
-  (ogt--create-org-file-in-org-gtd-dir filename ogt--base-project-heading))
+  "Create an additional file for project organization with a project heading."
+  (let ((base-heading "* AdditionalHeading\n:PROPERTIES:\n:ORG_GTD_REFILE:  Projects\n:END:\n"))
+    (ogt--create-org-file-in-org-gtd-dir filename base-heading)))
 
 (defun ogt-inbox-buffer ()
   (find-file-noselect (org-gtd-inbox-path)))
@@ -7,10 +12,10 @@
 (defun ogt--archive ()
   "Create or return the buffer to the archive file."
   (with-current-buffer (ogt-inbox-buffer)
-    (find-file-noselect
-     (car (with-org-gtd-context
-              (org-archive--compute-location
-               (funcall org-gtd-archive-location)))))))
+    ;; v4: Bind org-archive-location locally instead of using with-org-gtd-context
+    (let ((org-archive-location (funcall org-gtd-archive-location)))
+      (find-file-noselect
+       (car (org-archive--compute-location org-archive-location))))))
 
 (defun ogt--archive-string ()
   "return string of items archived from actionable file"
@@ -56,3 +61,6 @@ Return the buffer visiting that file."
                             (buffer-string)))))
     (kill-buffer "*Directory*")
     ogt-files))
+
+;; End load guard and provide feature
+(provide 'org-gtd-test-helper-utils))

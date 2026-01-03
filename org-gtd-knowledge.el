@@ -1,6 +1,6 @@
 ;;; org-gtd-knowledge.el --- Define logic for handling knowledge in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -29,9 +29,8 @@
 (require 'org-gtd-core)
 (require 'org-gtd-archive)
 (require 'org-gtd-clarify)
-
-(declare-function 'org-gtd-organize--call 'org-gtd-organize)
-(declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
+(require 'org-gtd-configure)
+(require 'org-gtd-organize-core)
 
 ;;;; Constants
 
@@ -54,12 +53,24 @@ clarify step, before you call `org-gtd-organize').")
 
 ;;;;; Private
 
-(defun org-gtd-knowledge--apply ()
-  "Once the user has filed this knowledge, we can execute this logic."
-  (org-todo org-gtd-done)
+(defun org-gtd-knowledge--configure ()
+  "Configure item at point as knowledge."
+  (org-gtd-configure-as-type 'reference))
+
+(defun org-gtd-knowledge--finalize ()
+  "Finalize knowledge organization and archive."
   (setq-local org-gtd--organize-type 'knowledge)
   (org-gtd-organize-apply-hooks)
   (org-gtd-archive-item-at-point))
+
+(defun org-gtd-knowledge--apply ()
+  "Process GTD inbox item by transforming it into knowledge.
+
+Orchestrates the knowledge organization workflow:
+1. Configure as knowledge
+2. Finalize and archive"
+  (org-gtd-knowledge--configure)
+  (org-gtd-knowledge--finalize))
 
 ;;;; Footer
 

@@ -1,6 +1,6 @@
 ;;; org-gtd-single-action.el --- Define single action items in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -26,22 +26,25 @@
 
 ;;;; Requirements
 
+(require 'org-gtd-core)
+(require 'org-gtd-types)
 (require 'org-gtd-clarify)
 (require 'org-gtd-refile)
+(require 'org-gtd-configure)
+(require 'org-gtd-organize-core)
 
-(declare-function 'org-gtd-organize--call 'org-gtd-organize)
-(declare-function 'org-gtd-organize-apply-hooks 'org-gtd-organize)
+;;;; Variables
+
+(defvar org-state)  ; dynamically bound by org-mode during state changes
 
 ;;;; Constants
-
-(defconst org-gtd-action "Actions")
 
 (defconst org-gtd-action-template
   (format "* Actions
 :PROPERTIES:
-:ORG_GTD: %s
+:%s: %s
 :END:
-" org-gtd-action))
+" org-gtd-prop-refile org-gtd-action))
 
 (defconst org-gtd-single-action-func #'org-gtd-single-action--apply
   "Function called when organizing item at point as a single next action.")
@@ -58,7 +61,7 @@
 ;;;;; Public
 
 (defun org-gtd-single-action-create (topic)
-  "Automatically create a delegated task in the GTD flow.
+  "Automatically create a single action in the GTD flow.
 
 TOPIC is what you want to see in the agenda view."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
@@ -66,18 +69,62 @@ TOPIC is what you want to see in the agenda view."
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
-      (org-gtd-clarify-item)
       (org-gtd-single-action))
     (kill-buffer buffer)))
 
 ;;;;; Private
 
-(defun org-gtd-single-action--apply ()
-  "Item at point is a one-off action, ready to be executed."
-  (org-todo org-gtd-next)
+(defun org-gtd-single-action--maybe-convert-to-delegated ()
+  "Prompt to convert single action to delegated item when changed to WAIT.
+
+This function is intended for `org-after-todo-state-change-hook'.
+It checks if:
+1. The item is a single action (ORG_GTD=Actions)
+2. The new state is WAIT
+
+If conditions are met, prompts the user to convert to a delegated item.
+If they confirm, prompts for who to delegate to and when to check in."
+  (when (and (equal org-state (org-gtd-keywords--wait))
+             (equal (org-entry-get (point) "ORG_GTD")
+                    (org-gtd-type-org-gtd-value 'next-action)))
+    (when (y-or-n-p "Convert to delegated item? ")
+      (org-gtd-single-action--convert-to-delegated))))
+
+(defun org-gtd-single-action--convert-to-delegated ()
+  "Convert current single action to a delegated item.
+
+Prompts for who to delegate to and when to check in, then updates
+the item's properties accordingly."
+  (let* ((who (read-string "Delegated to: "))
+         (when-date (org-read-date nil nil nil "Check-in date: ")))
+    ;; Set ORG_GTD to Delegated
+    (org-entry-put (point) "ORG_GTD" (org-gtd-type-org-gtd-value 'delegated))
+    ;; Set DELEGATED_TO property
+    (org-entry-put (point) (org-gtd-type-property 'delegated :who) who)
+    ;; Set ORG_GTD_TIMESTAMP property
+    (org-entry-put (point) (org-gtd-type-property 'delegated :when)
+                   (format "<%s>" when-date))))
+
+(defun org-gtd-single-action--configure ()
+  "Configure item at point as a single action."
+  (org-gtd-configure-as-type 'next-action))
+
+(defun org-gtd-single-action--finalize ()
+  "Finalize single action organization and refile."
   (setq-local org-gtd--organize-type 'single-action)
   (org-gtd-organize-apply-hooks)
-  (org-gtd-refile--do org-gtd-action org-gtd-action-template))
+  (if org-gtd-clarify--skip-refile
+      (org-gtd-organize--update-in-place)
+    (org-gtd-refile--do org-gtd-action org-gtd-action-template)))
+
+(defun org-gtd-single-action--apply ()
+  "Process GTD inbox item by transforming it into a single action.
+
+Orchestrates the single action organization workflow:
+1. Configure as next action
+2. Finalize and refile to actions file"
+  (org-gtd-single-action--configure)
+  (org-gtd-single-action--finalize))
 
 ;;;; Footer
 

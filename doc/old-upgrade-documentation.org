@@ -1,0 +1,309 @@
+For posterity
+
+
+* 4.0.0 <- 3.x
+** IMPORTANT: Configure org-agenda-files
+org-gtd no longer manages ~org-agenda-files~ for you. You must add your GTD directory to ~org-agenda-files~ in your config:
+
+#+begin_src elisp
+;; Add GTD files to agenda (REQUIRED for v4)
+(setq org-agenda-files (list org-gtd-directory))
+
+;; Or if you have other agenda files too:
+(setq org-agenda-files (list "~/org/" org-gtd-directory))
+#+end_src
+
+Without this, your GTD items will not appear in agenda views.
+
+** Minimum Emacs version
+org-gtd 4.0 requires Emacs 28.1 or higher. Users on Emacs 27.x must stay on org-gtd 3.x.
+
+** Clarify mode changes
+~org-gtd-clarify-mode~ is now a major mode derived from ~org-mode~ (was a minor mode).
+The ~org-gtd-wip-mode~ has been removed entirely.
+
+** Update keybindings
+Replace ~org-gtd-clarify-map~ with ~org-gtd-clarify-mode-map~ in your config:
+
+| 3.x                    | 4.0                         |
+|------------------------+-----------------------------|
+| ~org-gtd-clarify-map~  | ~org-gtd-clarify-mode-map~  |
+
+Example:
+#+begin_src elisp
+;; Before (v3):
+(define-key org-gtd-clarify-map (kbd "C-c c") 'org-gtd-organize)
+
+;; After (v4):
+(define-key org-gtd-clarify-mode-map (kbd "C-c c") 'org-gtd-organize)
+#+end_src
+
+The old name still works but is obsolete and will show compiler warnings.
+
+* 3.0.0 <- 2.2.0
+There's a lot here, so you may want to make yourself some tea. We have to cover support for org habits, upgrading data, key changes in the configuration, a change in the menu, and the rest of the API changes. And once that's done, you should head back to the [[#new-in-3.0][What's new in 3.0]] section to see what else is available for you!
+** A note for doom emacs users
+Beta testers using doom emacs found they needed to do a fully clean install. The regular upgrades did not work. We could not find a clean fix. We suspect this is related to org-mode being a very complex beast, but we're not sure.
+** Support for org habits
+For the sake of keeping the =org-agenda-custom-commands= as simple as possible, habits are now stored under headings with the property ~ORG_GTD: Habits~. The same rules for refiling apply to these headings.
+** Upgrading data
+Some not-inconsequential data structure changes happened under the hood. To keep using =org-gtd= you will need to upgrade your data, using ~M-x org-gtd-upgrade-v2-to-v3~.
+/Backups are always recommended, even though there are tests./
+Note that if there are any habits managed by =org-gtd v2= then they will be moved to a heading ~* Habits~, in a file called =org-gtd-tasks.org=, in =org-gtd-directory=.
+** Key changes in configuration
+Here's a table of the changes, with sample config change and explanations afterwards.
+| 2.0                            | 3.0                                    |
+|--------------------------------+----------------------------------------|
+| ~org-gtd-process-mode~         | ~org-gtd-clarify-mode~                 |
+| ~org-gtd-process-map~          | ~org-gtd-clarify-map~                  |
+| ~org-gtd-choose~               | ~org-gtd-organize~                     |
+| ~org-gtd-process-item-hooks~   | ~org-gtd-organize-hooks~               |
+| ~org-gtd-capture-templates~    | Now looks like ~org-capture-templates~ |
+| Projects :TRIGGER:             | changed again (see below)              |
+| ~org-gtd-agenda-custom-config~ | gone (see below)                       |
+| org file headers               | Drop 'em (see below)                   |
+
+*** Sample new config
+#+begin_src elisp
+  (use-package org-gtd
+    :after org
+    :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
+                     :commit "3.0.0" :upgrade t)
+    :demand t
+    :custom
+    (org-gtd-directory "~/org-gtd")
+    (org-edna-use-inheritance t)
+    (org-gtd-organize-hooks '(org-gtd-set-area-of-focus org-set-tags-command))
+    :config
+    (org-edna-mode)
+    :bind
+    (("C-c d c" . org-gtd-capture)
+     ("C-c d e" . org-gtd-engage)
+     ("C-c d p" . org-gtd-process-inbox)
+     :map org-gtd-clarify-map
+     ("C-c c" . org-gtd-organize)))
+#+end_src
+*** Projects trigger
+The new trigger line looks like this:
+
+~:TRIGGER: org-gtd-next-project-action org-gtd-update-project-task!~
+
+This allows us to define these functions as flexibly as we want, in the future, and
+that will mean we can expand what it means to be a project in the future.
+
+*** ~org-gtd-capture-templates~
+Most of you users have not had to touch this, so you probably won't have a use for this section of the upgrade documentation.
+The new data structure is now a complete parallel for the ~org-capture-templates~ structure, so you can see how to structure it by looking at the help file for that.
+
+The key elements are still the same, however:
+- the template has to start with a single asterisk
+- the entry has to be ~entry  (file ,#'org-gtd-inbox-path)~
+
+*** ~org-gtd-agenda-custom-config~
+This customization is no longer in use. It wasn't an easy decision to make, but I have to make way for bigger, future changes in org-gtd over the next major releases.
+
+If you have an existing ~org-gtd-agenda-custom-commands~ setup, then you can do something like this to keep using it. In short, for now, create your own function, and wrap the definition with the ~with-org-gtd-context~ macro. You can see the source code of ~org-gtd-engage~ for an example.
+
+#+begin_src elisp
+  ; only so I refer to it with a name in this snippet
+  (setq my-commands org-gtd-agenda-custom commands)
+
+  (defun my-org-gtd-engage ()
+    (interactive)
+    (with-org-gtd-context
+        (let ((org-agenda-custom-commands my-commands))
+          ; "g" is what the previous command used, replace with what you need
+          (org-agenda nil "g"))))
+#+end_src
+*** Dropping the org file headers
+The TODO keywords are now customizable (see ~M-x customize-group org-gtd RET~), while they were hard-coded in v2. Those hard-coded values are now the defaults, but you should remove the hard-coded values anyway, so remove the following line:
+
+=#+TODO: NEXT(n) TODO(t) WAIT(w@) | DONE(d) CNCL(c@)=
+** A change in the menu
+- Habits have their place (=h=)
+- What used to be called "archive" is now called "knowledge" (=k=)
+- Modify project is now "Add to project" (=a=)
+
+Do note that that "a" got completely reassigned! If you used to use it for items that went into your personal knowledge management system, you'll need to retrain yourself.
+
+I'm very sorry about this. In the future, you'll be able to customize this UI.
+** Rest of API changes
+*** ~org-gtd-delegate~ is now ~org-gtd-delegate-item-at-point~
+This is the function to call if you want to delegate without refiling.
+*** ~org-gtd-agenda-projectify~ is now ~just org-gtd-clarify-agenda-item~
+V3 means you can freely clarify and organize anything in the agenda with the above function.
+*** ~org-gtd-agenda-delegate~ is now ~org-gtd-delegate-agenda-item~
+The nomenclature changes here because of an effort to, over time, define a better language for GTD, slicing vertically through org-mode features.
+*** ~org-gtd-cancel-project~ is now ~org-gtd-project-cancel~
+Same reason as above.
+*** ~org-gtd-agenda-cancel-project~ is now ~org-gtd-project-cancel-from-agenda~
+Same reason as above.
+*** ~org-gtd-show-stuck-projects~ is now ~org-gtd-review-stuck-projects~
+Same reason as above.
+** That's it!
+Go check out [[#new-in-3.0][What's new in 3.0]] as well as [[#configuring][Configuring]].
+* 2.2.0 <- 2.1.0
+** respect org-mode's org-reverse-note-order variable
+The upgrade to =2.0.1= allowed addition of a task as the first task of an existing project while organizing a clarified item.
+=2.0.2= allows the user to choose what they prefer. Correspondingly, it lets the =org-mode= variable ~org-reverse-note-order~ operate as it should. In your configuration, use:
+#+begin_src emacs-lisp
+  (setq org-reverse-note-order t)   ;; refile to the top of the list, or
+  (setq org-reverse-note-order nil) ;; refile to the bottom of the list
+#+end_src
+
+Note that if you're upgrading directly from 2.0.0 you still need to make the adjustment to the TRIGGER for your project headings.
+
+* 2.1.0 <- 2.0.0
+** Update org-edna trigger
+In order for project modification to work, you will need to go to every Project heading that you have. You will find the following:
+#+begin_example
+:PROPERTIES:
+:TRIGGER: next-sibling todo!(NEXT)
+:ORG_GTD: Projects
+:END:
+#+end_example
+
+And you will need to update the trigger so it looks like this:
+#+begin_example
+:PROPERTIES:
+:TRIGGER: relatives(forward-no-wrap todo-only 1 no-sort) todo!(NEXT)
+:ORG_GTD: Projects
+:END:
+#+end_example
+
+Now be sure to set the following variable in your config file, before org-gtd loads, to disable the loud warning:
+
+#+begin_src emacs-lisp
+(setq org-gtd-update-ack "2.1.0")
+#+end_src
+
+That is it! You're ready to add tasks to existing projects while processing the inbox.
+* 2.0.0 <- 1.1.x
+** Configuration
+Org GTD now handles dependency loading more intelligently, so you no longer need the overly complicated setup of ~org-gtd~, ~org-agenda~ and ~org-capure~ in your config for dependency loading. You now only need ~org-gtd~. If you are using ~use-package~ then the following is the minimal config required.
+
+#+begin_src elisp
+  (use-package org-gtd :after 'org)
+#+end_src
+
+You no longer need to configure ~org-agenda-property-list~ yourself. Org GTD now manages the context with a macro, ~with-org-gtd-context~. Any prior configuration of this subpackage can be handled as you did before.
+
+You no longer need to configure ~org-agenda-files~. Same reason as above. This allows you to use org-gtd without destroying your previous setup, and makes it easier to try org-gtd and then get rid of it if you don't like it.
+
+You no longer need to configure ~org-agenda-custom-commands~. Now there's ~org-gtd-agenda-custom-commands~ to take the relay - see the variable documentation for more information.
+
+The org-capture templates are now simplified and managed by ~org-gtd-capture-templates~. If you did not change the default configuration, then you can just remove what you had. Read the variable documentaton for further information.
+*** Example upgrade
+My org-gtd config for 1.x was as follows:
+#+begin_src elisp
+  (use-package org-gtd
+    :after org
+    :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
+                     :commit "1.1.1" :upgrade t)
+    :demand t
+    :custom
+    (org-gtd-directory "~/org-gtd")
+    (org-agenda-property-list '("DELEGATED_TO"))
+    (org-edna-use-inheritance t)
+    :config
+    (org-edna-load)
+    :bind
+    (("C-c d c" . org-gtd-capture)
+     ("C-c d a" . org-agenda-list)
+     ("C-c d p" . org-gtd-process-inbox)
+     ("C-c d n" . org-gtd-show-all-next)
+     ("C-c d s" . org-gtd-show-stuck-projects)
+     :map org-gtd-process-map
+     ("C-c c" . org-gtd-choose)))
+
+
+  (use-package org-agenda
+    :ensure nil
+    :no-require t
+    :after (org-gtd)
+    :custom
+    (org-agenda-skip-deadline-if-done t)
+    (org-agenda-skip-scheduled-if-done t)
+    (org-agenda-files `(,org-gtd-directory))
+    (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT"))))))
+
+  (use-package org-capture
+    :ensure nil
+    :after org-gtd
+    :config
+    (setq org-capture-templates `(("i" "Inbox"
+                                 entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
+                                 "* %?\n%U\n\n  %i"
+                                 :kill-buffer t)
+                                ("t" "Todo with link"
+                                 entry (file ,(org-gtd--path org-gtd-inbox-file-basename))
+                                 "* %?\n%U\n\n  %i\n  %a"
+                                 :kill-buffer t))))
+#+end_src
+
+And my config for 2.0 is:
+#+begin_src elisp
+  (use-package org-gtd
+    :after org
+    :quelpa (org-gtd :fetcher github :repo "trevoke/org-gtd.el"
+                     :commit "2.0.0" :upgrade t)
+    :demand t
+    :custom
+    (org-gtd-directory "~/org-gtd")
+    (org-edna-use-inheritance t)
+    :config
+    (org-edna-mode)
+    :bind
+    (("C-c d c" . org-gtd-capture)
+     ("C-c d e" . org-gtd-engage)
+     ("C-c d p" . org-gtd-process-inbox)
+     ("C-c d n" . org-gtd-show-all-next)
+     ("C-c d s" . org-gtd-show-stuck-projects)
+     :map org-gtd-process-map
+     ("C-c c" . org-gtd-choose)))
+#+end_src
+** Relevant commands with new names
+- ~org-agenda-list~ -> ~org-gtd-engage~
+- ~org-gtd-clarify-finalize~ -> ~org-gtd-choose~ (see the section on Key bindings below)
+** heading states (TODO, etc.)
+You need to rename CANCELED to CNCL. a simple string replace in the ~org-gtd-directory~ will do the trick.
+** Differentiating GTD types of items
+Org GTD no longer uses the name of the heading to figure out how to refile things, and which headings are useful. Instead it uses a custom Org property called ORG_GTD. This means you are free to rename the existing headings whatever you want, but you DO need to make some adjustments to your current files.
+
+If you would like to add new refile targets, it's simple, follow these instructions.
+
+For projects, make sure the heading has the following two properties.
+#+begin_src org-mode
+:PROPERTIES:
+:TRIGGER: next-sibling todo!(NEXT)
+:ORG_GTD: Projects
+:END:
+#+end_src
+
+For other headings, make sure there is an ORG_GTD property, like for the project, above.
+
+The other ORG_GTD properties are set as follows. Note that Single and Delegated actions are together now, so you can merge those headings if you want.
+
+- Scheduled actions :: =ORG_GTD: Calendar=
+- Single & Delegated actions :: =ORG_GTD: Actions=
+- Incubated actions :: =ORG_GTD: Incubated=
+
+For incubated actions, version 1.x of Org GTD asked for second-level heading, such as ~*To Read~. No more - these are now top-level headings, exactly as described above, with a heading property of ~ORG_GTD: Incubated~.
+** Multiple refile targets
+There is a new variable, ~org-gtd-refile-to-any-target~. By default this variable is set to ~t~. This means that Org GTD will refile to whatever the first target it finds is. This is the default value because it most closely matches the behavior for version 1.x.
+*THIS BEHAVIOR ALSO APPLIES TO INCUBATE REFILE TARGETS*. Therefore, if you have multiple incubated refile targets, you will need to set this variable to ~nil~, or change to a single refile target. You can e.g. set a custom property to describe the kind of incubated item it is, if it is useful to you, something like:
+
+#+begin_example
+,* Incubated
+,** Buy a boat
+SCHEDULED: <2035-06-01 Fri>
+:PROPERTIES:
+:INCUBATE: big financial investment
+:END:
+#+end_example
+** Key bindings
+Version 1.x of Org GTD recommended a binding for ~org-gtd-clarify-finalize~. This binding must now be set as follows (replace the keybinding with one of your choice):
+
+#+begin_src elisp
+  (define-key org-gtd-process-map (kbd "C-c c") #'org-gtd-choose)
+#+end_src

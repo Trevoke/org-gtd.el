@@ -1,0 +1,2895 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- saved from url=(0035)https://www.nongnu.org/org-edna-el/ -->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Org Edna</title>
+<meta name="generator" content="Org mode">
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2020 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+<link type="text/css" rel="stylesheet" id="dark-mode-custom-link"><link type="text/css" rel="stylesheet" id="dark-mode-general-link"><style lang="en" type="text/css" id="dark-mode-custom-style"></style><style lang="en" type="text/css" id="dark-mode-native-style"></style><style lang="en" type="text/css" id="dark-mode-native-sheet"></style></head>
+<body>
+<div id="content">
+<h1 class="title">Org Edna</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="https://www.nongnu.org/org-edna-el/#org0ee32f2">Copying</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#introduction">Introduction</a>
+<ul>
+<li><a href="https://www.nongnu.org/org-edna-el/#org2421cd7">Installation and Setup</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#operation">Basic Operation</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#blockers">Blockers</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#triggers">Triggers</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#syntax">Syntax</a></li>
+</ul>
+</li>
+<li><a href="https://www.nongnu.org/org-edna-el/#basic">Basic Features</a>
+<ul>
+<li><a href="https://www.nongnu.org/org-edna-el/#finders">Finders</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#org29a9491">Actions</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#help">Getting Help</a></li>
+</ul>
+</li>
+<li><a href="https://www.nongnu.org/org-edna-el/#advanced">Advanced Features</a>
+<ul>
+<li><a href="https://www.nongnu.org/org-edna-el/#cache">Finder Cache</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#conditions">Conditions</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#org5ec9b2e">Consideration</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#conditional_forms">Conditional Forms</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#not_done">What Constitutes “Not Done”?</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#setting_keywords">Setting the Properties</a></li>
+</ul>
+</li>
+<li><a href="https://www.nongnu.org/org-edna-el/#org958f4c9">Extending Edna</a>
+<ul>
+<li><a href="https://www.nongnu.org/org-edna-el/#orgb74adfe">Naming Conventions</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#orgfa5cf97">Finders</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#org485f4c7">Actions</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#orgb87c679">Conditions</a></li>
+</ul>
+</li>
+<li><a href="https://www.nongnu.org/org-edna-el/#org3d8ff0f">Contributing</a>
+<ul>
+<li><a href="https://www.nongnu.org/org-edna-el/#bugs">Bugs</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#ede">Working with EDE</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#compiling">Compiling Edna</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#testing">Testing Edna</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#commit_checklist">Before Sending Changes</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#bzr_dev">Developing with Bazaar</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#docs">Documentation</a></li>
+</ul>
+</li>
+<li><a href="https://www.nongnu.org/org-edna-el/#org9658714">Changelog</a>
+<ul>
+<li><a href="https://www.nongnu.org/org-edna-el/#org8786aa7">1.1.2</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#org59ad461">1.1.1</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#orga319796">1.1.0</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#orged2e56d">1.0.2</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#orgd73b16f">1.0.1</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#orgab8f6ef">1.0</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#orga69625c">1.0beta8</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#orgc0f19cc">1.0beta7</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#orgdf63718">1.0beta6</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#org11eb5dc">1.0beta5</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#orgfe89cd4">1.0beta4</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#org501b0b1">1.0beta3</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#org3b5a7ff">1.0beta2</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org0ee32f2" class="outline-2">
+<h2 id="org0ee32f2">Copying</h2>
+<div class="outline-text-2" id="text-org0ee32f2">
+<p>
+Copyright (C) 2017-2020 Free Software Foundation, Inc.
+</p>
+
+<blockquote>
+<p>
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+</p>
+
+<p>
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+</p>
+
+<p>
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.
+</p>
+</blockquote>
+</div>
+</div>
+<div id="outline-container-orgeeb9960" class="outline-2">
+<h2 id="introduction">Introduction</h2>
+<div class="outline-text-2" id="text-introduction">
+<p>
+Extensible Dependencies ’N’ Actions (EDNA) for Org Mode tasks
+</p>
+
+<p>
+Edna provides an extensible means of specifying conditions which must be
+fulfilled before a task can be completed and actions to take once it is.
+</p>
+
+<p>
+Org Edna runs when either the BLOCKER or TRIGGER properties are set on a
+heading, and when it is changing from a TODO state to a DONE state.
+</p>
+
+<p>
+For brevity, we use TODO state to indicate any state in <code>org-not-done-keywords</code>,
+and DONE state to indicate any state in <code>org-done-keywords</code>.
+</p>
+</div>
+
+<div id="outline-container-org2421cd7" class="outline-3">
+<h3 id="org2421cd7">Installation and Setup</h3>
+<div class="outline-text-3" id="text-org2421cd7">
+<p>
+<b>Requirements</b>
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col class="org-left">
+
+<col class="org-right">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Emacs</td>
+<td class="org-right">25.1</td>
+</tr>
+
+<tr>
+<td class="org-left">seq</td>
+<td class="org-right">2.19</td>
+</tr>
+
+<tr>
+<td class="org-left">org</td>
+<td class="org-right">9.0.5</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+There are two ways to install Edna: From GNU ELPA, or from source.
+</p>
+
+<p>
+From ELPA:
+</p>
+
+<pre class="example">M-x package-install org-edna
+</pre>
+
+<p>
+From Source:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">bzr branch https://bzr.savannah.gnu.org/r/org-edna-el/ org-edna
+</pre>
+</div>
+
+<p>
+After that, add the following to your init file (typically .emacs):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #204A87;">;; </span><span style="color: #204A87;">Only necessary if installing from source</span>
+(add-to-list 'load-path <span style="color: #4E9A06;">"/full/path/to/org-edna/"</span>)
+(<span style="color: #A52A2A; font-weight: bold;">require</span> '<span style="color: #F5666D;">org-edna</span>)
+
+<span style="color: #204A87;">;; </span><span style="color: #204A87;">Always necessary</span>
+(org-edna-mode)
+</pre>
+</div>
+
+<p>
+If you ever want to disable Edna, run <code>(org-edna-mode)</code> again.
+</p>
+
+<p>
+To determine if Edna is active, check the <code>org-edna-mode</code> variable.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf53ea4e" class="outline-3">
+<h3 id="operation">Basic Operation</h3>
+<div class="outline-text-3" id="text-operation">
+<p>
+Let’s start with an example: Say you want to do laundry, but once you’ve put
+your clothes in the washer, you forget about it.  Even with a tool like
+org-notify or appt, Org won’t know when to remind you.  If you’ve got them
+scheduled for an hour after the other, maybe you forgot one time, or ran a
+little late.  Now Org will remind you too early.
+</p>
+
+<p>
+Edna can handle this for you like so:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Put clothes in washer</span>
+  <span style="color: #A52A2A; font-weight: bold;">SCHEDULED:</span> <span style="color: #a020f0; text-decoration: underline;">&lt;2017-04-08 Sat 09:00&gt;</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span> next-sibling scheduled!("++1h")
+<span style="color: #0000ff;">  :END:</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Put clothes in dryer</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span> next-sibling scheduled!("++1h")
+  <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span>  previous-sibling
+<span style="color: #0000ff;">  :END:</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Fold laundry</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span> next-sibling scheduled!("++1h")
+  <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span>  previous-sibling
+<span style="color: #0000ff;">  :END:</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Put clothes away</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span> next-sibling scheduled!("++1h")
+  <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span>  previous-sibling
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+After you’ve put your clothes in the washer and mark the task DONE, Edna will
+schedule the following task for one hour after you set the first heading as
+done.
+</p>
+
+<p>
+Another example might be a checklist that you’ve done so many times that you do
+part of it on autopilot:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Address all TODOs in code</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Commit Code to Repository</span>
+</pre>
+</div>
+
+<p>
+The last thing anyone wants is to find out that some part of the code on which
+they’ve been working for days has a surprise waiting for them.  Once again, Edna
+can help:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Address all TODOs in code</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span> file("main.cpp") file("code.cpp") re-search?("<span style="color: #cc0000;">TODO</span>")
+<span style="color: #0000ff;">  :END:</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Commit Code to Repository</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgae2d414" class="outline-3">
+<h3 id="blockers">Blockers</h3>
+<div class="outline-text-3" id="text-blockers">
+<p>
+A blocker indicates conditions which must be met in order for a heading to be
+marked as DONE.  Typically, this will be a list of headings that must be marked
+as DONE.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcb42362" class="outline-3">
+<h3 id="triggers">Triggers</h3>
+<div class="outline-text-3" id="text-triggers">
+<p>
+A trigger is an action to take when a heading is set to done.  For example,
+scheduling another task, marking another task as TODO, or renaming a file.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga8c007c" class="outline-3">
+<h3 id="syntax">Syntax</h3>
+<div class="outline-text-3" id="text-syntax">
+<p>
+Edna has its own language for commands, the basic form of which is KEYWORD(ARG1 ARG2 ...)
+</p>
+
+<p>
+KEYWORD can be any valid lisp symbol, such as key-word, KEY_WORD!, or keyword?.
+</p>
+
+<p>
+Each argument can be one of the following:
+</p>
+
+<ul class="org-ul">
+<li>A symbol, such as arg or org-mode</li>
+<li>A quoted string, such as “hello” or “My name is Edna”</li>
+<li>A number, such as 0.5, +1e3, or -5</li>
+<li>A UUID, such as c5e30c76-879a-494d-9281-3a4b559c1a3c</li>
+</ul>
+
+<p>
+Each argument takes specific datatypes as input, so be sure to read the entry
+before using it.
+</p>
+
+<p>
+The parentheses can be omitted for commands with no arguments.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org02921ea" class="outline-2">
+<h2 id="basic">Basic Features</h2>
+<div class="outline-text-2" id="text-basic">
+<p>
+The most basic features of Edna are <b>finders</b> and <b>actions</b>.
+</p>
+</div>
+
+<div id="outline-container-orgb1c2163" class="outline-3">
+<h3 id="finders">Finders</h3>
+<div class="outline-text-3" id="text-finders">
+<p>
+A finder specifies locations from which to test conditions or perform actions.
+These locations are referred to as “targets”.  The current heading, i.e. the one
+that is being blocked or triggered, is referred to as the “source” heading.
+</p>
+
+<p>
+More than one finder may be used.  In this case, the targets are merged
+together, removing any duplicates.
+</p>
+
+<p>
+Many finders take additional options, marked “OPTIONS”.  See <a href="https://www.nongnu.org/org-edna-el/#relatives">relatives</a> for
+information on these options.
+</p>
+</div>
+
+<div id="outline-container-orgba4870c" class="outline-4">
+<h4 id="ancestors">ancestors</h4>
+<div class="outline-text-4" id="text-ancestors">
+<ul class="org-ul">
+<li>Syntax: ancestors(OPTIONS...)</li>
+</ul>
+
+<p>
+The <code>ancestors</code> finder returns a list of the source heading’s ancestors.
+</p>
+
+<p>
+For example:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Heading 1</span>
+<span style="color: #EDEDED;">*</span><span style="color: #0084C8; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #0084C8; font-weight: bold;"> Heading 2</span>
+<span style="color: #EDEDED;">*</span><span style="color: #0084C8; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #0084C8; font-weight: bold;"> Heading 3</span>
+<span style="color: #EDEDED;">**</span><span style="color: #A52A2A; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #A52A2A; font-weight: bold;"> Heading 4</span>
+<span style="color: #EDEDED;">***</span><span style="color: #204A87;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #204A87;"> Heading 5</span>
+<span style="color: #0000ff;">     :PROPERTIES:</span>
+     <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span>  ancestors
+<span style="color: #0000ff;">     :END:</span>
+</pre>
+</div>
+
+<p>
+In the above example, “Heading 5” will be blocked until “Heading 1”, “Heading
+3”, and “Heading 4” are marked “DONE”, while “Heading 2” is ignored.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8918012" class="outline-4">
+<h4 id="children">children</h4>
+<div class="outline-text-4" id="text-children">
+<ul class="org-ul">
+<li>Syntax: children(OPTIONS...)</li>
+</ul>
+
+<p>
+The <code>children</code> finder returns a list of the <b>immediate</b> children of the source
+heading.  If the source has no children, no target is returned.
+</p>
+
+<p>
+In order to get all levels of children of the source heading, use the
+<a href="https://www.nongnu.org/org-edna-el/#descendants">descendants</a> keyword instead.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf815fd5" class="outline-4">
+<h4 id="descendants">descendants</h4>
+<div class="outline-text-4" id="text-descendants">
+<ul class="org-ul">
+<li>Syntax: descendants(OPTIONS...)</li>
+</ul>
+
+<p>
+The <code>descendants</code> finder returns a list of all descendants of the source heading.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Heading 1</span>
+<span style="color: #0000ff;">   :PROPERTIES:</span>
+   <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span>  descendants
+<span style="color: #0000ff;">   :END:</span>
+<span style="color: #EDEDED;">*</span><span style="color: #0084C8; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #0084C8; font-weight: bold;"> Heading 2</span>
+<span style="color: #EDEDED;">**</span><span style="color: #A52A2A; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #A52A2A; font-weight: bold;"> Heading 3</span>
+<span style="color: #EDEDED;">***</span><span style="color: #204A87;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #204A87;"> Heading 4</span>
+<span style="color: #EDEDED;">****</span><span style="color: #2F8B58; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #2F8B58; font-weight: bold;"> Heading 5</span>
+</pre>
+</div>
+
+<p>
+In the above example, “Heading 1” will block until Headings 2, 3, 4, and 5 are
+DONE.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc08aa62" class="outline-4">
+<h4 id="file">file</h4>
+<div class="outline-text-4" id="text-file">
+<ul class="org-ul">
+<li>Syntax: file(“FILE”)</li>
+</ul>
+
+<p>
+The <code>file</code> finder finds a single file, specified as a string.  The returned target
+will be the minimum point in the file.
+</p>
+
+<p>
+Note that this does not give a valid heading, so any conditions
+or actions that require will throw an error.  Consult the
+documentation for individual actions or conditions to determine
+which ones will and won’t work.
+</p>
+
+<p>
+See <a href="https://www.nongnu.org/org-edna-el/#conditions">conditions</a> for how to set a different condition.  For example:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Test</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span>  file("~/myfile.org") headings?
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+Here, “Test” will block until myfile.org is clear of headings.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org27c013c" class="outline-4">
+<h4 id="first-child">first-child</h4>
+<div class="outline-text-4" id="text-first-child">
+<ul class="org-ul">
+<li>Syntax: first-child(OPTIONS...)</li>
+</ul>
+
+<p>
+Return the first child of the source heading.  If the source heading has no
+children, no target is returned.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc1b736e" class="outline-4">
+<h4 id="ids">ids</h4>
+<div class="outline-text-4" id="text-ids">
+<ul class="org-ul">
+<li>Syntax: id(ID1 ID2 ...)</li>
+</ul>
+
+<p>
+The <code>ids</code> finder will search for headings with given IDs, using <code>org-id</code>.  Any
+number of UUIDs may be specified.  For example:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Test</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span>  ids(62209a9a-c63b-45ef-b8a8-12e47a9ceed9 6dbd7921-a25c-4e20-b035-365677e00f30)
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+Here, “Test” will block until the heading with ID
+62209a9a-c63b-45ef-b8a8-12e47a9ceed9 and the heading with ID
+6dbd7921-a25c-4e20-b035-365677e00f30 are set to “DONE”.
+</p>
+
+<p>
+Note that UUIDs need not be quoted; Edna will handle that for you.
+</p>
+
+<p>
+The IDs may also be prefixed with <code>id:</code>, allowing the links to the headings
+themselves to be used.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2afef8d" class="outline-4">
+<h4 id="match">match</h4>
+<div class="outline-text-4" id="text-match">
+<ul class="org-ul">
+<li>Syntax: match(“MATCH-STRING” SCOPE SKIP)</li>
+</ul>
+
+<p>
+The <code>match</code> keyword will take any arguments that <code>org-map-entries</code> usually takes.
+In fact, the arguments to <code>match</code> are passed straight into <code>org-map-entries</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Test</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span>  match("test&amp;mine" agenda)
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+“Test” will block until all entries tagged “test” and “mine” in the agenda files
+are marked DONE.
+</p>
+
+<p>
+See the documentation for <code>org-map-entries</code> for a full explanation of the first
+argument.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org74ca674" class="outline-4">
+<h4 id="next-sibling">next-sibling</h4>
+<div class="outline-text-4" id="text-next-sibling">
+<ul class="org-ul">
+<li>Syntax: next-sibling(OPTIONS...)</li>
+</ul>
+
+<p>
+The <code>next-sibling</code> keyword returns the next sibling of the source heading, if any.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8db2b8d" class="outline-4">
+<h4 id="next-sibling-wrap">next-sibling-wrap</h4>
+<div class="outline-text-4" id="text-next-sibling-wrap">
+<ul class="org-ul">
+<li>Syntax: next-sibling-wrap(OPTIONS...)</li>
+</ul>
+
+<p>
+Find the next sibling of the source heading, if any.  If there isn’t, wrap back
+around to the first heading in the same subtree.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org80009d2" class="outline-4">
+<h4 id="olp">olp</h4>
+<div class="outline-text-4" id="text-olp">
+<ul class="org-ul">
+<li>Syntax: olp(“FILE” “OLP”)</li>
+</ul>
+
+<p>
+Finds the heading given by OLP in FILE.  Both arguments are strings.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Test</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span>  olp("test.org" "path/to/heading")
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+“Test” will block if the heading “path/to/heading” in “test.org” is not DONE.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7ca4f81" class="outline-4">
+<h4 id="org-file">org-file</h4>
+<div class="outline-text-4" id="text-org-file">
+<ul class="org-ul">
+<li>Syntax: org-file(“FILE”)</li>
+</ul>
+
+<p>
+A special form of <code>file</code>, <code>org-file</code> will find FILE in <code>org-directory</code>.
+</p>
+
+<p>
+FILE is the relative path of a file in <code>org-directory</code>.  Nested
+files are allowed, such as “my-directory/my-file.org”.  The
+returned target is the minimum point of FILE.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Test</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span>  org-file("test.org")
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+Note that the file still requires an extension; the “org” here
+just means to look in <code>org-directory</code>, not necessarily an
+Org mode file.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org747ae9a" class="outline-4">
+<h4 id="parent">parent</h4>
+<div class="outline-text-4" id="text-parent">
+<ul class="org-ul">
+<li>Syntax: parent(OPTIONS...)</li>
+</ul>
+
+<p>
+Returns the parent of the source heading, if any.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orged8de76" class="outline-4">
+<h4 id="previous-sibling">previous-sibling</h4>
+<div class="outline-text-4" id="text-previous-sibling">
+<ul class="org-ul">
+<li>Syntax: previous-sibling(OPTIONS...)</li>
+</ul>
+
+<p>
+Returns the previous sibling of the source heading on the same level.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org37df6f8" class="outline-4">
+<h4 id="previous-sibling-wrap">previous-sibling-wrap</h4>
+<div class="outline-text-4" id="text-previous-sibling-wrap">
+<ul class="org-ul">
+<li>Syntax: previous-sibling-wrap(OPTIONS...)</li>
+</ul>
+
+<p>
+Returns the previous sibling of the source heading on the same level.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd164580" class="outline-4">
+<h4 id="relatives">relatives</h4>
+<div class="outline-text-4" id="text-relatives">
+<p>
+Find some relative of the current heading.
+</p>
+
+<ul class="org-ul">
+<li>Syntax: relatives(OPTION OPTION...)</li>
+<li>Syntax: chain-find(OPTION OPTION...)</li>
+</ul>
+
+<p>
+Identical to the chain argument in org-depend, relatives selects its single
+target using the following method:
+</p>
+
+<ol class="org-ol">
+<li>Creates a list of possible targets</li>
+<li>Filters the targets from Step 1</li>
+<li>Sorts the targets from Step 2</li>
+</ol>
+
+<p>
+One option from each of the following three categories may be
+used; if more than one is specified, the last will be used.
+Filtering is the exception to this; each filter argument adds to
+the current filter.  Apart from that, argument order is
+irrelevant.
+</p>
+
+<p>
+The chain-find finder is also provided for backwards
+compatibility, and for similarity to org-depend.
+</p>
+
+<p>
+All arguments are symbols, unless noted otherwise.
+</p>
+
+<p>
+<b>Selection</b>
+</p>
+
+<ul class="org-ul">
+<li>from-top:             Select siblings of the current heading, starting at the top</li>
+<li>from-bottom:          As above, but from the bottom</li>
+<li>from-current:         Selects siblings, starting from the heading (wraps)</li>
+<li>no-wrap:              As above, but without wrapping</li>
+<li>forward-no-wrap:      Find entries on the same level, going forward</li>
+<li>forward-wrap:         As above, but wrap when the end is reached</li>
+<li>backward-no-wrap:     Find entries on the same level, going backward</li>
+<li>backward-wrap:        As above, but wrap when the start is reached</li>
+<li>walk-up:              Walk up the tree, excluding self</li>
+<li>walk-up-with-self:    As above, but including self</li>
+<li>walk-down:            Recursively walk down the tree, excluding self</li>
+<li>walk-down-with-self:  As above, but including self</li>
+<li>step-down:            Collect headings from one level down</li>
+</ul>
+
+<p>
+<b>Filtering</b>
+</p>
+
+<ul class="org-ul">
+<li>todo-only:          Select only targets with TODO state set that isn’t a DONE state</li>
+<li>todo-and-done-only: Select all targets with a TODO state set</li>
+<li>no-comments:        Skip commented headings</li>
+<li>no-archive:         Skip archived headings</li>
+<li>NUMBER:             Only use that many headings, starting from the first one
+If passed 0, use all headings
+If &lt;0, omit that many headings from the end</li>
+<li>“+tag”:             Only select headings with given tag</li>
+<li>“-tag”:             Only select headings without tag</li>
+<li>“REGEX”:            select headings whose titles match REGEX</li>
+</ul>
+
+<p>
+<b>Sorting</b>
+</p>
+
+<ul class="org-ul">
+<li>no-sort:         Remove other sorting in affect</li>
+<li>reverse-sort:    Reverse other sorts (stacks with other sort methods)</li>
+<li>random-sort:     Sort in a random order</li>
+<li>priority-up:     Sort by priority, highest first</li>
+<li>priority-down:   Same, but lowest first</li>
+<li>effort-up:       Sort by effort, highest first</li>
+<li>effort-down:     Sort by effort, lowest first</li>
+<li>scheduled-up:    Scheduled time, farthest first</li>
+<li>scheduled-down:  Scheduled time, closest first</li>
+<li>deadline-up:     Deadline time, farthest first</li>
+<li>deadline-down:   Deadline time, closest first</li>
+<li>timestamp-up:    Timestamp time, farthest first</li>
+<li>timestamp-down:  Timestamp time, closest first</li>
+</ul>
+
+<p>
+Many of the other finders are shorthand for argument combinations of relative:
+</p>
+
+<dl class="org-dl">
+<dt><a href="https://www.nongnu.org/org-edna-el/#ancestors">ancestors</a></dt><dd>walk-up</dd>
+<dt><a href="https://www.nongnu.org/org-edna-el/#children">children</a></dt><dd>step-down</dd>
+<dt><a href="https://www.nongnu.org/org-edna-el/#descendants">descendants</a></dt><dd>walk-down</dd>
+<dt><a href="https://www.nongnu.org/org-edna-el/#first-child">first-child</a></dt><dd>step-down 1</dd>
+<dt><a href="https://www.nongnu.org/org-edna-el/#next-sibling">next-sibling</a></dt><dd>forward-no-wrap 1</dd>
+<dt><a href="https://www.nongnu.org/org-edna-el/#next-sibling-wrap">next-sibling-wrap</a></dt><dd>forward-wrap 1</dd>
+<dt><a href="https://www.nongnu.org/org-edna-el/#parent">parent</a></dt><dd>walk-up 1</dd>
+<dt><a href="https://www.nongnu.org/org-edna-el/#previous-sibling">previous-sibling</a></dt><dd>backward-no-wrap 1</dd>
+<dt><a href="https://www.nongnu.org/org-edna-el/#previous-sibling-wrap">previous-sibling-wrap</a></dt><dd>backward-wrap 1</dd>
+<dt><a href="https://www.nongnu.org/org-edna-el/#rest-of-siblings">rest-of-siblings</a></dt><dd>forward-no-wrap</dd>
+<dt><a href="https://www.nongnu.org/org-edna-el/#rest-of-siblings-wrap">rest-of-siblings-wrap</a></dt><dd>forward-wrap</dd>
+<dt><a href="https://www.nongnu.org/org-edna-el/#siblings">siblings</a></dt><dd>from-top</dd>
+<dt><a href="https://www.nongnu.org/org-edna-el/#siblings-wrap">siblings-wrap</a></dt><dd>forward-wrap</dd>
+</dl>
+
+<p>
+Because these are implemented as shorthand, any arguments for relatives may also
+be passed to one of these finders.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2bc7ad8" class="outline-4">
+<h4 id="rest-of-siblings">rest-of-siblings</h4>
+<div class="outline-text-4" id="text-rest-of-siblings">
+<ul class="org-ul">
+<li>Syntax: rest-of-siblings(OPTIONS...)</li>
+</ul>
+
+<p>
+Starting from the heading following the current one, all same-level siblings
+are returned.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0888256" class="outline-4">
+<h4 id="rest-of-siblings-wrap">rest-of-siblings-wrap</h4>
+<div class="outline-text-4" id="text-rest-of-siblings-wrap">
+<ul class="org-ul">
+<li>Syntax: rest-of-siblings-wrap(OPTIONS...)</li>
+</ul>
+
+<p>
+Starting from the heading following the current one, all same-level siblings
+are returned.  When the end is reached, wrap back to the beginning.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org36d9172" class="outline-4">
+<h4 id="self">self</h4>
+<div class="outline-text-4" id="text-self">
+<ul class="org-ul">
+<li>Syntax: self</li>
+</ul>
+
+<p>
+Returns the source heading.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9a2c019" class="outline-4">
+<h4 id="siblings">siblings</h4>
+<div class="outline-text-4" id="text-siblings">
+<ul class="org-ul">
+<li>Syntax: siblings(OPTIONS...)</li>
+</ul>
+
+<p>
+Returns all siblings of the source heading as targets, starting from the first
+sibling.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org40d3bb0" class="outline-4">
+<h4 id="siblings-wrap">siblings-wrap</h4>
+<div class="outline-text-4" id="text-siblings-wrap">
+<ul class="org-ul">
+<li>Syntax: siblings-wrap(OPTIONS...)</li>
+</ul>
+
+<p>
+Finds the siblings on the same level as the source heading, wrapping when it
+reaches the end.
+</p>
+
+<p>
+Identical to the <a href="https://www.nongnu.org/org-edna-el/#rest-of-siblings-wrap">rest-of-siblings-wrap</a> finder.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org29a9491" class="outline-3">
+<h3 id="org29a9491">Actions</h3>
+<div class="outline-text-3" id="text-org29a9491">
+<p>
+Once Edna has collected its targets for a trigger, it will perform actions on
+them.
+</p>
+
+<p>
+Actions must always end with ’!’.
+</p>
+</div>
+
+<div id="outline-container-org4022721" class="outline-4">
+<h4 id="planning">Scheduled/Deadline</h4>
+<div class="outline-text-4" id="text-planning">
+<ul class="org-ul">
+<li>Syntax: scheduled!(OPTIONS)</li>
+<li>Syntax: deadline!(OPTIONS)</li>
+</ul>
+
+<p>
+Set the scheduled or deadline time of any target headings.
+</p>
+
+<p>
+There are several forms that the planning keywords can take.  In the following,
+PLANNING is either scheduled or deadline.
+</p>
+
+<ul class="org-ul">
+<li><p>
+PLANNING!(“DATE[ TIME]”)
+</p>
+
+<p>
+Sets PLANNING to DATE at TIME.  If DATE is a weekday instead of a date, then
+set PLANNING to the following weekday.  If TIME is not specified, only a date
+will be added to the target.
+</p>
+
+<p>
+Any string recognized by <code>org-read-date</code> may be used for DATE.
+</p>
+
+<p>
+TIME is a time string, such as HH:MM.
+</p></li>
+
+<li><p>
+PLANNING!(rm|remove)
+</p>
+
+<p>
+Remove PLANNING from all targets.  The argument to this form may be either a
+string or a symbol.
+</p></li>
+
+<li><p>
+PLANNING!(copy|cp)
+</p>
+
+<p>
+Copy PLANNING info verbatim from the source heading to all targets.  The
+argument to this form may be either a string or a symbol.
+</p></li>
+
+<li><p>
+PLANNING!(“[+|-|++|--]NTHING[ [+|-]LANDING]”)
+</p>
+
+<p>
+Increment(+) or decrement(-) target’s PLANNING by N THINGs relative to either
+itself (+/-) or the current time (++/--).
+</p>
+
+<p>
+N is an integer
+</p>
+
+<p>
+THING is one of y (years), m (months), d (days), h (hours), M (minutes), a
+(case-insensitive) day of the week or its abbreviation, or the strings
+“weekday” or “wkdy”.
+</p>
+
+<p>
+If a day of the week is given as THING, move forward or backward N weeks to
+find that day of the week.
+</p>
+
+<p>
+If one of “weekday” or “wkdy” is given as THING, move forward or backward N
+days, moving forward or backward to the next weekday.
+</p>
+
+<p>
+This form may also include a “landing” specifier to control where in the week
+the final date lands.  LANDING may be one of the following:
+</p>
+
+<ul class="org-ul">
+<li>A day of the week, which means adjust the final date forward (+) or backward
+(-) to land on that day of the week.</li>
+
+<li>One of “weekday” or “wkdy”, which means adjust the target date to the
+closest weekday.</li>
+
+<li>One of “weekend” or “wknd”, which means adjust the target date to the
+closest weekend.</li>
+</ul></li>
+
+<li><p>
+PLANNING!(“float [+|-|++|--]N DAYNAME[ MONTH[ DAY]]”)
+</p>
+
+<p>
+Set time to the date of the Nth DAYNAME before/after MONTH DAY, as per
+<code>diary-float</code>.
+</p>
+
+<p>
+N is an integer.
+</p>
+
+<p>
+DAYNAME may be either an integer, where 0=Sunday, 1=Monday, etc., or a string
+for that day.
+</p>
+
+<p>
+MONTH may be an integer, 1-12, or a month’s string.  If MONTH is empty, the
+following (+) or previous (-) month relative to the target’s time (+/-) or the
+current time (++/--).
+</p>
+
+<p>
+DAY is an integer, or empty or 0 to use the first of the month (+) or the last
+of the month (-).
+</p></li>
+</ul>
+
+<p>
+Examples:
+</p>
+
+<dl class="org-dl">
+<dt>scheduled!(“Mon 09:00”)</dt><dd>Set SCHEDULED to the following Monday at 9:00</dd>
+<dt>deadline!(“++2h”)</dt><dd>Set DEADLINE to two hours from now.</dd>
+<dt>deadline!(copy) deadline!(“+1h”)</dt><dd>Copy the source deadline to the target, then increment it by an hour.</dd>
+<dt>scheduled!(“+1wkdy”)</dt><dd>Set SCHEDULED to the next weekday</dd>
+<dt>scheduled!(“+1d +wkdy”)</dt><dd>Same as above</dd>
+<dt>deadline!(“+1m -wkdy”)</dt><dd>Set DEADLINE up one month, but move backward to find a weekend</dd>
+<dt>scheduled!(“float 2 Tue Feb”)</dt><dd>Set SCHEDULED to the second Tuesday in the following February</dd>
+<dt>scheduled!(“float 3 Thu”)</dt><dd>Set SCHEDULED to the third Thursday in the following month</dd>
+</dl>
+</div>
+
+<div id="outline-container-orgab6f049" class="outline-5">
+<h5 id="ts_format">Timestamp Format</h5>
+<div class="outline-text-5" id="text-ts_format">
+<p>
+When using one of the planning modifiers, it isn’t always possible to deduce how
+the timestamp format will be chosen if using ++ or --.  The following method is
+used:
+</p>
+
+<ol class="org-ol">
+<li>If the target heading already has a timestamp, that format is used.</li>
+
+<li>If the modifier with the ++ or -- is “h” or “M” (hours or minutes), long
+format (includes time) is used.</li>
+
+<li>If the property <code>EDNA_TS_FORMAT</code> is set on the target heading, its value will
+be used.  It should be either <code>long</code> for long format (includes time) or
+<code>short</code> for short format (does not include time).</li>
+
+<li>The user variable <code>org-edna-timestamp-format</code> is the final fallback.  It
+should be either the symbol <code>long</code> or <code>short</code>.  It defaults to <code>short</code>.</li>
+</ol>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgc7b786f" class="outline-4">
+<h4 id="todo!">TODO State</h4>
+<div class="outline-text-4" id="text-todo!">
+<ul class="org-ul">
+<li>Syntax: todo!(NEW-STATE)</li>
+</ul>
+
+<p>
+Sets the TODO state of the target heading to NEW-STATE.
+</p>
+
+<p>
+NEW-STATE may either be a string or a symbol denoting the new TODO state.  It
+can also be the empty string, in which case the TODO state is removed.
+</p>
+
+<p>
+Example:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Heading 1</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span> next-sibling todo!(<span style="color: #98fb98;">DONE</span>)
+<span style="color: #0000ff;">  :END:</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Heading 2</span>
+</pre>
+</div>
+
+<p>
+In this example, when “Heading 1” is marked as DONE, it will also mark “Heading
+2” as DONE:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #98fb98;">DONE</span><span style="color: #00578E; font-weight: bold;"> Heading 1</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span> next-sibling todo!(<span style="color: #98fb98;">DONE</span>)
+<span style="color: #0000ff;">  :END:</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #98fb98;">DONE</span><span style="color: #00578E; font-weight: bold;"> Heading 2</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orge02af85" class="outline-4">
+<h4 id="archive!">Archive</h4>
+<div class="outline-text-4" id="text-archive!">
+<ul class="org-ul">
+<li>Syntax: archive!</li>
+</ul>
+
+<p>
+Archives all targets with confirmation.
+</p>
+
+<p>
+Confirmation is controlled with <code>org-edna-prompt-for-archive</code>.  If this option is
+nil, Edna will not ask before archiving targets.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgdf3894a" class="outline-4">
+<h4 id="chain!">Chain Property</h4>
+<div class="outline-text-4" id="text-chain!">
+<ul class="org-ul">
+<li>Syntax: chain!(“PROPERTY”)</li>
+</ul>
+
+<p>
+Copies PROPERTY from the source entry to all targets.  Does nothing if the
+source heading has no property PROPERTY.
+</p>
+
+<p>
+Example:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Heading 1</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:COUNTER:</span> 2
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span> next-sibling chain!("COUNTER")
+<span style="color: #0000ff;">  :END:</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Heading 2</span>
+</pre>
+</div>
+
+<p>
+In this example, when “Heading 1” is marked as DONE, it will copy its COUNTER
+property to “Heading 2”:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #98fb98;">DONE</span><span style="color: #00578E; font-weight: bold;"> Heading 1</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:COUNTER:</span> 2
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span> next-sibling chain!("COUNTER")
+<span style="color: #0000ff;">  :END:</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Heading 2</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:COUNTER:</span> 2
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org6ce8dd3" class="outline-4">
+<h4 id="clocking">Clocking</h4>
+<div class="outline-text-4" id="text-clocking">
+<ul class="org-ul">
+<li>Syntax: clock-in!</li>
+<li>Syntax: clock-out!</li>
+</ul>
+
+<p>
+Clocks into or out of all targets.
+</p>
+
+<p>
+<code>clock-in!</code> has no special handling of targets, so be careful when specifying
+multiple targets.
+</p>
+
+<p>
+In contrast, <code>clock-out!</code> ignores its targets and only clocks out of the current
+clock, if any.
+</p>
+</div>
+</div>
+<div id="outline-container-org1548973" class="outline-4">
+<h4 id="properties">Property</h4>
+<div class="outline-text-4" id="text-properties">
+<ul class="org-ul">
+<li>Syntax: set-property!(“PROPERTY” “VALUE”)</li>
+<li>Syntax: set-property!(“PROPERTY” inc)</li>
+<li>Syntax: set-property!(“PROPERTY” dec)</li>
+<li>Syntax: set-property!(“PROPERTY” next)</li>
+<li>Syntax: set-property!(“PROPERTY” prev)</li>
+<li>Syntax: set-property!(“PROPERTY” previous)</li>
+</ul>
+
+<p>
+The first form sets the property PROPERTY on all targets to VALUE.
+</p>
+
+<p>
+If VALUE is a symbol, it is interpreted as follows:
+</p>
+
+<dl class="org-dl">
+<dt>inc</dt><dd>Increment a numeric property value by one</dd>
+<dt>dec</dt><dd>Decrement a numeric property value by one</dd>
+</dl>
+
+<p>
+If either <code>inc</code> or <code>dec</code> attempt to modify a non-numeric property value, Edna will
+fail with an error message.
+</p>
+
+<dl class="org-dl">
+<dt>next</dt><dd>Cycle the property through to the next allowed property value</dd>
+<dt>previous</dt><dd>Cycle the property through to the previous allowed property value</dd>
+</dl>
+
+<p>
+The symbol <code>prev</code> may be used as an abbreviation for <code>previous</code>.  Similar to
+<code>inc</code> and <code>dec</code>, any of these will fail if there are no defined properties.
+When reaching the end of the list of allowed properties, <code>next</code> will cycle back
+to the beginning.
+</p>
+
+<p>
+Example:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #204A87;">#+PROPERTY: TEST_ALL a b c d</span>
+
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Test Heading</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:TEST:</span>     d
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span>  self set-property!("TEST" next)
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+When “Test Heading” is set to DONE, its TEST property will change to “a”.  This
+also works with <code>previous</code>, but in the opposite direction.
+</p>
+
+<p>
+Additionally, all special forms will fail if the property is not already set:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Test</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span> self set-property!("TEST" inc)
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+In the above example, if “Test” is set to DONE, Edna will fail to increment the
+TEST property, since it doesn’t exist.
+</p>
+
+<ul class="org-ul">
+<li>Syntax: delete-property!(“PROPERTY”)</li>
+</ul>
+
+<p>
+Deletes the property PROPERTY from all targets.
+</p>
+
+<p>
+Examples:
+</p>
+
+<dl class="org-dl">
+<dt>set-property!(“COUNTER” “1”)</dt><dd>Sets the property COUNTER to 1 on all targets</dd>
+<dt>set-property!(“COUNTER” inc)</dt><dd>Increments the property COUNTER by 1.  Following the previous example, it would be 2.</dd>
+</dl>
+</div>
+</div>
+
+<div id="outline-container-org43e2cf9" class="outline-4">
+<h4 id="priorities">Priority</h4>
+<div class="outline-text-4" id="text-priorities">
+<p>
+Sets the priority of all targets.
+</p>
+
+<ul class="org-ul">
+<li><p>
+Syntax: set-priority!(“PRIORITY”)
+</p>
+
+<p>
+Set the priority to the first character of PRIORITY.
+</p></li>
+
+<li><p>
+Syntax: set-priority!(up)
+</p>
+
+<p>
+Cycle the target’s priority up through the list of allowed priorities.
+</p></li>
+
+<li><p>
+Syntax: set-priority!(down)
+</p>
+
+<p>
+Cycle the target’s priority down through the list of allowed priorities.
+</p></li>
+
+<li><p>
+Syntax: set-priority!(P)
+</p>
+
+<p>
+Set the target’s priority to the character P.
+</p></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgee8d125" class="outline-4">
+<h4 id="tags">Tag</h4>
+<div class="outline-text-4" id="text-tags">
+<ul class="org-ul">
+<li>Syntax: tag!(“TAG-SPEC”)</li>
+</ul>
+
+<p>
+Tags all targets with TAG-SPEC, which is any valid tag specification,
+e.g. tag1:tag2
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgfbc8566" class="outline-4">
+<h4 id="effort">Effort</h4>
+<div class="outline-text-4" id="text-effort">
+<p>
+Modifies the effort of all targets.
+</p>
+
+<ul class="org-ul">
+<li><p>
+Syntax: set-effort!(“VALUE”)
+</p>
+
+<p>
+Set the effort of all targets to “VALUE”.
+</p></li>
+
+<li><p>
+Syntax: set-effort!(NUMBER)
+</p>
+
+<p>
+Sets the effort to the NUMBER’th allowed effort property.
+</p></li>
+
+<li><p>
+Syntax: set-effort!(increment)
+</p>
+
+<p>
+Increment the effort value.
+</p></li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org1d74f8b" class="outline-3">
+<h3 id="help">Getting Help</h3>
+<div class="outline-text-3" id="text-help">
+<p>
+Edna provides help for any keyword with <code>M-x org-edna-describe-keyword</code>.  When
+invoked, a list of keywords (finders, actions, etc.) known to Edna will be
+provided.  Select any one to get its description.
+</p>
+
+<p>
+This description includes the syntax and an explanation of what the keyword
+does.  Some descriptions also contain examples.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org7a4864a" class="outline-2">
+<h2 id="advanced">Advanced Features</h2>
+<div class="outline-text-2" id="text-advanced">
+</div>
+<div id="outline-container-org7d84d20" class="outline-3">
+<h3 id="cache">Finder Cache</h3>
+<div class="outline-text-3" id="text-cache">
+<p>
+Some finders, <code>match</code> in particular, can take a long time to run.  Oftentimes,
+this can make it unappealing to use Edna at all, especially with long
+checklists.
+</p>
+
+<p>
+The finder cache is one solution to this.  To enable it, set
+<code>org-edna-finder-use-cache</code> to non-nil.  This can be done through the
+customization interface, or manually with <code>setq</code>.
+</p>
+
+<p>
+When enabled, the cache will store the results of every finder form for a
+configurable amount of time.  This timeout is controlled by
+<code>org-edna-finder-cache-timeout</code>.  The cache is also invalidated if any of the
+results are invalid, which can happen if their target files have been closed.
+</p>
+
+<p>
+For example, if there are several entries in a checklist that all use the form
+<code>match("daily")</code> as part of their trigger, the results of that form will be
+cached.  When the next item is marked as DONE, the results will be searched for
+in cache, not recomputed.
+</p>
+
+<p>
+When reverting Org mode files, the cache will often be invalidated.  This isn’t
+the case for every Org mode file, so we can’t just tell Emacs to automatically
+reset the cache when reverting a file.  Instead, we provide the command
+<code>org-edna-reset-cache</code> to reset the finder cache.  If you notice headings that
+should be blocking but aren’t while cache is enabled, reset the cache and check
+again.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf8ac3ee" class="outline-3">
+<h3 id="conditions">Conditions</h3>
+<div class="outline-text-3" id="text-conditions">
+<p>
+Edna gives you he option to specify <b>blocking conditions</b>.  Each condition is checked
+for each of the specified targets; if one of the conditions returns true for
+that target, then the source heading is blocked.
+</p>
+
+<p>
+If no condition is specified, <code>!done?</code> is used by default, which means block if
+any target heading isn’t done.
+</p>
+</div>
+
+<div id="outline-container-org09d7bad" class="outline-4">
+<h4 id="done">Heading is DONE</h4>
+<div class="outline-text-4" id="text-done">
+<ul class="org-ul">
+<li>Syntax: done?</li>
+</ul>
+
+<p>
+Blocks the source heading if any target heading is DONE.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4e60917" class="outline-4">
+<h4 id="headings">File Has Headings</h4>
+<div class="outline-text-4" id="text-headings">
+<ul class="org-ul">
+<li>Syntax: headings?</li>
+</ul>
+
+<p>
+Blocks the source heading if any target belongs to a file that has an Org
+heading.  This means that target does not have to be a heading.
+</p>
+
+<pre class="example">org-file("refile.org") headings?
+</pre>
+
+<p>
+The above example blocks if refile.org has any headings.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgceb5075" class="outline-4">
+<h4 id="todo-state">Heading TODO State</h4>
+<div class="outline-text-4" id="text-todo-state">
+<ul class="org-ul">
+<li>Syntax: todo-state?(STATE)</li>
+</ul>
+
+<p>
+Blocks if any target heading has TODO state set to STATE.
+</p>
+
+<p>
+STATE may be a string or a symbol.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9bfc8e7" class="outline-4">
+<h4 id="variable-set">Lisp Variable Set</h4>
+<div class="outline-text-4" id="text-variable-set">
+<ul class="org-ul">
+<li>Syntax: variable-set?(VARIABLE VALUE)</li>
+</ul>
+
+<p>
+Evaluate VARIABLE when visiting a target, and compare it with <code>equal</code>
+against VALUE.  Block the source heading if VARIABLE = VALUE.
+</p>
+
+<p>
+VARIABLE should be a symbol, and VALUE is any valid lisp expression.
+</p>
+
+<p>
+Examples:
+</p>
+
+<dl class="org-dl">
+<dt>self variable-set?(test-variable 12)</dt><dd>Blocks if the variable <code>test-variable</code> is set to 12.</dd>
+<dt>self variable-set?(buffer-file-name “org-edna.org”)</dt><dd>Blocks if the variable <code>buffer-file-name</code> is set to “org-edna.org”.</dd>
+</dl>
+</div>
+</div>
+
+<div id="outline-container-orga748f09" class="outline-4">
+<h4 id="has-property">Heading Has Property</h4>
+<div class="outline-text-4" id="text-has-property">
+<ul class="org-ul">
+<li>Syntax: has-property?(“PROPERTY” “VALUE”)</li>
+</ul>
+
+<p>
+Tests each target for the property PROPERTY, and blocks if it’s set to VALUE.
+</p>
+
+<p>
+Example:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Take Shower</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:COUNT:</span>  1
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span> self set-property!("COUNT" inc) todo!("<span style="color: #cc0000;">TODO</span>")
+<span style="color: #0000ff;">  :END:</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Wash Towels</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span>  previous-sibling !has-property?("COUNT" "3")
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span>  previous-sibling set-property!("COUNT" "0")
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+In this example, “Wash Towels” can’t be completed until the user has showered at
+least three times.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4257927" class="outline-4">
+<h4 id="re-search">Regexp Search</h4>
+<div class="outline-text-4" id="text-re-search">
+<ul class="org-ul">
+<li>Syntax: re-search?(“REGEXP”)</li>
+</ul>
+
+<p>
+Blocks the source heading if the regular expression REGEXP is present in any
+of the targets.
+</p>
+
+<p>
+The targets are expected to be files, although this will work with other targets
+as well.  When given a target heading, the heading’s file will be searched.
+</p>
+</div>
+</div>
+<div id="outline-container-org2737790" class="outline-4">
+<h4 id="has-tags">Checking Tags</h4>
+<div class="outline-text-4" id="text-has-tags">
+<ul class="org-ul">
+<li>Syntax: has-tags?(“TAG1” “TAG2” ...)</li>
+</ul>
+
+<p>
+Blocks the source heading if any of the target headings have one or more of the
+given tags.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Task 1                                                          </span><span style="color: #00578E; font-weight: bold;">:tag1:</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Task 2                                                     </span><span style="color: #00578E; font-weight: bold;">:tag3:tag2:</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Task 3</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span>  rest-of-siblings-wrap has-tags?("tag1" "tag2")
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+In the above example, Tasks 1 and 2 will block Task 3.  Task 1 will block it
+because it contains “tag1” as one of its tags, and likewise for Task 2 and
+“tag2”.
+</p>
+
+<p>
+Note that marking “Task 1” or “Task 2” as DONE will not unblock “Task 3”.  If
+you want to set up such a system, use the <a href="https://www.nongnu.org/org-edna-el/#match">match</a> finder.
+</p>
+</div>
+</div>
+<div id="outline-container-orgf773c84" class="outline-4">
+<h4 id="matches">Matching Headings</h4>
+<div class="outline-text-4" id="text-matches">
+<ul class="org-ul">
+<li>Syntax: matches?(“MATCH-STRING”)</li>
+</ul>
+
+<p>
+Blocks the source heading if any of the target headings match against
+MATCH-STRING.
+</p>
+
+<p>
+MATCH-STRING is a string passed to <code>org-map-entries</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Task 1</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Task 2</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Task 3</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span>  rest-of-siblings-wrap !matches?("<span style="color: #cc0000;">TODO</span>==\"<span style="color: #98fb98;">DONE</span>\"")
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+In the above example, Tasks 1 and 2 will block Task 3 until they’re marked as
+DONE.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf353801" class="outline-4">
+<h4 id="negate">Negating Conditions</h4>
+<div class="outline-text-4" id="text-negate">
+<p>
+Any condition can be negated by using ’!’ before the condition.
+</p>
+
+<pre class="example">match("test") !has-property?("PROP" "1")
+</pre>
+
+<p>
+The above example will cause the source heading to block if any heading
+tagged “test” does <b>not</b> have the property PROP set to “1”.
+</p>
+</div>
+</div>
+<div id="outline-container-org3a152e4" class="outline-4">
+<h4 id="multiple">Multiple Conditions</h4>
+<div class="outline-text-4" id="text-multiple">
+<p>
+Multiple blocking conditions can be used for a single entry.  The heading will
+block if any of the provided conditions evaluate to true.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Heading 1</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:ID:</span>       1942caf2-caad-4757-b689-3c0029c1d8a5
+<span style="color: #0000ff;">  :END:</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Heading 2</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Heading 3</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span>  previous-sibling !done? ids(1942caf2-caad-4757-b689-3c0029c1d8a5) !done?
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+“Heading 3” will block if either “Heading 1” isn’t done (ids) or “Heading 2”
+isn’t done (previous-sibling).
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org5ec9b2e" class="outline-3">
+<h3 id="org5ec9b2e">Consideration</h3>
+<div class="outline-text-3" id="text-org5ec9b2e">
+<p>
+“Consideration” and “consider” are special keywords that are only valid for
+blockers.
+</p>
+
+<p>
+A blocker says “If ANY heading in TARGETS meets CONDITION, block this task”.
+</p>
+
+<p>
+In order to modify the ANY part of that statement, the <code>consider</code> keyword may be
+used:
+</p>
+
+<ol class="org-ol">
+<li>consider(any)</li>
+<li>consider(all)</li>
+<li>consider(FRACTION)</li>
+<li>consider(NUMBER)</li>
+</ol>
+
+<p>
+(1) blocks the current task if any target meets the blocking condition.  This is
+the default case.
+</p>
+
+<p>
+(2) blocks the current task only if all targets meet the blocking condition.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* Shovel Snow</span>
+<span style="color: #EDEDED;">*</span><span style="color: #0084C8; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #0084C8; font-weight: bold;"> Shovel on Monday</span>
+<span style="color: #EDEDED;">*</span><span style="color: #0084C8; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #0084C8; font-weight: bold;"> Shovel on Tuesday</span>
+<span style="color: #EDEDED;">*</span><span style="color: #0084C8; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #0084C8; font-weight: bold;"> Shovel on Wednesday</span>
+<span style="color: #EDEDED;">*</span><span style="color: #0084C8; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #0084C8; font-weight: bold;"> Put shovel away</span>
+<span style="color: #0000ff;">   :PROPERTIES:</span>
+   <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span> consider(all) rest-of-siblings-wrap
+<span style="color: #0000ff;">   :END:</span>
+</pre>
+</div>
+
+<p>
+The above example blocks “Put shovel away” so long as all of the siblings are
+still marked TODO.
+</p>
+
+<p>
+(3) blocks the current task if at least FRACTION of the targets meet the
+blocking condition.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* Work</span>
+<span style="color: #EDEDED;">*</span><span style="color: #0084C8; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #0084C8; font-weight: bold;"> Shovel Snow</span>
+<span style="color: #EDEDED;">*</span><span style="color: #0084C8; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #0084C8; font-weight: bold;"> Clean room</span>
+<span style="color: #EDEDED;">*</span><span style="color: #0084C8; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #0084C8; font-weight: bold;"> Vacuum</span>
+<span style="color: #EDEDED;">*</span><span style="color: #0084C8; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #0084C8; font-weight: bold;"> Eat lunch</span>
+<span style="color: #EDEDED;">*</span><span style="color: #0084C8; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #0084C8; font-weight: bold;"> Work on Edna</span>
+<span style="color: #0000ff;">   :PROPERTIES:</span>
+   <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span> consider(0.5) rest-of-siblings-wrap
+<span style="color: #0000ff;">   :END:</span>
+</pre>
+</div>
+
+<p>
+The above example blocks “Work on Edna” so long as at least half of the siblings
+are marked TODO.  This means that three of them must be completed before
+development can begin on Edna.
+</p>
+
+<p>
+(4) blocks the current task if at least NUMBER of the targets meet the blocking
+condition.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* Work</span>
+<span style="color: #EDEDED;">*</span><span style="color: #0084C8; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #0084C8; font-weight: bold;"> Shovel Snow</span>
+<span style="color: #EDEDED;">*</span><span style="color: #0084C8; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #0084C8; font-weight: bold;"> Clean room</span>
+<span style="color: #EDEDED;">*</span><span style="color: #0084C8; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #0084C8; font-weight: bold;"> Vacuum</span>
+<span style="color: #EDEDED;">*</span><span style="color: #0084C8; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #0084C8; font-weight: bold;"> Eat lunch</span>
+<span style="color: #EDEDED;">*</span><span style="color: #0084C8; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #0084C8; font-weight: bold;"> Work on Edna</span>
+<span style="color: #0000ff;">   :PROPERTIES:</span>
+   <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span> consider(2) rest-of-siblings-wrap
+<span style="color: #0000ff;">   :END:</span>
+</pre>
+</div>
+
+<p>
+The above example blocks “Work on Edna” so long as two of the siblings are
+marked TODO.  This means that NUMBER=1 is the same as specifying <code>any</code>.
+</p>
+
+<p>
+A consideration must be specified before the conditions to which it applies.
+</p>
+
+<p>
+Both “consider” and “consideration” are valid keywords; they both mean the same
+thing.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8aad72f" class="outline-3">
+<h3 id="conditional_forms">Conditional Forms</h3>
+<div class="outline-text-3" id="text-conditional_forms">
+<p>
+Let’s say you’ve got the following checklist:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Nightly</span>
+  <span style="color: #A52A2A; font-weight: bold;">DEADLINE:</span> <span style="color: #a020f0; text-decoration: underline;">&lt;2017-12-22 Fri 22:00 +1d&gt;</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:ID:</span>       12345
+  <span style="color: #A52A2A; font-weight: bold;">:BLOCKER:</span>  match("nightly")
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span>  match("nightly") todo!(<span style="color: #cc0000;">TODO</span>)
+<span style="color: #0000ff;">  :END:</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Prepare Tomorrow's Lunch                                     </span><span style="color: #00578E; font-weight: bold;">:nightly:</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Lock Back Door                                               </span><span style="color: #00578E; font-weight: bold;">:nightly:</span>
+<span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Feed Dog                                                     </span><span style="color: #00578E; font-weight: bold;">:nightly:</span>
+</pre>
+</div>
+
+<p>
+You don’t know in what order you want to perform each task, nor should it
+matter.  However, you also want the parent heading, “Nightly”, to be marked as
+DONE when you’re finished with the last task.
+</p>
+
+<p>
+There are two solutions to this: 1. Have each task attempt to mark “Nightly” as
+DONE, which will spam blocking messages after each task.
+</p>
+
+<p>
+The second is to use conditional forms.  Conditional forms are simple; it’s just
+if/then/else/endif:
+</p>
+
+<blockquote>
+<p>
+if CONDITION then THEN else ELSE endif
+</p>
+</blockquote>
+
+<p>
+Here’s how that reads:
+</p>
+
+<p>
+“If CONDITION would not block, execute THEN.  Otherwise, execute ELSE.”
+</p>
+
+<p>
+For our nightly entries, this looks as follows:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Prepare Tomorrow's Lunch                                     </span><span style="color: #00578E; font-weight: bold;">:nightly:</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span>  if match("nightly") then ids(12345) todo!(<span style="color: #98fb98;">DONE</span>) endif
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+Thus, we replicate our original blocking condition on all of them, so it won’t
+trigger the original until the last one is marked DONE.
+</p>
+
+<p>
+Occasionally, you may find that you’d rather execute a form if the condition
+<b>would</b> block.  There are two options.
+</p>
+
+<p>
+The first is to use <code>consider(all)</code>.  This will tell Edna to block only if all
+of the targets meets the condition, and thus not block if at least one of them
+does not meet the condition.  This is the opposite of Edna’s standard operation,
+which only allows passage if all targets meet the condition.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Prepare Tomorrow's Lunch                                     </span><span style="color: #00578E; font-weight: bold;">:nightly:</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span>  if consider(all) match("nightly") then ids(12345) todo!(<span style="color: #98fb98;">DONE</span>) endif
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+The second is to switch the then and else clauses:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> Prepare Tomorrow's Lunch                                     </span><span style="color: #00578E; font-weight: bold;">:nightly:</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span>  if match("nightly") then else ids(12345) todo!(<span style="color: #98fb98;">DONE</span>) endif
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+The conditional block tells it to evaluate that section.  Thus, you can
+conditionally add targets, or conditionally check conditions.
+</p>
+
+<p>
+Another common use case is to check for a property:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> My Task</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span> if self has-property?("REPEAT" "2") then self set-property!("REPEAT" inc) todo!("<span style="color: #cc0000;">TODO</span>") endif
+  <span style="color: #A52A2A; font-weight: bold;">:REPEAT:</span> 0
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+When “My Task” is set to DONE, REPEAT will be incremented, then the task will be
+set back to TODO.  This happens until REPEAT is 2.  Once that happens, the task
+will be left alone, staying in the DONE state.
+</p>
+
+<p>
+Be warned that trying the above example with a repeater will not work.  In order
+for that to work, Edna must take over the repeater:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* </span><span style="color: #cc0000;">TODO</span><span style="color: #00578E; font-weight: bold;"> My Task</span>
+  <span style="color: #A52A2A; font-weight: bold;">SCHEDULED:</span> <span style="color: #a020f0; text-decoration: underline;">&lt;2020-09-02 Wed&gt;</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span> if self has-property?("REPEAT" "2") then self set-property!("REPEAT" inc) scheduled!("+1d") todo!("<span style="color: #cc0000;">TODO</span>") endif
+  <span style="color: #A52A2A; font-weight: bold;">:REPEAT:</span> 0
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+This example will increment the SCHEDULED time by one day every time the task is
+marked DONE.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org33cce78" class="outline-3">
+<h3 id="not_done">What Constitutes “Not Done”?</h3>
+<div class="outline-text-3" id="text-not_done">
+<p>
+Sometimes, you have a heading like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* My Task</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span>  self set-property!("TEST" inc)
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+You want to mark it as DONE because that’s how you do things.  Will Edna run
+when you do that?
+</p>
+
+<p>
+The answer is it can.  There is user variable called <code>org-edna-from-todo-states</code>
+that controls the categories of TODO states from which changing a heading will
+cause Edna to run.  This has two possible values:
+</p>
+
+<dl class="org-dl">
+<dt>todo</dt><dd>Edna will only run if the old TODO state is in
+<code>org-not-done-keywords</code>.  This is the default.</dd>
+<dt>not-done</dt><dd>Edna will run if the old TODO state is <b>not</b> in
+<code>org-done-keywords</code>.  This includes no state at all.</dd>
+</dl>
+
+<p>
+Further, using <a href="https://www.nongnu.org/org-edna-el/#conditional_forms">conditional forms</a>, it is possible to take different actions
+depending on the new TODO state.  For example:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #00578E; font-weight: bold;">* My Task</span>
+<span style="color: #0000ff;">  :PROPERTIES:</span>
+  <span style="color: #A52A2A; font-weight: bold;">:TRIGGER:</span>  if self todo-state?("COMPLETE") then self set-property!("TEST" inc) endif
+  <span style="color: #A52A2A; font-weight: bold;">:TEST:</span>     0
+<span style="color: #0000ff;">  :END:</span>
+</pre>
+</div>
+
+<p>
+This will only increment the TEST property if the new TODO state is <b>not</b>
+“COMPLETE”.  Currently, there is no way to take different actions depending on
+the <b>old</b> TODO state.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org860ce35" class="outline-3">
+<h3 id="setting_keywords">Setting the Properties</h3>
+<div class="outline-text-3" id="text-setting_keywords">
+<p>
+There are two ways to set the BLOCKER and TRIGGER properties: by hand, or the
+easy way.  You can probably guess which way we prefer.
+</p>
+
+<p>
+With point within the heading you want to edit, type <code>M-x org-edna-edit</code>.  You end
+up in a buffer that looks like this:
+</p>
+
+<pre class="example">Edit blockers and triggers in this buffer under their respective sections below.
+All lines under a given section will be merged into one when saving back to
+the source buffer.  Finish with `C-c C-c' or abort with `C-c C-k'.
+
+BLOCKER
+BLOCKER STUFF HERE
+
+TRIGGER
+TIRGGER STUFF HERE
+</pre>
+
+<p>
+In here, you can edit the blocker and trigger properties for the original
+heading in a cleaner environment.  More importantly, you can complete the names
+of any valid keyword within the BLOCKER or TRIGGER sections using
+<code>completion-at-point</code>.
+</p>
+
+<p>
+When finished, type <code>C-c C-c</code> to apply the changes, or <code>C-c C-k</code> to throw out your
+changes.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org958f4c9" class="outline-2">
+<h2 id="org958f4c9">Extending Edna</h2>
+<div class="outline-text-2" id="text-org958f4c9">
+<p>
+Extending Edna is (relatively) simple.
+</p>
+
+<p>
+During operation, Edna searches for functions of the form org-edna-TYPE/KEYWORD.
+</p>
+</div>
+
+<div id="outline-container-orgb74adfe" class="outline-3">
+<h3 id="orgb74adfe">Naming Conventions</h3>
+<div class="outline-text-3" id="text-orgb74adfe">
+<p>
+In order to distinguish between actions, finders, and conditions, we add ’?’ to
+conditions and ’!’ to actions.  This is taken from the practice in Guile and
+Scheme to suffix destructive functions with ’!’ and predicates with ’?’.
+</p>
+
+<p>
+Thus, one can have an action that files a target, and a finder that finds a
+file.
+</p>
+
+<p>
+We recommend that you don’t name a finder with a special character at the end of
+its name.  As we devise new ideas, we consider using special characters for
+additional categories of keywords.  Thus, to avoid complications in the future,
+it’s best if everyone avoids using characters that may become reserved in the
+future.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgfa5cf97" class="outline-3">
+<h3 id="orgfa5cf97">Finders</h3>
+<div class="outline-text-3" id="text-orgfa5cf97">
+<p>
+Finders have the form org-edna-finder/KEYWORD, like so:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #A52A2A; font-weight: bold;">defun</span> <span style="color: #00578E; font-weight: bold;">org-edna-finder/test-finder</span> ()
+  (list (point-marker)))
+</pre>
+</div>
+
+<p>
+All finders must return a list of markers, one for each target found, or nil if
+no targets were found.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org485f4c7" class="outline-3">
+<h3 id="org485f4c7">Actions</h3>
+<div class="outline-text-3" id="text-org485f4c7">
+<p>
+Actions have the form org-edna-action/KEYWORD!:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #A52A2A; font-weight: bold;">defun</span> <span style="color: #00578E; font-weight: bold;">org-edna-action/test-action!</span> (last-entry arg1 arg2)
+  )
+</pre>
+</div>
+
+<p>
+Each action has at least one argument: <code>last-entry</code>.  This is a marker for the
+current entry (not to be confused with the current target).
+</p>
+
+<p>
+The rest of the arguments are the arguments specified in the form.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb87c679" class="outline-3">
+<h3 id="orgb87c679">Conditions</h3>
+<div class="outline-text-3" id="text-orgb87c679">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #A52A2A; font-weight: bold;">defun</span> <span style="color: #00578E; font-weight: bold;">org-edna-condition/test-cond?</span> (neg))
+</pre>
+</div>
+
+<p>
+All conditions have at least one argument, “NEG”.  If NEG is non-nil, the
+condition should be negated.
+</p>
+
+<p>
+Most conditions have the following form:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #A52A2A; font-weight: bold;">defun</span> <span style="color: #00578E; font-weight: bold;">org-edna-condition/test-condition?</span> (neg)
+  (<span style="color: #A52A2A; font-weight: bold;">let</span> ((condition (my-test-for-condition)))
+    (<span style="color: #A52A2A; font-weight: bold;">when</span> (org-xor condition neg)
+      (string-for-blocking-entry-here))))
+</pre>
+</div>
+
+<p>
+For conditions, we return true if condition is true and neg is false, or if
+condition is false and neg is true:
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col class="org-left">
+
+<col class="org-left">
+
+<col class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">cond</th>
+<th scope="col" class="org-left">neg</th>
+<th scope="col" class="org-left">res</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">t</td>
+<td class="org-left">t</td>
+<td class="org-left">f</td>
+</tr>
+
+<tr>
+<td class="org-left">t</td>
+<td class="org-left">f</td>
+<td class="org-left">t</td>
+</tr>
+
+<tr>
+<td class="org-left">f</td>
+<td class="org-left">t</td>
+<td class="org-left">t</td>
+</tr>
+
+<tr>
+<td class="org-left">f</td>
+<td class="org-left">f</td>
+<td class="org-left">f</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+This is an XOR table, so we pass CONDITION and NEG into <code>org-xor</code> to get our
+result.
+</p>
+
+<p>
+A condition must return a string if the current entry should be blocked.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org3d8ff0f" class="outline-2">
+<h2 id="org3d8ff0f">Contributing</h2>
+<div class="outline-text-2" id="text-org3d8ff0f">
+<p>
+We are all happy for any help you may provide.
+</p>
+
+<p>
+First, check out the source code on Savannah: <a href="https://savannah.nongnu.org/projects/org-edna-el/">https://savannah.nongnu.org/projects/org-edna-el/</a>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">bzr branch https://bzr.savannah.gnu.org/r/org-edna-el/ org-edna
+</pre>
+</div>
+
+<p>
+You’ll also want a copy of the most recent Org Mode source:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">git clone git://orgmode.org/org-mode.git
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org90672c8" class="outline-3">
+<h3 id="bugs">Bugs</h3>
+<div class="outline-text-3" id="text-bugs">
+<p>
+There are two ways to submit bug reports:
+</p>
+
+<ol class="org-ol">
+<li>Using the bug tracker at Savannah</li>
+<li>Sending an email using <code>org-edna-submit-bug-report</code></li>
+</ol>
+
+<p>
+When submitting a bug report, be sure to include the Edna form that caused the
+bug, with as much context as possible.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org03861da" class="outline-3">
+<h3 id="ede">Working with EDE</h3>
+<div class="outline-text-3" id="text-ede">
+<p>
+Our build system uses EDE.  EDE can be a little finicky at times, but we feel
+the benefits, namely package dependency handling and Makefile generation,
+outweigh the costs.
+</p>
+
+<p>
+One of the issues that many will likely encounter is the error “Corrupt file on
+disk”.  This is most often due to EDE not loading all its subprojects as needed.
+If you find yourself dealing with this error often, place the following in your
+.emacs file:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #204A87;">;; </span><span style="color: #204A87;">Target types needed for working with edna</span>
+(<span style="color: #A52A2A; font-weight: bold;">require</span> '<span style="color: #F5666D;">ede/proj-elisp</span>)
+(<span style="color: #A52A2A; font-weight: bold;">require</span> '<span style="color: #F5666D;">ede/proj-aux</span>)
+(<span style="color: #A52A2A; font-weight: bold;">require</span> '<span style="color: #F5666D;">ede/proj-misc</span>)
+</pre>
+</div>
+
+<p>
+These are the three target types that edna uses: elisp for compilation and
+autoloads; aux for auxiliary files such as documentation; and misc for tests.
+</p>
+
+<p>
+When creating a new file, EDE will ask if you want to add it to a target.
+Consult with one of the edna devs for guidance, but usually selecting “none”
+and letting one of us handle it is a good way to go.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgbbea723" class="outline-3">
+<h3 id="compiling">Compiling Edna</h3>
+<div class="outline-text-3" id="text-compiling">
+<p>
+To compile Edna, you’ve got to have EDE create the Makefile first.  Run the
+following in your Emacs instance to generate the Makefile:
+</p>
+
+<pre class="example">M-x ede-proj-regenerate
+</pre>
+
+<p>
+This will create the Makefile and point it to the correct version of Org.  The
+targets are as follows:
+</p>
+
+<dl class="org-dl">
+<dt>compile</dt><dd>Compiles the code.  This should be done to verify that everything
+will compile, as ELPA requires this.</dd>
+<dt>autoloads</dt><dd>Creates the autoloads file.  This should also run without
+problems, so it’s a good idea to check this one as well.</dd>
+<dt>check</dt><dd>Runs the tests in <code>org-edna-tests.el</code>.</dd>
+</dl>
+
+<p>
+To run any target, call <code>make</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">make compile autoloads
+</pre>
+</div>
+
+<p>
+The above command compiles Edna and generates the autoloads file.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3a22e86" class="outline-3">
+<h3 id="testing">Testing Edna</h3>
+<div class="outline-text-3" id="text-testing">
+<p>
+There are two ways to test Edna: the command-line and through Emacs.
+</p>
+
+<p>
+The command-line version is simple, and we ask that you do any final testing
+using this method.  This is how we periodically check to verify that new
+versions of Org mode haven’t broken Edna.  It uses the Makefile, which is
+generated with EDE.  See <a href="https://www.nongnu.org/org-edna-el/#compiling">Compiling Edna</a> for how to do that.  Once you have, run
+<code>make check</code> on the command line.
+</p>
+
+<p>
+Edna tests are written using <code>ERT</code>, the Emacs Regression Testing framework.  In
+order to use it interactively in Emacs, the following must be done:
+</p>
+
+<ol class="org-ol">
+<li>Load <code>org-edna-tests.el</code></li>
+<li>Run <code>M-x ert-run-tests-interactively</code></li>
+<li>Select which tests to run, or just the letter “t” to run all of them.</li>
+</ol>
+
+<p>
+Results are printed in their own buffer.  See the ERT documentation for more
+details.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org84e541d" class="outline-3">
+<h3 id="commit_checklist">Before Sending Changes</h3>
+<div class="outline-text-3" id="text-commit_checklist">
+<p>
+There are a few rules to follow:
+</p>
+
+<ul class="org-ul">
+<li>Verify that any new Edna keywords follow the appropriate naming conventions</li>
+<li>Any new keywords should be documented</li>
+<li>We operate on headings, not headlines
+<ul class="org-ul">
+<li>Use one word in documentation to avoid confusion</li>
+</ul></li>
+<li>Make sure your changes compile</li>
+<li>Run ’make check’ to verify that your mods don’t break anything</li>
+<li>Avoid additional or altered dependencies if at all possible
+<ul class="org-ul">
+<li>Exception: New versions of Org mode are allowed</li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org3d9a592" class="outline-3">
+<h3 id="bzr_dev">Developing with Bazaar</h3>
+<div class="outline-text-3" id="text-bzr_dev">
+<p>
+If you’re new to bazaar, we recommend using Emacs’s built-in VC package.  It
+eases the overhead of dealing with a brand new VCS with a few standard commands.
+For more information, see the info page on it (In Emacs, this is
+C-h r m Introduction to VC RET).
+</p>
+
+<p>
+To contribute with bazaar, you can do the following:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell"><span style="color: #204A87;"># </span><span style="color: #204A87;">Hack away and make your changes</span>
+$ bzr commit -m <span style="color: #4E9A06;">"Changes I've made"</span>
+$ bzr send -o file-name.txt
+</pre>
+</div>
+
+<p>
+Then, use <code>org-edna-submit-bug-report</code> and attach “file-name.txt”.  We can then
+merge that into the main development branch.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org440376b" class="outline-3">
+<h3 id="docs">Documentation</h3>
+<div class="outline-text-3" id="text-docs">
+<p>
+Documentation is always helpful to us.  Please be sure to do the following after
+making any changes:
+</p>
+
+<ol class="org-ol">
+<li>Update the info page in the repository with <code>C-c C-e i i</code></li>
+<li>If you’re updating the HTML documentation, switch to a theme that can easily
+be read on a white background; we recommend the “adwaita” theme</li>
+</ol>
+</div>
+</div>
+</div>
+<div id="outline-container-org9658714" class="outline-2">
+<h2 id="org9658714">Changelog</h2>
+<div class="outline-text-2" id="text-org9658714">
+</div>
+<div id="outline-container-org8786aa7" class="outline-3">
+<h3 id="org8786aa7">1.1.2</h3>
+<div class="outline-text-3" id="text-org8786aa7">
+<ul class="org-ul">
+<li>Allow <code>id:</code> syntax in <code>ids</code> finder</li>
+<li>Added setting <code>org-edna-from-todo-states</code>
+<ul class="org-ul">
+<li>See <a href="https://www.nongnu.org/org-edna-el/#not_done">What Constitutes “Not Done”</a> for more</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org59ad461" class="outline-3">
+<h3 id="org59ad461">1.1.1</h3>
+<div class="outline-text-3" id="text-org59ad461">
+<ul class="org-ul">
+<li>Marked <code>org-edna-load</code> and <code>org-edna-unload</code> as deprecated</li>
+<li>Renamed to <code>org-edna--load</code> and <code>org-edna--unload</code> to reflect internal use only intention</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orga319796" class="outline-3">
+<h3 id="orga319796">1.1.0</h3>
+<div class="outline-text-3" id="text-orga319796">
+<ul class="org-ul">
+<li>Added <code>org-edna-mode</code> as a minor mode, as opposed to <code>org-edna-load</code> and <code>org-edna-unload</code></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orged2e56d" class="outline-3">
+<h3 id="orged2e56d">1.0.2</h3>
+<div class="outline-text-3" id="text-orged2e56d">
+<ul class="org-ul">
+<li>Added <code>org-edna-reset-cache</code> to allow a user to reset the finder cache</li>
+
+<li>Fixed timestamp format bug with scheduled! and deadline!
+<ul class="org-ul">
+<li>See <a href="https://www.nongnu.org/org-edna-el/#ts_format">Timestamp Format</a> for more</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgd73b16f" class="outline-3">
+<h3 id="orgd73b16f">1.0.1</h3>
+<div class="outline-text-3" id="text-orgd73b16f">
+<ul class="org-ul">
+<li>Fixed bug in multiple blocking conditions</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgab8f6ef" class="outline-3">
+<h3 id="orgab8f6ef">1.0</h3>
+<div class="outline-text-3" id="text-orgab8f6ef">
+<ul class="org-ul">
+<li>Various bugs fixes
+<ul class="org-ul">
+<li>Fixed parsing of consideration</li>
+<li>Limited cache to just the finders that don’t depend on current position</li>
+</ul></li>
+<li>Added “buffer” option for match finder</li>
+<li>Added timestamp sorting to relatives finder</li>
+<li>Inverted meaning of consideration to avoid confusion</li>
+<li>Added <a href="https://www.nongnu.org/org-edna-el/#has-tags">has-tags?</a> and <a href="https://www.nongnu.org/org-edna-el/#matches">matches?</a> conditions</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orga69625c" class="outline-3">
+<h3 id="orga69625c">1.0beta8</h3>
+<div class="outline-text-3" id="text-orga69625c">
+<p>
+Quick fix for beta7.
+</p>
+</div>
+</div>
+<div id="outline-container-orgc0f19cc" class="outline-3">
+<h3 id="orgc0f19cc">1.0beta7</h3>
+<div class="outline-text-3" id="text-orgc0f19cc">
+<p>
+Biggest change here is the cache.
+</p>
+
+<ul class="org-ul">
+<li>Added cache to the finders to improve performance</li>
+
+<li>Updated documentation to include EDE</li>
+
+<li>Added testing and compiling documentation</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgdf63718" class="outline-3">
+<h3 id="orgdf63718">1.0beta6</h3>
+<div class="outline-text-3" id="text-orgdf63718">
+<p>
+Lots of parsing fixes.
+</p>
+
+<ul class="org-ul">
+<li>Fixed error reporting</li>
+
+<li>Fixed parsing of negations in conditions</li>
+
+<li>Fixed parsing of multiple forms inside if/then/else blocks</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org11eb5dc" class="outline-3">
+<h3 id="org11eb5dc">1.0beta5</h3>
+<div class="outline-text-3" id="text-org11eb5dc">
+<p>
+Some new forms and a new build system.
+</p>
+
+<ul class="org-ul">
+<li>Added new forms to set-property!
+<ul class="org-ul">
+<li>Now allows ’inc, ’dec, ’previous, and ’next as values</li>
+</ul></li>
+
+<li>Changed build system to EDE to properly handle dependencies</li>
+
+<li>Fixed compatibility with new Org effort functions</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgfe89cd4" class="outline-3">
+<h3 id="orgfe89cd4">1.0beta4</h3>
+<div class="outline-text-3" id="text-orgfe89cd4">
+<p>
+Just some bug fixes from the new form parsing.
+</p>
+
+<ul class="org-ul">
+<li>Fixed multiple forms getting incorrect targets</li>
+
+<li>Fixed multiple forms not evaluating</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org501b0b1" class="outline-3">
+<h3 id="org501b0b1">1.0beta3</h3>
+<div class="outline-text-3" id="text-org501b0b1">
+<p>
+HUGE addition here
+</p>
+
+<ul class="org-ul">
+<li>Conditional Forms
+<ul class="org-ul">
+<li>See <a href="https://www.nongnu.org/org-edna-el/#conditional_forms">Conditional Forms</a> for more information</li>
+</ul></li>
+
+<li>Overhauled Internal Parsing</li>
+
+<li>Fixed consideration keywords</li>
+
+<li>Both consider and consideration are accepted now</li>
+
+<li>Added ’any consideration
+<ul class="org-ul">
+<li>Allows passage if just one target is fulfilled</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org3b5a7ff" class="outline-3">
+<h3 id="org3b5a7ff">1.0beta2</h3>
+<div class="outline-text-3" id="text-org3b5a7ff">
+<p>
+Big release here, with three new features.
+</p>
+
+<ul class="org-ul">
+<li>Added interactive keyword editor with completion
+<ul class="org-ul">
+<li>See <a href="https://www.nongnu.org/org-edna-el/#setting_keywords">Setting the Properties</a> for how to do that</li>
+</ul></li>
+
+<li>New uses of schedule! and deadline!
+<ul class="org-ul">
+<li>New “float” form that mimics diary-float</li>
+<li>New “landing” addition to “+1d” and friends to force planning changes to land on a certain day or type of day (weekend/weekday)</li>
+<li>See <a href="https://www.nongnu.org/org-edna-el/#planning">Scheduled/Deadline</a> for details</li>
+</ul></li>
+
+<li>New “relatives” finder
+<ul class="org-ul">
+<li>Renamed from chain-find with tons of new keywords</li>
+<li>Modified all other relative finders (previous-sibling, first-child, etc.) to use the same keywords</li>
+<li>See <a href="https://www.nongnu.org/org-edna-el/#relatives">relatives</a> for details</li>
+</ul></li>
+
+<li>New finders
+<ul class="org-ul">
+<li><a href="https://www.nongnu.org/org-edna-el/#previous-sibling-wrap">previous-sibling-wrap</a></li>
+<li><a href="https://www.nongnu.org/org-edna-el/#rest-of-siblings-wrap">rest-of-siblings-wrap</a></li>
+</ul></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="email">Email: <a href="mailto:dunni@gnu.org">dunni@gnu.org</a></p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+
+
+<protonpass-root-6695 data-protonpass-role="root" data-protonpass-theme="os"><template shadowrootmode="closed"></template></protonpass-root-6695><div class="calendly-frame-tag" manager_id="9fa55aab-b762-4ae5-a805-c37da4f8f861" style="height: 0px; width: 0px; visibility: hidden;" id="9fa55aab-b762-4ae5-a805-c37da4f8f861"></div><div class="calendly-lifecycle-optibutton_singleton"><template shadowrootmode="closed"><div class="calendly-opti-root"></div></template></div></body></html>

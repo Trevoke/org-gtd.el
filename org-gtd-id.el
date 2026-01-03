@@ -1,6 +1,6 @@
 ;;; org-gtd-id.el --- generating ids for tasks -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -28,6 +28,8 @@
 
 ;;;; Requirements
 
+(require 'org)
+(require 'org-id)
 (require 'org-macs)
 (require 'ffap)
 
@@ -54,10 +56,15 @@ This function is a modified copy of `org-id-get'."
 
 ;;;;; Private
 
+(defconst org-gtd-id--max-heading-length 50
+  "Maximum length for the heading portion of generated IDs.
+The timestamp suffix is added after this limit.")
+
 (defun org-gtd-id--generate ()
   "Generate and return a new id.
 The generated ID is stripped off potential progress indicator cookies and
-sanitized to get a slug.  Furthermore, it is suffixed with an ISO date-stamp."
+sanitized to get a slug.  Furthermore, it is suffixed with an ISO date-stamp.
+The heading portion is truncated to `org-gtd-id--max-heading-length' characters."
   (let* ((my-heading-text (or (nth 4 (org-heading-components))
                               "org-gtd-makeshift-id"))
          (clean-text (org-gtd-id--remove-week-time-from-inactive-timestamps
@@ -68,25 +75,44 @@ sanitized to get a slug.  Furthermore, it is suffixed with an ISO date-stamp."
                           (org-gtd-id--remove-percent-progress-indicators
                            my-heading-text)))))))
          (raw-id (org-gtd-id--generate-sanitized-alnum-dash-string clean-text))
+         (truncated-id (org-gtd-id--truncate-to-limit raw-id))
          (timestamp (format-time-string "%F-%H-%M-%S")))
-    (concat raw-id "-" timestamp)))
+    (concat truncated-id "-" timestamp)))
+
+(defun org-gtd-id--truncate-to-limit (str)
+  "Truncate STR to `org-gtd-id--max-heading-length' chars, ending cleanly.
+Truncates at word boundary (dash) when possible, removes trailing dashes."
+  (if (<= (length str) org-gtd-id--max-heading-length)
+      str
+    (let ((truncated (substring str 0 org-gtd-id--max-heading-length)))
+      ;; Try to end at a word boundary (last dash before limit)
+      (if-let ((last-dash (string-match-p "-[^-]*$" truncated)))
+          (substring truncated 0 last-dash)
+        ;; No dash found, just use the truncated string and remove trailing dash
+        (replace-regexp-in-string "-+$" "" truncated)))))
 
 (defun org-gtd-id--remove-percent-progress-indicators (heading)
+  "Remove [N%] progress indicators from HEADING."
   (replace-regexp-in-string "\\(\\[[0-9]+%\\]\\)" "" heading))
 
 (defun org-gtd-id--remove-tally-progress-indicators (heading)
+  "Remove [N/M] tally progress indicators from HEADING."
   (replace-regexp-in-string "\\(\\[[0-9]+/[0-9]+\\]\\)" "" heading))
 
 (defun org-gtd-id--remove-priority-indicators (heading)
+  "Remove [#A], [#B], [#C] priority indicators from HEADING."
   (replace-regexp-in-string "\\(\\[#[ABC]\\]\\)" "" heading))
 
 (defun org-gtd-id--remove-links (heading)
+  "Remove org link markup from HEADING, keeping link text."
   (replace-regexp-in-string "\\[\\[\\(.+?\\)\\]\\[" "" heading t))
 
 (defun org-gtd-id--remove-day-time-from-active-timestamps (heading)
+  "Remove day and time from active timestamps in HEADING."
   (replace-regexp-in-string "<[12][0-9]\\{3\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\( .*?\\)>" "" heading t))
 
 (defun org-gtd-id--remove-week-time-from-inactive-timestamps (heading)
+  "Remove week and time from inactive timestamps in HEADING."
   (replace-regexp-in-string "\\[[12][0-9]\\{3\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\( .*?\\)\\]" "" heading t))
 
 (defun org-gtd-id--generate-sanitized-alnum-dash-string (str)
@@ -122,15 +148,8 @@ https://gitlab.com/publicvoit/orgmode-link-demo/-/raw/main/link_demo.org ."
          ;; Replace all characters except alphabets, numbers and
          ;; parentheses with spaces.
          (str (replace-regexp-in-string "[^[:alnum:]()]" " " str))
-         ;; On emacs 24.5, multibyte punctuation characters like "："
-         ;; are considered as alphanumeric characters! Below evals to
-         ;; non-nil on emacs 24.5:
-         ;;   (string-match-p "[[:alnum:]]+" "：")
-         ;; So replace them with space manually..
-         (str (if (version< emacs-version "25.0")
-                  (let ((multibyte-punctuations-str "：")) ;String of multibyte punctuation chars
-                    (replace-regexp-in-string (format "[%s]" multibyte-punctuations-str) " " str))
-                str))
+         ;; Multibyte punctuation characters are handled correctly in Emacs 25+
+         (str str)
          ;; Remove leading and trailing whitespace.
          (str (replace-regexp-in-string "\\(^[[:space:]]*\\|[[:space:]]*$\\)" "" str))
          ;; Replace 2 or more spaces with a single space.

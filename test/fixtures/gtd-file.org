@@ -2,43 +2,142 @@
 
 * Projects
 :PROPERTIES:
-:TRIGGER: org-gtd-next-project-action org-gtd-update-project-task!
 :ORG_GTD:  Projects
 :END:
 
 ** [0/3] Unstarted project
 :PROPERTIES:
+:ID: unstarted-project-id
+:ORG_GTD: Projects
+:ORG_GTD_FIRST_TASKS: unstarted-task-1-id
 :CATEGORY: Home
 :END:
 *** NEXT Task 1
+:PROPERTIES:
+:ID: unstarted-task-1-id
+:ORG_GTD: Actions
+:ORG_GTD_BLOCKS: unstarted-task-2-id
+:ORG_GTD_PROJECT: Unstarted project
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 
 *** TODO Task 2
+:PROPERTIES:
+:ID: unstarted-task-2-id
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: unstarted-task-1-id
+:ORG_GTD_BLOCKS: unstarted-task-3-id
+:ORG_GTD_PROJECT: Unstarted project
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 
 *** TODO Task 3
+:PROPERTIES:
+:ID: unstarted-task-3-id
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: unstarted-task-2-id
+:ORG_GTD_PROJECT: Unstarted project
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 
 
 ** [1/3] cancel me
 :PROPERTIES:
+:ID: cancel-me-project-id
+:ORG_GTD: Projects
+:ORG_GTD_FIRST_TASKS: cancel-task-1-id
 :CATEGORY: Career
 :END:
 *** DONE Task 1
+:PROPERTIES:
+:ID: cancel-task-1-id
+:ORG_GTD: Actions
+:ORG_GTD_BLOCKS: cancel-task-2-id
+:ORG_GTD_PROJECT: cancel me
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 *** NEXT Task 2
+:PROPERTIES:
+:ID: cancel-task-2-id
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: cancel-task-1-id
+:ORG_GTD_BLOCKS: cancel-task-3-id
+:ORG_GTD_PROJECT: cancel me
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 *** TODO Task 3
+:PROPERTIES:
+:ID: cancel-task-3-id
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: cancel-task-2-id
+:ORG_GTD_PROJECT: cancel me
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 
 ** [3/3] canceled
 :PROPERTIES:
+:ID: canceled-project-id
+:ORG_GTD: Projects
+:ORG_GTD_FIRST_TASKS: canceled-task-1-id
 :CATEGORY: Health
 :END:
 *** DONE Task 1
+:PROPERTIES:
+:ID: canceled-task-1-id
+:ORG_GTD: Actions
+:ORG_GTD_BLOCKS: canceled-task-2-id
+:ORG_GTD_PROJECT: canceled
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 *** CNCL Task 2
+:PROPERTIES:
+:ID: canceled-task-2-id
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: canceled-task-1-id
+:ORG_GTD_BLOCKS: canceled-task-3-id
+:ORG_GTD_PROJECT: canceled
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 *** CNCL Task 3
+:PROPERTIES:
+:ID: canceled-task-3-id
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: canceled-task-2-id
+:ORG_GTD_PROJECT: canceled
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 ** [1/3] addtaskhere
 :PROPERTIES:
+:ID: addtaskhere-project-id
+:ORG_GTD: Projects
+:ORG_GTD_FIRST_TASKS: addtask-finished-id
 :CATEGORY: Home
 :END:
 *** DONE finished task
+:PROPERTIES:
+:ID: addtask-finished-id
+:ORG_GTD: Actions
+:ORG_GTD_BLOCKS: addtask-next-id
+:ORG_GTD_PROJECT: addtaskhere
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 *** NEXT initial next task
+:PROPERTIES:
+:ID: addtask-next-id
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: addtask-finished-id
+:ORG_GTD_BLOCKS: addtask-last-id
+:ORG_GTD_PROJECT: addtaskhere
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 *** TODO initial last task
+:PROPERTIES:
+:ID: addtask-last-id
+:ORG_GTD: Actions
+:ORG_GTD_DEPENDS_ON: addtask-next-id
+:ORG_GTD_PROJECT: addtaskhere
+:TRIGGER: org-gtd-update-project-after-task-done!
+:END:
 * Calendar
 :PROPERTIES:
 :ORG_GTD:  Calendar
@@ -46,6 +145,7 @@
 
 ** DONE write a nice test
 :PROPERTIES:
+:ORG_GTD: Calendar
 :ORG_GTD_TIMESTAMP: <2021-11-20 Sat>
 :CATEGORY: Home
 :END:
@@ -53,12 +153,14 @@
 
 ** probably overdue by now
 :PROPERTIES:
+:ORG_GTD: Calendar
 :ORG_GTD_TIMESTAMP: <2021-11-18 Thu>
 :END:
 
 ** repeating item
 SCHEDULED: <2021-12-04 Sat .+1d>
 :PROPERTIES:
+:ORG_GTD:  Habit
 :STYLE:    habit
 :LAST_REPEAT: [2021-11-20 Sat 16:52]
 :END:
@@ -78,12 +180,14 @@ SCHEDULED: <2021-12-04 Sat .+1d>
 
 ** WAIT Overdue delegated
 :PROPERTIES:
+:ORG_GTD: Delegated
 :ORG_GTD_TIMESTAMP: <2021-11-18 Sun>
 :DELEGATED_TO: future me
 :END:
 
 ** WAIT Wait for someone
 :PROPERTIES:
+:ORG_GTD: Delegated
 :ORG_GTD_TIMESTAMP: <2025-03-23 Sun>
 :DELEGATED_TO: future me
 :END:
@@ -93,22 +197,25 @@ SCHEDULED: <2021-12-04 Sat .+1d>
 ** DONE this is done
 ** CNCL this is canceled
 
-* Incubate
+* Tickler
 :PROPERTIES:
-:ORG_GTD:  Incubated
+:ORG_GTD:  Tickler
 :END:
 ** Time to review this one
 :PROPERTIES:
+:ORG_GTD: Tickler
 :ORG_GTD_TIMESTAMP: <2021-11-19 Thu>
 :CATEGORY: Home
 :END:
 ** For later
 :PROPERTIES:
+:ORG_GTD: Tickler
 :ORG_GTD_TIMESTAMP: <2037-02-19 Thu>
 :CATEGORY: Home
 :END:
 
 ** CNCL not worth thinking about
 :PROPERTIES:
+:ORG_GTD: Tickler
 :ORG_GTD_TIMESTAMP: <2021-11-21 Sun>
 :END:

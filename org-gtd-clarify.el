@@ -1,6 +1,6 @@
 ;;; org-gtd-clarify.el --- Handle clarifying tasks -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -26,10 +26,11 @@
 
 ;;;; Requirements
 
+(require 'cl-lib)
 (require 'org-agenda)
 
 (require 'org-gtd-core)
-(require 'org-gtd-id)
+(require 'org-gtd-wip)
 (require 'org-gtd-horizons)
 
 ;;;; Customization
@@ -58,9 +59,73 @@ The file shown can be configured in `org-gtd-horizons-file'."
   :package-version '(org-gtd . "3.0")
   :type 'symbol)
 
+(defcustom org-gtd-clarify-display-helper-buffer nil
+  "If non-nil, display project dependencies helper window in WIP buffers.
+When enabled, shows a live view of task relationships in a side window when
+there are multiple tasks in the WIP buffer."
+  :group 'org-gtd-clarify
+  :package-version '(org-gtd . "4.0")
+  :type 'boolean)
+
+(defcustom org-gtd-clarify-show-organize-help nil
+  "If non-nil, position to display the organize types help buffer.
+The values can be: nil, top, right, left, bottom."
+  :group 'org-gtd-clarify
+  :options '('right 'top 'left 'bottom 'nil)
+  :package-version '(org-gtd . "4.0")
+  :type 'symbol)
+
 ;;;; Constants
 
-(defconst org-gtd-clarify--prefix "Org-GTD WIP")
+(defconst org-gtd-clarify-organize-help-content
+  "* Quick Action [q]
+Do it now (< 2 minutes). Marks DONE and archives immediately.
+
+* Single Action [s]
+One-off task to do when ready.
+- Marks as NEXT
+- Shows in engage view
+
+* Project [p]
+Multi-step outcome requiring several tasks.
+- Creates task dependencies
+- First task(s) marked NEXT, rest TODO
+- Auto-advances on completion
+
+* Add to Project [a]
+Attach this task to an existing project.
+
+* Calendar [c]
+Must happen at a specific date/time.
+- Prompts for date
+- Shows in agenda at that time
+
+* Delegate [d]
+Someone else will do it; you follow up.
+- Prompts for person and follow-up date
+- Marks as WAIT
+
+* Habit [h]
+Recurring action with org-habit tracking.
+
+* Tickler [i]
+Remind me to reconsider on a specific date.
+- Prompts for review date
+- Reappears in agenda then
+
+* Someday/Maybe [y]
+Might do eventually, no commitment or date.
+
+* Knowledge [k]
+Reference material to file away.
+
+* Trash [t]
+Not needed. Deletes the item.
+"
+  "Content for the organize help buffer showing GTD item types.")
+
+(defconst org-gtd-clarify-organize-help-buffer-name "*Org GTD Organize Help*"
+  "Buffer name for the organize types help window.")
 
 ;;;; Variables
 
@@ -76,11 +141,34 @@ The file shown can be configured in `org-gtd-horizons-file'."
 (defvar-local org-gtd-clarify--window-config nil
   "Store window configuration prior to clarifying task.")
 
+(defvar-local org-gtd-clarify--skip-refile nil
+  "When non-nil, update item in place instead of refiling.
+Set via C-u prefix to clarify commands or transient toggle.")
+
+(defvar-local org-gtd-clarify--continuation nil
+  "Function to call after organizing completes.
+Set by `org-gtd-clarify-inbox-item' to continue inbox processing.
+Called by `org-gtd-organize--call' when non-nil.")
+
+;;;;; External variables (defined in org-gtd-process.el)
+
+(defvar org-gtd-process--session-active)
+(defvar org-gtd-process--pending-inboxes)
+
 ;;;;; Keymaps
 
-;;;###autoload
-(defvar org-gtd-clarify-map (make-sparse-keymap)
-  "Keymap for command `org-gtd-clarify-mode', a minor mode.")
+;; Forward-declare obsolete alias for byte-compiler ordering
+(defvar org-gtd-clarify-map)
+
+(defvar org-gtd-clarify-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c C-k") #'org-gtd-clarify-stop)
+    map)
+  "Keymap for `org-gtd-clarify-mode'.")
+
+;; Backward compatibility alias (obsolete)
+(defvaralias 'org-gtd-clarify-map 'org-gtd-clarify-mode-map)
+(make-obsolete-variable 'org-gtd-clarify-map 'org-gtd-clarify-mode-map "4.0")
 
 ;; code to make windows atomic, from emacs manual
 ;; (let ((window (split-window-right)))
@@ -95,53 +183,70 @@ The file shown can be configured in `org-gtd-horizons-file'."
 ;; dedicated side window
 ;; (display-buffer-in-side-window (get-buffer "horizons.org") '((side . right) (dedicated . t)))
 
-;;;; Macros
+;;;; Modes
 
 ;;;###autoload
-(define-minor-mode org-gtd-clarify-mode
-  "Minor mode for org-gtd."
-  :lighter " GPM"
-  :keymap org-gtd-clarify-map
+(define-derived-mode org-gtd-clarify-mode org-mode "GTD-Clarify"
+  "Major mode for GTD item clarification.
+Derived from `org-mode' and provides keybindings and interface for
+clarifying GTD items before organizing them.
+
+\\{org-gtd-clarify-mode-map}"
   :group 'org-gtd-clarify
-  (if org-gtd-clarify-mode
-      (setq-local
-       header-line-format
-       (substitute-command-keys
-        "\\<org-gtd-clarify-map>Clarify item.  Use `\\[org-gtd-organize]' to file it appropriately when finished."))
-    (setq-local header-line-format nil)))
+  (setq-local org-gtd--loading-p t)
+  (setq-local
+   header-line-format
+   (substitute-command-keys
+    "\\<org-gtd-clarify-mode-map>Clarify item.  \\[org-gtd-organize] to file, \\[org-gtd-clarify-stop] to cancel."))
+  ;; Enable auto-save for crash protection (absorbed from wip-mode)
+  (auto-save-mode 1))
 
 ;;;; Commands
 
 (defun org-gtd-clarify-agenda-item ()
-  "Process item at point on agenda view."
-  (declare (modes org-agenda-mode)) ;; for 27.2 compatibility
-  (interactive nil)
+  "Process item at point on agenda view.
+With prefix argument (C-u), mark item for in-place update instead of refile."
+  (interactive)
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)
   (let ((heading-marker (or (org-get-at-bol 'org-marker)
-                            (org-agenda-error))))
-    (org-gtd-clarify-item-at-marker heading-marker)))
+                            (org-agenda-error)))
+        (prefix-arg current-prefix-arg))
+    ;; Rebind current-prefix-arg so org-gtd-clarify-item sees it
+    (let ((current-prefix-arg prefix-arg))
+      (org-gtd-clarify-item heading-marker
+                            (current-window-configuration)))))
 
 ;;;###autoload
-(defun org-gtd-clarify-item ()
-  "Process item at point through org-gtd."
-  (declare (modes org-mode)) ;; for 27.2 compatibility
+(defun org-gtd-clarify-item (&optional marker window-config)
+  "Clarify the GTD item at point for decision-making.
+Opens a dedicated clarification buffer where you can refine the item's
+details before organizing it.
+
+With prefix argument (C-u), mark item for in-place update instead of refile.
+
+MARKER must be a marker pointing to an org heading.
+WINDOW-CONFIG is the window config to set after clarification finishes."
   (interactive)
-  (let ((processing-buffer (org-gtd-clarify--get-buffer))
-        (window-config (current-window-configuration))
-        (source-heading-marker (point-marker)))
-    (org-gtd-clarify--maybe-initialize-buffer-contents processing-buffer)
+  (let* ((skip-refile current-prefix-arg)
+         (window-config (or window-config (current-window-configuration)))
+         (source-heading-marker (or marker (point-marker)))
+         (clarify-id (org-gtd-id-get-create source-heading-marker))
+         (processing-buffer (org-gtd-wip--get-buffer clarify-id)))
+    (org-gtd-clarify--initialize-buffer-contents source-heading-marker processing-buffer)
     (with-current-buffer processing-buffer
+      (unless (derived-mode-p 'org-gtd-clarify-mode)
+        (org-gtd-clarify-mode))
       (setq-local org-gtd-clarify--window-config window-config
                   org-gtd-clarify--source-heading-marker source-heading-marker
-                  org-gtd-clarify--clarify-id (org-gtd-id-get-create)))
+                  org-gtd-clarify--clarify-id clarify-id
+                  org-gtd-clarify--skip-refile (when skip-refile t)))
     (org-gtd-clarify-setup-windows processing-buffer)))
 
 (defun org-gtd-clarify-switch-to-buffer ()
   "Prompt the user to choose one of the existing WIP buffers."
-  (declare (modes org-gtd-clarify-mode)) ;; for 27.2 compatibility
   (interactive)
-  (let ((buf-names (mapcar #'buffer-name (org-gtd-clarify--get-buffers))))
+  (let ((buf-names (mapcar #'buffer-name (org-gtd-wip--get-buffers))))
     (if buf-names
         (let ((chosen-buf-name (completing-read "Choose a buffer: " buf-names nil t)))
           (org-gtd-clarify-setup-windows chosen-buf-name))
@@ -156,23 +261,43 @@ The file shown can be configured in `org-gtd-horizons-file'."
         (quit-window nil window)
       (org-gtd-clarify--display-horizons-window))))
 
+(defun org-gtd-clarify-stop ()
+  "Stop clarifying the current item and restore previous state.
+Closes the horizons view, restores the window configuration,
+cleans up temp file, and kills the WIP buffer without organizing the item."
+  (interactive)
+  (let ((window-config org-gtd-clarify--window-config)
+        (task-id org-gtd-clarify--clarify-id)
+        (inbox-p org-gtd-clarify--inbox-p))
+    ;; Clean up horizons view
+    (org-gtd-clarify--cleanup-horizons-view)
+    ;; Clean up temp file and kill buffer
+    (when task-id
+      (org-gtd-wip--cleanup-temp-file task-id))
+    ;; Clear inbox processing session state if we were processing inbox
+    (when inbox-p
+      (setq org-gtd-process--session-active nil
+            org-gtd-process--pending-inboxes nil))
+    ;; Restore window configuration
+    (when window-config
+      (set-window-configuration window-config))
+    (message "Stopped clarifying")))
+
 ;;;; Functions
 
 ;;;;; Public
 
-(defun org-gtd-clarify-inbox-item ()
+(defun org-gtd-clarify-inbox-item (marker window-config &optional continuation)
   "Process item at point through org-gtd.
-This function is called through the inbox clarification process."
-  (org-gtd-clarify-item)
-  (setq-local org-gtd-clarify--inbox-p t))
+This function is called through the inbox clarification process.
 
-(defun org-gtd-clarify-item-at-marker (marker)
-  "MARKER must be a marker pointing to an org heading."
-  (let ((heading-buffer (marker-buffer marker))
-        (heading-position (marker-position marker)))
-    (with-current-buffer heading-buffer
-      (goto-char heading-position)
-      (org-gtd-clarify-item))))
+MARKER must be a marker pointing to an org heading.
+WINDOW-CONFIG is the window config to set after clarification finishes.
+CONTINUATION is a function to call after organizing completes (e.g., to
+process the next inbox item)."
+  (org-gtd-clarify-item marker window-config)
+  (setq-local org-gtd-clarify--inbox-p t)
+  (setq-local org-gtd-clarify--continuation continuation))
 
 (defun org-gtd-clarify-project-insert-template ()
   "Insert user-provided template under item at point."
@@ -199,45 +324,183 @@ This function is called through the inbox clarification process."
     (if org-gtd-clarify-show-horizons
         (org-gtd-clarify--display-horizons-window))))
 
+(defun org-gtd-clarify-display-dependency-helper ()
+  "Display project dependencies in a helper window for current WIP buffer.
+Shows task relationships in format: (depends_on, ...) -> task -> (blocks, ...)
+Only displays when `org-gtd-clarify-display-helper-buffer' is non-nil and
+the buffer contains more than one task heading."
+  (interactive)
+  (when (and org-gtd-clarify-display-helper-buffer
+             (derived-mode-p 'org-gtd-clarify-mode))
+    (let ((proj-name (org-gtd-clarify--extract-project-name))
+          (task-info (org-gtd-clarify--collect-task-information)))
+
+      ;; Show helper if we have tasks to display
+      (when task-info
+        (org-gtd-clarify--create-dependency-helper-window
+         proj-name task-info)))))
+
 ;;;;; Private
 
-(defun org-gtd-clarify--buffer-name (id)
-  "Retrieve the name of the WIP buffer for this particular ID."
-  (format "*%s: %s*" org-gtd-clarify--prefix id))
-
-(defun org-gtd-clarify--display-horizons-window ()
-  "Display horizons window."
-  (let ((horizons-side (or org-gtd-clarify-show-horizons 'right)))
-    (display-buffer (org-gtd--horizons-file)
-                    `(display-buffer-in-side-window . ((side . ,horizons-side))))))
-
-(defun org-gtd-clarify--get-buffer ()
-  "Get or create a WIP buffer for heading at point."
-  (let* ((org-id (org-gtd-id-get-create))
-         (buffer (get-buffer-create (org-gtd-clarify--buffer-name org-id))))
-    (with-current-buffer buffer
-      (unless (eq major-mode 'org-mode) (org-mode))
-      (org-gtd-core-prepare-buffer)
-      (org-gtd-clarify-mode 1)
-      buffer)))
-
-(defun org-gtd-clarify--get-buffers ()
-  "Retrieve a list of Org GTD WIP buffers."
-  (seq-filter (lambda (buf)
-                (string-match-p org-gtd-clarify--prefix (buffer-name buf)))
-              (buffer-list)))
-
-(defun org-gtd-clarify--maybe-initialize-buffer-contents (buffer)
-  "If BUFFER is empty, then copy org heading at point and paste inside buffer."
+(defun org-gtd-clarify--initialize-buffer-contents (marker buffer)
+  "Prepare BUFFER with org heading at MARKER if possible.
+If BUFFER is empty, copy org heading at MARKER and paste inside BUFFER,
+then remove org-gtd state properties to prepare for fresh organization."
   (with-temp-message ""
     (when (= (buffer-size buffer) 0)
       (let ((last-command nil))
-        (org-copy-subtree))
+        (org-with-point-at marker
+          (org-copy-subtree)))
       (with-current-buffer buffer
         (org-paste-subtree)
         (org-entry-delete (point) org-gtd-timestamp)
-        (org-entry-delete (point) org-gtd-delegate-property)
-        (org-entry-delete (point) "STYLE")))))
+        (org-entry-delete (point) (org-gtd-type-property 'delegated :who))
+        (org-entry-delete (point) org-gtd-prop-style)
+        (org-entry-delete (point) org-gtd-prop-project)))))
+
+(defun org-gtd-clarify--get-or-create-horizons-view ()
+  "Get or create read-only indirect buffer for horizons file."
+  (let* ((horizons-buffer (org-gtd--horizons-file))
+         (view-buffer-name "*Org GTD Horizons View*")
+         (existing-view (get-buffer view-buffer-name)))
+    (if (and existing-view (buffer-live-p existing-view))
+        existing-view
+      (with-current-buffer horizons-buffer
+        (let ((view-buffer (make-indirect-buffer
+                            horizons-buffer
+                            view-buffer-name
+                            t)))
+          (with-current-buffer view-buffer
+            (read-only-mode 1))
+          view-buffer)))))
+
+(defun org-gtd-clarify--display-horizons-window ()
+  "Display horizons window."
+  (let ((horizons-side (or org-gtd-clarify-show-horizons 'right))
+        (view-buffer (org-gtd-clarify--get-or-create-horizons-view)))
+    (display-buffer view-buffer
+                    `(display-buffer-in-side-window . ((side . ,horizons-side))))))
+
+(defun org-gtd-clarify--cleanup-horizons-view ()
+  "Kill the horizons view buffer if it exists."
+  (let ((view-buffer (get-buffer "*Org GTD Horizons View*")))
+    (when (and view-buffer (buffer-live-p view-buffer))
+      (kill-buffer view-buffer))))
+
+(defun org-gtd-clarify--get-or-create-organize-help-buffer ()
+  "Get or create the organize help buffer with GTD type descriptions."
+  (let ((buffer (get-buffer org-gtd-clarify-organize-help-buffer-name)))
+    (if (and buffer (buffer-live-p buffer))
+        buffer
+      (with-current-buffer (get-buffer-create org-gtd-clarify-organize-help-buffer-name)
+        (erase-buffer)
+        (insert org-gtd-clarify-organize-help-content)
+        (org-mode)
+        (read-only-mode 1)
+        (goto-char (point-min))
+        (current-buffer)))))
+
+(defun org-gtd-clarify--display-organize-help-window ()
+  "Display organize help in a side window."
+  (let ((side (or org-gtd-clarify-show-organize-help 'right))
+        (buffer (org-gtd-clarify--get-or-create-organize-help-buffer)))
+    (display-buffer buffer
+                    `(display-buffer-in-side-window . ((side . ,side))))))
+
+(defun org-gtd-clarify-toggle-organize-help ()
+  "Toggle the organize types help window."
+  (interactive)
+  (let ((window (get-buffer-window org-gtd-clarify-organize-help-buffer-name)))
+    (if window
+        (quit-window nil window)
+      (org-gtd-clarify--display-organize-help-window))))
+
+(defun org-gtd-clarify--extract-project-name ()
+  "Extract project name from the first level heading in current buffer."
+  (save-excursion
+    (goto-char (point-min))
+    (when (re-search-forward "^\\*[[:space:]]+" nil t)
+      (org-get-heading t t t t))))
+
+(defun org-gtd-clarify--collect-task-information ()
+  "Collect task information from all level-2 headings in current buffer.
+Returns a list of (heading id depends-on blocks) for each task."
+  (let ((task-info '()))
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward "^\\*\\*[[:space:]]" nil t)
+        (when (= (org-outline-level) 2)
+          (let* ((heading (org-get-heading t t t t))
+                 (id (org-entry-get nil "ID"))
+                 (depends-on (org-entry-get-multivalued-property nil "ORG_GTD_DEPENDS_ON"))
+                 (blocks (org-entry-get-multivalued-property nil "ORG_GTD_BLOCKS")))
+            (push (list heading id depends-on blocks) task-info)))))
+    (nreverse task-info)))
+
+(defun org-gtd-clarify--create-dependency-helper-window (proj-name task-info)
+  "Create and display dependency helper window.
+PROJ-NAME is the name of the project.
+TASK-INFO is a list of (heading id depends-on blocks) for each task."
+  (let ((helper-buffer (get-buffer-create "*Org GTD Project Dependencies*")))
+    (with-current-buffer helper-buffer
+      (setq buffer-read-only nil)
+      (erase-buffer)
+
+      ;; Build and insert content
+      (insert (org-gtd-clarify--format-helper-content proj-name task-info))
+      
+      (setq buffer-read-only t)
+      (goto-char (point-min)))
+    
+    ;; Display the helper buffer in a side window
+    (display-buffer helper-buffer
+                    '(display-buffer-in-side-window . ((side . right))))))
+
+(defun org-gtd-clarify--format-helper-content (proj-name task-info)
+  "Format the helper window content with project name and task relationships.
+PROJ-NAME is the name of the project.
+TASK-INFO is a list of (heading id depends-on blocks) for each task."
+  (let ((content (format "Project name: %s\n\n" (or proj-name "Unknown Project")))
+        (orphaned '()))
+    
+    ;; Process each task and build relationship strings
+    (dolist (task-data task-info)
+      (let* ((heading (nth 0 task-data))
+             (_id (nth 1 task-data))
+             (depends-on (nth 2 task-data))
+             (blocks (nth 3 task-data)))
+        (if (or depends-on blocks)
+            ;; Task with relationships - format as: (deps) -> task -> (blocks)
+            (setq content
+                  (concat content
+                          (format "(%s) -> %s -> (%s)\n"
+                                 (org-gtd-clarify--format-task-list depends-on task-info)
+                                 heading
+                                 (org-gtd-clarify--format-task-list blocks task-info))))
+          ;; Task without relationships (orphaned)
+          (push heading orphaned))))
+    
+    ;; Add orphaned tasks section if any exist
+    (when orphaned
+      (setq content (concat content "\nOrphaned tasks:\n"))
+      (dolist (task orphaned)
+        (setq content (concat content (format "%s\n" task)))))
+    
+    content))
+
+(defun org-gtd-clarify--format-task-list (task-ids task-info)
+  "Format a list of TASK-IDS as comma-separated task names using TASK-INFO."
+  (if task-ids
+      (mapconcat (lambda (id) (org-gtd-clarify--resolve-task-name id task-info))
+                 task-ids ", ")
+    ""))
+
+(defun org-gtd-clarify--resolve-task-name (task-id task-info)
+  "Resolve TASK-ID to task name using TASK-INFO."
+  (let ((task-data (cl-find-if (lambda (task) (string= (nth 1 task) task-id)) task-info)))
+    (if task-data
+        (nth 0 task-data)
+      task-id)))
 
 ;;;; Footer
 

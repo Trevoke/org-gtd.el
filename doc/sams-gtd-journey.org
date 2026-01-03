@@ -1,0 +1,851 @@
+#+TITLE: Sam's GTD Journey
+#+AUTHOR: org-gtd
+#+DESCRIPTION: A narrative guide to adopting org-gtd, following one person's progressive journey from overwhelmed to organized.
+
+* Introduction
+
+This is a story about Sam, a software developer who felt constantly overwhelmed by too many things to remember. Follow along as Sam discovers org-gtd and progressively adopts its features over several weeks.
+
+*Who is this for?*
+
+- You've installed org-gtd but aren't sure how to start using it
+- You learn better through stories than reference manuals
+- You want to see how the features connect in a real workflow
+
+*How to use this guide*
+
+Read it like a story. Each "week" introduces new problems and solutions. Try the commands as Sam tries them. By the end, you'll understand the complete org-gtd workflow through lived experience.
+
+*Prerequisites*
+
+You should have org-gtd installed and configured. If not, see the [[info:org-gtd#Installing][Installation guide]] first.
+
+* Week 1: Getting Out of My Head
+
+** Monday Morning
+
+Sam stares at their monitor, overwhelmed. In the last hour:
+
+- Their manager mentioned a deadline change
+- A colleague asked for code review
+- They remembered they need to call the dentist
+- An idea for improving the build system popped up
+- They got an email about renewing a software license
+
+None of it is written down. All of it is swirling in Sam's head, creating anxiety. Where do they even start?
+
+Sam has heard about "Getting Things Done" and org-gtd. Today feels like the right day to try it.
+
+** The First Capture
+
+Sam opens Emacs and tries the capture command:
+
+#+begin_example
+C-c d c
+#+end_example
+
+A capture buffer appears. Sam types the first thing on their mind:
+
+#+begin_example
+Call dentist to schedule cleaning
+#+end_example
+
+They press ~C-c C-c~ to save.
+
+That felt... good. One thing out of their head.
+
+Sam captures the others:
+
+#+begin_example
+C-c d c → Review Alex's pull request
+C-c d c → Update project deadline in tracker
+C-c d c → Idea: improve build caching
+C-c d c → Renew IDE license before Friday
+#+end_example
+
+Five captures, maybe two minutes. Everything that was bouncing around in Sam's head is now in the inbox.
+
+*Sam notices*: The capture buffer is simple. No decisions required. Just get it out of your head. This matches what Sam read about GTD—capture is about speed, not organization.
+
+** Processing the Inbox
+
+Sam has five things in the inbox. What now?
+
+#+begin_example
+C-c d p
+#+end_example
+
+The first item appears: "Call dentist to schedule cleaning"
+
+Sam sees a buffer where they can edit the item. Do they need to add anything? It's pretty clear as-is. The dentist's number is already in his phone. Sam presses:
+
+#+begin_example
+C-c c
+#+end_example
+
+A transient menu appears with options:
+
+#+begin_example
+[s] Single action    [p] Project    [c] Calendar
+[d] Delegate         [t] Tickler    [y] Someday/Maybe
+[k] Knowledge        [q] Quick action    [x] Trash
+#+end_example
+
+** Making the First Decision
+
+"Call dentist" is one thing Sam needs to do, at some point, but not at a specific time. That sounds like a *single action*.
+
+Sam presses *[s]*.
+
+The item disappears from the inbox. Sam doesn't see where it went, but trusts the system. One down, four to go.
+
+** More Decisions
+
+The inbox shows the next item: "Review Alex's pull request"
+
+Single action again. Press *[s]*.
+
+Next: "Update project deadline in tracker"
+
+Wait—Sam needs to do this today because the team meeting is this afternoon. That's calendar-specific.
+
+Sam presses *[c]* for Calendar.
+
+A date prompt appears. Sam enters today's date. Done.
+
+Next: "Idea: improve build caching"
+
+This isn't actionable right now. It's an idea Sam might pursue someday. That's *[y]* for Someday/Maybe.
+
+Last: "Renew IDE license before Friday"
+
+This needs to happen before a deadline, but not at a specific time. Single action with a deadline? Sam thinks... actually, single action works. They can add a deadline later if needed.
+
+Press *[s]*.
+
+*Sam notices*: Each decision took seconds. The transient menu made it obvious what the choices were. No agonizing required.
+
+** Seeing What's Actionable
+
+Sam's inbox is empty. Where did everything go?
+
+#+begin_example
+C-c d e
+#+end_example
+
+The engage view appears:
+
+#+begin_example
+Headlines with NEXT keyword:
+  NEXT Call dentist to schedule cleaning
+  NEXT Review Alex's pull request
+  NEXT Renew IDE license before Friday
+
+Calendar items for today:
+  TODO Update project deadline in tracker    Scheduled: <today>
+#+end_example
+
+*Sam's revelation*: This is the answer to "what should I work on?" Four things. Not the infinite list in their head—four concrete next actions.
+
+Sam feels calmer already. They know what the options are.
+
+** Getting Things Done
+
+Sam picks up the phone and calls the dentist. Appointment scheduled for next month.
+
+Now, how to mark it done?
+
+Sam navigates to the engage view (~C-c d e~), finds "Call dentist", and presses *t* to change the TODO state. They select *DONE*.
+
+The item disappears from the list.
+
+*Sam checks*: Three items remain in the engage view. Clean. Simple. No completed items cluttering the view.
+
+** End of Day Reflection
+
+Sam completed three tasks today:
+- Called the dentist
+- Updated the deadline (team noticed and appreciated it!)
+- Reviewed Alex's PR
+
+Two items remain for tomorrow:
+- Renew IDE license
+- The build caching idea is safely stored in Someday/Maybe
+
+*What Sam learned*:
+
+1. *Capture* is fast (~C-c d c~)—don't overthink, just write
+2. *Process* happens one item at a time (~C-c d p~)—make decisions quickly
+3. *Organize* is choosing a category—the transient menu makes it obvious
+4. *Engage* shows what's actionable (~C-c d e~)—not everything, just next actions
+5. *Done* removes it from the list—no manual cleanup needed
+
+** Tuesday: Building the Habit
+
+Sam's morning starts with three new captures:
+
+#+begin_example
+C-c d c → Reply to Sarah's email about the API
+C-c d c → Book flight for conference
+C-c d c → Fix failing CI test in main branch
+#+end_example
+
+Process them:
+- Reply to Sarah → Single action
+- Book flight → Single action (or Calendar if there's a deadline)
+- Fix CI → Single action
+
+Check engage view: Five items now, including the license renewal from yesterday.
+
+*Sam's routine emerges*:
+- Morning: Capture whatever came in overnight
+- After capturing: Process inbox to zero
+- Throughout day: Check engage view when deciding what to do next
+- When done with something: Mark it DONE
+
+This takes maybe 5 minutes a day. But Sam's head is clear.
+
+** Friday: Archiving
+
+It's Friday. Sam has completed seven items this week. The engage view shows just two remaining next actions.
+
+But what happened to all those done items? Where did they go?
+
+Sam runs:
+
+#+begin_example
+M-x org-gtd-archive-completed-items
+#+end_example
+
+The archived items move to an archive file, keeping the active files clean.
+
+*Sam learns*: Archiving is for weekly review, not daily. Let completed items accumulate for a few days, then archive them all at once. Some people look at their archives to see what they accomplished.
+
+** Week 1 Summary
+
+Sam went from "everything in my head" to "everything in the system" in one week.
+
+The workflow:
+
+| Action | Command | When |
+|--------|---------|------|
+| Capture | ~C-c d c~ | Anytime something comes up |
+| Process | ~C-c d p~ | After capturing, clear the inbox |
+| Engage | ~C-c d e~ | When deciding what to work on |
+| Done | ~t~ in agenda | When you finish something |
+| Archive | ~M-x org-gtd-archive-completed-items~ | Weekly |
+
+*What Sam hasn't learned yet*:
+- How to handle multi-step work (projects)
+- How to filter by context (work vs home)
+- How to reflect on life balance (areas of focus)
+
+That comes next.
+
+* Week 2: Discovering Projects
+
+** The Multi-Step Problem
+
+Sam gets an assignment: "Implement the new authentication feature."
+
+This isn't a single action. It has steps:
+1. Read the auth spec
+2. Implement the token validation
+3. Write unit tests
+4. Update the API documentation
+5. Get code review from security team
+
+Sam tries to capture it:
+
+#+begin_example
+C-c d c → Implement new authentication feature
+#+end_example
+
+But that's not actionable. What's the /next/ action? Reading the spec.
+
+Should Sam capture five separate items? That seems wrong—they're all part of one thing.
+
+** Capturing as a Project
+
+Sam tries something different. In the capture buffer:
+
+#+begin_example
+* Implement authentication feature
+** Read the auth spec document
+** Implement token validation
+** Write unit tests for auth
+** Update API documentation
+** Get security team code review
+#+end_example
+
+Notice the structure:
+- ~*~ is the project headline
+- ~**~ are the tasks within the project
+
+Sam saves with ~C-c C-c~.
+
+** Organizing as a Project
+
+Sam processes the inbox (~C-c d p~).
+
+The project appears in the clarify buffer. Sam can edit it if needed—maybe add details to a task, fix a typo, reorder things.
+
+Satisfied, Sam presses ~C-c c~ to organize.
+
+This time, Sam chooses *[p]* for Project.
+
+*Something magical happens*: org-gtd automatically:
+- Marks "Read the auth spec document" as *NEXT*
+- Marks all other tasks as *TODO*
+- Creates dependency relationships (each task blocks the next)
+
+Sam didn't have to manage any of that.
+
+** Seeing the Project in Action
+
+Check the engage view:
+
+#+begin_example
+C-c d e
+#+end_example
+
+#+begin_example
+Headlines with NEXT keyword:
+  NEXT Read the auth spec document
+  NEXT Reply to Sarah's email about the API
+  ...
+#+end_example
+
+Only "Read the auth spec" appears. Not the other four tasks. They're blocked—waiting for the first task to complete.
+
+*Sam realizes*: The engage view shows actionable work. Since Sam can't implement token validation until they've read the spec, it doesn't show up. The system knows the sequence.
+
+** Completing Project Tasks
+
+Sam reads the spec. It takes about an hour.
+
+In the engage view, Sam marks "Read the auth spec document" as DONE.
+
+Refresh the view (~g~):
+
+#+begin_example
+Headlines with NEXT keyword:
+  NEXT Implement token validation
+  NEXT Reply to Sarah's email about the API
+  ...
+#+end_example
+
+"Implement token validation" is now NEXT! The system automatically advanced the project.
+
+*Sam's revelation*: They don't have to think about which task is next. They don't have to manually change status. Complete one task, and the next becomes available. The system handles the workflow.
+
+** Parallel Work
+
+A few days later, Sam has a new project: "Set up home office"
+
+#+begin_example
+* Set up home office
+** Order standing desk
+** Order monitor arm
+** Order cable management kit
+#+end_example
+
+Wait—these don't need to be sequential. Sam can order all three things at once.
+
+Sam organizes it as a project with *[p]*.
+
+After organizing, Sam checks the engage view... and sees only "Order standing desk" as NEXT.
+
+That's not right. These should all be NEXT since they're independent.
+
+** Custom Dependencies
+
+Sam opens the project file and looks at the tasks. Each task has properties like ~ORG_GTD_BLOCKS~ and ~ORG_GTD_DEPENDS_ON~ that control the sequence.
+
+For this project, Sam wants all tasks to start as NEXT since they're independent.
+
+Sam can either:
+1. Organize as separate single actions (not a project)
+2. Manually remove the dependency properties
+3. Use the dependency management commands
+
+For simple parallel work, option 1 is easiest. But for complex projects with some sequential and some parallel tasks, org-gtd provides commands to modify dependencies.
+
+*Sam learns*: Sequential is the default because most projects have a natural order. When tasks can truly happen in parallel, there are ways to handle that.
+
+For now, Sam reorganizes the home office items as three single actions. Simple enough.
+
+** A Real Complex Project
+
+The authentication feature becomes more interesting. After implementing token validation, Sam learns that documentation and code review can happen in parallel—but both need the implementation done first.
+
+The structure:
+
+#+begin_example
+Read spec → Implement → Documentation
+                     ↘
+                       Code review
+#+end_example
+
+Sam could model this with custom dependencies. For now, Sam keeps it simple: let the system handle it sequentially, and if one task is blocked waiting for external review, they'll work on other things.
+
+*Sam's principle*: Start simple. Sequential projects cover 90% of cases. Learn the advanced features when you genuinely need them.
+
+** Week 2 Summary
+
+Sam now handles both simple tasks and multi-step projects.
+
+| Type | Structure | What happens |
+|------|-----------|--------------|
+| Single action | One headline | Goes straight to NEXT |
+| Project | Nested headlines | First task is NEXT, rest are TODO |
+
+Key behaviors:
+- Projects automatically track what's next
+- Completing a task advances the project
+- The engage view shows only actionable work
+
+*What Sam hasn't learned yet*:
+- Filtering by context (work vs home vs errands)
+- Reflecting on areas of focus
+
+* Week 3: Working with Context
+
+** The Context Problem
+
+Sam's system is working great. Twenty items in their list, a mix of work and personal. But something's off.
+
+It's 9 PM. Sam opens the engage view to figure out what to do:
+
+#+begin_example
+NEXT Implement token validation
+NEXT Reply to Sarah's email about the API
+NEXT Call dentist to reschedule
+NEXT Order standing desk
+NEXT Fix failing CI test
+NEXT Research vacation destinations
+NEXT Review auth spec with Bob
+NEXT Check if package arrived
+#+end_example
+
+Half of these don't make sense at 9 PM:
+- Can't call the dentist (office closed)
+- Shouldn't do deep work tasks (brain is tired)
+- Work stuff can wait until tomorrow
+
+Sam wants to see only what's relevant /right now/.
+
+** Introducing Tags
+
+GTD has a concept of "context"—the conditions under which you can do something. Common contexts:
+
+- ~@work~ - Need to be at work
+- ~@home~ - Need to be at home
+- ~@phone~ - Need a phone (during business hours)
+- ~@computer~ - Just need a computer
+- ~@errands~ - Need to be out and about
+
+Sam decides to start tagging items with context.
+
+** Adding Tags While Organizing
+
+Sam captures a new item:
+
+#+begin_example
+C-c d c → Buy groceries for dinner
+#+end_example
+
+When processing and organizing as a single action, org-gtd prompts for tags. Sam types:
+
+#+begin_example
+@errands
+#+end_example
+
+Now this item is tagged. Sam can see it in the engage view with the tag.
+
+** Retroactively Tagging
+
+What about existing items? Sam needs to tag those too.
+
+Sam opens the file where items are stored (~C-c d e~ then navigate to an item and press ~RET~ to open it). On the headline, Sam adds a tag:
+
+#+begin_example
+*** NEXT Call dentist to reschedule :@phone:
+#+end_example
+
+Or use org-mode's tag command: ~C-c C-c~ on a headline, then type the tag.
+
+Sam goes through existing items and adds context tags:
+- Work deep focus: ~@work~
+- Work communication: ~@work~
+- Phone calls: ~@phone~
+- Errands: ~@errands~
+- Computer anywhere: ~@computer~
+- Home only: ~@home~
+
+** Creating a Context View
+
+Now Sam wants to filter. At 9 PM at home, show only ~@home~ or ~@computer~ items.
+
+Sam creates a custom view:
+
+#+begin_src emacs-lisp
+(defun my-evening-tasks ()
+  "Show tasks I can do at home in the evening."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Evening @home")
+     (type . next-action)
+     (tags . ("@home" "@computer")))))
+#+end_src
+
+Now ~M-x my-evening-tasks~ shows only relevant items.
+
+** Context View Examples
+
+Sam creates a few more:
+
+*Work focus time* (deep work tasks):
+
+#+begin_src emacs-lisp
+(defun my-work-focus ()
+  "Deep work tasks for focus time."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Work Focus")
+     (type . next-action)
+     (tags . ("@work")))))
+#+end_src
+
+*Phone calls* (batch these during business hours):
+
+#+begin_src emacs-lisp
+(defun my-phone-calls ()
+  "Phone calls to make."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Phone Calls")
+     (type . next-action)
+     (tags . ("@phone")))))
+#+end_src
+
+*Quick wins* (when you have 10 minutes between meetings):
+
+#+begin_src emacs-lisp
+(defun my-quick-wins ()
+  "Small tasks for short time windows."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Quick Wins")
+     (type . next-action)
+     (tags . ("@quick")))))
+#+end_src
+
+** Using Context in Daily Workflow
+
+Sam's new routine:
+
+*Morning at work*:
+1. ~C-c d e~ to see all next actions
+2. ~M-x my-work-focus~ to see just work tasks
+3. Pick something and do it
+
+*Lunch break*:
+1. ~M-x my-phone-calls~ to see calls to make
+2. Batch them together
+
+*Evening at home*:
+1. ~M-x my-evening-tasks~ to see home/computer tasks
+2. Ignore work stuff until tomorrow
+
+** The Mental Shift
+
+Before tags, Sam looked at their list and mentally filtered: "I can't do that one... or that one... that's work... oh, here's one I can do."
+
+Now the view does the filtering. Sam sees only what's possible right now.
+
+*Sam's insight*: The engage view answers "what CAN I do?" Context views answer "what SHOULD I do right now?" Both are valuable.
+
+** Week 3 Summary
+
+Tags add context to tasks. Combined with custom views, Sam can filter their system to match their current situation.
+
+| Context | When to use | Example tags |
+|---------|-------------|--------------|
+| Location | Where you are | ~@work~, ~@home~, ~@errands~ |
+| Tool | What you need | ~@phone~, ~@computer~ |
+| Energy | How you feel | ~@quick~, ~@deepwork~ |
+| Time | When available | ~@morning~, ~@evening~ |
+
+*Key insight*: You don't need all these tags on day one. Start with 2-3 contexts you actually use. Add more when you feel the need.
+
+*What Sam hasn't learned yet*:
+- Reflecting on life areas to maintain balance
+
+* Week 4: Areas of Focus
+
+** The Imbalance
+
+It's Friday. Sam looks back at the week:
+- 15 work tasks completed
+- 2 personal tasks completed
+- 0 health-related tasks
+- 0 relationship tasks
+
+Sam has been productive at work. But other parts of life are being neglected. Exercise hasn't happened in two weeks. They haven't called their parents in a month.
+
+The GTD system captured everything—including things Sam wanted to do for health and relationships. But those items kept getting pushed aside in favor of work tasks.
+
+** The Horizons of Focus
+
+GTD talks about "horizons of focus"—different altitudes from which you view your life:
+
+- *Runway*: Current actions (what Sam has been managing)
+- *10,000 ft*: Current projects
+- *20,000 ft*: Areas of focus (ongoing responsibilities)
+- *30,000 ft*: Goals (1-2 year outcomes)
+- *40,000 ft*: Vision (3-5 year direction)
+- *50,000 ft*: Purpose (why you exist)
+
+Sam has been living at runway level. Time to zoom out.
+
+** Defining Areas of Focus
+
+Areas of focus are the ongoing responsibilities and roles in your life. Sam brainstorms:
+
+*Work*:
+- Software development
+- Team collaboration
+- Career growth
+
+*Personal*:
+- Health & fitness
+- Family relationships
+- Finances
+- Home maintenance
+
+*Growth*:
+- Learning
+- Creative projects
+
+These aren't tasks—they're buckets that tasks fall into. Every task should connect to an area of focus.
+
+** Configuring Areas in org-gtd
+
+Sam adds areas of focus to their configuration:
+
+#+begin_src emacs-lisp
+(setq org-gtd-areas-of-focus
+      '("Work" "Health" "Family" "Finances" "Home" "Learning" "Creative"))
+#+end_src
+
+Now when organizing items, org-gtd can prompt for area of focus (if configured to do so).
+
+** Tagging Existing Items
+
+Sam goes through existing items and adds area tags:
+- Work tasks: no extra tag (they're obviously work)
+- "Call dentist" → ~:Health:~
+- "Research vacation" → ~:Family:~
+- "Review investment account" → ~:Finances:~
+
+** The Weekly Reflect
+
+On Sunday, Sam sits down for a weekly review. Part of this is checking each area of focus:
+
+#+begin_example
+M-x org-gtd-reflect-area-of-focus
+#+end_example
+
+This shows each area and whether it has active tasks:
+
+#+begin_example
+Work: 12 active tasks
+Health: 0 active tasks  ← WARNING
+Family: 1 active task
+Finances: 0 active tasks ← WARNING
+Home: 3 active tasks
+Learning: 1 active task
+Creative: 0 active tasks
+#+end_example
+
+*Sam sees the problem*: Health and Finances have zero active tasks. These areas are being neglected.
+
+** Creating Balance
+
+Sam captures tasks for neglected areas:
+
+#+begin_example
+C-c d c → Schedule gym session for Monday      :Health:
+C-c d c → Review monthly budget                :Finances:
+C-c d c → Research 401k contribution changes   :Finances:
+C-c d c → Call parents this weekend            :Family:
+#+end_example
+
+Process and organize these. Now the reflection view looks healthier:
+
+#+begin_example
+Work: 12 active tasks
+Health: 1 active task
+Family: 2 active tasks
+Finances: 2 active tasks
+Home: 3 active tasks
+Learning: 1 active task
+Creative: 0 active tasks
+#+end_example
+
+Creative is still empty, but Sam decides that's okay for now—they're focused on other things this month.
+
+** The Higher Perspective
+
+Areas of focus aren't just for balance. They answer important questions:
+
+*"Am I working on what matters?"*
+
+If all your tasks are in "Work" and none are in "Health," you might be productive but unbalanced.
+
+*"Should I take on this new commitment?"*
+
+Before saying yes, check: which area does this serve? Is that area already overloaded?
+
+*"What can I drop?"*
+
+If an area has too many tasks, some might not be essential. Review with area in mind.
+
+** Creating Area Views
+
+Sam creates views for periodic reflection:
+
+*What am I doing for my health?*
+
+#+begin_src emacs-lisp
+(defun my-health-review ()
+  "Review health-related items."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Health Review")
+     (area-of-focus . "Health"))))
+#+end_src
+
+*What projects am I running at work?*
+
+#+begin_src emacs-lisp
+(defun my-work-projects ()
+  "Review work projects."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Work Projects")
+     (type . project)
+     (area-of-focus . "Work"))))
+#+end_src
+
+** Sam's Weekly Reflect Routine
+
+Every Sunday, Sam:
+
+1. *Clear the inbox* - Process any remaining items
+2. *Review each area of focus* - Does each have appropriate attention?
+3. *Check stuck projects* - Any projects that need a push?
+4. *Review Someday/Maybe* - Anything to activate or delete?
+5. *Plan the week* - What must happen this week?
+
+This takes about 30 minutes and provides clarity for the week ahead.
+
+** Week 4 Summary
+
+Areas of focus connect daily tasks to life's bigger picture.
+
+| Level | Timeframe | Question |
+|-------|-----------|----------|
+| Actions | Today | What can I do right now? |
+| Projects | Weeks | What multi-step work is active? |
+| Areas | Ongoing | Am I maintaining all my responsibilities? |
+
+*Key insight*: You can be very productive at the wrong things. Areas of focus help ensure you're working on what matters.
+
+* Where Sam Is Now
+
+Four weeks later, Sam has a complete GTD system:
+
+** Daily Workflow
+
+1. *Capture* - Things come up, they go in the inbox (~C-c d c~)
+2. *Process* - Clear inbox to zero, decide on each item (~C-c d p~)
+3. *Engage* - See what's actionable, filtered by context (~C-c d e~ or custom views)
+4. *Do* - Complete tasks, mark them DONE
+
+** Weekly Workflow
+
+1. *Reflect on areas* - Check that all life areas have attention
+2. *Review projects* - Ensure active projects have next actions
+3. *Process Someday/Maybe* - Activate, delete, or keep
+4. *Archive completed* - Clean up done items
+5. *Plan ahead* - What must happen this week?
+
+** The System Sam Uses
+
+| Feature | How Sam uses it |
+|---------|-----------------|
+| Single actions | Quick tasks with no dependencies |
+| Projects | Multi-step work with automatic sequencing |
+| Tags | Context filtering (~@work~, ~@home~, ~@phone~) |
+| Areas of focus | Balance checking during weekly review |
+| Custom views | Context-specific and area-specific views |
+| Someday/Maybe | Ideas and possibilities for later |
+| Archive | Keep active lists clean |
+
+** What Changed
+
+*Before org-gtd*:
+- Everything in Sam's head
+- Constant anxiety about forgetting things
+- Worked on whatever seemed urgent
+- Some life areas completely neglected
+
+*After org-gtd*:
+- Everything in the system
+- Head is clear, system remembers
+- Works on what's actionable and contextually appropriate
+- Weekly reflect ensures nothing falls through the cracks
+
+** Sam's Advice
+
+If Sam were to give advice to a new org-gtd user:
+
+1. *Start with capture and single actions*. Don't try to learn everything at once.
+2. *Process daily*. An inbox with 100 items is overwhelming. Zero is peaceful.
+3. *Trust the system*. If it's in org-gtd, you don't need to remember it.
+4. *Add complexity as you need it*. Tags when context matters. Areas when balance matters.
+5. *The weekly reflect is essential*. This is where you maintain the system.
+
+The system is only as good as you trust it. And you only trust it if you use it consistently.
+
+Welcome to stress-free productivity.
+
+* Quick Reference
+
+The commands Sam uses most:
+
+| Command | Keys | Purpose |
+|---------|------|---------|
+| ~org-gtd-capture~ | ~C-c d c~ | Get something into the inbox |
+| ~org-gtd-process-inbox~ | ~C-c d p~ | Process inbox items one by one |
+| ~org-gtd-engage~ | ~C-c d e~ | See all actionable items |
+| ~org-gtd-archive-completed-items~ | - | Clean up done items |
+| ~org-gtd-reflect-area-of-focus~ | - | Check life balance |
+
+Organization options (during processing):
+
+| Key | Category | When to use |
+|-----|----------|-------------|
+| ~s~ | Single action | One-step task, do anytime |
+| ~p~ | Project | Multi-step work |
+| ~c~ | Calendar | Specific date/time required |
+| ~d~ | Delegate | Someone else will do it |
+| ~t~ | Tickler | Remind me on a specific date |
+| ~y~ | Someday/Maybe | Maybe later, no commitment |
+| ~k~ | Knowledge | Reference material |
+| ~q~ | Quick action | Do it right now (< 2 min) |
+| ~x~ | Trash | Delete it |
+
+For complete documentation, see [[info:org-gtd][the org-gtd manual]].

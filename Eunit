@@ -1,0 +1,8 @@
+;;; Eunit --- E-unit configuration for org-gtd -*- lexical-binding: t -*-
+
+;; This file is automatically loaded by e-unit before running tests.
+;; It initializes e-unit with short syntax (deftest, assert-equal, etc.)
+
+(e-unit-initialize)
+
+;;; Eunit ends here

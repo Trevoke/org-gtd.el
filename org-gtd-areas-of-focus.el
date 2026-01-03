@@ -1,6 +1,6 @@
 ;;; org-gtd-areas-of-focus.el --- Areas of Focus for org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023 Aldric Giacomoni
+;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -40,12 +40,12 @@
   "The current major areas in your life where you don't want to drop balls."
   :group 'org-gtd-horizons
   :package-version '(org-gtd . "3.0.0")
-  :type 'list)
+  :type '(repeat string))
 
 ;;;; Commands
 
 (defun org-gtd-area-of-focus-set-on-item-at-point ()
-  (declare (modes org-mode)) ;; for 27.2 compatibility
+  "Set the area of focus category on the heading at point."
   (interactive)
   (let ((chosen-area (completing-read
                       "Which area of focus does this belong to? "
@@ -55,7 +55,7 @@
     (org-entry-put (point) "CATEGORY" chosen-area)))
 
 (defun org-gtd-area-of-focus-set-on-agenda-item ()
-  (declare (modes org-agenda-mode)) ;; for 27.2 compatibility
+  "Set the area of focus category on the current agenda item."
   (interactive)
   (org-agenda-check-type t 'agenda 'todo 'tags 'search)
   (org-agenda-check-no-diary)
@@ -68,18 +68,42 @@
       (with-current-buffer buffer
         (widen)
         (goto-char pos)
-        (if (string-equal (org-entry-get nil "ORG_GTD" t)
-                          org-gtd-projects)
-            (org-up-heading-safe))
-        (org-gtd-area-of-focus-set-on-item-at-point)))))
+
+        ;; Check if this item has ORG_GTD property
+        ;; v4: Items have direct ORG_GTD property, no inheritance needed
+        (unless (org-entry-get nil "ORG_GTD")
+          (user-error "This item has no ORG_GTD property - cannot set area of focus"))
+
+        ;; Determine if this is a project task by checking for project IDs
+        (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+          (if project-ids
+              ;; Project task: set CATEGORY on all tasks in the project
+              (org-gtd-areas-of-focus--set-on-project-tasks)
+            ;; Non-project task: set CATEGORY on this task only
+            (org-gtd-area-of-focus-set-on-item-at-point)))))))
 
 ;;;; Functions
 
 ;;;;; Public
 
-(defalias 'org-gtd-set-area-of-focus 'org-gtd-areas-of-focus--set)
+(defalias 'org-gtd-set-area-of-focus #'org-gtd-areas-of-focus--set)
 
 ;;;;; Private
+
+(defun org-gtd-areas-of-focus--set-on-project-tasks ()
+  "Set area of focus on all tasks in the project containing the task at point.
+If the task belongs to multiple projects, prompt user to choose which project."
+  (require 'org-gtd-projects)
+  (let* ((project-marker (org-gtd-project--get-marker-at-point))
+         (task-markers (org-gtd-dependencies-collect-project-tasks project-marker))
+         (chosen-area (completing-read
+                       "Which area of focus does this project belong to? "
+                       org-gtd-areas-of-focus
+                       nil t)))
+    ;; Set CATEGORY on all tasks
+    (dolist (task-marker task-markers)
+      (org-with-point-at task-marker
+        (org-entry-put (point) "CATEGORY" chosen-area)))))
 
 (defun org-gtd-areas-of-focus--set ()
   "Use as a hook when decorating items after clarifying them.
