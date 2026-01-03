@@ -198,16 +198,8 @@ _EVENT is the file-notify event (unused)."
     (insert "\n\n")
 
     ;; Insert legend
-    (insert (propertize "Graph View Controls:\n" 'face 'bold))
-    (insert "  ? - All commands    v - Toggle ASCII/SVG    r - Refresh    q - Quit\n")
-    (insert "\n")
-    (insert "  Navigation:\n")
-    (insert "    n - A task this blocks       p - A task that blocks this\n")
-    (insert "    TAB - Next sibling task      S-TAB - Previous sibling task\n")
-    (insert "    g - Go to task by name\n")
-    (insert "\n")
-    (insert "  Press ? to see all commands including: add/remove tasks, modify relationships\n")
-    (insert (format "\n  Render mode: SVG (press 'v' to toggle)\n"))
+    (insert (propertize "Keys: " 'face 'bold))
+    (insert "r/s/b add  B/S modify  n/p/G navigate  g refresh  v toggle  t task ops  ? help  q quit\n")
 
     (goto-char (point-min))))
 
@@ -221,16 +213,8 @@ _EVENT is the file-notify event (unused)."
     (insert "\n\n")
 
     ;; Insert legend
-    (insert (propertize "Graph View Controls:\n" 'face 'bold))
-    (insert "  ? - All commands    v - Toggle ASCII/SVG    r - Refresh    q - Quit\n")
-    (insert "\n")
-    (insert "  Navigation:\n")
-    (insert "    n - A task this blocks       p - A task that blocks this\n")
-    (insert "    TAB - Next sibling task      S-TAB - Previous sibling task\n")
-    (insert "    g - Go to task by name\n")
-    (insert "\n")
-    (insert "  Press ? to see all commands including: add/remove tasks, modify relationships\n")
-    (insert (format "\n  Render mode: ASCII (press 'v' to toggle)\n"))
+    (insert (propertize "Keys: " 'face 'bold))
+    (insert "r/s/b add  B/S modify  n/p/G navigate  g refresh  v toggle  t task ops  ? help  q quit\n")
 
     (goto-char (point-min))))
 

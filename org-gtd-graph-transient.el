@@ -50,7 +50,7 @@
   :description (lambda () (if org-gtd-graph-transient-sticky
                               "[X] Sticky mode"
                             "[ ] Sticky mode"))
-  :key "s")
+  :key "=")
 
 (defun org-gtd-graph-transient--resume-if-sticky ()
   "Re-open main transient if sticky mode is enabled.
@@ -80,35 +80,35 @@ Named with \"--do-\" so transient.el recognizes it as a pre-command function."
   [:description
    (lambda () (org-gtd-graph-transient--show-selected-context))
    :class transient-row]
-  [["Insert Tasks"
-    ("a r" "Add root task" org-gtd-graph-transient-add-root)
-    ("a s" "Add successor (blocks)" org-gtd-graph-add-successor)
-    ("a b" "Add blocker (blocked by)" org-gtd-graph-add-blocker)]
+  [["Add Tasks"
+    ("r" "Add root task" org-gtd-graph-transient-add-root)
+    ("s" "Add successor" org-gtd-graph-add-successor)
+    ("b" "Add blocker" org-gtd-graph-add-blocker)]
    ["Modify Relationships"
-    ("m b" "Modify blockers" org-gtd-graph-modify-blockers)
-    ("m d" "Modify dependents" org-gtd-graph-modify-successors)]
-   ["Task Operations"
-    ("r" "Remove from project" org-gtd-graph-remove-task)
-    ("T" "Trash task" org-gtd-graph-trash-task)
-    ("e" "Edit in org file" org-gtd-graph-ui-jump-to-task :transient nil)
-    ("t" "Change TODO state" org-gtd-graph-change-state)
-    ("i" "Show relationships" org-gtd-graph-view-show-relationships)
-    ("I" "Incubate this project" org-gtd-graph-incubate-project :transient nil)]]
+    ("B" "Modify blockers" org-gtd-graph-modify-blockers)
+    ("S" "Modify successors" org-gtd-graph-modify-successors)]
+   ["Task Operations (t prefix)"
+    ("t t" "Change TODO state" org-gtd-graph-change-state)
+    ("t r" "Remove from project" org-gtd-graph-remove-task)
+    ("t d" "Trash task" org-gtd-graph-trash-task)
+    ("t e" "Edit in org file" org-gtd-graph-ui-jump-to-task :transient nil)
+    ("t i" "Show relationships" org-gtd-graph-view-show-relationships)]]
   [["Navigation"
     ("n" "Next successor" org-gtd-graph-nav-down-dependency :transient t)
     ("p" "Previous blocker" org-gtd-graph-nav-up-dependency :transient t)
     ("TAB" "Next sibling" org-gtd-graph-nav-next-sibling :transient t)
-    ("g" "Goto task" org-gtd-graph-nav-goto)]
+    ("G" "Goto task" org-gtd-graph-nav-goto)]
    ["View"
     ("v" "Toggle ASCII/SVG" org-gtd-graph-toggle-render-mode :transient t)
-    ("R" "Refresh" org-gtd-graph-view-refresh :transient t)]
-   ["Export"
-    ("E s" "Export as SVG" org-gtd-graph-export-svg)
-    ("E d" "Export as DOT" org-gtd-graph-export-dot)
-    ("E a" "Export as ASCII" org-gtd-graph-export-ascii)]
-   ["Quit"
-    ("q" "Quit" transient-quit-one :transient nil)
-    ("Q" "Quit and kill" org-gtd-graph-quit-and-kill :transient nil)
+    ("g" "Refresh" org-gtd-graph-view-refresh :transient t)]
+   ["Export (x prefix)"
+    ("x s" "Export as SVG" org-gtd-graph-export-svg)
+    ("x d" "Export as DOT" org-gtd-graph-export-dot)
+    ("x a" "Export as ASCII" org-gtd-graph-export-ascii)]
+   ["Session"
+    ("I" "Incubate project" org-gtd-graph-incubate-project :transient nil)
+    ("q" "Quit menu" transient-quit-one :transient nil)
+    ("Q" "Quit and kill buffer" org-gtd-graph-quit-and-kill :transient nil)
     (org-gtd-graph-transient--sticky)]])
 
 ;;;; Context Display

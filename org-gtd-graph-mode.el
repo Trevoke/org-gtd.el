@@ -46,24 +46,51 @@
 
 (defvar org-gtd-graph-view-mode-map
   (let ((map (make-sparse-keymap)))
-    ;; Help/Transient menu
+    ;; === Tier 1: Single keys ===
+
+    ;; Help/menu
     (define-key map (kbd "?") #'org-gtd-graph-transient-main)
 
-    ;; Graph operations
-    (define-key map (kbd "r") #'org-gtd-graph-view-refresh)
-    (define-key map (kbd "v") #'org-gtd-graph-toggle-render-mode)
-    (define-key map (kbd "q") #'org-gtd-graph-quit)
-
-    ;; Dependency-based navigation
+    ;; Navigation
     (define-key map (kbd "n") #'org-gtd-graph-nav-down-dependency)
     (define-key map (kbd "p") #'org-gtd-graph-nav-up-dependency)
-
-    ;; Layer-based navigation
     (define-key map (kbd "TAB") #'org-gtd-graph-nav-next-sibling)
     (define-key map (kbd "<backtab>") #'org-gtd-graph-nav-previous-sibling)
+    (define-key map (kbd "G") #'org-gtd-graph-nav-goto)
 
-    ;; Goto navigation
-    (define-key map (kbd "g") #'org-gtd-graph-nav-goto)
+    ;; Add tasks
+    (define-key map (kbd "r") #'org-gtd-graph-transient-add-root)
+    (define-key map (kbd "s") #'org-gtd-graph-add-successor)
+    (define-key map (kbd "b") #'org-gtd-graph-add-blocker)
+
+    ;; Modify relationships (bulk)
+    (define-key map (kbd "B") #'org-gtd-graph-modify-blockers)
+    (define-key map (kbd "S") #'org-gtd-graph-modify-successors)
+
+    ;; View
+    (define-key map (kbd "v") #'org-gtd-graph-toggle-render-mode)
+    (define-key map (kbd "g") #'org-gtd-graph-view-refresh)
+
+    ;; Quit
+    (define-key map (kbd "q") #'org-gtd-graph-quit)
+
+    ;; === Tier 2: Prefixed or capital keys ===
+
+    ;; Task operations (t prefix)
+    (define-key map (kbd "t t") #'org-gtd-graph-change-state)
+    (define-key map (kbd "t r") #'org-gtd-graph-remove-task)
+    (define-key map (kbd "t d") #'org-gtd-graph-trash-task)
+    (define-key map (kbd "t e") #'org-gtd-graph-ui-jump-to-task)
+    (define-key map (kbd "t i") #'org-gtd-graph-view-show-relationships)
+
+    ;; Project operation
+    (define-key map (kbd "I") #'org-gtd-graph-incubate-project)
+
+    ;; Graph view operations
+    (define-key map (kbd "Q") #'org-gtd-graph-quit-and-kill)
+    (define-key map (kbd "x s") #'org-gtd-graph-export-svg)
+    (define-key map (kbd "x d") #'org-gtd-graph-export-dot)
+    (define-key map (kbd "x a") #'org-gtd-graph-export-ascii)
 
     map)
   "Keymap for `org-gtd-graph-view-mode'.")

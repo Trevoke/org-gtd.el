@@ -41,10 +41,46 @@ This ensures evil users get emacs state by default, avoiding C-z conflicts."
 
 (deftest graph-mode/keymap-has-essential-bindings ()
   "Graph view mode keymap should have essential navigation bindings."
+  ;; Help and quit
   (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "?")))
   (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "q")))
+  ;; Navigation
   (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "n")))
-  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "p"))))
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "p")))
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "G")))
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "TAB"))))
+
+(deftest graph-mode/keymap-has-tier1-add-bindings ()
+  "Graph view mode keymap should have single-key add task bindings."
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "r")))
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "s")))
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "b"))))
+
+(deftest graph-mode/keymap-has-tier1-modify-bindings ()
+  "Graph view mode keymap should have single-key modify bindings."
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "B")))
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "S"))))
+
+(deftest graph-mode/keymap-has-tier1-view-bindings ()
+  "Graph view mode keymap should have view operation bindings."
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "v")))
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "g"))))
+
+(deftest graph-mode/keymap-has-tier2-task-ops ()
+  "Graph view mode keymap should have t-prefixed task operations."
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "t t")))
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "t r")))
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "t d")))
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "t e")))
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "t i"))))
+
+(deftest graph-mode/keymap-has-tier2-project-and-view-ops ()
+  "Graph view mode keymap should have project and view operations."
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "I")))
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "Q")))
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "x s")))
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "x d")))
+  (assert-true (lookup-key org-gtd-graph-view-mode-map (kbd "x a"))))
 
 (provide 'graph-mode-test)
 
