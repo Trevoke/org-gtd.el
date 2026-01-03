@@ -95,16 +95,17 @@ planning keyword in `org-mode'."
         (org-use-property-inheritance "ORG_GTD"))
     (org-gtd-refile--add-target org-gtd-habit-template)
 
-    (let ((org-gtd-refile-to-any-target t))
-      (org-map-entries #'org-gtd-upgrades--organize-habits-v3
-                       "+LEVEL=2&+ORG_GTD=\"Actions\""
-                       'agenda)
-      (org-map-entries #'org-gtd-upgrades--organize-habits-v3
-                       "+LEVEL=2&+ORG_GTD=\"Incubated\""
-                       'agenda)
-      (org-map-entries #'org-gtd-upgrades--organize-habits-v3
-                       "+LEVEL=2&+ORG_GTD=\"Calendar\""
-                       'agenda))))
+    (with-suppressed-warnings ((obsolete org-gtd-refile-to-any-target))
+      (let ((org-gtd-refile-to-any-target t))
+        (org-map-entries #'org-gtd-upgrades--organize-habits-v3
+                         "+LEVEL=2&+ORG_GTD=\"Actions\""
+                         'agenda)
+        (org-map-entries #'org-gtd-upgrades--organize-habits-v3
+                         "+LEVEL=2&+ORG_GTD=\"Incubated\""
+                         'agenda)
+        (org-map-entries #'org-gtd-upgrades--organize-habits-v3
+                         "+LEVEL=2&+ORG_GTD=\"Calendar\""
+                         'agenda)))))
 
 (defun org-gtd-upgrades-incubated-items-to-v3 ()
   "Change incubated items away from SCHEDULED to using a custom property."

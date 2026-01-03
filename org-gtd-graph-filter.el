@@ -132,7 +132,7 @@ SCHEDULED-FILTER can be:
   \\='today       - scheduled for today
   \\='week        - scheduled within 7 days from today
   \\='unscheduled - no scheduled date"
-  (let* ((today (format-time-string "%Y-%m-%d"))
+  (let* ((today (format-time-string "%F"))
          (today-time (org-time-string-to-time today))
          (week-from-now (time-add today-time (days-to-time 7))))
     (cl-remove-if-not
@@ -180,7 +180,7 @@ Returns list of node IDs in the subtree."
 ;;;; Graph Filtering
 
 (defun org-gtd-graph-filter-create-filtered-graph (graph filter)
-  "Create a new graph containing only nodes that pass FILTER.
+  "Create a new GRAPH containing only nodes that pass FILTER.
 
 Returns a new org-gtd-graph structure with only the visible nodes
 and edges between visible nodes."

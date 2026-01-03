@@ -34,7 +34,6 @@
 (require 'org-gtd-graph-ui)
 (require 'org-gtd-svg-render)  ; For color helpers and svg-to-image
 (require 'org-gtd-dag-draw)
-(require 'org-gtd-projects)
 (require 'org-gtd-dependencies)
 (require 'org-gtd-accessors)
 (require 'org-gtd-id)
@@ -116,8 +115,12 @@ Can be toggled with `org-gtd-graph-toggle-render-mode'.")
     (when org-gtd-graph-view--graph
       (let ((initial-node (or (org-gtd-graph-data-find-first-actionable
                                org-gtd-graph-view--graph)
-                              (org-gtd-graph-project-id org-gtd-graph-view--graph))))
-        (org-gtd-graph-ui-select-node initial-node)))
+                              (org-gtd-graph-project-id org-gtd-graph-view--graph)
+                              ;; Fallback: select any node from the graph
+                              (car (hash-table-keys
+                                    (org-gtd-graph-nodes org-gtd-graph-view--graph))))))
+        (when initial-node
+          (org-gtd-graph-ui-select-node initial-node))))
 
     buffer))
 
@@ -189,6 +192,12 @@ _EVENT is the file-notify event (unused)."
         (let ((svg (org-gtd-dag-draw-render graph 'svg org-gtd-graph-ui--selected-node-id)))
           (org-gtd-graph-view--display-svg svg graph))))))
 
+(defun org-gtd-graph-view--insert-legend ()
+  "Insert the keybinding legend at point."
+  (insert (propertize "Keys: " 'face 'bold))
+  (insert "r/s/b add  B/S modify  n/p/G navigate  g refresh  v SVG/ASCII  t.. task ops  q quit\n")
+  (insert "  ? opens command menu (more commands available)\n"))
+
 (defun org-gtd-graph-view--display-svg (svg _displayed-graph)
   "Display SVG in the current buffer showing DISPLAYED-GRAPH."
   (let* ((inhibit-read-only t)
@@ -196,42 +205,16 @@ _EVENT is the file-notify event (unused)."
     (erase-buffer)
     (insert-image image)
     (insert "\n\n")
-
-    ;; Insert legend
-    (insert (propertize "Graph View Controls:\n" 'face 'bold))
-    (insert "  ? - All commands    v - Toggle ASCII/SVG    r - Refresh    q - Quit\n")
-    (insert "\n")
-    (insert "  Navigation:\n")
-    (insert "    n - A task this blocks       p - A task that blocks this\n")
-    (insert "    TAB - Next sibling task      S-TAB - Previous sibling task\n")
-    (insert "    g - Go to task by name\n")
-    (insert "\n")
-    (insert "  Press ? to see all commands including: add/remove tasks, modify relationships\n")
-    (insert (format "\n  Render mode: SVG (press 'v' to toggle)\n"))
-
+    (org-gtd-graph-view--insert-legend)
     (goto-char (point-min))))
 
 (defun org-gtd-graph-view--display-ascii (ascii-text _displayed-graph)
   "Display ASCII-TEXT in the current buffer showing DISPLAYED-GRAPH."
   (let ((inhibit-read-only t))
     (erase-buffer)
-
-    ;; Insert ASCII graph
     (insert ascii-text)
     (insert "\n\n")
-
-    ;; Insert legend
-    (insert (propertize "Graph View Controls:\n" 'face 'bold))
-    (insert "  ? - All commands    v - Toggle ASCII/SVG    r - Refresh    q - Quit\n")
-    (insert "\n")
-    (insert "  Navigation:\n")
-    (insert "    n - A task this blocks       p - A task that blocks this\n")
-    (insert "    TAB - Next sibling task      S-TAB - Previous sibling task\n")
-    (insert "    g - Go to task by name\n")
-    (insert "\n")
-    (insert "  Press ? to see all commands including: add/remove tasks, modify relationships\n")
-    (insert (format "\n  Render mode: ASCII (press 'v' to toggle)\n"))
-
+    (org-gtd-graph-view--insert-legend)
     (goto-char (point-min))))
 
 ;;;; Render Mode Toggle
@@ -250,7 +233,7 @@ _EVENT is the file-notify event (unused)."
 
 (defun org-gtd-graph-view-add-dependency ()
   "Add a dependency between two tasks.
-Prompts for blocker task from ALL tasks in org-agenda-files.
+Prompts for blocker task from ALL tasks in agenda files.
 Prompts for blocked task from current project tasks.
 If blocker is external to project, adds project ID and TRIGGER property."
   (interactive)
@@ -288,7 +271,7 @@ If blocker is external to project, adds project ID and TRIGGER property."
 
 (defun org-gtd-graph-view-add-blocker ()
   "Add a blocker task and make it a root task of the project.
-Prompts for blocker task from ALL tasks in org-agenda-files.
+Prompts for blocker task from ALL tasks in agenda files.
 Prompts for blocked task from current project tasks.
 Adds blocker to project's ORG_GTD_FIRST_TASKS.
 If blocker is external to project, adds project ID and TRIGGER property."
@@ -459,7 +442,7 @@ Removes both blockers (depends on) and dependents (blocks)."
 ;;;; Helper Functions
 
 (defun org-gtd-graph-view--get-all-tasks ()
-  "Get all tasks from `org-agenda-files' as completion list.
+  "Get all tasks from agenda files as completion list.
 Returns list of (title . id) cons cells for tasks with IDs."
   (let (tasks)
     (org-map-entries

@@ -92,21 +92,27 @@ Truncates at word boundary (dash) when possible, removes trailing dashes."
         (replace-regexp-in-string "-+$" "" truncated)))))
 
 (defun org-gtd-id--remove-percent-progress-indicators (heading)
+  "Remove [N%] progress indicators from HEADING."
   (replace-regexp-in-string "\\(\\[[0-9]+%\\]\\)" "" heading))
 
 (defun org-gtd-id--remove-tally-progress-indicators (heading)
+  "Remove [N/M] tally progress indicators from HEADING."
   (replace-regexp-in-string "\\(\\[[0-9]+/[0-9]+\\]\\)" "" heading))
 
 (defun org-gtd-id--remove-priority-indicators (heading)
+  "Remove [#A], [#B], [#C] priority indicators from HEADING."
   (replace-regexp-in-string "\\(\\[#[ABC]\\]\\)" "" heading))
 
 (defun org-gtd-id--remove-links (heading)
+  "Remove org link markup from HEADING, keeping link text."
   (replace-regexp-in-string "\\[\\[\\(.+?\\)\\]\\[" "" heading t))
 
 (defun org-gtd-id--remove-day-time-from-active-timestamps (heading)
+  "Remove day and time from active timestamps in HEADING."
   (replace-regexp-in-string "<[12][0-9]\\{3\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\( .*?\\)>" "" heading t))
 
 (defun org-gtd-id--remove-week-time-from-inactive-timestamps (heading)
+  "Remove week and time from inactive timestamps in HEADING."
   (replace-regexp-in-string "\\[[12][0-9]\\{3\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\( .*?\\)\\]" "" heading t))
 
 (defun org-gtd-id--generate-sanitized-alnum-dash-string (str)

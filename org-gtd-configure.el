@@ -40,7 +40,7 @@
 (require 'org-gtd-core)
 
 (defun org-gtd-prompt-for-active-date (prompt)
-  "Prompt the user for a date and return it formatted as an active timestamp."
+  "Display PROMPT and return the selected date as an active timestamp."
   (interactive)
   (let ((date (org-read-date nil nil nil (format "%s > " prompt))))
     (format "<%s>" date)))
@@ -52,7 +52,7 @@
     ;; Check if input contains a repeater pattern (starts with + or .)
     (if (string-match "^[.+]" input)
         ;; Input is just a repeater, use today's date
-        (format "<%s %s>" (format-time-string "%Y-%m-%d") input)
+        (format "<%s %s>" (format-time-string "%F") input)
       ;; Input might be a date specification, use org-read-date
       (let ((date (org-read-date nil nil input)))
         (if (string-match "\\([.+][+.][0-9]+[hdwmy]\\)" input)

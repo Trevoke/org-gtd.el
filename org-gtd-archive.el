@@ -49,7 +49,7 @@ When nil, org-gtd uses org-mode's standard `org-archive-location'
 variable.
 When a function, calls it to get the archive location string.
 
-Set to nil if you want org-gtd to respect your org-mode archive
+Set to nil if you want org-gtd to respect your Org archive
 configuration.
 The default function generates gtd_archive_<year>::datetree/ in
 `org-gtd-directory'.
@@ -186,7 +186,7 @@ relationships.  Falls back to checking immediate children if no
 dependency-tracked tasks exist."
   (require 'org-gtd-projects)
   (let* ((project-marker (point-marker))
-         (tasks (org-gtd-projects--collect-tasks-by-graph project-marker)))
+         (tasks (org-gtd-dependencies-collect-project-tasks project-marker)))
     (if tasks
         ;; Has dependency-tracked tasks - check if all done
         (seq-every-p
@@ -219,7 +219,7 @@ handled separately via graph traversal)."
   (require 'org-gtd-projects)
   (let* ((project-marker (point-marker))
          (project-id (org-entry-get (point) "ID"))
-         (tasks (org-gtd-projects--collect-tasks-by-graph project-marker)))
+         (tasks (org-gtd-dependencies-collect-project-tasks project-marker)))
 
     ;; Step 1: Process each task - remove project ID and archive if no projects remain
     (when (and project-id tasks)

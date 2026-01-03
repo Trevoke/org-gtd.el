@@ -230,7 +230,7 @@ Returns t if the project has no tasks with TODO keyword NEXT."
                   project-marker-or-name)))
     (when marker
       (org-with-point-at marker
-        (let ((tasks (org-gtd-projects--collect-tasks-by-graph marker)))
+        (let ((tasks (org-gtd-dependencies-collect-project-tasks marker)))
           (not (seq-some (lambda (task-marker)
                           (org-with-point-at task-marker
                             (string= (org-get-todo-state) "NEXT")))
@@ -250,7 +250,7 @@ Returns the count of tasks in the project's task graph."
                   project-marker-or-name)))
     (when marker
       (org-with-point-at marker
-        (length (org-gtd-projects--collect-tasks-by-graph marker))))))
+        (length (org-gtd-dependencies-collect-project-tasks marker))))))
 
 (defun project-has-tasks? (project-marker-or-name)
   "Check if project has any tasks.

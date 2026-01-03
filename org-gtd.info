@@ -1,7 +1,7 @@
 This is org-gtd.info, produced by makeinfo version 7.1 from
 org-gtd.texi.
 
-Copyright (C) 2018-2025 Aldric Giacomoni <trevoke@gmail.com>
+Copyright (C) 2018-2026 Aldric Giacomoni <trevoke@gmail.com>
 
    You can redistribute this document and/or modify it under the terms
 of the GNU General Public License as published by the Free Software
@@ -26,7 +26,7 @@ Org GTD User Manual
 Org GTD is an attempt to implement the GTD flow described in the GTD
 book as faithfully as possible.
 
-This manual is for Org GTD version 4.0.0beta1
+This manual is for Org GTD version 4.0.0
 
 * Menu:
 
@@ -326,7 +326,6 @@ Configuration problems
 
 * Keywords not working::
 * Items not showing in engage view::
-
 
 
 
@@ -3639,7 +3638,7 @@ Let's build a project where some tasks happen simultaneously.
 
      Click on (or navigate to) the "Find place to get MRI" task.
 
-     Press ‘a r’ (add root task)
+     Press ‘r’ (add root task)
 
      At the prompt, type: ‘Make orthopedist appointment’
 
@@ -3672,14 +3671,14 @@ Let's build a project where some tasks happen simultaneously.
      From the project heading in graph view, press ‘?’ to open the
      command menu:
 
-     ‘a r’
+     ‘r’
           Add a root task (no dependencies, starts immediately)
-     ‘a s’
+     ‘s’
           Add a successor (a new task that depends on the selected task)
-     ‘a b’
+     ‘b’
           Add a blocker (a new task that the selected task depends on)
 
-     *The key insight:* ‘a s’ and ‘a b’ let you connect ONE new task to
+     *The key insight:* ‘s’ and ‘b’ let you connect ONE new task to
      MULTIPLE existing tasks using a checkbox menu.  This enables
      complex patterns like convergence (diamond).
 
@@ -3688,13 +3687,13 @@ Let's build a project where some tasks happen simultaneously.
      Let's build the correct structure from scratch:
 
        1. Start with project heading selected
-       2. ‘a r’ → "Find place to get MRI" (root task 1)
-       3. ‘a r’ → "Make orthopedist appointment" (root task 2 - now
+       2. ‘r’ → "Find place to get MRI" (root task 1)
+       3. ‘r’ → "Make orthopedist appointment" (root task 2 - now
           parallel!)
        4. Select "Find place to get MRI"
-       5. ‘a s’ → "Make MRI appointment" → check only "Find MRI" → RET
+       5. ‘s’ → "Make MRI appointment" → check only "Find MRI" → RET
        6. Now select "Make MRI appointment"
-       7. ‘a s’ → "Get diagnosis"
+       7. ‘s’ → "Get diagnosis"
        8. *Here's the key step:* The checkbox menu shows ALL project
           tasks.  Check BOTH "Make MRI appointment" AND "Make
           orthopedist appointment"
@@ -3720,13 +3719,13 @@ Let's build a project where some tasks happen simultaneously.
 
    • Alternative Approach: Add Blockers
 
-     You could also build this using ‘a b’ (add blocker):
+     You could also build this using ‘b’ (add blocker):
 
-       1. Create "Get diagnosis" first as a root task (‘a r’)
+       1. Create "Get diagnosis" first as a root task (‘r’)
        2. Select "Get diagnosis"
-       3. ‘a b’ → "Make MRI appointment" → check "Get diagnosis" → RET
-       4. Still on "Get diagnosis", ‘a b’ → "Make orthopedist
-          appointment" → check "Get diagnosis" → RET
+       3. ‘b’ → "Make MRI appointment" → check "Get diagnosis" → RET
+       4. Still on "Get diagnosis", ‘b’ → "Make orthopedist appointment"
+          → check "Get diagnosis" → RET
        5. Continue building backwards...
 
      Both approaches work.  Use whichever feels more natural for your
@@ -3766,11 +3765,11 @@ File: org-gtd.info,  Node: Tutorial Complex Dependencies with Graph View,  Next:
 
      Starting from the project heading, open the command menu with ‘?’:
 
-       1. ‘a r’ → "List features" (root task)
+       1. ‘r’ → "List features" (root task)
        2. Select "List features"
-       3. ‘a s’ → "Implement features" → check "List features" → RET
+       3. ‘s’ → "Implement features" → check "List features" → RET
        4. Go back to "List features"
-       5. ‘a s’ → "Write documentation" → check "List features" → RET
+       5. ‘s’ → "Write documentation" → check "List features" → RET
 
      Now you have two parallel branches from "List features".
 
@@ -3780,7 +3779,7 @@ File: org-gtd.info,  Node: Tutorial Complex Dependencies with Graph View,  Next:
      documentation:
 
        1. Select "Implement features"
-       2. ‘a s’ → "Get Beta Feedback"
+       2. ‘s’ → "Get Beta Feedback"
        3. In the checkbox menu, check BOTH "Implement features" AND
           "Write documentation"
        4. Press ‘RET’
@@ -3793,14 +3792,14 @@ File: org-gtd.info,  Node: Tutorial Complex Dependencies with Graph View,  Next:
      Continue building the parallel update paths:
 
        1. Select "Get Beta Feedback"
-       2. ‘a s’ → "Update code" → check "Get Beta Feedback" → RET
+       2. ‘s’ → "Update code" → check "Get Beta Feedback" → RET
        3. Select "Get Beta Feedback" again
-       4. ‘a s’ → "Update docs" → check "Get Beta Feedback" → RET
+       4. ‘s’ → "Update docs" → check "Get Beta Feedback" → RET
 
      For the final convergence at "Release":
 
        1. Select "Update code"
-       2. ‘a s’ → "Release"
+       2. ‘s’ → "Release"
        3. Check BOTH "Update code" AND "Update docs"
        4. Press ‘RET’
 
@@ -3822,11 +3821,11 @@ File: org-gtd.info,  Node: Tutorial Complex Dependencies with Graph View,  Next:
 
    • Key Patterns This Example Shows
 
-       1. *Parallel branches* from List Features (using ‘a s’ twice from
+       1. *Parallel branches* from List Features (using ‘s’ twice from
           same parent)
        2. *Converging paths* at Get Beta Feedback (using multi-select
           checkbox)
-       3. *Parallel updates* after feedback (using ‘a s’ twice)
+       3. *Parallel updates* after feedback (using ‘s’ twice)
        4. *Final convergence* at Release (using multi-select checkbox)
 
      All four patterns are fully supported.
@@ -3849,8 +3848,8 @@ Here's what different patterns look like in graph view:
 
      *When to use*: Order matters, each task depends on the previous.
 
-     *How to build*: ‘a r’ for A, select A, ‘a s’ for B (check A),
-     select B, ‘a s’ for C (check B).
+     *How to build*: ‘r’ for A, select A, ‘s’ for B (check A), select B,
+     ‘s’ for C (check B).
 
      *Example*: Review blueprints → Order windows → Schedule carpenter
 
@@ -3861,7 +3860,7 @@ Here's what different patterns look like in graph view:
      *When to use*: Tasks are completely independent, all can start
      immediately.
 
-     *How to build*: From project heading, ‘a r’ for each task.
+     *How to build*: From project heading, ‘r’ for each task.
 
      *Example*: Research destinations, Check budget, Ask for time off
      (vacation planning)
@@ -3875,8 +3874,8 @@ Here's what different patterns look like in graph view:
 
      *When to use*: Initial work enables multiple independent paths.
 
-     *How to build*: ‘a r’ for A, select A, then ‘a s’ three times (B,
-     C, D - each checking only A).
+     *How to build*: ‘r’ for A, select A, then ‘s’ three times (B, C, D
+     - each checking only A).
 
      *Example*: Get project approval → (Design UI, Write backend API,
      Setup infrastructure)
@@ -3890,8 +3889,8 @@ Here's what different patterns look like in graph view:
 
      *When to use*: Final task needs all previous work completed.
 
-     *How to build*: ‘a r’ for A and B.  Select A, ‘a s’ for C, then
-     check BOTH A and B in the checkbox menu.
+     *How to build*: ‘r’ for A and B.  Select A, ‘s’ for C, then check
+     BOTH A and B in the checkbox menu.
 
      *Example*: (Write code, Write tests) → Merge to main
 
@@ -3908,10 +3907,10 @@ Here's what different patterns look like in graph view:
      *When to use*: Work splits, proceeds in parallel, then combines.
 
      *How to build*:
-       1. ‘a r’ for A
-       2. Select A, ‘a s’ for B (check A)
-       3. Select A again, ‘a s’ for C (check A)
-       4. Select B, ‘a s’ for D, then check BOTH B and C
+       1. ‘r’ for A
+       2. Select A, ‘s’ for B (check A)
+       3. Select A again, ‘s’ for C (check A)
+       4. Select B, ‘s’ for D, then check BOTH B and C
 
      *Example*: Research → (Write content, Design graphics) → Publish
      article
@@ -3937,53 +3936,45 @@ commands.
      *Creates*: Interactive SVG buffer named ‘*Org GTD Graph:
      <project-name>*’
 
-   • Direct Keybindings (Always Available)
+   • Tier 1: Single-Key Commands (Always Available)
+
+     These are the most frequently used commands, available without any
+     prefix.
 
      *Navigation:*
 
-     Key     Command                    Description
-     ------------------------------------------------------------------------------------------
-     n       Down dependency            Move to a task this one blocks
-     p       Up dependency              Move to a task that blocks this one
-     TAB     Next sibling               Next sibling task (see ‘org-gtd-graph-sibling-mode’)
-     S-TAB   Previous sibling           Previous sibling task
-     g       Goto node                  Jump to task by name (with completion)
-     RET     Jump to task in org file   Opens the org file at the task's location
+     Key     Command            Description
+     ----------------------------------------------------------------------------------
+     n       Down dependency    Move to a task this one blocks
+     p       Up dependency      Move to a task that blocks this one
+     TAB     Next sibling       Next sibling task (see ‘org-gtd-graph-sibling-mode’)
+     S-TAB   Previous sibling   Previous sibling task
+     G       Goto node          Jump to task by name (with completion)
 
      *What counts as a "sibling"?*  By default, siblings are tasks that
      share at least one blocker (tasks blocked by the same thing).  You
      can customize this with ‘org-gtd-graph-sibling-mode’.  See *note
      Sibling Mode Configuration: org-gtd-graph-sibling-mode.
 
-     *View:*
-
-     Key   Command     Description
-     ---------------------------------------------------------------
-     ?     Show menu   Display transient menu with all commands
-     r     Refresh     Rebuild graph (use after external changes)
-     q     Quit        Close graph view, keep buffer
-
-   • Transient Menu Commands (Press ‘?’ first)
-
-     *Add Operations (‘a’ prefix):*
+     *Add Tasks:*
 
      Key   Command         Description
      -------------------------------------------------------------------------------
-     a r   Add root task   Create task with no dependencies (starts immediately)
-     a s   Add successor   Create task that the selected task must complete first
-     a b   Add blocker     Create task that must complete before selected task
+     r     Add root task   Create task with no dependencies (starts immediately)
+     s     Add successor   Create task that the selected task must complete first
+     b     Add blocker     Create task that must complete before selected task
 
      *Understanding successors and blockers:*
 
      These two commands handle all dependency relationships:
 
-        • *Add successor* (‘a s’): "What comes after this task?"
-          Creates a new task that depends on the selected task.  The
-          selected task blocks the new task.
+        • *Add successor* (‘s’): "What comes after this task?"  Creates
+          a new task that depends on the selected task.  The selected
+          task blocks the new task.
 
-        • *Add blocker* (‘a b’): "What must happen first?"  Creates a
-          new task that the selected task depends on.  The new task
-          blocks the selected task.
+        • *Add blocker* (‘b’): "What must happen first?"  Creates a new
+          task that the selected task depends on.  The new task blocks
+          the selected task.
 
      Both commands:
        1. Prompt you to select an existing task OR type a new task title
@@ -3996,28 +3987,55 @@ commands.
      *After adding*: Graph automatically refreshes to show new task and
      dependencies.
 
-     *Modify Operations (‘m’ prefix):*
+     *Modify Relationships:*
 
      Key   Command             Description
      ------------------------------------------------------------------------
-     m b   Modify blockers     Toggle which tasks block the selected task
-     m d   Modify dependents   Toggle which tasks the selected task blocks
+     B     Modify blockers     Toggle which tasks block the selected task
+     S     Modify successors   Toggle which tasks the selected task blocks
 
      These commands open a checkbox menu showing all project tasks.
      Toggle checkboxes to add/remove relationships, then press ‘RET’ to
      apply.
 
-     *Inspect:*
+     *View:*
 
-     Key   Command              Description
-     -------------------------------------------------------------------------
-     i     Show relationships   Display all relationships for selected task
+     Key   Command            Description
+     ----------------------------------------------------------------------
+     ?     Show menu          Display transient menu with all commands
+     g     Refresh            Rebuild graph (use after external changes)
+     v     Toggle rendering   Switch between SVG and ASCII rendering
+     q     Quit               Close graph view, keep buffer
 
-     *Other:*
+   • Tier 2: Prefixed Commands
+
+     These commands are used less frequently and use key prefixes for
+     organization.
+
+     *Task Operations (‘t’ prefix):*
+
+     Key   Command               Description
+     ------------------------------------------------------------------------------
+     t t   Change TODO state     Cycle through TODO states
+     t r   Remove from project   Remove task from this project (keeps task)
+     t d   Trash task            Mark task canceled and remove from all projects
+     t e   Edit in org file      Jump to task in org file for editing
+     t i   Show relationships    Display all relationships for selected task
+
+     *Project Operation:*
+
+     Key   Command            Description
+     ------------------------------------------------------------------
+     I     Incubate project   Move entire project to tickler/someday
+
+     *Graph View Operations:*
 
      Key   Command         Description
-     ---------------------------------------------------------
+     ----------------------------------------------------------
      Q     Quit and kill   Close graph view and kill buffer
+     x s   Export SVG      Export graph as SVG file
+     x d   Export DOT      Export graph as Graphviz DOT file
+     x a   Export ASCII    Export graph as ASCII text file
 
    • Visual Indicators
 
@@ -4115,50 +4133,44 @@ File: org-gtd.info,  Node: Complete Keyboard Reference,  Next: Auto-Refresh on F
 
 This is a comprehensive quick reference for all graph view keybindings.
 
-   • Navigation
+   • Tier 1: Single Keys
 
      Key           Action
      ---------------------------------------------------------
      ‘?’           Show command menu (transient)
-     ‘n’ / ‘j’     Down dependency (to task this blocks)
-     ‘p’ / ‘k’     Up dependency (to task that blocks this)
+     ‘n’           Down dependency (to task this blocks)
+     ‘p’           Up dependency (to task that blocks this)
      ‘TAB’         Next sibling (same layer)
      ‘<backtab>’   Previous sibling
-     ‘<’           First task in layer
-     ‘>’           Last task in layer
-     ‘g’           Go to task by name
-     ‘[’           Navigate back in history
-     ‘]’           Navigate forward in history
+     ‘G’           Go to task by name
+     ‘r’           Add root task (no dependencies)
+     ‘s’           Add successor (task that this blocks)
+     ‘b’           Add blocker (task that blocks this)
+     ‘B’           Modify blockers (bulk toggle)
+     ‘S’           Modify successors (bulk toggle)
+     ‘g’           Refresh graph (rebuild from org file)
+     ‘v’           Toggle ASCII/SVG rendering
+     ‘q’           Quit graph view
 
-   • Modification (via transient menu ‘?’)
-
-     Key     Action
-     ---------------------------------------------------------------
-     ‘a r’   Add root task (no dependencies)
-     ‘a s’   Add successor (new task that selected task blocks)
-     ‘a b’   Add blocker (new task that blocks selected task)
-     ‘m b’   Modify blockers (toggle what blocks selected task)
-     ‘m d’   Modify dependents (toggle what selected task blocks)
-     ‘r’     Remove task from project
-     ‘t’     Change TODO state
-
-   • Information
+   • Tier 2: Task Operations (‘t’ prefix)
 
      Key     Action
      ------------------------------------------
-     ‘i’     Show relationships for task
-     ‘e’     Edit task in org file (jump to)
-     ‘RET’   Jump to task in org file
+     ‘t t’   Change TODO state
+     ‘t r’   Remove task from project
+     ‘t d’   Trash task (cancel and remove)
+     ‘t e’   Edit task in org file (jump to)
+     ‘t i’   Show relationships for task
 
-   • View Control
+   • Tier 2: Project and View Operations
 
-     Key   Action
-     ----------------------------------------------
-     ‘v’   Toggle ASCII/SVG rendering
-     ‘z’   Zoom menu (filter/focus)
-     ‘R’   Refresh graph (rebuild from org file)
-     ‘q’   Quit graph view
-     ‘Q’   Quit and kill buffer
+     Key     Action
+     ---------------------------------------------
+     ‘I’     Incubate project (move to someday)
+     ‘Q’     Quit and kill buffer
+     ‘x s’   Export as SVG
+     ‘x d’   Export as DOT
+     ‘x a’   Export as ASCII
 
 
 File: org-gtd.info,  Node: Auto-Refresh on File Changes,  Next: Technical Details,  Prev: Complete Keyboard Reference,  Up: Working with Projects (Advanced)
@@ -4174,7 +4186,7 @@ are detected (with 300ms debounce).  This means:
    • Multiple graph views of the same project stay in sync
    • File watching is buffer-local and cleaned up on quit
 
-   You can still manually refresh with ‘R’ if needed.
+   You can still manually refresh with ‘g’ if needed.
 
 
 File: org-gtd.info,  Node: Technical Details,  Next: Practical Tips for Project Management,  Prev: Auto-Refresh on File Changes,  Up: Working with Projects (Advanced)
@@ -4264,8 +4276,7 @@ File: org-gtd.info,  Node: Practical Tips for Project Management,  Next: Exporti
         • You want to optimize for speed
         • You know all tasks upfront
 
-     *Use ‘a r’ multiple times* from graph view to create parallel
-     roots.
+     *Use ‘r’ multiple times* from graph view to create parallel roots.
 
    • Managing Complexity
 
@@ -4282,10 +4293,10 @@ File: org-gtd.info,  Node: Practical Tips for Project Management,  Next: Exporti
 
      As projects evolve, you need to add tasks:
 
-        • *New independent work stream*: ‘a r’ (add root task)
-        • *Next step in sequence*: Select current task, ‘a s’ (add
+        • *New independent work stream*: ‘r’ (add root task)
+        • *Next step in sequence*: Select current task, ‘s’ (add
           successor)
-        • *Prerequisite for existing task*: Select existing task, ‘a b’
+        • *Prerequisite for existing task*: Select existing task, ‘b’
           (add blocker)
 
      After adding, the graph refreshes automatically.
@@ -4381,14 +4392,14 @@ File: org-gtd.info,  Node: Exporting Project Graphs,  Next: Troubleshooting Proj
 
    • Reference: Export Commands
 
-     From graph view (‘M-x org-gtd-show-project-graph’), press ‘?’ to
-     open the menu, then:
+     From graph view (‘M-x org-gtd-show-project-graph’), use the ‘x’
+     prefix:
 
      Key     Command                        Format   Best For
      -------------------------------------------------------------------------------------
-     ‘E s’   ‘org-gtd-graph-export-svg’     SVG      Documents, presentations, sharing
-     ‘E d’   ‘org-gtd-graph-export-dot’     DOT      Graphviz processing, customization
-     ‘E a’   ‘org-gtd-graph-export-ascii’   ASCII    Terminals, plain-text docs
+     ‘x s’   ‘org-gtd-graph-export-svg’     SVG      Documents, presentations, sharing
+     ‘x d’   ‘org-gtd-graph-export-dot’     DOT      Graphviz processing, customization
+     ‘x a’   ‘org-gtd-graph-export-ascii’   ASCII    Terminals, plain-text docs
 
      All commands prompt for a filename.  The file is created
      immediately.
@@ -4400,7 +4411,7 @@ File: org-gtd.info,  Node: Exporting Project Graphs,  Next: Troubleshooting Proj
 
      **Empty or corrupted file**:
         • Verify the graph displays correctly before exporting
-        • Press ‘R’ to refresh the graph view
+        • Press ‘g’ to refresh the graph view
         • Try exporting to a different location with write permissions
 
      **SVG won't open in browser**: Ensure the filename ends in ‘.svg’.
@@ -4425,7 +4436,7 @@ File: org-gtd.info,  Node: Troubleshooting Projects with Graph View,  Next: See 
 
      *What to look for*:
         • *No green boxes?*  All tasks might be waiting for dependencies
-          that are DONE.  Press ‘r’ to refresh.
+          that are DONE.  Press ‘g’ to refresh.
         • *Gray boxes at layer 0?*  These should be green (root tasks
           are never blocked).  Something's wrong with the dependency
           structure.
@@ -4434,8 +4445,8 @@ File: org-gtd.info,  Node: Troubleshooting Projects with Graph View,  Next: See 
 
      *How to fix*:
         • Use graph view to understand the structure
-        • Add a new root task (‘a r’) if nothing can start
-        • Refresh (‘r’) after any changes
+        • Add a new root task (‘r’) if nothing can start
+        • Refresh (‘g’) after any changes
 
    • Task Should Be NEXT But Shows as TODO
 
@@ -4445,12 +4456,12 @@ File: org-gtd.info,  Node: Troubleshooting Projects with Graph View,  Next: See 
         • Are all those blockers green?  Then something's wrong.
         • Are some blockers gray?  Then the task is correctly blocked.
 
-     If blockers are actually DONE but still showing as green, press ‘R’
+     If blockers are actually DONE but still showing as green, press ‘g’
      to refresh.
 
-     *How to fix*: Use ‘m b’ to modify blockers (uncheck incorrect
-     ones), or use text command ‘org-gtd-task-clear-relationships’ to
-     start fresh.
+     *How to fix*: Use ‘B’ to modify blockers (uncheck incorrect ones),
+     or use text command ‘org-gtd-task-clear-relationships’ to start
+     fresh.
 
    • Too Many Tasks Are NEXT
 
@@ -4462,9 +4473,9 @@ File: org-gtd.info,  Node: Troubleshooting Projects with Graph View,  Next: See 
 
      *How to fix*:
         • Select a task that should be blocked
-        • Press ‘m b’ to modify its blockers
-        • Or use ‘a s’ from an earlier task to add a successor that
-          should come later
+        • Press ‘B’ to modify its blockers
+        • Or use ‘s’ from an earlier task to add a successor that should
+          come later
 
    • Graph Won't Open
 
@@ -4484,14 +4495,14 @@ File: org-gtd.info,  Node: Troubleshooting Projects with Graph View,  Next: See 
           under the project)
         • Verify tasks have ‘ORG_GTD_PROJECT_IDS’ property containing
           the project ID
-        • Press ‘R’ to force a complete refresh
+        • Press ‘g’ to force a complete refresh
         • Check ‘*Messages*’ buffer for parsing errors
 
    • Task Shows Wrong State (NEXT vs TODO)
 
      If a task's color doesn't match its expected state:
 
-        • Press ‘R’ to refresh (state might be stale from external
+        • Press ‘g’ to refresh (state might be stale from external
           edits)
         • Check the task's actual TODO state in the org file (press ‘e’
           to jump there)
@@ -4508,7 +4519,7 @@ File: org-gtd.info,  Node: Troubleshooting Projects with Graph View,  Next: See 
           menu
         • Check that you're in the graph view buffer, not the org file
           buffer
-        • Try ‘R’ to refresh if the graph is in an inconsistent state
+        • Try ‘g’ to refresh if the graph is in an inconsistent state
 
 
 File: org-gtd.info,  Node: See Also,  Next: Tickler Projects Pausing Work You're Not Ready For,  Prev: Troubleshooting Projects with Graph View,  Up: Working with Projects (Advanced)
@@ -4681,7 +4692,7 @@ File: org-gtd.info,  Node: Tickler Projects Pausing Work You're Not Ready For,  
        3. Project graph opens automatically:
              • Review the project structure
              • Verify NEXT/TODO states make sense
-             • Adjust dependencies with ‘m b’ (modify blockers) or ‘m d’
+             • Adjust dependencies with ‘B’ (modify blockers) or ‘S’
                (modify dependents)
 
    • Common Patterns and Scenarios
@@ -4944,10 +4955,10 @@ File: org-gtd.info,  Node: Tickler Projects Pausing Work You're Not Ready For,  
         • Look for tasks with cleared keywords that should have keywords
 
      *Solution:*
-        • Press ‘R’ to refresh and recalculate states
+        • Press ‘g’ to refresh and recalculate states
         • If recalculation doesn't fix it: dependencies might be
           incorrect
-        • Use ‘m b’ to modify blockers, then ‘R’ to recalculate
+        • Use ‘B’ to modify blockers, then ‘g’ to recalculate
 
      *Can't Reactivate: "Not Tickler" Error*
 
@@ -7656,9 +7667,9 @@ graph view.  Most users will find the graph view more intuitive (press
    • Preference for text-based workflows
 
    *Graph UI equivalents*:
-   • Adding tasks with dependencies: ‘a r’ (root), ‘a s’ (successor), ‘a
-     b’ (blocker)
-   • Modifying relationships: ‘m b’ (modify blockers), ‘m d’ (modify
+   • Adding tasks with dependencies: ‘r’ (root), ‘s’ (successor), ‘b’
+     (blocker)
+   • Modifying relationships: ‘B’ (modify blockers), ‘S’ (modify
      dependents)
    • Viewing relationships: ‘i’ (show relationships)
 
@@ -8120,8 +8131,8 @@ File: org-gtd.info,  Node: Project Properties,  Next: Task Dependency Properties
 
      *How it's set*:
         • Automatically when organizing a project
-        • Automatically by graph view ‘a r’ (add root task) and ‘a b’
-          (add blocker as root)
+        • Automatically by graph view ‘r’ (add root task) and ‘b’ (add
+          blocker as root)
         • Programmatically via ‘org-entry-add-to-multivalued-property’
 
      *For interactive use*: Use graph view commands instead of editing
@@ -8177,7 +8188,7 @@ File: org-gtd.info,  Node: Task Dependency Properties,  Next: Calendar and Time 
         • Task 004 (implement) waits for both 002 and 003 to complete
 
      *How it's set*:
-        • Graph view: ‘a s’ (add successor), ‘a b’ (add blocker), ‘m b’
+        • Graph view: ‘s’ (add successor), ‘b’ (add blocker), ‘B’
           (modify blockers)
         • Text commands: ‘org-gtd-task-add-blockers’,
           ‘org-gtd-task-add-dependent’
@@ -8432,18 +8443,18 @@ references, orphaned tasks):
   2. *Visual inspection with graph view*:
         • Run ‘M-x org-gtd-show-project-graph’
         • Visual inspection often makes problems obvious
-        • Missing arrows?  Use ‘a s’ to add successor or ‘m b’ to add
+        • Missing arrows?  Use ‘s’ to add successor or ‘B’ to add
           blockers
-        • Wrong arrows?  Use ‘m b’ or ‘m d’ to uncheck incorrect
+        • Wrong arrows?  Use ‘B’ or ‘S’ to uncheck incorrect
           relationships
         • Use ‘i’ to inspect a task's current relationships
 
   3. *Clear and rebuild*: If task relationships are completely
      corrupted:
-        • In graph view: Select task, use ‘m b’ and ‘m d’ to adjust
+        • In graph view: Select task, use ‘B’ and ‘S’ to adjust
           blockers/dependents
         • Or in text: Run ‘M-x org-gtd-task-clear-relationships’
-        • Rebuild using graph view: ‘a s’ (add successor), ‘a b’ (add
+        • Rebuild using graph view: ‘s’ (add successor), ‘b’ (add
           blocker)
 
 
@@ -8506,9 +8517,9 @@ File: org-gtd.info,  Node: Common Problems and Solutions,  Prev: When Manual Pro
              • Missing ORG_GTD_FIRST_TASKS property
 
      *Solution*:
-        • Fix circular dependencies: Use ‘m b’ to remove incorrect
-          blocker relationships
-        • Add root tasks: Use ‘a r’ to create tasks that can start
+        • Fix circular dependencies: Use ‘B’ to remove incorrect blocker
+          relationships
+        • Add root tasks: Use ‘r’ to create tasks that can start
           immediately
         • Run ‘org-gtd-validate-project-dependencies’ for detailed
           diagnosis
@@ -8521,9 +8532,9 @@ File: org-gtd.info,  Node: Common Problems and Solutions,  Prev: When Manual Pro
 
      *Solution*:
         • In graph view, identify tasks that should depend on others
-        • Select a task, use ‘m b’ to add blockers it should wait for
-        • Or use ‘a s’ from an earlier task to add a successor that
-          should come later
+        • Select a task, use ‘B’ to add blockers it should wait for
+        • Or use ‘s’ from an earlier task to add a successor that should
+          come later
 
    • Task Won't Advance to NEXT
 
@@ -8536,12 +8547,12 @@ File: org-gtd.info,  Node: Common Problems and Solutions,  Prev: When Manual Pro
         • Check if all blockers are actually DONE
 
      *Solution*:
-        • If blockers are DONE but showing as blocking: Press ‘R’ to
+        • If blockers are DONE but showing as blocking: Press ‘g’ to
           refresh graph
-        • If blocker shouldn't block this task: Use ‘m b’ to modify
+        • If blocker shouldn't block this task: Use ‘B’ to modify
           blockers and uncheck it
         • If many wrong dependencies: Run
-          ‘org-gtd-task-clear-relationships’, rebuild with ‘a s~/~a b’
+          ‘org-gtd-task-clear-relationships’, rebuild with ‘s~/~b’
 
    • Task States Inconsistent After External Edits
 
@@ -10496,7 +10507,6 @@ If you're still having problems:
         • Expected vs actual behavior
         • Any error messages
 
-
 
 Tag Table:
 Node: Top736
@@ -11033,4 +11043,5 @@ End Tag Table
 
 Local Variables:
 coding: utf-8
+Info-documentlanguage: en
 End:

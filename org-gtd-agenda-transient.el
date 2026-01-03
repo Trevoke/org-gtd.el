@@ -115,12 +115,12 @@ Excludes Habit since deferring habits has different semantics."
 
 (defun org-gtd-agenda-transient--add-days-to-timestamp (timestamp days)
   "Add DAYS to TIMESTAMP string and return new timestamp string.
-TIMESTAMP is an org-mode active timestamp like \"<2025-11-28>\"."
+TIMESTAMP is an Org active timestamp like \"<2025-11-28>\"."
   (when (and timestamp (string-match "<\\([0-9]+-[0-9]+-[0-9]+\\)" timestamp))
     (let* ((date-str (match-string 1 timestamp))
            (time (org-time-string-to-time date-str))
            (new-time (time-add time (days-to-time days)))
-           (new-date-str (format-time-string "%Y-%m-%d" new-time)))
+           (new-date-str (format-time-string "%F" new-time)))
       (format "<%s>" new-date-str))))
 
 (defun org-gtd-agenda-transient--defer ()

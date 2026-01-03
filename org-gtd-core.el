@@ -34,259 +34,11 @@
 (require 'org-gtd-backward-compatibility)
 (require 'org-gtd-types)
 
-;;;; Forward declarations
-(defvar org-gtd-archive-location)
-(defvar org-gtd-projects)
-
-;;;; Customization
-
-(defgroup org-gtd nil
-  "Customize the org-gtd package."
-  :group 'org
-  :link '(url-link "https://github.com/Trevoke/org-gtd.el")
-  :package-version '(org-gtd . "0.1"))
-
-
-(defcustom org-gtd-directory "~/gtd/"
-  "Directory for org-gtd.
-
-The package will use this directory for all its functionality, whether it is
-building the agenda or refiling items.  This is the directory where you will
-find the default org-gtd file, and it is the directory where you should place
-your own files if you want multiple refile targets (projects, etc.)."
-  :group 'org-gtd
-  :package-version '(org-gtd . "0.1")
-  :type 'directory)
-
-
-;; Note: org-gtd-directory must be defined above for the defvars below
-
-(unless (boundp 'org-gtd-archive-location)
-  (defvar org-gtd-archive-location
-    (lambda ()
-      (let* ((year (number-to-string (caddr (calendar-current-date))))
-             (full-org-gtd-path (expand-file-name org-gtd-directory))
-             (filename (format "gtd_archive_%s" year))
-             (filepath (f-join full-org-gtd-path filename)))
-        (string-join `(,filepath "::" "datetree/"))))))
-
-
-;; New user option to control buffer saving behavior after organizing
-(defcustom org-gtd-save-after-organize nil
-  "If non-nil, save all modified buffers after each organize step."
-  :group 'org-gtd
-  :type 'boolean
-  :package-version '(org-gtd . "3.1"))
-
-(defcustom org-gtd-project-progress-cookie-position 'end
-  "Where to display progress cookies on project headings.
-
-- nil: Disabled (no cookies)
-- `start': After TODO keyword, before title
-- `end': After heading text, before tags (default)"
-  :group 'org-gtd
-  :type '(choice (const :tag "Disabled" nil)
-                 (const :tag "Start (after keyword)" start)
-                 (const :tag "End (before tags)" end))
-  :package-version '(org-gtd . "4.0"))
-
-(defcustom org-gtd-prefix-width 12
-  "How many characters to dedicate to the agenda prefix in org-gtd views.
-
-This controls the width of the prefix column where project names and
-areas of focus are displayed on the left side of agenda items."
-  :group 'org-gtd
-  :package-version '(org-gtd . "4.0")
-  :type 'integer)
-
-;;;; GTD Semantic Keyword Mapping
-
-(defun org-gtd--extract-keyword-name (keyword-string)
-  "Extract base keyword name from org-todo-keywords DSL syntax.
-Handles formats like \"NEXT\", \"NEXT(n)\", \"NEXT(n/@)\", \"NEXT(n/!)\".
-Returns just the keyword name without shortcut or logging configuration."
-  (if (string-match "^\\([^(]+\\)" keyword-string)
-      (match-string 1 keyword-string)
-    keyword-string))
-
-(defun org-gtd--validate-and-set-keyword-mapping (symbol value)
-  "Validate and set the org-gtd keyword mapping.
-SYMBOL should be `org-gtd-keyword-mapping' and VALUE should be the new mapping.
-
-Validates that:
-- All required mappings exist (todo, next, wait, done, canceled)
-- All mapped keywords exist in `org-todo-keywords'
-- All GTD keywords are in the same sequence within `org-todo-keywords'
-
-Only sets the value if validation passes."
-  ;; Skip validation during byte compilation or when loading - org-todo-keywords may not be set up yet
-  (if (or byte-compile-current-file
-          (bound-and-true-p byte-compile-current-buffer)
-          (bound-and-true-p load-in-progress))
-      (set-default symbol value)
-    ;; Normal runtime validation
-    (org-gtd--validate-and-set-keyword-mapping-runtime symbol value)))
-
-(defun org-gtd--validate-and-set-keyword-mapping-runtime (symbol value)
-  "Runtime validation for org-gtd keyword mapping."
-  (let ((todo-kw (alist-get 'todo value))
-        (next-kw (alist-get 'next value))
-        (wait-kw (alist-get 'wait value))
-        (done-kw (alist-get 'done value))
-        (canceled-kw (alist-get 'canceled value))
-        (all-sequences (if (listp (car org-todo-keywords))
-                           org-todo-keywords
-                         (list org-todo-keywords)))
-        (errors nil))
-
-    ;; Check that all required mappings exist
-    (unless todo-kw
-      (push "Missing 'todo' mapping in org-gtd-keyword-mapping" errors))
-    (unless next-kw
-      (push "Missing 'next' mapping in org-gtd-keyword-mapping" errors))
-    (unless wait-kw
-      (push "Missing 'wait' mapping in org-gtd-keyword-mapping" errors))
-    (unless done-kw
-      (push "Missing 'done' mapping in org-gtd-keyword-mapping" errors))
-    (unless canceled-kw
-      (push "Missing 'canceled' mapping in org-gtd-keyword-mapping" errors))
-
-    (when (and todo-kw next-kw wait-kw done-kw canceled-kw)
-      (let ((gtd-keywords (list todo-kw next-kw wait-kw done-kw canceled-kw))
-            (found-sequence nil))
-
-        ;; Check that all keywords exist somewhere in org-todo-keywords
-        ;; Use org-gtd--extract-keyword-name to handle DSL syntax like "NEXT(n/@)"
-        (let ((all-keywords (mapcar #'org-gtd--extract-keyword-name
-                                    (if (listp (car org-todo-keywords))
-                                        ;; Extract keywords from sequences, removing "|" separators
-                                        (cl-remove-if (lambda (kw) (string-match-p "^|" kw))
-                                                      (apply #'append (mapcar #'cdr org-todo-keywords)))
-                                      ;; Simple list format
-                                      org-todo-keywords))))
-          (dolist (keyword gtd-keywords)
-            (unless (member keyword all-keywords)
-              (push (format "GTD keyword '%s' not found in org-todo-keywords" keyword) errors))))
-
-        ;; Check that all GTD keywords are in the same sequence
-        (when (not errors)  ; Only check sequences if all keywords exist
-          (catch 'found
-            (dolist (sequence all-sequences)
-              (let ((seq-keywords (mapcar #'org-gtd--extract-keyword-name
-                                          (cl-remove-if (lambda (kw) (string-match-p "^|" kw))
-                                                        (if (listp sequence) (cdr sequence) sequence)))))
-                (when (cl-every (lambda (kw) (member kw seq-keywords)) gtd-keywords)
-                  (setq found-sequence sequence)
-                  (throw 'found t))))
-
-            ;; If we get here, keywords are not all in the same sequence
-            (unless found-sequence
-              (push (format "All GTD keywords (%s) must be in the same sequence within org-todo-keywords"
-                            (string-join gtd-keywords ", "))
-                    errors))))))
-
-    ;; Only set the value if validation passed
-    (if errors
-        (user-error "org-gtd keyword configuration errors:\n%s\n\nExample valid configuration:\n(setq org-todo-keywords '((sequence \"TODO\" \"NEXT\" \"WAIT\" \"|\" \"DONE\" \"CNCL\")))\n(setopt org-gtd-keyword-mapping\n        '((todo . \"TODO\") (next . \"NEXT\") (wait . \"WAIT\") (done . \"DONE\") (canceled . \"CNCL\")))"
-                    (string-join (reverse errors) "\n"))
-      (set-default symbol value))))
-
-
-
-
-;;;###autoload
-(defun org-gtd-setup-keywords-wizard ()
-  "Configure GTD keyword mapping interactively.
-Walks you through mapping your org TODO keywords to GTD concepts
-like TODO, NEXT, WAIT, and CANCELED."
-  (interactive)
-  (let ((available-keywords org-todo-keywords-1))
-    (unless available-keywords
-      (user-error "No TODO keywords found. Please configure `org-todo-keywords' first"))
-
-    (message "Setting up org-gtd keyword mapping...")
-    (message "Available TODO keywords: %s" (string-join available-keywords " "))
-
-    (let ((todo-kw (completing-read "Keyword for 'TODO' (not ready to act): "
-                                    available-keywords nil t "TODO"))
-          (next-kw (completing-read "Keyword for 'NEXT' (ready to act): "
-                                    available-keywords nil t "NEXT"))
-          (wait-kw (completing-read "Keyword for 'WAIT' (blocked/delegated): "
-                                    available-keywords nil t "WAIT"))
-          (canceled-kw (completing-read "Keyword for 'CANCELED': "
-                                        available-keywords nil t "CNCL")))
-      (customize-save-variable
-       'org-gtd-keyword-mapping
-       `((todo . ,todo-kw)
-         (next . ,next-kw)
-         (wait . ,wait-kw)
-         (canceled . ,canceled-kw)))
-
-      (message "org-gtd keyword configuration complete!"))))
-
-(defcustom org-gtd-keyword-mapping
-  '((todo . "TODO")
-    (next . "NEXT")
-    (wait . "WAIT")
-    (done . "DONE")
-    (canceled . "CNCL"))
-  "Mapping of GTD semantic states to org-todo-keywords.
-
-Each entry maps a GTD semantic state to a keyword from your `org-todo-keywords':
-- \\='todo\\=' - tasks not ready to be acted upon
-- \\='next\\=' - tasks ready to be acted upon immediately
-- \\='wait\\=' - tasks waiting for someone else or blocked
-- \\='done\\=' - tasks successfully completed
-- \\='canceled\\=' - tasks terminated and will not be completed
-
-This variable validates that:
-- All required mappings exist (todo, next, wait, done, canceled)
-- All mapped keywords exist in `org-todo-keywords'
-- All GTD keywords are in the same sequence within `org-todo-keywords'
-
-When setting programmatically, use `setopt' (Emacs 29+) or
-`customize-set-variable' to ensure validation runs. To set manually
-without validation, use `setq' but ensure the mapping is valid."
-  :type '(alist :key-type (choice (const todo)
-                                  (const next)
-                                  (const wait)
-                                  (const done)
-                                  (const canceled))
-                :value-type string)
-  :set #'org-gtd--validate-and-set-keyword-mapping
-  :group 'org-gtd
-  :package-version '(org-gtd . "4.0"))
-
-;; Backward compatibility - mark old variables as obsolete
-(defcustom org-gtd-todo-keyword nil
-  "OBSOLETE: Use `org-gtd-keyword-mapping' instead."
-  :type '(choice (const nil) string)
-  :group 'org-gtd
-  :package-version '(org-gtd . "4.0"))
-(make-obsolete-variable 'org-gtd-todo-keyword 'org-gtd-keyword-mapping "4.0")
-
-(defcustom org-gtd-next-keyword nil
-  "OBSOLETE: Use `org-gtd-keyword-mapping' instead."
-  :type '(choice (const nil) string)
-  :group 'org-gtd
-  :package-version '(org-gtd . "4.0"))
-(make-obsolete-variable 'org-gtd-next-keyword 'org-gtd-keyword-mapping "4.0")
-
-(defcustom org-gtd-wait-keyword nil
-  "OBSOLETE: Use `org-gtd-keyword-mapping' instead."
-  :type '(choice (const nil) string)
-  :group 'org-gtd
-  :package-version '(org-gtd . "4.0"))
-(make-obsolete-variable 'org-gtd-wait-keyword 'org-gtd-keyword-mapping "4.0")
-
-(defcustom org-gtd-canceled-keyword nil
-  "OBSOLETE: Use `org-gtd-keyword-mapping' instead."
-  :type '(choice (const nil) string)
-  :group 'org-gtd
-  :package-version '(org-gtd . "4.0"))
-(make-obsolete-variable 'org-gtd-canceled-keyword 'org-gtd-keyword-mapping "4.0")
-
 ;;;; Constants
+;; NOTE: These constants are defined early in the file to ensure they are
+;; available when other modules are byte-compiled. Some package managers
+;; (e.g., quelpa) may compile files in an order where dependent modules
+;; need these values at compile time.
 
 (defconst org-gtd-timestamp "ORG_GTD_TIMESTAMP"
   "Org property storing timestamps for `org-gtd' logic.")
@@ -370,6 +122,258 @@ This property also controls the prefix displayed in agenda views.")
 (defconst org-gtd-prop-someday-list "ORG_GTD_SOMEDAY_LIST"
   "Property for categorizing someday/maybe items into lists.")
 
+;;;; Forward declarations
+(defvar org-gtd-archive-location)
+
+;;;; Customization
+
+(defgroup org-gtd nil
+  "Customize the org-gtd package."
+  :group 'org
+  :link '(url-link "https://github.com/Trevoke/org-gtd.el")
+  :package-version '(org-gtd . "0.1"))
+
+
+(defcustom org-gtd-directory "~/gtd/"
+  "Directory for org-gtd.
+
+The package will use this directory for all its functionality, whether it is
+building the agenda or refiling items.  This is the directory where you will
+find the default org-gtd file, and it is the directory where you should place
+your own files if you want multiple refile targets (projects, etc.)."
+  :group 'org-gtd
+  :package-version '(org-gtd . "0.1")
+  :type 'directory)
+
+
+;; Note: org-gtd-directory must be defined above for the defvars below
+
+(unless (boundp 'org-gtd-archive-location)
+  (defvar org-gtd-archive-location
+    (lambda ()
+      (let* ((year (number-to-string (caddr (calendar-current-date))))
+             (full-org-gtd-path (expand-file-name org-gtd-directory))
+             (filename (format "gtd_archive_%s" year))
+             (filepath (f-join full-org-gtd-path filename)))
+        (string-join `(,filepath "::" "datetree/"))))))
+
+
+;; New user option to control buffer saving behavior after organizing
+(defcustom org-gtd-save-after-organize nil
+  "If non-nil, save all modified buffers after each organize step."
+  :group 'org-gtd
+  :type 'boolean
+  :package-version '(org-gtd . "3.1"))
+
+(defcustom org-gtd-project-progress-cookie-position 'end
+  "Where to display progress cookies on project headings.
+
+- nil: Disabled (no cookies)
+- `start': After TODO keyword, before title
+- `end': After heading text, before tags (default)"
+  :group 'org-gtd
+  :type '(choice (const :tag "Disabled" nil)
+                 (const :tag "Start (after keyword)" start)
+                 (const :tag "End (before tags)" end))
+  :package-version '(org-gtd . "4.0"))
+
+(defcustom org-gtd-prefix-width 12
+  "How many characters to dedicate to the agenda prefix in org-gtd views.
+
+This controls the width of the prefix column where project names and
+areas of focus are displayed on the left side of agenda items."
+  :group 'org-gtd
+  :package-version '(org-gtd . "4.0")
+  :type 'integer)
+
+;;;; GTD Semantic Keyword Mapping
+
+(defun org-gtd--extract-keyword-name (keyword-string)
+  "Extract base keyword name from KEYWORD-STRING.
+Handles `org-todo-keywords' DSL formats like \"NEXT(n)\", \"NEXT(n/@)\".
+Returns just the keyword name without shortcut or logging configuration."
+  (if (string-match "^\\([^(]+\\)" keyword-string)
+      (match-string 1 keyword-string)
+    keyword-string))
+
+(defun org-gtd--validate-and-set-keyword-mapping (symbol value)
+  "Validate and set the org-gtd keyword mapping.
+SYMBOL should be `org-gtd-keyword-mapping' and VALUE should be the new mapping.
+
+Validates that:
+- All required mappings exist (todo, next, wait, done, canceled)
+- All mapped keywords exist in `org-todo-keywords'
+- All GTD keywords are in the same sequence within `org-todo-keywords'
+
+Only sets the value if validation passes."
+  ;; Skip validation during byte compilation or when loading - org-todo-keywords may not be set up yet
+  (if (or byte-compile-current-file
+          (bound-and-true-p byte-compile-current-buffer)
+          (bound-and-true-p load-in-progress))
+      (set-default symbol value)
+    ;; Normal runtime validation
+    (org-gtd--validate-and-set-keyword-mapping-runtime symbol value)))
+
+(defun org-gtd--validate-and-set-keyword-mapping-runtime (symbol value)
+  "Runtime validation for org-gtd keyword mapping.
+SYMBOL is the custom variable being set, VALUE is the new mapping."
+  (let ((todo-kw (alist-get 'todo value))
+        (next-kw (alist-get 'next value))
+        (wait-kw (alist-get 'wait value))
+        (done-kw (alist-get 'done value))
+        (canceled-kw (alist-get 'canceled value))
+        (all-sequences (if (listp (car org-todo-keywords))
+                           org-todo-keywords
+                         (list org-todo-keywords)))
+        (errors nil))
+
+    ;; Check that all required mappings exist
+    (unless todo-kw
+      (push "Missing 'todo' mapping in org-gtd-keyword-mapping" errors))
+    (unless next-kw
+      (push "Missing 'next' mapping in org-gtd-keyword-mapping" errors))
+    (unless wait-kw
+      (push "Missing 'wait' mapping in org-gtd-keyword-mapping" errors))
+    (unless done-kw
+      (push "Missing 'done' mapping in org-gtd-keyword-mapping" errors))
+    (unless canceled-kw
+      (push "Missing 'canceled' mapping in org-gtd-keyword-mapping" errors))
+
+    (when (and todo-kw next-kw wait-kw done-kw canceled-kw)
+      (let ((gtd-keywords (list todo-kw next-kw wait-kw done-kw canceled-kw))
+            (found-sequence nil))
+
+        ;; Check that all keywords exist somewhere in org-todo-keywords
+        ;; Use org-gtd--extract-keyword-name to handle DSL syntax like "NEXT(n/@)"
+        (let ((all-keywords (mapcar #'org-gtd--extract-keyword-name
+                                    (if (listp (car org-todo-keywords))
+                                        ;; Extract keywords from sequences, removing "|" separators
+                                        (cl-remove-if (lambda (kw) (string-match-p "^|" kw))
+                                                      (apply #'append (mapcar #'cdr org-todo-keywords)))
+                                      ;; Simple list format
+                                      org-todo-keywords))))
+          (dolist (keyword gtd-keywords)
+            (unless (member keyword all-keywords)
+              (push (format "GTD keyword '%s' not found in org-todo-keywords" keyword) errors))))
+
+        ;; Check that all GTD keywords are in the same sequence
+        (when (not errors)  ; Only check sequences if all keywords exist
+          (catch 'found
+            (dolist (sequence all-sequences)
+              (let ((seq-keywords (mapcar #'org-gtd--extract-keyword-name
+                                          (cl-remove-if (lambda (kw) (string-match-p "^|" kw))
+                                                        (if (listp sequence) (cdr sequence) sequence)))))
+                (when (cl-every (lambda (kw) (member kw seq-keywords)) gtd-keywords)
+                  (setq found-sequence sequence)
+                  (throw 'found t))))
+
+            ;; If we get here, keywords are not all in the same sequence
+            (unless found-sequence
+              (push (format "All GTD keywords (%s) must be in the same sequence within org-todo-keywords"
+                            (string-join gtd-keywords ", "))
+                    errors))))))
+
+    ;; Only set the value if validation passed
+    (if errors
+        (user-error "Org-gtd keyword configuration errors:\n%s\n\nExample valid configuration:\n(setq org-todo-keywords '((sequence \"TODO\" \"NEXT\" \"WAIT\" \"|\" \"DONE\" \"CNCL\")))\n(setopt org-gtd-keyword-mapping\n        '((todo . \"TODO\") (next . \"NEXT\") (wait . \"WAIT\") (done . \"DONE\") (canceled . \"CNCL\")))"
+                    (string-join (reverse errors) "\n"))
+      (set-default symbol value))))
+
+
+
+
+;;;###autoload
+(defun org-gtd-setup-keywords-wizard ()
+  "Configure GTD keyword mapping interactively.
+Walks you through mapping your org TODO keywords to GTD concepts
+like TODO, NEXT, WAIT, and CANCELED."
+  (interactive)
+  (let ((available-keywords org-todo-keywords-1))
+    (unless available-keywords
+      (user-error "No TODO keywords found. Please configure `org-todo-keywords' first"))
+
+    (message "Setting up org-gtd keyword mapping...")
+    (message "Available TODO keywords: %s" (string-join available-keywords " "))
+
+    (let ((todo-kw (completing-read "Keyword for 'TODO' (not ready to act): "
+                                    available-keywords nil t "TODO"))
+          (next-kw (completing-read "Keyword for 'NEXT' (ready to act): "
+                                    available-keywords nil t "NEXT"))
+          (wait-kw (completing-read "Keyword for 'WAIT' (blocked/delegated): "
+                                    available-keywords nil t "WAIT"))
+          (canceled-kw (completing-read "Keyword for 'CANCELED': "
+                                        available-keywords nil t "CNCL")))
+      (customize-save-variable
+       'org-gtd-keyword-mapping
+       `((todo . ,todo-kw)
+         (next . ,next-kw)
+         (wait . ,wait-kw)
+         (canceled . ,canceled-kw)))
+
+      (message "org-gtd keyword configuration complete!"))))
+
+(defcustom org-gtd-keyword-mapping
+  '((todo . "TODO")
+    (next . "NEXT")
+    (wait . "WAIT")
+    (done . "DONE")
+    (canceled . "CNCL"))
+  "Mapping of GTD semantic states to `org-todo-keywords'.
+
+Each entry maps a GTD semantic state to a keyword from your todo keywords:
+- \\='todo\\=' - tasks not ready to be acted upon
+- \\='next\\=' - tasks ready to be acted upon immediately
+- \\='wait\\=' - tasks waiting for someone else or blocked
+- \\='done\\=' - tasks successfully completed
+- \\='canceled\\=' - tasks terminated and will not be completed
+
+This variable validates that:
+- All required mappings exist (todo, next, wait, done, canceled)
+- All mapped keywords exist in `org-todo-keywords'
+- All GTD keywords are in the same sequence within `org-todo-keywords'
+
+When setting programmatically, use `setopt' (Emacs 29+) or
+`customize-set-variable' to ensure validation runs. To set manually
+without validation, use `setq' but ensure the mapping is valid."
+  :type '(alist :key-type (choice (const todo)
+                                  (const next)
+                                  (const wait)
+                                  (const done)
+                                  (const canceled))
+                :value-type string)
+  :set #'org-gtd--validate-and-set-keyword-mapping
+  :group 'org-gtd
+  :package-version '(org-gtd . "4.0"))
+
+;; Backward compatibility - mark old variables as obsolete
+(defcustom org-gtd-todo-keyword nil
+  "OBSOLETE: Use `org-gtd-keyword-mapping' instead."
+  :type '(choice (const nil) string)
+  :group 'org-gtd
+  :package-version '(org-gtd . "4.0"))
+(make-obsolete-variable 'org-gtd-todo-keyword 'org-gtd-keyword-mapping "4.0")
+
+(defcustom org-gtd-next-keyword nil
+  "OBSOLETE: Use `org-gtd-keyword-mapping' instead."
+  :type '(choice (const nil) string)
+  :group 'org-gtd
+  :package-version '(org-gtd . "4.0"))
+(make-obsolete-variable 'org-gtd-next-keyword 'org-gtd-keyword-mapping "4.0")
+
+(defcustom org-gtd-wait-keyword nil
+  "OBSOLETE: Use `org-gtd-keyword-mapping' instead."
+  :type '(choice (const nil) string)
+  :group 'org-gtd
+  :package-version '(org-gtd . "4.0"))
+(make-obsolete-variable 'org-gtd-wait-keyword 'org-gtd-keyword-mapping "4.0")
+
+(defcustom org-gtd-canceled-keyword nil
+  "OBSOLETE: Use `org-gtd-keyword-mapping' instead."
+  :type '(choice (const nil) string)
+  :group 'org-gtd
+  :package-version '(org-gtd . "4.0"))
+(make-obsolete-variable 'org-gtd-canceled-keyword 'org-gtd-keyword-mapping "4.0")
+
 ;;;; Variables
 
 (defvar-local org-gtd--loading-p nil
@@ -397,10 +401,10 @@ This property also controls the prefix displayed in agenda views.")
 
 ;;;###autoload
 (defmacro with-org-gtd-context (&rest body)
-  "DEPRECATED: No-op in org-gtd v4.
+  "DEPRECATED: No-op in org-gtd v4.  Execute BODY without context setup.
 
-In v4, configure org-mode directly instead:
-- Add `org-gtd-directory' to `org-agenda-files'
+In v4, configure Org directly instead:
+- Add `org-gtd-directory' to your agenda files
 - Configure `org-archive-location' as needed
 
 This macro is a no-op and will be removed in a future version."
@@ -508,7 +512,7 @@ If BUFFER is nil, use current buffer."
  'user-error)
 
 (defun org-gtd-core--agenda-files ()
-  "Concatenate `org-agenda-files' variable with `org-gtd-directory' contents."
+  "Concatenate agenda files variable with `org-gtd-directory' contents."
   (seq-uniq (if (stringp org-agenda-files)
                 (append (org-read-agenda-file-list)
                         (ensure-list org-gtd-directory))
@@ -516,6 +520,7 @@ If BUFFER is nil, use current buffer."
                       (ensure-list org-gtd-directory)))))
 
 (defun org-gtd-core--uniq (list)
+  "Remove duplicates from LIST."
   (seq-uniq list))
 
 ;;;;; Note: Using native org-mode multivalued property functions

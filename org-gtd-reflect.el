@@ -103,8 +103,7 @@ mostly of value for testing purposes."
   "GTD view specifications for reflecting on missed items.")
 
 (defun org-gtd-reflect-missed-items (&optional _start-date)
-  "Agenda view with all tickler, delegated, or calendar items whose dates
-are in the past.
+  "Show agenda view with past-due tickler, delegated, or calendar items.
 
 You can pass an optional START-DATE to tell the code what to use as the first
 day for the agenda.  It is mostly of value for testing purposes."
@@ -185,8 +184,8 @@ This view shows all items with done TODO states that were closed within
 the specified time period. Useful for weekly reviews to see what was
 accomplished.
 
-With a numeric prefix argument (e.g., C-u 14), shows items completed
-in that many days."
+With a numeric prefix argument (e.g., \\[universal-argument] 14), shows items
+completed in that many days."
   (interactive "P")
   (let ((days (or (and days-back (prefix-numeric-value days-back)) 7)))
     (org-gtd-view-show

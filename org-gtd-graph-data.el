@@ -30,7 +30,7 @@
 ;;;; Requirements
 
 (require 'cl-lib)
-(require 'org-gtd-projects)
+(require 'org-gtd-dependencies)
 (require 'org-gtd-id)
 
 ;;;; Data Structures
@@ -122,7 +122,7 @@ extracted from the project's task tree and dependency relationships."
             project-scheduled (org-entry-get (point) "SCHEDULED")
             project-deadline (org-entry-get (point) "DEADLINE")
             first-task-ids (org-entry-get-multivalued-property (point) "ORG_GTD_FIRST_TASKS")
-            task-markers (org-gtd-projects--collect-tasks-by-graph project-marker)))
+            task-markers (org-gtd-dependencies-collect-project-tasks project-marker)))
 
     ;; Convert markers to task plists
     (dolist (marker task-markers)
@@ -198,6 +198,10 @@ extracted from the project's task tree and dependency relationships."
 
     ;; Deduplicate edges (BLOCKS and DEPENDS_ON create the same edge)
     (org-gtd-graph-data--deduplicate-edges graph)
+
+    ;; Filter out edges to/from nodes not in this project
+    ;; (multi-project tasks may have dependencies on external tasks)
+    (org-gtd-graph-data--filter-invalid-edges graph)
 
     graph))
 
@@ -300,6 +304,25 @@ Keeps the first occurrence of each unique edge."
 
     ;; Reverse to preserve original order
     (setf (org-gtd-graph-edges graph) (nreverse unique-edges))))
+
+(defun org-gtd-graph-data--filter-invalid-edges (graph)
+  "Remove edges from GRAPH that reference non-existent nodes.
+This can happen with multi-project tasks that have dependencies
+on tasks in other projects."
+  (let ((nodes (org-gtd-graph-nodes graph))
+        (edges (org-gtd-graph-edges graph))
+        (valid-edges nil))
+
+    (dolist (edge edges)
+      (let ((from-id (org-gtd-graph-edge-from-id edge))
+            (to-id (org-gtd-graph-edge-to-id edge)))
+        ;; Only keep edges where both endpoints exist in the graph
+        (when (and (gethash from-id nodes)
+                   (gethash to-id nodes))
+          (push edge valid-edges))))
+
+    ;; Reverse to preserve original order
+    (setf (org-gtd-graph-edges graph) (nreverse valid-edges))))
 
 (defun org-gtd-graph-data--calculate-roots (graph)
   "Calculate and set root task IDs for GRAPH.

@@ -120,7 +120,7 @@ Prefers non-project parents over the project heading."
   "Get sibling nodes that share at least one blocker with current node.
 Returns list of node IDs in traversal order, excluding current node."
   (when-let* ((current-blockers (org-gtd-graph-nav--get-current-blockers))
-              ((not (null current-blockers))))
+              (current-blockers))
     (let ((current-id org-gtd-graph-ui--selected-node-id)
           (current-blocker-set (make-hash-table :test 'equal))
           (siblings '()))

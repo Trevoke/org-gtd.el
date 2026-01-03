@@ -80,16 +80,14 @@ REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
             (org-gtd-project-incubate (point-marker) review-date)))
 
          ;; Case 2: On project task - tickler the project(s)
-         ;; For now, just tickler the first project (multi-project selection added later)
+         ;; If task belongs to multiple projects, prompt user to choose
          (is-project-task
           (require 'org-gtd-projects)
-          (let* ((project-id (car project-ids))
-                 (project-marker (org-id-find project-id t))
+          (let* ((project-marker (org-gtd-project--get-marker-at-point
+                                  "Which project to incubate? "))
                  (review-date (or reminder-date
                                   (org-read-date nil nil nil "Review date: "))))
-            (if project-marker
-                (org-gtd-project-incubate project-marker review-date)
-              (user-error "Cannot find project with ID: %s" project-id))))
+            (org-gtd-project-incubate project-marker review-date)))
 
          ;; Case 3: Single item - use existing logic
          (t

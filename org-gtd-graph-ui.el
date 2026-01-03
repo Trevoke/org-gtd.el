@@ -59,7 +59,7 @@
 ;;;; Window Management
 
 (defun org-gtd-graph-ui-setup-windows (graph-buffer)
-  "Setup split-window layout for GRAPH-BUFFER.
+  "Setup window layout for GRAPH-BUFFER.
 Creates side window for task details panel.
 Returns (graph-window . details-window) cons cell."
   (let* ((graph-window (get-buffer-window graph-buffer))
@@ -101,7 +101,7 @@ Returns (graph-window . details-window) or nil if not in split layout."
         (cons graph-window details-window)))))
 
 (defun org-gtd-graph-ui-cleanup-windows ()
-  "Clean up the split-window layout.
+  "Clean up the window layout.
 Closes details window and restores single-window state."
   (when org-gtd-graph-ui--details-buffer
     (let ((details-window (get-buffer-window org-gtd-graph-ui--details-buffer)))

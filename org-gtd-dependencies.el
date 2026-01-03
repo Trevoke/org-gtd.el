@@ -160,7 +160,8 @@ Returns nil if no path exists."
 
 (defun org-gtd-dependencies--dfs-find-path (current-id target-id visited)
   "Depth-first search to find path from CURRENT-ID to TARGET-ID.
-Returns path as list of IDs, or nil if no path exists."
+Uses VISITED hash table to avoid cycles.  Returns path as list of IDs,
+or nil if no path exists."
   (if (gethash current-id visited)
       nil
     (puthash current-id t visited)
@@ -175,6 +176,62 @@ Returns path as list of IDs, or nil if no path exists."
                 (throw 'found (cons current-id sub-path)))))
           nil)))))
 
+
+;;;; Project Task Collection
+
+(defun org-gtd-dependencies-collect-project-tasks (project-marker)
+  "Collect all project tasks by traversing the dependency graph.
+
+Starting from the project heading at PROJECT-MARKER, reads
+ORG_GTD_FIRST_TASKS property to find root task IDs, then traverses
+the graph by following ORG_GTD_BLOCKS/ORG_GTD_DEPENDS_ON
+relationships using `org-id-find'.
+
+Only includes tasks that have the current project's ID in their
+ORG_GTD_PROJECT_IDS property, respecting project boundaries.
+
+Returns list of task markers in breadth-first order."
+  (org-with-point-at project-marker
+    (let* ((project-id (org-entry-get (point) "ID"))
+           (first-tasks-str (org-entry-get (point) "ORG_GTD_FIRST_TASKS"))
+           (first-task-ids (when first-tasks-str (split-string first-tasks-str)))
+           (queue '())
+           (visited-ids (make-hash-table :test 'equal))
+           (result-tasks '()))
+
+      ;; Initialize queue with first tasks
+      (dolist (task-id first-task-ids)
+        (push task-id queue))
+      (setq queue (nreverse queue))
+
+      ;; Breadth-first traversal
+      (while queue
+        (let* ((current-id (pop queue))
+               ;; Try org-id-find first, fall back to searching current buffer
+               (task-location (or (org-id-find current-id t)
+                                  (save-excursion
+                                    (goto-char (point-min))
+                                    (when-let ((pos (org-find-entry-with-id current-id)))
+                                      (goto-char pos)
+                                      (point-marker))))))
+
+          (when (and task-location (not (gethash current-id visited-ids)))
+            (puthash current-id t visited-ids)
+
+            ;; Include task if it has current project ID in ORG_GTD_PROJECT_IDS
+            (org-with-point-at task-location
+              (let ((task-project-ids (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids)))
+                (when (member project-id task-project-ids)
+                  (push task-location result-tasks)
+
+                  ;; Find tasks this one blocks (children in the graph)
+                  (let ((blocks-list (org-entry-get-multivalued-property (point) "ORG_GTD_BLOCKS")))
+                    (dolist (blocked-id blocks-list)
+                      (unless (gethash blocked-id visited-ids)
+                        (setq queue (append queue (list blocked-id))))))))))))
+
+      ;; Return in breadth-first order
+      (nreverse result-tasks))))
 
 ;;;; Footer
 

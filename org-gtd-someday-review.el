@@ -32,6 +32,12 @@
 (require 'org-gtd-reactivate)
 (require 'org-gtd-someday)
 
+;;;; External Function Declarations
+
+;; Evil functions (only called inside with-eval-after-load 'evil)
+(declare-function evil-set-initial-state "evil-core")
+(declare-function evil-emacs-state "evil-states")
+
 ;;;; Variables
 
 (defvar org-gtd-someday-review--session-active nil
@@ -114,7 +120,7 @@ LIST-FILTER is nil (match all), a string (match exact), or `unassigned'."
    (t nil)))
 
 (defun org-gtd-someday-review--add-reviewed-entry ()
-  "Add a 'Reviewed' entry to the LOGBOOK drawer at point."
+  "Add a \\='Reviewed\\=' entry to the LOGBOOK drawer at point."
   (save-excursion
     (org-back-to-heading t)
     (let* ((drawer-pos (org-log-beginning t))
@@ -127,7 +133,7 @@ LIST-FILTER is nil (match all), a string (match exact), or `unassigned'."
         (save-excursion
           (insert ":END:\n")))
       (insert (format "- Reviewed %s\n"
-                      (format-time-string "[%Y-%m-%d %a %H:%M]"))))))
+                      (format-time-string "[%F %a %R]"))))))
 
 (defun org-gtd-someday-review--advance ()
   "Advance to the next item or end session if done."
@@ -159,6 +165,20 @@ with keybindings for defer, clarify, and quit actions.
   ;; Note: buffer is made read-only in display function, not here
   )
 
+;;;; Evil-mode Integration
+
+;; When evil-mode is loaded, start someday-review-mode in emacs state.
+;; This mode is for read-only review with simple keybindings (d/c/q),
+;; so emacs state provides better UX than normal state.
+;;
+;; We use both evil-set-initial-state AND a mode hook for robustness:
+;; - evil-set-initial-state: handles new buffers entering this mode
+;; - mode hook: forces emacs state even if evil-collection or user config
+;;   has set a different state for org-mode (our parent)
+(with-eval-after-load 'evil
+  (evil-set-initial-state 'org-gtd-someday-review-mode 'emacs)
+  (add-hook 'org-gtd-someday-review-mode-hook #'evil-emacs-state))
+
 ;;;; Entry Point
 
 ;;;###autoload
@@ -166,7 +186,7 @@ with keybindings for defer, clarify, and quit actions.
   "Review someday/maybe items one at a time.
 With optional LIST argument, review only items in that list.
 When `org-gtd-someday-lists' is configured, prompts for list selection.
-Adds 'Unassigned' option for items without a list."
+Adds \\='Unassigned\\=' option for items without a list."
   (interactive
    (list (when org-gtd-someday-lists
            (completing-read "Review which list? "

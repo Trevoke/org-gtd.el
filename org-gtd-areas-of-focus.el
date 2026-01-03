@@ -94,32 +94,8 @@
   "Set area of focus on all tasks in the project containing the task at point.
 If the task belongs to multiple projects, prompt user to choose which project."
   (require 'org-gtd-projects)
-  ;; Get project IDs for this task
-  (let* ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS"))
-         (project-id (cond
-                      ;; No projects - shouldn't happen if caller checked properly
-                      ((null project-ids)
-                       (error "Task has no project IDs"))
-                      ;; Single project - use it
-                      ((= (length project-ids) 1)
-                       (car project-ids))
-                      ;; Multiple projects - prompt user
-                      (t
-                       (let* ((project-names
-                               (mapcar (lambda (id)
-                                         (org-with-point-at (org-id-find id t)
-                                           (cons (org-get-heading t t t t) id)))
-                                       project-ids))
-                              (chosen-name (completing-read
-                                            "Which project? "
-                                            (mapcar #'car project-names)
-                                            nil t)))
-                         (cdr (assoc chosen-name project-names))))))
-         ;; Get marker for the project
-         (project-marker (org-id-find project-id t))
-         ;; Get all tasks in this project
-         (task-markers (org-gtd-projects--collect-tasks-by-graph project-marker))
-         ;; Prompt for area of focus
+  (let* ((project-marker (org-gtd-project--get-marker-at-point))
+         (task-markers (org-gtd-dependencies-collect-project-tasks project-marker))
          (chosen-area (completing-read
                        "Which area of focus does this project belong to? "
                        org-gtd-areas-of-focus

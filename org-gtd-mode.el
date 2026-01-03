@@ -147,7 +147,7 @@ configuration."
 Programmatic wrapper to add org-gtd context to any FUN using `defadvice'.
 Argument R is there to be passed through.
 
-v4: Now a simple pass-through since users configure org-agenda-files directly."
+v4: Now a simple pass-through since users configure agenda files directly."
   (apply fun r))
 
 ;;;;; CLOSED Timestamp Hook

@@ -192,6 +192,37 @@
    (assert-raises 'user-error
      (org-gtd-reactivate))))
 
+(deftest reactivate/works-from-agenda-context ()
+  "Reactivates a someday item when called from agenda view."
+  ;; Create org buffer with someday item
+  (with-temp-buffer
+    (org-mode)
+    (insert "* Someday item from agenda
+:PROPERTIES:
+:ID: agenda-reactivate-id
+:ORG_GTD: Someday
+:PREVIOUS_ORG_GTD: Actions
+:PREVIOUS_TODO: TODO
+:END:")
+    (org-back-to-heading t)
+    (let ((org-marker (point-marker)))
+
+      ;; Create mock agenda buffer and call reactivate
+      (with-temp-buffer
+        (org-agenda-mode)
+        (insert "  agenda:  Someday item from agenda")
+        (put-text-property (point-min) (point-max) 'org-marker org-marker)
+        (goto-char (point-min))
+
+        ;; Call reactivate from agenda context
+        (let ((org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL"))))
+          (org-gtd-reactivate)))
+
+      ;; Verify reactivated - still inside the org buffer
+      (goto-char org-marker)
+      (assert-equal "Actions" (org-entry-get (point) "ORG_GTD"))
+      (assert-equal "TODO" (org-entry-get (point) "TODO")))))
+
 ;;; Integration tests: someday/tickler cycles
 
 (deftest integration/preserves-delegated-state-through-someday-cycle ()
