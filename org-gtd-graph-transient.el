@@ -46,6 +46,7 @@
   "Toggle sticky mode for graph transient menu."
   :class 'transient-lisp-variable
   :variable 'org-gtd-graph-transient-sticky
+  :reader (lambda (&rest _) (not org-gtd-graph-transient-sticky))
   :description (lambda () (if org-gtd-graph-transient-sticky
                               "[X] Sticky mode"
                             "[ ] Sticky mode"))
@@ -59,10 +60,15 @@ Call this at the end of sub-transient apply functions."
 
 (defun org-gtd-graph-transient--do-sticky ()
   "Pre-command that stays in transient if sticky mode is enabled.
-Returns `transient--stay' when sticky mode is on, `transient--exit' otherwise.
+Returns `transient--stay' when sticky mode is on, exits properly otherwise.
 Named with \"--do-\" so transient.el recognizes it as a pre-command function."
   (if org-gtd-graph-transient-sticky
       transient--stay
+    ;; Must call cleanup functions like transient--do-exit does
+    ;; (only when actually in a transient context)
+    (when transient--prefix
+      (transient--export)
+      (transient--stack-zap))
     transient--exit))
 
 ;;;; Main Transient Menu
