@@ -379,12 +379,13 @@ Safe to run multiple times."
      'agenda)))
 
 (defun org-gtd-upgrade--set-project-ids-on-tasks (project-marker)
-  "Set ORG_GTD_PROJECT_IDS and TRIGGER on tasks under PROJECT-MARKER.
+  "Set ORG_GTD_PROJECT_IDS, ORG_GTD_PROJECT, and TRIGGER on tasks under PROJECT-MARKER.
 Safe to run multiple times - only adds ID if not already present.
 Sets TRIGGER to org-gtd-update-project-after-task-done! on all."
   (org-with-point-at project-marker
     (let ((project-id (or (org-entry-get (point) "ID")
-                          (org-gtd-id-get-create))))
+                          (org-gtd-id-get-create)))
+          (project-name (org-get-heading t t t t)))
       ;; Process all descendants under the project heading
       (org-map-entries
        (lambda ()
@@ -393,6 +394,10 @@ Sets TRIGGER to org-gtd-update-project-after-task-done! on all."
            (let ((existing-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
              (unless (member project-id existing-ids)
                (org-entry-add-to-multivalued-property (point) "ORG_GTD_PROJECT_IDS" project-id)))
+           ;; Add ORG_GTD_PROJECT (project name cache) - only if not already set
+           ;; to preserve first project for multi-project tasks
+           (unless (org-entry-get (point) "ORG_GTD_PROJECT")
+             (org-entry-put (point) "ORG_GTD_PROJECT" project-name))
            ;; Add TRIGGER property to task (self finder + action for org-edna)
            (org-entry-put (point) "TRIGGER" "self org-gtd-update-project-after-task-done!")))
        nil

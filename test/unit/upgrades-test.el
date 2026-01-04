@@ -589,6 +589,70 @@ Content here.
       (assert-true project-ids)
       (assert-true (member "proj-docs-456" project-ids)))))
 
+(deftest upgrade-v3-to-v4/adds-project-name-to-all-tasks ()
+  "Adds ORG_GTD_PROJECT property (project name cache) to all project tasks."
+  (with-current-buffer (org-gtd--default-file)
+    (insert "
+* Projects
+:PROPERTIES:
+:ORG_GTD: Projects
+:END:
+** Build a webapp
+:PROPERTIES:
+:ID: proj-webapp-123
+:END:
+*** TODO Design database
+:PROPERTIES:
+:ID: task-1
+:END:
+*** TODO Implement API
+:PROPERTIES:
+:ID: task-2
+:END:
+**** TODO Create endpoint
+:PROPERTIES:
+:ID: task-3
+:END:
+** Write documentation
+:PROPERTIES:
+:ID: proj-docs-456
+:END:
+*** TODO Create user manual
+:PROPERTIES:
+:ID: task-4
+:END:
+")
+    (basic-save-buffer))
+
+  ;; Run full migration
+  (with-stub yes-or-no-p t
+    (org-gtd-upgrade-v3-to-v4))
+
+  ;; Verify all tasks have ORG_GTD_PROJECT set to their project's name
+  (with-current-buffer (org-gtd--default-file)
+    ;; Check first project's tasks
+    (goto-char (point-min))
+    (search-forward "Design database")
+    (org-back-to-heading t)
+    (assert-equal "Build a webapp" (org-entry-get (point) "ORG_GTD_PROJECT"))
+
+    (goto-char (point-min))
+    (search-forward "Implement API")
+    (org-back-to-heading t)
+    (assert-equal "Build a webapp" (org-entry-get (point) "ORG_GTD_PROJECT"))
+
+    ;; Check nested task
+    (goto-char (point-min))
+    (search-forward "Create endpoint")
+    (org-back-to-heading t)
+    (assert-equal "Build a webapp" (org-entry-get (point) "ORG_GTD_PROJECT"))
+
+    ;; Check second project's task
+    (goto-char (point-min))
+    (search-forward "Create user manual")
+    (org-back-to-heading t)
+    (assert-equal "Write documentation" (org-entry-get (point) "ORG_GTD_PROJECT"))))
+
 (deftest upgrade-v3-to-v4/adds-trigger-to-all-tasks ()
   "Adds TRIGGER property to all project tasks."
   (with-current-buffer (org-gtd--default-file)
