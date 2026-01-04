@@ -18,7 +18,7 @@
 ;; When e-unit is on MELPA, replace with: (eldev-add-extra-dependencies 'test 'e-unit)
 ;; :setup disables info file processing (avoids install-info requirement)
 (eldev-use-vc-repository 'e-unit :git "https://codeberg.org/Trevoke/e-unit.el.git"
-                         :rev "0.14.0"
+                         :rev "0.15.0"
                          :setup '(setq eldev-info-sources nil))
 (eldev-add-extra-dependencies 'test 'e-unit)
 
@@ -40,22 +40,15 @@
 (defvar org-gtd-etest-stop-on-failure nil
   "Whether to stop on first failure.")
 
-(defun org-gtd-etest--find-test-dirs (root-dir)
-  "Recursively find directories containing *-test.el files under ROOT-DIR."
-  (let ((dirs '()))
-    (dolist (file (directory-files-recursively root-dir ".*-test\\.el$"))
-      (let ((dir (file-name-directory file)))
-        (unless (member dir dirs)
-          (push dir dirs))))
-    (nreverse dirs)))
-
 (eldev-defcommand org-gtd-etest (&rest _parameters)
   "Run e-unit tests.
 
 E-unit tests are in the test/ directory with subdirectories:
   - test/unit/       Unit tests
   - test/integration/ Integration tests
-  - test/acceptance/  Acceptance tests"
+  - test/acceptance/  Acceptance tests
+
+E-unit now searches recursively, so we just point it at the root test directory."
   :aliases    (etest)
   :category   testing
 
@@ -78,42 +71,23 @@ E-unit tests are in the test/ directory with subdirectories:
     (if (not (file-directory-p root-dir))
         (message "No test directory found (%s). Create it and add *-test.el files to run e-unit tests." root-dir)
 
-      ;; Find all directories with test files
-      (let ((test-dirs (org-gtd-etest--find-test-dirs root-dir))
-            (all-results '()))
+      ;; Run all tests recursively from root directory
+      (let ((results (e-unit-run-directory root-dir)))
 
-        (if (null test-dirs)
-            (message "No e-unit tests found in %s" root-dir)
+        (if (null results)
+            (message "No e-unit tests executed")
 
-          ;; Run tests in each directory
-          (dolist (test-dir test-dirs)
-            (message "\n=== Running tests in %s ===" test-dir)
-            (let ((results (e-unit-run-directory test-dir)))
-              (when results
-                (setq all-results (append all-results results)))))
+          (let* ((total (length results))
+                 (passed (length (cl-remove-if-not
+                                  (lambda (r) (eq (plist-get r :status) 'pass))
+                                  results)))
+                 (failed (length (cl-remove-if-not
+                                  (lambda (r) (memq (plist-get r :status) '(fail error)))
+                                  results))))
 
-          (if (null all-results)
-              (message "No e-unit tests executed")
-            (let* ((total (length all-results))
-                   (passed (length (cl-remove-if-not
-                                    (lambda (r) (eq (plist-get r :status) 'pass))
-                                    all-results)))
-                   (failed (length (cl-remove-if-not
-                                    (lambda (r) (memq (plist-get r :status) '(fail error)))
-                                    all-results))))
-
-              ;; Print summary
-              (message "\n%d/%d e-unit tests passed" passed total)
-
-              ;; Update Eldev counters
-              (setq eldev-test-num-passed passed)
-              (setq eldev-test-num-failed failed)
-
-              ;; Fail if tests failed
-              (when (> failed 0)
-                (signal 'eldev-error
-                        `(:hint "Run with -v for verbose output"
-                                "%d e-unit test(s) failed" ,failed))))))))))
+            ;; Update Eldev counters - this sets the exit code
+            (setq eldev-test-num-passed passed)
+            (setq eldev-test-num-failed failed)))))))
 
 ;; Define options for etest command
 ;; Note: command name is gtd-etest (eldev strips "org-" prefix)
