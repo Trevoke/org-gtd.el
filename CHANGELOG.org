@@ -1,4 +1,4 @@
-* 4.0.1 (unreleased)
+* 4.0.1 - 2026-01-04
 
 ** Fixed
 *** v3→v4 upgrade now sets ORG_GTD_PROJECT on project tasks
