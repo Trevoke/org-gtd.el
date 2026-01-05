@@ -374,6 +374,8 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
     (with-current-buffer buffer
       (org-gtd-graph-view-mode)
       (setq org-gtd-graph-view--project-marker project-marker)
+      (setq org-gtd-graph-view--graph
+            (org-gtd-graph-data--extract-from-project project-marker))
       (setq org-gtd-graph-ui--selected-node-id task-id)
       (cl-letf (((symbol-function 'yes-or-no-p) (lambda (_) t))
                 ((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
@@ -407,6 +409,8 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
     (with-current-buffer buffer
       (org-gtd-graph-view-mode)
       (setq org-gtd-graph-view--project-marker project-marker)
+      (setq org-gtd-graph-view--graph
+            (org-gtd-graph-data--extract-from-project project-marker))
       (setq org-gtd-graph-ui--selected-node-id task-id)
       (cl-letf (((symbol-function 'yes-or-no-p) (lambda (_) nil))
                 ((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
@@ -419,6 +423,82 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
       (org-back-to-heading t)
       (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
         (assert-true (member project-id project-ids))))))
+
+(deftest graph-transient/remove-task-selects-nearby-node ()
+  "After removing a task, a nearby node (predecessor or project) is selected.
+This prevents the graph view from having a stale selected-node-id."
+  (let* ((project-marker (ogt-graph-transient-test--create-project "Select After Remove"))
+         (buffer (get-buffer-create "*Org GTD Graph: select-after-remove*"))
+         task-1-id task-2-id project-id)
+
+    ;; Get task 1 ID and project ID
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Task 1")
+      (org-back-to-heading t)
+      (setq task-1-id (org-entry-get (point) "ID"))
+      (org-with-point-at project-marker
+        (setq project-id (org-entry-get (point) "ID")))
+
+      ;; Add a second task that depends on task 1
+      (org-end-of-subtree t t)
+      (insert "** TODO Task 2\n")
+      (forward-line -1)
+      (org-back-to-heading t)
+      (setq task-2-id (org-id-get-create))
+      (org-entry-put (point) "ORG_GTD" "Actions")
+      (org-gtd-add-to-multivalued-property task-2-id org-gtd-prop-project-ids project-id)
+      ;; Task 2 depends on Task 1 (Task 1 blocks Task 2)
+      (org-gtd-dependencies-create task-1-id task-2-id)
+      (basic-save-buffer))
+
+    ;; Set up graph view with Task 2 selected
+    (with-current-buffer buffer
+      (org-gtd-graph-view-mode)
+      (setq org-gtd-graph-view--project-marker project-marker)
+      ;; Extract graph so predecessors/successors can be computed
+      (setq org-gtd-graph-view--graph
+            (org-gtd-graph-data--extract-from-project project-marker))
+      (setq org-gtd-graph-ui--selected-node-id task-2-id)
+
+      ;; Remove Task 2 (which has Task 1 as predecessor)
+      (cl-letf (((symbol-function 'yes-or-no-p) (lambda (_) t))
+                ((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
+        (org-gtd-graph-remove-task))
+
+      ;; Verify selected node is now Task 1 (the predecessor)
+      (assert-equal task-1-id org-gtd-graph-ui--selected-node-id))))
+
+(deftest graph-transient/remove-task-selects-project-when-no-nearby-tasks ()
+  "When removing the only task, the project node is selected."
+  (let* ((project-marker (ogt-graph-transient-test--create-project "Select Project After Remove"))
+         (buffer (get-buffer-create "*Org GTD Graph: select-project*"))
+         task-id project-id)
+
+    ;; Get task and project IDs
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (search-forward "Task 1")
+      (org-back-to-heading t)
+      (setq task-id (org-entry-get (point) "ID"))
+      (org-with-point-at project-marker
+        (setq project-id (org-entry-get (point) "ID"))))
+
+    ;; Set up graph view
+    (with-current-buffer buffer
+      (org-gtd-graph-view-mode)
+      (setq org-gtd-graph-view--project-marker project-marker)
+      (setq org-gtd-graph-view--graph
+            (org-gtd-graph-data--extract-from-project project-marker))
+      (setq org-gtd-graph-ui--selected-node-id task-id)
+
+      ;; Remove the only task
+      (cl-letf (((symbol-function 'yes-or-no-p) (lambda (_) t))
+                ((symbol-function 'org-gtd-graph-view-refresh) (lambda () nil)))
+        (org-gtd-graph-remove-task))
+
+      ;; Verify selected node is now the project
+      (assert-equal project-id org-gtd-graph-ui--selected-node-id))))
 
 ;;; org-gtd-graph-trash-task Tests
 

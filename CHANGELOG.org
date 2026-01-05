@@ -1,3 +1,11 @@
+* 4.0.3 - 2026-01-04
+
+** Fixed
+*** Graph view selects nearby node after task removal
+When removing a task from a project graph (`t r`), the selected node now
+updates to a nearby task (predecessor, successor, or project) instead of
+leaving a stale reference to the removed task.
+
 * 4.0.2 - 2026-01-04
 
 ** Fixed

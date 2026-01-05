@@ -803,19 +803,30 @@ Prompts for confirmation before removing."
 
 (defun org-gtd-graph-remove-task-from-context (ctx)
   "Remove task from project using context CTX.
-Graph-view specific: refreshes view after removal."
+Graph-view specific: refreshes view after removal and selects nearby node."
   (require 'org-gtd-graph-view)
+  (require 'org-gtd-graph-data)
   (let ((task-id (org-gtd-context-task-id ctx))
         (project-id (org-gtd-context-project-id ctx))
         (project-marker (org-gtd-context-project-marker ctx)))
     (unless task-id
       (user-error "No task selected"))
-    (let ((task-title (when-let ((graph org-gtd-graph-view--graph)
-                                 (node (org-gtd-graph-data-get-node graph task-id)))
-                        (org-gtd-graph-node-title node))))
+    (let* ((graph org-gtd-graph-view--graph)
+           (task-title (when-let ((node (org-gtd-graph-data-get-node graph task-id)))
+                         (org-gtd-graph-node-title node)))
+           ;; Get nearby nodes before removal (excluding project node)
+           (predecessors (seq-remove (lambda (id) (string= id project-id))
+                                     (org-gtd-graph-data-get-predecessors graph task-id)))
+           (successors (seq-remove (lambda (id) (string= id project-id))
+                                   (org-gtd-graph-data-get-successors graph task-id))))
       (when (yes-or-no-p (format "Remove '%s' from this project? " task-title))
         (org-gtd-graph--remove-from-project task-id project-id)
         (message "Removed '%s' from project" task-title)
+        ;; Update selected node to a nearby node
+        (setq org-gtd-graph-ui--selected-node-id
+              (or (car predecessors)
+                  (car successors)
+                  project-id))
         ;; Refresh the graph view
         (org-gtd-projects-fix-todo-keywords project-marker)
         (when (derived-mode-p 'org-gtd-graph-view-mode)
