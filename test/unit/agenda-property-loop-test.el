@@ -142,6 +142,60 @@ Verifies that property lines have:
     (when (get-buffer "*Org Agenda*")
       (kill-buffer "*Org Agenda*"))))
 
+(deftest agenda-property/preserves-plain-text-property-values ()
+  "Property values without links are displayed unchanged.
+Plain text like 'John Doe' should not be garbled by link extraction."
+  (capture-inbox-item "Task with plain property")
+  (org-gtd-process-inbox)
+  (with-wip-buffer
+    (org-gtd-delegate "Alice Bob" "2025-12-01"))
+
+  ;; Get the marker for the delegated item
+  (let ((marker (with-current-buffer (org-gtd--default-file)
+                  (goto-char (point-min))
+                  (search-forward "Task with plain property")
+                  (org-back-to-heading t)
+                  (point-marker))))
+
+    ;; Test the create-string function directly
+    (let ((org-gtd-agenda-property-list '("DELEGATED_TO")))
+      (let ((result (org-gtd-agenda-property-create-string marker)))
+        ;; Should contain the plain text unchanged
+        (assert-match "Alice Bob" result)))))
+
+(deftest agenda-property/extracts-link-description-from-property ()
+  "Property values containing org links display link description only.
+When a property like DELEGATED_TO contains [[ebdb:uuid][John Doe]],
+the agenda should show 'John Doe', not the raw link syntax."
+  ;; Create a delegated item with an org link in DELEGATED_TO
+  (capture-inbox-item "Task with link property")
+  (org-gtd-process-inbox)
+  (with-wip-buffer
+    (org-gtd-delegate "placeholder" "2025-12-01"))
+
+  ;; Now update the property to contain a link (in the actual GTD file)
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "Task with link property")
+    (org-back-to-heading t)
+    (org-entry-put (point) "DELEGATED_TO" "[[ebdb:some-uuid][Jane Smith]]"))
+
+  ;; Get the marker for the delegated item
+  (let ((marker (with-current-buffer (org-gtd--default-file)
+                  (goto-char (point-min))
+                  (search-forward "Task with link property")
+                  (org-back-to-heading t)
+                  (point-marker))))
+
+    ;; Test the create-string function directly
+    (let ((org-gtd-agenda-property-list '("DELEGATED_TO")))
+      (let ((result (org-gtd-agenda-property-create-string marker)))
+        ;; Should show description, not raw link
+        (assert-match "Jane Smith" result)
+        ;; Should NOT contain link syntax
+        (assert-nil (string-match "\\[\\[ebdb:" result))
+        (assert-nil (string-match "some-uuid" result))))))
+
 (provide 'agenda-property-loop-test)
 
 ;;; agenda-property-loop-test.el ends here

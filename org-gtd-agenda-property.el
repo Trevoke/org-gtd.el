@@ -59,6 +59,10 @@
 
 (require 'org-agenda)
 
+(defun org-gtd-agenda-property--extract-link-description (text)
+  "Replace all `org-mode' links in TEXT with their descriptions."
+  (replace-regexp-in-string org-link-bracket-re "\\2" text))
+
 (defconst org-gtd-agenda-property-version "1.3.2"
   "Version string of the `org-gtd-agenda-property' package.")
 (defconst org-gtd-agenda-property-version-int 6
@@ -169,6 +173,7 @@ See: https://github.com/Malabarba/org-agenda-property/issues/6"
     (dolist (cur org-gtd-agenda-property-list)
       (let ((prop (org-entry-get marker cur 'selective)))
         (when prop
+          (setq prop (org-gtd-agenda-property--extract-link-description prop))
           (setq out (if first (concat out prop)
                       (concat out org-gtd-agenda-property-separator prop)))
           (setq first nil))))
