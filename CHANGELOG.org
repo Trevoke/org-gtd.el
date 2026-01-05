@@ -1,3 +1,12 @@
+* 4.0.4 - 2026-01-04
+
+** Fixed
+*** Agenda property display now extracts link descriptions
+Properties containing org links (e.g., EBDB links like ~[[ebdb:uuid][John Doe]]~)
+now display just the link description ("John Doe") instead of the raw link syntax.
+This improves readability when using linked contacts for DELEGATED_TO or similar
+properties.
+
 * 4.0.3 - 2026-01-04
 
 ** Fixed
