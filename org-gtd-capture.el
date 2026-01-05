@@ -40,12 +40,12 @@
 (defcustom org-gtd-capture-templates
   `(("i" "Inbox"
      entry (file ,#'org-gtd-inbox-path)
-     "* %?\n%U\n\n  %i"
+     "* %?\n\n\n  %i"
      :kill-buffer t
      :before-finalize org-gtd-capture--add-captured-at-timestamp)
     ("l" "Inbox with link"
      entry (file ,#'org-gtd-inbox-path)
-     "* %?\n%U\n\n  %i\n  %a"
+     "* %?\n\n\n  %i\n  %a"
      :kill-buffer t
      :before-finalize org-gtd-capture--add-captured-at-timestamp))
   "Capture templates to be used when adding something to the inbox.

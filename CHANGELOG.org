@@ -1,3 +1,12 @@
+* 4.0.5 - 2026-01-04
+
+** Fixed
+*** Removed redundant inactive timestamp from capture templates
+The default capture templates included ~%U~ which added an inactive timestamp
+to the body of captured items. This was redundant since the capture timestamp
+is already stored in the ~ORG_GTD_CAPTURED_AT~ property. The templates now
+only include the property.
+
 * 4.0.4 - 2026-01-04
 
 ** Fixed
