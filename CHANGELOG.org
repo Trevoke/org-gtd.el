@@ -1,3 +1,12 @@
+* 4.0.2 - 2026-01-04
+
+** Fixed
+*** Graph transient edge selection now uses proper transient architecture
+The graph transients (add/modify blockers/successors) now use a custom EIEIO
+prefix class to store edge selection state on the transient object itself,
+rather than using a global variable. This fixes edge selection state being
+lost when switching between transient buffers.
+
 * 4.0.1 - 2026-01-04
 
 ** Fixed

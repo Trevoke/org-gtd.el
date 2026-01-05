@@ -516,6 +516,30 @@ Unified command replacing insert-before and add-blocker."
     ;; So selected-task depends on new-task
     (assert-true (member new-task-id (org-gtd-get-task-dependencies selected-task-id)))))
 
+;;; Custom Transient Prefix Class Tests
+
+(deftest graph-transient/custom-prefix-class-exists ()
+  "Custom transient prefix class should exist with edge-selection slot.
+This verifies the proper transient architecture using EIEIO objects."
+  ;; Verify class exists
+  (assert-true (find-class 'org-gtd-graph-transient-prefix))
+
+  ;; Verify it inherits from transient-prefix
+  (assert-true (child-of-class-p 'org-gtd-graph-transient-prefix 'transient-prefix))
+
+  ;; Create an instance and verify edge-selection slot works
+  (let* ((edge-data (list (cons "task-1" t) (cons "task-2" nil)))
+         (obj (make-instance 'org-gtd-graph-transient-prefix
+                             :edge-selection edge-data
+                             :command 'test-command)))
+    ;; Verify slot access with oref
+    (assert-equal edge-data (oref obj edge-selection))
+
+    ;; Verify slot mutation with oset
+    (let ((new-data (list (cons "task-1" nil) (cons "task-2" t))))
+      (oset obj edge-selection new-data)
+      (assert-equal new-data (oref obj edge-selection)))))
+
 (provide 'graph-transient-test)
 
 ;;; graph-transient-test.el ends here
