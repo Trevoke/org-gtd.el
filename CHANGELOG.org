@@ -1,3 +1,13 @@
+* 4.0.6 - 2026-01-05
+
+** Fixed
+*** WIP buffer headings excluded from refile targets
+When users had ~(nil :maxlevel . N)~ in their ~org-refile-targets~ configuration
+(meaning "current buffer"), the WIP clarify buffer would be offered as a refile
+target. This caused "Cannot refile to position inside the tree or region" errors
+because org-refile cannot refile a heading to itself. The refile verify function
+now excludes files in the WIP temp directory.
+
 * 4.0.5 - 2026-01-04
 
 ** Fixed
