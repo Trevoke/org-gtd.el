@@ -84,6 +84,37 @@ Valid type symbols (same as `org-gtd-organize-type-member-p'):
 
 ;;;;; Helper
 
+(defun org-gtd-refile--wip-file-p (file)
+  "Return non-nil if FILE is in the WIP temp directory.
+WIP temp files are used during clarification and should never be
+valid refile targets."
+  (when file
+    (let ((wip-temp-dir (expand-file-name "org-gtd" temporary-file-directory)))
+      (string-prefix-p (file-name-as-directory wip-temp-dir)
+                       (expand-file-name file)))))
+
+(defun org-gtd-refile--make-verify-function (type)
+  "Create a verify function for refile targets of TYPE.
+Returns a function suitable for `org-refile-target-verify-function'.
+
+The function filters targets as follows:
+- WIP temp files: always rejected (prevents self-refile errors)
+- Files in `org-gtd-directory': must have matching ORG_GTD_REFILE property
+- Other files: accepted (allows user's custom refile targets)"
+  (lambda ()
+    (let* ((file (buffer-file-name))
+           (gtd-dir (expand-file-name org-gtd-directory))
+           (in-wip-dir (org-gtd-refile--wip-file-p file))
+           (in-gtd-dir (and file (string-prefix-p gtd-dir (expand-file-name file))))
+           (refile-prop (org-element-property :ORG_GTD_REFILE (org-element-at-point))))
+      (cond
+       ;; WIP temp files should never be refile targets
+       (in-wip-dir nil)
+       ;; Files in GTD dir must have matching ORG_GTD_REFILE property
+       (in-gtd-dir (string-equal type refile-prop))
+       ;; Other files (user's custom targets) are accepted
+       (t t)))))
+
 (defun org-gtd-refile--should-prompt-p (type)
   "Return non-nil if refiling TYPE should prompt for target selection.
 
@@ -110,18 +141,10 @@ REFILE-TARGET-ELEMENT is a string template for creating a new target if needed.
 Merges user's `org-refile-targets' with org-gtd's ORG_GTD_REFILE targets.
 User's targets appear first, then org-gtd's property-based targets.
 Files in `org-gtd-directory' are filtered by ORG_GTD_REFILE property;
-files outside are accepted without filtering."
+WIP temp files are always excluded; other files are accepted."
   (unless (org-gtd-refile--get-targets type)
     (org-gtd-refile--add-target refile-target-element))
-  (let ((org-refile-target-verify-function
-         (lambda ()
-           (let* ((file (buffer-file-name))
-                  (gtd-dir (expand-file-name org-gtd-directory))
-                  (in-gtd-dir (and file (string-prefix-p gtd-dir (expand-file-name file))))
-                  (refile-prop (org-element-property :ORG_GTD_REFILE (org-element-at-point))))
-             (if in-gtd-dir
-                 (string-equal type refile-prop)
-               t))))
+  (let ((org-refile-target-verify-function (org-gtd-refile--make-verify-function type))
         (org-refile-targets (append org-refile-targets
                                     '((org-agenda-files :maxlevel . 9))))
         (org-refile-use-outline-path t)
@@ -135,15 +158,7 @@ files outside are accepted without filtering."
 
 Returns the list of refile targets that would be available when refiling
 an item of TYPE (e.g., `org-gtd-projects', variable `org-gtd-tickler')."
-  (let ((org-refile-target-verify-function
-         (lambda ()
-           (let* ((file (buffer-file-name))
-                  (gtd-dir (expand-file-name org-gtd-directory))
-                  (in-gtd-dir (and file (string-prefix-p gtd-dir (expand-file-name file))))
-                  (refile-prop (org-element-property :ORG_GTD_REFILE (org-element-at-point))))
-             (if in-gtd-dir
-                 (string-equal type refile-prop)
-               t))))
+  (let ((org-refile-target-verify-function (org-gtd-refile--make-verify-function type))
         (org-refile-targets (append org-refile-targets
                                     '((org-agenda-files :maxlevel . 9))))
         (org-refile-use-outline-path t)

@@ -195,6 +195,35 @@
       (org-gtd-refile--should-prompt-p 'calendar)
       (assert-equal 1 (length warnings)))))
 
+;;; Edge Case Tests - User Configuration Issues
+
+(deftest refile/nil-current-buffer-target-excludes-wip-buffer ()
+  "User's (nil :maxlevel) target should not match WIP buffer headings.
+
+When a user has org-refile-targets configured with (nil :maxlevel . N),
+this means 'current buffer'. During organize, the current buffer is the
+WIP/clarify buffer which contains the item being organized.
+
+The refile verify function should exclude WIP buffer headings to prevent
+the 'Cannot refile to position inside the tree or region' error that
+would occur if the item tried to refile to itself."
+  ;; Set up user's org-refile-targets with (nil :maxlevel . 3)
+  ;; This configuration should work - WIP buffers should be filtered out
+  (let ((org-refile-targets '((nil :maxlevel . 3)))
+        (org-gtd-refile-to-any-target t))
+    ;; Capture and process an item - this creates a WIP buffer
+    (capture-inbox-item "test item with nil refile target")
+    (org-gtd-process-inbox)
+    ;; Now we're in the WIP buffer with the item
+    ;; Organizing should succeed - WIP buffer headings should be filtered
+    (organize-as-single-action)
+    ;; Verify item was refiled to the default GTD file
+    (with-current-buffer (org-gtd--default-file)
+      (assert-match "test item with nil refile target" (ogt--current-buffer-raw-text)))
+    ;; Verify item shows in engage agenda
+    (org-gtd-engage)
+    (assert-match "test item with nil refile target" (agenda-raw-text))))
+
 (provide 'refiling-test)
 
 ;;; refiling-test.el ends here
