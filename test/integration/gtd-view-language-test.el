@@ -516,6 +516,47 @@ SCHEDULED: <2099-12-31 Wed>
         (assert-match "Task in NEXT state" content)
         (assert-nil (string-match-p "Task in WAIT state" content))))))
 
+;;; Area-of-Focus Prefix Integration Tests
+
+(deftest view-lang-int/area-of-focus-prefix-shows-project-category ()
+  "Area-of-focus prefix displays project's CATEGORY for project tasks.
+Bug: area-of-focus prefix didn't traverse to project heading to get CATEGORY.
+Instead it returned the file-name based default category."
+  (with-current-buffer (org-gtd--default-file)
+    (insert "* Health Project
+:PROPERTIES:
+:ORG_GTD: Projects
+:ID: proj-health
+:CATEGORY: Health
+:ORG_GTD_FIRST_TASKS: task-health-1
+:END:
+* NEXT Do something
+:PROPERTIES:
+:ORG_GTD: Actions
+:ID: task-health-1
+:ORG_GTD_PROJECT_IDS: proj-health
+:END:
+")
+    (basic-save-buffer)
+    (org-id-update-id-locations (list (buffer-file-name))))
+
+  (org-gtd-view-show
+   '((name . "Actions with Area")
+     (type . next-action)
+     (prefix . (area-of-focus))))
+
+  (let ((agenda-buffer (get-buffer org-agenda-buffer-name)))
+    (assert-true agenda-buffer)
+    (with-current-buffer agenda-buffer
+      (let ((content (buffer-string)))
+        ;; The task should appear
+        (assert-match "Do something" content)
+        ;; The prefix should show "Health" (the project's CATEGORY)
+        ;; NOT the file name "org-gtd-tasks" which is org-mode's default
+        (assert-match "Health.*NEXT Do something" content)
+        ;; And it should NOT show the file-name based prefix
+        (refute-match "org-gtd-tasks.*NEXT Do something" content)))))
+
 (provide 'gtd-view-language-integration-test)
 
 ;;; gtd-view-language-test.el ends here

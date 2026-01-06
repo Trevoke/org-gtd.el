@@ -76,14 +76,32 @@ Uses project name if available, otherwise CATEGORY, otherwise \"no project\"."
        (org-gtd-agenda-replace-link-with-description
         (replace-regexp-in-string tally-cookie-regexp "" proj-name))))))
 
+(defun org-gtd-agenda--has-explicit-category-p ()
+  "Return non-nil if entry at point has CATEGORY explicitly set in drawer."
+  (when-let ((range (org-get-property-block)))
+    (save-excursion
+      (goto-char (car range))
+      (re-search-forward "^:CATEGORY:" (cdr range) t))))
+
 (defun org-gtd-agenda--resolve-area-of-focus ()
-  "Return explicitly set CATEGORY property for item at point, or nil if none.
-Unlike `org-entry-get' with CATEGORY, this only returns user-set values,
-not org-mode's computed default category."
-  (let ((category (org-entry-get (point) "CATEGORY")))
-    ;; Filter out org-mode's default "???" category
-    (unless (or (null category) (string= category "???"))
-      category)))
+  "Return area of focus for item at point, or nil if none.
+First checks for explicit CATEGORY on the entry, then looks up the
+project's CATEGORY via ORG_GTD_PROJECT_IDS if no explicit value is set."
+  (cond
+   ;; Entry has explicit CATEGORY in its properties drawer
+   ((org-gtd-agenda--has-explicit-category-p)
+    (let ((category (org-entry-get (point) "CATEGORY")))
+      (unless (string= category "???")
+        category)))
+   ;; Look up project's CATEGORY via ORG_GTD_PROJECT_IDS
+   ((when-let* ((project-ids (org-entry-get-multivalued-property
+                              (point) org-gtd-prop-project-ids))
+                (first-id (car project-ids))
+                (project-marker (org-id-find first-id 'marker)))
+      (org-with-point-at project-marker
+        (org-entry-get (point) "CATEGORY"))))
+   ;; No explicit category and no project - return nil
+   (t nil)))
 
 (defun org-gtd-agenda--resolve-file-name ()
   "Return base file name for current buffer, or nil if no file."
