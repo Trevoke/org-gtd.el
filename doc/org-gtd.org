@@ -456,6 +456,12 @@ This is the simplest possible configuration for org-gtd. Copy this entire block 
 ;; Add org-gtd files to your agenda
 (setq org-agenda-files (list org-gtd-directory))
 
+;; Enable per-type refile prompting (recommended)
+;; Without this, all items auto-refile to first target without prompting
+(setq org-gtd-refile-to-any-target nil)
+;; Customize which types prompt vs auto-refile:
+;; (setq org-gtd-refile-prompt-for-types '(project-heading project-task ...))
+
 ;; REQUIRED: Enable org-edna for project dependencies
 (org-edna-mode 1)
 
@@ -505,6 +511,9 @@ Then add this to your ~config.el~:
                              (done . "DONE")
                              (canceled . "CNCL")))
   (org-agenda-files (list org-gtd-directory))
+  ;; Enable per-type refile prompting (recommended)
+  ;; Without this, all items auto-refile to first target without prompting
+  (org-gtd-refile-to-any-target nil)
   :config
   (org-edna-mode)
   ;; Doom-style leader key bindings
@@ -552,6 +561,9 @@ If you use Spacemacs, add this to your ~dotspacemacs/user-config~ function:
   (setq org-gtd-directory "~/gtd/")
   ;; Add to agenda files
   (setq org-agenda-files (list org-gtd-directory))
+  ;; Enable per-type refile prompting (recommended)
+  ;; Without this, all items auto-refile to first target without prompting
+  (setq org-gtd-refile-to-any-target nil)
   :config
   ;; REQUIRED: Enable org-edna for project dependencies
   (org-edna-mode 1)
@@ -888,7 +900,7 @@ These settings are *required* for Org GTD to work properly:
 - ~org-reverse-note-order~ :: (=org-mode= variable) set this to ~t~ to add new items to the top of project tasks and to ~nil~ to add new items to the bottom of project tasks when organizing an item as such.
 - ~org-gtd-organize-hooks~ :: this is a list of functions that you can use to decorate each item when you clarify it. For instance, you could add a function to set the effort, or the priority, or some category, etc. By default it has only one function, which lets you add tags, but of course you can change this entirely. [[#organizing-an-item][Organizing an item]].
 - ~org-gtd-archive-location~ :: Points to a function to generate the archive file dynamically. Default value generates a file suffixed with the current year. The function has an arity of zero and generates an org-mode file+outline path. [[#cleaning-up-the-system][Cleaning up / archiving completed work]].
-- ~org-gtd-refile-prompt-for-types~ :: list of GTD item types that should prompt for refile target selection. Types not in the list auto-refile to first target. [[#controlling-refile-prompts][Controlling Refile Prompts by Item Type]].
+- ~org-gtd-refile-prompt-for-types~ :: list of GTD item types that should prompt for refile target selection. Types not in the list auto-refile to first target. Requires ~org-gtd-refile-to-any-target~ to be ~nil~. [[#controlling-refile-prompts][Controlling Refile Prompts by Item Type]].
 - ~org-gtd-delegate-read-func~ :: function that is used to prompt for a person a task is delegated to. Must return a string. By default this is set to ~read-string~.
 - ~org-gtd-areas-of-focus~ :: list of strings representing your areas of focus (horizon 2 in GTD).
 - ~org-gtd-clarify-show-horizons~ :: When clarifying, do you want the horizons buffer to be shown by default, or do you prefer it hidden?
@@ -1719,7 +1731,15 @@ When you organize an item as a Project, org-gtd finds *all* headings with ~ORG_G
 
 When you have multiple refile targets, you might want org-gtd to prompt for some item types but auto-refile others. For example: always prompt when organizing projects (you care where they go), but auto-refile quick actions (just get them out of the inbox).
 
-The ~org-gtd-refile-prompt-for-types~ variable controls this. It's a list of GTD item types that should prompt for target selection:
+*Important:* First, you must opt into per-type control by setting:
+
+#+begin_src elisp
+(setq org-gtd-refile-to-any-target nil)
+#+end_src
+
+By default ~org-gtd-refile-to-any-target~ is ~t~, which makes org-gtd auto-refile everything without prompting.
+
+Once you've opted in, the ~org-gtd-refile-prompt-for-types~ variable controls which types prompt. It's a list of GTD item types that should prompt for target selection:
 
 #+begin_src elisp
 ;; Default value - these types prompt for refile target:
@@ -4021,12 +4041,14 @@ Useful if you want automatic saves during inbox processing.
 *Migration*: To migrate to the new system:
 
 #+begin_src emacs-lisp
-;; Old way (deprecated):
+;; Step 1: Set the deprecated variable to nil (required)
+;; This enables per-type control via org-gtd-refile-prompt-for-types
 (setq org-gtd-refile-to-any-target nil)
 
-;; New way - equivalent behavior (prompt for all default types):
-(setq org-gtd-refile-to-any-target nil)  ; Must be nil to use new system
-;; org-gtd-refile-prompt-for-types has sensible defaults, no change needed
+;; Step 2 (optional): Customize which types prompt
+;; The default prompts for most types except quick-action, knowledge, trash
+;; Only change this if you want different behavior:
+;; (setq org-gtd-refile-prompt-for-types '(project-heading project-task))
 #+end_src
 
 See [[#controlling-refile-prompts][Controlling Refile Prompts by Item Type]] for the new approach.

@@ -58,14 +58,18 @@ setting as part of following the instructions to add your own refile targets."
   '(single-action project-heading project-task calendar someday delegated tickler habit)
   "List of GTD types that should prompt for refile target selection.
 
-When refiling an item, if its type is in this list, org-gtd will prompt
-you to choose from available refile targets (ORG_GTD_REFILE targets +
-user's `org-refile-targets').  If the type is not in this list, org-gtd
-will automatically refile to the first available target.
+IMPORTANT: This variable only takes effect when `org-gtd-refile-to-any-target'
+is set to nil.  By default that variable is t, which means org-gtd auto-refiles
+everything without prompting.  To enable per-type control:
 
-This variable is only consulted when `org-gtd-refile-to-any-target' is nil.
+  (setq org-gtd-refile-to-any-target nil)
 
-Valid type symbols (same as `org-gtd-organize-type-member-p'):
+When this variable is active and an item's type is in the list, org-gtd
+will prompt you to choose from available refile targets (ORG_GTD_REFILE
+targets + user's `org-refile-targets').  Types not in the list auto-refile
+to the first available target.
+
+Valid type symbols:
   single-action, project-heading, project-task, calendar, someday,
   delegated, tickler, habit, knowledge, quick-action, trash"
   :group 'org-gtd-organize
