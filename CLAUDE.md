@@ -15,17 +15,14 @@ curl -fsSL https://raw.github.com/doublep/eldev/master/webinstall/github-eldev |
 
 ### Testing
 ```bash
-# Run all tests (standard - minimal output)
-eldev etest -B
+# Run all tests (standard)
+eldev etest -r dot
 
 # Run all tests for a specific version of emacs (uses silex/emacs images)
-eldev docker silex/emacs:30.1-ci etest
-
-# Run all tests with backtraces (debugging)
-eldev etest
+eldev docker silex/emacs:30.1-ci etest -r dot
 
 # Run tests with full debugging (CI command)
-eldev -p -dtT etest
+eldev -p -dtT etest -r dot
 ```
 
 ### Build and Compilation
@@ -64,23 +61,24 @@ eldev doctor
 eldev update-copyright
 ```
 
-### Manual Testing Environment
-```bash
-# Use sandboxed dev environment
-HOME="dev/" emacs
-
-# Test autoloads without full package installation
-# (Uses dev/init.el configuration)
-```
-
 ### Container Testing (Multiple Emacs Versions)
 ```bash
 # Build container for specific emacs version
 podman build -t stag-28-2 -f dev/Containerfile --build-arg emacs_version=28-2 .
 
 # Run tests in container
-eldev -dt docker "localhost/stag-28-2" -C -dtp test
+eldev -dt docker "localhost/stag-28-2" -C -dtp etest
 ```
+
+### Creating a new release
+  Todos
+  ☐ Update CHANGELOG.org with x.x.x entry
+  ☐ Update version in org-gtd.el header
+  ☐ Update version in org-gtd-pkg.el
+  ☐ Run tests to confirm all pass
+  ☐ Commit release changes
+  ☐ Create git tag x.x.x
+  ☐ Push commit and tag
 
 ## Architecture Overview
 
