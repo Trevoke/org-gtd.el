@@ -61,11 +61,17 @@ By default, org-gtd uses files in ~org-gtd-directory~ (default: =~/gtd/=):
 | File | Purpose |
 |------|---------|
 | ~inbox.org~ | Capture target |
-| ~org-gtd-tasks.org~ | Main GTD file (actions, projects) |
-| ~org-gtd-calendar.org~ | Calendar items |
-| ~org-gtd-incubate.org~ | Tickler and Someday/Maybe |
+| ~org-gtd-tasks.org~ | All organized items |
 
-You can customize this. The files are standard org files with no magic.
+All GTD categories are stored as top-level headings within ~org-gtd-tasks.org~:
+- ~* Actions~ - Single actions
+- ~* Projects~ - Multi-step projects
+- ~* Calendar~ - Time-specific items
+- ~* Delegated~ - Waiting for others
+- ~* Tickler~ - Remind on date
+- ~* Someday~ - No timeframe
+
+These headings are created automatically on first refile. The files are standard org files with no magic.
 
 ** The ORG_GTD Property
 

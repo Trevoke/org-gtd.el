@@ -107,9 +107,9 @@ org-gtd creates files in =~/gtd/= (or wherever you set ~org-gtd-directory~):
 | File | Purpose |
 |------|---------|
 | ~inbox.org~ | Where captures land |
-| ~org-gtd-tasks.org~ | Organized tasks and projects |
-| ~org-gtd-calendar.org~ | Time-specific items |
-| ~org-gtd-incubate.org~ | Someday/maybe items |
+| ~org-gtd-tasks.org~ | All organized items (actions, projects, calendar, etc.) |
+
+All GTD categories (Actions, Projects, Calendar, Tickler, Delegated, Someday/Maybe) are stored as top-level headings within ~org-gtd-tasks.org~. These headings are created automatically when you first organize an item into that category.
 
 Your notes stay in your notes directory. org-gtd never touches them.
 

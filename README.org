@@ -58,10 +58,10 @@ If you use ~use-package~, copy this entire block into your init file - it includ
   :init
   ;; Suppress upgrade warnings (must be set before package loads)
   (setq org-gtd-update-ack "4.0.0")
-  :custom
   ;; Where org-gtd will keep its files (defaults to ~/gtd/)
-  ;; (org-gtd-directory "~/my-gtd/")
+  ;; (setq org-gtd-directory "~/my-gtd/")
 
+  :custom
   ;; Configure TODO keyword states (options like "TODO(t)" or "DONE(d!)" are fine)
   (org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
 
@@ -71,12 +71,12 @@ If you use ~use-package~, copy this entire block into your init file - it includ
                              (wait . "WAIT")
                              (canceled . "CNCL")))
 
-  ;; Add org-gtd files to your agenda
-  (org-agenda-files (list org-gtd-directory))
-
   :config
   ;; REQUIRED: Enable org-edna for project dependencies
   (org-edna-mode 1)
+
+  ;; Add org-gtd files to your agenda (must be in :config so org-gtd-directory is defined)
+  (setq org-agenda-files (list org-gtd-directory))
 
   :bind
   ;; Global keybindings (work anywhere in Emacs)
