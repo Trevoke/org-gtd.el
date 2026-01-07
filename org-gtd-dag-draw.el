@@ -116,6 +116,18 @@ Returns rendered string (SVG XML or ASCII art)."
     (dag-draw-layout-graph dd-graph)
     (dag-draw-render-graph dd-graph format)))
 
+(defun org-gtd-dag-draw-render-with-bounds (org-gtd-graph format &optional selected-node-id)
+  "Render ORG-GTD-GRAPH and return both output and positioned graph.
+FORMAT should be \\='svg or \\='ascii.
+SELECTED-NODE-ID, if provided, highlights that node.
+
+Returns plist (:output STRING :graph DAG-DRAW-GRAPH)."
+  (let* ((spec (org-gtd-dag-draw-translate org-gtd-graph selected-node-id))
+         (dd-graph (apply #'dag-draw-create-from-spec spec)))
+    (dag-draw-layout-graph dd-graph)
+    (list :output (dag-draw-render-graph dd-graph format)
+          :graph dd-graph)))
+
 ;;;; Footer
 
 (provide 'org-gtd-dag-draw)

@@ -64,6 +64,9 @@
     (define-key map (kbd "<backtab>") #'org-gtd-graph-nav-previous-sibling)
     (define-key map (kbd "G") #'org-gtd-graph-nav-goto)
 
+    ;; Mouse selection
+    (define-key map [mouse-1] #'org-gtd-graph-view-click-select)
+
     ;; Add tasks
     (define-key map (kbd "r") #'org-gtd-graph-transient-add-root)
     (define-key map (kbd "s") #'org-gtd-graph-add-successor)

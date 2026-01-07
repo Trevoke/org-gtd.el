@@ -39,6 +39,7 @@
 (require 'org-gtd-id)
 (require 'org-gtd-configure)
 (require 'org-gtd-files)
+(require 'ht)  ; For ht-each in extract-node-bounds
 
 (declare-function org-gtd-graph-view-mode "org-gtd-graph-view")
 
@@ -76,6 +77,94 @@ Users can toggle per-buffer using `org-gtd-graph-toggle-render-mode'."
   "Current render mode for this buffer (\\='svg or \\='ascii).
 Initialized from `org-gtd-graph-render-mode' on buffer creation.
 Can be toggled with `org-gtd-graph-toggle-render-mode'.")
+
+(defvar-local org-gtd-graph-view--node-bounds nil
+  "Alist of (node-id . (left top width height)) for click hit-testing.
+Coordinates are render-mode-specific:
+- ASCII: buffer character coordinates
+- SVG: SVG viewport pixel coordinates")
+
+(defvar-local org-gtd-graph-view--svg-viewbox-offset nil
+  "Cons cell (view-x . view-y) for SVG coordinate transformation.")
+
+(defvar-local org-gtd-graph-view--svg-native-size nil
+  "Cons cell (width . height) of SVG's native coordinate space.")
+
+(defvar-local org-gtd-graph-view--svg-display-size nil
+  "Cons cell (width . height) of displayed image size.")
+
+;;;; Hit Testing
+
+(defun org-gtd-graph-view--node-at-position (x y)
+  "Return node ID at position (X, Y) or nil if none.
+X and Y are in render-mode-appropriate coordinates."
+  (cl-loop for (node-id . bounds) in org-gtd-graph-view--node-bounds
+           for left = (nth 0 bounds)
+           for top = (nth 1 bounds)
+           for width = (nth 2 bounds)
+           for height = (nth 3 bounds)
+           when (and (>= x left) (< x (+ left width))
+                     (>= y top) (< y (+ top height)))
+           return node-id))
+
+(defun org-gtd-graph-view--extract-click-coords (pos)
+  "Extract coordinates from POS based on current render mode.
+Returns (x . y) in appropriate coordinate space, or nil if invalid."
+  (pcase org-gtd-graph-view--render-mode
+    ('ascii
+     (posn-col-row pos))
+    ('svg
+     (when-let ((obj-xy (posn-object-x-y pos)))
+       ;; Scale from displayed coordinates to native SVG coordinates
+       (let* ((raw-x (car obj-xy))
+              (raw-y (cdr obj-xy))
+              ;; Compute scale factor from display vs native size
+              (scale-x (if (and org-gtd-graph-view--svg-display-size
+                                org-gtd-graph-view--svg-native-size)
+                           (/ (float (car org-gtd-graph-view--svg-display-size))
+                              (car org-gtd-graph-view--svg-native-size))
+                         1.0))
+              (scale-y (if (and org-gtd-graph-view--svg-display-size
+                                org-gtd-graph-view--svg-native-size)
+                           (/ (float (cdr org-gtd-graph-view--svg-display-size))
+                              (cdr org-gtd-graph-view--svg-native-size))
+                         1.0))
+              ;; Convert to native SVG coordinates
+              (native-x (/ raw-x scale-x))
+              (native-y (/ raw-y scale-y)))
+         ;; Add viewbox offset to get final SVG coordinates
+         (if org-gtd-graph-view--svg-viewbox-offset
+             (cons (+ native-x (car org-gtd-graph-view--svg-viewbox-offset))
+                   (+ native-y (cdr org-gtd-graph-view--svg-viewbox-offset)))
+           (cons native-x native-y)))))))
+
+(defun org-gtd-graph-view-click-select (event)
+  "Select node at mouse click position.
+If click is not on a node, do nothing."
+  (interactive "e")
+  (when-let* ((pos (event-start event))
+              (coords (org-gtd-graph-view--extract-click-coords pos))
+              (node-id (org-gtd-graph-view--node-at-position
+                        (car coords) (cdr coords))))
+    (org-gtd-graph-ui-select-node node-id)))
+
+(defun org-gtd-graph-view--extract-node-bounds (dd-graph scale)
+  "Extract node bounding boxes from DD-GRAPH after layout.
+SCALE is the coordinate scale factor (1.0 for ASCII, 10.0 for SVG).
+Returns alist of (org-id-string . (left top width height))."
+  (let ((bounds nil))
+    (ht-each
+     (lambda (node-id node)
+       (let* ((x (* scale (or (dag-draw-node-x-coord node) 0)))
+              (y (* scale (or (dag-draw-node-y-coord node) 0)))
+              (w (* scale (dag-draw-node-x-size node)))
+              (h (* scale (dag-draw-node-y-size node)))
+              ;; Convert center coords to top-left
+              (left (- x (/ w 2.0)))
+              (top (- y (/ h 2.0))))
+         (push (cons (symbol-name node-id) (list left top w h)) bounds)))
+     (dag-draw-graph-nodes dd-graph))
+    bounds))
 
 ;;;; Buffer Management
 
@@ -184,12 +273,35 @@ _EVENT is the file-notify event (unused)."
       ;; Store the graph before rendering
       (setq org-gtd-graph-view--graph full-graph)
 
-      ;; Render using dag-draw
+      ;; Render and store bounds
       (if (eq org-gtd-graph-view--render-mode 'ascii)
-          (let ((ascii-text (org-gtd-dag-draw-render graph 'ascii org-gtd-graph-ui--selected-node-id)))
+          (let* ((result (org-gtd-dag-draw-render-with-bounds graph 'ascii org-gtd-graph-ui--selected-node-id))
+                 (ascii-text (plist-get result :output))
+                 (dd-graph (plist-get result :graph)))
+            (setq org-gtd-graph-view--node-bounds
+                  (org-gtd-graph-view--extract-node-bounds dd-graph 1.0))
+            (setq org-gtd-graph-view--svg-viewbox-offset nil)
             (org-gtd-graph-view--display-ascii ascii-text graph))
-        ;; Default to SVG
-        (let ((svg (org-gtd-dag-draw-render graph 'svg org-gtd-graph-ui--selected-node-id)))
+        ;; SVG mode
+        (let* ((result (org-gtd-dag-draw-render-with-bounds graph 'svg org-gtd-graph-ui--selected-node-id))
+               (svg (plist-get result :output))
+               (dd-graph (plist-get result :graph))
+               (scale (if (require 'dag-draw-svg nil t) dag-draw-svg-coordinate-scale 10.0))
+               (bounds (dag-draw-get-graph-bounds dd-graph))
+               (margin 20)
+               (min-x (* scale (nth 0 bounds)))
+               (min-y (* scale (nth 1 bounds)))
+               (max-x (* scale (nth 2 bounds)))
+               (max-y (* scale (nth 3 bounds)))
+               (svg-width (+ (- max-x min-x) (* 2 margin)))
+               (svg-height (+ (- max-y min-y) (* 2 margin)))
+               (view-x (- min-x margin))
+               (view-y (- min-y margin)))
+          ;; Store native SVG dimensions for coordinate scaling
+          (setq org-gtd-graph-view--svg-native-size (cons svg-width svg-height))
+          (setq org-gtd-graph-view--node-bounds
+                (org-gtd-graph-view--extract-node-bounds dd-graph scale))
+          (setq org-gtd-graph-view--svg-viewbox-offset (cons view-x view-y))
           (org-gtd-graph-view--display-svg svg graph))))))
 
 (defun org-gtd-graph-view--insert-legend ()
@@ -204,6 +316,12 @@ _EVENT is the file-notify event (unused)."
          (image (org-gtd-svg-to-image svg)))
     (erase-buffer)
     (insert-image image)
+    ;; Capture displayed image size for coordinate scaling
+    (let* ((img-props (image-size image t))
+           (display-width (car img-props))
+           (display-height (cdr img-props)))
+      (setq org-gtd-graph-view--svg-display-size
+            (cons display-width display-height)))
     (insert "\n\n")
     (org-gtd-graph-view--insert-legend)
     (goto-char (point-min))))
