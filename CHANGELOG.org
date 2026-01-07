@@ -1,3 +1,11 @@
+* 4.1.0 - 2026-01-06
+
+** Added
+*** Click-to-select in project graph view
+You can now click on nodes in the project graph view (both ASCII and SVG modes)
+to select them. This updates the details panel to show the clicked node's
+information. Handles Emacs ~image-scaling-factor~ automatically.
+
 * 4.0.7 - 2026-01-05
 
 ** Fixed
