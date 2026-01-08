@@ -31,6 +31,7 @@
 (require 'org-gtd-graph-transient)
 (require 'org-gtd-graph-navigation)
 (require 'org-gtd-graph-ui)
+(require 'org-gtd-core)
 
 ;;;; External Function Declarations
 
@@ -152,21 +153,110 @@ The graph auto-updates when you refresh (\\[org-gtd-graph-view-refresh])."
 (defun org-gtd-show-project-graph (&optional project-marker)
   "Display an interactive visual graph of project task dependencies.
 Shows tasks as nodes and dependencies as edges in an SVG visualization.
-If PROJECT-MARKER is nil, use the project at point or prompt for one."
+
+When called interactively:
+- On a project heading: shows that project's graph
+- On a task heading: shows the project it belongs to (prompts if multiple)
+- From org-agenda: shows the project for the task at point
+- Otherwise: prompts to select a project
+
+If PROJECT-MARKER is provided, shows that project's graph directly."
   (interactive)
   (let ((marker (or project-marker
-                    (org-gtd-graph-mode--find-project-at-point)
+                    (org-gtd-graph-mode--find-project-at-point-or-agenda)
                     (org-gtd-graph-mode--prompt-for-project))))
     (when marker
       (org-gtd-graph-view-create marker))))
 
+(defun org-gtd-graph-mode--find-project-at-point-or-agenda ()
+  "Find project from point in org-mode or from agenda item.
+In org-agenda-mode, gets the marker for the item at point and
+delegates to the org-mode logic."
+  (cond
+   ;; In agenda - get marker and process
+   ((derived-mode-p 'org-agenda-mode)
+    (if-let ((marker (org-get-at-bol 'org-marker)))
+        (org-with-point-at marker
+          (org-gtd-graph-mode--find-project-at-point))
+      (message "No task at point")
+      nil))
+
+   ;; In org-mode - direct processing
+   ((derived-mode-p 'org-mode)
+    (org-gtd-graph-mode--find-project-at-point))
+
+   ;; Other modes
+   (t
+    (message "Not in org-mode or org-agenda")
+    nil)))
+
 (defun org-gtd-graph-mode--find-project-at-point ()
-  "Find project heading at point, if any."
+  "Find project for heading at point.
+Works on:
+- Project headings (ORG_GTD=Projects): returns that project
+- Task headings with ORG_GTD_PROJECT_IDS: returns the project
+  (or prompts if multiple)
+- Other headings: returns nil with appropriate message"
   (when (derived-mode-p 'org-mode)
     (save-excursion
       (org-back-to-heading t)
-      (when (string= (org-entry-get nil "ORG_GTD") "Projects")
-        (point-marker)))))
+      (let ((org-gtd-type (org-entry-get nil "ORG_GTD")))
+        (cond
+         ;; Project heading - return it directly
+         ((string= org-gtd-type "Projects")
+          (point-marker))
+
+         ;; Has ORG_GTD property - check for project membership
+         (org-gtd-type
+          (org-gtd-graph-mode--find-project-for-task))
+
+         ;; No ORG_GTD property
+         (t
+          (message "Heading not a GTD item")
+          nil))))))
+
+(defun org-gtd-graph-mode--find-project-for-task ()
+  "Find project marker for task at point.
+If task belongs to multiple projects, prompt user to select.
+Returns nil with message if task not in any project."
+  (let ((project-ids (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids)))
+    (cond
+     ;; No projects
+     ((null project-ids)
+      (message "Task not in a project")
+      nil)
+
+     ;; Single project
+     ((= (length project-ids) 1)
+      (org-id-find (car project-ids) 'marker))
+
+     ;; Multiple projects - prompt
+     (t
+      (org-gtd-graph-mode--select-project-for-task project-ids)))))
+
+(defun org-gtd-graph-mode--select-project-for-task (project-ids)
+  "Prompt user to select from PROJECT-IDS and return marker.
+Shows project titles in completion."
+  (let* ((projects (org-gtd-graph-mode--resolve-project-ids project-ids))
+         (titles (mapcar #'car projects)))
+    (if (null projects)
+        (progn
+          (message "Task not in a project")
+          nil)
+      (let ((choice (completing-read
+                     (format "Task is in %d projects, select: " (length projects))
+                     titles nil t)))
+        (cdr (assoc choice projects))))))
+
+(defun org-gtd-graph-mode--resolve-project-ids (project-ids)
+  "Resolve PROJECT-IDS to alist of (title . marker).
+Filters out IDs that can't be resolved (deleted projects)."
+  (let (results)
+    (dolist (id project-ids)
+      (when-let ((marker (org-id-find id 'marker)))
+        (org-with-point-at marker
+          (push (cons (org-get-heading t t t t) marker) results))))
+    (nreverse results)))
 
 (defun org-gtd-graph-mode--prompt-for-project ()
   "Prompt user to select a project."

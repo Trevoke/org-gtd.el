@@ -5,7 +5,7 @@
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; Homepage: https://github.com/Trevoke/org-gtd.el
 ;; Package-Requires: ((emacs "28.1") (compat "30.0.0.0") (org-edna "1.1.2") (f "0.20.0") (org "9.6") (transient "0.11.0") (dag-draw "1.0.4"))
-;; Package-Version: 4.1.0
+;; Package-Version: 4.2.0
 
 ;; This file is not part of GNU Emacs.
 
@@ -68,8 +68,8 @@
 (require 'org-gtd-value-objects)
 (require 'org-gtd-dependencies)
 (require 'org-gtd-projects)
-(require 'org-gtd-graph-mode)
-(require 'org-gtd-dag-draw)
+;; Graph features are autoloaded - only loaded when user invokes graph commands
+;; (org-gtd-show-project-graph, org-gtd-graph-view-mode, etc.)
 (require 'org-gtd-agenda)
 (require 'org-gtd-agenda-transient)
 (require 'org-gtd-engage)

@@ -1,3 +1,19 @@
+* 4.2.0 - 2026-01-08
+
+** Added
+*** Show project graph from task headings and agenda items
+~org-gtd-show-project-graph~ now works in more contexts:
+- On task headings: shows the graph for the project the task belongs to
+- On tasks in multiple projects: prompts to select which project
+- From org-agenda: shows the graph for the task at point
+- Shows helpful messages when task is not in a project or heading is not a GTD item
+
+** Changed
+*** Graph modules are now lazy-loaded
+The graph visualization modules (~org-gtd-graph-mode~, ~org-gtd-dag-draw~, etc.)
+are no longer loaded when org-gtd initializes. They load on first use of
+~org-gtd-show-project-graph~ or related commands, reducing startup time by ~17ms.
+
 * 4.1.0 - 2026-01-06
 
 ** Added
