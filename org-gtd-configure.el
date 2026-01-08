@@ -39,11 +39,23 @@
 (require 'org-gtd-types)
 (require 'org-gtd-core)
 
+(defvar org-time-was-given)
+(defvar org-end-time-was-given)
+
 (defun org-gtd-prompt-for-active-date (prompt)
-  "Display PROMPT and return the selected date as an active timestamp."
+  "Display PROMPT and return the selected date as an active timestamp.
+Uses `org-read-date' with org-mode's time variables to properly handle
+time ranges like 11:00-12:00."
   (interactive)
-  (let ((date (org-read-date nil nil nil (format "%s > " prompt))))
-    (format "<%s>" date)))
+  (let* (org-time-was-given
+         org-end-time-was-given
+         (time (org-read-date t t nil (format "%s > " prompt)))
+         (fmt (org-time-stamp-format org-time-was-given))
+         (ts (format-time-string fmt time)))
+    ;; Append end time if given (time range like 11:00-12:00)
+    (when org-end-time-was-given
+      (setq ts (concat (substring ts 0 -1) "-" org-end-time-was-given ">")))
+    ts))
 
 (defun org-gtd-prompt-for-active-date-with-repeater (prompt)
   "Prompt for an active date with optional repeater using PROMPT."

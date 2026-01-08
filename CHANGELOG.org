@@ -1,3 +1,12 @@
+* 4.2.1 - 2026-01-08
+
+** Fixed
+*** Calendar timestamps now preserve time ranges
+When entering a calendar item with a time range like ~11:00-12:00~, the duration
+is now correctly preserved in the ~ORG_GTD_TIMESTAMP~ property. Previously the
+end time was being lost. Now uses org-mode's ~org-end-time-was-given~ variable
+to properly capture time ranges, matching how ~org-timestamp~ (C-c .) works.
+
 * 4.2.0 - 2026-01-08
 
 ** Added

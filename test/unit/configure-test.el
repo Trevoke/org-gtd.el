@@ -264,6 +264,52 @@
        (org-gtd-configure-as-type 'delegated))
      (assert-equal "Test prompt here" received-prompt))))
 
+;;; Time Range Preservation Tests
+
+(deftest configure/calendar-preserves-time-in-timestamp ()
+  "Calendar type preserves time when user enters date with time."
+  (ogt--with-temp-org-buffer
+   "* Test appointment"
+   (with-simulated-input "2026-08-01 SPC 11:00 RET"
+     (org-gtd-configure-as-type 'calendar))
+   (let ((timestamp (org-entry-get nil "ORG_GTD_TIMESTAMP")))
+     (assert-true timestamp)
+     (assert-match "2026-08-01" timestamp)
+     (assert-match "11:00" timestamp))))
+
+(deftest configure/calendar-preserves-time-range-duration ()
+  "Calendar type preserves time range (duration) when user enters it."
+  (ogt--with-temp-org-buffer
+   "* Test meeting"
+   (with-simulated-input "2026-08-01 SPC 11:00-12:00 RET"
+     (org-gtd-configure-as-type 'calendar))
+   (let ((timestamp (org-entry-get nil "ORG_GTD_TIMESTAMP")))
+     (assert-true timestamp)
+     (assert-match "2026-08-01" timestamp)
+     (assert-match "11:00-12:00" timestamp))))
+
+(deftest configure/calendar-preserves-time-range-with-day-name ()
+  "Calendar type preserves full timestamp with day name and time range."
+  (ogt--with-temp-org-buffer
+   "* Test event"
+   (with-simulated-input "2026-08-01 SPC Sat SPC 14:30-16:00 RET"
+     (org-gtd-configure-as-type 'calendar))
+   (let ((timestamp (org-entry-get nil "ORG_GTD_TIMESTAMP")))
+     (assert-true timestamp)
+     (assert-match "Sat" timestamp)
+     (assert-match "14:30-16:00" timestamp))))
+
+(deftest configure/calendar-preserves-day-name-only ()
+  "Calendar type preserves day name when entered without time."
+  (ogt--with-temp-org-buffer
+   "* Test event"
+   (with-simulated-input "2026-08-01 SPC Sat RET"
+     (org-gtd-configure-as-type 'calendar))
+   (let ((timestamp (org-entry-get nil "ORG_GTD_TIMESTAMP")))
+     (assert-true timestamp)
+     (assert-match "2026-08-01" timestamp)
+     (assert-match "Sat" timestamp))))
+
 (provide 'configure-test)
 
 ;;; configure-test.el ends here
