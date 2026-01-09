@@ -1,3 +1,12 @@
+* 4.2.2 - 2026-01-09
+
+** Fixed
+*** Inbox file excluded from refile targets
+The inbox file is now always excluded from refile targets, even if it
+accidentally contains headings with ~ORG_GTD_REFILE~ properties. This prevents
+items from being refiled back to inbox during processing and resolves issues
+where users saw inbox.org headings in their refile target list.
+
 * 4.2.1 - 2026-01-08
 
 ** Fixed

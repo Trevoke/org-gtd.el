@@ -197,6 +197,38 @@
 
 ;;; Edge Case Tests - User Configuration Issues
 
+;;; Inbox Exclusion Tests
+
+(deftest refile/excludes-inbox-file-even-with-refile-property ()
+  "Inbox file should never appear as a refile target, even with ORG_GTD_REFILE property.
+
+The inbox is for capture only. Even if inbox.org accidentally has headings
+with ORG_GTD_REFILE properties, they should still be filtered out.
+This prevents items from being refiled back to inbox during processing."
+  ;; First create a valid GTD target (this goes through the full workflow)
+  (create-project "project headline")
+  (with-current-buffer (org-gtd--default-file)
+    (basic-save-buffer))
+
+  ;; Now add headings to inbox WITH ORG_GTD_REFILE property (edge case)
+  (with-current-buffer (find-file-noselect (org-gtd-inbox-path))
+    (goto-char (point-max))
+    (insert "* Inbox Projects Heading
+:PROPERTIES:
+:ORG_GTD_REFILE: Projects
+:END:
+")
+    (basic-save-buffer))
+
+  ;; Get refile targets for projects
+  (let* ((org-gtd-refile-to-any-target nil)
+         (targets (org-gtd-refile--get-targets org-gtd-projects))
+         (target-names (mapcar 'car targets)))
+    ;; Should have GTD targets from org-gtd-tasks.org
+    (assert-true (member "Projects" target-names))
+    ;; Should NOT have inbox headings even if they have the property
+    (assert-nil (member "Inbox Projects Heading" target-names))))
+
 (deftest refile/nil-current-buffer-target-excludes-wip-buffer ()
   "User's (nil :maxlevel) target should not match WIP buffer headings.
 

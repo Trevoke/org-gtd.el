@@ -103,17 +103,22 @@ Returns a function suitable for `org-refile-target-verify-function'.
 
 The function filters targets as follows:
 - WIP temp files: always rejected (prevents self-refile errors)
+- Inbox file: always rejected (inbox is for capture, not refile)
 - Files in `org-gtd-directory': must have matching ORG_GTD_REFILE property
 - Other files: accepted (allows user's custom refile targets)"
   (lambda ()
     (let* ((file (buffer-file-name))
            (gtd-dir (expand-file-name org-gtd-directory))
+           (inbox-path (expand-file-name (org-gtd--path "inbox")))
            (in-wip-dir (org-gtd-refile--wip-file-p file))
+           (is-inbox (and file (string-equal (expand-file-name file) inbox-path)))
            (in-gtd-dir (and file (string-prefix-p gtd-dir (expand-file-name file))))
            (refile-prop (org-element-property :ORG_GTD_REFILE (org-element-at-point))))
       (cond
        ;; WIP temp files should never be refile targets
        (in-wip-dir nil)
+       ;; Inbox file should never be a refile target
+       (is-inbox nil)
        ;; Files in GTD dir must have matching ORG_GTD_REFILE property
        (in-gtd-dir (string-equal type refile-prop))
        ;; Other files (user's custom targets) are accepted
