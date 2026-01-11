@@ -13,7 +13,7 @@
 ;; - Temp file creation (2 tests)
 ;; - Temp file content preservation (1 test)
 ;; - Auto-save functionality (3 tests)
-;; - Temp file cleanup (2 tests)
+;; - Temp file cleanup (4 tests) - symlink test moved to wip-symlink-test.el
 ;; - Edge cases (2 tests)
 ;;
 ;; Migrated from test/wip-temp-file-test.el (buttercup)
@@ -193,6 +193,45 @@
 
       ;; After cleanup, temp file should be deleted
       (assert-nil (file-exists-p temp-file)))))
+
+(deftest wip-temp-file/cleanup-kills-buffer ()
+  "Cleanup kills buffer associated with temp file.
+Regression test for GitHub issue #271."
+  (let ((source-buffer (ogt--temp-org-file-buffer "taskfile" "* Task to clarify")))
+    (with-current-buffer source-buffer
+      (org-gtd-clarify-item))
+
+    (let* ((wip-buffer (car (org-gtd-wip--get-buffers)))
+           (clarify-id (with-current-buffer wip-buffer
+                         org-gtd-clarify--clarify-id)))
+      ;; Verify buffer exists before cleanup
+      (assert-true (buffer-live-p wip-buffer))
+
+      ;; Cleanup
+      (org-gtd-wip--cleanup-temp-file clarify-id)
+
+      ;; Buffer should be killed
+      (assert-nil (buffer-live-p wip-buffer)))))
+
+(deftest wip-temp-file/cleanup-uses-find-buffer-visiting ()
+  "Cleanup uses find-buffer-visiting which handles symlinks.
+Verifies the fix for GitHub issue #271: find-buffer-visiting matches
+files regardless of symlink resolution, unlike get-file-buffer."
+  (let ((source-buffer (ogt--temp-org-file-buffer "taskfile" "* Task")))
+    (with-current-buffer source-buffer
+      (org-gtd-clarify-item))
+
+    (let* ((wip-buffer (car (org-gtd-wip--get-buffers)))
+           (temp-file (buffer-file-name wip-buffer)))
+      ;; find-buffer-visiting should find the buffer
+      (assert-equal wip-buffer (find-buffer-visiting temp-file))
+
+      ;; Cleanup via org-gtd-clarify-stop
+      (with-current-buffer wip-buffer
+        (org-gtd-clarify-stop))
+
+      ;; Buffer should be gone
+      (assert-nil (find-buffer-visiting temp-file)))))
 
 ;;; Edge Cases Tests
 

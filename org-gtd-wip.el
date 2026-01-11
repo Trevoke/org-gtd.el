@@ -111,7 +111,9 @@ activating any additional modes (e.g., `org-gtd-clarify-mode')."
   (let ((temp-file (gethash org-id org-gtd-wip--temp-files)))
     (when temp-file
       ;; Kill buffer if open
-      (let ((buffer (get-file-buffer temp-file)))
+      ;; Use find-buffer-visiting instead of get-file-buffer to handle
+      ;; symlinks correctly when find-file-visit-truename is set (issue #271)
+      (let ((buffer (find-buffer-visiting temp-file)))
         (when buffer
           (with-current-buffer buffer
             (set-buffer-modified-p nil)) ; Don't prompt for save

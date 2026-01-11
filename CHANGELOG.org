@@ -1,3 +1,12 @@
+* 4.2.3 - 2026-01-10
+
+** Fixed
+*** WIP buffer cleanup with symlinked temp directories (Fix #271)
+When ~find-file-visit-truename~ is ~t~ and the temp directory is accessed
+through a symlink (e.g., macOS where ~/tmp~ -> ~/private/tmp~), clarify buffers
+were not being killed after organizing items. The fix uses ~find-buffer-visiting~
+instead of ~get-file-buffer~ to properly handle symlink path resolution.
+
 * 4.2.2 - 2026-01-09
 
 ** Fixed

@@ -25,6 +25,7 @@
 ;; Mock filesystem for testing
 ;; :setup disables info file processing (avoids install-info requirement)
 (eldev-use-vc-repository 'mock-fs :git "https://codeberg.org/Trevoke/mock-fs.el.git"
+                         :rev "0.10.1"
                          :setup '(setq eldev-info-sources nil))
 (eldev-add-extra-dependencies 'test 'mock-fs)
 
