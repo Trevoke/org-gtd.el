@@ -16,49 +16,49 @@ curl -fsSL https://raw.github.com/doublep/eldev/master/webinstall/github-eldev |
 ### Testing
 ```bash
 # Run all tests (standard)
-eldev etest -r dot
+~/bin/eldev etest -r dot
 
 # Run all tests for a specific version of emacs (uses silex/emacs images)
-eldev docker silex/emacs:30.1-ci etest -r dot
+~/bin/eldev docker silex/emacs:30.1-ci etest -r dot
 
 # Run tests with full debugging (CI command)
-eldev -p -dtT etest -r dot
+~/bin/eldev -p -dtT etest -r dot
 ```
 
 ### Build and Compilation
 ```bash
 # Compile all elisp files
-eldev compile
+~/bin/eldev compile
 
 # Clean and recompile (recommended for testing)
-eldev clean && eldev compile
+~/bin/eldev clean && ~/bin/eldev compile
 
 # Compile with warnings as errors
-eldev compile --warnings-as-errors
+~/bin/eldev compile --warnings-as-errors
 
 # Build autoloads (automatic during compile)
-eldev compile --set all
+~/bin/eldev compile --set all
 ```
 
 ### Linting and Validation
 ```bash
 # Run all linters (package-lint, checkdoc, etc.)
-eldev lint
+~/bin/eldev lint
 
 # Lint specific files
-eldev lint --file="org-gtd-core.el"
+~/bin/eldev lint --file="org-gtd-core.el"
 
 # List available linters
-eldev lint --list
+~/bin/eldev lint --list
 
 # Check dependencies status
-eldev dependencies
+~/bin/eldev dependencies
 
 # Comprehensive project health check
-eldev doctor
+~/bin/eldev doctor
 
 # Update copyright notices
-eldev update-copyright
+~/bin/eldev update-copyright
 ```
 
 ### Container Testing (Multiple Emacs Versions)
@@ -67,7 +67,7 @@ eldev update-copyright
 podman build -t stag-28-2 -f dev/Containerfile --build-arg emacs_version=28-2 .
 
 # Run tests in container
-eldev -dt docker "localhost/stag-28-2" -C -dtp etest
+~/bin/eldev -dt docker "localhost/stag-28-2" -C -dtp etest
 ```
 
 ### Creating a new release

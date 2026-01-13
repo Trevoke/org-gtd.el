@@ -14,6 +14,7 @@
 ;; - Project refiling with org-gtd-refile-to-any-target (1 test)
 ;; - Finding refile targets by ORG_GTD_REFILE property (3 tests)
 ;; - Multiple file refile targets (1 test)
+;; - Multivalue ORG_GTD_REFILE property matching (2 tests)
 ;;
 ;; Migrated from test/refiling-test.el (buttercup)
 
@@ -158,6 +159,8 @@
       (org-mode)
       (insert "* choose-refile-target")
       (point-min)
+      ;; Must set org-gtd--organize-type for should-prompt-p to work
+      (setq-local org-gtd--organize-type 'project-heading)
       (with-simulated-input
           "AdditionalHeading RET"
         (org-gtd-refile--do org-gtd-projects org-gtd-projects-template)))
@@ -255,6 +258,117 @@ would occur if the item tried to refile to itself."
     ;; Verify item shows in engage agenda
     (org-gtd-engage)
     (assert-match "test item with nil refile target" (agenda-raw-text))))
+
+;;; GTD-Only Target Lookup Tests
+
+(deftest refile/gtd-targets-ignores-user-refile-targets ()
+  "GTD-only targets should not include user's org-refile-targets.
+
+When auto-refiling GTD items, we need targets ONLY from org-gtd-tasks.org
+files with appropriate ORG_GTD_REFILE properties. User's org-refile-targets
+should be ignored to prevent items from being auto-refiled to random
+user-configured locations."
+  ;; Create a user refile target file
+  (let* ((user-file (expand-file-name "user-notes.org" org-gtd-directory))
+         (org-refile-targets `(((,user-file) :maxlevel . 9))))
+    ;; Create user file with a heading
+    (with-current-buffer (find-file-noselect user-file)
+      (erase-buffer)
+      (insert "* User Target\n")
+      (save-buffer))
+    ;; Create GTD file with proper target
+    (with-current-buffer (org-gtd--default-file)
+      (erase-buffer)
+      (insert (format "* Actions\n:PROPERTIES:\n:%s: %s\n:END:\n"
+                      org-gtd-prop-refile org-gtd-action))
+      (save-buffer))
+    ;; GTD-only targets should NOT include user file
+    (let ((targets (org-gtd-refile--get-gtd-targets org-gtd-action)))
+      (assert-true targets)
+      (assert-nil (seq-find (lambda (t) (string-match-p "user-notes" (nth 1 t)))
+                            targets))
+      (assert-true (seq-find (lambda (t) (string-match-p "org-gtd-tasks" (nth 1 t)))
+                             targets)))))
+
+;;; Auto-Refile End-to-End Tests
+
+(deftest refile/auto-refile-uses-gtd-targets-only ()
+  "Auto-refile should use GTD targets, ignoring user's org-refile-targets.
+
+When auto-refiling GTD items (org-gtd-refile-to-any-target is t), the item
+should go to org-gtd-tasks.org, NOT to a user-configured refile target
+that happens to be first in the target list."
+  ;; Create user file OUTSIDE GTD directory (would be accepted by verify function)
+  (let* ((user-file (make-temp-file "user-targets" nil ".org"))
+         (user-buffer (find-file-noselect user-file)))
+    (with-current-buffer user-buffer
+      (erase-buffer)
+      (insert "* User Target\n")
+      (basic-save-buffer))
+    ;; Set user's org-refile-targets - this file is FIRST in merged list
+    (let ((org-refile-targets `((,user-file :maxlevel . 9)))
+          (org-gtd-refile-to-any-target t))
+      ;; Create GTD file with proper target
+      (with-current-buffer (org-gtd--default-file)
+        (erase-buffer)
+        (insert (format "* Actions\n:PROPERTIES:\n:%s: %s\n:END:\n"
+                        org-gtd-prop-refile org-gtd-action))
+        (basic-save-buffer))
+      ;; Create inbox with item to process
+      (with-current-buffer (find-file-noselect (org-gtd-inbox-path))
+        (erase-buffer)
+        (insert "* Test item\n")
+        (basic-save-buffer))
+      ;; Process the item as single-action
+      (org-gtd-process-inbox)
+      (with-simulated-input "SPC"
+        (org-gtd-single-action))
+      ;; Item should be in GTD file, not user file
+      (with-current-buffer (find-file-noselect user-file)
+        (goto-char (point-min))
+        (assert-nil (search-forward "Test item" nil t)))
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-min))
+        (assert-true (search-forward "Test item" nil t))))
+    ;; Cleanup
+    (kill-buffer user-buffer)
+    (delete-file user-file)))
+
+;;; Multivalue ORG_GTD_REFILE Tests
+
+(deftest refile/multivalue-property-matches-any-type ()
+  "Headings with multiple ORG_GTD_REFILE values should match any of them."
+  (with-current-buffer (org-gtd--default-file)
+    (erase-buffer)
+    ;; Create heading that accepts both Actions and Projects
+    (insert (format "* Work Tasks\n:PROPERTIES:\n:%s: %s %s\n:END:\n"
+                    org-gtd-prop-refile org-gtd-action org-gtd-projects))
+    (save-buffer))
+  ;; Should find target for Actions
+  (let ((action-targets (org-gtd-refile--get-gtd-targets org-gtd-action)))
+    (assert-true action-targets)
+    (assert-true (seq-find (lambda (t) (string-match-p "Work Tasks" (car t)))
+                           action-targets)))
+  ;; Should also find target for Projects
+  (let ((project-targets (org-gtd-refile--get-gtd-targets org-gtd-projects)))
+    (assert-true project-targets)
+    (assert-true (seq-find (lambda (t) (string-match-p "Work Tasks" (car t)))
+                           project-targets))))
+
+(deftest refile/group-p-handles-multivalue ()
+  "org-gtd-refile--group-p should handle multivalue ORG_GTD_REFILE."
+  (with-current-buffer (org-gtd--default-file)
+    (erase-buffer)
+    (insert (format "* Work Tasks\n:PROPERTIES:\n:%s: %s %s\n:END:\n"
+                    org-gtd-prop-refile org-gtd-action org-gtd-projects))
+    (save-buffer)
+    (goto-char (point-min))
+    ;; Point is already at the headline (no org-next-visible-heading needed)
+    ;; Should match both types
+    (assert-true (org-gtd-refile--group-p org-gtd-action))
+    (assert-true (org-gtd-refile--group-p org-gtd-projects))
+    ;; Should not match unrelated types
+    (assert-nil (org-gtd-refile--group-p org-gtd-calendar))))
 
 (provide 'refiling-test)
 

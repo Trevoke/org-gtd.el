@@ -119,8 +119,9 @@ The function filters targets as follows:
        (in-wip-dir nil)
        ;; Inbox file should never be a refile target
        (is-inbox nil)
-       ;; Files in GTD dir must have matching ORG_GTD_REFILE property
-       (in-gtd-dir (string-equal type refile-prop))
+       ;; Files in GTD dir must have matching ORG_GTD_REFILE property (multivalue)
+       (in-gtd-dir (and refile-prop
+                        (member type (split-string refile-prop))))
        ;; Other files (user's custom targets) are accepted
        (t t)))))
 
@@ -147,20 +148,25 @@ Set it to nil and customize `org-gtd-refile-prompt-for-types' instead.")
 TYPE is one of the org-gtd action types (e.g., `org-gtd-projects').
 REFILE-TARGET-ELEMENT is a string template for creating a new target if needed.
 
-Merges user's `org-refile-targets' with org-gtd's ORG_GTD_REFILE targets.
-User's targets appear first, then org-gtd's property-based targets.
-Files in `org-gtd-directory' are filtered by ORG_GTD_REFILE property;
-WIP temp files are always excluded; other files are accepted."
-  (unless (org-gtd-refile--get-targets type)
+When prompting (type in `org-gtd-refile-prompt-for-types'), shows merged
+targets from user's `org-refile-targets' and GTD files.
+
+When auto-refiling (type not in prompt list), only uses GTD targets in
+`org-gtd-tasks.org', ignoring user configuration."
+  ;; Check GTD-only targets for existence (not merged targets)
+  (unless (org-gtd-refile--get-gtd-targets type)
     (org-gtd-refile--add-target refile-target-element))
-  (let ((org-refile-target-verify-function (org-gtd-refile--make-verify-function type))
-        (org-refile-targets (append org-refile-targets
-                                    '((org-agenda-files :maxlevel . 9))))
-        (org-refile-use-outline-path t)
-        (org-outline-path-complete-in-steps nil))
-    (if (org-gtd-refile--should-prompt-p org-gtd--organize-type)
-        (org-refile nil nil nil "Finish organizing task under: ")
-      (org-refile nil nil (car (org-refile-get-targets))))))
+
+  (if (org-gtd-refile--should-prompt-p org-gtd--organize-type)
+      ;; Prompt mode: use merged targets (user + GTD)
+      (let ((org-refile-target-verify-function (org-gtd-refile--make-verify-function type))
+            (org-refile-targets (append org-refile-targets
+                                        '((org-agenda-files :maxlevel . 9))))
+            (org-refile-use-outline-path t)
+            (org-outline-path-complete-in-steps nil))
+        (org-refile nil nil nil "Finish organizing task under: "))
+    ;; Auto-refile: GTD-only targets
+    (org-refile nil nil (car (org-gtd-refile--get-gtd-targets type)))))
 
 (defun org-gtd-refile--get-targets (type)
   "Get refile targets for TYPE, merging user's targets with org-gtd's.
@@ -172,6 +178,18 @@ an item of TYPE (e.g., `org-gtd-projects', variable `org-gtd-tickler')."
                                     '((org-agenda-files :maxlevel . 9))))
         (org-refile-use-outline-path t)
         (org-outline-path-complete-in-steps nil))
+    (org-refile-get-targets)))
+
+(defun org-gtd-refile--get-gtd-targets (type)
+  "Get GTD-only refile targets for TYPE.
+Only looks in `org-gtd-tasks.org', ignoring user's `org-refile-targets'
+and other `org-agenda-files'.  This ensures auto-refile always goes to
+the GTD file, regardless of user configuration."
+  (let* ((gtd-file (org-gtd--path org-gtd-default-file-name))
+         (org-refile-target-verify-function (org-gtd-refile--make-verify-function type))
+         (org-refile-targets `(((,gtd-file) :maxlevel . 9)))
+         (org-refile-use-outline-path t)
+         (org-outline-path-complete-in-steps nil))
     (org-refile-get-targets)))
 
 (defun org-gtd-refile--add-target (refile-target-element)
@@ -189,9 +207,11 @@ org-gtd files exist."
     (basic-save-buffer)))
 
 (defun org-gtd-refile--group-p (type)
-  "Determine whether the current heading is of a given gtd TYPE."
-  (string-equal type
-                (org-element-property :ORG_GTD_REFILE (org-element-at-point))))
+  "Determine whether the current heading is of a given gtd TYPE.
+TYPE can be one of multiple space-separated values in ORG_GTD_REFILE."
+  (let ((refile-prop (org-element-property :ORG_GTD_REFILE (org-element-at-point))))
+    (and refile-prop
+         (member type (split-string refile-prop)))))
 
 ;;;; Footer
 

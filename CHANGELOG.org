@@ -1,3 +1,16 @@
+* 4.3.0 - 2026-01-12
+
+** Changed
+*** Auto-refile now only uses targets in org-gtd-tasks.org
+Auto-refile now only uses targets in ~org-gtd-tasks.org~, ignoring user's
+~org-refile-targets~ and other ~org-agenda-files~. This fixes issues where items
+would be refiled to unexpected locations. (GitHub issues #259, #266)
+
+** Added
+*** ORG_GTD_REFILE property now supports multiple space-separated values
+A heading with property value ~Actions Projects~ (e.g., ~:ORG_GTD_REFILE: Actions Projects~)
+will be a valid target for both single actions and projects.
+
 * 4.2.3 - 2026-01-10
 
 ** Fixed

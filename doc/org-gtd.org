@@ -1812,6 +1812,19 @@ For other types, use the appropriate template constant value:
 - Someday: ~ORG_GTD_REFILE: Someday~
 - Habits: ~ORG_GTD_REFILE: Habits~
 
+****** Multiple Types Per Heading
+
+A single heading can accept multiple GTD types by listing them space-separated:
+
+#+begin_src org-mode
+,* Work Tasks
+:PROPERTIES:
+:ORG_GTD_REFILE: Actions Projects
+:END:
+#+end_src
+
+This heading will appear as a valid target when organizing both single actions AND projects. Useful when you want to organize related items under a common parent.
+
 If no refile target exists when organizing, org-gtd automatically creates one in your default GTD file.
 
 ***** Using Your Own Refile Targets
@@ -6289,6 +6302,8 @@ If you find yourself manually editing properties, that indicates a missing featu
 - ~"Someday"~ :: Target for refiling someday/maybe items
 - ~"Habits"~ :: Target for refiling habits
 
+*Multivalue support*: Values can be space-separated to accept multiple types. For example, ~Actions Projects~ makes a heading a valid target for both single actions and projects.
+
 *Example*:
 #+begin_example
 ,* Projects         <-- Can be at any level in any file
@@ -6299,6 +6314,11 @@ If you find yourself manually editing properties, that indicates a missing featu
 ,* Work/Development Projects   <-- Can have multiple targets per type
 :PROPERTIES:
 :ORG_GTD_REFILE: Projects
+:END:
+
+,* Work Tasks      <-- Accepts multiple types
+:PROPERTIES:
+:ORG_GTD_REFILE: Actions Projects
 :END:
 #+end_example
 
@@ -6311,6 +6331,7 @@ If you find yourself manually editing properties, that indicates a missing featu
 - Org-gtd merges these targets with your ~org-refile-targets~ configuration
 - Can exist at ANY level in ANY file in ~org-agenda-files~
 - You can have multiple refile targets for the same category type
+- A single heading can accept multiple types (space-separated values)
 - Your ~org-refile-targets~ appear first, then ~ORG_GTD_REFILE~ targets
 
 *** Project Properties
