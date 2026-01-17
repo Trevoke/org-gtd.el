@@ -1,3 +1,23 @@
+* 4.3.1 - 2026-01-17
+
+** Fixed
+*** Project graph now colors nodes by TODO state instead of priority
+Previously, graph nodes were colored by priority (A/B/C), not by TODO state
+(NEXT/TODO). This made the graph confusing since colors didn't indicate which
+tasks were actionable. Nodes now correctly show NEXT tasks in blue and TODO
+tasks in orange.
+
+*** Graph colors updated to be color-blind accessible
+Graph node colors now use the Okabe-Ito palette, which is designed to be
+distinguishable by people with color vision deficiency. The blue/orange
+contrast for NEXT/TODO is safe for all common forms of color blindness.
+
+** Changed
+*** Documentation updated for graph colors and layout
+- Node colors: Blue = NEXT (actionable), Orange = TODO (blocked)
+- Project heading appears at bottom of graph (represents end state after all tasks complete)
+- Tasks flow from top (first) to bottom (last)
+
 * 4.3.0 - 2026-01-12
 
 ** Changed

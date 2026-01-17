@@ -35,14 +35,16 @@
 ;;;; Color Schemes
 
 (defun org-gtd-svg--state-colors ()
-  "Get color mapping for task states using keyword mapping."
-  `((,(org-gtd-keywords--todo) . "#ff6b6b")
-    (,(org-gtd-keywords--next) . "#4ecdc4")
-    (,(org-gtd-keywords--done) . "#95e1d3")
-    (,(org-gtd-keywords--wait) . "#feca57")
-    ("HOLD" . "#ee5a6f")
-    (,(org-gtd-keywords--canceled) . "#ee5a6f")
-    (nil . "#b8c5d0")))  ; Default for tasks with no state
+  "Get color mapping for task states using keyword mapping.
+Colors are from the Okabe-Ito palette, designed to be accessible
+to people with color vision deficiency (color blindness)."
+  `((,(org-gtd-keywords--todo) . "#E69F00")   ; Orange - blocked/waiting
+    (,(org-gtd-keywords--next) . "#0072B2")   ; Blue - ready/actionable
+    (,(org-gtd-keywords--done) . "#999999")   ; Grey - completed
+    (,(org-gtd-keywords--wait) . "#F0E442")   ; Yellow - waiting for input
+    ("HOLD" . "#CC79A7")                       ; Reddish purple - on hold
+    (,(org-gtd-keywords--canceled) . "#999999") ; Grey - canceled
+    (nil . "#56B4E9")))  ; Light blue - default for tasks with no state
 
 (defconst org-gtd-svg--priority-colors
   '(("A" . "#e74c3c")

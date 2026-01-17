@@ -77,9 +77,8 @@ SELECTED-NODE-ID, if provided, determines node selection."
        (push (list (intern id)  ; dag-draw expects symbol IDs
                    :label (org-gtd-graph-node-title node)
                    ;; SVG visual properties
-                   :svg-fill (org-gtd-svg--get-node-color
-                             (org-gtd-graph-node-priority node)
-                             (org-gtd-graph-node-tags node))
+                   :svg-fill (org-gtd-svg--get-state-color
+                             (org-gtd-graph-node-state node))
                    :svg-fill-opacity (org-gtd-svg--get-node-opacity
                                      (org-gtd-graph-node-state node))
                    :svg-stroke (org-gtd-dag-draw--compute-stroke-color

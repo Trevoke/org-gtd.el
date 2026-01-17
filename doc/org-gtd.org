@@ -2336,11 +2336,11 @@ Run: ~M-x org-gtd-show-project-graph~
 **** Step 3: Explore
 
 You're now looking at your project as a visual graph:
-- The project heading is at the top
-- Tasks are arranged in layers below
+- Tasks are arranged in layers from top to bottom
+- The project heading is at the bottom (it represents the end state after all tasks complete)
 - Arrows show which tasks block other tasks
-- Green boxes are NEXT (ready to work on)
-- Gray boxes are TODO (waiting for dependencies)
+- Blue boxes are NEXT (ready to work on)
+- Orange boxes are TODO (waiting for dependencies)
 
 Press ~?~ to see all available commands.
 
@@ -2372,12 +2372,12 @@ The graph view arranges tasks in *layers*:
 - *Layer 2*: Tasks blocked by layer 1
 - And so on...
 
-*Green boxes* (NEXT state) mean "ready to work on right now."
-*Gray boxes* (TODO state) mean "blocked by dependencies."
+*Blue boxes* (NEXT state) mean "ready to work on right now."
+*Orange boxes* (TODO state) mean "blocked by dependencies."
 
 When you complete a NEXT task, org-gtd automatically updates the graph:
 - Completed task disappears (or grays out if you keep DONE tasks visible)
-- Tasks that were waiting for it may turn green
+- Tasks that were waiting for it may turn blue
 
 **** Sequential vs Parallel vs Mixed
 
@@ -2393,7 +2393,7 @@ In graph view, sequential projects look like a vertical chain of boxes with arro
 - Multiple tasks at layer 0 (all root tasks)
 - Faster project completion when tasks are independent
 
-In graph view, parallel projects have multiple green boxes at the same layer.
+In graph view, parallel projects have multiple blue boxes at the same layer.
 
 *Mixed* (most real projects):
 - Some tasks parallel, others sequential
@@ -2805,8 +2805,8 @@ These commands are used less frequently and use key prefixes for organization.
 
 **** Visual Indicators
 
-- *Green boxes*: NEXT tasks (ready to work on)
-- *Gray boxes*: TODO tasks (blocked by dependencies)
+- *Blue boxes*: NEXT tasks (ready to work on)
+- *Orange boxes*: TODO tasks (blocked by dependencies)
 - *Arrows*: Dependencies (from blocker → blocked task)
 - *Layers*: Vertical positioning shows dependency depth
 
@@ -3154,8 +3154,8 @@ Run ~M-x org-gtd-reflect-stuck-projects~ to find stuck projects.
 Open the stuck project in graph view: ~M-x org-gtd-show-project-graph~
 
 *What to look for*:
-- *No green boxes?* All tasks might be waiting for dependencies that are DONE. Press ~g~ to refresh.
-- *Gray boxes at layer 0?* These should be green (root tasks are never blocked). Something's wrong with the dependency structure.
+- *No blue boxes?* All tasks might be waiting for dependencies that are DONE. Press ~g~ to refresh.
+- *Orange boxes at layer 0?* These should be blue (root tasks are never blocked). Something's wrong with the dependency structure.
 - *Circular dependency?* Org-gtd prevents these, but if you see arrows forming a loop, you've found a bug.
 
 *How to fix*:
@@ -3166,20 +3166,20 @@ Open the stuck project in graph view: ~M-x org-gtd-show-project-graph~
 **** Task Should Be NEXT But Shows as TODO
 
 In graph view, look at the task:
-- Is it gray (TODO)?
+- Is it orange (TODO)?
 - Trace arrows pointing TO it—these are its blockers
-- Are all those blockers green? Then something's wrong.
-- Are some blockers gray? Then the task is correctly blocked.
+- Are all those blockers blue? Then something's wrong.
+- Are some blockers orange? Then the task is correctly blocked.
 
-If blockers are actually DONE but still showing as green, press ~g~ to refresh.
+If blockers are actually DONE but still showing as blue, press ~g~ to refresh.
 
 *How to fix*: Use ~B~ to modify blockers (uncheck incorrect ones), or use text command ~org-gtd-task-clear-relationships~ to start fresh.
 
 **** Too Many Tasks Are NEXT
 
 In graph view:
-- Count green boxes
-- If you have 10+ green tasks, you probably have dependency problems
+- Count blue boxes
+- If you have 10+ blue tasks, you probably have dependency problems
 - Some tasks should depend on others but don't
 
 *How to fix*:
@@ -6652,8 +6652,8 @@ The ONLY cases where manual property editing might be necessary:
 
 *Diagnosis*:
 - Run ~M-x org-gtd-show-project-graph~
-- Look for green boxes (NEXT tasks)
-- If no green boxes, check for:
+- Look for blue boxes (NEXT tasks)
+- If no blue boxes, check for:
   - Circular dependencies (arrows forming a loop)
   - All tasks waiting on incomplete tasks
   - Missing ORG_GTD_FIRST_TASKS property
@@ -6665,7 +6665,7 @@ The ONLY cases where manual property editing might be necessary:
 
 **** Too Many NEXT Tasks
 
-*Symptom*: Project shows 10+ green boxes in graph view.
+*Symptom*: Project shows 10+ blue boxes in graph view.
 
 *Diagnosis*: Tasks that should be dependent are independent.
 
@@ -6676,10 +6676,10 @@ The ONLY cases where manual property editing might be necessary:
 
 **** Task Won't Advance to NEXT
 
-*Symptom*: Completed a task, but dependent task still shows TODO (gray).
+*Symptom*: Completed a task, but dependent task still shows TODO (orange).
 
 *Diagnosis*:
-- In graph view, select the gray task
+- In graph view, select the orange task
 - Press ~i~ to show relationships
 - Check if all blockers are actually DONE
 
