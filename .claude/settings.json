@@ -30,7 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/.claude/hooks/validate_elisp_syntax.py"
+            "command": "python3 .claude/hooks/validate_elisp_syntax.py"
           }
         ]
       },
@@ -39,7 +39,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/.claude/hooks/validate_elisp_syntax.py"
+            "command": "python3 .claude/hooks/validate_elisp_syntax.py"
           }
         ]
       },
@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/.claude/hooks/validate_elisp_syntax.py"
+            "command": "python3 .claude/hooks/validate_elisp_syntax.py"
           }
         ]
       }
