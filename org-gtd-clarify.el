@@ -75,6 +75,17 @@ The values can be: nil, top, right, left, bottom."
   :package-version '(org-gtd . "4.0")
   :type 'symbol)
 
+(defcustom org-gtd-clarify-duplicate-queue-position 'bottom
+  "Position for the duplicate queue window during clarification.
+When duplicates are created, they appear in a side window at this position.
+Values can be: top, right, left, bottom."
+  :group 'org-gtd-clarify
+  :package-version '(org-gtd . "4.4.0")
+  :type '(choice (const :tag "Top" top)
+                 (const :tag "Right" right)
+                 (const :tag "Left" left)
+                 (const :tag "Bottom" bottom)))
+
 ;;;; Constants
 
 (defconst org-gtd-clarify-organize-help-content

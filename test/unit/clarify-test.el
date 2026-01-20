@@ -100,6 +100,13 @@
     (when-let ((buf (get-buffer "*Org GTD Organize Help*")))
       (kill-buffer buf))))
 
+;;; Duplicate Queue Customization Tests
+
+(deftest clarify/duplicate-queue-position-customizable ()
+  "Has a customizable variable for queue window position."
+  (assert-true (boundp 'org-gtd-clarify-duplicate-queue-position))
+  (assert-equal 'bottom (default-value 'org-gtd-clarify-duplicate-queue-position)))
+
 ;;; Clarify Through Agenda Tests
 
 (deftest clarify/agenda-converts-tickler-to-project ()
