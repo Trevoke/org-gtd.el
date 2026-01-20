@@ -187,6 +187,17 @@
     (org-gtd-clarify--queue-cleanup)
     (assert-nil (get-buffer "*Org GTD Duplicate Queue*"))))
 
+;;; Content Extraction Tests
+
+(deftest clarify/get-wip-content-extracts-heading ()
+  "Extracts title and content from WIP buffer."
+  (capture-inbox-item "Test heading")
+  (org-gtd-process-inbox)
+  (with-wip-buffer
+    (let ((result (org-gtd-clarify--get-wip-content)))
+      (assert-match "Test heading" (plist-get result :title))
+      (assert-match "\\* .*Test heading" (plist-get result :content)))))
+
 ;;; Clarify Through Agenda Tests
 
 (deftest clarify/agenda-converts-tickler-to-project ()

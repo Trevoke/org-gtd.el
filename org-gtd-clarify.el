@@ -571,6 +571,22 @@ Creates or updates the queue buffer with current queue contents."
     (kill-buffer buffer))
   (setq org-gtd-clarify--duplicate-queue nil))
 
+;;;;; Content Extraction
+
+(defun org-gtd-clarify--get-wip-content ()
+  "Extract title and full content from current WIP buffer.
+Returns plist with :title and :content keys, or nil if buffer is empty."
+  (save-excursion
+    (goto-char (point-min))
+    (when (org-before-first-heading-p)
+      (org-next-visible-heading 1))
+    (when (org-at-heading-p)
+      (let ((title (org-get-heading t t t t))
+            (content (buffer-substring-no-properties
+                      (point-min) (point-max))))
+        (when (and title (not (string-empty-p (string-trim title))))
+          (list :title title :content content))))))
+
 ;;;; Footer
 
 (provide 'org-gtd-clarify)
