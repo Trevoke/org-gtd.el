@@ -107,6 +107,19 @@
   (assert-true (boundp 'org-gtd-clarify-duplicate-queue-position))
   (assert-equal 'bottom (default-value 'org-gtd-clarify-duplicate-queue-position)))
 
+;;; Duplicate Queue Variable Tests
+
+(deftest clarify/duplicate-queue-variable-exists ()
+  "Has a buffer-local variable for the duplicate queue."
+  (assert-true (boundp 'org-gtd-clarify--duplicate-queue))
+  ;; Verify it's buffer-local by default
+  (with-temp-buffer
+    (setq org-gtd-clarify--duplicate-queue '("test"))
+    (assert-equal '("test") org-gtd-clarify--duplicate-queue))
+  ;; Different buffer should have nil
+  (with-temp-buffer
+    (assert-nil org-gtd-clarify--duplicate-queue)))
+
 ;;; Clarify Through Agenda Tests
 
 (deftest clarify/agenda-converts-tickler-to-project ()

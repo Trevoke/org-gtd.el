@@ -161,6 +161,10 @@ Set via C-u prefix to clarify commands or transient toggle.")
 Set by `org-gtd-clarify-inbox-item' to continue inbox processing.
 Called by `org-gtd-organize--call' when non-nil.")
 
+(defvar-local org-gtd-clarify--duplicate-queue nil
+  "List of pending duplicate items to clarify after current item.
+Each element is a plist with :title and :content keys.")
+
 ;;;;; External variables (defined in org-gtd-process.el)
 
 (defvar org-gtd-process--session-active)
