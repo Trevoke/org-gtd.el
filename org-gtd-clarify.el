@@ -517,6 +517,28 @@ TASK-INFO is a list of (heading id depends-on blocks) for each task."
         (nth 0 task-data)
       task-id)))
 
+;;;; Duplicate Queue Functions
+
+;;;;; Queue Predicates
+
+(defun org-gtd-clarify--queue-empty-p ()
+  "Return t if the duplicate queue is empty."
+  (null org-gtd-clarify--duplicate-queue))
+
+;;;;; Queue Operations
+
+(defun org-gtd-clarify--queue-add (title content)
+  "Add item with TITLE and CONTENT to end of duplicate queue."
+  (setq org-gtd-clarify--duplicate-queue
+        (append org-gtd-clarify--duplicate-queue
+                (list (list :title title :content content)))))
+
+(defun org-gtd-clarify--queue-pop ()
+  "Remove and return first item from duplicate queue.
+Returns nil if queue is empty."
+  (when org-gtd-clarify--duplicate-queue
+    (pop org-gtd-clarify--duplicate-queue)))
+
 ;;;; Footer
 
 (provide 'org-gtd-clarify)

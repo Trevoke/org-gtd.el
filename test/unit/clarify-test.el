@@ -120,6 +120,46 @@
   (with-temp-buffer
     (assert-nil org-gtd-clarify--duplicate-queue)))
 
+;;; Duplicate Queue Helper Tests
+
+(deftest clarify/queue-empty-p-returns-true-when-empty ()
+  "Returns t when queue is empty or nil."
+  (with-temp-buffer
+    (setq org-gtd-clarify--duplicate-queue nil)
+    (assert-true (org-gtd-clarify--queue-empty-p))))
+
+(deftest clarify/queue-empty-p-returns-nil-when-has-items ()
+  "Returns nil when queue has items."
+  (with-temp-buffer
+    (setq org-gtd-clarify--duplicate-queue '((:title "Test" :content "* Test")))
+    (assert-nil (org-gtd-clarify--queue-empty-p))))
+
+(deftest clarify/queue-add-appends-to-queue ()
+  "Adds item to end of queue."
+  (with-temp-buffer
+    (setq org-gtd-clarify--duplicate-queue nil)
+    (org-gtd-clarify--queue-add "First" "* First")
+    (org-gtd-clarify--queue-add "Second" "* Second")
+    (assert-equal 2 (length org-gtd-clarify--duplicate-queue))
+    (assert-equal "First" (plist-get (car org-gtd-clarify--duplicate-queue) :title))))
+
+(deftest clarify/queue-pop-returns-and-removes-first-item ()
+  "Pops first item from queue (FIFO)."
+  (with-temp-buffer
+    (setq org-gtd-clarify--duplicate-queue
+          '((:title "First" :content "* First")
+            (:title "Second" :content "* Second")))
+    (let ((item (org-gtd-clarify--queue-pop)))
+      (assert-equal "First" (plist-get item :title))
+      (assert-equal 1 (length org-gtd-clarify--duplicate-queue))
+      (assert-equal "Second" (plist-get (car org-gtd-clarify--duplicate-queue) :title)))))
+
+(deftest clarify/queue-pop-returns-nil-when-empty ()
+  "Returns nil when popping from empty queue."
+  (with-temp-buffer
+    (setq org-gtd-clarify--duplicate-queue nil)
+    (assert-nil (org-gtd-clarify--queue-pop))))
+
 ;;; Clarify Through Agenda Tests
 
 (deftest clarify/agenda-converts-tickler-to-project ()
