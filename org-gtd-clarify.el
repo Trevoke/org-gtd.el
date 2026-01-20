@@ -178,6 +178,8 @@ Each element is a plist with :title and :content keys.")
 (defvar org-gtd-clarify-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-k") #'org-gtd-clarify-stop)
+    (define-key map (kbd "d") #'org-gtd-clarify-duplicate)
+    (define-key map (kbd "D") #'org-gtd-clarify-duplicate-exact)
     map)
   "Keymap for `org-gtd-clarify-mode'.")
 

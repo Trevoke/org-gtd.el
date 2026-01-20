@@ -286,6 +286,15 @@
     (assert-equal "Habit" (org-entry-get (point) "ORG_GTD"))
     (assert-true (org-get-scheduled-time (point)))))
 
+;;; Keybinding Tests
+
+(deftest clarify/keymap-has-duplicate-bindings ()
+  "Clarify mode map has d and D for duplicate commands."
+  (assert-equal 'org-gtd-clarify-duplicate
+                (lookup-key org-gtd-clarify-mode-map (kbd "d")))
+  (assert-equal 'org-gtd-clarify-duplicate-exact
+                (lookup-key org-gtd-clarify-mode-map (kbd "D"))))
+
 ;;; Duplicate Command Tests
 
 (deftest clarify/duplicate-exact-adds-to-queue ()
