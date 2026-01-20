@@ -363,6 +363,37 @@
   ;; Queue should be empty, no more WIP buffers from this session
   (assert-nil (ogt-get-wip-buffer)))
 
+;;; Cancel with Queue Tests
+
+(deftest clarify/stop-with-queue-prompts-discard ()
+  "Stopping with pending duplicates - discard clears queue."
+  (capture-inbox-item "Original item")
+  (org-gtd-process-inbox)
+  (with-wip-buffer
+    (org-gtd-clarify-duplicate-exact)
+    (org-gtd-clarify-duplicate-exact))
+  ;; Simulate choosing discard
+  (with-wip-buffer
+    (with-simulated-input "d"
+      (org-gtd-clarify-stop)))
+  ;; Queue should be cleared, no queue window
+  (assert-nil (get-buffer "*Org GTD Duplicate Queue*")))
+
+(deftest clarify/stop-save-to-inbox-preserves-duplicates ()
+  "Choosing save-to-inbox preserves duplicates in inbox."
+  (capture-inbox-item "Original item")
+  (org-gtd-process-inbox)
+  (with-wip-buffer
+    (org-gtd-clarify-duplicate-exact))
+  ;; Simulate choosing save
+  (with-wip-buffer
+    (with-simulated-input "s"
+      (org-gtd-clarify-stop)))
+  ;; Check inbox has the duplicate (need to refresh buffer)
+  (with-current-buffer (find-file-noselect (org-gtd-inbox-path))
+    (revert-buffer t t)
+    (assert-match "Original item" (buffer-string))))
+
 (provide 'clarify-test)
 
 ;;; clarify-test.el ends here

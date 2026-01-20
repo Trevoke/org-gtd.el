@@ -281,11 +281,22 @@ WINDOW-CONFIG is the window config to set after clarification finishes."
 (defun org-gtd-clarify-stop ()
   "Stop clarifying the current item and restore previous state.
 Closes the horizons view, restores the window configuration,
-cleans up temp file, and kills the WIP buffer without organizing the item."
+cleans up temp file, and kills the WIP buffer without organizing the item.
+If there are pending duplicates, prompts whether to discard or save them."
   (interactive)
+  ;; Handle pending duplicates first
+  (when (and (boundp 'org-gtd-clarify--duplicate-queue)
+             (not (org-gtd-clarify--queue-empty-p)))
+    (pcase (org-gtd-clarify--prompt-queue-action)
+      ('save (org-gtd-clarify--queue-save-to-inbox))
+      ('cancel (keyboard-quit))
+      ('discard nil)))  ; Just continue with cleanup
+
   (let ((window-config org-gtd-clarify--window-config)
         (task-id org-gtd-clarify--clarify-id)
         (inbox-p org-gtd-clarify--inbox-p))
+    ;; Clean up queue display
+    (org-gtd-clarify--queue-cleanup)
     ;; Clean up horizons view
     (org-gtd-clarify--cleanup-horizons-view)
     ;; Clean up temp file and kill buffer
@@ -655,6 +666,32 @@ Returns plist with :title and :content keys, or nil if buffer is empty."
                       (point-min) (point-max))))
         (when (and title (not (string-empty-p (string-trim title))))
           (list :title title :content content))))))
+
+;;;;; Queue Persistence
+
+(defun org-gtd-clarify--queue-save-to-inbox ()
+  "Save all queued duplicates to the inbox."
+  (let ((inbox-file (org-gtd-inbox-path)))
+    (with-current-buffer (find-file-noselect inbox-file)
+      (goto-char (point-max))
+      (dolist (item org-gtd-clarify--duplicate-queue)
+        (insert "\n" (plist-get item :content)))
+      (save-buffer))))
+
+(defun org-gtd-clarify--prompt-queue-action ()
+  "Prompt user for action on pending duplicates.
+Returns \\='discard, \\='save, or \\='cancel."
+  (let* ((count (length org-gtd-clarify--duplicate-queue))
+         (titles (mapcar (lambda (item) (plist-get item :title))
+                         org-gtd-clarify--duplicate-queue))
+         (prompt (format "%d pending duplicate%s:\n  - %s\n[d]iscard all  [s]ave to inbox  [c]ancel: "
+                         count
+                         (if (= count 1) "" "s")
+                         (string-join titles "\n  - "))))
+    (pcase (read-char-choice prompt '(?d ?s ?c))
+      (?d 'discard)
+      (?s 'save)
+      (?c 'cancel))))
 
 ;;;; Footer
 
