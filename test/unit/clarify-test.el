@@ -394,6 +394,55 @@
     (revert-buffer t t)
     (assert-match "Original item" (buffer-string))))
 
+;;; Integration Tests
+
+(deftest clarify/duplicate-full-workflow ()
+  "Test complete duplicate workflow: create, process, verify."
+  ;; Start with inbox item
+  (capture-inbox-item "Meeting prep")
+  (org-gtd-process-inbox)
+
+  ;; Create two duplicates with exact names (rename happens at queue add time)
+  (with-wip-buffer
+    (org-gtd-clarify-duplicate-exact)
+    (org-gtd-clarify-duplicate-exact))
+
+  ;; Verify queue has 2 items
+  (with-wip-buffer
+    (assert-equal 2 (length org-gtd-clarify--duplicate-queue)))
+
+  ;; Organize original as calendar item
+  (with-wip-buffer
+    (with-simulated-input "2026-02-01 RET"
+      (org-gtd-calendar)))
+
+  ;; Now clarifying first duplicate - look for WIP buffer
+  (assert-true (ogt-get-wip-buffer))
+
+  ;; Organize first duplicate as single action
+  (with-wip-buffer
+    (organize-as-single-action))
+
+  ;; Now clarifying second duplicate
+  (assert-true (ogt-get-wip-buffer))
+
+  ;; Organize second duplicate as single action
+  (with-wip-buffer
+    (organize-as-single-action))
+
+  ;; Should be done - no more WIP buffers
+  (assert-nil (ogt-get-wip-buffer))
+
+  ;; Verify items exist in GTD system - all should be "Meeting prep"
+  ;; (the original plus two exact duplicates)
+  (with-current-buffer (org-gtd--default-file)
+    (revert-buffer t t)
+    (let ((content (buffer-string)))
+      ;; Should have Calendar and Actions sections with "Meeting prep"
+      (assert-match "Meeting prep" content)
+      (assert-match "Calendar" content)
+      (assert-match "Actions" content))))
+
 (provide 'clarify-test)
 
 ;;; clarify-test.el ends here
