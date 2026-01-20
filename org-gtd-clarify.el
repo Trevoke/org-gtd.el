@@ -75,6 +75,17 @@ The values can be: nil, top, right, left, bottom."
   :package-version '(org-gtd . "4.0")
   :type 'symbol)
 
+(defcustom org-gtd-clarify-duplicate-queue-position 'bottom
+  "Position for the duplicate queue window during clarification.
+When duplicates are created, they appear in a side window at this position.
+Values can be: top, right, left, bottom."
+  :group 'org-gtd-clarify
+  :package-version '(org-gtd . "4.4.0")
+  :type '(choice (const :tag "Top" top)
+                 (const :tag "Right" right)
+                 (const :tag "Left" left)
+                 (const :tag "Bottom" bottom)))
+
 ;;;; Constants
 
 (defconst org-gtd-clarify-organize-help-content
@@ -150,6 +161,10 @@ Set via C-u prefix to clarify commands or transient toggle.")
 Set by `org-gtd-clarify-inbox-item' to continue inbox processing.
 Called by `org-gtd-organize--call' when non-nil.")
 
+(defvar-local org-gtd-clarify--duplicate-queue nil
+  "List of pending duplicate items to clarify after current item.
+Each element is a plist with :title and :content keys.")
+
 ;;;;; External variables (defined in org-gtd-process.el)
 
 (defvar org-gtd-process--session-active)
@@ -163,6 +178,8 @@ Called by `org-gtd-organize--call' when non-nil.")
 (defvar org-gtd-clarify-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-k") #'org-gtd-clarify-stop)
+    (define-key map (kbd "d") #'org-gtd-clarify-duplicate)
+    (define-key map (kbd "D") #'org-gtd-clarify-duplicate-exact)
     map)
   "Keymap for `org-gtd-clarify-mode'.")
 
@@ -197,7 +214,7 @@ clarifying GTD items before organizing them.
   (setq-local
    header-line-format
    (substitute-command-keys
-    "\\<org-gtd-clarify-mode-map>Clarify item.  \\[org-gtd-organize] to file, \\[org-gtd-clarify-stop] to cancel."))
+    "\\<org-gtd-clarify-mode-map>Clarify item.  \\[org-gtd-organize] to file, \\[org-gtd-clarify-duplicate] to duplicate, \\[org-gtd-clarify-stop] to cancel."))
   ;; Enable auto-save for crash protection (absorbed from wip-mode)
   (auto-save-mode 1))
 
@@ -264,11 +281,22 @@ WINDOW-CONFIG is the window config to set after clarification finishes."
 (defun org-gtd-clarify-stop ()
   "Stop clarifying the current item and restore previous state.
 Closes the horizons view, restores the window configuration,
-cleans up temp file, and kills the WIP buffer without organizing the item."
+cleans up temp file, and kills the WIP buffer without organizing the item.
+If there are pending duplicates, prompts whether to discard or save them."
   (interactive)
+  ;; Handle pending duplicates first
+  (when (and (boundp 'org-gtd-clarify--duplicate-queue)
+             (not (org-gtd-clarify--queue-empty-p)))
+    (pcase (org-gtd-clarify--prompt-queue-action)
+      ('save (org-gtd-clarify--queue-save-to-inbox))
+      ('cancel (keyboard-quit))
+      ('discard nil)))  ; Just continue with cleanup
+
   (let ((window-config org-gtd-clarify--window-config)
         (task-id org-gtd-clarify--clarify-id)
         (inbox-p org-gtd-clarify--inbox-p))
+    ;; Clean up queue display
+    (org-gtd-clarify--queue-cleanup)
     ;; Clean up horizons view
     (org-gtd-clarify--cleanup-horizons-view)
     ;; Clean up temp file and kill buffer
@@ -282,6 +310,37 @@ cleans up temp file, and kills the WIP buffer without organizing the item."
     (when window-config
       (set-window-configuration window-config))
     (message "Stopped clarifying")))
+
+(defun org-gtd-clarify-duplicate ()
+  "Duplicate current item with a new title.
+Prompts for a new title, then adds the duplicate to the queue."
+  (interactive)
+  (unless (derived-mode-p 'org-gtd-clarify-mode)
+    (user-error "Not in a clarify buffer"))
+  (let ((content-plist (org-gtd-clarify--get-wip-content)))
+    (unless content-plist
+      (user-error "Nothing to duplicate"))
+    (let* ((default-title (plist-get content-plist :title))
+           (new-title (read-string "Duplicate title: " default-title))
+           (content (plist-get content-plist :content)))
+      (org-gtd-clarify--queue-add new-title content)
+      (org-gtd-clarify--queue-display)
+      (message "Duplicated: %s" new-title))))
+
+(defun org-gtd-clarify-duplicate-exact ()
+  "Duplicate current item exactly as-is.
+Adds an exact copy to the queue without prompting for changes."
+  (interactive)
+  (unless (derived-mode-p 'org-gtd-clarify-mode)
+    (user-error "Not in a clarify buffer"))
+  (let ((content-plist (org-gtd-clarify--get-wip-content)))
+    (unless content-plist
+      (user-error "Nothing to duplicate"))
+    (let ((title (plist-get content-plist :title))
+          (content (plist-get content-plist :content)))
+      (org-gtd-clarify--queue-add title content)
+      (org-gtd-clarify--queue-display)
+      (message "Duplicated: %s" title))))
 
 ;;;; Functions
 
@@ -501,6 +560,179 @@ TASK-INFO is a list of (heading id depends-on blocks) for each task."
     (if task-data
         (nth 0 task-data)
       task-id)))
+
+;;;; Duplicate Queue Functions
+
+;;;;; Queue Predicates
+
+(defun org-gtd-clarify--queue-empty-p ()
+  "Return t if the duplicate queue is empty."
+  (null org-gtd-clarify--duplicate-queue))
+
+;;;;; Queue Operations
+
+(defun org-gtd-clarify--queue-add (title content)
+  "Add item with TITLE and CONTENT to end of duplicate queue."
+  (setq org-gtd-clarify--duplicate-queue
+        (append org-gtd-clarify--duplicate-queue
+                (list (list :title title :content content)))))
+
+(defun org-gtd-clarify--queue-pop ()
+  "Remove and return first item from duplicate queue.
+Returns nil if queue is empty."
+  (when org-gtd-clarify--duplicate-queue
+    (pop org-gtd-clarify--duplicate-queue)))
+
+;;;;; Queue Display
+
+(defconst org-gtd-clarify--queue-buffer-name "*Org GTD Duplicate Queue*"
+  "Buffer name for the duplicate queue window.")
+
+(defun org-gtd-clarify--queue-display ()
+  "Display the duplicate queue in a side window.
+Creates or updates the queue buffer with current queue contents."
+  (let ((buffer (get-buffer-create org-gtd-clarify--queue-buffer-name))
+        (queue org-gtd-clarify--duplicate-queue))
+    (with-current-buffer buffer
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert (format "Pending (%d):\n" (length queue)))
+        (let ((idx 1))
+          (dolist (item queue)
+            (insert (format "  %d. %s\n" idx (plist-get item :title)))
+            (setq idx (1+ idx))))
+        (goto-char (point-min)))
+      (setq buffer-read-only t))
+    (display-buffer buffer
+                    `(display-buffer-in-side-window
+                      . ((side . ,org-gtd-clarify-duplicate-queue-position))))))
+
+(defun org-gtd-clarify--queue-cleanup ()
+  "Close the queue window and kill the queue buffer."
+  (when-let ((buffer (get-buffer org-gtd-clarify--queue-buffer-name)))
+    (when-let ((window (get-buffer-window buffer)))
+      (quit-window nil window))
+    (kill-buffer buffer))
+  (setq org-gtd-clarify--duplicate-queue nil))
+
+;;;;; Queue Processing
+
+(defun org-gtd-clarify--process-next-queued-item (queue window-config continuation)
+  "Process the next item from the duplicate QUEUE.
+WINDOW-CONFIG is restored after all items are processed.
+CONTINUATION is called after the queue is empty."
+  (let ((item (pop queue)))
+    (if item
+        (let* ((content (plist-get item :content))
+               (clarify-id (org-id-new))
+               (processing-buffer (org-gtd-wip--get-buffer clarify-id)))
+          ;; Initialize buffer with queued content
+          (with-current-buffer processing-buffer
+            (insert content)
+            (goto-char (point-min))
+            (unless (derived-mode-p 'org-gtd-clarify-mode)
+              (org-gtd-clarify-mode))
+            (setq-local org-gtd-clarify--window-config window-config
+                        org-gtd-clarify--clarify-id clarify-id
+                        org-gtd-clarify--continuation continuation
+                        org-gtd-clarify--source-heading-marker nil
+                        org-gtd-clarify--duplicate-queue queue))
+          ;; Update queue display or cleanup if empty
+          (with-current-buffer processing-buffer
+            (if (org-gtd-clarify--queue-empty-p)
+                (org-gtd-clarify--queue-cleanup)
+              (org-gtd-clarify--queue-display)))
+          (org-gtd-clarify-setup-windows processing-buffer))
+      ;; No more items - cleanup and continue
+      (org-gtd-clarify--queue-cleanup)
+      (message "All duplicates processed")
+      (when window-config
+        (set-window-configuration window-config))
+      (when continuation
+        (funcall continuation)))))
+
+;;;;; Content Extraction
+
+(defun org-gtd-clarify--get-wip-content ()
+  "Extract title and full content from current WIP buffer.
+Returns plist with :title and :content keys, or nil if buffer is empty."
+  (save-excursion
+    (goto-char (point-min))
+    (when (org-before-first-heading-p)
+      (org-next-visible-heading 1))
+    (when (org-at-heading-p)
+      (let ((title (org-get-heading t t t t))
+            (content (buffer-substring-no-properties
+                      (point-min) (point-max))))
+        (when (and title (not (string-empty-p (string-trim title))))
+          (list :title title :content content))))))
+
+;;;;; Queue Persistence
+
+(defun org-gtd-clarify--queue-save-to-inbox ()
+  "Save all queued duplicates to the inbox."
+  (let ((inbox-file (org-gtd-inbox-path)))
+    (with-current-buffer (find-file-noselect inbox-file)
+      (goto-char (point-max))
+      (dolist (item org-gtd-clarify--duplicate-queue)
+        (insert "\n" (plist-get item :content)))
+      (save-buffer))))
+
+(defun org-gtd-clarify--prompt-queue-action ()
+  "Prompt user for action on pending duplicates.
+Returns \\='discard, \\='save, or \\='cancel."
+  (let* ((count (length org-gtd-clarify--duplicate-queue))
+         (titles (mapcar (lambda (item) (plist-get item :title))
+                         org-gtd-clarify--duplicate-queue))
+         (prompt (format "%d pending duplicate%s:\n  - %s\n[d]iscard all  [s]ave to inbox  [c]ancel: "
+                         count
+                         (if (= count 1) "" "s")
+                         (string-join titles "\n  - "))))
+    (pcase (read-char-choice prompt '(?d ?s ?c))
+      (?d 'discard)
+      (?s 'save)
+      (?c 'cancel))))
+
+;;;;; Kill-Emacs Safety
+
+(defun org-gtd-clarify--pending-duplicates-all-buffers ()
+  "Return list of all pending duplicates across all clarify buffers."
+  (let (all-duplicates)
+    (dolist (buf (buffer-list))
+      (with-current-buffer buf
+        (when (and (derived-mode-p 'org-gtd-clarify-mode)
+                   (bound-and-true-p org-gtd-clarify--duplicate-queue))
+          (setq all-duplicates
+                (append all-duplicates org-gtd-clarify--duplicate-queue)))))
+    all-duplicates))
+
+(defun org-gtd-clarify--save-all-pending-duplicates ()
+  "Save pending duplicates from all clarify buffers to inbox."
+  (dolist (buf (buffer-list))
+    (with-current-buffer buf
+      (when (and (derived-mode-p 'org-gtd-clarify-mode)
+                 (bound-and-true-p org-gtd-clarify--duplicate-queue))
+        (org-gtd-clarify--queue-save-to-inbox)))))
+
+(defun org-gtd-clarify--kill-emacs-query ()
+  "Prompt about pending duplicates before Emacs exits.
+Added to `kill-emacs-query-functions'."
+  (let ((duplicates (org-gtd-clarify--pending-duplicates-all-buffers)))
+    (if (null duplicates)
+        t  ; No duplicates, allow exit
+      ;; Prompt user
+      (let* ((count (length duplicates))
+             (titles (mapcar (lambda (item) (plist-get item :title)) duplicates))
+             (prompt (format "%d pending duplicate%s will be lost:\n  - %s\n[d]iscard  [s]ave to inbox  [c]ancel exit: "
+                             count
+                             (if (= count 1) "" "s")
+                             (string-join titles "\n  - "))))
+        (pcase (read-char-choice prompt '(?d ?s ?c))
+          (?d t)  ; Discard, allow exit
+          (?s (org-gtd-clarify--save-all-pending-duplicates) t)  ; Save, allow exit
+          (?c nil))))))  ; Cancel, abort exit
+
+(add-hook 'kill-emacs-query-functions #'org-gtd-clarify--kill-emacs-query)
 
 ;;;; Footer
 

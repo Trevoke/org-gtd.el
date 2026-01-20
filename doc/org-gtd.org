@@ -1696,6 +1696,98 @@ If you are clarifying a project, you may be interested in project templates:
 
 *See also*: [[#config-vars-reference][Configuration Variables Reference]] for complete documentation of clarification options, and [[#commands-reference][Commands Reference]] for all clarification commands.
 
+**** Duplicating items during clarification
+:PROPERTIES:
+:CUSTOM_ID: duplicating-items
+:END:
+
+Sometimes one inbox item represents multiple outcomes. "Prepare for Monday meeting" might actually be three things: book the room, prepare the slides, and email the agenda. The duplicate feature lets you split these apart during clarification.
+
+**Who needs this:** Anyone who captures quick notes that later turn out to be multiple separate actions or projects.
+
+***** Your first duplicate in 30 seconds
+
+1. While clarifying any item, press ~d~
+2. Edit the title in the minibuffer (or keep it the same)
+3. Press ~RET~
+
+That's it. A queue window appears showing your duplicate. Continue clarifying and organizing the original item—the duplicate waits its turn.
+
+***** Understanding the workflow
+
+Think of duplicates as a "spawn" operation. You're clarifying item A, and you realize it's actually A, B, and C. You spawn B and C as duplicates, then:
+
+1. Organize A (the original)
+2. Automatically, B opens for clarification
+3. Organize B
+4. Automatically, C opens for clarification
+5. Organize C
+6. Done—back to where you started
+
+The key insight: *duplicates form a mini-session*. You must process all of them before returning to your previous context. This matches the GTD principle of fully processing what's in front of you before moving on.
+
+***** The queue window
+
+When you create your first duplicate, a side window appears:
+
+#+begin_example
+Pending (2):
+  1. Book the room
+  2. Email the agenda
+#+end_example
+
+This window:
+- Shows all queued duplicates by title
+- Updates as you add more or process them
+- Closes automatically when the last duplicate is organized
+- Position is configurable (default: bottom)
+
+***** Two ways to duplicate
+
+| Key | Command | Behavior |
+|-----+---------+----------|
+| ~d~ | ~org-gtd-clarify-duplicate~ | Prompts for new title (current title as default) |
+| ~D~ | ~org-gtd-clarify-duplicate-exact~ | Copies exactly, no prompt |
+
+Use ~d~ when the duplicates have different titles (most common). Use ~D~ when you want identical copies to organize differently (e.g., same task delegated to multiple people).
+
+***** What happens if you cancel?
+
+If you press ~C-c C-k~ to stop clarifying while duplicates are queued, you'll see:
+
+#+begin_example
+2 pending duplicates:
+  - Book the room
+  - Email the agenda
+[d]iscard all  [s]ave to inbox  [c]ancel:
+#+end_example
+
+- *Discard*: Duplicates are lost (you decided you don't need them)
+- *Save to inbox*: Duplicates are appended to your inbox for later processing
+- *Cancel*: Return to the clarify buffer (abort the abort)
+
+***** Nested duplicates
+
+While clarifying a duplicate, you can create more duplicates. They append to the queue. All must be processed before returning to your original context.
+
+***** Data safety
+
+Duplicates exist only in memory until organized. If Emacs crashes, they're lost. However:
+
+- Before exiting Emacs normally, you'll be prompted if any clarify buffers have pending duplicates
+- You can save them to inbox or discard them
+- The WIP buffer itself has auto-save enabled, so your clarification work is protected
+
+***** Configuration
+
+#+begin_src emacs-lisp
+;; Change queue window position (default: 'bottom)
+;; Options: 'top, 'right, 'left, 'bottom
+(setq org-gtd-clarify-duplicate-queue-position 'right)
+#+end_src
+
+*See also*: [[#commands-reference][Commands Reference]] for ~org-gtd-clarify-duplicate~ and ~org-gtd-clarify-duplicate-exact~.
+
 *** Organizing an item into the system
 :PROPERTIES:
 :CUSTOM_ID: organizing-an-item
@@ -4236,6 +4328,29 @@ Each entry is a pair of (template-name . template-tasks) where template-tasks is
 
 Use ~org-gtd-clarify-project-insert-template~ during clarification to insert a template.
 
+**** ~org-gtd-clarify-duplicate-queue-position~
+
+*Type*: Symbol
+
+*Default*: ~'bottom~
+
+*Description*: Position for the duplicate queue window during clarification.
+
+When you create duplicates during clarification, a side window appears showing pending duplicates. This variable controls where that window appears.
+
+Values:
+- ~'top~ :: Show queue window at top
+- ~'bottom~ :: Show queue window at bottom
+- ~'left~ :: Show queue window on left
+- ~'right~ :: Show queue window on right
+
+*Example*:
+#+begin_src emacs-lisp
+(setq org-gtd-clarify-duplicate-queue-position 'right)
+#+end_src
+
+*See also*: [[#duplicating-items][Duplicating items during clarification]]
+
 *** Areas of Focus Configuration
 
 **** ~org-gtd-areas-of-focus~
@@ -5541,6 +5656,46 @@ Each view will appear in its own buffer: ~*Org Agenda(a)*~, ~*Org Agenda(c)*~, e
 *What it does*:
 - Prompts for template from ~org-gtd-clarify-project-templates~
 - Inserts template tasks into current project
+
+**** ~org-gtd-clarify-duplicate~
+
+*Binding*: ~d~ (in clarify buffers)
+
+*When to use*: When an item you're clarifying represents multiple outcomes
+
+*What it does*:
+- Prompts for a title (current title as default)
+- Creates a duplicate with that title
+- Adds duplicate to a queue
+- Shows queue window if not already visible
+- After organizing current item, the duplicate opens for clarification
+
+*Example*: You captured "Prepare for Monday meeting" but realize it's three things: book room, prepare slides, send agenda. Press ~d~, type "Book meeting room", press RET. Repeat for each outcome.
+
+*See also*: [[#duplicating-items][Duplicating items during clarification]]
+
+**** ~org-gtd-clarify-duplicate-exact~
+
+*Binding*: ~D~ (in clarify buffers)
+
+*When to use*: When you want an identical copy without changing the title
+
+*What it does*:
+- Creates exact duplicate (no prompt)
+- Adds to queue immediately
+
+*Example*: Same task needs to be delegated to multiple people. Duplicate exactly, then organize each copy as delegated to a different person.
+
+**** ~org-gtd-clarify-stop~
+
+*Binding*: ~C-c C-k~ (in clarify buffers)
+
+*When to use*: To abort clarification and discard changes
+
+*What it does*:
+- If duplicates are pending: prompts to discard, save to inbox, or cancel
+- Kills the WIP buffer
+- Restores previous window configuration
 
 **** Updating Items Without Refiling
 
