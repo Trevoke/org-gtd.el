@@ -1,3 +1,17 @@
+* Unreleased
+
+** Added
+*** Duplicate items during clarification (Issue #275)
+When clarifying an inbox item, you can now create duplicates to handle items
+that represent multiple outcomes.
+
+- Press ~d~ to duplicate with rename prompt (enter a new title)
+- Press ~D~ to duplicate exactly as-is
+- Duplicates are queued and processed immediately after the current item
+- Queue displays in a side window showing pending duplicates
+- When canceling with pending duplicates, choose to discard or save to inbox
+- Customize queue window position with ~org-gtd-clarify-duplicate-queue-position~
+
 * 4.3.1 - 2026-01-17
 
 ** Fixed
