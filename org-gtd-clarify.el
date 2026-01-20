@@ -298,6 +298,37 @@ cleans up temp file, and kills the WIP buffer without organizing the item."
       (set-window-configuration window-config))
     (message "Stopped clarifying")))
 
+(defun org-gtd-clarify-duplicate ()
+  "Duplicate current item with a new title.
+Prompts for a new title, then adds the duplicate to the queue."
+  (interactive)
+  (unless (derived-mode-p 'org-gtd-clarify-mode)
+    (user-error "Not in a clarify buffer"))
+  (let ((content-plist (org-gtd-clarify--get-wip-content)))
+    (unless content-plist
+      (user-error "Nothing to duplicate"))
+    (let* ((default-title (plist-get content-plist :title))
+           (new-title (read-string "Duplicate title: " default-title))
+           (content (plist-get content-plist :content)))
+      (org-gtd-clarify--queue-add new-title content)
+      (org-gtd-clarify--queue-display)
+      (message "Duplicated: %s" new-title))))
+
+(defun org-gtd-clarify-duplicate-exact ()
+  "Duplicate current item exactly as-is.
+Adds an exact copy to the queue without prompting for changes."
+  (interactive)
+  (unless (derived-mode-p 'org-gtd-clarify-mode)
+    (user-error "Not in a clarify buffer"))
+  (let ((content-plist (org-gtd-clarify--get-wip-content)))
+    (unless content-plist
+      (user-error "Nothing to duplicate"))
+    (let ((title (plist-get content-plist :title))
+          (content (plist-get content-plist :content)))
+      (org-gtd-clarify--queue-add title content)
+      (org-gtd-clarify--queue-display)
+      (message "Duplicated: %s" title))))
+
 ;;;; Functions
 
 ;;;;; Public

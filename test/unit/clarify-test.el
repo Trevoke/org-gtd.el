@@ -286,6 +286,51 @@
     (assert-equal "Habit" (org-entry-get (point) "ORG_GTD"))
     (assert-true (org-get-scheduled-time (point)))))
 
+;;; Duplicate Command Tests
+
+(deftest clarify/duplicate-exact-adds-to-queue ()
+  "Exact duplicate adds current content to queue."
+  (capture-inbox-item "Original item")
+  (org-gtd-process-inbox)
+  (with-wip-buffer
+    (org-gtd-clarify-duplicate-exact)
+    (assert-equal 1 (length org-gtd-clarify--duplicate-queue))
+    (assert-equal "Original item"
+                  (plist-get (car org-gtd-clarify--duplicate-queue) :title)))
+  ;; Cleanup
+  (org-gtd-clarify--queue-cleanup))
+
+(deftest clarify/duplicate-exact-shows-queue-window ()
+  "Exact duplicate displays queue window."
+  (capture-inbox-item "Original item")
+  (org-gtd-process-inbox)
+  (with-wip-buffer
+    (org-gtd-clarify-duplicate-exact)
+    (assert-true (get-buffer "*Org GTD Duplicate Queue*")))
+  ;; Cleanup
+  (org-gtd-clarify--queue-cleanup))
+
+(deftest clarify/duplicate-with-rename-uses-new-title ()
+  "Duplicate with rename uses provided title."
+  (capture-inbox-item "Original item")
+  (org-gtd-process-inbox)
+  (with-wip-buffer
+    ;; C-a moves to beginning of line, C-k kills to end of line, then type new title
+    (with-simulated-input "C-a C-k New SPC title RET"
+      (org-gtd-clarify-duplicate))
+    (assert-equal 1 (length org-gtd-clarify--duplicate-queue))
+    (assert-equal "New title"
+                  (plist-get (car org-gtd-clarify--duplicate-queue) :title)))
+  ;; Cleanup
+  (org-gtd-clarify--queue-cleanup))
+
+(deftest clarify/duplicate-fails-on-empty-buffer ()
+  "Duplicate fails when buffer has no content."
+  (with-temp-buffer
+    (org-gtd-clarify-mode)
+    (assert-raises 'user-error
+      (org-gtd-clarify-duplicate-exact))))
+
 (provide 'clarify-test)
 
 ;;; clarify-test.el ends here
