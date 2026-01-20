@@ -539,6 +539,38 @@ Returns nil if queue is empty."
   (when org-gtd-clarify--duplicate-queue
     (pop org-gtd-clarify--duplicate-queue)))
 
+;;;;; Queue Display
+
+(defconst org-gtd-clarify--queue-buffer-name "*Org GTD Duplicate Queue*"
+  "Buffer name for the duplicate queue window.")
+
+(defun org-gtd-clarify--queue-display ()
+  "Display the duplicate queue in a side window.
+Creates or updates the queue buffer with current queue contents."
+  (let ((buffer (get-buffer-create org-gtd-clarify--queue-buffer-name))
+        (queue org-gtd-clarify--duplicate-queue))
+    (with-current-buffer buffer
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert (format "Pending (%d):\n" (length queue)))
+        (let ((idx 1))
+          (dolist (item queue)
+            (insert (format "  %d. %s\n" idx (plist-get item :title)))
+            (setq idx (1+ idx))))
+        (goto-char (point-min)))
+      (setq buffer-read-only t))
+    (display-buffer buffer
+                    `(display-buffer-in-side-window
+                      . ((side . ,org-gtd-clarify-duplicate-queue-position))))))
+
+(defun org-gtd-clarify--queue-cleanup ()
+  "Close the queue window and kill the queue buffer."
+  (when-let ((buffer (get-buffer org-gtd-clarify--queue-buffer-name)))
+    (when-let ((window (get-buffer-window buffer)))
+      (quit-window nil window))
+    (kill-buffer buffer))
+  (setq org-gtd-clarify--duplicate-queue nil))
+
 ;;;; Footer
 
 (provide 'org-gtd-clarify)

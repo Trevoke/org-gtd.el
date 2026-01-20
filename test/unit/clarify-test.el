@@ -160,6 +160,33 @@
     (setq org-gtd-clarify--duplicate-queue nil)
     (assert-nil (org-gtd-clarify--queue-pop))))
 
+;;; Queue Display Tests
+
+(deftest clarify/queue-display-creates-buffer ()
+  "Creates queue buffer with correct content."
+  (with-temp-buffer
+    (setq org-gtd-clarify--duplicate-queue
+          '((:title "Task A" :content "* Task A")
+            (:title "Task B" :content "* Task B")))
+    (org-gtd-clarify--queue-display)
+    (let ((queue-buf (get-buffer "*Org GTD Duplicate Queue*")))
+      (assert-true queue-buf)
+      (with-current-buffer queue-buf
+        (assert-match "Pending (2)" (buffer-string))
+        (assert-match "1\\. Task A" (buffer-string))
+        (assert-match "2\\. Task B" (buffer-string))
+        (assert-true buffer-read-only))
+      (kill-buffer queue-buf))))
+
+(deftest clarify/queue-cleanup-kills-buffer ()
+  "Cleanup kills the queue buffer."
+  (with-temp-buffer
+    (setq org-gtd-clarify--duplicate-queue '((:title "Test" :content "* Test")))
+    (org-gtd-clarify--queue-display)
+    (assert-true (get-buffer "*Org GTD Duplicate Queue*"))
+    (org-gtd-clarify--queue-cleanup)
+    (assert-nil (get-buffer "*Org GTD Duplicate Queue*"))))
+
 ;;; Clarify Through Agenda Tests
 
 (deftest clarify/agenda-converts-tickler-to-project ()
