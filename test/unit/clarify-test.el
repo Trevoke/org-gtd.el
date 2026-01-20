@@ -340,6 +340,29 @@
     (assert-raises 'user-error
       (org-gtd-clarify-duplicate-exact))))
 
+;;; Queue Processing Tests
+
+(deftest clarify/organize-processes-queue-before-continuation ()
+  "After organizing, processes queued duplicates before calling continuation."
+  (capture-inbox-item "Original item")
+  (org-gtd-process-inbox)
+  ;; Add a duplicate while clarifying
+  (with-wip-buffer
+    (org-gtd-clarify-duplicate-exact))
+  ;; Verify we have one duplicate in queue
+  (with-wip-buffer
+    (assert-equal 1 (length org-gtd-clarify--duplicate-queue)))
+  ;; Organize the original as single action
+  (with-wip-buffer
+    (organize-as-single-action))
+  ;; Should now be clarifying the duplicate - look for a WIP buffer
+  (assert-true (ogt-get-wip-buffer))
+  ;; Organize the duplicate
+  (with-wip-buffer
+    (organize-as-single-action))
+  ;; Queue should be empty, no more WIP buffers from this session
+  (assert-nil (ogt-get-wip-buffer)))
+
 (provide 'clarify-test)
 
 ;;; clarify-test.el ends here

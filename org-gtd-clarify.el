@@ -604,6 +604,42 @@ Creates or updates the queue buffer with current queue contents."
     (kill-buffer buffer))
   (setq org-gtd-clarify--duplicate-queue nil))
 
+;;;;; Queue Processing
+
+(defun org-gtd-clarify--process-next-queued-item (queue window-config continuation)
+  "Process the next item from the duplicate QUEUE.
+WINDOW-CONFIG is restored after all items are processed.
+CONTINUATION is called after the queue is empty."
+  (let ((item (pop queue)))
+    (if item
+        (let* ((content (plist-get item :content))
+               (clarify-id (org-id-new))
+               (processing-buffer (org-gtd-wip--get-buffer clarify-id)))
+          ;; Initialize buffer with queued content
+          (with-current-buffer processing-buffer
+            (insert content)
+            (goto-char (point-min))
+            (unless (derived-mode-p 'org-gtd-clarify-mode)
+              (org-gtd-clarify-mode))
+            (setq-local org-gtd-clarify--window-config window-config
+                        org-gtd-clarify--clarify-id clarify-id
+                        org-gtd-clarify--continuation continuation
+                        org-gtd-clarify--source-heading-marker nil
+                        org-gtd-clarify--duplicate-queue queue))
+          ;; Update queue display or cleanup if empty
+          (with-current-buffer processing-buffer
+            (if (org-gtd-clarify--queue-empty-p)
+                (org-gtd-clarify--queue-cleanup)
+              (org-gtd-clarify--queue-display)))
+          (org-gtd-clarify-setup-windows processing-buffer))
+      ;; No more items - cleanup and continue
+      (org-gtd-clarify--queue-cleanup)
+      (message "All duplicates processed")
+      (when window-config
+        (set-window-configuration window-config))
+      (when continuation
+        (funcall continuation)))))
+
 ;;;;; Content Extraction
 
 (defun org-gtd-clarify--get-wip-content ()

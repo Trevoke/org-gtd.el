@@ -114,10 +114,12 @@ This handles the internal bits of `org-gtd'."
            nil))) ;; Return nil when no error was thrown
     (unless error-caught
       ;; Only run cleanup if no error was thrown
+      ;; Capture buffer-local variables before buffer is killed
       (let ((continuation org-gtd-clarify--continuation)
             (task-id org-gtd-clarify--clarify-id)
             (window-config org-gtd-clarify--window-config)
-            (skip-refile org-gtd-clarify--skip-refile))
+            (skip-refile org-gtd-clarify--skip-refile)
+            (duplicate-queue (copy-sequence org-gtd-clarify--duplicate-queue)))
         ;; Only cut original if we refiled (not updated in place)
         (unless skip-refile
           (when (and (boundp 'org-gtd-clarify--source-heading-marker)
@@ -132,9 +134,15 @@ This handles the internal bits of `org-gtd'."
                     (org-cut-subtree)))))))
         (when task-id
           (org-gtd-wip--cleanup-temp-file task-id))
-        (when window-config
-          (set-window-configuration window-config))
-        (when continuation (funcall continuation))
+        ;; Check if we have queued duplicates to process
+        (if duplicate-queue
+            ;; Process queued duplicates before calling continuation
+            (org-gtd-clarify--process-next-queued-item
+             duplicate-queue window-config continuation)
+          ;; No queue - proceed with normal flow
+          (when window-config
+            (set-window-configuration window-config))
+          (when continuation (funcall continuation)))
         ;; Save GTD buffers after organizing
         (org-gtd-save-buffers)
         ;; Clean up horizons view for one-off clarification
