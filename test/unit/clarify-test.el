@@ -394,6 +394,26 @@
     (revert-buffer t t)
     (assert-match "Original item" (buffer-string))))
 
+;;; Kill-Emacs Query Tests
+
+(deftest clarify/pending-duplicates-all-buffers-finds-duplicates ()
+  "Finds pending duplicates across all clarify buffers."
+  (capture-inbox-item "Item one")
+  (org-gtd-process-inbox)
+  (with-wip-buffer
+    (org-gtd-clarify-duplicate-exact))
+  ;; Should find the duplicate
+  (let ((all-duplicates (org-gtd-clarify--pending-duplicates-all-buffers)))
+    (assert-equal 1 (length all-duplicates))
+    (assert-equal "Item one" (plist-get (car all-duplicates) :title)))
+  ;; Cleanup
+  (with-wip-buffer
+    (org-gtd-clarify--queue-cleanup)))
+
+(deftest clarify/kill-emacs-query-registered ()
+  "The kill-emacs query function is registered."
+  (assert-true (memq 'org-gtd-clarify--kill-emacs-query kill-emacs-query-functions)))
+
 ;;; Integration Tests
 
 (deftest clarify/duplicate-full-workflow ()

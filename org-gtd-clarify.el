@@ -693,6 +693,47 @@ Returns \\='discard, \\='save, or \\='cancel."
       (?s 'save)
       (?c 'cancel))))
 
+;;;;; Kill-Emacs Safety
+
+(defun org-gtd-clarify--pending-duplicates-all-buffers ()
+  "Return list of all pending duplicates across all clarify buffers."
+  (let (all-duplicates)
+    (dolist (buf (buffer-list))
+      (with-current-buffer buf
+        (when (and (derived-mode-p 'org-gtd-clarify-mode)
+                   (bound-and-true-p org-gtd-clarify--duplicate-queue))
+          (setq all-duplicates
+                (append all-duplicates org-gtd-clarify--duplicate-queue)))))
+    all-duplicates))
+
+(defun org-gtd-clarify--save-all-pending-duplicates ()
+  "Save pending duplicates from all clarify buffers to inbox."
+  (dolist (buf (buffer-list))
+    (with-current-buffer buf
+      (when (and (derived-mode-p 'org-gtd-clarify-mode)
+                 (bound-and-true-p org-gtd-clarify--duplicate-queue))
+        (org-gtd-clarify--queue-save-to-inbox)))))
+
+(defun org-gtd-clarify--kill-emacs-query ()
+  "Prompt about pending duplicates before Emacs exits.
+Added to `kill-emacs-query-functions'."
+  (let ((duplicates (org-gtd-clarify--pending-duplicates-all-buffers)))
+    (if (null duplicates)
+        t  ; No duplicates, allow exit
+      ;; Prompt user
+      (let* ((count (length duplicates))
+             (titles (mapcar (lambda (item) (plist-get item :title)) duplicates))
+             (prompt (format "%d pending duplicate%s will be lost:\n  - %s\n[d]iscard  [s]ave to inbox  [c]ancel exit: "
+                             count
+                             (if (= count 1) "" "s")
+                             (string-join titles "\n  - "))))
+        (pcase (read-char-choice prompt '(?d ?s ?c))
+          (?d t)  ; Discard, allow exit
+          (?s (org-gtd-clarify--save-all-pending-duplicates) t)  ; Save, allow exit
+          (?c nil))))))  ; Cancel, abort exit
+
+(add-hook 'kill-emacs-query-functions #'org-gtd-clarify--kill-emacs-query)
+
 ;;;; Footer
 
 (provide 'org-gtd-clarify)
