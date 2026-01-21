@@ -94,11 +94,16 @@ same name."
 ;;;; Private
 
 (defun org-gtd-capture--add-captured-at-timestamp ()
-  "Add ORG_GTD_CAPTURED_AT property with inactive timestamp.
-Used as :before-finalize hook in `org-gtd-capture-templates'."
-  (org-back-to-heading t)
-  (org-entry-put nil "ORG_GTD_CAPTURED_AT"
-                 (format-time-string (org-time-stamp-format t t))))
+  "Add ORG_GTD_CAPTURED_AT property to all level-1 headings.
+Used as :before-finalize hook in `org-gtd-capture-templates'.
+All headings in a multi-item capture get the same timestamp."
+  (let ((timestamp (format-time-string (org-time-stamp-format t t))))
+    (org-map-entries
+     (lambda ()
+       (unless (org-entry-get nil "ORG_GTD_CAPTURED_AT")
+         (org-entry-put nil "ORG_GTD_CAPTURED_AT" timestamp)))
+     "LEVEL=1"
+     nil)))
 
 ;;;; Public
 
