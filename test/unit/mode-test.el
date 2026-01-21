@@ -54,14 +54,16 @@
 ;;; org-gtd-mode-lighter tests
 
 (deftest mode/lighter-formats-count-in-string ()
-  "Mode lighter formats count in lighter string."
-  (capture-inbox-item "Test item")
-  (capture-inbox-item "Another item")
-  (assert-equal " GTD[2]" (org-gtd-mode-lighter)))
+  "Mode lighter formats count in lighter string when display is set to always."
+  (let ((org-gtd-mode-lighter-display 'always))
+    (capture-inbox-item "Test item")
+    (capture-inbox-item "Another item")
+    (assert-equal " GTD[2]" (org-gtd-mode-lighter))))
 
 (deftest mode/lighter-shows-zero-when-inbox-empty ()
-  "Mode lighter shows zero when inbox is empty."
-  (assert-equal " GTD[0]" (org-gtd-mode-lighter)))
+  "Mode lighter shows zero when display is set to always and inbox is empty."
+  (let ((org-gtd-mode-lighter-display 'always))
+    (assert-equal " GTD[0]" (org-gtd-mode-lighter))))
 
 (deftest mode/lighter-display-variable-exists ()
   "The lighter display customization variable exists with correct default."
