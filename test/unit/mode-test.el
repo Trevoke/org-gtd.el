@@ -63,6 +63,11 @@
   "Mode lighter shows zero when inbox is empty."
   (assert-equal " GTD[0]" (org-gtd-mode-lighter)))
 
+(deftest mode/lighter-display-variable-exists ()
+  "The lighter display customization variable exists with correct default."
+  (assert-true (boundp 'org-gtd-mode-lighter-display))
+  (assert-equal 'always (default-value 'org-gtd-mode-lighter-display)))
+
 ;;; CLOSED timestamp auto-logging tests
 
 (deftest mode/closed-timestamp-added-for-gtd-item ()

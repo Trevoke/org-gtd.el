@@ -61,6 +61,17 @@ Only applies when `org-gtd-mode' is enabled."
   :type '(choice (integer :tag "Seconds")
                  (const :tag "Disable periodic refresh" nil)))
 
+(defcustom org-gtd-mode-lighter-display 'always
+  "When to display the org-gtd-mode lighter in the mode-line.
+
+- `always': Always show (e.g., GTD[0], GTD[5]) - default behavior
+- `never': Never show the lighter
+- `when-non-zero': Only show when inbox has items (hides GTD[0])"
+  :group 'org-gtd
+  :type '(choice (const :tag "Always show" always)
+                 (const :tag "Never show" never)
+                 (const :tag "Only when inbox non-empty" when-non-zero)))
+
 ;;;; External variables
 
 (defvar org-gtd-additional-inbox-files)
