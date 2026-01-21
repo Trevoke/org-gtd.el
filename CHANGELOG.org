@@ -1,3 +1,18 @@
+* Unreleased
+
+** Added
+*** Configurable mode-line lighter display (Issue #254)
+Control when the GTD lighter appears in the mode-line with ~org-gtd-mode-lighter-display~:
+
+- ~always~ (default): Always show (e.g., ~GTD[0]~, ~GTD[5]~)
+- ~never~: Never show the lighter
+- ~when-non-zero~: Only show when inbox has items (hides ~GTD[0]~)
+
+#+begin_src elisp
+;; Hide lighter when inbox is empty
+(setq org-gtd-mode-lighter-display 'when-non-zero)
+#+end_src
+
 * 4.4.0 - 2026-01-20
 
 ** Added
