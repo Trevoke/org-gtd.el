@@ -383,7 +383,7 @@
   "Native block includes prefix format when provided."
   (let* ((view-spec '((name . "Test View")
                       (type . next-action)))
-         (prefix-format " %i %-12:(org-gtd-agenda--prefix-format 12) ")
+         (prefix-format " %i %-12:(org-gtd-agenda--resolve-prefix-chain '(project) 12) ")
          (block (org-gtd-view-lang--translate-to-native-block view-spec prefix-format))
          (settings (caddr block))
          (prefix-setting (assoc 'org-agenda-prefix-format settings)))

@@ -51,21 +51,6 @@ This function looks up the project heading's CATEGORY via ORG_GTD_PROJECT_IDS."
         (org-with-point-at project-marker
           (org-entry-get (point) "CATEGORY")))))
 
-(defun org-gtd-agenda--prefix-format (width)
-  "Format prefix for items in agenda buffer, truncated to WIDTH.
-Uses project name if available, otherwise CATEGORY, otherwise \"no project\"."
-  (let* ((proj-name (org-entry-get (point) org-gtd-prop-project))
-         (category (org-gtd-agenda-get-category-for-task))
-         (tally-cookie-regexp "\[[[:digit:]]+/[[:digit:]]+\][[:space:]]*"))
-    (truncate-string-to-width
-     (string-trim
-      (org-gtd-agenda-replace-link-with-description
-       (cond
-        (proj-name (replace-regexp-in-string tally-cookie-regexp "" proj-name))
-        (category     category)
-        (t  "no project"))))
-     width nil ?\s "…")))
-
 ;;;;; Prefix Element Resolvers
 
 (defun org-gtd-agenda--resolve-project ()

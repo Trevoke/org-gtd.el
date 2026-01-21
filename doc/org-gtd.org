@@ -7926,7 +7926,7 @@ For advanced users who need full control, you can specify the raw org-agenda pre
 *Example*:
 #+begin_src emacs-lisp
 '((name . "Custom Format")
-  (prefix-format . " %i %-12:(org-gtd-agenda--prefix-format 12) ")
+  (prefix-format . " %i %-12:(org-gtd-agenda--resolve-prefix-chain '(project) 12) ")
   (blocks . (((name . "NEXT Actions")
               (type . next-action)))))
 #+end_src
