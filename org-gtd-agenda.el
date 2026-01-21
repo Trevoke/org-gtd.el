@@ -128,7 +128,7 @@ ELEMENTS is a list of prefix element specifiers (symbols or strings).
 The first element that resolves to a non-nil value is used.
 Result is truncated with ellipsis if too long, padded with spaces if too short."
   (let ((result (cl-some #'org-gtd-agenda--resolve-prefix-element elements)))
-    (truncate-string-to-width (or result "") width nil ?\s "…")))
+    (truncate-string-to-width (or result "") width nil ?\s org-gtd-agenda-truncate-ellipsis)))
 
 ;;;; Footer
 

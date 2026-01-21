@@ -189,6 +189,19 @@
    (assert-equal "Short     "
                  (org-gtd-agenda--resolve-prefix-chain '(project) 10))))
 
+(deftest prefix-chain/uses-custom-ellipsis ()
+  "Uses org-gtd-agenda-truncate-ellipsis for truncation."
+  (ogt--with-temp-org-buffer
+   "* Very long project name that will be truncated
+** NEXT task
+"
+   (search-forward "task")
+   (org-back-to-heading t)
+   (org-entry-put nil org-gtd-prop-project "Very long project name that will be truncated")
+   (let ((org-gtd-agenda-truncate-ellipsis "..."))
+     (assert-equal "Very lo..."
+                   (org-gtd-agenda--resolve-prefix-chain '(project) 10)))))
+
 (provide 'prefix-element-test)
 
 ;;; prefix-element-test.el ends here
