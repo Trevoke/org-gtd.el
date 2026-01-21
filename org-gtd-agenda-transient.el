@@ -135,9 +135,7 @@ TIMESTAMP is an Org active timestamp like \"<2025-11-28>\"."
 (defun org-gtd-agenda-transient--set-date ()
   "Set new date for task's GTD timestamp."
   (interactive)
-  (org-gtd-agenda-transient--with-task
-   (let ((new-date (org-gtd-prompt-for-active-date "New date")))
-     (org-entry-put (point) org-gtd-timestamp new-date))))
+  (org-gtd-set-timestamp))
 
 ;;;; Clarify Actions
 
