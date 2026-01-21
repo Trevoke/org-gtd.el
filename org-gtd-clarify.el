@@ -781,9 +781,13 @@ Added to `kill-buffer-hook' buffer-locally."
     (org-gtd-clarify--kill-side-window org-gtd-clarify-organize-help-buffer-name)
     (org-gtd-clarify--kill-side-window "*Org GTD Horizons View*")
     (org-gtd-clarify--kill-side-window "*Org GTD Project Dependencies*"))
-  ;; Always clean up WIP temp file for this buffer
+  ;; Delete WIP temp file directly (don't call org-gtd-wip--cleanup-temp-file
+  ;; which would try to kill-buffer again, causing infinite recursion)
   (when org-gtd-clarify--clarify-id
-    (org-gtd-wip--cleanup-temp-file org-gtd-clarify--clarify-id)))
+    (when-let ((temp-file (gethash org-gtd-clarify--clarify-id org-gtd-wip--temp-files)))
+      (when (file-exists-p temp-file)
+        (delete-file temp-file))
+      (remhash org-gtd-clarify--clarify-id org-gtd-wip--temp-files))))
 
 ;;;; Footer
 
