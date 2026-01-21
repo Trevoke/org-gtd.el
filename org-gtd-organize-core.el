@@ -120,6 +120,8 @@ This handles the internal bits of `org-gtd'."
             (window-config org-gtd-clarify--window-config)
             (skip-refile org-gtd-clarify--skip-refile)
             (duplicate-queue (copy-sequence org-gtd-clarify--duplicate-queue)))
+        ;; Clear queue so kill-buffer hooks don't prompt
+        (setq org-gtd-clarify--duplicate-queue nil)
         ;; Only cut original if we refiled (not updated in place)
         (unless skip-refile
           (when (and (boundp 'org-gtd-clarify--source-heading-marker)
