@@ -734,6 +734,18 @@ Added to `kill-emacs-query-functions'."
 
 (add-hook 'kill-emacs-query-functions #'org-gtd-clarify--kill-emacs-query)
 
+;;;;; Kill Buffer Safety
+
+(defun org-gtd-clarify--other-clarify-buffers-exist-p ()
+  "Return t if other clarify buffers exist besides current one."
+  (let ((current (current-buffer)))
+    (cl-some (lambda (buf)
+               (and (not (eq buf current))
+                    (buffer-live-p buf)
+                    (with-current-buffer buf
+                      (derived-mode-p 'org-gtd-clarify-mode))))
+             (buffer-list))))
+
 ;;;; Footer
 
 (provide 'org-gtd-clarify)

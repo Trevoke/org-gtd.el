@@ -414,6 +414,28 @@
   "The kill-emacs query function is registered."
   (assert-true (memq 'org-gtd-clarify--kill-emacs-query kill-emacs-query-functions)))
 
+;;; Other Clarify Buffers Exist Tests
+
+(deftest clarify/other-buffers-exist-returns-nil-when-alone ()
+  "Returns nil when current buffer is the only clarify buffer."
+  (capture-inbox-item "Test item")
+  (org-gtd-process-inbox)
+  (with-wip-buffer
+    (assert-nil (org-gtd-clarify--other-clarify-buffers-exist-p))))
+
+(deftest clarify/other-buffers-exist-returns-t-when-multiple ()
+  "Returns t when other clarify buffers exist."
+  ;; Create first clarify buffer
+  (capture-inbox-item "Item one")
+  (org-gtd-process-inbox)
+  (let ((first-buf (ogt-get-wip-buffer)))
+    ;; Create second clarify buffer manually
+    (with-temp-buffer
+      (org-gtd-clarify-mode)
+      ;; Check from first buffer's perspective
+      (with-current-buffer first-buf
+        (assert-true (org-gtd-clarify--other-clarify-buffers-exist-p))))))
+
 ;;; Integration Tests
 
 (deftest clarify/duplicate-full-workflow ()
