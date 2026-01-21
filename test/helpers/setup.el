@@ -146,6 +146,11 @@ Kills GTD-related buffers and clears org-mode internal state."
           (when (buffer-file-name buffer)
             (with-current-buffer buffer
               (set-buffer-modified-p nil)))
+          ;; Clear duplicate queue before killing to prevent hook prompts
+          (with-current-buffer buffer
+            (when (and (boundp 'org-gtd-clarify--duplicate-queue)
+                       (local-variable-p 'org-gtd-clarify--duplicate-queue))
+              (setq org-gtd-clarify--duplicate-queue nil)))
           (kill-buffer buffer)))))
 
   ;; Clear org-mode internal state
