@@ -13,6 +13,12 @@ Control when the GTD lighter appears in the mode-line with ~org-gtd-mode-lighter
 (setq org-gtd-mode-lighter-display 'when-non-zero)
 #+end_src
 
+*** Multi-item capture timestamps (Issue #99)
+When capturing multiple inbox items in one session (by adding multiple
+level-1 headings in the capture buffer), each heading now gets its own
+~ORG_GTD_CAPTURED_AT~ timestamp. All items in the same capture session
+share the same timestamp.
+
 * 4.4.0 - 2026-01-20
 
 ** Added
