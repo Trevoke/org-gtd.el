@@ -531,6 +531,17 @@
       (when-let ((buf (get-buffer "*Org GTD Duplicate Queue*")))
         (kill-buffer buf)))))
 
+;;; Hook Registration Tests
+
+(deftest clarify/mode-registers-kill-buffer-hooks ()
+  "Clarify mode registers buffer-local kill hooks."
+  (with-temp-buffer
+    (org-gtd-clarify-mode)
+    (assert-true (memq 'org-gtd-clarify--kill-buffer-query
+                       (buffer-local-value 'kill-buffer-query-functions (current-buffer))))
+    (assert-true (memq 'org-gtd-clarify--kill-buffer-cleanup
+                       (buffer-local-value 'kill-buffer-hook (current-buffer))))))
+
 ;;; Integration Tests
 
 (deftest clarify/duplicate-full-workflow ()

@@ -216,7 +216,12 @@ clarifying GTD items before organizing them.
    (substitute-command-keys
     "\\<org-gtd-clarify-mode-map>Clarify item.  \\[org-gtd-organize] to file, \\[org-gtd-clarify-duplicate] to duplicate, \\[org-gtd-clarify-stop] to cancel."))
   ;; Enable auto-save for crash protection (absorbed from wip-mode)
-  (auto-save-mode 1))
+  (auto-save-mode 1)
+  ;; Kill buffer hooks for cleanup
+  (add-hook 'kill-buffer-query-functions
+            #'org-gtd-clarify--kill-buffer-query nil t)
+  (add-hook 'kill-buffer-hook
+            #'org-gtd-clarify--kill-buffer-cleanup nil t))
 
 ;;;; Commands
 
