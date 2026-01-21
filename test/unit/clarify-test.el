@@ -436,6 +436,45 @@
       (with-current-buffer first-buf
         (assert-true (org-gtd-clarify--other-clarify-buffers-exist-p))))))
 
+;;; Kill Buffer Query Tests
+
+(deftest clarify/kill-buffer-query-allows-when-queue-empty ()
+  "Query function returns t when queue is empty (test A1)."
+  (with-temp-buffer
+    (org-gtd-clarify-mode)
+    (setq org-gtd-clarify--duplicate-queue nil)
+    (assert-true (org-gtd-clarify--kill-buffer-query))))
+
+(deftest clarify/kill-buffer-query-prompts-discard ()
+  "Query function prompts and returns t on discard (test A2)."
+  (with-temp-buffer
+    (org-gtd-clarify-mode)
+    (setq org-gtd-clarify--duplicate-queue '((:title "Test" :content "* Test")))
+    (with-simulated-input "d"
+      (assert-true (org-gtd-clarify--kill-buffer-query)))
+    ;; Queue unchanged (will be cleared by actual kill)
+    (assert-equal 1 (length org-gtd-clarify--duplicate-queue))))
+
+(deftest clarify/kill-buffer-query-prompts-save ()
+  "Query function saves to inbox and returns t on save (test A3)."
+  (with-temp-buffer
+    (org-gtd-clarify-mode)
+    (setq org-gtd-clarify--duplicate-queue '((:title "Saved Item" :content "* Saved Item")))
+    (with-simulated-input "s"
+      (assert-true (org-gtd-clarify--kill-buffer-query)))
+    ;; Check inbox has the saved item
+    (with-current-buffer (find-file-noselect (org-gtd-inbox-path))
+      (revert-buffer t t)
+      (assert-match "Saved Item" (buffer-string)))))
+
+(deftest clarify/kill-buffer-query-prompts-cancel ()
+  "Query function returns nil on cancel, aborting kill (test A4)."
+  (with-temp-buffer
+    (org-gtd-clarify-mode)
+    (setq org-gtd-clarify--duplicate-queue '((:title "Test" :content "* Test")))
+    (with-simulated-input "c"
+      (assert-nil (org-gtd-clarify--kill-buffer-query)))))
+
 ;;; Kill Side Window Helper Tests
 
 (deftest clarify/kill-side-window-removes-buffer ()

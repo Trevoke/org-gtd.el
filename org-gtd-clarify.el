@@ -671,10 +671,11 @@ Returns plist with :title and :content keys, or nil if buffer is empty."
 
 (defun org-gtd-clarify--queue-save-to-inbox ()
   "Save all queued duplicates to the inbox."
-  (let ((inbox-file (org-gtd-inbox-path)))
+  (let ((inbox-file (org-gtd-inbox-path))
+        (queue org-gtd-clarify--duplicate-queue))
     (with-current-buffer (find-file-noselect inbox-file)
       (goto-char (point-max))
-      (dolist (item org-gtd-clarify--duplicate-queue)
+      (dolist (item queue)
         (insert "\n" (plist-get item :content)))
       (save-buffer))))
 
@@ -735,6 +736,18 @@ Added to `kill-emacs-query-functions'."
 (add-hook 'kill-emacs-query-functions #'org-gtd-clarify--kill-emacs-query)
 
 ;;;;; Kill Buffer Safety
+
+(defun org-gtd-clarify--kill-buffer-query ()
+  "Query before killing clarify buffer if duplicates are pending.
+Returns t to allow kill, nil to abort.
+Added to `kill-buffer-query-functions' buffer-locally."
+  (if (org-gtd-clarify--queue-empty-p)
+      t  ; No duplicates, allow kill
+    ;; Prompt user - reuse existing prompt logic
+    (pcase (org-gtd-clarify--prompt-queue-action)
+      ('save (org-gtd-clarify--queue-save-to-inbox) t)
+      ('discard t)
+      ('cancel nil))))
 
 (defun org-gtd-clarify--other-clarify-buffers-exist-p ()
   "Return t if other clarify buffers exist besides current one."
