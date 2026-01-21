@@ -71,6 +71,30 @@
            (setq count (1+ count)))))
       (assert-equal 3 count))))
 
+(deftest capture/single-session-multi-item-timestamps-all ()
+  "Multiple headings in one capture session all get timestamps."
+  ;; Start capture
+  (org-gtd-capture nil "i")
+  ;; Add multiple headings in one session
+  (insert "First item")
+  (org-insert-heading)
+  (insert "Second item")
+  (org-insert-heading)
+  (insert "Third item")
+  ;; Finalize single capture
+  (org-capture-finalize)
+  ;; Verify all three have timestamps
+  (with-current-buffer (find-file-noselect (org-gtd-inbox-path))
+    (let ((timestamps '()))
+      (org-map-entries
+       (lambda ()
+         (push (org-entry-get nil "ORG_GTD_CAPTURED_AT") timestamps))
+       "LEVEL=1" 'file)
+      ;; All three have timestamps
+      (assert-equal 3 (length (cl-remove-if-not #'identity timestamps)))
+      ;; All timestamps are the same
+      (assert-equal 1 (length (delete-dups (cl-remove-if-not #'identity timestamps)))))))
+
 (provide 'capture-test)
 
 ;;; capture-test.el ends here
