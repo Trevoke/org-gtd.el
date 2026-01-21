@@ -289,11 +289,11 @@
 ;;; Keybinding Tests
 
 (deftest clarify/keymap-has-duplicate-bindings ()
-  "Clarify mode map has d and D for duplicate commands."
+  "Clarify mode map has C-c d and C-c D for duplicate commands."
   (assert-equal 'org-gtd-clarify-duplicate
-                (lookup-key org-gtd-clarify-mode-map (kbd "d")))
+                (lookup-key org-gtd-clarify-mode-map (kbd "C-c d")))
   (assert-equal 'org-gtd-clarify-duplicate-exact
-                (lookup-key org-gtd-clarify-mode-map (kbd "D"))))
+                (lookup-key org-gtd-clarify-mode-map (kbd "C-c D"))))
 
 ;;; Duplicate Command Tests
 

@@ -1707,7 +1707,7 @@ Sometimes one inbox item represents multiple outcomes. "Prepare for Monday meeti
 
 ***** Your first duplicate in 30 seconds
 
-1. While clarifying any item, press ~d~
+1. While clarifying any item, press ~C-c d~
 2. Edit the title in the minibuffer (or keep it the same)
 3. Press ~RET~
 
@@ -1746,10 +1746,10 @@ This window:
 
 | Key | Command | Behavior |
 |-----+---------+----------|
-| ~d~ | ~org-gtd-clarify-duplicate~ | Prompts for new title (current title as default) |
-| ~D~ | ~org-gtd-clarify-duplicate-exact~ | Copies exactly, no prompt |
+| ~C-c d~ | ~org-gtd-clarify-duplicate~ | Prompts for new title (current title as default) |
+| ~C-c D~ | ~org-gtd-clarify-duplicate-exact~ | Copies exactly, no prompt |
 
-Use ~d~ when the duplicates have different titles (most common). Use ~D~ when you want identical copies to organize differently (e.g., same task delegated to multiple people).
+Use ~C-c d~ when the duplicates have different titles (most common). Use ~C-c D~ when you want identical copies to organize differently (e.g., same task delegated to multiple people).
 
 ***** What happens if you cancel?
 

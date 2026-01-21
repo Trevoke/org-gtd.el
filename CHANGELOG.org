@@ -1,17 +1,25 @@
-* Unreleased
+* 4.4.0 - 2026-01-20
 
 ** Added
 *** Duplicate items during clarification (Issue #275)
 When clarifying an inbox item, you can now create duplicates to handle items
 that represent multiple outcomes.
 
-- Press ~d~ to duplicate with rename prompt (enter a new title)
-- Press ~D~ to duplicate exactly as-is
+- Press ~C-c d~ to duplicate with rename prompt (enter a new title)
+- Press ~C-c D~ to duplicate exactly as-is
 - Duplicates are queued and processed immediately after the current item
 - Queue displays in a side window showing pending duplicates
 - When canceling with pending duplicates, choose to discard or save to inbox
 - Before exiting Emacs, prompts if any clarify buffers have pending duplicates
 - Customize queue window position with ~org-gtd-clarify-duplicate-queue-position~
+
+*** Safe clarify buffer management with kill-buffer hooks
+Clarify buffers now have proper protection against accidental data loss:
+
+- Closing a clarify buffer with pending duplicates prompts to confirm
+- The duplicate queue side window auto-closes when the last clarify buffer is killed
+- WIP temp files are cleaned up properly when buffers are killed directly
+- Multiple clarify buffers can exist simultaneously without interference
 
 * 4.3.1 - 2026-01-17
 
