@@ -12,7 +12,7 @@
 ;; Test Coverage:
 ;; - Context detection (2 tests)
 ;; - State change actions (4 tests)
-;; - Time operations (1 test)
+;; - Time operations (4 tests)
 ;;
 ;; Migrated from test/org-gtd-agenda-transient-test.el (buttercup)
 
@@ -214,6 +214,79 @@
   ;; Clean up agenda buffer
   (when (get-buffer "*Org Agenda*")
     (kill-buffer "*Org Agenda*")))
+
+;;; Set Timestamp Tests
+
+(deftest time/set-timestamp-from-org-heading ()
+  "Sets timestamp on Calendar item from org-mode heading."
+  ;; Create a Calendar task
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-max))
+    (insert "* TODO Calendar item to reschedule\n")
+    (forward-line -1)
+    (org-back-to-heading t)
+    (org-id-get-create)
+    (org-entry-put (point) "ORG_GTD" "Calendar")
+    (org-entry-put (point) org-gtd-timestamp "<2025-11-28>")
+    (basic-save-buffer)
+
+    ;; Call set-timestamp from org-mode
+    (with-stub org-gtd-prompt-for-active-date "<2025-12-15>"
+      (org-gtd-set-timestamp))
+
+    ;; Verify timestamp was changed
+    (assert-equal "<2025-12-15>" (org-entry-get (point) org-gtd-timestamp))))
+
+(deftest time/set-timestamp-from-agenda ()
+  "Sets timestamp on Delegated item from agenda buffer."
+  ;; Create a Delegated task
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-max))
+    (insert "* WAIT Delegated item to reschedule\n")
+    (forward-line -1)
+    (org-back-to-heading t)
+    (org-id-get-create)
+    (org-entry-put (point) "ORG_GTD" "Delegated")
+    (org-entry-put (point) org-gtd-timestamp "<2025-11-28>")
+    (basic-save-buffer))
+
+  ;; Generate agenda and call set-timestamp
+  (org-agenda nil "t")
+  (goto-char (point-min))
+  (search-forward "Delegated item to reschedule")
+  (beginning-of-line)
+
+  (with-stub org-gtd-prompt-for-active-date "<2025-12-20>"
+    (org-gtd-set-timestamp))
+
+  ;; Verify timestamp was changed
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "Delegated item to reschedule")
+    (org-back-to-heading t)
+    (assert-equal "<2025-12-20>" (org-entry-get (point) org-gtd-timestamp)))
+
+  ;; Clean up agenda buffer
+  (when (get-buffer "*Org Agenda*")
+    (kill-buffer "*Org Agenda*")))
+
+(deftest time/set-timestamp-rejects-non-timestamped-type ()
+  "Refuses to set timestamp on non-timestamped GTD type."
+  ;; Create an Actions task (not timestamped type)
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-max))
+    (insert "* TODO Action item\n")
+    (forward-line -1)
+    (org-back-to-heading t)
+    (org-id-get-create)
+    (org-entry-put (point) "ORG_GTD" "Actions")
+    (basic-save-buffer)
+
+    ;; Call set-timestamp - should fail gracefully
+    (org-gtd-set-timestamp)
+
+    ;; Verify no timestamp was set
+    (assert-nil (org-entry-get (point) org-gtd-timestamp))))
 
 (provide 'agenda-transient-test)
 
