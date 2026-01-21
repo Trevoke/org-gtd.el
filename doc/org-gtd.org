@@ -4239,6 +4239,24 @@ Values:
 (setq org-gtd-mode-update-interval nil)
 #+end_src
 
+**** ~org-gtd-mode-lighter-display~
+
+*Type*: Symbol
+
+*Default*: ~'always~
+
+*Description*: Controls when the GTD lighter appears in the mode-line.
+
+Values:
+- ~'always~ :: Always show the lighter (e.g., =GTD[0]=, =GTD[5]=)
+- ~'never~ :: Never show the lighter
+- ~'when-non-zero~ :: Only show when inbox has items
+
+*Example*: Hide lighter when inbox is empty:
+#+begin_src emacs-lisp
+(setq org-gtd-mode-lighter-display 'when-non-zero)
+#+end_src
+
 *** Clarification Configuration
 
 **** ~org-gtd-clarify-show-horizons~
