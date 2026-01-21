@@ -43,6 +43,15 @@
 (defconst org-gtd-timestamp "ORG_GTD_TIMESTAMP"
   "Org property storing timestamps for `org-gtd' logic.")
 
+(defconst org-gtd--timestamped-types '("Calendar" "Delegated" "Tickler")
+  "GTD types that support ORG_GTD_TIMESTAMP operations.")
+
+(defun org-gtd--timestamped-item-p ()
+  "Return non-nil if heading at point is a timestamped GTD type.
+Timestamped types are Calendar, Delegated, and Tickler items."
+  (when-let ((org-gtd-type (org-entry-get nil "ORG_GTD")))
+    (member org-gtd-type org-gtd--timestamped-types)))
+
 ;;;;; GTD Category Constants
 
 (defconst org-gtd-action "Actions"
