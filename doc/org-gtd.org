@@ -2017,9 +2017,11 @@ Change the TODO state of a task. These are the most common actions:
 For Calendar, Delegated, and Tickler items only - these have GTD timestamps that determine when they appear.
 
 - *Defer 1 day* (~+~) - Push it to tomorrow (quick snooze)
-- *Set date* (~s~) - Pick a new date
+- *Set date* (~s~) - Pick a new date (calls ~org-gtd-set-timestamp~)
 
 Why only these types? Calendar items have appointment dates. Delegated items have follow-up dates. Tickler items have "remind me on" dates. Habits are excluded because deferring a habit has different semantics (you'd break the streak).
+
+*Note*: You can also call ~org-gtd-set-timestamp~ directly from an org-mode heading (not just from the agenda). This is useful when editing a Calendar, Delegated, or Tickler item in its source file.
 
 ****** Clocking
 
@@ -5857,6 +5859,23 @@ These commands only work when point is on an agenda item:
 - Finds the project containing the agenda item
 - Marks all remaining tasks as CNCL
 - Updates project status
+
+*** Timestamp Commands (DWIM)
+
+These commands work from any context: org buffer or agenda view. They automatically detect where you are.
+
+**** ~org-gtd-set-timestamp~
+
+*When to use*: To reschedule a Calendar, Delegated, or Tickler item
+
+*What it does*:
+- Prompts for a new date
+- Sets the ~ORG_GTD_TIMESTAMP~ property
+- Works from org-mode headings or agenda items
+
+*Example*: You have a Calendar item for a meeting next week, but the meeting got moved. Navigate to the item (either in org-mode or via the agenda), call ~M-x org-gtd-set-timestamp~, pick the new date.
+
+*Note*: In the agenda transient (~org-gtd-agenda-transient~), this is the ~s~ "Set date" action.
 
 *** Project Task Commands (DWIM)
 
