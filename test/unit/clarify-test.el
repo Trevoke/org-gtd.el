@@ -491,6 +491,46 @@
   ;; Should not error
   (org-gtd-clarify--kill-side-window "*Nonexistent Buffer*"))
 
+;;; Kill Buffer Cleanup Tests
+
+(deftest clarify/kill-buffer-cleanup-kills-queue-window ()
+  "Cleanup kills queue window when last clarify buffer (test B1)."
+  (with-temp-buffer
+    (org-gtd-clarify-mode)
+    (setq org-gtd-clarify--duplicate-queue '((:title "Test" :content "* Test")))
+    (org-gtd-clarify--queue-display)
+    (assert-true (get-buffer "*Org GTD Duplicate Queue*"))
+    ;; Simulate being the last buffer
+    (org-gtd-clarify--kill-buffer-cleanup)
+    (assert-nil (get-buffer "*Org GTD Duplicate Queue*"))))
+
+(deftest clarify/kill-buffer-cleanup-no-error-when-empty ()
+  "Cleanup handles case with no side windows (test B6)."
+  (with-temp-buffer
+    (org-gtd-clarify-mode)
+    ;; Should not error
+    (org-gtd-clarify--kill-buffer-cleanup)))
+
+(deftest clarify/kill-buffer-cleanup-preserves-windows-when-other-buffers ()
+  "Cleanup preserves side windows when other clarify buffers exist (test C1)."
+  (let ((other-buf (get-buffer-create "*Other Clarify*")))
+    (with-current-buffer other-buf
+      (org-gtd-clarify-mode))
+    (unwind-protect
+        (with-temp-buffer
+          (org-gtd-clarify-mode)
+          ;; Create queue window
+          (setq org-gtd-clarify--duplicate-queue '((:title "Test" :content "* Test")))
+          (org-gtd-clarify--queue-display)
+          (assert-true (get-buffer "*Org GTD Duplicate Queue*"))
+          ;; Cleanup - other buffer exists, so windows should remain
+          (org-gtd-clarify--kill-buffer-cleanup)
+          (assert-true (get-buffer "*Org GTD Duplicate Queue*")))
+      ;; Cleanup test buffer
+      (kill-buffer other-buf)
+      (when-let ((buf (get-buffer "*Org GTD Duplicate Queue*")))
+        (kill-buffer buf)))))
+
 ;;; Integration Tests
 
 (deftest clarify/duplicate-full-workflow ()

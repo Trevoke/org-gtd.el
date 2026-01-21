@@ -766,6 +766,20 @@ Added to `kill-buffer-query-functions' buffer-locally."
       (quit-window nil window))
     (kill-buffer buffer)))
 
+(defun org-gtd-clarify--kill-buffer-cleanup ()
+  "Clean up side windows when clarify buffer is killed.
+Only cleans up global side windows if no other clarify buffers exist.
+Added to `kill-buffer-hook' buffer-locally."
+  (unless (org-gtd-clarify--other-clarify-buffers-exist-p)
+    ;; Clean up all side windows
+    (org-gtd-clarify--kill-side-window org-gtd-clarify--queue-buffer-name)
+    (org-gtd-clarify--kill-side-window org-gtd-clarify-organize-help-buffer-name)
+    (org-gtd-clarify--kill-side-window "*Org GTD Horizons View*")
+    (org-gtd-clarify--kill-side-window "*Org GTD Project Dependencies*"))
+  ;; Always clean up WIP temp file for this buffer
+  (when org-gtd-clarify--clarify-id
+    (org-gtd-wip--cleanup-temp-file org-gtd-clarify--clarify-id)))
+
 ;;;; Footer
 
 (provide 'org-gtd-clarify)
