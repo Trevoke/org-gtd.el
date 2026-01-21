@@ -70,6 +70,12 @@
   (assert-true (boundp 'org-gtd-mode-lighter-display))
   (assert-equal 'always (default-value 'org-gtd-mode-lighter-display)))
 
+(deftest mode/lighter-never-returns-nil ()
+  "Mode lighter returns nil when display is set to never."
+  (let ((org-gtd-mode-lighter-display 'never))
+    (capture-inbox-item "item")
+    (assert-nil (org-gtd-mode-lighter))))
+
 ;;; CLOSED timestamp auto-logging tests
 
 (deftest mode/closed-timestamp-added-for-gtd-item ()

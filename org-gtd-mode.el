@@ -200,8 +200,10 @@ Counts items in main inbox plus any files in `org-gtd-additional-inbox-files'."
         count))))
 
 (defun org-gtd-mode-lighter ()
-  "Return the mode-line lighter string with inbox count."
-  (format " GTD[%d]" (org-gtd-inbox-count)))
+  "Return the mode-line lighter string based on `org-gtd-mode-lighter-display'."
+  (pcase org-gtd-mode-lighter-display
+    ('never nil)
+    (_ (format " GTD[%d]" (org-gtd-inbox-count)))))
 
 (defun org-gtd-mode--start-refresh-timer ()
   "Start the periodic refresh timer if configured."
