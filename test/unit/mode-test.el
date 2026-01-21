@@ -76,6 +76,18 @@
     (capture-inbox-item "item")
     (assert-nil (org-gtd-mode-lighter))))
 
+(deftest mode/lighter-when-non-zero-hides-empty ()
+  "Mode lighter returns nil when display is when-non-zero and inbox empty."
+  (let ((org-gtd-mode-lighter-display 'when-non-zero))
+    (assert-nil (org-gtd-mode-lighter))))
+
+(deftest mode/lighter-when-non-zero-shows-count ()
+  "Mode lighter shows count when display is when-non-zero and inbox has items."
+  (let ((org-gtd-mode-lighter-display 'when-non-zero))
+    (capture-inbox-item "item")
+    (capture-inbox-item "another")
+    (assert-equal " GTD[2]" (org-gtd-mode-lighter))))
+
 ;;; CLOSED timestamp auto-logging tests
 
 (deftest mode/closed-timestamp-added-for-gtd-item ()
