@@ -74,6 +74,7 @@ podman build -t stag-28-2 -f dev/Containerfile --build-arg emacs_version=28-2 .
   Todos
   ☐ Update CHANGELOG.org with x.x.x entry
   ☐ Update version in org-gtd.el header
+  ☐ Update version in defconst org-gtd-version
   ☐ Update version in org-gtd-pkg.el
   ☐ Run tests to confirm all pass
   ☐ Commit release changes
