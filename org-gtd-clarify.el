@@ -746,6 +746,13 @@ Added to `kill-emacs-query-functions'."
                       (derived-mode-p 'org-gtd-clarify-mode))))
              (buffer-list))))
 
+(defun org-gtd-clarify--kill-side-window (buffer-name)
+  "Kill side window buffer BUFFER-NAME if it exists."
+  (when-let ((buffer (get-buffer buffer-name)))
+    (when-let ((window (get-buffer-window buffer)))
+      (quit-window nil window))
+    (kill-buffer buffer)))
+
 ;;;; Footer
 
 (provide 'org-gtd-clarify)

@@ -436,6 +436,22 @@
       (with-current-buffer first-buf
         (assert-true (org-gtd-clarify--other-clarify-buffers-exist-p))))))
 
+;;; Kill Side Window Helper Tests
+
+(deftest clarify/kill-side-window-removes-buffer ()
+  "Kills buffer and closes window."
+  (let ((test-buf (get-buffer-create "*Test Side Window*")))
+    (display-buffer-in-side-window test-buf '((side . right)))
+    (assert-true (get-buffer-window test-buf))
+    (org-gtd-clarify--kill-side-window "*Test Side Window*")
+    (assert-nil (get-buffer "*Test Side Window*"))))
+
+(deftest clarify/kill-side-window-handles-nonexistent ()
+  "Does not error when buffer doesn't exist."
+  (assert-nil (get-buffer "*Nonexistent Buffer*"))
+  ;; Should not error
+  (org-gtd-clarify--kill-side-window "*Nonexistent Buffer*"))
+
 ;;; Integration Tests
 
 (deftest clarify/duplicate-full-workflow ()
