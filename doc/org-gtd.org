@@ -4403,7 +4403,7 @@ Used when:
 
 The prefix shows context information (project name, area of focus, etc.) on the left side of each task. This variable sets the default width used when no explicit ~prefix-width~ is specified in a view spec.
 
-Long values are truncated with "…". Short values are padded with spaces.
+Long values are truncated with ~org-gtd-agenda-truncate-ellipsis~ (default "…"). Short values are padded with spaces.
 
 *Example*: Increase space for longer project names:
 #+begin_src emacs-lisp
@@ -4413,6 +4413,28 @@ Long values are truncated with "…". Short values are padded with spaces.
 *Note*: You can also set ~prefix-width~ per-view in the View DSL. See [[#prefix-dsl][Prefix DSL]].
 
 *Backward compatibility*: The old name ~org-gtd-engage-prefix-width~ still works but is deprecated.
+
+**** ~org-gtd-agenda-truncate-ellipsis~
+
+*Type*: String
+
+*Default*: ~"…"~
+
+*Description*: String appended when truncating long text in agenda prefixes.
+
+The default ellipsis character (~…~) doesn't have consistent width across all fonts. Some fonts (like Iosevka) display it wider than one character, causing agenda items to misalign.
+
+*Example*: Use ASCII dots for consistent alignment:
+#+begin_src emacs-lisp
+(setq org-gtd-agenda-truncate-ellipsis "...")
+#+end_src
+
+*Example*: Use a Braille character (works well in some fonts):
+#+begin_src emacs-lisp
+(setq org-gtd-agenda-truncate-ellipsis "⣀")
+#+end_src
+
+*See also*: ~org-gtd-prefix-width~ for controlling prefix column width.
 
 *** Archive Configuration
 
@@ -7881,7 +7903,7 @@ That's the fallback chain in action.
 
 *Default*: Uses ~org-gtd-prefix-width~ (default: 12)
 
-*Note*: Long values are truncated with "…". Short values are padded with spaces.
+*Note*: Long values are truncated with ~org-gtd-agenda-truncate-ellipsis~ (default "…"). Short values are padded with spaces.
 
 *Example*: Extra space for long project names:
 #+begin_src emacs-lisp
