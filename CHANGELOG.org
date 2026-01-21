@@ -19,6 +19,11 @@ level-1 headings in the capture buffer), each heading now gets its own
 ~ORG_GTD_CAPTURED_AT~ timestamp. All items in the same capture session
 share the same timestamp.
 
+*** Unified set-timestamp command (Issue #187)
+~org-gtd-set-timestamp~ now works from both org-mode headings and
+org-agenda items. Use it to reschedule Calendar, Delegated, or Tickler
+items. The agenda transient (~s~ key) uses this same command.
+
 * 4.4.0 - 2026-01-20
 
 ** Added
