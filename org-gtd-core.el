@@ -236,6 +236,18 @@ areas of focus are displayed on the left side of agenda items."
   :package-version '(org-gtd . "4.0")
   :type 'integer)
 
+(defcustom org-gtd-agenda-truncate-ellipsis "…"
+  "String to append when truncating long text in agenda prefixes.
+
+The default ellipsis character (…) doesn't have consistent width across
+all fonts. If your agenda items don't align properly, try using a
+different string like \"...\" or \"⣀\".
+
+See also `org-gtd-prefix-width' for controlling prefix column width."
+  :group 'org-gtd
+  :package-version '(org-gtd . "4.5")
+  :type 'string)
+
 ;;;; GTD Semantic Keyword Mapping
 
 (defun org-gtd--extract-keyword-name (keyword-string)
