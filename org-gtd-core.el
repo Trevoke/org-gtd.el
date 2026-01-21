@@ -52,6 +52,46 @@ Timestamped types are Calendar, Delegated, and Tickler items."
   (when-let ((org-gtd-type (org-entry-get nil "ORG_GTD")))
     (member org-gtd-type org-gtd--timestamped-types)))
 
+(defun org-gtd--find-timestamped-item-at-point-or-agenda ()
+  "Find timestamped GTD item from point in org-mode or agenda.
+Returns marker if item is a Calendar, Delegated, or Tickler type.
+Returns nil with message otherwise."
+  (cond
+   ((derived-mode-p 'org-agenda-mode)
+    (if-let ((marker (org-get-at-bol 'org-marker)))
+        (org-with-point-at marker
+          (if (org-gtd--timestamped-item-p)
+              marker
+            (message "Item is not a Calendar, Delegated, or Tickler type")
+            nil))
+      (message "No task at point")
+      nil))
+
+   ((derived-mode-p 'org-mode)
+    (save-excursion
+      (org-back-to-heading t)
+      (if (org-gtd--timestamped-item-p)
+          (point-marker)
+        (message "Item is not a Calendar, Delegated, or Tickler type")
+        nil)))
+
+   (t
+    (message "Not in org-mode or org-agenda")
+    nil)))
+
+;;;###autoload
+(defun org-gtd-set-timestamp ()
+  "Set or change the timestamp for a Calendar, Delegated, or Tickler item.
+Works from org-mode headings or org-agenda items.
+
+Prompts for a new date and sets the ORG_GTD_TIMESTAMP property."
+  (interactive)
+  (when-let ((marker (org-gtd--find-timestamped-item-at-point-or-agenda)))
+    (org-with-point-at marker
+      (let ((new-date (org-gtd-prompt-for-active-date "New date")))
+        (org-entry-put nil org-gtd-timestamp new-date)
+        (save-buffer)))))
+
 ;;;;; GTD Category Constants
 
 (defconst org-gtd-action "Actions"
@@ -133,6 +173,7 @@ This property also controls the prefix displayed in agenda views.")
 
 ;;;; Forward declarations
 (defvar org-gtd-archive-location)
+(declare-function org-gtd-prompt-for-active-date "org-gtd-configure" (prompt))
 
 ;;;; Customization
 
