@@ -24,6 +24,11 @@ share the same timestamp.
 org-agenda items. Use it to reschedule Calendar, Delegated, or Tickler
 items. The agenda transient (~s~ key) uses this same command.
 
+*** Customizable truncation ellipsis (Issue #200)
+~org-gtd-agenda-truncate-ellipsis~ controls the string used when truncating
+long text in agenda prefixes. Users with fonts where "…" doesn't display
+as one character width can now customize this (e.g., ~"..."~ or ~"⣀"~).
+
 * 4.4.0 - 2026-01-20
 
 ** Added
