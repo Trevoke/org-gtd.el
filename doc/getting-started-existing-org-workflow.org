@@ -120,10 +120,8 @@ org-gtd *merges* your refile targets with its own. Your targets appear first in 
 If you want org-gtd to prompt for refile location (so you can choose your targets):
 
 #+begin_src emacs-lisp
-;; Make org-gtd prompt for refile target instead of auto-refiling
-(setq org-gtd-refile-to-any-target nil)
-
-;; Then specify which GTD types should prompt
+;; By default, org-gtd auto-refiles to its standard locations.
+;; To prompt for refile target, specify which GTD types should prompt:
 (setq org-gtd-refile-prompt-for-types
       '(single-action project-heading calendar someday delegated))
 #+end_src
@@ -258,8 +256,8 @@ Here's a complete configuration that respects your existing setup:
 
 ;; Keep your existing refile targets
 ;; org-gtd will merge its targets with yours
-;; Set this to get prompted for where to refile (see your targets)
-(setq org-gtd-refile-to-any-target nil)
+;; By default org-gtd auto-refiles; to prompt for your targets instead:
+;; (setq org-gtd-refile-prompt-for-types '(single-action project-heading calendar someday delegated))
 
 ;; Map to your existing keywords (adjust to match yours)
 (setq org-gtd-keyword-mapping
@@ -333,7 +331,7 @@ org-gtd has its own project model with DAG dependencies. You can:
 | Process your GTD inbox | ~M-x org-gtd-process-inbox~ or ~C-c d p~ |
 | See GTD next actions | ~M-x org-gtd-engage~ or ~C-c d e~ |
 | Use your regular agenda | ~M-x org-agenda~ (unchanged) |
-| Refile with your targets | Set ~org-gtd-refile-to-any-target~ to nil |
+| Refile with your targets | Set ~org-gtd-refile-prompt-for-types~ to a list of types |
 | Archive GTD items | ~M-x org-gtd-archive-completed-items~ |
 | Archive other items | ~M-x org-archive-subtree~ (unchanged) |
 

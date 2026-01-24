@@ -4738,22 +4738,6 @@ Unlike org-mode's built-in statistics cookies (~[/]~ or ~[%]~) which count direc
 
 *See also*: [[#project-progress-cookies][Project Progress Cookies]] for detailed usage, [[#org-gtd-project-update-all-cookies][~org-gtd-project-update-all-cookies~]] for manual refresh.
 
-*** Obsolete Variables (Do Not Use)
-
-These variables are obsolete as of version 4.0. They are listed here for reference only.
-
-**** ~org-gtd-todo-keyword~ (obsolete)
-*Use instead*: ~org-gtd-keyword-mapping~ with key ~'todo~
-
-**** ~org-gtd-next-keyword~ (obsolete)
-*Use instead*: ~org-gtd-keyword-mapping~ with key ~'next~
-
-**** ~org-gtd-wait-keyword~ (obsolete)
-*Use instead*: ~org-gtd-keyword-mapping~ with key ~'wait~
-
-**** ~org-gtd-canceled-keyword~ (obsolete)
-*Use instead*: ~org-gtd-keyword-mapping~ with key ~'canceled~
-
 ** Commands Reference
 :PROPERTIES:
 :DESCRIPTION: All interactive commands explained
