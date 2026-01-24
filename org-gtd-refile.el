@@ -36,25 +36,6 @@
 
 ;;;; Customization
 
-(defcustom org-gtd-refile-to-any-target t
-  "Set to true if you do not need to choose where to refile processed items.
-
-When this is true, org-gtd will refile to the first target it finds, or creates
-it if necessary, without confirmation.  When this is false, it will ask for
-confirmation regardless of the number of options.  Note that setting this to
-false does not mean you can safely create new targets.  See the documentation
-to create new refile targets.
-
-Defaults to true to carry over pre-2.0 behavior.  You will need to change this
-setting as part of following the instructions to add your own refile targets."
-  :group 'org-gtd-organize
-  :package-version '(org-gtd . "2.0.0")
-  :type 'boolean)
-
-(make-obsolete-variable 'org-gtd-refile-to-any-target
-                        'org-gtd-refile-prompt-for-types
-                        "4.0.0")
-
 (defcustom org-gtd-refile-prompt-for-types
   '(single-action project-heading project-task calendar someday delegated tickler habit)
   "Obsolete since 4.1.0.  List of GTD types that should prompt for refile.
@@ -98,9 +79,6 @@ not declare `:prompt-to-refile' explicitly in the type registry."
 ;;;; Variables
 
 (defvar org-gtd--organize-type)
-
-(defvar org-gtd-refile--deprecated-warning-shown nil
-  "Non-nil if deprecation warning for `org-gtd-refile-to-any-target' was shown.")
 
 
 ;;;; Functions
@@ -148,19 +126,10 @@ The function filters targets as follows:
   "Return non-nil if refiling TYPE should prompt for target selection.
 
 Precedence:
-1. If `org-gtd-refile-to-any-target' is non-nil, emit the deprecation
-   warning and return nil (legacy behavior).
-2. Otherwise, if the type registry declares `:prompt-to-refile' for
-   TYPE (even explicitly nil), return that value.
-3. Otherwise, fall back to `org-gtd-refile-prompt-default'."
+1. If the type registry declares `:prompt-to-refile' for TYPE (even
+   explicitly nil), return that value.
+2. Otherwise, fall back to `org-gtd-refile-prompt-default'."
   (cond
-   (org-gtd-refile-to-any-target
-    (unless org-gtd-refile--deprecated-warning-shown
-      (display-warning 'org-gtd
-                       "`org-gtd-refile-to-any-target' is deprecated as of 4.0.0.
-Set it to nil and declare :prompt-to-refile on the relevant types instead.")
-      (setq org-gtd-refile--deprecated-warning-shown t))
-    nil)
    ((org-gtd-type-prompt-to-refile-set-p type)
     (org-gtd-type-prompt-to-refile type))
    (t org-gtd-refile-prompt-default)))

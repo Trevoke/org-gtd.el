@@ -35,8 +35,7 @@
 (deftest cleanup/returns-to-previous-window-layout ()
   "Returns to previous window layout after organizing item."
   (let ((source-buffer (ogt--temp-org-file-buffer "taskfile" "* This is the heading to clarify"))
-        (window-config nil)
-        (org-gtd-refile-to-any-target t))
+        (window-config nil))
     (set-buffer source-buffer)
     (org-gtd-clarify-item)
     (setq window-config org-gtd-clarify--window-config)
@@ -45,8 +44,7 @@
 
 (deftest cleanup/cleans-up-temporary-wip-buffer ()
   "Cleans up temporary WIP buffer after organizing item."
-  (let ((source-buffer (ogt--temp-org-file-buffer "taskfile" "* This is the heading to clarify"))
-        (org-gtd-refile-to-any-target t))
+  (let ((source-buffer (ogt--temp-org-file-buffer "taskfile" "* This is the heading to clarify")))
     (set-buffer source-buffer)
     (org-gtd-clarify-item)
     (org-gtd-single-action)
@@ -54,8 +52,7 @@
 
 (deftest cleanup/deletes-source-heading ()
   "Deletes the source heading after organizing."
-  (let ((source-buffer (ogt--temp-org-file-buffer "taskfile" "* This is the heading to clarify"))
-        (org-gtd-refile-to-any-target t))
+  (let ((source-buffer (ogt--temp-org-file-buffer "taskfile" "* This is the heading to clarify")))
     (set-buffer source-buffer)
     (org-gtd-clarify-item)
     (org-gtd-single-action)
@@ -71,7 +68,6 @@
         (org-entry-put (point) "HOOK2" "YES")))
   (unwind-protect
       (let* ((source-buffer (ogt--temp-org-file-buffer "taskfile" "* This is the heading to clarify"))
-             (org-gtd-refile-to-any-target t)
              (org-gtd-organize-hooks '(hook1 hook2)))
         (set-buffer source-buffer)
         (org-gtd-clarify-item)
