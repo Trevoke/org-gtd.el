@@ -72,7 +72,7 @@
     (delegate-item "Legal" past-date)
 
     ;; 2. VERIFY appears in missed items review
-    (org-gtd-review-missed-items)
+    (org-gtd-reflect-missed-items)
     (assert-match "Get contract from legal" (agenda-raw-text))))
 
 (deftest calendar-item-in-missed-review ()
@@ -84,7 +84,7 @@
     (schedule-item past-date)
 
     ;; 2. VERIFY appears in missed items review
-    (org-gtd-review-missed-items)
+    (org-gtd-reflect-missed-items)
     (assert-match "Client presentation" (agenda-raw-text))))
 
 (deftest tickler-item-in-missed-review ()
@@ -96,7 +96,7 @@
     (defer-item past-date)
 
     ;; 2. VERIFY appears in missed items review
-    (org-gtd-review-missed-items)
+    (org-gtd-reflect-missed-items)
     (assert-match "Review investment portfolio" (agenda-raw-text))))
 
 ;;; Review of Projects
@@ -130,7 +130,7 @@
     (org-todo "TODO"))
 
   ;; 3. VERIFY project appears in stuck projects review
-  (org-gtd-review-stuck-projects)
+  (org-gtd-reflect-stuck-projects)
   (assert-match "Launch new website" (agenda-raw-text)))
 
 (deftest completed-project-not-in-stuck-review ()
@@ -164,11 +164,11 @@
     (org-todo "DONE"))
 
   ;; 3. VERIFY project does NOT appear in stuck projects review
-  (org-gtd-review-stuck-projects)
+  (org-gtd-reflect-stuck-projects)
   (refute-match "Finished Campaign" (agenda-raw-text))
 
   ;; 4. VERIFY project DOES appear in completed projects review
-  (org-gtd-review-completed-projects)
+  (org-gtd-reflect-completed-projects)
   (assert-match "Finished Campaign" (agenda-raw-text)))
 
 ;;; Engage View for Habits
@@ -202,7 +202,7 @@
       (org-set-property "CATEGORY" "Health"))
 
     ;; 3. VERIFY appears in area of focus review
-    (org-gtd-review-area-of-focus "Health")
+    (org-gtd-reflect-area-of-focus "Health")
     (assert-match "Morning workout" (agenda-raw-text))))
 
 ;;; Review of Tickler Items
@@ -223,7 +223,7 @@
       (org-set-property "CATEGORY" "Personal"))
 
     ;; 3. VERIFY appears in area of focus review
-    (org-gtd-review-area-of-focus "Personal")
+    (org-gtd-reflect-area-of-focus "Personal")
     (assert-match "Learn Italian" (agenda-raw-text))))
 
 (deftest tickler-item-can-be-archived ()
@@ -310,7 +310,7 @@
       (org-todo "TODO"))
 
     ;; 5. VERIFY project does NOT appear as stuck (it has a NEXT task in other file)
-    (org-gtd-review-stuck-projects)
+    (org-gtd-reflect-stuck-projects)
     (refute-match "Multi-file project review" (agenda-raw-text))))
 
 ;;; Area of Focus Review with Tickler Projects
@@ -338,7 +338,7 @@
       (org-gtd-tickler "2025-12-01"))
 
     ;; 4. RUN area of focus review for Work
-    (org-gtd-review-area-of-focus "Work")
+    (org-gtd-reflect-area-of-focus "Work")
 
     ;; 5. VERIFY active project in Active projects section
     (let ((agenda-content (agenda-raw-text)))

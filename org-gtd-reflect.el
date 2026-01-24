@@ -84,10 +84,6 @@ mostly of value for testing purposes."
   (let ((org-agenda-buffer-name (format "*Org Agenda: %s*" area)))
     (org-gtd-view-show (org-gtd-reflect--area-of-focus-view-specs area))))
 
-;; Backward compatibility alias - must come before referent
-(define-obsolete-variable-alias 'org-gtd-review-missed-items-view-specs
-  'org-gtd-reflect-missed-items-view-specs "4.0")
-
 (defconst org-gtd-reflect-missed-items-view-specs
   '(((name . "Missed calendar events")
      (type . calendar)
@@ -214,13 +210,6 @@ This view helps identify projects ready for archiving."
 
 ;;;; Missed Engagements Reflection (formerly "oops")
 
-;; Backward compatibility aliases - must come before referents
-(define-obsolete-variable-alias 'org-gtd-oops-view-specs
-  'org-gtd-reflect-missed-engagements-view-specs "4.0")
-
-(define-obsolete-variable-alias 'org-gtd-review-missed-engagements-view-specs
-  'org-gtd-reflect-missed-engagements-view-specs "4.0")
-
 (defconst org-gtd-reflect-missed-engagements-view-specs
   '(((name . "Missed check-ins on delegated items")
      (type . delegated)
@@ -281,13 +270,6 @@ Useful for planning follow-ups and catching early completions."
   (interactive)
   (org-gtd-view-show org-gtd-reflect-upcoming-delegated-view-spec))
 
-;; Backward compatibility aliases - must come before referents
-(define-obsolete-variable-alias 'org-gtd-oops-custom-views
-  'org-gtd-reflect-missed-custom-views "4.0")
-
-(define-obsolete-variable-alias 'org-gtd-review-missed-custom-views
-  'org-gtd-reflect-missed-custom-views "4.0")
-
 (defcustom org-gtd-reflect-missed-custom-views nil
   "Additional custom missed engagement views defined by the user.
 Each view should be a GTD view specification alist with \\='name
@@ -308,94 +290,6 @@ Example:
   (org-gtd-view-show
    (append org-gtd-reflect-missed-engagements-view-specs
            org-gtd-reflect-missed-custom-views)))
-
-;;;; Backward Compatibility Aliases
-
-;; org-gtd-oops-* -> org-gtd-reflect-*
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-oops
-  #'org-gtd-reflect-missed-engagements "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-oops-delegated
-  #'org-gtd-reflect-missed-delegated "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-oops-calendar
-  #'org-gtd-reflect-missed-calendar "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-oops-projects
-  #'org-gtd-reflect-missed-projects "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-oops-with-custom
-  #'org-gtd-reflect-missed-with-custom "4.0")
-
-;; org-gtd-review-* -> org-gtd-reflect-*
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-review-area-of-focus
-  #'org-gtd-reflect-area-of-focus "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-review-missed-items
-  #'org-gtd-reflect-missed-items "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-review-stuck-calendar-items
-  #'org-gtd-reflect-stuck-calendar-items "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-review-stuck-delegated-items
-  #'org-gtd-reflect-stuck-delegated-items "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-review-stuck-habit-items
-  #'org-gtd-reflect-stuck-habit-items "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-review-stuck-incubated-items
-  #'org-gtd-reflect-stuck-tickler-items "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-review-stuck-projects
-  #'org-gtd-reflect-stuck-projects "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-review-stuck-single-action-items
-  #'org-gtd-reflect-stuck-single-action-items "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-review-completed-items
-  #'org-gtd-reflect-completed-items "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-review-completed-projects
-  #'org-gtd-reflect-completed-projects "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-review-missed-engagements
-  #'org-gtd-reflect-missed-engagements "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-review-missed-delegated
-  #'org-gtd-reflect-missed-delegated "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-review-missed-calendar
-  #'org-gtd-reflect-missed-calendar "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-review-missed-projects
-  #'org-gtd-reflect-missed-projects "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-review-upcoming-delegated
-  #'org-gtd-reflect-upcoming-delegated "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-review-missed-with-custom
-  #'org-gtd-reflect-missed-with-custom "4.0")
 
 ;;;; Footer
 

@@ -64,42 +64,6 @@
   (assert-true (fboundp 'org-gtd-reflect-missed-projects))
   (assert-true (fboundp 'org-gtd-reflect-missed-with-custom)))
 
-;;; Backward Compatibility
-
-(deftest reflect/oops-alias-exists ()
-  "Provides org-gtd-oops as an alias."
-  (assert-true (fboundp 'org-gtd-oops)))
-
-(deftest reflect/oops-delegated-alias-exists ()
-  "Provides org-gtd-oops-delegated as an alias."
-  (assert-true (fboundp 'org-gtd-oops-delegated)))
-
-(deftest reflect/oops-calendar-alias-exists ()
-  "Provides org-gtd-oops-calendar as an alias."
-  (assert-true (fboundp 'org-gtd-oops-calendar)))
-
-(deftest reflect/oops-projects-alias-exists ()
-  "Provides org-gtd-oops-projects as an alias."
-  (assert-true (fboundp 'org-gtd-oops-projects)))
-
-(deftest reflect/oops-with-custom-alias-exists ()
-  "Provides org-gtd-oops-with-custom as an alias."
-  (assert-true (fboundp 'org-gtd-oops-with-custom)))
-
-(deftest reflect/oops-custom-views-variable-exists ()
-  "Provides org-gtd-oops-custom-views as a variable alias."
-  (assert-true (boundp 'org-gtd-oops-custom-views)))
-
-(deftest reflect/oops-view-specs-variable-exists ()
-  "org-gtd-oops-view-specs aliases to org-gtd-reflect-missed-view-specs."
-  (assert-true (boundp 'org-gtd-oops-view-specs)))
-
-(deftest reflect/review-obsolete-aliases-exist ()
-  "Provides org-gtd-review-* as obsolete aliases."
-  (assert-true (fboundp 'org-gtd-review-missed-engagements))
-  (assert-true (fboundp 'org-gtd-review-missed-delegated))
-  (assert-true (fboundp 'org-gtd-review-stuck-projects)))
-
 ;;; Upcoming Delegated
 
 (deftest reflect/upcoming-delegated-view-spec-defined ()

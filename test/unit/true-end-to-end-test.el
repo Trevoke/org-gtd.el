@@ -77,7 +77,7 @@
   ;; Core workflow functions
   (assert-true (fboundp 'org-gtd-capture))
   (assert-true (fboundp 'org-gtd-engage))
-  (assert-true (fboundp 'org-gtd-review-stuck-projects))
+  (assert-true (fboundp 'org-gtd-reflect-stuck-projects))
 
   ;; Archive and cleanup functions
   (assert-true (fboundp 'org-gtd-archive-completed-items))

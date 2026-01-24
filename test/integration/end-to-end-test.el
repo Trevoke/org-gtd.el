@@ -76,7 +76,7 @@ Verifies that stuck project detection works correctly when:
         (org-todo "TODO"))
 
       ;; 5. VERIFY project appears in stuck projects review
-      (org-gtd-review-stuck-projects)
+      (org-gtd-reflect-stuck-projects)
       (assert-match "Multi-file stuck project" (agenda-raw-text)))))
 
 (deftest e2e/detects-broken-references-in-multi-file-projects ()
