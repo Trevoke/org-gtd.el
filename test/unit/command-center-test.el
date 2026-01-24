@@ -30,7 +30,7 @@
 (deftest command-center-contains-engage-commands ()
   "Command center contains engage commands."
   (assert-true (fboundp 'org-gtd-engage))
-  (assert-true (fboundp 'org-gtd-engage-grouped-by-context))
+  (assert-true (fboundp 'org-gtd-engage-tagged))
   (assert-true (fboundp 'org-gtd-show-all-next)))
 
 (deftest command-center-contains-capture-and-process-commands ()

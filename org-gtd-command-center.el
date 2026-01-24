@@ -43,7 +43,7 @@
   "GTD command center - entry point to all org-gtd operations."
   [["Engage"
     ("e" "Daily view" org-gtd-engage)
-    ("@" "By context" org-gtd-engage-grouped-by-context)
+    ("@" "By tag" org-gtd-engage-tagged)
     ("n" "All next actions" org-gtd-show-all-next)]
    ["Capture & Process"
     ("c" "Capture to inbox" org-gtd-capture)
