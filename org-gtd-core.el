@@ -404,35 +404,6 @@ without validation, use `setq' but ensure the mapping is valid."
   :group 'org-gtd
   :package-version '(org-gtd . "4.0"))
 
-;; Backward compatibility - mark old variables as obsolete
-(defcustom org-gtd-todo-keyword nil
-  "OBSOLETE: Use `org-gtd-keyword-mapping' instead."
-  :type '(choice (const nil) string)
-  :group 'org-gtd
-  :package-version '(org-gtd . "4.0"))
-(make-obsolete-variable 'org-gtd-todo-keyword 'org-gtd-keyword-mapping "4.0")
-
-(defcustom org-gtd-next-keyword nil
-  "OBSOLETE: Use `org-gtd-keyword-mapping' instead."
-  :type '(choice (const nil) string)
-  :group 'org-gtd
-  :package-version '(org-gtd . "4.0"))
-(make-obsolete-variable 'org-gtd-next-keyword 'org-gtd-keyword-mapping "4.0")
-
-(defcustom org-gtd-wait-keyword nil
-  "OBSOLETE: Use `org-gtd-keyword-mapping' instead."
-  :type '(choice (const nil) string)
-  :group 'org-gtd
-  :package-version '(org-gtd . "4.0"))
-(make-obsolete-variable 'org-gtd-wait-keyword 'org-gtd-keyword-mapping "4.0")
-
-(defcustom org-gtd-canceled-keyword nil
-  "OBSOLETE: Use `org-gtd-keyword-mapping' instead."
-  :type '(choice (const nil) string)
-  :group 'org-gtd
-  :package-version '(org-gtd . "4.0"))
-(make-obsolete-variable 'org-gtd-canceled-keyword 'org-gtd-keyword-mapping "4.0")
-
 ;;;; Variables
 
 (defvar-local org-gtd--loading-p nil
@@ -463,29 +434,8 @@ without validation, use `setq' but ensure the mapping is valid."
 ;;;;; GTD Keyword Semantic Functions
 
 (defun org-gtd-keywords--get-effective-mapping ()
-  "Get the effective keyword mapping, handling backward compatibility."
-  (cond
-   ;; If new mapping is configured, use it
-   ((and org-gtd-keyword-mapping
-         (alist-get 'todo org-gtd-keyword-mapping)
-         (alist-get 'next org-gtd-keyword-mapping)
-         (alist-get 'wait org-gtd-keyword-mapping)
-         (alist-get 'done org-gtd-keyword-mapping)
-         (alist-get 'canceled org-gtd-keyword-mapping))
-    org-gtd-keyword-mapping)
-   ;; If old variables are set, convert them (with warning)
-   ((or org-gtd-todo-keyword org-gtd-next-keyword
-        org-gtd-wait-keyword org-gtd-canceled-keyword)
-    (display-warning 'org-gtd
-                     "Old individual keyword variables are deprecated. Please use `org-gtd-keyword-mapping' instead."
-                     :warning)
-    `((todo . ,(or org-gtd-todo-keyword "TODO"))
-      (next . ,(or org-gtd-next-keyword "NEXT"))
-      (wait . ,(or org-gtd-wait-keyword "WAIT"))
-      (done . "DONE")
-      (canceled . ,(or org-gtd-canceled-keyword "CNCL"))))
-   ;; Default fallback
-   (t org-gtd-keyword-mapping)))
+  "Get the effective keyword mapping."
+  org-gtd-keyword-mapping)
 
 (defun org-gtd-keywords--todo ()
   "Get keyword for GTD \\='todo\\=' semantic state."
