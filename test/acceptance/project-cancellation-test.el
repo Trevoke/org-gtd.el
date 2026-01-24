@@ -435,7 +435,7 @@ task -> project via PROJECT_IDS) so archiving works correctly across files."
     (org-todo "TODO"))
 
   ;; Verify project appears in stuck projects review
-  (org-gtd-review-stuck-projects)
+  (org-gtd-reflect-stuck-projects)
   (assert-match "Marketing" (agenda-raw-text))
 
   ;; Try to archive - stuck project should NOT be archived
@@ -462,7 +462,7 @@ task -> project via PROJECT_IDS) so archiving works correctly across files."
     (org-todo "DONE"))
 
   ;; Verify project does NOT appear in stuck projects anymore
-  (org-gtd-review-stuck-projects)
+  (org-gtd-reflect-stuck-projects)
   (refute-match "Marketing" (agenda-raw-text))
 
   ;; Archive - completed project should now archive

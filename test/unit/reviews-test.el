@@ -42,7 +42,7 @@
   "Throws error when called with an area not in the list."
   (setq org-gtd-areas-of-focus '("Health" "Home" "Career"))
   (assert-raises 'org-gtd-invalid-area-of-focus
-    (org-gtd-review-area-of-focus "Playing")))
+    (org-gtd-reflect-area-of-focus "Playing")))
 
 (deftest reviews/area-of-focus-shows-all-item-types ()
   "Shows projects, next actions, habits, tickler items in agenda for area."
@@ -52,7 +52,7 @@
                       "foo"
                       (org-file-contents
                        "test/fixtures/areas-of-focus.org"))))
-    (org-gtd-review-area-of-focus "Home" "2021-11-20")
+    (org-gtd-reflect-area-of-focus "Home" "2021-11-20")
 
     (with-current-buffer org-agenda-buffer
       (let ((content (buffer-substring-no-properties (point-min) (point-max))))
@@ -79,7 +79,7 @@
                       "foo"
                       (org-file-contents
                        "test/fixtures/gtd-file.org"))))
-    (org-gtd-review-missed-items "2021-11-20")
+    (org-gtd-reflect-missed-items "2021-11-20")
     (let ((agenda-contents (agenda-raw-text)))
       ;; These are DONE OR CANCELED - should NOT appear
       (refute-match "not worth thinking about" agenda-contents)
@@ -121,7 +121,7 @@
       (org-gtd-tickler "2025-12-01"))
 
     ;; Run area of focus review for Work
-    (org-gtd-review-area-of-focus "Work")
+    (org-gtd-reflect-area-of-focus "Work")
 
     (with-current-buffer org-agenda-buffer
       (let ((content (buffer-substring-no-properties (point-min) (point-max))))
