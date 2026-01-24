@@ -89,7 +89,6 @@ Sets up org-gtd to use the virtual filesystem."
   (setq org-gtd-directory ogt-eunit--mock-gtd-path
         org-gtd-areas-of-focus nil
         org-gtd-organize-hooks '()
-        org-gtd-refile-to-any-target t
         ;; Show DELEGATED_TO property in agenda views (for delegation tests)
         org-gtd-agenda-property-list '("DELEGATED_TO"))
 
@@ -104,10 +103,8 @@ Sets up org-gtd to use the virtual filesystem."
   ;; v4: Users must configure org-agenda-files to include GTD directory
   (setq org-agenda-files (list org-gtd-directory))
 
-  ;; Disable project-task refile prompt in tests (use direct refile to project)
-  ;; This simplifies test simulated input - only one prompt for project selection
-  (setq org-gtd-refile-prompt-for-types
-        '(single-action project-heading calendar someday delegated tickler habit))
+  ;; Auto-refile mode - tests don't need to prompt for targets
+  (setq org-gtd-refile-prompt-for-types nil)
 
   ;; Enable org-edna for dependency management
   (org-edna-mode 1)

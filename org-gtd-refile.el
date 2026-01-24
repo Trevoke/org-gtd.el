@@ -35,53 +35,47 @@
 
 ;;;; Customization
 
-(defcustom org-gtd-refile-to-any-target t
-  "Set to true if you do not need to choose where to refile processed items.
+(defcustom org-gtd-refile-prompt-for-types nil
+  "List of GTD item types that should prompt for refile target selection.
 
-When this is true, org-gtd will refile to the first target it finds, or creates
-it if necessary, without confirmation.  When this is false, it will ask for
-confirmation regardless of the number of options.  Note that setting this to
-false does not mean you can safely create new targets.  See the documentation
-to create new refile targets.
+By default this is nil, meaning all items auto-refile to the first
+available target.  This provides a turnkey experience where organizing
+is fast and frictionless.
 
-Defaults to true to carry over pre-2.0 behavior.  You will need to change this
-setting as part of following the instructions to add your own refile targets."
-  :group 'org-gtd-organize
-  :package-version '(org-gtd . "2.0.0")
-  :type 'boolean)
+To control where specific item types are filed, add them to this list.
+When an item's type is in the list, org-gtd prompts you to choose from
+available refile targets.
 
-(make-obsolete-variable 'org-gtd-refile-to-any-target
-                        'org-gtd-refile-prompt-for-types
-                        "4.0.0")
+Example - prompt only for projects (most common customization):
 
-(defcustom org-gtd-refile-prompt-for-types
-  '(single-action project-heading project-task calendar someday delegated tickler habit)
-  "List of GTD types that should prompt for refile target selection.
+  (setq org-gtd-refile-prompt-for-types
+        \\='(project-heading project-task))
 
-IMPORTANT: This variable only takes effect when `org-gtd-refile-to-any-target'
-is set to nil.  By default that variable is t, which means org-gtd auto-refiles
-everything without prompting.  To enable per-type control:
+Example - prompt for everything (maximum control):
 
-  (setq org-gtd-refile-to-any-target nil)
-
-When this variable is active and an item's type is in the list, org-gtd
-will prompt you to choose from available refile targets (ORG_GTD_REFILE
-targets + user's `org-refile-targets').  Types not in the list auto-refile
-to the first available target.
+  (setq org-gtd-refile-prompt-for-types
+        \\='(single-action project-heading project-task calendar
+          someday delegated tickler habit knowledge quick-action trash))
 
 Valid type symbols:
-  single-action, project-heading, project-task, calendar, someday,
-  delegated, tickler, habit, knowledge, quick-action, trash"
+  single-action   - One-off tasks
+  project-heading - New project containers
+  project-task    - Tasks added to existing projects
+  calendar        - Date/time specific items
+  someday         - Someday/maybe items
+  delegated       - Items waiting on others
+  tickler         - Items to resurface later
+  habit           - Recurring habits
+  knowledge       - Reference material
+  quick-action    - <2 minute tasks (done immediately)
+  trash           - Items to discard"
   :group 'org-gtd-organize
-  :package-version '(org-gtd . "4.0.0")
+  :package-version '(org-gtd . "5.0.0")
   :type '(repeat symbol))
 
 ;;;; Variables
 
 (defvar org-gtd--organize-type)
-
-(defvar org-gtd-refile--deprecated-warning-shown nil
-  "Non-nil if deprecation warning for `org-gtd-refile-to-any-target' was shown.")
 
 
 ;;;; Functions
@@ -127,18 +121,8 @@ The function filters targets as follows:
 
 (defun org-gtd-refile--should-prompt-p (type)
   "Return non-nil if refiling TYPE should prompt for target selection.
-
-Checks `org-gtd-refile-to-any-target' first (deprecated, takes precedence
-when non-nil).  If nil, checks if TYPE is in `org-gtd-refile-prompt-for-types'."
-  (if org-gtd-refile-to-any-target
-      (progn
-        (unless org-gtd-refile--deprecated-warning-shown
-          (display-warning 'org-gtd
-                           "`org-gtd-refile-to-any-target' is deprecated as of 4.0.0.
-Set it to nil and customize `org-gtd-refile-prompt-for-types' instead.")
-          (setq org-gtd-refile--deprecated-warning-shown t))
-        nil)
-    (memq type org-gtd-refile-prompt-for-types)))
+Checks if TYPE is in `org-gtd-refile-prompt-for-types'."
+  (memq type org-gtd-refile-prompt-for-types))
 
 ;;;;; Private
 

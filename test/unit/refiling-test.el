@@ -11,9 +11,13 @@
 ;;
 ;; Test Coverage:
 ;; - User refile targets merged with GTD targets (2 tests)
-;; - Project refiling with org-gtd-refile-to-any-target (1 test)
+;; - Auto-refiling when prompt list is empty (1 test)
 ;; - Finding refile targets by ORG_GTD_REFILE property (3 tests)
 ;; - Multiple file refile targets (1 test)
+;; - Should-prompt helper behavior (2 tests)
+;; - Inbox exclusion (2 tests)
+;; - GTD-only target lookup (1 test)
+;; - Auto-refile end-to-end (1 test)
 ;; - Multivalue ORG_GTD_REFILE property matching (2 tests)
 ;;
 ;; Migrated from test/refiling-test.el (buttercup)
@@ -76,13 +80,13 @@
 
 ;;; Project Refiling Tests
 
-(deftest refiling/skips-choice-when-refile-to-any-enabled ()
-  "Skips refiling choice if option is enabled."
+(deftest refiling/auto-refiles-when-prompt-list-empty ()
+  "Auto-refiles without prompting when org-gtd-refile-prompt-for-types is nil."
   (create-project "project headline")
   (with-current-buffer (org-gtd--default-file)
     (basic-save-buffer))
 
-  (let ((org-gtd-refile-to-any-target t)
+  (let ((org-gtd-refile-prompt-for-types nil)
         (temp-buffer (get-buffer-create (generate-new-buffer-name "wip"))))
 
     (with-current-buffer temp-buffer
@@ -108,9 +112,8 @@
 :END:")
     (save-buffer))
 
-  (let ((org-gtd-refile-to-any-target nil))
-    (let ((targets (mapcar 'car (org-gtd-refile--get-targets org-gtd-projects))))
-      (assert-true (member "Work Projects" targets)))))
+  (let ((targets (mapcar 'car (org-gtd-refile--get-targets org-gtd-projects))))
+    (assert-true (member "Work Projects" targets))))
 
 (deftest refiling/finds-project-target ()
   "Finds the Project target."
@@ -118,9 +121,8 @@
   (with-current-buffer (org-gtd--default-file)
     (basic-save-buffer))
 
-  (let ((org-gtd-refile-to-any-target nil))
-    (let ((targets (caar (org-gtd-refile--get-targets org-gtd-projects))))
-      (assert-equal "Projects" targets))))
+  (let ((targets (caar (org-gtd-refile--get-targets org-gtd-projects))))
+    (assert-equal "Projects" targets)))
 
 (deftest refiling/finds-tickler-headings ()
   "Finds the Tickler headings in the tickler file."
@@ -137,11 +139,10 @@
 :END:")
     (save-buffer))
 
-  (let ((org-gtd-refile-to-any-target nil))
-    (let ((ogt-target-names (mapcar 'car (org-gtd-refile--get-targets org-gtd-tickler))))
-      ;; Both targets should be found
-      (assert-true (member "To Eat" ogt-target-names))
-      (assert-true (member "To Read" ogt-target-names)))))
+  (let ((ogt-target-names (mapcar 'car (org-gtd-refile--get-targets org-gtd-tickler))))
+    ;; Both targets should be found
+    (assert-true (member "To Eat" ogt-target-names))
+    (assert-true (member "To Read" ogt-target-names))))
 
 ;;; Multiple File Refile Targets Tests
 
@@ -151,9 +152,10 @@
   (with-current-buffer (org-gtd--default-file)
     (basic-save-buffer))
 
-  (let ((org-gtd-refile-to-any-target nil)
-        (new-buffer (create-additional-project-target "more-projects"))
-        (temp-buffer (get-buffer-create (generate-new-buffer-name "wip"))))
+  (let ((new-buffer (create-additional-project-target "more-projects"))
+        (temp-buffer (get-buffer-create (generate-new-buffer-name "wip")))
+        ;; Enable prompting for project-heading to test target selection
+        (org-gtd-refile-prompt-for-types '(project-heading)))
 
     (with-current-buffer temp-buffer
       (org-mode)
@@ -173,30 +175,19 @@
 
 ;;; Should-Prompt Helper Tests
 
-(deftest refile/should-prompt-returns-nil-when-deprecated-var-set ()
-  "Returns nil when org-gtd-refile-to-any-target is t (deprecated path)."
-  (let ((org-gtd-refile-to-any-target t)
-        (org-gtd-refile--deprecated-warning-shown t)) ; suppress warning in test
-    (assert-nil (org-gtd-refile--should-prompt-p 'single-action))))
-
-(deftest refile/should-prompt-checks-list-when-deprecated-var-nil ()
-  "Checks org-gtd-refile-prompt-for-types when deprecated var is nil."
-  (let ((org-gtd-refile-to-any-target nil)
-        (org-gtd-refile-prompt-for-types '(single-action calendar)))
+(deftest refile/should-prompt-checks-list ()
+  "Checks org-gtd-refile-prompt-for-types for prompting decision."
+  (let ((org-gtd-refile-prompt-for-types '(single-action calendar)))
     (assert-true (org-gtd-refile--should-prompt-p 'single-action))
     (assert-true (org-gtd-refile--should-prompt-p 'calendar))
     (assert-nil (org-gtd-refile--should-prompt-p 'trash))))
 
-(deftest refile/deprecated-var-shows-warning-once ()
-  "Shows deprecation warning only once per session."
-  (let ((org-gtd-refile-to-any-target t)
-        (org-gtd-refile--deprecated-warning-shown nil)
-        (warnings nil))
-    (cl-letf (((symbol-function 'display-warning)
-               (lambda (&rest args) (push args warnings))))
-      (org-gtd-refile--should-prompt-p 'single-action)
-      (org-gtd-refile--should-prompt-p 'calendar)
-      (assert-equal 1 (length warnings)))))
+(deftest refile/should-prompt-nil-means-no-prompts ()
+  "When org-gtd-refile-prompt-for-types is nil, never prompt."
+  (let ((org-gtd-refile-prompt-for-types nil))
+    (assert-nil (org-gtd-refile--should-prompt-p 'single-action))
+    (assert-nil (org-gtd-refile--should-prompt-p 'project-heading))
+    (assert-nil (org-gtd-refile--should-prompt-p 'calendar))))
 
 ;;; Edge Case Tests - User Configuration Issues
 
@@ -224,8 +215,7 @@ This prevents items from being refiled back to inbox during processing."
     (basic-save-buffer))
 
   ;; Get refile targets for projects
-  (let* ((org-gtd-refile-to-any-target nil)
-         (targets (org-gtd-refile--get-targets org-gtd-projects))
+  (let* ((targets (org-gtd-refile--get-targets org-gtd-projects))
          (target-names (mapcar 'car targets)))
     ;; Should have GTD targets from org-gtd-tasks.org
     (assert-true (member "Projects" target-names))
@@ -245,7 +235,7 @@ would occur if the item tried to refile to itself."
   ;; Set up user's org-refile-targets with (nil :maxlevel . 3)
   ;; This configuration should work - WIP buffers should be filtered out
   (let ((org-refile-targets '((nil :maxlevel . 3)))
-        (org-gtd-refile-to-any-target t))
+        (org-gtd-refile-prompt-for-types nil))
     ;; Capture and process an item - this creates a WIP buffer
     (capture-inbox-item "test item with nil refile target")
     (org-gtd-process-inbox)
@@ -295,7 +285,7 @@ user-configured locations."
 (deftest refile/auto-refile-uses-gtd-targets-only ()
   "Auto-refile should use GTD targets, ignoring user's org-refile-targets.
 
-When auto-refiling GTD items (org-gtd-refile-to-any-target is t), the item
+When auto-refiling GTD items (org-gtd-refile-prompt-for-types is nil), the item
 should go to org-gtd-tasks.org, NOT to a user-configured refile target
 that happens to be first in the target list."
   ;; Create user file OUTSIDE GTD directory (would be accepted by verify function)
@@ -307,7 +297,7 @@ that happens to be first in the target list."
       (basic-save-buffer))
     ;; Set user's org-refile-targets - this file is FIRST in merged list
     (let ((org-refile-targets `((,user-file :maxlevel . 9)))
-          (org-gtd-refile-to-any-target t))
+          (org-gtd-refile-prompt-for-types nil))
       ;; Create GTD file with proper target
       (with-current-buffer (org-gtd--default-file)
         (erase-buffer)
