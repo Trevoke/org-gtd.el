@@ -177,9 +177,6 @@ Each element is a plist with :title and :content keys.")
 
 ;;;;; Keymaps
 
-;; Forward-declare obsolete alias for byte-compiler ordering
-(defvar org-gtd-clarify-map)
-
 (defvar org-gtd-clarify-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-k") #'org-gtd-clarify-stop)
@@ -187,11 +184,6 @@ Each element is a plist with :title and :content keys.")
     (define-key map (kbd "C-c D") #'org-gtd-clarify-duplicate-exact)
     map)
   "Keymap for `org-gtd-clarify-mode'.")
-
-;; Backward compatibility alias (obsolete)
-(with-no-warnings
-  (defvaralias 'org-gtd-clarify-map 'org-gtd-clarify-mode-map))
-(make-obsolete-variable 'org-gtd-clarify-map 'org-gtd-clarify-mode-map "4.0")
 
 ;; code to make windows atomic, from emacs manual
 ;; (let ((window (split-window-right)))

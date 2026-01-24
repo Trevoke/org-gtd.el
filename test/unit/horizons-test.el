@@ -190,7 +190,7 @@
 (deftest horizons/keybinding-bound-to-stop ()
   "C-c C-k keybinding is bound to stop clarifying."
   (assert-equal #'org-gtd-clarify-stop
-                (lookup-key org-gtd-clarify-map (kbd "C-c C-k"))))
+                (lookup-key org-gtd-clarify-mode-map (kbd "C-c C-k"))))
 
 (deftest horizons/header-shows-keybindings ()
   "Header line shows both organize and stop keybindings."
