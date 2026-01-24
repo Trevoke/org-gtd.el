@@ -145,8 +145,6 @@ Following David Allen's updated terminology from his more recent books, all "rev
 - ~org-gtd-review-*~ → ~org-gtd-reflect-*~
 - ~org-gtd-oops-*~ → ~org-gtd-reflect-*~
 
-The old names still work as aliases but are marked obsolete.
-
 ** Updated terminology: Incubate → Tickler + Someday/Maybe
 The "Incubate" category has been split into two distinct types to better align with GTD concepts:
 
@@ -161,8 +159,6 @@ Changes:
 - New ~org-gtd-reflect-someday-review~ command - Walk through someday items one-by-one with single-keystroke defer/clarify/quit actions. Optionally group items into named lists for focused reviews. See [[#someday-review][Reviewing Someday/Maybe Items]].
 - Property value: ~ORG_GTD: Incubated~ → ~ORG_GTD: Tickler~ or ~ORG_GTD: Someday~
 
-The old ~org-gtd-incubate~ command still works as an alias to ~org-gtd-tickler~ but is marked obsolete.
-
 ** Enhanced reflect capabilities
 - *Find missed items* - New ~org-gtd-reflect-missed-items~ command to catch things that slipped through
 - *Better stuck project detection* - Improved identification of projects that need attention
@@ -174,8 +170,7 @@ The old ~org-gtd-incubate~ command still works as an alias to ~org-gtd-tickler~ 
 You can now control refile prompting behavior for each GTD item type independently:
 
 - *Fine-grained control* - Configure which item types prompt for refile target selection vs. auto-refile to first target
-- *Sensible defaults* - Most item types prompt by default; quick actions, knowledge, and trash auto-refile
-- *Deprecates ~org-gtd-refile-to-any-target~* - The old boolean is replaced by ~org-gtd-refile-prompt-for-types~, a list of types that should prompt
+- *Sensible defaults* - By default, all item types auto-refile to first target without prompting (set ~org-gtd-refile-prompt-for-types~ if you want to be prompted)
 
 See [[#refiling-after-organizing][Refiling to the appropriate area]] for configuration details.
 
@@ -459,10 +454,8 @@ This is the simplest possible configuration for org-gtd. Copy this entire block 
   ;; Must be set BEFORE org-gtd loads if you want to customize it
   ;; (setq org-gtd-directory "~/my-gtd/")
 
-  ;; Enable per-type refile prompting (recommended)
-  ;; Without this, all items auto-refile to first target without prompting
-  (setq org-gtd-refile-to-any-target nil)
-  ;; Customize which types prompt vs auto-refile:
+  ;; Optional: Enable per-type refile prompting (useful with multiple refile targets)
+  ;; By default, all items auto-refile to first target without prompting
   ;; (setq org-gtd-refile-prompt-for-types '(project-heading project-task ...))
 
   ;; REQUIRED: Enable org-edna for project dependencies
@@ -518,9 +511,9 @@ Then add this to your ~config.el~:
                              (wait . "WAIT")
                              (done . "DONE")
                              (canceled . "CNCL")))
-  ;; Enable per-type refile prompting (recommended)
-  ;; Without this, all items auto-refile to first target without prompting
-  (org-gtd-refile-to-any-target nil)
+  ;; Optional: Enable per-type refile prompting (useful with multiple refile targets)
+  ;; By default, all items auto-refile to first target without prompting
+  ;; (org-gtd-refile-prompt-for-types '(project-heading project-task ...))
 
   :config
   (org-edna-mode)
@@ -569,9 +562,9 @@ If you use Spacemacs, add this to your ~dotspacemacs/user-config~ function:
           (canceled . "CNCL")))
   ;; Set GTD directory before package loads
   (setq org-gtd-directory "~/gtd/")
-  ;; Enable per-type refile prompting (recommended)
-  ;; Without this, all items auto-refile to first target without prompting
-  (setq org-gtd-refile-to-any-target nil)
+  ;; Optional: Enable per-type refile prompting (useful with multiple refile targets)
+  ;; By default, all items auto-refile to first target without prompting
+  ;; (setq org-gtd-refile-prompt-for-types '(project-heading project-task ...))
 
   :config
   ;; REQUIRED: Enable org-edna for project dependencies
@@ -919,7 +912,7 @@ These settings are *required* for Org GTD to work properly:
 - ~org-reverse-note-order~ :: (=org-mode= variable) set this to ~t~ to add new items to the top of project tasks and to ~nil~ to add new items to the bottom of project tasks when organizing an item as such.
 - ~org-gtd-organize-hooks~ :: this is a list of functions that you can use to decorate each item when you clarify it. For instance, you could add a function to set the effort, or the priority, or some category, etc. By default it has only one function, which lets you add tags, but of course you can change this entirely. [[#organizing-an-item][Organizing an item]].
 - ~org-gtd-archive-location~ :: Points to a function to generate the archive file dynamically. Default value generates a file suffixed with the current year. The function has an arity of zero and generates an org-mode file+outline path. [[#cleaning-up-the-system][Cleaning up / archiving completed work]].
-- ~org-gtd-refile-prompt-for-types~ :: list of GTD item types that should prompt for refile target selection. Types not in the list auto-refile to first target. Requires ~org-gtd-refile-to-any-target~ to be ~nil~. [[#controlling-refile-prompts][Controlling Refile Prompts by Item Type]].
+- ~org-gtd-refile-prompt-for-types~ :: list of GTD item types that should prompt for refile target selection. Types not in the list auto-refile to first target. Default is ~nil~ (all types auto-refile). [[#controlling-refile-prompts][Controlling Refile Prompts by Item Type]].
 - ~org-gtd-delegate-read-func~ :: function that is used to prompt for a person a task is delegated to. Must return a string. By default this is set to ~read-string~.
 - ~org-gtd-areas-of-focus~ :: list of strings representing your areas of focus (horizon 2 in GTD).
 - ~org-gtd-clarify-show-horizons~ :: When clarifying, do you want the horizons buffer to be shown by default, or do you prefer it hidden?
@@ -1845,31 +1838,22 @@ When you organize an item as a Project, org-gtd finds *all* headings with ~ORG_G
 
 When you have multiple refile targets, you might want org-gtd to prompt for some item types but auto-refile others. For example: always prompt when organizing projects (you care where they go), but auto-refile quick actions (just get them out of the inbox).
 
-*Important:* First, you must opt into per-type control by setting:
+The ~org-gtd-refile-prompt-for-types~ variable controls which types prompt. It's a list of GTD item types that should prompt for target selection. By default, this is ~nil~ meaning all item types auto-refile to the first available target without prompting.
 
-#+begin_src elisp
-(setq org-gtd-refile-to-any-target nil)
-#+end_src
+*Example: Prompt only for projects*
 
-By default ~org-gtd-refile-to-any-target~ is ~t~, which makes org-gtd auto-refile everything without prompting.
-
-Once you've opted in, the ~org-gtd-refile-prompt-for-types~ variable controls which types prompt. It's a list of GTD item types that should prompt for target selection:
-
-#+begin_src elisp
-;; Default value - these types prompt for refile target:
-(setq org-gtd-refile-prompt-for-types
-      '(single-action project-heading project-task calendar
-        someday delegated tickler habit))
-#+end_src
-
-Item types *not* in the list auto-refile to the first available target. By default, ~quick-action~, ~knowledge~, and ~trash~ auto-refile.
-
-*Example: Auto-refile everything except projects*
-
-If you want maximum speed and only care about choosing project locations:
+If you only care about choosing project locations:
 
 #+begin_src elisp
 (setq org-gtd-refile-prompt-for-types '(project-heading project-task))
+#+end_src
+
+*Example: Prompt for most types except quick actions*
+
+#+begin_src elisp
+(setq org-gtd-refile-prompt-for-types
+      '(single-action project-heading project-task calendar
+        someday delegated tickler habit))
 #+end_src
 
 *Example: Always prompt for everything*
@@ -4157,45 +4141,16 @@ Useful if you want automatic saves during inbox processing.
 (setq org-gtd-save-after-organize t)
 #+end_src
 
-**** ~org-gtd-refile-to-any-target~ (deprecated)
-
-*Type*: Boolean
-
-*Default*: ~t~
-
-*Deprecated*: As of 4.0.0. Use ~org-gtd-refile-prompt-for-types~ instead.
-
-*Description*: Control refile behavior when organizing items. This variable is deprecated and will show a warning when used.
-
-- When ~t~: org-gtd will refile to the first target it finds without prompting (deprecated behavior)
-- When ~nil~: org-gtd consults ~org-gtd-refile-prompt-for-types~ to decide per item type
-
-*Migration*: To migrate to the new system:
-
-#+begin_src emacs-lisp
-;; Step 1: Set the deprecated variable to nil (required)
-;; This enables per-type control via org-gtd-refile-prompt-for-types
-(setq org-gtd-refile-to-any-target nil)
-
-;; Step 2 (optional): Customize which types prompt
-;; The default prompts for most types except quick-action, knowledge, trash
-;; Only change this if you want different behavior:
-;; (setq org-gtd-refile-prompt-for-types '(project-heading project-task))
-#+end_src
-
-See [[#controlling-refile-prompts][Controlling Refile Prompts by Item Type]] for the new approach.
-
 **** ~org-gtd-refile-prompt-for-types~
 
-*Type*: List of symbols
+*Type*: List of symbols or ~nil~
 
-*Default*: ~(single-action project-heading project-task calendar someday delegated tickler habit)~
+*Default*: ~nil~
 
 *Description*: List of GTD item types that should prompt for refile target selection when organizing.
 
-- Types in the list prompt user to choose from available refile targets
-- Types *not* in the list auto-refile to the first available target
-- Only consulted when ~org-gtd-refile-to-any-target~ is ~nil~
+- When ~nil~ (default): all item types auto-refile to the first available target without prompting
+- When a list: types in the list prompt user to choose from available refile targets; types not in the list auto-refile to first target
 
 *Valid type symbols:* ~single-action~, ~project-heading~, ~project-task~, ~calendar~, ~someday~, ~delegated~, ~tickler~, ~habit~, ~knowledge~, ~quick-action~, ~trash~
 
@@ -4205,12 +4160,12 @@ See [[#controlling-refile-prompts][Controlling Refile Prompts by Item Type]] for
 (setq org-gtd-refile-prompt-for-types '(project-heading project-task))
 #+end_src
 
-*Example*: Add knowledge items to prompt list (they auto-refile by default):
+*Example*: Prompt for most types:
 
 #+begin_src emacs-lisp
 (setq org-gtd-refile-prompt-for-types
       '(single-action project-heading project-task calendar
-        someday delegated tickler habit knowledge))
+        someday delegated tickler habit))
 #+end_src
 
 See [[#controlling-refile-prompts][Controlling Refile Prompts by Item Type]] for detailed examples.
@@ -4412,8 +4367,6 @@ Long values are truncated with ~org-gtd-agenda-truncate-ellipsis~ (default "…"
 
 *Note*: You can also set ~prefix-width~ per-view in the View DSL. See [[#prefix-dsl][Prefix DSL]].
 
-*Backward compatibility*: The old name ~org-gtd-engage-prefix-width~ still works but is deprecated.
-
 **** ~org-gtd-agenda-truncate-ellipsis~
 
 *Type*: String
@@ -4506,8 +4459,6 @@ Think of this like creating saved searches. Instead of seeing ALL missed items, 
 #+end_src
 
 After configuring, run ~M-x org-gtd-reflect-missed-with-custom~ to see all standard views plus your custom ones.
-
-*Backward compatibility*: The old variable name ~org-gtd-oops-custom-views~ still works but will be removed in a future version.
 
 *** Advanced Item Configuration
 
@@ -5269,17 +5220,6 @@ Use custom views to see missed items by area of focus (see configuration below).
 | ~org-gtd-reflect-missed-delegated~ | Delegations needing check-in | Following up on delegated work |
 | ~org-gtd-reflect-missed-projects~ | Late projects only | Project review |
 | ~org-gtd-reflect-missed-with-custom~ | All missed + custom views | Using custom filters |
-
-**** Backward Compatibility Note
-
-The old command names still work:
-- ~org-gtd-oops~ → ~org-gtd-reflect-missed-engagements~
-- ~org-gtd-oops-calendar~ → ~org-gtd-reflect-missed-calendar~
-- ~org-gtd-oops-delegated~ → ~org-gtd-reflect-missed-delegated~
-- ~org-gtd-oops-projects~ → ~org-gtd-reflect-missed-projects~
-- ~org-gtd-oops-with-custom~ → ~org-gtd-reflect-missed-with-custom~
-
-Update to the new names when convenient. The old names will be removed in a future version.
 
 *** Reflect Commands (Upcoming Delegated)
 
