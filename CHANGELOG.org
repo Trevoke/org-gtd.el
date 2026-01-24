@@ -1,3 +1,59 @@
+* 5.0.0 - Unreleased
+
+** BREAKING CHANGES
+
+*** Removed deprecated aliases and variables
+
+The following items deprecated in 4.0 have been removed:
+
+**** Functions renamed (use new names):
+- ~org-gtd-oops~ → ~org-gtd-reflect-missed-engagements~
+- ~org-gtd-oops-delegated~ → ~org-gtd-reflect-missed-delegated~
+- ~org-gtd-oops-calendar~ → ~org-gtd-reflect-missed-calendar~
+- ~org-gtd-oops-projects~ → ~org-gtd-reflect-missed-projects~
+- ~org-gtd-oops-with-custom~ → ~org-gtd-reflect-missed-with-custom~
+- ~org-gtd-review-*~ → ~org-gtd-reflect-*~ (all review functions)
+- ~org-gtd-incubate~ → ~org-gtd-tickler~
+- ~org-gtd-incubate-create~ → ~org-gtd-tickler-create~
+- ~org-gtd-engage-grouped-by-context~ → ~org-gtd-engage-tagged~
+
+**** Variables renamed (use new names):
+- ~org-gtd-incubate~ → ~org-gtd-tickler~
+- ~org-gtd-clarify-map~ → ~org-gtd-clarify-mode-map~
+- ~org-gtd-engage-prefix-width~ → ~org-gtd-prefix-width~
+- ~org-gtd-oops-view-specs~ → ~org-gtd-reflect-missed-engagements-view-specs~
+- ~org-gtd-oops-custom-views~ → ~org-gtd-reflect-missed-custom-views~
+- ~org-gtd-review-missed-*-view-specs~ → ~org-gtd-reflect-*-view-specs~
+
+**** Variables removed entirely:
+- ~org-gtd-refile-to-any-target~ - Use ~org-gtd-refile-prompt-for-types~ instead
+- ~org-gtd-todo-keyword~ - Use ~org-gtd-keyword-mapping~ instead
+- ~org-gtd-next-keyword~ - Use ~org-gtd-keyword-mapping~ instead
+- ~org-gtd-wait-keyword~ - Use ~org-gtd-keyword-mapping~ instead
+- ~org-gtd-canceled-keyword~ - Use ~org-gtd-keyword-mapping~ instead
+
+**** Macros removed:
+- ~with-org-gtd-context~ - No longer needed; configure ~org-agenda-files~ directly
+
+*** Default behavior change for refile prompting
+
+~org-gtd-refile-prompt-for-types~ now defaults to ~nil~ instead of a list of types. This means:
+
+- *Old behavior*: Most item types prompted for refile target selection
+- *New behavior*: All items auto-refile to first target (turnkey experience)
+
+To restore prompting for specific types:
+
+#+begin_src elisp
+;; Prompt for projects only
+(setq org-gtd-refile-prompt-for-types '(project-heading project-task))
+
+;; Prompt for everything
+(setq org-gtd-refile-prompt-for-types
+      '(single-action project-heading project-task calendar
+        someday delegated tickler habit knowledge quick-action trash))
+#+end_src
+
 * 4.5.0 - 2026-01-22
 
 ** Added
