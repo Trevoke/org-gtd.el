@@ -456,29 +456,6 @@ without validation, use `setq' but ensure the mapping is valid."
         ;; If the timestamp is not found, insert it at the end of the body
         (insert "\n" new-timestamp)))))
 
-;;;; Macros
-
-;;;###autoload
-(defmacro with-org-gtd-context (&rest body)
-  "DEPRECATED: No-op in org-gtd v4.  Execute BODY without context setup.
-
-In v4, configure Org directly instead:
-- Add `org-gtd-directory' to your agenda files
-- Configure `org-archive-location' as needed
-
-This macro is a no-op and will be removed in a future version."
-  (declare (debug t) (indent 2))
-  `(progn
-     (display-warning 'org-gtd
-                      "with-org-gtd-context is deprecated and is now a no-op.
-Configure org-agenda-files and other settings directly instead."
-                      :warning)
-     ,@body))
-
-(make-obsolete 'with-org-gtd-context
-               "Configure org-agenda-files and other settings directly."
-               "4.0")
-
 ;;;; Functions
 
 ;;;;; Public
