@@ -147,17 +147,6 @@ prompting behavior."
   (org-gtd-tickler--configure config-override)
   (org-gtd-tickler--finalize))
 
-;;;; Backward Compatibility Aliases
-
-;; Incubate → Tickler rename (v4.0)
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-incubate
-  #'org-gtd-tickler "4.0")
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-incubate-create
-  #'org-gtd-tickler-create "4.0")
-
 ;;;; Footer
 
 (provide 'org-gtd-tickler)

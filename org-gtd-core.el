@@ -106,9 +106,6 @@ Prompts for a new date and sets the ORG_GTD_TIMESTAMP property."
 (defconst org-gtd-habit "Habits"
   "GTD category for recurring habits.")
 
-;; Backward compatibility alias - must come before referent
-(define-obsolete-variable-alias 'org-gtd-incubate 'org-gtd-tickler "4.0")
-
 (defconst org-gtd-tickler "Tickler"
   "GTD category for tickler items (time-based reminders).")
 
