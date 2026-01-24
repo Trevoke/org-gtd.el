@@ -38,35 +38,35 @@
 (deftest engage-prefix/adds-ellipses-if-name-too-long ()
   "Adds ellipses when project name exceeds prefix width."
   (create-project "My long project name which needs shortening")
-  (let ((org-gtd-engage-prefix-width 17))
+  (let ((org-gtd-prefix-width 17))
     (org-gtd-engage))
   (assert-match "My long project …" (ogt--buffer-string org-agenda-buffer)))
 
 (deftest engage-prefix/shortens-prefix-words-if-necessary ()
   "Shortens prefix to fit within specified width."
   (create-project "P234567890")
-  (let ((org-gtd-engage-prefix-width 5))
+  (let ((org-gtd-prefix-width 5))
     (org-gtd-engage))
   (assert-match "P234…" (ogt--buffer-string org-agenda-buffer)))
 
 (deftest engage-prefix/only-shows-ellipses-if-width-is-1 ()
   "Shows only ellipsis when width is 1."
   (create-project "P234567890")
-  (let ((org-gtd-engage-prefix-width 1))
+  (let ((org-gtd-prefix-width 1))
     (org-gtd-engage))
   (assert-match "^  …" (ogt--buffer-string org-agenda-buffer)))
 
 (deftest engage-prefix/shows-full-name-without-ellipses-when-fits ()
   "Shows full project name without ellipses when it fits."
   (create-project "P234567890")
-  (let ((org-gtd-engage-prefix-width 10))
+  (let ((org-gtd-prefix-width 10))
     (org-gtd-engage))
   (assert-match "P234567890" (ogt--buffer-string org-agenda-buffer)))
 
 (deftest engage-prefix/adds-spaces-for-alignment ()
   "Adds padding spaces for alignment when name is shorter than width."
   (create-project "P234567890")
-  (let ((org-gtd-engage-prefix-width 50))
+  (let ((org-gtd-prefix-width 50))
     (org-gtd-engage))
   (assert-match "P234567890                                        " (ogt--buffer-string org-agenda-buffer)))
 

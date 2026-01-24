@@ -38,10 +38,6 @@
   :group 'org-gtd
   :package-version '(org-gtd . "3.1"))
 
-;; Backward compatibility alias for renamed variable
-(define-obsolete-variable-alias 'org-gtd-engage-prefix-width
-  'org-gtd-prefix-width "4.0")
-
 ;;;; GTD View Specifications
 
 (defun org-gtd-engage-view-spec ()
@@ -101,14 +97,6 @@ Prompts for a tag if not provided."
 This assumes all GTD files are also agenda files."
   (interactive)
   (org-gtd-view-show (org-gtd-show-all-next-view-spec)))
-
-;;;; Backward Compatibility
-
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-engage-grouped-by-context
-  #'org-gtd-engage-tagged "4.0"
-  "Use `org-gtd-engage-tagged' instead.
-The new function prompts for any tag, not just @-prefixed context tags.")
 
 ;;;; Footer
 
