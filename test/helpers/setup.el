@@ -110,7 +110,7 @@ Sets up org-gtd to use the virtual filesystem."
   (org-edna-mode 1)
 
   ;; Set up clarify keybinding
-  (define-key org-gtd-clarify-map (kbd "C-c c") #'org-gtd-organize))
+  (define-key org-gtd-clarify-mode-map (kbd "C-c c") #'org-gtd-organize))
 
 ;;; Cleanup Functions
 

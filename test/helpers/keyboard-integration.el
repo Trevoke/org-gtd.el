@@ -24,7 +24,7 @@ This uses the critical org-gtd-process-inbox command while checking keyboard acc
         (error "WIP buffer not in org-gtd-clarify-mode"))
 
       ;; Verify keyboard binding exists
-      (unless (eq (lookup-key org-gtd-clarify-map (kbd "C-c c")) #'org-gtd-organize)
+      (unless (eq (lookup-key org-gtd-clarify-mode-map (kbd "C-c c")) #'org-gtd-organize)
         (error "C-c c not bound to org-gtd-organize in WIP buffer"))
 
       ;; Verify org-mode integration
@@ -108,7 +108,7 @@ ITEMS-AND-TYPES should be a list of (text . type) pairs where type is a symbol."
         ;; Verify keyboard integration for each item
         (with-wip-buffer
           ;; Verify keyboard binding exists for each organization step
-          (unless (eq (lookup-key org-gtd-clarify-map (kbd "C-c c")) #'org-gtd-organize)
+          (unless (eq (lookup-key org-gtd-clarify-mode-map (kbd "C-c c")) #'org-gtd-organize)
             (error "Keyboard binding missing during multi-item processing"))
 
           ;; Navigate to current item

@@ -21,12 +21,12 @@
                   (or load-file-name byte-compile-current-file buffer-file-name))
                  "../helpers/prelude.el"))
 
-;;; org-gtd-clarify-map Keymap Tests
+;;; org-gtd-clarify-mode-map Keymap Tests
 
 (deftest keymap/clarify-map-triggers-organize-transient ()
   "C-c c triggers org-gtd-organize transient menu."
-  (assert-true (keymapp org-gtd-clarify-map))
-  (assert-equal #'org-gtd-organize (lookup-key org-gtd-clarify-map (kbd "C-c c"))))
+  (assert-true (keymapp org-gtd-clarify-mode-map))
+  (assert-equal #'org-gtd-organize (lookup-key org-gtd-clarify-mode-map (kbd "C-c c"))))
 
 ;;; org-gtd-organize Transient Menu Tests
 
@@ -51,8 +51,8 @@
 
 (deftest keymap/clarify-mode-works-with-org-mode ()
   "Clarify mode keymap works with org-mode keymaps."
-  (assert-true (keymapp org-gtd-clarify-map))
-  (assert-equal #'org-gtd-organize (lookup-key org-gtd-clarify-map (kbd "C-c c")))
+  (assert-true (keymapp org-gtd-clarify-mode-map))
+  (assert-equal #'org-gtd-organize (lookup-key org-gtd-clarify-mode-map (kbd "C-c c")))
 
   ;; Test that org functions are available
   (assert-true (fboundp 'org-cycle)))
@@ -66,13 +66,13 @@
   (assert-true (fboundp 'org-gtd-project-extend))
 
   ;; Test keymap binding
-  (assert-equal #'org-gtd-organize (lookup-key org-gtd-clarify-map (kbd "C-c c"))))
+  (assert-equal #'org-gtd-organize (lookup-key org-gtd-clarify-mode-map (kbd "C-c c"))))
 
 ;;; Error Handling in Keymap Context
 
 (deftest keymap/keymap-works-after-errors ()
   "Keymap continues to work after organization errors."
-  (assert-equal #'org-gtd-organize (lookup-key org-gtd-clarify-map (kbd "C-c c")))
+  (assert-equal #'org-gtd-organize (lookup-key org-gtd-clarify-mode-map (kbd "C-c c")))
 
   ;; Test that functions are available for error handling
   (assert-true (fboundp 'org-gtd-project-new))

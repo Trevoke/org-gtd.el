@@ -30,7 +30,7 @@
   (assert-true (fboundp 'org-gtd-organize))
 
   ;; Test keymap binding
-  (assert-equal #'org-gtd-organize (lookup-key org-gtd-clarify-map (kbd "C-c c")))
+  (assert-equal #'org-gtd-organize (lookup-key org-gtd-clarify-mode-map (kbd "C-c c")))
 
   ;; Test that organization functions exist
   (assert-true (fboundp 'org-gtd-single-action))
@@ -59,12 +59,12 @@
 ;;; End-to-end keymap integration
 
 (deftest e2e/clarify-map-properly-configured ()
-  "Ensures org-gtd-clarify-map is properly configured."
+  "Ensures org-gtd-clarify-mode-map is properly configured."
   ;; Test keymap exists
-  (assert-true (keymapp org-gtd-clarify-map))
+  (assert-true (keymapp org-gtd-clarify-mode-map))
 
   ;; Test key binding
-  (assert-equal #'org-gtd-organize (lookup-key org-gtd-clarify-map (kbd "C-c c")))
+  (assert-equal #'org-gtd-organize (lookup-key org-gtd-clarify-mode-map (kbd "C-c c")))
 
   ;; Test that transient menu function is callable
   (assert-true (fboundp 'org-gtd-organize))
@@ -97,7 +97,7 @@
 
   ;; Test org-gtd functions don't conflict
   (assert-true (fboundp 'org-gtd-organize))
-  (assert-equal #'org-gtd-organize (lookup-key org-gtd-clarify-map (kbd "C-c c")))
+  (assert-equal #'org-gtd-organize (lookup-key org-gtd-clarify-mode-map (kbd "C-c c")))
 
   ;; Test that TAB key still works in org-mode context
   (with-temp-buffer
