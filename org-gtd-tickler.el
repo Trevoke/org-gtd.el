@@ -92,18 +92,6 @@ review date.  Otherwise the user is prompted."
            (t (org-read-date nil nil nil "Review date: ")))))
     (org-gtd-project-incubate pom review-date)))
 
-;;;; Backward Compatibility Aliases
-
-;; Incubate → Tickler rename (v4.0)
-;;;###autoload
-(define-obsolete-function-alias 'org-gtd-incubate
-  #'org-gtd-tickler "4.0")
-
-;;;###autoload
-(with-suppressed-warnings ((obsolete org-gtd-tickler-create))
-  (define-obsolete-function-alias 'org-gtd-incubate-create
-    #'org-gtd-tickler-create "4.0"))
-
 ;;;; Footer
 
 (provide 'org-gtd-tickler)
