@@ -31,6 +31,7 @@
 (require 'org-clock)
 (require 'org-element)
 (require 'org-edna)
+(require 'seq)
 
 (require 'org-gtd-core)
 (require 'org-gtd-refile)
@@ -47,6 +48,9 @@
 ;; variables, ensuring `let' bindings work correctly with lexical-binding: t.
 (defvar org-gtd-graph-view--project-marker)
 (defvar org-gtd-graph-view--graph)
+
+;; Defined in org-gtd-someday.el - forward declared to avoid circular dependency.
+(defvar org-gtd-someday-lists)
 
 ;;;; External Function Declarations
 
@@ -298,6 +302,17 @@ Prompts for a review date when the project should be reconsidered."
     (org-with-point-at project-marker
       (call-interactively #'org-gtd-tickler))
     (message "Project incubated")))
+
+;;;###autoload
+(defun org-gtd-project-someday-from-context ()
+  "Put the current project into someday/maybe.
+Works from graph view or agenda context."
+  (interactive)
+  (require 'org-gtd-someday)
+  (let ((project-marker (org-gtd-project--get-marker-from-context)))
+    (org-with-point-at project-marker
+      (call-interactively #'org-gtd-someday))
+    (message "Project moved to someday/maybe")))
 
 ;;;###autoload
 (defun org-gtd-project-cancel-from-context ()
@@ -965,6 +980,25 @@ Useful for weekly reviews or after bulk changes."
      "+ORG_GTD=\"Projects\""
      'agenda)))
 
+(defun org-gtd-project--active-p (project-id)
+  "Check if project with PROJECT-ID is active.
+A project is active if it has ORG_GTD=\"Projects\" and is not done or cancelled."
+  (when-let ((marker (org-id-find project-id 'marker)))
+    (org-with-point-at marker
+      (and (string= (org-entry-get (point) "ORG_GTD") org-gtd-projects)
+           (not (org-entry-is-done-p))))))
+
+(defun org-gtd-project--task-last-active-project-p (task-marker current-project-id)
+  "Check if CURRENT-PROJECT-ID is the last active project for task at TASK-MARKER.
+Returns t if no other active projects exist for this task."
+  (org-with-point-at task-marker
+    (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+      (not (seq-some
+            (lambda (pid)
+              (and (not (string= pid current-project-id))
+                   (org-gtd-project--active-p pid)))
+            project-ids)))))
+
 (defun org-gtd-project--save-state (marker)
   "Save ORG_GTD and TODO state at MARKER to PREVIOUS_* properties.
 
@@ -973,26 +1007,15 @@ Saves current TODO keyword to PREVIOUS_TODO property.
 Clears the TODO keyword.
 
 Does NOT set ORG_GTD to any value -- callers are responsible for
-setting the target type after calling this function.
-
-Skips tasks belonging to multiple projects (identified by
-multiple IDs in ORG_GTD_PROJECT_IDS property)."
+setting the target type after calling this function."
   (org-with-point-at marker
-    ;; Check if this is a multi-project task
-    (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
-      (if (> (length project-ids) 1)
-          ;; Skip multi-project tasks
-          (message "Skipping multi-project task: %s" (org-get-heading t t t t))
-        ;; Save state
-        (let ((current-org-gtd (org-entry-get (point) "ORG_GTD"))
-              (current-todo (org-entry-get (point) "TODO")))
-          ;; Save current state
-          (when current-org-gtd
-            (org-entry-put (point) "PREVIOUS_ORG_GTD" current-org-gtd))
-          (when current-todo
-            (org-entry-put (point) "PREVIOUS_TODO" current-todo))
-          ;; Clear TODO keyword
-          (org-todo 'none))))))
+    (let ((current-org-gtd (org-entry-get (point) "ORG_GTD"))
+          (current-todo (org-entry-get (point) "TODO")))
+      (when current-org-gtd
+        (org-entry-put (point) "PREVIOUS_ORG_GTD" current-org-gtd))
+      (when current-todo
+        (org-entry-put (point) "PREVIOUS_TODO" current-todo))
+      (org-todo 'none))))
 
 (defun org-gtd-project--restore-state (marker)
   "Restore ORG_GTD and TODO state at MARKER from PREVIOUS_* properties.
@@ -1131,23 +1154,76 @@ Does not check for external dependencies or multi-project tasks yet
                                       dep-names "\n")))
             (user-error "Tickler cancelled")))))
 
-    ;; Save state and set type for project heading
-    (org-gtd-project--save-state project-marker)
-    (org-entry-put (point) "ORG_GTD" org-gtd-tickler)
+    (let ((current-project-id (org-id-get)))
+      ;; Save state and set type for project heading
+      (org-gtd-project--save-state project-marker)
+      (org-entry-put (point) "ORG_GTD" org-gtd-tickler)
 
-    ;; Set review date
-    (org-entry-put (point) org-gtd-timestamp (format "<%s>" review-date))
+      ;; Set review date
+      (org-entry-put (point) org-gtd-timestamp (format "<%s>" review-date))
 
-    ;; Save state and set type for all tasks
-    (let ((task-markers (org-gtd-project--get-all-tasks project-marker)))
-      (dolist (task-marker task-markers)
-        (org-with-point-at task-marker
-          ;; Skip multi-project tasks
-          (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
-            (if (> (length project-ids) 1)
-                (message "Skipping multi-project task: %s" (org-get-heading t t t t))
-              (org-gtd-project--save-state task-marker)
-              (org-entry-put (point) "ORG_GTD" org-gtd-tickler))))))
+      ;; Save state and set type for all tasks
+      (let ((task-markers (org-gtd-project--get-all-tasks project-marker)))
+        (dolist (task-marker task-markers)
+          (if (org-gtd-project--task-last-active-project-p task-marker current-project-id)
+              (progn
+                (org-gtd-project--save-state task-marker)
+                (org-with-point-at task-marker
+                  (org-entry-put (point) "ORG_GTD" org-gtd-tickler)))
+            (message "Skipping multi-project task (other active projects): %s"
+                     (org-with-point-at task-marker
+                       (org-get-heading t t t t)))))))
+
+    ;; Save changes to disk
+    (save-buffer)))
+
+;;;###autoload
+(defun org-gtd-project-someday (project-marker)
+  "Put project at PROJECT-MARKER into someday/maybe.
+
+PROJECT-MARKER is a marker pointing to the project heading.
+
+Puts the project into someday/maybe by:
+1. Saving state for project heading and all tasks
+2. Setting ORG_GTD to Someday on everything
+3. Prompting for someday list if configured"
+  (interactive (list (point-marker)))
+
+  (org-with-point-at project-marker
+    ;; Check for external dependencies
+    (let ((external-deps (org-gtd-project--check-external-dependencies project-marker)))
+      (when external-deps
+        (let ((dep-names (mapcar (lambda (m)
+                                   (org-with-point-at m
+                                     (org-get-heading t t t t)))
+                                 external-deps)))
+          (unless (yes-or-no-p
+                   (format "External tasks depend on this project:\n%s\n\nContinue with someday? "
+                           (mapconcat (lambda (name) (format "  - %s" name))
+                                      dep-names "\n")))
+            (user-error "Someday cancelled")))))
+
+    (let ((current-project-id (org-id-get)))
+      ;; Save state and set type for project heading
+      (org-gtd-project--save-state project-marker)
+      (org-entry-put (point) "ORG_GTD" org-gtd-someday)
+
+      ;; Prompt for someday list if configured
+      (when org-gtd-someday-lists
+        (let ((list (completing-read "Someday list: " org-gtd-someday-lists nil t)))
+          (org-entry-put (point) org-gtd-prop-someday-list list)))
+
+      ;; Save state and set type for all tasks
+      (let ((task-markers (org-gtd-project--get-all-tasks project-marker)))
+        (dolist (task-marker task-markers)
+          (if (org-gtd-project--task-last-active-project-p task-marker current-project-id)
+              (progn
+                (org-gtd-project--save-state task-marker)
+                (org-with-point-at task-marker
+                  (org-entry-put (point) "ORG_GTD" org-gtd-someday)))
+            (message "Skipping multi-project task (other active projects): %s"
+                     (org-with-point-at task-marker
+                       (org-get-heading t t t t)))))))
 
     ;; Save changes to disk
     (save-buffer)))
