@@ -1131,16 +1131,23 @@ Does not check for external dependencies or multi-project tasks yet
                                       dep-names "\n")))
             (user-error "Tickler cancelled")))))
 
-    ;; Save and tickler project heading
+    ;; Save state and set type for project heading
     (org-gtd-project--save-state project-marker)
+    (org-entry-put (point) "ORG_GTD" org-gtd-tickler)
 
     ;; Set review date
     (org-entry-put (point) org-gtd-timestamp (format "<%s>" review-date))
 
-    ;; Tickler all tasks
+    ;; Save state and set type for all tasks
     (let ((task-markers (org-gtd-project--get-all-tasks project-marker)))
       (dolist (task-marker task-markers)
-        (org-gtd-project--save-state task-marker)))
+        (org-with-point-at task-marker
+          ;; Skip multi-project tasks
+          (let ((project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS")))
+            (if (> (length project-ids) 1)
+                (message "Skipping multi-project task: %s" (org-get-heading t t t t))
+              (org-gtd-project--save-state task-marker)
+              (org-entry-put (point) "ORG_GTD" org-gtd-tickler))))))
 
     ;; Save changes to disk
     (save-buffer)))
