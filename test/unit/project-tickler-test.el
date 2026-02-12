@@ -50,8 +50,8 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
     (assert-equal "Actions" (org-entry-get (point) "PREVIOUS_ORG_GTD"))
     (assert-equal "NEXT" (org-entry-get (point) "PREVIOUS_TODO"))
 
-    ;; Verify ORG_GTD changed to Tickler
-    (assert-equal "Tickler" (org-entry-get (point) "ORG_GTD"))
+    ;; Verify ORG_GTD is NOT changed (generic save-state doesn't set type)
+    (assert-equal "Actions" (org-entry-get (point) "ORG_GTD"))
 
     ;; Verify TODO keyword was cleared
     (assert-nil (org-entry-get (point) "TODO"))))

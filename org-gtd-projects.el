@@ -970,8 +970,10 @@ Useful for weekly reviews or after bulk changes."
 
 Saves current ORG_GTD value to PREVIOUS_ORG_GTD property.
 Saves current TODO keyword to PREVIOUS_TODO property.
-Sets ORG_GTD to \\='Tickler\\='.
 Clears the TODO keyword.
+
+Does NOT set ORG_GTD to any value -- callers are responsible for
+setting the target type after calling this function.
 
 Skips tasks belonging to multiple projects (identified by
 multiple IDs in ORG_GTD_PROJECT_IDS property)."
@@ -981,7 +983,7 @@ multiple IDs in ORG_GTD_PROJECT_IDS property)."
       (if (> (length project-ids) 1)
           ;; Skip multi-project tasks
           (message "Skipping multi-project task: %s" (org-get-heading t t t t))
-        ;; Normal tickler state
+        ;; Save state
         (let ((current-org-gtd (org-entry-get (point) "ORG_GTD"))
               (current-todo (org-entry-get (point) "TODO")))
           ;; Save current state
@@ -989,8 +991,6 @@ multiple IDs in ORG_GTD_PROJECT_IDS property)."
             (org-entry-put (point) "PREVIOUS_ORG_GTD" current-org-gtd))
           (when current-todo
             (org-entry-put (point) "PREVIOUS_TODO" current-todo))
-          ;; Set tickler state
-          (org-entry-put (point) "ORG_GTD" org-gtd-tickler)
           ;; Clear TODO keyword
           (org-todo 'none))))))
 
