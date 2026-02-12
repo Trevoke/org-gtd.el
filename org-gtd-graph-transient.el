@@ -108,6 +108,7 @@ Named with \"--do-\" so transient.el recognizes it as a pre-command function."
     ("x a" "Export as ASCII" org-gtd-graph-export-ascii)]
    ["Session"
     ("I" "Incubate project" org-gtd-graph-incubate-project :transient nil)
+    ("S" "Someday/Maybe" org-gtd-graph-someday-project :transient nil)
     ("C" "Cancel project" org-gtd-graph-cancel-project :transient nil)
     ("q" "Quit menu" transient-quit-one :transient nil)
     ("Q" "Quit and kill buffer" org-gtd-graph-quit-and-kill :transient nil)
@@ -886,6 +887,15 @@ Graph-view specific: refreshes view after state change."
 Prompts for a review date, then closes the graph view."
   (interactive)
   (org-gtd-project-incubate-from-context)
+  ;; Clean up details pane before quitting
+  (org-gtd-graph-ui-cleanup-windows)
+  (quit-window))
+
+(defun org-gtd-graph-someday-project ()
+  "Put the current project on someday/maybe from graph mode.
+Prompts for someday list if configured, then closes the graph view."
+  (interactive)
+  (org-gtd-project-someday-from-context)
   ;; Clean up details pane before quitting
   (org-gtd-graph-ui-cleanup-windows)
   (quit-window))

@@ -95,6 +95,7 @@
 
     ;; Project operations
     (define-key map (kbd "I") #'org-gtd-graph-incubate-project)
+    (define-key map (kbd "S") #'org-gtd-graph-someday-project)
     (define-key map (kbd "C") #'org-gtd-graph-cancel-project)
 
     ;; Graph view operations
