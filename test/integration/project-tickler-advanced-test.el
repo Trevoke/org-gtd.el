@@ -70,15 +70,12 @@ Incubating Project A should detect Project B task as external dependency."
 
 ;;; Multi-Project Tasks
 
-(deftest tickler-adv/skips-multi-project-tasks ()
-  "Skips multi-project tasks during tickler.
-Tasks that belong to multiple projects should not be incubated when
-only one project is ticklered."
+(deftest tickler-adv/skips-multi-project-task-when-other-project-active ()
+  "Skips multi-project task when another project is still active."
   (create-project "Project A")
   (create-project "Project B")
 
   (with-current-buffer (org-gtd--default-file)
-    ;; Make Task 1 belong to both projects
     (goto-char (point-min))
     (re-search-forward "Project A")
     (let ((project-a-id (org-id-get-create)))
@@ -86,25 +83,64 @@ only one project is ticklered."
       (re-search-forward "Project B")
       (let ((project-b-id (org-id-get-create)))
 
-        ;; Add both project IDs to Task 1 of Project A
+        ;; Make Task 1 of Project A belong to both projects
         (goto-char (point-min))
         (re-search-forward "Project A")
-        (org-next-visible-heading 1)  ; Task 1
+        (org-next-visible-heading 1)
         (org-entry-put (point) "ORG_GTD_PROJECT_IDS" (format "%s %s" project-a-id project-b-id))
         (let ((task-1-todo (org-entry-get (point) "TODO")))
 
-          ;; Incubate Project A
+          ;; Incubate Project A (Project B still active)
           (goto-char (point-min))
           (re-search-forward "Project A")
           (org-back-to-heading t)
           (org-gtd-project-incubate (point-marker) "2025-12-01")
 
-          ;; Verify Task 1 was NOT incubated (it belongs to multiple projects)
+          ;; Verify Task 1 was NOT incubated (Project B still active)
           (goto-char (point-min))
           (re-search-forward "Project A")
           (org-next-visible-heading 1)
           (assert-nil (equal "Tickler" (org-entry-get (point) "ORG_GTD")))
           (assert-equal task-1-todo (org-entry-get (point) "TODO")))))))
+
+(deftest tickler-adv/incubates-multi-project-task-when-last-active-project ()
+  "Incubates multi-project task when this is the last active project."
+  (create-project "Project A")
+  (create-project "Project B")
+
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (re-search-forward "Project A")
+    (let ((project-a-id (org-id-get-create)))
+      (goto-char (point-min))
+      (re-search-forward "Project B")
+      (org-back-to-heading t)
+      (let ((project-b-id (org-id-get-create)))
+
+        ;; Make Task 1 of Project A belong to both projects
+        (goto-char (point-min))
+        (re-search-forward "Project A")
+        (org-next-visible-heading 1)
+        (org-entry-put (point) "ORG_GTD_PROJECT_IDS" (format "%s %s" project-a-id project-b-id))
+
+        ;; First, tickler Project B
+        (goto-char (point-min))
+        (re-search-forward "Project B")
+        (org-back-to-heading t)
+        (org-gtd-project-incubate (point-marker) "2025-12-01")
+
+        ;; Now incubate Project A (last active project for the shared task)
+        (goto-char (point-min))
+        (re-search-forward "Project A")
+        (org-back-to-heading t)
+        (org-gtd-project-incubate (point-marker) "2025-12-01")
+
+        ;; Verify Task 1 WAS incubated (Project A was the last active project)
+        (goto-char (point-min))
+        (re-search-forward "Project A")
+        (org-next-visible-heading 1)
+        (assert-equal "Tickler" (org-entry-get (point) "ORG_GTD"))
+        (assert-nil (org-entry-get (point) "TODO"))))))
 
 (provide 'project-tickler-advanced-test)
 

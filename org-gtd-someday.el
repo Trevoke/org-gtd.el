@@ -63,12 +63,42 @@ When populated, user is prompted to select which list to review."
 (defun org-gtd-someday ()
   "Decorate, organize and refile item at point as someday/maybe.
 
+Smart dispatcher that detects context:
+- On project heading (ORG_GTD: Projects): someday entire project
+- On project task (has ORG_GTD_PROJECT_IDS): someday project(s)
+- On single item: use existing single-item someday logic
+
 Someday/maybe items are for things you might want to do eventually,
-but with no specific timeframe. They are stored in refile targets
-with ORG_GTD_REFILE: Someday property."
+but with no specific timeframe."
   (interactive)
-  (org-gtd-organize--call
-   (lambda () (org-gtd-someday--apply))))
+
+  ;; Get the actual marker - works from both org buffers and agenda buffers
+  (let* ((marker (or (org-get-at-bol 'org-marker)
+                     (point-marker))))
+    (org-with-point-at marker
+      ;; Detect context
+      (let* ((org-gtd-value (org-entry-get (point) "ORG_GTD"))
+             (project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS"))
+             (is-project-heading (string= org-gtd-value "Projects"))
+             (is-project-task (> (length project-ids) 0)))
+
+        (cond
+         ;; Case 1: On project heading - someday the project
+         (is-project-heading
+          (require 'org-gtd-projects)
+          (org-gtd-project-someday (point-marker)))
+
+         ;; Case 2: On project task - someday the project(s)
+         (is-project-task
+          (require 'org-gtd-projects)
+          (let ((project-marker (org-gtd-project--get-marker-at-point
+                                 "Which project to put on someday? ")))
+            (org-gtd-project-someday project-marker)))
+
+         ;; Case 3: Single item - use existing logic
+         (t
+          (org-gtd-organize--call
+           (lambda () (org-gtd-someday--apply)))))))))
 
 ;;;; Functions
 
