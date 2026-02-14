@@ -327,8 +327,14 @@ Prompts for a new title, then adds the duplicate to the queue."
       (user-error "Nothing to duplicate"))
     (let* ((default-title (plist-get content-plist :title))
            (new-title (read-string "Duplicate title: " default-title))
-           (content (plist-get content-plist :content)))
-      (org-gtd-clarify--queue-add new-title content)
+           (new-content
+            (with-temp-buffer
+              (insert (plist-get content-plist :content))
+              (org-mode)
+              (goto-char (point-min))
+              (org-edit-headline new-title)
+              (buffer-string))))
+      (org-gtd-clarify--queue-add new-title new-content)
       (org-gtd-clarify--queue-display)
       (message "Duplicated: %s" new-title))))
 
@@ -629,25 +635,14 @@ CONTINUATION is called after the queue is empty."
   (let ((item (pop queue)))
     (if item
         (let* ((content (plist-get item :content))
-               (clarify-id (org-id-new))
-               (processing-buffer (org-gtd-wip--get-buffer clarify-id)))
-          ;; Initialize buffer with queued content
-          (with-current-buffer processing-buffer
-            (insert content)
-            (goto-char (point-min))
-            (unless (derived-mode-p 'org-gtd-clarify-mode)
-              (org-gtd-clarify-mode))
-            (setq-local org-gtd-clarify--window-config window-config
-                        org-gtd-clarify--clarify-id clarify-id
-                        org-gtd-clarify--continuation continuation
-                        org-gtd-clarify--source-heading-marker nil
-                        org-gtd-clarify--duplicate-queue queue))
+               (marker (org-gtd-clarify--insert-content-to-inbox content)))
+          (org-gtd-clarify-item marker window-config)
+          (setq-local org-gtd-clarify--continuation continuation
+                      org-gtd-clarify--duplicate-queue queue)
           ;; Update queue display or cleanup if empty
-          (with-current-buffer processing-buffer
-            (if (org-gtd-clarify--queue-empty-p)
-                (org-gtd-clarify--queue-cleanup)
-              (org-gtd-clarify--queue-display)))
-          (org-gtd-clarify-setup-windows processing-buffer))
+          (if (org-gtd-clarify--queue-empty-p)
+              (org-gtd-clarify--queue-cleanup)
+            (org-gtd-clarify--queue-display)))
       ;; No more items - cleanup and continue
       (org-gtd-clarify--queue-cleanup)
       (message "All duplicates processed")
@@ -674,15 +669,23 @@ Returns plist with :title and :content keys, or nil if buffer is empty."
 
 ;;;;; Queue Persistence
 
+(defun org-gtd-clarify--insert-content-to-inbox (content)
+  "Insert CONTENT at end of inbox file and return a marker to the heading."
+  (with-current-buffer (find-file-noselect (org-gtd-inbox-path))
+    (goto-char (point-max))
+    (unless (bolp) (insert "\n"))
+    (insert content)
+    (org-back-to-heading t)
+    ;; Remove stale ID so clarifying item creates a fresh one
+    (org-entry-delete nil "ID")
+    (point-marker)))
+
 (defun org-gtd-clarify--queue-save-to-inbox ()
   "Save all queued duplicates to the inbox."
-  (let ((inbox-file (org-gtd-inbox-path))
-        (queue org-gtd-clarify--duplicate-queue))
-    (with-current-buffer (find-file-noselect inbox-file)
-      (goto-char (point-max))
-      (dolist (item queue)
-        (insert "\n" (plist-get item :content)))
-      (save-buffer))))
+  (dolist (item org-gtd-clarify--duplicate-queue)
+    (org-gtd-clarify--insert-content-to-inbox (plist-get item :content)))
+  (with-current-buffer (find-file-noselect (org-gtd-inbox-path))
+    (save-buffer)))
 
 (defun org-gtd-clarify--prompt-queue-action ()
   "Prompt user for action on pending duplicates.
