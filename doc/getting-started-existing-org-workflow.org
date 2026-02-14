@@ -59,7 +59,7 @@ This goes to org-gtd's inbox (separate from your existing files).
 M-x org-gtd-process-inbox RET
 #+end_example
 
-The item appears. Press ~C-c c~ to organize, then ~s~ for single action.
+The item appears. Press ~M-x org-gtd-organize~ to organize, then ~s~ for single action.
 
 ** Step 4: See It in the GTD View
 
