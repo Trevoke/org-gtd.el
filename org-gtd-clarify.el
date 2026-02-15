@@ -327,11 +327,12 @@ Prompts for a new title, then adds the duplicate to the queue."
       (user-error "Nothing to duplicate"))
     (let* ((default-title (plist-get content-plist :title))
            (new-title (read-string "Duplicate title: " default-title))
+           (default-content (plist-get content-plist :content))
            (new-content
             (with-temp-buffer
-              (insert (plist-get content-plist :content))
               (org-mode)
-              (goto-char (point-min))
+              (save-excursion
+                (insert default-content))
               (org-edit-headline new-title)
               (buffer-string))))
       (org-gtd-clarify--queue-add new-title new-content)
@@ -669,23 +670,27 @@ Returns plist with :title and :content keys, or nil if buffer is empty."
 
 ;;;;; Queue Persistence
 
-(defun org-gtd-clarify--insert-content-to-inbox (content)
-  "Insert CONTENT at end of inbox file and return a marker to the heading."
-  (with-current-buffer (find-file-noselect (org-gtd-inbox-path))
-    (goto-char (point-max))
-    (unless (bolp) (insert "\n"))
-    (insert content)
-    (org-back-to-heading t)
-    ;; Remove stale ID so clarifying item creates a fresh one
-    (org-entry-delete nil "ID")
-    (point-marker)))
+(defun org-gtd-clarify--insert-content-to-inbox (content &optional inbox-buffer)
+  "Insert CONTENT at end of INBOX-BUFFER and return a marker to the heading.
+CONTENT must be an org entry starting with a heading.
+Remove stale ID so clarification creates a fresh one."
+  (let ((buf (or inbox-buffer (find-file-noselect (org-gtd-inbox-path)))))
+    (with-current-buffer buf
+      (goto-char (point-max))
+      (unless (bolp) (insert "\n"))
+      (save-excursion
+        (insert content))
+      (org-entry-delete nil "ID")
+      (point-marker))))
 
 (defun org-gtd-clarify--queue-save-to-inbox ()
   "Save all queued duplicates to the inbox."
-  (dolist (item org-gtd-clarify--duplicate-queue)
-    (org-gtd-clarify--insert-content-to-inbox (plist-get item :content)))
-  (with-current-buffer (find-file-noselect (org-gtd-inbox-path))
-    (save-buffer)))
+  (let ((inbox-buffer (find-file-noselect (org-gtd-inbox-path))))
+    (dolist (item org-gtd-clarify--duplicate-queue)
+      (let ((content (plist-get item :content)))
+        (org-gtd-clarify--insert-content-to-inbox content inbox-buffer)))
+    (with-current-buffer inbox-buffer
+      (save-buffer))))
 
 (defun org-gtd-clarify--prompt-queue-action ()
   "Prompt user for action on pending duplicates.
