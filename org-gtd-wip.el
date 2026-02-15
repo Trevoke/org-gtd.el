@@ -35,7 +35,7 @@
 
 ;;;; Constants
 
-(defconst org-gtd-wip--prefix "Org-GTD Clarify")
+(defconst org-gtd-wip--prefix "Org GTD Clarify")
 
 (defconst org-gtd-wip--max-filename-id-length 80
   "Maximum length for ID portion in temp filenames.
