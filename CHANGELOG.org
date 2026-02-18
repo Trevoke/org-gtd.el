@@ -1,3 +1,31 @@
+* 4.5.1 - 2026-02-11
+
+** Fixed
+*** ~org-gtd-someday~ now handles projects and project tasks
+Previously, ~org-gtd-someday~ only handled single items. It now uses smart dispatch
+like ~org-gtd-tickler~:
+
+- On a project heading (~ORG_GTD: Projects~): puts the entire project on someday/maybe
+- On a project task (has ~ORG_GTD_PROJECT_IDS~): prompts for which project to put on someday
+- On a single item: uses existing someday/maybe logic
+
+State is preserved just like tickler projects—~PREVIOUS_ORG_GTD~, ~PREVIOUS_TODO~, and
+type-specific properties are all saved for later reactivation via ~org-gtd-reactivate~.
+
+*** Multi-project tasks use "last active project" logic
+For both ~org-gtd-tickler~ and ~org-gtd-someday~: when incubating a project, tasks that
+belong to multiple projects are now only incubated if the current project is the *last
+active* one for that task. Previously, multi-project tasks were always skipped entirely.
+
+An active project is one with ~ORG_GTD: Projects~ that is not done or cancelled. This
+means if Task A belongs to Project X (being ticklered) and Project Y (still active),
+Task A stays active. But if Project Y is also ticklered/someday/done, Task A gets
+incubated along with Project X.
+
+*** Graph view: ~S~ keybinding for someday/maybe
+The project graph view now has an ~S~ key to move the current project to someday/maybe,
+matching the existing ~I~ key for tickler/incubate.
+
 * 4.5.0 - 2026-01-22
 
 ** Added

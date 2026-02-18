@@ -2247,6 +2247,13 @@ This ensures your waiting-for list always has the context GTD requires: who has 
 - Refiles to a someday/maybe category
 - Stays out of active views until you explicitly review it
 
+*Smart dispatch*: ~org-gtd-someday~ detects what you're on:
+- Project heading → puts entire project on someday/maybe (all tasks)
+- Project task → puts the project it belongs to on someday/maybe
+- Single action → puts just that action on someday/maybe
+
+*Use case - Paused projects*: You can put entire projects on someday/maybe to temporarily hide them from your active views while preserving all structure and dependencies. Unlike tickler, there's no review date—you decide when to reconsider during your reviews.
+
 *How to review*: Use ~org-gtd-reflect-someday-review~ to walk through your someday items one by one and decide whether to keep deferring or reactivate them. See [[#someday-review][Reviewing Someday/Maybe Items]] for details.
 
 *Key difference from Tickler*: Someday items have NO review date. They don't appear in your agenda automatically. You choose when to review them (typically during weekly/monthly reviews).
@@ -2884,9 +2891,10 @@ These commands are used less frequently and use key prefixes for organization.
 
 *Project Operation:*
 
-| Key   | Command          | Description                                                  |
-|-------+------------------+--------------------------------------------------------------|
-| I     | Incubate project | Move entire project to tickler/someday                       |
+| Key   | Command           | Description                                                 |
+|-------+-------------------+-------------------------------------------------------------|
+| I     | Incubate project  | Move entire project to tickler (with review date)           |
+| S     | Someday project   | Move entire project to someday/maybe (no review date)       |
 
 *Graph View Operations:*
 
@@ -3025,7 +3033,8 @@ This is a comprehensive quick reference for all graph view keybindings.
 
 | Key   | Action                                |
 |-------+---------------------------------------|
-| ~I~   | Incubate project (move to someday)    |
+| ~I~   | Incubate project (tickler with date)  |
+| ~S~   | Someday project (no review date)      |
 | ~C~   | Cancel project (cancel all tasks)     |
 | ~Q~   | Quit and kill buffer                  |
 | ~x s~ | Export as SVG                         |
@@ -3390,11 +3399,9 @@ ALL dependency relationships (~ORG_GTD_DEPENDS_ON~, ~ORG_GTD_BLOCKS~) remain int
 
 *Multi-Project Tasks*
 
-If a task belongs to MULTIPLE projects (has multiple IDs in ~ORG_GTD_PROJECT_IDS~), it is NOT tickler'd. Why? Because it's still needed by other active projects.
+If a task belongs to MULTIPLE projects (has multiple IDs in ~ORG_GTD_PROJECT_IDS~), org-gtd uses "last active project" logic: the task is only incubated if the project being ticklered/someday'd is the *last active* project for that task. An active project is one with ~ORG_GTD: Projects~ that is not done or cancelled.
 
-You'll see: "Skipping multi-project task: Task Name"
-
-The task remains active with its TODO keyword intact.
+This means: if Task A belongs to Project X (being ticklered) and Project Y (still active), Task A stays active because Project Y still needs it. But if Project Y is also ticklered, someday, done, or cancelled, then Task A gets incubated along with Project X.
 
 **** Tutorial: Managing Seasonal Projects
 
@@ -3633,18 +3640,16 @@ When you reactivate, here's the exact sequence:
 
 *Multi-Project Task Detection*
 
-The check:
+The check uses "last active project" logic:
 #+begin_src elisp
-(let ((project-ids (org-entry-get-multivalued-property
-                     (point) "ORG_GTD_PROJECT_IDS")))
-  (if (> (length project-ids) 1)
-      ;; Skip this task - belongs to multiple projects
-      (message "Skipping multi-project task: %s" (org-get-heading))
-    ;; Normal tickler
-    ...))
+;; A project is "active" if ORG_GTD="Projects" and not done/cancelled
+(org-gtd-project--active-p project-id)
+
+;; A task is incubated only if this is its last active project
+(org-gtd-project--task-last-active-project-p task-marker current-project-id)
 #+end_src
 
-If ~ORG_GTD_PROJECT_IDS~ contains ~"project-a project-b"~ (two IDs), the task belongs to both projects. Tickler'ing one project shouldn't hide the task—it's still needed by the other project.
+If ~ORG_GTD_PROJECT_IDS~ contains ~"project-a project-b"~ (two IDs), the task belongs to both projects. The task is only incubated if the current project is the last active one—i.e., no other project in the task's ~ORG_GTD_PROJECT_IDS~ is still active.
 
 **** Troubleshooting Tickler
 
@@ -3652,14 +3657,14 @@ If ~ORG_GTD_PROJECT_IDS~ contains ~"project-a project-b"~ (two IDs), the task be
 
 *Symptom:* You tickler'd a project, but some of its tasks still appear in your engage view.
 
-*Diagnosis:* Check if those tasks belong to multiple projects:
+*Diagnosis:* Those tasks likely belong to multiple projects. Check:
 1. Navigate to the task
 2. ~C-c C-x p~ (show properties)
 3. Look at ~ORG_GTD_PROJECT_IDS~ value
 4. If it has multiple IDs (space-separated), the task is shared
 
-*Solution:* This is expected behavior. Multi-project tasks remain active because other projects need them. Options:
-- Tickler ALL projects the task belongs to (task will then be tickler'd)
+*Solution:* This is expected behavior. Tasks are only incubated when the project being ticklered is the task's /last active/ project. If the task still has other active projects, it stays active because those projects need it. Options:
+- Tickler ALL active projects the task belongs to (task will then be tickler'd)
 - Remove the task from one of the projects first
 - Accept that the task stays visible (it's genuinely active in another project)
 
@@ -6099,7 +6104,7 @@ For projects:
 - Preserves all task states and dependencies
 - Hides everything from engage/NEXT views
 - Adds review date to your agenda
-- Skips multi-project tasks (tasks shared between projects)
+- Multi-project tasks: only incubated if this is the task's last active project
 
 **When to use:**
 
@@ -6109,6 +6114,41 @@ For projects:
 - Items you want to reconsider after a specific event or milestone
 
 **Note:** For items with NO specific timeframe ("maybe someday"), use ~org-gtd-someday~ instead.
+
+**** ~org-gtd-someday~
+
+**What it is:** Smart command to put items on someday/maybe (no specific timeframe).
+
+**Why you'd use it:** You have a project or action that's a possibility, but you're not committing to it. No review date—you'll reconsider during your periodic reviews.
+
+**Who needs it:** Anyone managing items that need to be deferred indefinitely without a specific review date.
+
+**Your first use (30 seconds):**
+
+1. Navigate to a project or action
+2. Run: ~M-x org-gtd-someday~
+3. If ~org-gtd-someday-lists~ is configured, select a list
+4. Done - it disappears from your engage view
+
+**What it does:**
+
+Detects what you're on:
+- Project heading → puts entire project on someday/maybe with all tasks
+- Project task → puts the project it belongs to on someday/maybe
+- Single action → puts just that action on someday/maybe
+
+For projects:
+- Preserves all task states and dependencies
+- Hides everything from engage/NEXT views
+- Multi-project tasks: only incubated if this is the task's last active project
+
+**When to use:**
+
+- Ideas you want to keep but have no commitment to
+- Projects you're not ready for and don't have a review date in mind
+- Items that might become relevant but have no timeline
+
+**Note:** For items with a SPECIFIC review date, use ~org-gtd-tickler~ instead.
 
 **** ~org-gtd-reactivate~
 
@@ -8646,24 +8686,24 @@ If items aren't appearing in ~org-gtd-engage~:
 
 See [[#config-vars-reference][Configuration Variables Reference]] for all configuration options.
 
-** Tasks still showing after tickler'ing project
+** Tasks still showing after tickler'ing or someday'ing project
 
-*Symptom*: Tickler'd a project but some tasks still appear in engage view.
+*Symptom*: Moved a project to tickler or someday/maybe, but some tasks still appear in engage view.
 
 *Diagnosis*:
-- Multi-project tasks (tasks shared between projects) are not tickler'd
-- If task belongs to Project A and Project B, and you only tickler Project A, the task stays visible
+- Multi-project tasks (tasks shared between projects) use "last active project" logic
+- If task belongs to Project A and Project B, and you only tickler/someday Project A, the task stays visible because Project B is still active
+- This is intentional—the task is genuinely needed by an active project
 
 *Solution*:
-- Check task's ORG_GTD_PROJECT_IDS property to see which projects it belongs to
-- Either tickler all projects the task belongs to, or remove it from one project first
-- During tickler, watch for "Skipping multi-project task" messages
+- Check task's ~ORG_GTD_PROJECT_IDS~ property to see which projects it belongs to
+- Each project that's still active (~ORG_GTD: Projects~, not done/cancelled) keeps the task visible
+- Incubate all active projects the task belongs to if you want it fully hidden
 
-*Recommended workflow*:
-1. Before tickler'ing: review the project for multi-project tasks
-2. Decide: should this task stay active (part of other project) or be tickler'd too?
-3. If tickler'ing: tickler all projects it belongs to
-4. If staying active: accept that it will remain visible
+*How it works*:
+1. When incubating Project X, org-gtd checks each task's other projects
+2. If any other project is still active, the task stays active (correct behavior)
+3. If Project X is the task's /last/ active project, the task gets incubated
 
 ** Still stuck?
 
