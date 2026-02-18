@@ -1,0 +1,63 @@
+* Extending org-gtd
+:PROPERTIES:
+:CUSTOM_ID: extending-org-gtd
+:END:
+
+org-gtd provides public API functions for building custom functionality.
+
+** Project Traversal Functions
+
+*** ~org-gtd-project-map-tasks~
+
+Apply a function to each task in a project's dependency graph.
+
+#+begin_src emacs-lisp
+(org-gtd-project-map-tasks FN PROJECT-MARKER)
+#+end_src
+
+- ~FN~ :: Function called with point at each task heading
+- ~PROJECT-MARKER~ :: Marker to the project heading
+- Returns :: List of non-nil results from FN
+
+*Example*: Collect all task headlines in a project:
+#+begin_src emacs-lisp
+(org-gtd-project-map-tasks
+ (lambda () (org-get-heading t t t t))
+ project-marker)
+#+end_src
+
+*Example*: Sum effort estimates:
+#+begin_src emacs-lisp
+(apply #'+ (org-gtd-project-map-tasks
+            (lambda ()
+              (or (org-duration-to-minutes
+                   (org-entry-get nil "Effort")) 0))
+            project-marker))
+#+end_src
+
+*** ~org-gtd-projects-map~
+
+Apply a function to each project in your GTD system.
+
+#+begin_src emacs-lisp
+(org-gtd-projects-map FN)
+#+end_src
+
+- ~FN~ :: Function called with point at each project heading
+- Returns :: Alist of ~(marker . result)~ for non-nil results
+
+*Example*: Find projects missing effort estimates:
+#+begin_src emacs-lisp
+(org-gtd-projects-map
+ (lambda ()
+   (unless (org-entry-get nil "Effort")
+     (org-get-heading t t t t))))
+#+end_src
+
+*Example*: Get clock totals for all projects:
+#+begin_src emacs-lisp
+(org-gtd-projects-map
+ (lambda ()
+   (cons (org-get-heading t t t t)
+         (org-clock-sum-current-item))))
+#+end_src

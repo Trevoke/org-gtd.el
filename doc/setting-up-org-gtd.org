@@ -1,0 +1,797 @@
+* Setting up Org GTD
+** Upgrading
+:PROPERTIES:
+:DESCRIPTION: How to upgrade your local setup across major versions
+:CUSTOM_ID: upgrading
+:END:
+If you are installing and not upgrading, you can skip this section entirely and just go to the next section, [[#Installing][Installing]].
+*** 4.0.0 <- 3.x.x
+Version 4.0 introduces major improvements to keyword configuration and project management. Your existing GTD data will continue to work, but you'll need to update your configuration and optionally migrate to take full advantage of new features.
+
+**** Required: Configuration changes
+
+*1. Update keyword configuration*
+
+*OLD way (version 3.x):*
+#+begin_src emacs-lisp
+;; Individual keyword variables (no longer used)
+(setq org-gtd-next "NEXT")
+(setq org-gtd-todo "TODO")
+(setq org-gtd-wait "WAIT")
+(setq org-gtd-canceled "CNCL")
+#+end_src
+
+*NEW way (version 4.0):*
+#+begin_src emacs-lisp
+;; First, configure org-mode's global TODO keywords
+;; All your GTD keywords must be in the same sequence
+(setq org-todo-keywords
+      '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+
+;; Then map GTD semantic states to your keywords
+;; Use setopt (Emacs 29+) for automatic validation, or setq for older versions
+(setopt org-gtd-keyword-mapping
+        '((todo . "TODO")      ;; tasks not ready to be acted upon
+          (next . "NEXT")      ;; tasks ready to act on immediately
+          (wait . "WAIT")      ;; tasks blocked or delegated
+          (done . "DONE")      ;; tasks successfully completed
+          (canceled . "CNCL"))) ;; tasks that won't be completed
+#+end_src
+
+Steps:
+1. Remove old keyword variables (~org-gtd-next~, ~org-gtd-todo~, ~org-gtd-wait~, ~org-gtd-canceled~ and their ~-suffix~ variants) from your configuration
+2. Remove any ~#+TODO:~ lines from your GTD org files (inbox.org, org-gtd-tasks.org, etc.)
+3. Add the global keyword configuration to your Emacs init file
+4. Ensure all GTD keywords appear in the *same sequence* in ~org-todo-keywords~
+
+**** Required: Configure org-agenda-files
+
+Before running the migration, ensure your GTD files are in ~org-agenda-files~. The migration command scans these files to find items to upgrade.
+
+For the migration to work, first load org-gtd, then set ~org-agenda-files~:
+
+#+begin_src emacs-lisp
+(require 'org-gtd)
+(setq org-agenda-files (list org-gtd-directory))
+#+end_src
+
+Or if using ~use-package~, put the ~org-agenda-files~ setting in your ~:config~ section. It's important to put the ~org-gtd-directory~ definition in the ~:init~ section.
+
+If ~org-agenda-files~ is not configured, the migration won't find anything to migrate.
+
+**** Required: Data migration
+
+Version 4.0 changes how projects work internally. *The old TRIGGER-based system no longer functions* - v4 uses dependency properties instead. You MUST run the migration for your existing projects to continue working.
+
+*Make a backup first!* The migration modifies your GTD files.
+
+*Run the migration command:*
+
+#+begin_src emacs-lisp
+M-x org-gtd-upgrade-v3-to-v4
+#+end_src
+
+*What the migration does:*
+
+The migration performs five steps automatically:
+
+1. *Migrates Incubated items* to Tickler or Someday:
+   - Items with ~ORG_GTD_TIMESTAMP~: Sets ~ORG_GTD="Tickler"~
+   - Items without timestamp: Sets ~ORG_GTD="Someday"~
+   - Level 1 heading gets ~ORG_GTD_REFILE~ based on first child's type
+
+2. *Adds ORG_GTD properties* to identify items:
+   - Adds ~ORG_GTD="Projects"~ to project headings
+   - Adds ~ORG_GTD="Actions"~ to project tasks
+
+3. *Migrates delegated items* to use their own type:
+   - Changes ~ORG_GTD~ from "Actions" to "Delegated" for items with ~DELEGATED_TO~ property
+   - This separates delegated items from regular single actions
+
+4. *Migrates habits* to use consistent property value:
+   - Sets ~ORG_GTD="Habit"~ on all items with ~STYLE="habit"~
+
+5. *Converts projects to dependency-based system*:
+   - Adds ~ORG_GTD_DEPENDS_ON~ and ~ORG_GTD_BLOCKS~ properties to create sequential task chains
+   - Adds ~ORG_GTD_FIRST_TASKS~ property to project headings
+   - Updates task states (NEXT/TODO) based on the new dependency graph
+
+*After migration:*
+
+- Your projects continue to work sequentially (task 1 → task 2 → task 3)
+- The sequential behavior is now implemented via dependency properties instead of TRIGGER
+- You can now customize dependencies for individual projects if you want parallel tasks
+- Safe to run multiple times if needed
+
+**** Required: Acknowledge the upgrade
+
+After completing the upgrade, you must set ~org-gtd-update-ack~ to suppress the upgrade warning. *This setting must be evaluated before org-gtd loads*—otherwise the warning appears during package loading, before your config runs.
+
+*Why before loading?* The warning is intentionally triggered at load time so you can't miss it. Once you've completed the upgrade steps, you acknowledge by setting this variable in the `:init` section (for use-package) or before the ~require~ statement.
+
+*use-package:*
+#+begin_src emacs-lisp
+(use-package org-gtd
+  :after org
+  :init
+  ;; Acknowledge upgrade BEFORE package loads
+  (setq org-gtd-update-ack "4.0.0")
+  :config
+  ;; Rest of your configuration...
+  (org-edna-mode 1))
+#+end_src
+
+*Without use-package:*
+#+begin_src emacs-lisp
+;; Set BEFORE requiring org-gtd
+(setq org-gtd-update-ack "4.0.0")
+(require 'org-gtd)
+#+end_src
+
+*What version to use:* Always set it to the major version you've upgraded to (e.g., "4.0.0"). Minor version updates (4.0.1, 4.1.0) generally don't require acknowledgment—only major upgrades with breaking changes do.
+
+**** Why these changes?
+
+*Keyword configuration:*
+- Simpler: One mapping structure instead of multiple variables
+- More reliable: Global configuration avoids file-level conflicts
+- Better validation: Org GTD checks your configuration and provides helpful errors
+- Future-proof: Easier to extend with new keyword types
+
+*Property-based system:*
+- More robust: Properties work reliably across different org-mode features
+- More flexible: Enables features like multi-project tasks
+- Better performance: Efficient skip functions for native org-agenda
+
+**** org-gtd-mode has a new purpose
+
+The ~org-gtd-mode~ minor mode has been redesigned in version 4.0. It no longer wraps org-agenda commands—instead, it provides useful mode-line feedback.
+
+*What it does now:*
+- Displays inbox count in your mode-line (e.g., =GTD[5]=)
+- Includes items from both main inbox and additional inbox files
+- Refreshes periodically to catch external file changes
+
+*To enable:*
+#+begin_src emacs-lisp
+(org-gtd-mode 1)
+#+end_src
+
+**** org-agenda-property has been vendored
+
+If you were using ~org-agenda-property~ configuration variables to show properties in the agenda, you need to update them. The package has been vendored into org-gtd with a new prefix.
+
+*OLD (org-agenda-property package):*
+#+begin_src emacs-lisp
+(setq org-agenda-property-list '("LOCATION" "DELEGATED_TO"))
+(setq org-agenda-property-position 'where-it-fits)
+(setq org-agenda-property-column 60)
+(setq org-agenda-property-separator "|")
+#+end_src
+
+*NEW (org-gtd-agenda-property):*
+#+begin_src emacs-lisp
+(setq org-gtd-agenda-property-list '("LOCATION" "DELEGATED_TO"))
+(setq org-gtd-agenda-property-position 'where-it-fits)
+(setq org-gtd-agenda-property-column 60)
+(setq org-gtd-agenda-property-separator "|")
+#+end_src
+
+Steps:
+1. Remove ~org-agenda-property~ from your package dependencies (no longer needed)
+2. Rename any ~org-agenda-property-*~ variables to ~org-gtd-agenda-property-*~
+
+The functionality is identical—only the naming has changed.
+
+** Installing
+:PROPERTIES:
+:DESCRIPTION: Get Org GTD in your emacs
+:CUSTOM_ID: Installing
+:END:
+This package requires Emacs 28.1 or higher.
+
+This package is on MELPA and MELPA stable under the name ~org-gtd~.
+*** use-package
+Just make sure this is loaded after ~org-mode~ like so.
+#+begin_src emacs-lisp
+  (use-package org-gtd :after org)
+#+end_src
+*** Manually
+Check out the source code for dependencies and install them.
+Then, clone this repo to a directory of your choice, e.g. =~/.emacs.d/packages=.
+Finally, add this to your config:
+#+begin_src emacs-lisp
+(add-to-list 'load-path "~/.emacs.d/packages")
+(require 'org-gtd)
+#+end_src
+** Configuring
+:PROPERTIES:
+:DESCRIPTION: Required and optional system configuration
+:CUSTOM_ID: configuring
+:END:
+*** Basic setup
+You need to configure three things for org-gtd to work:
+
+1. *TODO keywords*: Configure ~org-todo-keywords~ with your GTD workflow states
+2. *Keyword mapping*: Map GTD semantic states to your keywords with ~org-gtd-keyword-mapping~
+3. *org-edna*: Enable org-edna with inheritance for project dependencies to work
+
+*Important for existing org-mode users*: If you already have custom ~org-todo-keywords~, add a separate sequence for GTD keywords rather than mixing them into your existing sequences. See [[#required-keyword-configuration][Required keyword configuration]] for details.
+
+See the configuration sections below for details.
+
+*Optional*: Enable ~org-gtd-mode~ if you want to see your inbox count in the mode-line (e.g., =GTD[5]=).
+
+*** Complete Configuration Examples
+
+*Configuration is the most critical part of setup.* The examples below are complete, working configurations you can copy-paste into your init file.
+
+**** Example 1: Vanilla Emacs (Minimal Configuration)
+:PROPERTIES:
+:CUSTOM_ID: example-1-vanilla-emacs-minimal-configuration
+:END:
+
+This is the simplest possible configuration for org-gtd. Copy this entire block into your init file:
+
+#+begin_src emacs-lisp
+  ;; Suppress upgrade warnings (set BEFORE org-gtd loads)
+  ;; After upgrading, set to the version you upgraded to
+  (setq org-gtd-update-ack "4.0.0")
+
+  ;; Configure org-mode TODO keywords
+  ;; All GTD keywords MUST be in the same sequence
+  ;; Standard options like "TODO(t)" or "DONE(d!)" are fine - org-gtd ignores them
+  (setq org-todo-keywords
+        '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+
+  ;; Map GTD semantic states to your keywords
+  (setq org-gtd-keyword-mapping
+        '((todo . "TODO")      ; tasks not ready to act on
+          (next . "NEXT")      ; tasks ready to act on immediately
+          (wait . "WAIT")      ; tasks blocked or delegated
+          (done . "DONE")      ; tasks successfully completed
+          (canceled . "CNCL"))) ; tasks that won't be completed
+
+  ;; Optional: Set GTD directory (defaults to ~/gtd/)
+  ;; Must be set BEFORE org-gtd loads if you want to customize it
+  ;; (setq org-gtd-directory "~/my-gtd/")
+
+  ;; Enable per-type refile prompting (recommended)
+  ;; Without this, all items auto-refile to first target without prompting
+  (setq org-gtd-refile-to-any-target nil)
+  ;; Customize which types prompt vs auto-refile:
+  ;; (setq org-gtd-refile-prompt-for-types '(project-heading project-task ...))
+
+  ;; REQUIRED: Enable org-edna for project dependencies
+  (org-edna-mode 1)
+
+  ;; Global keybindings for GTD commands
+  ;; These work anywhere in Emacs
+  (global-set-key (kbd "C-c d c") 'org-gtd-capture)
+  (global-set-key (kbd "C-c d e") 'org-gtd-engage)
+  (global-set-key (kbd "C-c d p") 'org-gtd-process-inbox)
+  (global-set-key (kbd "C-c d n") 'org-gtd-show-all-next)
+  (global-set-key (kbd "C-c d s") 'org-gtd-reflect-stuck-projects)
+
+
+
+  ;; Keybinding for clarify map and agenda files
+  ;; These only work after org-gtd loads (e.g. so org-gtd-directory is defined)
+  (with-eval-after-load 'org-gtd
+    (setq org-agenda-files (list org-gtd-directory))
+    (define-key org-gtd-clarify-mode-map (kbd "C-c c") 'org-gtd-organize))
+
+  ;; Quick task actions in agenda view
+  (with-eval-after-load 'org-agenda
+    (define-key org-agenda-mode-map (kbd "C-c .") 'org-gtd-agenda-transient))
+#+end_src
+
+**** Example 2: Doom Emacs Configuration
+:PROPERTIES:
+:CUSTOM_ID: example-2-doom-emacs-configuration
+:END:
+
+If you use Doom Emacs, add this to your ~packages.el~:
+
+#+begin_src emacs-lisp
+(package! org-gtd)
+#+end_src
+
+Then add this to your ~config.el~:
+
+#+begin_src emacs-lisp
+(use-package! org-gtd
+  :after org
+  :init
+  ;; Suppress upgrade warnings (must be set before package loads)
+  (setq org-gtd-update-ack "4.0.0")
+  ;; Set GTD directory before package loads
+  (setq org-gtd-directory "~/gtd/")
+
+  :custom
+  (org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+  (org-gtd-keyword-mapping '((todo . "TODO")
+                             (next . "NEXT")
+                             (wait . "WAIT")
+                             (done . "DONE")
+                             (canceled . "CNCL")))
+  ;; Enable per-type refile prompting (recommended)
+  ;; Without this, all items auto-refile to first target without prompting
+  (org-gtd-refile-to-any-target nil)
+
+  :config
+  (org-edna-mode)
+  ;; Add org-gtd files to your agenda (in :config so org-gtd-directory is defined)
+  (setq org-agenda-files (list org-gtd-directory))
+  ;; Doom-style leader key bindings
+  (map! :leader
+        (:prefix ("d" . "org-gtd")
+         :desc "Capture"        "c"  #'org-gtd-capture
+         :desc "Engage"         "e"  #'org-gtd-engage
+         :desc "Process inbox"  "p"  #'org-gtd-process-inbox
+         :desc "Show all next"  "n"  #'org-gtd-show-all-next
+         :desc "Stuck projects" "s"  #'org-gtd-reflect-stuck-projects))
+  ;; Clarify map binding
+  (map! :map org-gtd-clarify-mode-map
+        :desc "Organize this item" "C-c c" #'org-gtd-organize)
+  ;; Quick task actions in agenda view
+  (map! :map org-agenda-mode-map
+        :desc "GTD quick actions" "C-c ." #'org-gtd-agenda-transient))
+#+end_src
+
+**** Example 3: Spacemacs Configuration
+:PROPERTIES:
+:CUSTOM_ID: example-3-spacemacs-configuration
+:END:
+
+If you use Spacemacs, add this to your ~dotspacemacs/user-config~ function:
+
+#+begin_src emacs-lisp
+;; Install org-gtd
+(use-package org-gtd
+  :ensure t
+  :after org
+  :init
+  ;; Suppress upgrade warnings (must be set before package loads)
+  (setq org-gtd-update-ack "4.0.0")
+  ;; Configure org-mode TODO keywords
+  (setq org-todo-keywords
+        '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+  ;; Map GTD semantic states
+  (setq org-gtd-keyword-mapping
+        '((todo . "TODO")
+          (next . "NEXT")
+          (wait . "WAIT")
+          (done . "DONE")
+          (canceled . "CNCL")))
+  ;; Set GTD directory before package loads
+  (setq org-gtd-directory "~/gtd/")
+  ;; Enable per-type refile prompting (recommended)
+  ;; Without this, all items auto-refile to first target without prompting
+  (setq org-gtd-refile-to-any-target nil)
+
+  :config
+  ;; REQUIRED: Enable org-edna for project dependencies
+  (org-edna-mode 1)
+  ;; Add org-gtd files to your agenda (in :config so org-gtd-directory is defined)
+  (setq org-agenda-files (list org-gtd-directory))
+  ;; Spacemacs leader key bindings
+  (spacemacs/set-leader-keys
+    "od c" 'org-gtd-capture
+    "od e" 'org-gtd-engage
+    "od p" 'org-gtd-process-inbox
+    "od n" 'org-gtd-show-all-next
+    "od s" 'org-gtd-reflect-stuck-projects)
+  ;; Clarify map binding
+  (with-eval-after-load 'org-gtd
+    (define-key org-gtd-clarify-mode-map (kbd "C-c c") 'org-gtd-organize))
+  ;; Quick task actions in agenda view
+  (with-eval-after-load 'org-agenda
+    (define-key org-agenda-mode-map (kbd "C-c .") 'org-gtd-agenda-transient)))
+#+end_src
+
+**** What These Configurations Do
+
+All three examples configure the same essential pieces:
+
+1. *~org-todo-keywords~* - Defines the workflow states (TODO → NEXT → WAIT → DONE/CNCL)
+   - The ~|~ separator marks done states (right side) vs active states (left side)
+   - All GTD keywords must be in a single sequence
+
+2. *~org-gtd-keyword-mapping~* - Maps GTD concepts to your keyword choices
+   - ~todo~ - Tasks not yet actionable
+   - ~next~ - Tasks ready to work on right now
+   - ~wait~ - Tasks blocked or delegated
+   - ~done~ - Tasks successfully completed
+   - ~canceled~ - Tasks that won't be done
+
+3. *~org-gtd-directory~* - Where org-gtd keeps its files (defaults to =~/gtd/=)
+
+4. *~org-agenda-files~* - Makes org-gtd items appear in agenda views
+
+5. *~org-edna-mode~* - REQUIRED for projects to work
+
+6. *Keybindings* - Three types:
+   - *Global bindings*: Work anywhere in Emacs (capture, engage, process, etc.)
+   - *Clarify map binding*: Only works when organizing items in clarify buffers
+   - *Agenda map binding*: Quick task actions in agenda views (~C-c .~ for ~org-gtd-agenda-transient~)
+
+**** Testing Your Configuration
+
+After adding one of the configurations above and restarting Emacs, verify everything works:
+
+*Test 1: Capture works*
+
+#+begin_example
+M-x org-gtd-capture
+#+end_example
+
+Expected: Opens a capture buffer for the inbox.
+
+If it fails: Check that ~org-gtd-directory~ exists and you have write permissions.
+
+*Test 2: Engage works*
+
+#+begin_example
+M-x org-gtd-engage
+#+end_example
+
+Expected: Opens an agenda view (might be empty if you haven't organized anything yet).
+
+If it fails: Check that ~org-agenda-files~ includes your GTD directory.
+
+*Test 3: Keywords are recognized*
+
+1. Open any org file: ~M-x find-file ~/test.org~
+2. Type: ~* Test heading~
+3. Put cursor on the heading
+4. Try cycling TODO states: ~C-c C-t~
+
+Expected: Should cycle through TODO → NEXT → WAIT → DONE → CNCL.
+
+If it fails: Check that ~org-todo-keywords~ is set correctly.
+
+*Test 4: org-edna is enabled*
+
+#+begin_example
+M-x describe-variable RET org-edna-mode
+#+end_example
+
+Expected: Should show "t" (enabled).
+
+If it fails: Make sure ~(org-edna-mode 1)~ is in your config and you've restarted Emacs.
+
+**** Common Configuration Problems
+
+Before troubleshooting, identify which configuration style you're using:
+- *Vanilla Emacs*: See [[#example-1-vanilla-emacs-minimal-configuration][Example 1: Vanilla Emacs]]
+- *Doom Emacs*: See [[#example-2-doom-emacs-configuration][Example 2: Doom Emacs]]
+- *Spacemacs*: See [[#example-3-spacemacs-configuration][Example 3: Spacemacs]]
+
+Each example shows the complete, correct configuration for that environment.
+
+*Problem: "org-gtd-capture" is undefined*
+
+*Cause*: org-gtd package isn't installed or loaded.
+
+*Solution*:
+- *Vanilla Emacs*: Install from MELPA with ~M-x package-install RET org-gtd RET~
+- *Doom Emacs*: Add ~(package! org-gtd)~ to your ~packages.el~ and run ~doom sync~
+- *Spacemacs*: The ~use-package~ form in the [[#example-3-spacemacs-configuration][Spacemacs example]] automatically installs it with ~:ensure t~
+
+*Problem: Keywords don't change when I press C-c C-t*
+
+*Cause*: ~org-todo-keywords~ not configured correctly.
+
+*Solution*: Check your configuration has this setting:
+#+begin_src emacs-lisp
+(setq org-todo-keywords
+      '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+#+end_src
+
+Common mistakes:
+- Keywords not in quotes: Should be ~"TODO"~ not ~TODO~
+- Missing sequence wrapper: Need ~'((sequence ...))~ not just ~'("TODO" ...)~
+- No done separator: Need ~|~ before ~"DONE"~ and ~"CNCL"~
+
+See the complete configuration for your environment above.
+
+*Problem: Projects don't advance when I mark tasks DONE*
+
+*Cause*: org-edna isn't enabled.
+
+*Solution*: All three configuration examples include ~(org-edna-mode 1)~. Make sure you have:
+- *Vanilla/Spacemacs*: ~(org-edna-mode 1)~ in the ~:config~ section
+- *Doom*: ~(org-edna-mode)~ in the ~:config~ section (Doom handles the argument)
+
+*Problem: Can't see GTD items in agenda*
+
+*Cause*: GTD directory not in ~org-agenda-files~.
+
+*Solution*: All three configuration examples include this. Check you have:
+#+begin_src emacs-lisp
+;; For plain elisp - must be AFTER org-gtd loads
+(with-eval-after-load 'org-gtd
+  (setq org-agenda-files (list org-gtd-directory)))
+#+end_src
+
+Or if using ~use-package~ / ~use-package!~, put it in ~:config~ (not ~:custom~):
+#+begin_src emacs-lisp
+:config
+(setq org-agenda-files (list org-gtd-directory))
+#+end_src
+
+*Problem: Keybindings don't work*
+
+*Cause*: Keybindings not defined, or defined incorrectly for your environment.
+
+*Solution*:
+- *Vanilla Emacs*: Use ~global-set-key~ for global commands, ~define-key org-gtd-clarify-mode-map~ for clarify buffer commands
+- *Doom Emacs*: Use ~map!~ with ~:leader~ prefix for global, ~:map org-gtd-clarify-mode-map~ for clarify buffer
+- *Spacemacs*: Use ~spacemacs/set-leader-keys~ for global, ~define-key~ for clarify buffer
+
+The clarify binding (~C-c c~) *only works in clarify buffers* - you must run ~M-x org-gtd-process-inbox~ first.
+
+See the complete configuration for your environment to copy the correct keybinding syntax.
+
+**** Working with Your Existing Org Setup
+
+Already have org-mode configured with your own refile targets and archive location? Org-gtd is designed to work *alongside* your existing setup, not replace it.
+
+*Quick answers:*
+
+- *Will org-gtd break my ~org-refile-targets~?* No. Org-gtd merges its targets with yours. Your targets appear first in completion.
+
+- *Will org-gtd ignore my ~org-archive-location~?* By default, yes—org-gtd uses year-based archive files. But you can make it respect yours with one line:
+  #+begin_src emacs-lisp
+  (setq org-gtd-archive-location nil)  ; Use your org-archive-location
+  #+end_src
+
+*How the merge works:*
+
+When you organize an item (say, as a Project), org-gtd builds a combined refile target list:
+
+1. Your ~org-refile-targets~ (appears first)
+2. Any heading with ~ORG_GTD_REFILE: Projects~ property (org-gtd's system)
+
+So if you have ~org-refile-targets~ pointing to =~/org/projects.org=, that file's headings appear first. Org-gtd's property-marked targets appear after.
+
+*When to use which:*
+
+| Scenario | What to do |
+|----------|------------|
+| New to org-mode | Use org-gtd defaults. It creates targets automatically. |
+| Have existing refile setup | Keep it! Org-gtd adds to it, doesn't replace it. |
+| Want single archive file | Set ~org-gtd-archive-location~ to ~nil~, configure ~org-archive-location~ |
+| Want year-based GTD archives | Use org-gtd default (nothing to configure) |
+
+*See also:* [[#refiling-after-organizing][Refiling to the appropriate area]] for details on ~ORG_GTD_REFILE~ properties, [[#cleaning-up-the-system][Cleaning up / archiving]] for archive details.
+
+*** Understanding Keybindings
+
+org-gtd uses two types of keybindings, and understanding the difference is important:
+
+**** Global Keybindings
+
+These work *anywhere* in Emacs and let you access the main GTD commands:
+
+#+begin_src emacs-lisp
+;; These commands are always available:
+(global-set-key (kbd "C-c d c") 'org-gtd-capture)       ; Capture to inbox
+(global-set-key (kbd "C-c d e") 'org-gtd-engage)        ; Daily view
+(global-set-key (kbd "C-c d p") 'org-gtd-process-inbox) ; Process inbox
+(global-set-key (kbd "C-c d n") 'org-gtd-show-all-next) ; Show NEXT actions
+#+end_src
+
+You can use any key combination you prefer. The ~C-c d~ prefix is just a convention.
+
+**** Clarify Map Keybindings
+
+These only work when you're in a *clarify buffer* (during inbox processing). The most important one is:
+
+#+begin_src emacs-lisp
+;; This only works in clarify buffers:
+(define-key org-gtd-clarify-mode-map (kbd "C-c c") 'org-gtd-organize)
+#+end_src
+
+*When you're in a clarify buffer:*
+1. You've called ~org-gtd-process-inbox~ and are looking at an item
+2. You've edited the item to make it clear and actionable
+3. Now you press ~C-c c~ to organize it (choose its type: project, single action, etc.)
+
+*Why the distinction?*
+
+The clarify map is a separate keymap because:
+- It prevents conflicts with other org-mode bindings
+- It only activates when you need it (during processing)
+- You can bind different keys for organizing without affecting the rest of Emacs
+
+*Common patterns:*
+
+Most users bind:
+- ~C-c d *~ for global commands (capture, engage, process)
+- ~C-c c~ for organizing (only in clarify buffers)
+
+But you can use whatever works for your workflow!
+
+*** Required configuration of sub-packages
+:PROPERTIES:
+:CUSTOM_ID: configuring-sub-packages
+:END:
+**** Configuring org-edna
+:PROPERTIES:
+:CUSTOM_ID: configuring-org-edna
+:END:
+package: https://www.nongnu.org/org-edna-el/
+
+This configuration is *REQUIRED* for project dependencies to work correctly. It enables org-edna to automatically update task states when you complete tasks in a project.
+
+#+begin_src emacs-lisp
+(org-edna-mode 1)
+#+end_src
+
+**** Adding org-gtd files to your agenda
+
+To see org-gtd items in your agenda views, add the org-gtd directory to your ~org-agenda-files~.
+
+*Important*: This must happen AFTER org-gtd loads, so that ~org-gtd-directory~ is defined:
+
+#+begin_src emacs-lisp
+;; For plain elisp configs:
+(with-eval-after-load 'org-gtd
+  ;; If you only want GTD files in your agenda:
+  (setq org-agenda-files (list org-gtd-directory))
+  ;; Or if you have other agenda files, add GTD to the list:
+  ;; (add-to-list 'org-agenda-files org-gtd-directory)
+  )
+#+end_src
+
+For ~use-package~ configs, put this in the ~:config~ section (not ~:custom~) so it runs after the package loads.
+*** configuration options for org-gtd
+**** I don't care, just let me start using it
+The most direct way to find out about the configuration options for org-gtd is to see the customize group: ~M-x customize-group RET org-gtd~. They are all optional because they all come with default values.
+
+The only one you may want to change before starting to use Org GTD is ~org-gtd-directory~, which is the directory that Org GTD
+will look to for everything it needs to do.
+
+The configuration options will also be mentioned in the relevant subsections of [[#using-org-gtd][Using Org GTD]].
+**** Tell me all the levers I can pull
+:PROPERTIES:
+:CUSTOM_ID: all-the-levers
+:END:
+
+Make sure you also read about sub-package configuration: [[#configuring-sub-packages][Required configuration of sub-packages]].
+
+***** Required keyword configuration
+:PROPERTIES:
+:CUSTOM_ID: required-keyword-configuration
+:END:
+
+These settings are *required* for Org GTD to work properly:
+
+- ~org-todo-keywords~ :: (=org-mode= variable) Define your TODO keyword sequences here. All GTD keywords (TODO, NEXT, WAIT, DONE, CNCL or your custom versions) *must* be in the same sequence. Example:
+  #+begin_src emacs-lisp
+  (setq org-todo-keywords
+        '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+  #+end_src
+
+  *Power users note:* If you already have ~org-todo-keywords~ configured with your own workflows (e.g., BACKLOG, DOING, REVIEW), don't merge GTD keywords into those sequences. Instead, add a *separate* GTD sequence. Your org-gtd items could end up in an unhandled state otherwise (always fixable, but annoying). Example with multiple sequences:
+  #+begin_src emacs-lisp
+  (setq org-todo-keywords
+        '((sequence "BACKLOG(b)" "DOING(o)" "REVIEW(r)" "|" "DONE(d)" "ARCHIVED(a)")
+          (sequence "TODO(t)" "NEXT(n)" "WAIT(w)" "|" "DONE(D)" "CNCL(c)")))  ; GTD
+  #+end_src
+
+- ~org-gtd-keyword-mapping~ :: Map GTD semantic states to your chosen keywords. This tells Org GTD which keyword means what. The five required mappings are.
+  - ~todo~ :: Tasks not ready to be acted upon
+  - ~next~ :: Tasks ready to act on immediately
+  - ~wait~ :: Tasks blocked or delegated to someone else
+  - ~done~ :: Tasks successfully completed
+  - ~canceled~ :: Tasks that won't be completed
+
+  Example configuration (use ~setopt~ for Emacs 29+ to get automatic validation):
+  #+begin_src emacs-lisp
+  (setopt org-gtd-keyword-mapping
+          '((todo . "TODO")
+            (next . "NEXT")
+            (wait . "WAIT")
+            (done . "DONE")
+            (canceled . "CNCL")))
+  #+end_src
+
+  Or for older Emacs versions:
+  #+begin_src emacs-lisp
+  (setq org-gtd-keyword-mapping
+        '((todo . "TODO")
+          (next . "NEXT")
+          (wait . "WAIT")
+          (done . "DONE")
+          (canceled . "CNCL")))
+  #+end_src
+
+***** Optional configuration
+
+- ~org-gtd-directory~ :: set this to a directory. =org-gtd= will look for all its files in this directory.
+- ~org-gtd-capture-templates~ :: (!note: take care when changing this) This defines the pre-filled text that will show up when capturing an item to the inbox. The only requirements are that the template string must define an org-mode top-level heading, and that the entry point to the inbox.  That is to say, the first two characters must be a single asterisk followed by a space: ~"* "~, and the entry type must be like this: =entry  (file ,#'org-gtd-inbox-path)=. [[#adding-things-to-the-inbox][Adding things to the inbox]].
+- ~org-reverse-note-order~ :: (=org-mode= variable) set this to ~t~ to add new items to the top of project tasks and to ~nil~ to add new items to the bottom of project tasks when organizing an item as such.
+- ~org-gtd-organize-hooks~ :: this is a list of functions that you can use to decorate each item when you clarify it. For instance, you could add a function to set the effort, or the priority, or some category, etc. By default it has only one function, which lets you add tags, but of course you can change this entirely. [[#organizing-an-item][Organizing an item]].
+- ~org-gtd-archive-location~ :: Points to a function to generate the archive file dynamically. Default value generates a file suffixed with the current year. The function has an arity of zero and generates an org-mode file+outline path. [[#cleaning-up-the-system][Cleaning up / archiving completed work]].
+- ~org-gtd-refile-prompt-for-types~ :: list of GTD item types that should prompt for refile target selection. Types not in the list auto-refile to first target. Requires ~org-gtd-refile-to-any-target~ to be ~nil~. [[#controlling-refile-prompts][Controlling Refile Prompts by Item Type]].
+- ~org-gtd-delegate-read-func~ :: function that is used to prompt for a person a task is delegated to. Must return a string. By default this is set to ~read-string~.
+- ~org-gtd-areas-of-focus~ :: list of strings representing your areas of focus (horizon 2 in GTD).
+- ~org-gtd-clarify-show-horizons~ :: When clarifying, do you want the horizons buffer to be shown by default, or do you prefer it hidden?
+- ~org-gtd-clarify-show-organize-help~ :: When clarifying, show a help buffer with GTD item type descriptions and keyboard shortcuts.
+- ~org-gtd-clarify-project-templates~ :: Alist of strings: ~project template name . project template~ where there template is a series of tasks you may want to insert automatically, if you have a generic type of project that comes up a lot.
+- ~org-gtd-clarify-display-helper-buffer~ :: When ~t~, show a dependencies helper window when clarifying projects with multiple tasks. Useful for visualizing task relationships.
+- ~org-gtd-horizons-file~ :: Name of the file, in ~org-gtd-directory~, that will be displayed when the horizons buffer is displayed when clarifying.
+- ~org-gtd-prefix-width~ :: how many characters to dedicate to the prefix, on the left side of the TODO items, so the project name, area of focus, or other context can show clearly. See [[#prefix-dsl][Prefix DSL]] for controlling what appears in the prefix.
+- ~org-gtd-agenda-property-list~ :: List of properties to display in agenda views (default: ~'("LOCATION")~). See [[#config-vars-reference][Configuration Variables Reference]] for related positioning options.
+- ~org-gtd-graph-render-mode~ :: Default rendering mode for project graphs (~'svg~ or ~'ascii~). Terminal users should use ~'ascii~. [[#graph-rendering-modes][Graph Rendering Modes]].
+- ~org-gtd-graph-ui-split-ratio~ :: Width ratio for graph vs. details panel (default: ~0.7~ = 70% graph).
+- ~org-gtd-save-after-organize~ :: When ~t~, save all modified buffers after each organize step.
+*** Recommended key bindings
+:PROPERTIES:
+:CUSTOM_ID: recommended-key-bindings
+:END:
+
+There's an important keymap you'll want to make the flow of processing the inbox smoother. To limit impact on your emacs configuration, there is a specific keymap you can use. The function you'll want to bind is ~org-gtd-organize~. I suggest ~C-c c~, as in the following example.
+
+#+begin_src elisp
+(define-key org-gtd-clarify-mode-map (kbd "C-c c") #'org-gtd-organize)
+#+end_src
+
+For other keybindings, do what you need. My bindings use ~C-c d~ as a prefix, i.e.:
+
+- ~C-c d c~ :: ~org-gtd-capture~
+- ~C-c d e~ :: ~org-gtd-engage~
+
+etc.
+
+**** Command Center
+
+Alternatively, you can bind a single key to ~org-gtd-command-center~, which provides a transient menu with access to all major org-gtd commands:
+
+#+begin_src elisp
+(global-set-key (kbd "C-c d") #'org-gtd-command-center)
+#+end_src
+
+The command center is organized for both discovery and quick access:
+
+- *Engage* (~e~, ~@~, ~n~) :: What to work on now
+- *Capture & Process* (~c~, ~p~, ~k~) :: Add items and process inbox
+- *Reflect* (~a~, ~y~, ~d~, ~r~, ~R~) :: Review areas, someday items, completed work
+- *Review System* (~S~, ~M~) :: Sub-menus for stuck and missed items
+- *Archive* (~A~) :: Archive completed items
+
+Try it: ~M-x org-gtd-command-center~
+
+*** Sample Doom Emacs Config
+If you are a Doom Emacs user, then your configuration may look something like this:
+
+#+BEGIN_SRC elisp
+  (use-package! org-gtd
+    :after org
+    :init
+    ;; Set GTD directory before package loads
+    (setq org-gtd-directory "~/gtd/")
+    :custom
+    (org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+    (org-gtd-keyword-mapping '((todo . "TODO")
+                               (next . "NEXT")
+                               (wait . "WAIT")
+                               (done . "DONE")
+                               (canceled . "CNCL")))
+    :config
+    (org-edna-mode)
+    ;; Add org-gtd files to your agenda (in :config so org-gtd-directory is defined)
+    (setq org-agenda-files (list org-gtd-directory))
+    (map! :leader
+          (:prefix ("d" . "org-gtd")
+           :desc "Capture"        "c"  #'org-gtd-capture
+           :desc "Engage"         "e"  #'org-gtd-engage
+           :desc "Process inbox"  "p"  #'org-gtd-process-inbox
+           :desc "Show all next"  "n"  #'org-gtd-show-all-next
+           :desc "Stuck projects" "s"  #'org-gtd-reflect-stuck-projects))
+    (map! :map org-gtd-clarify-mode-map
+          :desc "Organize this item" "C-c c" #'org-gtd-organize))
+#+END_SRC

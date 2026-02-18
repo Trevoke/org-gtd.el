@@ -1,0 +1,2365 @@
+* Using Org GTD
+:PROPERTIES:
+:DESCRIPTION: How Org GTD maps to the GTD flow
+:CUSTOM_ID: using-org-gtd
+:END:
+
+You've completed the tutorials and understand the basics. This section covers everything else you'll need as you use org-gtd day-to-day and want to explore more advanced features.
+
+** Your Daily Workflow
+:PROPERTIES:
+:DESCRIPTION: The GTD cycle you'll practice every day
+:END:
+
+The GTD workflow has six steps. You'll do the first four frequently (even daily), and the last two periodically:
+
+1. *Capture* - Get things out of your head into your inbox (~org-gtd-capture~)
+2. *Process* - Look at each inbox item one at a time (~org-gtd-process-inbox~)
+3. *Clarify* - Edit the item to make it clear and actionable
+4. *Organize* - Categorize the item (~org-gtd-organize~)
+5. *Engage* - Look at what you can do right now (~org-gtd-engage~)
+6. *Review* - Periodically review your system for health
+
+You already practiced this in the [[#getting-started][Getting Started tutorials]]. The sections below go deeper into each part.
+
+*** Quick command reference
+
+These are the commands you'll use most:
+
+| Command | What it does | When to use it |
+|-|-|-|
+| ~org-gtd-capture~ | Add item to inbox | Anytime something comes up |
+| ~org-gtd-process-inbox~ | Start processing inbox | Daily (or when inbox has items) |
+| ~org-gtd-organize~ | Organize current item | During processing (in clarify buffer) |
+| ~org-gtd-engage~ | See actionable items | Daily (your "work from" view) |
+| ~org-gtd-show-all-next~ | See only NEXT actions | When you want to focus on actions |
+| ~org-gtd-reflect-stuck-projects~ | Find stuck projects | Weekly review |
+| ~org-gtd-reflect-someday-review~ | Review someday items one-by-one | Weekly/monthly review |
+| ~org-gtd-projects-fix-all-todo-keywords~ | Fix task states after external edits | After mobile/web edits |
+| ~org-gtd-archive-completed-items~ | Archive finished items | Weekly/monthly cleanup |
+
+For complete command reference with detailed explanations, see [[#commands-reference][Commands Reference]].
+
+For details on each workflow step, see the subsections below.
+
+** The GTD Flow in Depth
+:PROPERTIES:
+:DESCRIPTION: Detailed explanation of each GTD step
+:END:
+
+Here are the domain elements of GTD that we handle:
+*** Adding things to the inbox
+:PROPERTIES:
+:CUSTOM_ID: adding-things-to-the-inbox
+:END:
+
+The trip through GTD arguably begins by adding things to the inbox. The inbox is a file called ~inbox.org~ in the directory stored in the variable ~org-gtd-directory~. By default this means the file will be ~~/gtd/inbox.org~.
+
+Org GTD provides one function to capture items: ~M-x org-gtd-capture~. In my setup I have this bound globally as such:
+
+#+begin_src elisp
+(global-set-key "C-c d c" #'org-gtd-capture)
+#+end_src
+
+This function uses the variable ~org-gtd-capture-templates~ to define org-gtd-specific capture templates. By default it comes with two templates, one to just capture a new item, and one to capture an item with a link to the file where you were when you started the capture.
+
+You can customize these templates as you see fit. In order to maintain proper functioning of org-gtd, however, there are two constraints:
+
+1. the first two characters of the template string must be a single asterisk followed by a space: ~"* "~
+2. the entry type must be like this: =entry  (file ,#'org-gtd-inbox-path)=
+
+*See also*: [[#config-vars-reference][Configuration Variables Reference]] for complete documentation of ~org-gtd-capture-templates~ and ~org-gtd-directory~.
+
+*** Processing the inbox
+:PROPERTIES:
+:CUSTOM_ID: processing-the-inbox
+:END:
+Processing the inbox means taking everything in the inbox, one at a time, and refining/categorizing them so they are instantly useful when you are looking at available next / scheduled actions.
+
+You can start processing the inbox with ~org-gtd-process-inbox~. This starts a looping behavior of clarifying each item in the inbox.
+
+If you capture items from multiple sources (mobile app, email, different contexts), you can configure additional inbox files. After the main inbox is empty, processing continues through each additional file in order. See ~org-gtd-additional-inbox-files~ in [[#config-vars-reference][Configuration Variables Reference]].
+
+*** Clarifying each item
+:PROPERTIES:
+:CUSTOM_ID: clarification
+:END:
+Clarifying an item means editing and adding the information that will be most valuable to you to the item. Note that task-specific information, such as appointment date, or name of person to whom it is delegated, or even area of focus, will be added during the Organize step, so don't worry about these yet.
+**** How to start clarifying
+Besides ending up in here automatically while processing the inbox, there's two more ways to enter the clarifying flow:
+
+- ~org-gtd-clarify-item~ :: call this from any org-mode heading to do a one-off clarification.
+- ~org-gtd-clarify-agenda-item~ :: call this from the agenda view, if you have anything you want to re-clarify, or possibly clarify for the first time, from somewhere outside the inbox.
+
+**** data shape requirements
+:PROPERTIES:
+:CUSTOM_ID: data-shape-requirement-while-clarifying
+:END:
+There's two general shapes you'll be looking for.
+Almost everything will look like a simple org-mode heading.
+For instance, ~* Task desc~.
+
+
+The only exception will be a project, that will look like a top-level heading for the project description with, underneath, a series of second-level headings representing each task to be executed sequentially before the project is complete.
+
+#+begin_example
+,* Project heading
+,** First task
+,** Second task
+,** Third task
+#+end_example
+
+**** Options and commands related to clarification
+:PROPERTIES:
+:CUSTOM_ID: options-and-behaviors-related-to-clarification-step
+:END:
+The clarify buffers use the major mode ~org-gtd-clarify-mode~, which is derived from ~org-mode~. There is a keymap, ~org-gtd-clarify-mode-map~, that you can use to bind useful keybindings.
+
+org-gtd provides three optional helper windows during clarification, each controlled by a variable:
+
+**Horizons window** — shows your GTD horizons file for context:
+- ~org-gtd-clarify-show-horizons~ :: set to ~'right~, ~'left~, ~'top~, or ~'bottom~ to show by default; ~nil~ to hide
+- ~org-gtd-clarify-toggle-horizons-window~ :: command to toggle visibility
+
+See [[#working-with-horizons][Working with the GTD Horizons]] for more details.
+
+**Organize help window** — shows all GTD item types with keyboard shortcuts:
+- ~org-gtd-clarify-show-organize-help~ :: set to ~'right~, ~'left~, ~'top~, or ~'bottom~ to show by default; ~nil~ to hide
+- ~org-gtd-clarify-toggle-organize-help~ :: command to toggle visibility
+
+**Dependencies helper window** — shows task relationships when clarifying projects:
+- ~org-gtd-clarify-display-helper-buffer~ :: set to ~t~ to show when clarifying projects with multiple tasks; ~nil~ to hide
+
+Try it now: while clarifying an item, run ~M-x org-gtd-clarify-toggle-organize-help~. You'll see each type's purpose and what happens when you choose it.
+
+If you are clarifying a project, you may be interested in project templates:
+- ~org-gtd-clarify-project-insert-template~ :: a function that will ask you to choose a template to insert.
+- ~org-gtd-clarify-project-templates~ :: an alist of the form =(name . template)= where both name and template are strings. =name= will be used in the interactive menu, and =template= will be inserted in the buffer.
+
+*See also*: [[#config-vars-reference][Configuration Variables Reference]] for complete documentation of clarification options, and [[#commands-reference][Commands Reference]] for all clarification commands.
+
+**** Duplicating items during clarification
+:PROPERTIES:
+:CUSTOM_ID: duplicating-items
+:END:
+
+Sometimes one inbox item represents multiple outcomes. "Prepare for Monday meeting" might actually be three things: book the room, prepare the slides, and email the agenda. The duplicate feature lets you split these apart during clarification.
+
+**Who needs this:** Anyone who captures quick notes that later turn out to be multiple separate actions or projects.
+
+***** Your first duplicate in 30 seconds
+
+1. While clarifying any item, press ~C-c d~
+2. Edit the title in the minibuffer (or keep it the same)
+3. Press ~RET~
+
+That's it. A queue window appears showing your duplicate. Continue clarifying and organizing the original item—the duplicate waits its turn.
+
+***** Understanding the workflow
+
+Think of duplicates as a "spawn" operation. You're clarifying item A, and you realize it's actually A, B, and C. You spawn B and C as duplicates, then:
+
+1. Organize A (the original)
+2. Automatically, B opens for clarification
+3. Organize B
+4. Automatically, C opens for clarification
+5. Organize C
+6. Done—back to where you started
+
+The key insight: *duplicates form a mini-session*. You must process all of them before returning to your previous context. This matches the GTD principle of fully processing what's in front of you before moving on.
+
+***** The queue window
+
+When you create your first duplicate, a side window appears:
+
+#+begin_example
+Pending (2):
+  1. Book the room
+  2. Email the agenda
+#+end_example
+
+This window:
+- Shows all queued duplicates by title
+- Updates as you add more or process them
+- Closes automatically when the last duplicate is organized
+- Position is configurable (default: bottom)
+
+***** Two ways to duplicate
+
+| Key | Command | Behavior |
+|-----+---------+----------|
+| ~C-c d~ | ~org-gtd-clarify-duplicate~ | Prompts for new title (current title as default) |
+| ~C-c D~ | ~org-gtd-clarify-duplicate-exact~ | Copies exactly, no prompt |
+
+Use ~C-c d~ when the duplicates have different titles (most common). Use ~C-c D~ when you want identical copies to organize differently (e.g., same task delegated to multiple people).
+
+***** What happens if you cancel?
+
+If you press ~C-c C-k~ to stop clarifying while duplicates are queued, you'll see:
+
+#+begin_example
+2 pending duplicates:
+  - Book the room
+  - Email the agenda
+[d]iscard all  [s]ave to inbox  [c]ancel:
+#+end_example
+
+- *Discard*: Duplicates are lost (you decided you don't need them)
+- *Save to inbox*: Duplicates are appended to your inbox for later processing
+- *Cancel*: Return to the clarify buffer (abort the abort)
+
+***** Nested duplicates
+
+While clarifying a duplicate, you can create more duplicates. They append to the queue. All must be processed before returning to your original context.
+
+***** Data safety
+
+Duplicates exist only in memory until organized. If Emacs crashes, they're lost. However:
+
+- Before exiting Emacs normally, you'll be prompted if any clarify buffers have pending duplicates
+- You can save them to inbox or discard them
+- The WIP buffer itself has auto-save enabled, so your clarification work is protected
+
+***** Configuration
+
+#+begin_src emacs-lisp
+;; Change queue window position (default: 'bottom)
+;; Options: 'top, 'right, 'left, 'bottom
+(setq org-gtd-clarify-duplicate-queue-position 'right)
+#+end_src
+
+*See also*: [[#commands-reference][Commands Reference]] for ~org-gtd-clarify-duplicate~ and ~org-gtd-clarify-duplicate-exact~.
+
+*** Organizing an item into the system
+:PROPERTIES:
+:CUSTOM_ID: organizing-an-item
+:END:
+When you are done clarifying, call ~M-x org-gtd-organize~ (or hit your keybinding for it, see [[#recommended-key-bindings][Recommended key bindings]]). This will open a transient menu to let you choose how Org GTD should categorize this item.
+
+Organizing is broken up into three steps:
+- Choosing a task type (see [[#understanding-gtd-item-types][Understanding GTD Item Types]])
+- Applying hooks to add additional relevant information (see [[#hooks-reference][Hooks Framework Reference]])
+- Refiling to the appropriate area (see [[#refiling-after-organizing][Refiling]] below)
+
+*See also*: [[#commands-reference][Commands Reference]] for the ~org-gtd-organize~ command and all organization-related commands.
+
+**** Refiling to the appropriate area
+:PROPERTIES:
+:CUSTOM_ID: refiling-after-organizing
+:END:
+
+***** Understanding Refiling in V4
+
+In org-gtd v4, refiling is *optional organizational preference*, not a structural requirement. Items can exist anywhere in your ~org-agenda-files~.
+
+By default, org-gtd uses ~ORG_GTD_REFILE~ properties to mark refile target headings. These can be at *any level* in *any file* in ~org-agenda-files~.
+
+***** Refile Target System
+
+Org-gtd *merges* your ~org-refile-targets~ configuration with its own ~ORG_GTD_REFILE~ property-based targets:
+
+1. Your configured ~org-refile-targets~ appear first
+2. Org-gtd's ~ORG_GTD_REFILE~ targets appear after
+
+This means you can use both org-mode's standard refile configuration AND org-gtd's property-based system together.
+
+Org-gtd finds refile targets by searching for ~ORG_GTD_REFILE~ property:
+
+#+begin_example
+,* Projects         <-- Can be anywhere, any level
+:PROPERTIES:
+:ORG_GTD_REFILE: Projects
+:END:
+
+,** Work/
+,*** Development Projects   <-- Also a valid refile target!
+:PROPERTIES:
+:ORG_GTD_REFILE: Projects
+:END:
+#+end_example
+
+When you organize an item as a Project, org-gtd finds *all* headings with ~ORG_GTD_REFILE: Projects~ (plus any targets from your ~org-refile-targets~).
+
+****** Controlling Refile Prompts by Item Type
+:PROPERTIES:
+:CUSTOM_ID: controlling-refile-prompts
+:END:
+
+When you have multiple refile targets, you might want org-gtd to prompt for some item types but auto-refile others. For example: always prompt when organizing projects (you care where they go), but auto-refile quick actions (just get them out of the inbox).
+
+*Important:* First, you must opt into per-type control by setting:
+
+#+begin_src elisp
+(setq org-gtd-refile-to-any-target nil)
+#+end_src
+
+By default ~org-gtd-refile-to-any-target~ is ~t~, which makes org-gtd auto-refile everything without prompting.
+
+Once you've opted in, the ~org-gtd-refile-prompt-for-types~ variable controls which types prompt. It's a list of GTD item types that should prompt for target selection:
+
+#+begin_src elisp
+;; Default value - these types prompt for refile target:
+(setq org-gtd-refile-prompt-for-types
+      '(single-action project-heading project-task calendar
+        someday delegated tickler habit))
+#+end_src
+
+Item types *not* in the list auto-refile to the first available target. By default, ~quick-action~, ~knowledge~, and ~trash~ auto-refile.
+
+*Example: Auto-refile everything except projects*
+
+If you want maximum speed and only care about choosing project locations:
+
+#+begin_src elisp
+(setq org-gtd-refile-prompt-for-types '(project-heading project-task))
+#+end_src
+
+*Example: Always prompt for everything*
+
+If you always want to choose where items go:
+
+#+begin_src elisp
+(setq org-gtd-refile-prompt-for-types
+      '(single-action project-heading project-task calendar
+        someday delegated tickler habit knowledge quick-action trash))
+#+end_src
+
+*Valid type symbols:* ~single-action~, ~project-heading~, ~project-task~, ~calendar~, ~someday~, ~delegated~, ~tickler~, ~habit~, ~knowledge~, ~quick-action~, ~trash~
+
+***** Creating New Refile Targets
+
+To create a new refile target, add ~ORG_GTD_REFILE~ property to any heading:
+
+For Projects:
+#+begin_src org-mode
+,* My Projects
+:PROPERTIES:
+:ORG_GTD_REFILE: Projects
+:END:
+#+end_src
+
+For other types, use the appropriate template constant value:
+- Projects: ~ORG_GTD_REFILE: Projects~
+- Actions: ~ORG_GTD_REFILE: Actions~
+- Calendar: ~ORG_GTD_REFILE: Calendar~
+- Tickler: ~ORG_GTD_REFILE: Tickler~
+- Someday: ~ORG_GTD_REFILE: Someday~
+- Habits: ~ORG_GTD_REFILE: Habits~
+
+****** Multiple Types Per Heading
+
+A single heading can accept multiple GTD types by listing them space-separated:
+
+#+begin_src org-mode
+,* Work Tasks
+:PROPERTIES:
+:ORG_GTD_REFILE: Actions Projects
+:END:
+#+end_src
+
+This heading will appear as a valid target when organizing both single actions AND projects. Useful when you want to organize related items under a common parent.
+
+If no refile target exists when organizing, org-gtd automatically creates one in your default GTD file.
+
+***** Using Your Own Refile Targets
+
+If you have existing ~org-refile-targets~ configuration, org-gtd automatically merges your targets with its own:
+
+#+begin_src elisp
+;; Your refile configuration is respected and merged
+(setq org-refile-targets '(("~/org/notes.org" :maxlevel . 2)
+                           ("~/org/work.org" :maxlevel . 3)))
+#+end_src
+
+Your targets appear *first* in the refile completion list, followed by org-gtd's ~ORG_GTD_REFILE~ targets. Files inside ~org-gtd-directory~ are filtered by the ~ORG_GTD_REFILE~ property; files outside are available as-is.
+
+***** Migration from V3
+
+V3 required this structure:
+#+begin_example
+,* Projects      <-- MUST be level 1
+:PROPERTIES:
+:ORG_GTD: Projects    <-- Dual-purpose property
+:END:
+#+end_example
+
+V4 is flexible:
+#+begin_example
+,* Projects      <-- Can be anywhere, any level
+:PROPERTIES:
+:ORG_GTD_REFILE: Projects    <-- Marks refile target
+:END:
+#+end_example
+
+The upgrade script (~org-gtd-upgrade-v3-to-v4~) automatically renames ~ORG_GTD~ → ~ORG_GTD_REFILE~ on your old category headings.
+
+*** Engaging with your GTD items
+
+You can see a list of all NEXT actions, and scheduled actions, with ~M-x org-gtd-engage~ .
+
+You can call ~org-gtd-show-all-next~ to only see NEXT actions, nothing scheduled.
+
+You can use ~M-x org-gtd-reflect-missed-engagements~ to find appointments you missed, delegated items needing check-ins, and late projects. This is your safety net for catching things that slipped through the cracks.
+
+The weekly review is not yet implemented.
+
+**** Quick Task Actions from the Agenda
+:PROPERTIES:
+:DESCRIPTION: Work on tasks without leaving the agenda view
+:CUSTOM_ID: agenda-transient
+:END:
+
+***** First Contact: Why This Feature?
+
+When you're working from ~org-gtd-engage~, you see your NEXT actions and scheduled items. You want to mark things done, defer something to tomorrow, or clock in on a task - but you don't want to navigate away from your list.
+
+~org-gtd-agenda-transient~ gives you quick access to common task operations right from the agenda view. One keypress, pick an action, and you're back to your list.
+
+*For GTD users* who spend time in their daily agenda and want to execute tasks efficiently without context-switching.
+
+***** Black Triangle: Your First Quick Action
+
+1. Open your engage view: ~C-c d e~ (or ~M-x org-gtd-engage~)
+2. Move point to any task
+3. Press ~C-c .~ (you'll need to set up the keybinding first - see below)
+4. Press ~d~ to mark the task DONE
+
+That's it. The task is done, and you're still in your agenda.
+
+*Setup:* Add this keybinding to your config:
+
+#+begin_src emacs-lisp
+(define-key org-agenda-mode-map (kbd "C-c .") #'org-gtd-agenda-transient)
+#+end_src
+
+For ~use-package~, add this to your ~:bind~ section:
+
+#+begin_src emacs-lisp
+:bind
+(:map org-agenda-mode-map
+ ("C-c ." . org-gtd-agenda-transient))
+#+end_src
+
+***** Understanding the Actions
+
+The transient menu is organized into groups based on what you're trying to do:
+
+****** State Changes
+
+Change the TODO state of a task. These are the most common actions:
+
+- *Mark DONE* (~d~) - You finished it
+- *Set WAITING* (~w~) - You're blocked on something/someone
+- *Set NEXT* (~n~) - It's ready to work on
+- *Cancel* (~x~) - It's no longer relevant
+- *Cycle TODO* (~t~) - Cycle through all states
+
+****** Time Adjustments (Conditional)
+
+For Calendar, Delegated, and Tickler items only - these have GTD timestamps that determine when they appear.
+
+- *Defer 1 day* (~+~) - Push it to tomorrow (quick snooze)
+- *Set date* (~s~) - Pick a new date (calls ~org-gtd-set-timestamp~)
+
+Why only these types? Calendar items have appointment dates. Delegated items have follow-up dates. Tickler items have "remind me on" dates. Habits are excluded because deferring a habit has different semantics (you'd break the streak).
+
+*Note*: You can also call ~org-gtd-set-timestamp~ directly from an org-mode heading (not just from the agenda). This is useful when editing a Calendar, Delegated, or Tickler item in its source file.
+
+****** Clocking
+
+Track time spent on tasks:
+
+- *Clock in* (~I~) - Start the clock
+- *Clock out* (~O~) - Stop the clock
+
+****** Metadata
+
+Add context to tasks:
+
+- *Set effort* (~e~) - Estimate how long it'll take
+- *Set priority* (~,~) - A/B/C priority
+- *Set tags* (~:~) - Add tags for filtering
+- *Add note* (~z~) - Append a note (logged with timestamp)
+- *Area of focus* (~a~) - Set which life area this belongs to
+
+****** Clarify
+
+Sometimes you need to rethink a task:
+
+- *Clarify (refile)* (~c~) - Open the clarify workflow, refile when done
+- *Clarify (in place)* (~C~) - Open the clarify workflow, keep in same GTD location
+
+***** Command Reference
+
+| Key | Action | Description |
+|-----+--------+-------------|
+| ~d~ | Mark DONE | Complete the task |
+| ~w~ | Set WAITING | Mark as blocked/waiting |
+| ~n~ | Set NEXT | Mark as ready to work on |
+| ~x~ | Cancel | Cancel the task |
+| ~t~ | Cycle TODO | Cycle through TODO states |
+| ~+~ | Defer 1 day | Push to tomorrow (time-based items only) |
+| ~s~ | Set date | Pick new date (time-based items only) |
+| ~I~ | Clock in | Start time tracking |
+| ~O~ | Clock out | Stop time tracking |
+| ~e~ | Set effort | Estimate duration |
+| ~,~ | Set priority | Set A/B/C priority |
+| ~:~ | Set tags | Add/modify tags |
+| ~z~ | Add note | Append timestamped note |
+| ~a~ | Area of focus | Set life area |
+| ~c~ | Clarify (refile) | Re-clarify and refile |
+| ~C~ | Clarify (in place) | Re-clarify, keep location |
+| ~q~ | Quit | Close the menu |
+
+***** Suggested Keybinding
+
+The command isn't bound by default because org-agenda-mode already has many keybindings. The suggested binding is ~C-c .~ which follows the ~C-c~ prefix convention for user bindings:
+
+#+begin_src emacs-lisp
+(define-key org-agenda-mode-map (kbd "C-c .") #'org-gtd-agenda-transient)
+#+end_src
+
+** Understanding GTD Item Types
+:PROPERTIES:
+:DESCRIPTION: When to use each type in the organize menu
+:CUSTOM_ID: understanding-gtd-item-types
+:END:
+
+When you organize an item (~org-gtd-organize~), a transient menu appears with different item types. This section explains what each type means and when to use it.
+
+You already saw *Projects* and *Single actions* in the tutorials. Here's the complete reference for all item types:
+
+*** Single Action [S]
+
+*What it is*: A one-off task to do when you have time and energy.
+
+*When to use it*: For standalone tasks that aren't time-sensitive, don't depend on anyone else, and can be done whenever you're ready.
+
+*Examples*:
+- Buy birthday gift for Alex
+- Read article about GTD methodology
+- Update profile photo
+- Clean garage
+
+*What org-gtd does*:
+- Marks it as NEXT (immediately actionable)
+- Refiles to your actions file
+- Shows in ~org-gtd-engage~ view
+
+*** Project [P]
+
+*What it is*: A multi-step action requiring more than one task to complete.
+
+*When to use it*: When accomplishing your goal requires multiple sequential (or parallel) steps.
+
+*Examples*:
+- House renovation (review blueprints → order materials → schedule work)
+- Launch product (design → build → test → deploy → announce)
+- Plan vacation (research destinations → book flights → arrange accommodation)
+
+*What org-gtd does*:
+- Creates dependency relationships between tasks
+- Marks first task(s) as NEXT, others as TODO
+- Automatically advances tasks as you complete them
+- Refiles entire project to your projects file
+
+See [[#working-with-projects-advanced][Working with Projects]] for advanced features (parallel tasks, custom dependencies).
+
+*** Add to existing project [A]
+
+*What it is*: Add the current task to a project that already exists.
+
+*When to use it*: When you realize a project needs an additional task, or you're breaking down a project task into sub-tasks.
+
+*Examples*:
+- Adding "Get permits" to your house renovation project
+- Adding "Write announcement email" to your product launch project
+
+*What org-gtd does*:
+- Prompts you to choose which project
+- Inserts task into project (position depends on ~org-reverse-note-order~)
+- Task keywords may need adjustment - use ~org-gtd-projects-fix-todo-keywords-for-project-at-point~ on the project heading if needed
+
+*** Calendar [C]
+
+*What it is*: An action that must be done at a specific date or time.
+
+*When to use it*: For appointments, events, or time-sensitive tasks.
+
+*Examples*:
+- Doctor appointment on Tuesday at 2pm
+- Team meeting every Monday at 9am
+- Submit report by Friday 5pm (deadline)
+- Call contractor on Thursday
+
+*What org-gtd does*:
+- Prompts for date/time
+- Adds timestamp to ~ORG_GTD_TIMESTAMP~ property
+- Marks as NEXT
+- Shows in agenda views at the appropriate time
+
+*Note*: This is for calendar items, not scheduled work blocks. In GTD, scheduling means "do this at this time," not "start working on this someday."
+
+*** Delegate [D]
+
+*What it is*: A task someone else will do, but you need to follow up on.
+
+*When to use it*: When you're waiting for someone else to complete something and you need to check back.
+
+*Examples*:
+- Waiting for designer to finish mockups
+- Asked colleague to review document
+- IT to fix laptop issue
+- Contractor to provide estimate
+
+*What org-gtd does*:
+- Prompts for: person name, follow-up date
+- Sets ~DELEGATED_TO~ property
+- Marks as WAIT
+- Shows in waiting-for views
+- Appears in agenda on follow-up date
+
+*Customization*: Set ~org-gtd-delegate-read-func~ to use completion for names.
+
+*Converting actions to delegated*:
+
+Sometimes you start a task yourself, then realize you need to hand it off. If you change any action item to WAIT (using ~org-todo~ or ~C-c C-t~), org-gtd prompts: "Convert to delegated item?"
+
+If you confirm, you provide who has it and when to follow up. The item becomes a proper delegated item with full tracking.
+
+This ensures your waiting-for list always has the context GTD requires: who has it and when to check back.
+
+*** Quick Action [Q]
+
+*What it is*: Tasks that take less than 2 minutes.
+
+*When to use it*: For trivial tasks you can do immediately.
+
+*Examples*:
+- Reply to quick email
+- File a document
+- Add item to shopping list
+- Send calendar invite
+
+*What org-gtd does*:
+- Marks as DONE
+- Archives immediately
+- Assumes you just did it
+
+*GTD principle*: If it takes less than 2 minutes, do it now. Don't organize it - just do it and mark it done.
+
+*** Tickler [I]
+
+*What it is*: Items with a specific review date - things you want to be reminded about at a future time.
+
+*When to use it*: For ideas, projects, or actions you're not ready for NOW but want to reconsider on a specific date.
+
+*Examples*:
+- Project paused until Q2 starts (review on April 1st)
+- Check if new API is released (review monthly)
+- Consider kitchen remodel when bonus arrives (review in June)
+- Revisit proposal after team meeting (review next week)
+
+*What org-gtd does*:
+- Prompts for review date
+- Sets ~ORG_GTD_TIMESTAMP~ property with the date
+- Refiles to tickler file
+- Will remind you in agenda on that date to reconsider
+
+*Use case - Paused projects*: You can tickler entire projects to temporarily hide them from your active views while preserving all structure and dependencies. See [[#tickler-projects][Tickler Projects]] for details.
+
+*State Preservation*: Like someday items, tickler saves your item's current state (~ORG_GTD~, TODO keyword, and type-specific properties like ~DELEGATED_TO~). When the review date arrives and you run ~M-x org-gtd-reactivate~, you'll be prompted to confirm or update each property.
+
+*GTD principle*: The tickler file is a time-based reminder system. Items appear when the date arrives, prompting you to decide if you're ready to act.
+
+*** Someday/Maybe [y]
+
+*What it is*: Ideas or possibilities with no specific timeframe - things you might do eventually but have no commitment to.
+
+*When to use it*: For ideas you want to keep but aren't ready to commit time or energy to, and don't need a specific review date.
+
+*Examples*:
+- Learn Spanish (someday)
+- Write a book (maybe)
+- Build a woodworking shop (no timeline)
+- Take photography class (when life permits)
+
+*What org-gtd does*:
+- Sets ~ORG_GTD: Someday~ property (no timestamp)
+- Refiles to a someday/maybe category
+- Stays out of active views until you explicitly review it
+
+*Smart dispatch*: ~org-gtd-someday~ detects what you're on:
+- Project heading → puts entire project on someday/maybe (all tasks)
+- Project task → puts the project it belongs to on someday/maybe
+- Single action → puts just that action on someday/maybe
+
+*Use case - Paused projects*: You can put entire projects on someday/maybe to temporarily hide them from your active views while preserving all structure and dependencies. Unlike tickler, there's no review date—you decide when to reconsider during your reviews.
+
+*How to review*: Use ~org-gtd-reflect-someday-review~ to walk through your someday items one by one and decide whether to keep deferring or reactivate them. See [[#someday-review][Reviewing Someday/Maybe Items]] for details.
+
+*Key difference from Tickler*: Someday items have NO review date. They don't appear in your agenda automatically. You choose when to review them (typically during weekly/monthly reviews).
+
+*GTD principle*: Someday/maybe items acknowledge possibilities without cluttering your active system. They're safe to ignore until you're ready.
+
+*State Preservation*: When you move an item TO someday, org-gtd automatically saves its current state:
+- ~ORG_GTD~ value → saved to ~PREVIOUS_ORG_GTD~
+- TODO keyword → saved to ~PREVIOUS_TODO~
+- Type-specific properties (e.g., ~DELEGATED_TO~, ~SCHEDULED~) → saved to ~PREVIOUS_*~ versions
+
+This means a delegated action moved to someday will remember who it was delegated to, and a calendar item will remember its original date.
+
+*Reactivating Someday Items*: When you're ready to work on a someday item again, use ~M-x org-gtd-reactivate~. For non-project items, you'll be prompted to confirm or update each preserved property (e.g., "Delegated to [Jane Smith]: "). This lets you adjust for the time that has passed while keeping your original planning work.
+
+*** Habit [H]
+
+*What it is*: Recurring tasks you want to track consistently (org-mode habits).
+
+*When to use it*: For building routines and tracking streaks.
+
+*Examples*:
+- Exercise daily
+- Write in journal
+- Review finances weekly
+- Call parents monthly
+
+*What org-gtd does*:
+- Prompts for: repeat pattern (e.g., "daily", "+1w"), start date
+- Creates org-mode habit with consistency tracking
+- Shows habit graph in agenda views
+
+*Note*: See org-mode documentation for habit repeat patterns and tracking.
+
+*** Knowledge [K]
+
+*What it is*: Reference information to store for later.
+
+*When to use it*: When the item is information to keep, not an action to take.
+
+*Examples*:
+- Recipe you want to remember
+- Quote from article
+- Meeting notes for reference
+- Product specifications
+
+*Important*: Choose this AFTER you've properly stored the information somewhere (your notes system, wiki, etc.). This just marks the inbox item as "filed" and archives it.
+
+*GTD principle*: Separate "stuff to do" from "stuff to know." Knowledge goes in your reference system, not your action lists.
+
+*** Trash [T]
+
+*What it is*: Not actionable, not worth keeping.
+
+*When to use it*: When you captured something that turns out to be irrelevant, already done, or not worth pursuing.
+
+*Examples*:
+- Event that already passed
+- Duplicate of another item
+- Idea that's no longer relevant
+- Spam/noise
+
+*What org-gtd does*:
+- Deletes the item
+- Doesn't archive, just removes it
+
+*GTD principle*: Be ruthless. If it's not actionable and not valuable information, delete it. Clutter in your system creates noise.
+
+*See also*: For technical details on how each item type is stored, see [[#properties-reference][Properties Reference]].
+
+*** Working with the GTD Horizons
+:PROPERTIES:
+:CUSTOM_ID: working-with-horizons
+:END:
+In GTD, the horizons are defined as such:
+
+- Ground :: the day-to-day
+- Horizon 1 :: projects
+- Horizon 2 :: areas of focus
+- Horizon 3 :: 1-2 year goals
+- Horizon 4 :: 3-5 year vision
+- Horizon 5 :: purpose and principles
+
+Obviously, Ground and Horizons 1 are handled by the "capture/clarify/organize/engage" flow we've already seen.
+
+GTD recommends that you do not start using the horizons above Horizon 1 until you have both Ground and Horizon 1 under control. So, when you are ready...
+
+**** Areas of focus
+Horizon 2 is now handled by a variable and a hook you can add to ~org-gtd-organize-hooks~:
+- ~org-gtd-areas-of-focus~ is a list of strings, each representing one of your areas of focus.
+- ~org-gtd-set-area-of-focus~ is the hook you would add, e.g. ~(setq org-gtd-organize-hooks '(org-gtd-set-area-of-focus))~, it ensures each item you clarify will need to be part of a horizon.
+
+You can then use the function ~org-gtd-reflect-area-of-focus~ to generate an agenda view to review a specific area of focus.
+
+In order to add areas of focus to pre-existing items in your system, without going through the clarifying flow, we provide two functions:
+- ~org-gtd-area-of-focus-set-on-item-at-point~, when you are on a org heading
+- ~org-gtd-area-of-focus-set-on-agenda-item~, when you are on an agenda item
+
+Do note that calling the function on item at point will trust you blindly to do the right thing, whereas setting the area of focus through the agenda will attempt to recognize if you are on a project task and thus set the category on the project itself instead of the task.
+
+**** Longer-term horizons
+The longer-term horizons can be stored in a file in the ~org-gtd-directory~. A variable governs the name of the file, ~org-gtd-horizons-file~, by default =horizons.org=.
+
+At the moment it does not seem particularly useful to add any automation around these, since they will change so infrequently.
+
+They are, however, useful to display.
+
+A variable, ~org-gtd-clarify-show-horizons~, determines whether/where to display the side buffer while clarifying.
+
+Regardless of the value of this variable, you can use the function ~org-gtd-clarify-toggle-horizons-window~ to display or hide the side window. If the above variable is nil, then the horizons window will be toggled on the right side of the screen.
+
+If your Emacs configuration or distribution doesn't enable ~global-visual-line-mode~ by default, you may consider adding the following line at the beginning of the file containing your longer-term horizons:
+
+#+begin_src org
+# -*- eval: (visual-line-mode 1); -*-
+#+end_src
+
+The horizons window is narrow and enabling ~visual-line-mode~ locally will make sure that your horizons are easily readable during the clarification process.
+
+*See also*:
+- [[#config-vars-reference][Configuration Variables Reference]] for ~org-gtd-areas-of-focus~, ~org-gtd-horizons-file~, and ~org-gtd-clarify-show-horizons~
+- [[#commands-reference][Commands Reference]] for all horizon-related commands
+- [[#hooks-reference][Hooks Framework Reference]] for ~org-gtd-set-area-of-focus~ hook
+
+** Working with Projects (Advanced)
+:PROPERTIES:
+:CUSTOM_ID: working-with-projects-advanced
+:END:
+
+You learned sequential projects in [[#tutorial-your-first-project][Tutorial: Your First Project]]. This section teaches you how to handle complex projects with parallel work streams, custom dependencies, and sophisticated project structures—all using visual project management.
+
+*** Quick Navigation
+
+This section covers:
+
+- [[#graph-first-contact][Why Visual Project Management?]] - Understanding the motivation
+- [[#graph-black-triangle][Your First Project Graph View]] - Get started in 30 seconds
+- [[#graph-understanding-dependencies][Understanding Project Dependencies]] - Learn the DAG model
+- [[#graph-tutorial-parallel][Tutorial: Parallel Tasks]] - Build your first complex project
+- [[#graph-dependency-patterns][Common Dependency Patterns]] - Visual reference for typical structures
+- [[#graph-view-command-reference][Graph View Command Reference]] - Complete command listing
+- [[#graph-rendering-modes][Rendering Modes]] - SVG vs ASCII
+- [[#graph-keyboard-reference][Complete Keyboard Reference]] - Quick reference card
+- [[#graph-technical-details][Technical Details]] - Implementation and properties
+- [[#graph-practical-tips][Practical Tips]] - When and how to use graph view
+- [[#graph-troubleshooting][Troubleshooting]] - Common problems and solutions
+
+*** First Contact: Why Visual Project Management?
+:PROPERTIES:
+:CUSTOM_ID: graph-first-contact
+:END:
+
+Real projects are rarely simple sequences. You might have:
+- Tasks that can start simultaneously (parallel research streams)
+- Multiple tasks that must all finish before the next step (convergence points)
+- Independent work paths that later merge (diamond patterns)
+
+Managing these mentally or through text properties is error-prone. You forget dependencies, create accidental bottlenecks, or miss opportunities for parallelization.
+
+*Visual project management solves this.* You SEE your project as a dependency graph—boxes for tasks, arrows for dependencies, colors for states. Adding tasks, creating dependencies, and understanding project structure becomes intuitive and immediate.
+
+*** Black Triangle: Your First Project Graph View
+:PROPERTIES:
+:CUSTOM_ID: graph-black-triangle
+:END:
+
+Let's see this in action right now.
+
+**** Step 1: Find a project
+
+Open your engage view: ~C-c d e~
+
+Find any project task in your agenda (or create a quick test project if you don't have one).
+
+**** Step 2: Open the graph view
+
+Press ~RET~ on the project task to jump to the project heading.
+
+Run: ~M-x org-gtd-show-project-graph~
+
+**** Step 3: Explore
+
+You're now looking at your project as a visual graph:
+- Tasks are arranged in layers from top to bottom
+- The project heading is at the bottom (it represents the end state after all tasks complete)
+- Arrows show which tasks block other tasks
+- Blue boxes are NEXT (ready to work on)
+- Orange boxes are TODO (waiting for dependencies)
+
+Press ~?~ to see all available commands.
+
+*Success!* You've visualized your first project. Everything from here builds on this.
+
+*** Understanding Project Dependencies
+:PROPERTIES:
+:CUSTOM_ID: graph-understanding-dependencies
+:END:
+
+Before we build complex projects, let's understand how dependencies work visually.
+
+**** The Dependency Graph (DAG)
+
+Projects in org-gtd are *Directed Acyclic Graphs* (DAGs):
+
+- *Directed* :: Dependencies have direction. If Task A blocks Task B, the arrow points from A → B. B can't start until A finishes.
+
+- *Acyclic* :: No circular dependencies. A → B → C → A would create a deadlock. Org-gtd prevents these automatically.
+
+- *Graph* :: Tasks can have multiple dependencies. Task C might need both A AND B to finish before it can start.
+
+**** What You See in Graph View
+
+The graph view arranges tasks in *layers*:
+
+- *Layer 0*: Root tasks (no dependencies, can start immediately)
+- *Layer 1*: Tasks blocked by layer 0
+- *Layer 2*: Tasks blocked by layer 1
+- And so on...
+
+*Blue boxes* (NEXT state) mean "ready to work on right now."
+*Orange boxes* (TODO state) mean "blocked by dependencies."
+
+When you complete a NEXT task, org-gtd automatically updates the graph:
+- Completed task disappears (or grays out if you keep DONE tasks visible)
+- Tasks that were waiting for it may turn blue
+
+**** Sequential vs Parallel vs Mixed
+
+*Sequential* (default for new projects):
+- Tasks execute one after another: A → B → C
+- Only one task is NEXT at a time
+- Simple, linear workflow
+
+In graph view, sequential projects look like a vertical chain of boxes with arrows flowing downward.
+
+*Parallel*:
+- Multiple tasks can be NEXT simultaneously
+- Multiple tasks at layer 0 (all root tasks)
+- Faster project completion when tasks are independent
+
+In graph view, parallel projects have multiple blue boxes at the same layer.
+
+*Mixed* (most real projects):
+- Some tasks parallel, others sequential
+- Example: Research and Planning happen together, but both must finish before Building starts
+
+In graph view, mixed projects show parallel branches that converge at join points.
+
+*** Tutorial: Parallel Tasks with Graph View
+:PROPERTIES:
+:CUSTOM_ID: graph-tutorial-parallel
+:END:
+
+Let's build a project where some tasks happen simultaneously.
+
+**** The Scenario
+
+You need to "Fix Shoulder Pain":
+1. Find MRI facility (research task)
+2. Make MRI appointment (depends on finding facility)
+3. Make orthopedist appointment (independent research - parallel with 1 & 2)
+4. Get diagnosis (depends on both appointments completing)
+
+Tasks 1 and 3 can happen in parallel—they're independent research tasks.
+
+**** Step 1: Capture and Organize
+
+Capture the project: ~C-c d c~
+
+#+begin_example
+,* Fix Shoulder Pain
+,** Find place to get MRI
+,** Make MRI appointment
+,** Make orthopedist appointment
+,** Get diagnosis from orthopedist
+#+end_example
+
+Process the inbox: ~C-c d p~
+
+Organize as a project: ~C-c c~ → ~[P]~
+
+**** Step 2: Open Graph View
+
+From the engage view (~C-c d e~), press ~RET~ on any task to jump to the project.
+
+Run: ~M-x org-gtd-show-project-graph~
+
+You'll see a sequential graph (the default):
+#+begin_example
+[Fix Shoulder Pain]
+        ↓
+[NEXT: Find place to get MRI]
+        ↓
+[TODO: Make MRI appointment]
+        ↓
+[TODO: Make orthopedist appointment]
+        ↓
+[TODO: Get diagnosis from orthopedist]
+#+end_example
+
+We need to make tasks 1 and 3 parallel.
+
+**** Step 3: Modify Dependencies to Create Parallel Tasks
+
+We need to make "Make orthopedist appointment" a root task (parallel to "Find place to get MRI").
+
+In graph view, you can modify existing dependencies:
+
+1. Select "Make orthopedist appointment" in the graph (use navigation keys)
+2. Press ~B~ to modify blockers (remove the blocker that makes it sequential)
+3. Press ~S~ to modify successors (connect it to "Get diagnosis")
+
+Alternatively, use ~t r~ to remove a task from the project and re-add it where you need it.
+
+**** What Graph View CAN Do
+
+From the project heading in graph view, press ~?~ to open the command menu:
+
+- ~r~ :: Add a root task (no dependencies, starts immediately)
+- ~s~ :: Add a successor (a new task that depends on the selected task)
+- ~b~ :: Add a blocker (a new task that the selected task depends on)
+
+*The key insight:* ~s~ and ~b~ let you connect ONE new task to MULTIPLE existing tasks using a checkbox menu. This enables complex patterns like convergence (diamond).
+
+**** Building Our Parallel Structure
+
+Let's build the correct structure from scratch:
+
+1. Start with project heading selected
+2. ~r~ → "Find place to get MRI" (root task 1)
+3. ~r~ → "Make orthopedist appointment" (root task 2 - now parallel!)
+4. Select "Find place to get MRI"
+5. ~s~ → "Make MRI appointment" → check only "Find MRI" → RET
+6. Now select "Make MRI appointment"
+7. ~s~ → "Get diagnosis"
+8. *Here's the key step:* The checkbox menu shows ALL project tasks. Check BOTH "Make MRI appointment" AND "Make orthopedist appointment"
+9. Press ~RET~ to apply
+
+Now "Get diagnosis" is blocked by BOTH appointments - a convergence point!
+
+**** The Diamond Pattern in Action
+
+What we just built:
+
+#+begin_example
+[Find MRI - NEXT]    [Make Ortho Appt - NEXT]
+        ↓                    ↓
+[Make MRI Appt - TODO]      │
+        ↓                   │
+        └───────┬───────────┘
+                ↓
+       [Get Diagnosis - TODO]
+#+end_example
+
+Two parallel paths converging at "Get diagnosis". This is the diamond pattern.
+
+**** Alternative Approach: Add Blockers
+
+You could also build this using ~b~ (add blocker):
+
+1. Create "Get diagnosis" first as a root task (~r~)
+2. Select "Get diagnosis"
+3. ~b~ → "Make MRI appointment" → check "Get diagnosis" → RET
+4. Still on "Get diagnosis", ~b~ → "Make orthopedist appointment" → check "Get diagnosis" → RET
+5. Continue building backwards...
+
+Both approaches work. Use whichever feels more natural for your mental model.
+
+*** Tutorial: Complex Dependencies with Graph View
+
+**** The Scenario
+
+"Release Next Version of Software":
+
+1. List features (starting task)
+2. Implement features (depends on list)
+3. Write documentation (can start after list, parallel with implement)
+4. Get beta tester feedback (depends on both implement AND documentation)
+5. Update code based on feedback (depends on beta feedback)
+6. Update documentation based on feedback (depends on beta feedback, parallel with code updates)
+7. Release (depends on both updates completing)
+
+**** The Dependency Graph
+
+#+begin_example
+List Features
+    ├──→ Implement Features ───┐
+    └──→ Write Documentation ───┼──→ Get Beta Feedback
+                                │         ├──→ Update Code ─────┐
+                                │         └──→ Update Docs ──────┼──→ Release
+                                └───────────────────────────────┘
+#+end_example
+
+**** Building with Graph View
+
+Starting from the project heading, open the command menu with ~?~:
+
+1. ~r~ → "List features" (root task)
+2. Select "List features"
+3. ~s~ → "Implement features" → check "List features" → RET
+4. Go back to "List features"
+5. ~s~ → "Write documentation" → check "List features" → RET
+
+Now you have two parallel branches from "List features".
+
+**** Creating the Convergence Point
+
+For "Get Beta Feedback" that depends on BOTH implement AND documentation:
+
+1. Select "Implement features"
+2. ~s~ → "Get Beta Feedback"
+3. In the checkbox menu, check BOTH "Implement features" AND "Write documentation"
+4. Press ~RET~
+
+Now "Get Beta Feedback" has two blockers - it won't become NEXT until both are complete.
+
+**** Building the Rest
+
+Continue building the parallel update paths:
+
+1. Select "Get Beta Feedback"
+2. ~s~ → "Update code" → check "Get Beta Feedback" → RET
+3. Select "Get Beta Feedback" again
+4. ~s~ → "Update docs" → check "Get Beta Feedback" → RET
+
+For the final convergence at "Release":
+
+1. Select "Update code"
+2. ~s~ → "Release"
+3. Check BOTH "Update code" AND "Update docs"
+4. Press ~RET~
+
+**** The Complete Graph
+
+#+begin_example
+           [List Features - NEXT]
+              /              \
+             ↓                ↓
+[Implement - TODO]    [Write Docs - TODO]
+             \                /
+              ↓              ↓
+         [Get Beta Feedback - TODO]
+              /              \
+             ↓                ↓
+   [Update Code - TODO]  [Update Docs - TODO]
+              \              /
+               ↓            ↓
+            [Release - TODO]
+#+end_example
+
+**** Key Patterns This Example Shows
+
+1. *Parallel branches* from List Features (using ~s~ twice from same parent)
+2. *Converging paths* at Get Beta Feedback (using multi-select checkbox)
+3. *Parallel updates* after feedback (using ~s~ twice)
+4. *Final convergence* at Release (using multi-select checkbox)
+
+All four patterns are fully supported.
+
+*** Common Dependency Patterns (Visual Reference)
+:PROPERTIES:
+:CUSTOM_ID: graph-dependency-patterns
+:END:
+
+Here's what different patterns look like in graph view:
+
+**** Sequential Chain (A → B → C)
+
+#+begin_example
+[A - NEXT]
+    ↓
+[B - TODO]
+    ↓
+[C - TODO]
+#+end_example
+
+*When to use*: Order matters, each task depends on the previous.
+
+*How to build*: ~r~ for A, select A, ~s~ for B (check A), select B, ~s~ for C (check B).
+
+*Example*: Review blueprints → Order windows → Schedule carpenter
+
+**** Parallel Independent (A, B, C all start together)
+
+#+begin_example
+[A - NEXT]  [B - NEXT]  [C - NEXT]
+#+end_example
+
+*When to use*: Tasks are completely independent, all can start immediately.
+
+*How to build*: From project heading, ~r~ for each task.
+
+*Example*: Research destinations, Check budget, Ask for time off (vacation planning)
+
+**** Fan-out (A → B, A → C, A → D)
+
+#+begin_example
+        [A - NEXT]
+       /    |    \
+      ↓     ↓     ↓
+  [B-TODO][C-TODO][D-TODO]
+#+end_example
+
+*When to use*: Initial work enables multiple independent paths.
+
+*How to build*: ~r~ for A, select A, then ~s~ three times (B, C, D - each checking only A).
+
+*Example*: Get project approval → (Design UI, Write backend API, Setup infrastructure)
+
+**** Fan-in / Convergence (A → C, B → C)
+
+#+begin_example
+[A - NEXT]  [B - NEXT]
+      \        /
+       ↓      ↓
+      [C - TODO]
+#+end_example
+
+*When to use*: Final task needs all previous work completed.
+
+*How to build*: ~r~ for A and B. Select A, ~s~ for C, then check BOTH A and B in the checkbox menu.
+
+*Example*: (Write code, Write tests) → Merge to main
+
+**** Diamond (A → B → D, A → C → D)
+
+#+begin_example
+      [A - NEXT]
+       /      \
+      ↓        ↓
+  [B-TODO] [C-TODO]
+      \      /
+       ↓    ↓
+     [D-TODO]
+#+end_example
+
+*When to use*: Work splits, proceeds in parallel, then combines.
+
+*How to build*:
+1. ~r~ for A
+2. Select A, ~s~ for B (check A)
+3. Select A again, ~s~ for C (check A)
+4. Select B, ~s~ for D, then check BOTH B and C
+
+*Example*: Research → (Write content, Design graphics) → Publish article
+
+*** Graph View Command Reference
+:PROPERTIES:
+:CUSTOM_ID: graph-view-command-reference
+:END:
+
+This is the complete command reference for expert users.
+
+*Most operations require the transient menu:* Press ~?~ to access all commands.
+
+**** Opening Graph View
+
+~M-x org-gtd-show-project-graph~
+
+*Requires*: Point must be on a project heading (not a task), or will prompt for project selection
+
+*Creates*: Interactive SVG buffer named ~*Org GTD Graph: <project-name>*~
+
+**** Tier 1: Single-Key Commands (Always Available)
+
+These are the most frequently used commands, available without any prefix.
+
+*Navigation:*
+
+| Key       | Command                    | Description                                           |
+|-----------+----------------------------+-------------------------------------------------------|
+| n         | Down dependency            | Move to a task this one blocks                        |
+| p         | Up dependency              | Move to a task that blocks this one                   |
+| TAB       | Next sibling               | Next sibling task (see ~org-gtd-graph-sibling-mode~)  |
+| S-TAB     | Previous sibling           | Previous sibling task                                 |
+| G         | Goto node                  | Jump to task by name (with completion)                |
+
+*What counts as a "sibling"?* By default, siblings are tasks that share at least one blocker (tasks blocked by the same thing). You can customize this with ~org-gtd-graph-sibling-mode~. See [[#org-gtd-graph-sibling-mode][Sibling Mode Configuration]].
+
+*Add Tasks:*
+
+| Key   | Command              | Description                                              |
+|-------+----------------------+----------------------------------------------------------|
+| r     | Add root task        | Create task with no dependencies (starts immediately)    |
+| s     | Add successor        | Create task that the selected task must complete first   |
+| b     | Add blocker          | Create task that must complete before selected task      |
+
+*Understanding successors and blockers:*
+
+These two commands handle all dependency relationships:
+
+- *Add successor* (~s~): "What comes after this task?" Creates a new task that depends on the selected task. The selected task blocks the new task.
+
+- *Add blocker* (~b~): "What must happen first?" Creates a new task that the selected task depends on. The new task blocks the selected task.
+
+Both commands:
+1. Prompt you to select an existing task OR type a new task title
+2. If creating new: ask whether to clarify/organize it or create as simple action
+3. Let you choose multiple edges (which tasks to connect) via checkbox menu
+4. Automatically refresh the graph
+
+*After adding*: Graph automatically refreshes to show new task and dependencies.
+
+*Modify Relationships:*
+
+| Key   | Command              | Description                                              |
+|-------+----------------------+----------------------------------------------------------|
+| B     | Modify blockers      | Toggle which tasks block the selected task               |
+| S     | Modify successors    | Toggle which tasks the selected task blocks              |
+
+These commands open a checkbox menu showing all project tasks. Toggle checkboxes to add/remove relationships, then press ~RET~ to apply.
+
+*View:*
+
+| Key   | Command          | Description                                                  |
+|-------+------------------+--------------------------------------------------------------|
+| ?     | Show menu        | Display transient menu with all commands                     |
+| g     | Refresh          | Rebuild graph (use after external changes)                   |
+| v     | Toggle rendering | Switch between SVG and ASCII rendering                       |
+| q     | Quit             | Close graph view, keep buffer                                |
+
+**** Tier 2: Prefixed Commands
+
+These commands are used less frequently and use key prefixes for organization.
+
+*Task Operations (~t~ prefix):*
+
+| Key   | Command                    | Description                                              |
+|-------+----------------------------+----------------------------------------------------------|
+| t t   | Change TODO state          | Cycle through TODO states                                |
+| t r   | Remove from project        | Remove task from this project (keeps task)               |
+| t d   | Trash task                 | Mark task canceled and remove from all projects          |
+| t e   | Edit in org file           | Jump to task in org file for editing                     |
+| t i   | Show relationships         | Display all relationships for selected task              |
+
+*Project Operation:*
+
+| Key   | Command           | Description                                                 |
+|-------+-------------------+-------------------------------------------------------------|
+| I     | Incubate project  | Move entire project to tickler (with review date)           |
+| S     | Someday project   | Move entire project to someday/maybe (no review date)       |
+
+*Graph View Operations:*
+
+| Key   | Command          | Description                                                  |
+|-------+------------------+--------------------------------------------------------------|
+| Q     | Quit and kill    | Close graph view and kill buffer                             |
+| x s   | Export SVG       | Export graph as SVG file                                     |
+| x d   | Export DOT       | Export graph as Graphviz DOT file                            |
+| x a   | Export ASCII     | Export graph as ASCII text file                              |
+
+**** Visual Indicators
+
+- *Blue boxes*: NEXT tasks (ready to work on)
+- *Orange boxes*: TODO tasks (blocked by dependencies)
+- *Arrows*: Dependencies (from blocker → blocked task)
+- *Layers*: Vertical positioning shows dependency depth
+
+**** Operations Not Available in Graph View
+
+Some operations are standard org-mode functionality and must be done in the org file:
+
+*Changing task properties*:
+- TODO state: Use ~t t~ in graph view, or ~C-c C-t~ in org file
+- Deadlines/schedules: ~C-c C-d~, ~C-c C-s~ in org file
+- Task title/description: edit in org file
+- Tags/properties: edit in org file
+
+*Task removal*: Use ~t r~ to remove a task from the project (keeps task) or ~t d~ to trash it (marks canceled). Completed tasks still show in graph view to maintain project history.
+
+*Access org file*: Press ~RET~ on any task in graph view to jump to it in the org file.
+
+**** Text-Based Alternatives
+
+Most users will find the graph view intuitive for dependency management. However, DWIM (Do What I Mean) commands work from any context (org buffer, agenda, or graph view):
+
+- ~org-gtd-project-add-successor~ - Add a task that depends on current task
+- ~org-gtd-project-add-blocker~ - Add a task that blocks current task
+- ~org-gtd-project-add-root-task~ - Add a task with no dependencies
+- ~org-gtd-project-remove-task~ - Remove task from project (keeps task)
+- ~org-gtd-project-trash-task~ - Remove and cancel task
+- ~org-gtd-project-change-state~ - Change TODO state
+
+For lower-level dependency manipulation:
+
+- ~org-gtd-task-add-blockers~ - Add blockers via text interface
+- ~org-gtd-task-remove-blockers~ - Remove blockers via text interface
+- ~org-gtd-task-show-relationships~ - Display relationships in minibuffer
+- ~org-gtd-validate-project-dependencies~ - Validate project structure
+
+See [[#task-dependency-commands][Task Dependency Commands]] for details.
+
+*** Graph Rendering Modes
+:PROPERTIES:
+:CUSTOM_ID: graph-rendering-modes
+:END:
+
+The graph view supports two rendering modes that you can toggle between at any time. Configure the default mode with ~org-gtd-graph-render-mode~.
+
+**** SVG Mode (Default)
+
+High-quality graphical rendering with:
+- Smooth curves for dependency arrows
+- Anti-aliased text
+- Visual polish
+- Larger display area
+- Better for GUI Emacs
+
+Set as default with:
+#+begin_src emacs-lisp
+(setq org-gtd-graph-render-mode 'svg)
+#+end_src
+
+**** ASCII Mode
+
+Text-based rendering using box-drawing characters:
+- Works in terminal Emacs
+- Accessible for screen readers
+- Compact display
+- No external dependencies
+- Uses Unicode box-drawing glyphs
+
+Set as default with:
+#+begin_src emacs-lisp
+(setq org-gtd-graph-render-mode 'ascii)
+#+end_src
+
+**** Toggling Modes
+
+Press ~v~ while in graph view to toggle between SVG and ASCII rendering.
+
+**** Troubleshooting ASCII Rendering
+
+If ASCII rendering looks broken:
+- Ensure your terminal supports UTF-8 box-drawing characters
+- Try SVG mode (~v~ to toggle)
+- Check that your font supports box-drawing glyphs
+- Verify ~(char-displayable-p ?│)~ returns ~t~
+
+*** Complete Keyboard Reference
+:PROPERTIES:
+:CUSTOM_ID: graph-keyboard-reference
+:END:
+
+This is a comprehensive quick reference for all graph view keybindings.
+
+**** Tier 1: Single Keys
+
+| Key         | Action                                    |
+|-------------+-------------------------------------------|
+| ~?~         | Show command menu (transient)             |
+| ~n~         | Down dependency (to task this blocks)     |
+| ~p~         | Up dependency (to task that blocks this)  |
+| ~TAB~       | Next sibling (same layer)                 |
+| ~<backtab>~ | Previous sibling                          |
+| ~G~         | Go to task by name                        |
+| ~r~         | Add root task (no dependencies)           |
+| ~s~         | Add successor (task that this blocks)     |
+| ~b~         | Add blocker (task that blocks this)       |
+| ~B~         | Modify blockers (bulk toggle)             |
+| ~S~         | Modify successors (bulk toggle)           |
+| ~g~         | Refresh graph (rebuild from org file)     |
+| ~v~         | Toggle ASCII/SVG rendering                |
+| ~q~         | Quit graph view                           |
+
+**** Tier 2: Task Operations (~t~ prefix)
+
+| Key     | Action                             |
+|---------+------------------------------------|
+| ~t t~   | Change TODO state                  |
+| ~t r~   | Remove task from project           |
+| ~t d~   | Trash task (cancel and remove)     |
+| ~t e~   | Edit task in org file (jump to)    |
+| ~t i~   | Show relationships for task        |
+
+**** Tier 2: Project and View Operations
+
+| Key   | Action                                |
+|-------+---------------------------------------|
+| ~I~   | Incubate project (tickler with date)  |
+| ~S~   | Someday project (no review date)      |
+| ~C~   | Cancel project (cancel all tasks)     |
+| ~Q~   | Quit and kill buffer                  |
+| ~x s~ | Export as SVG                         |
+| ~x d~ | Export as DOT                         |
+| ~x a~ | Export as ASCII                       |
+
+*** Auto-Refresh on File Changes
+
+Graph view automatically watches the org file and refreshes when changes are detected (with 300ms debounce). This means:
+
+- Changes in the org file appear in graph view automatically
+- No need to manually refresh after external edits
+- Multiple graph views of the same project stay in sync
+- File watching is buffer-local and cleaned up on quit
+
+You can still manually refresh with ~g~ if needed.
+
+*** Technical Details
+:PROPERTIES:
+:CUSTOM_ID: graph-technical-details
+:END:
+
+**** Graph Data Structure
+
+Projects are represented as *Directed Acyclic Graphs* (DAGs):
+
+- *Directed*: Dependencies have direction (A blocks B, not vice versa)
+- *Acyclic*: No circular dependencies (org-gtd prevents these)
+- *Graph*: Tasks can have multiple blockers and multiple dependents
+
+**** Layout Algorithm
+
+The Sugiyama layout algorithm:
+1. Assigns tasks to layers based on dependency depth
+2. Minimizes edge crossings between layers
+3. Centers nodes horizontally for visual balance
+4. Calculates smooth curved arrows (SVG) or line-drawing characters (ASCII)
+
+**** Properties Used
+
+Graph view reads and writes these org properties:
+
+- ~ORG_GTD_FIRST_TASKS~ (on project heading): Space-separated list of task IDs with no dependencies
+- ~ORG_GTD_DEPENDS_ON~ (on tasks): Space-separated list of task IDs this task depends on
+- ~ORG_GTD_BLOCKS~ (on tasks): Space-separated list of task IDs this task blocks
+- ~ORG_GTD_PROJECT_IDS~ (on tasks): Space-separated list of project IDs this task belongs to
+
+These properties maintain bidirectional consistency. When you add dependency A→B:
+- A's ~ORG_GTD_BLOCKS~ includes B's ID
+- B's ~ORG_GTD_DEPENDS_ON~ includes A's ID
+
+You typically don't edit these properties directly—use graph view commands or the text-based alternatives.
+
+**** Undo/Redo Support
+
+Currently, undo/redo is not implemented in graph view. Graph modifications are immediately saved to the org file.
+
+To undo changes:
+- Switch to the org file buffer
+- Use ~C-x u~ (undo) as normal
+- The graph view will auto-refresh to show the reverted state
+
+*** Practical Tips for Project Management
+:PROPERTIES:
+:CUSTOM_ID: graph-practical-tips
+:END:
+
+**** When to Use Graph View
+
+- *Planning complex projects*: Visualize before committing to structure
+- *Understanding stuck projects*: See why tasks are blocked
+- *Weekly review*: Quick visual health check of all projects
+- *Adding tasks mid-project*: Add with correct dependencies immediately
+
+**** When to Use Sequential (Default)
+
+- Order truly matters (can't install before purchasing)
+- You're unsure what the next task will be until you complete current one
+- The project is simple (3-4 tasks)
+- You don't want to think about dependencies
+
+*Just organize as project* (~C-c c~ → ~[P]~) and you're done.
+
+**** When to Create Parallel Structures
+
+- You have multiple people working on the project
+- Tasks are independent and could be done in any order
+- You want to optimize for speed
+- You know all tasks upfront
+
+*Use ~r~ multiple times* from graph view to create parallel roots.
+
+**** Managing Complexity
+
+- *Start sequential, add parallel only when needed*: Don't over-engineer.
+- *Use graph view to understand before modifying*: Visualize first.
+- *Keep task names clear and specific*: "Research venues" not "Research"
+- *Review stuck projects weekly*: ~M-x org-gtd-reflect-stuck-projects~
+
+**** Growing Projects Over Time
+
+As projects evolve, you need to add tasks:
+
+- *New independent work stream*: ~r~ (add root task)
+- *Next step in sequence*: Select current task, ~s~ (add successor)
+- *Prerequisite for existing task*: Select existing task, ~b~ (add blocker)
+
+After adding, the graph refreshes automatically.
+
+*** Exporting Project Graphs
+:PROPERTIES:
+:CUSTOM_ID: graph-exporting
+:END:
+
+**** First Contact: What is Graph Export?
+
+Graph export saves your project visualization as a file. Share project plans with teammates who don't use Emacs. Include project graphs in presentations or documentation. Process graphs with external tools like Graphviz.
+
+Three export formats:
+- *SVG*: High-quality graphics for documents and presentations
+- *DOT*: Graphviz source for custom styling and layouts
+- *ASCII*: Text-based diagrams for terminals and plain-text documentation
+
+Who needs this? Anyone collaborating outside Emacs, creating documentation, or using graph analysis tools.
+
+**** Tutorial: Export Your First Graph
+
+Let's export a project graph in under 30 seconds:
+
+1. Open any project in graph view: ~M-x org-gtd-show-project-graph~
+2. Press ~?~ to open the command menu
+3. Press ~E s~ to export as SVG
+4. Choose a filename (e.g., ~project-plan.svg~)
+5. Done! Open the file in any image viewer or web browser
+
+The exported graph preserves your current view, including which task is selected (highlighted).
+
+**** Progressive Learning: Choosing Export Formats
+
+**Start with SVG** when you first need to export. It works everywhere—documents, presentations, web pages, email attachments. Your colleague can open it in any browser.
+
+**Use DOT when you need control**. The DOT format is Graphviz's source language. Export to DOT when you want to:
+- Change colors, fonts, or layout algorithms
+- Combine multiple project graphs
+- Generate different output formats (PNG, PDF, PostScript)
+- Integrate with automated build systems
+
+Process a DOT file with Graphviz:
+#+begin_src bash
+dot -Tpng project.dot -o project.png      # Convert to PNG
+dot -Tpdf project.dot -o project.pdf      # Convert to PDF
+neato -Tsvg project.dot -o custom.svg     # Different layout algorithm
+#+end_src
+
+**Use ASCII for text contexts**. ASCII export creates terminal-friendly diagrams. Use when:
+- Writing plain-text documentation (README files)
+- Sharing in chat or email where images don't work
+- Reviewing projects over SSH without graphics
+- Creating quick diagrams for code comments
+
+Example ASCII output:
+#+begin_example
+Conference Planning
+├─ Research venues
+├─ Create budget
+│  └─ Get quotes
+└─ Book venue
+#+end_example
+
+**Handling large projects**: All formats work with complex graphs, but consider:
+- SVG scales perfectly (zoom without quality loss)
+- DOT can be processed with different layout algorithms for readability
+- ASCII may become unwieldy with 20+ tasks (switch to SVG)
+
+**** When Exports Differ from Display
+
+The export reflects your current graph state. If you've selected a task (navigated with ~j~/~k~ or clicked), that task appears highlighted in the export.
+
+To export without highlighting:
+1. Press ~ESC~ to deselect the current task
+2. Export with ~E s~, ~E d~, or ~E a~
+3. The export shows all tasks unhighlighted
+
+Changes you make in graph view are immediately saved to the org file, so exports always reflect the actual project structure.
+
+**** Reference: Export Commands
+
+From graph view (~M-x org-gtd-show-project-graph~), use the ~x~ prefix:
+
+| Key   | Command                       | Format | Best For                           |
+|-------+-------------------------------+--------+------------------------------------|
+| ~x s~ | ~org-gtd-graph-export-svg~    | SVG    | Documents, presentations, sharing  |
+| ~x d~ | ~org-gtd-graph-export-dot~    | DOT    | Graphviz processing, customization |
+| ~x a~ | ~org-gtd-graph-export-ascii~  | ASCII  | Terminals, plain-text docs         |
+
+All commands prompt for a filename. The file is created immediately.
+
+**** Troubleshooting Exports
+
+**"No graph to export" error**: You must be in a graph view buffer. Open a project graph first with ~M-x org-gtd-show-project-graph~.
+
+**Empty or corrupted file**:
+- Verify the graph displays correctly before exporting
+- Press ~g~ to refresh the graph view
+- Try exporting to a different location with write permissions
+
+**SVG won't open in browser**: Ensure the filename ends in ~.svg~. Most programs detect format by file extension.
+
+**DOT processing fails**: Install Graphviz (~dot~ command) on your system. The DOT file is plain text—open it in any editor to verify its contents.
+
+*** Troubleshooting Projects with Graph View
+:PROPERTIES:
+:CUSTOM_ID: graph-troubleshooting
+:END:
+
+**** Project is Stuck (has TODO tasks but no NEXT)
+
+Run ~M-x org-gtd-reflect-stuck-projects~ to find stuck projects.
+
+Open the stuck project in graph view: ~M-x org-gtd-show-project-graph~
+
+*What to look for*:
+- *No blue boxes?* All tasks might be waiting for dependencies that are DONE. Press ~g~ to refresh.
+- *Orange boxes at layer 0?* These should be blue (root tasks are never blocked). Something's wrong with the dependency structure.
+- *Circular dependency?* Org-gtd prevents these, but if you see arrows forming a loop, you've found a bug.
+
+*How to fix*:
+- Use graph view to understand the structure
+- Add a new root task (~r~) if nothing can start
+- Refresh (~g~) after any changes
+
+**** Task Should Be NEXT But Shows as TODO
+
+In graph view, look at the task:
+- Is it orange (TODO)?
+- Trace arrows pointing TO it—these are its blockers
+- Are all those blockers blue? Then something's wrong.
+- Are some blockers orange? Then the task is correctly blocked.
+
+If blockers are actually DONE but still showing as blue, press ~g~ to refresh.
+
+*How to fix*: Use ~B~ to modify blockers (uncheck incorrect ones), or use text command ~org-gtd-task-clear-relationships~ to start fresh.
+
+**** Too Many Tasks Are NEXT
+
+In graph view:
+- Count blue boxes
+- If you have 10+ blue tasks, you probably have dependency problems
+- Some tasks should depend on others but don't
+
+*How to fix*:
+- Select a task that should be blocked
+- Press ~B~ to modify its blockers
+- Or use ~s~ from an earlier task to add a successor that should come later
+
+**** Graph Won't Open
+
+If ~M-x org-gtd-show-project-graph~ doesn't work:
+
+- Verify you're on a project heading (not a task heading)
+- Check that the heading has ~ORG_GTD~ property set to "Projects"
+- Try explicitly: ~M-x org-gtd-show-project-graph~
+- Check for errors in ~*Messages*~ buffer
+
+**** Graph Shows No Tasks
+
+If the graph opens but shows no tasks:
+
+- Check if the project has subtasks (tasks should be subheadings under the project)
+- Verify tasks have ~ORG_GTD_PROJECT_IDS~ property containing the project ID
+- Press ~g~ to force a complete refresh
+- Check ~*Messages*~ buffer for parsing errors
+
+**** Task Shows Wrong State (NEXT vs TODO)
+
+If a task's color doesn't match its expected state:
+
+- Press ~g~ to refresh (state might be stale from external edits)
+- Check the task's actual TODO state in the org file (press ~e~ to jump there)
+- Verify dependencies are correct (press ~i~ to inspect relationships)
+- Look for completed tasks that haven't been refreshed
+
+**** Can't Modify Dependencies
+
+If modification commands don't work:
+
+- Ensure a task is selected (should see highlighted box)
+- Press ~?~ to verify commands are available in the transient menu
+- Check that you're in the graph view buffer, not the org file buffer
+- Try ~g~ to refresh if the graph is in an inconsistent state
+
+*** See Also
+
+- [[#tutorial-your-first-project][Tutorial: Your First Project]] for sequential project basics
+- [[#properties-reference][Properties Reference]] for ~ORG_GTD_FIRST_TASKS~, ~ORG_GTD_DEPENDS_ON~, and ~ORG_GTD_BLOCKS~ (internal implementation)
+- [[#commands-reference][Commands Reference]] for all project management commands
+- [[#view-dsl-reference][View DSL Filter Reference]] for creating custom project views
+*** Tickler Projects: Pausing Work You're Not Ready For
+:PROPERTIES:
+:CUSTOM_ID: tickler-projects
+:END:
+
+**** First Contact: Why Tickler Projects?
+
+You're managing 15 active projects. Some are ready to work on NOW. Others are good ideas, but wrong timing—maybe you're waiting for budget approval, or team availability, or just aren't ready to commit yet.
+
+Keeping them all visible in your engage view creates noise. You scan past 10 "someday" projects to find the 5 you can actually work on today. That's cognitive load you don't need.
+
+*Tickler projects solve this.* Pause a project with a review date. It disappears from your engage view, your NEXT lists, everywhere—but preserves the complete project structure (all tasks, dependencies, planning work). When the review date arrives or you're ready, reactivate it with one command. The project springs back to life exactly as you left it.
+
+For GTD users managing multiple projects where some need to be dormant temporarily with a specific return date.
+
+**** Black Triangle: Tickler Your First Project in 30 Seconds
+
+Let's tickler a project right now.
+
+*Step 1: Find a project you're not ready for*
+
+Open graph view for any project: ~M-x org-gtd-show-project-graph~
+
+Or navigate to any project heading in your GTD file.
+
+*Step 2: Tickler it*
+
+Press ~I~ in graph view, or run ~M-x org-gtd-tickler~
+
+Enter a review date when prompted: ~2025-06-01~
+
+*Step 3: Verify it's gone*
+
+Open your engage view: ~C-c d e~
+
+The project's tasks are GONE from your NEXT list. No clutter.
+
+*Step 4: Check your review date*
+
+The tickler project will appear in your agenda on 2025-06-01 as a reminder to reconsider it.
+
+*Success!* You've paused a project without losing any of your planning work.
+
+**** Understanding Tickler: What Actually Happens
+
+When you tickler a project, org-gtd performs several operations to make it completely invisible while preserving state:
+
+*State Preservation*
+
+For the project heading and every task:
+- Current ~ORG_GTD~ property → saved to ~PREVIOUS_ORG_GTD~ (e.g., "Projects" → "Projects")
+- Current TODO keyword → saved to ~PREVIOUS_TODO~ property (e.g., "NEXT" → "NEXT")
+- ~ORG_GTD~ property → set to "Tickler"
+- TODO keyword → cleared completely (becomes nil)
+
+**Why clear keywords?** This makes tickler tasks invisible to all views naturally. Your engage view shows ~(todo . "NEXT")~—tasks with no keywords don't match, so they disappear automatically.
+
+*Review Date Storage*
+
+The review date is stored in the project heading's ~ORG_GTD_TIMESTAMP~ property as ~<2025-06-01>~. This makes the project appear in your org-agenda on that date, just like delegated items or calendar events.
+
+*Dependency Preservation*
+
+ALL dependency relationships (~ORG_GTD_DEPENDS_ON~, ~ORG_GTD_BLOCKS~) remain intact. They're dormant—they don't affect anything while in tickler—but they're there. When you reactivate, dependencies work exactly as before.
+
+*Multi-Project Tasks*
+
+If a task belongs to MULTIPLE projects (has multiple IDs in ~ORG_GTD_PROJECT_IDS~), org-gtd uses "last active project" logic: the task is only incubated if the project being ticklered/someday'd is the *last active* project for that task. An active project is one with ~ORG_GTD: Projects~ that is not done or cancelled.
+
+This means: if Task A belongs to Project X (being ticklered) and Project Y (still active), Task A stays active because Project Y still needs it. But if Project Y is also ticklered, someday, done, or cancelled, then Task A gets incubated along with Project X.
+
+**** Tutorial: Managing Seasonal Projects
+
+Let's walk through a realistic scenario: you have annual projects that you only work on during specific seasons.
+
+*The Problem*
+
+You're tracking these projects:
+- "Annual Review Process" (only relevant December-January)
+- "Summer Conference Planning" (only relevant May-August)
+- "Q4 Budget Proposals" (only relevant September-November)
+
+It's March. None of these are relevant, but they clutter your project list and NEXT tasks keep appearing in your engage view.
+
+*The Solution: Tickler Until Needed*
+
+In March, tickler all three:
+
+1. Navigate to "Summer Conference Planning"
+2. ~M-x org-gtd-tickler~
+3. Review date: ~2025-05-01~
+4. Repeat for other seasonal projects with appropriate dates
+
+Your engage view is now clean—only projects you can work on THIS MONTH.
+
+*When Review Dates Arrive*
+
+On May 1st, "Summer Conference Planning" appears in your agenda:
+
+#+begin_example
+Tuesday 1 May 2025
+  Summer Conference Planning (review tickler project)
+#+end_example
+
+Options:
+- *Ready to activate?* Press ~RET~ to jump to it, then ~M-x org-gtd-reactivate~
+- *Still not ready?* Leave it in tickler, or run ~org-gtd-tickler~ again with a later date
+
+*Reactivation Details*
+
+When you run ~org-gtd-reactivate~:
+
+1. State restoration happens automatically:
+   - ~PREVIOUS_ORG_GTD~ → ~ORG_GTD~ (Tickler → Projects)
+   - ~PREVIOUS_TODO~ → TODO keywords restored
+   - ~ORG_GTD_TIMESTAMP~ removed (no longer in agenda)
+
+2. Dependency recalculation runs:
+   - ~org-gtd-projects-fix-todo-keywords~ examines all dependencies
+   - Tasks with satisfied dependencies → marked NEXT
+   - Tasks still blocked → remain TODO
+
+3. Project graph opens automatically:
+   - Review the project structure
+   - Verify NEXT/TODO states make sense
+   - Adjust dependencies with ~B~ (modify blockers) or ~S~ (modify dependents)
+
+**** Common Patterns and Scenarios
+
+*Pattern: "Not Now, But Someday"*
+
+Project ideas that might happen eventually:
+
+#+begin_example
+"Rewrite legacy authentication system"
+"Migrate to new CRM platform"
+"Redesign company website"
+#+end_example
+
+*Strategy:*
+- Tickler with a FAR future date (2026-01-01)
+- Or use quarterly review dates (2025-07-01, 2025-10-01, etc.)
+- When review arrives, ask: "Is this the right time?" If no, tickler again for next quarter
+
+*Pattern: "Waiting for External Factor"*
+
+Projects blocked by external dependencies:
+
+#+begin_example
+"Launch new product" (waiting for legal approval)
+"Office redesign" (waiting for budget committee meeting on May 15th)
+"Implement new API" (waiting for vendor release)
+#+end_example
+
+*Strategy:*
+- Tickler with review date = when you expect the blocker to clear
+- Add note in project heading: "Tickler because: waiting for budget approval"
+- When reactivated, first task might be "Check if budget was approved"
+
+*Pattern: "Quarterly Batch Projects"*
+
+Projects you tackle in batches:
+
+#+begin_example
+"Review expenses" (quarterly)
+"Update documentation" (quarterly)
+"Audit security" (quarterly)
+#+end_example
+
+*Strategy:*
+- After completing Q1 batch, tickler with Q2 start date
+- Review dates: 2025-04-01, 2025-07-01, 2025-10-01, 2026-01-01
+- Consistent rhythm without manual tracking
+
+*Pattern: "Collaborative Project, Waiting for Team"*
+
+Project requires specific people who aren't available:
+
+#+begin_example
+"Marketing campaign redesign" (designer on vacation until June)
+"Code refactoring sprint" (waiting for team to finish current release)
+#+end_example
+
+*Strategy:*
+- Tickler with return/availability date
+- In project heading, note: "Tickler: waiting for Sarah (back June 10th)"
+- Reactivate when team is available, project structure intact
+
+**** Advanced: External Dependencies and Warnings
+
+*What Are External Dependencies?*
+
+Imagine:
+- Project A has "Task A1: Research vendor options"
+- Project B (separate project) has "Task B1: Evaluate vendors" that depends on Task A1 completing
+
+Task B1 has an *external dependency*—it depends on a task from a different project.
+
+*What Happens When Tickler'ing*
+
+If you tickler Project A, org-gtd warns you:
+
+#+begin_example
+External tasks depend on this project:
+  - Task B1: Evaluate vendors (in Project B)
+
+Continue tickler? (y/n)
+#+end_example
+
+**Why warn?** Tickler'ing Project A clears Task A1's TODO keyword. Task B1 is still expecting Task A1 to be NEXT or TODO. This creates a "dangling reference"—B1 is blocked by a task that doesn't exist in active work anymore.
+
+**Your options:**
+
+1. *Cancel tickler* (~n~): Don't tickler Project A yet. Maybe restructure dependencies first.
+
+2. *Continue anyway* (~y~): Accept that Task B1 will stay TODO/blocked until you reactivate Project A. Make a note in Project B about this.
+
+3. *Remove the dependency*: Before tickler'ing, use graph view to remove the B1 → A1 dependency link. Decide if B1 should proceed independently.
+
+*Real-World Example*
+
+You're planning a conference (Project Conference) with these tasks:
+- Book venue
+- Invite speakers
+- Set up registration
+
+A separate project (Project Marketing) has:
+- "Design conference branding" → depends on "Book venue" (need venue details for design)
+
+If you tickler Project Conference (venue not booked yet, conference might not happen), the warning shows you that Marketing's branding task will be stuck.
+
+*Decision:* You might realize the branding task should just wait in Project Marketing with a note "start when conference is confirmed", rather than having a hard dependency. Remove the link before tickler'ing.
+
+**** Technical Details: How Tickler Works Under the Hood
+
+*Property-Based State Management*
+
+Tickler uses properties, not file movement. The project and its tasks stay in the same file, same location. Only properties change:
+
+Before tickler (Task 1 of a project):
+#+begin_example
+,*** NEXT Task 1: Research options
+:PROPERTIES:
+:ID: task-1-id
+:ORG_GTD: Actions
+:ORG_GTD_PROJECT_IDS: project-id
+:ORG_GTD_DEPENDS_ON:
+:ORG_GTD_BLOCKS: task-2-id
+:END:
+#+end_example
+
+After tickler:
+#+begin_example
+,*** Task 1: Research options
+:PROPERTIES:
+:ID: task-1-id
+:ORG_GTD: Tickler
+:PREVIOUS_ORG_GTD: Actions
+:PREVIOUS_TODO: NEXT
+:ORG_GTD_PROJECT_IDS: project-id
+:ORG_GTD_DEPENDS_ON:
+:ORG_GTD_BLOCKS: task-2-id
+:END:
+#+end_example
+
+Note:
+- TODO keyword cleared (was NEXT, now nothing)
+- ~ORG_GTD~ changed to "Tickler"
+- Original values saved in ~PREVIOUS_*~ properties
+- Dependencies (~ORG_GTD_BLOCKS~) preserved unchanged
+
+*View Filtering Mechanism*
+
+Why don't tickler tasks appear in views?
+
+Most views filter by TODO keywords: ~(todo . "NEXT")~, ~(todo . "TODO|NEXT|WAIT")~, etc.
+
+Since tickler tasks have NO TODO keyword (cleared to nil), they don't match these filters. Natural exclusion.
+
+For area-of-focus reviews that show projects, we filter: ~(and (property "ORG_GTD" "Projects") (property "CATEGORY" "Work"))~
+
+Tickler projects have ~(property "ORG_GTD" "Tickler")~ instead of "Projects", so they appear in a separate "Tickler projects" section.
+
+*Reactivation Dependency Recalculation*
+
+When you reactivate, here's the exact sequence:
+
+1. *Restore properties* (for project heading + all tasks):
+   - ~PREVIOUS_ORG_GTD~ → ~ORG_GTD~
+   - ~PREVIOUS_TODO~ → TODO keyword
+   - Delete ~PREVIOUS_*~ properties
+   - Delete ~ORG_GTD_TIMESTAMP~
+
+2. *Recalculate NEXT/TODO states*:
+   - Call ~org-gtd-projects-fix-todo-keywords~
+   - This traverses the dependency graph breadth-first
+   - For each task: if ALL dependencies are DONE/CNCL → mark NEXT
+   - Otherwise → mark TODO
+
+3. *Open graph view* (if interactive):
+   - Shows the reactivated project visually
+   - User can verify states, adjust dependencies
+   - Immediate feedback on project structure
+
+**Why recalculate?** You might have manually edited the project while in tickler—added tasks, changed dependencies, marked some DONE. Recalculation ensures consistent state.
+
+*Multi-Project Task Detection*
+
+The check uses "last active project" logic:
+#+begin_src elisp
+;; A project is "active" if ORG_GTD="Projects" and not done/cancelled
+(org-gtd-project--active-p project-id)
+
+;; A task is incubated only if this is its last active project
+(org-gtd-project--task-last-active-project-p task-marker current-project-id)
+#+end_src
+
+If ~ORG_GTD_PROJECT_IDS~ contains ~"project-a project-b"~ (two IDs), the task belongs to both projects. The task is only incubated if the current project is the last active one—i.e., no other project in the task's ~ORG_GTD_PROJECT_IDS~ is still active.
+
+**** Troubleshooting Tickler
+
+*Tasks Still Showing After Tickler'ing Project*
+
+*Symptom:* You tickler'd a project, but some of its tasks still appear in your engage view.
+
+*Diagnosis:* Those tasks likely belong to multiple projects. Check:
+1. Navigate to the task
+2. ~C-c C-x p~ (show properties)
+3. Look at ~ORG_GTD_PROJECT_IDS~ value
+4. If it has multiple IDs (space-separated), the task is shared
+
+*Solution:* This is expected behavior. Tasks are only incubated when the project being ticklered is the task's /last active/ project. If the task still has other active projects, it stays active because those projects need it. Options:
+- Tickler ALL active projects the task belongs to (task will then be tickler'd)
+- Remove the task from one of the projects first
+- Accept that the task stays visible (it's genuinely active in another project)
+
+*Tickler Project Doesn't Appear on Review Date*
+
+*Symptom:* Review date arrived (e.g., June 1st), but the project doesn't show in your agenda.
+
+*Diagnosis:*
+1. Navigate to the project heading
+2. Check for ~ORG_GTD_TIMESTAMP~ property
+3. Verify format is ~<2025-06-01>~ (angle brackets, YYYY-MM-DD)
+4. Check your org-agenda-files includes the GTD file
+
+*Solution:*
+- If property is missing: tickler again with a date
+- If format is wrong: manually fix to ~<YYYY-MM-DD>~
+- If file not in agenda: ~M-x org-agenda-file-to-front~ while in the GTD file
+
+*Reactivated Project Has Wrong NEXT/TODO States*
+
+*Symptom:* After reactivating, tasks that should be NEXT are showing as TODO, or vice versa.
+
+*Diagnosis:* Open graph view (~M-x org-gtd-show-project-graph~):
+- Trace arrows (dependencies)
+- Check if dependencies are actually DONE
+- Look for tasks with cleared keywords that should have keywords
+
+*Solution:*
+- Press ~g~ to refresh and recalculate states
+- If recalculation doesn't fix it: dependencies might be incorrect
+- Use ~B~ to modify blockers, then ~g~ to recalculate
+
+*Can't Reactivate: "Not Tickler" Error*
+
+*Symptom:* Running ~org-gtd-reactivate~ gives error: "Item at point is not tickler"
+
+*Diagnosis:* Check the ~ORG_GTD~ property:
+1. ~C-c C-x p~ to show properties
+2. Look for ~ORG_GTD~ value
+3. Should be "Tickler"
+
+*Solution:*
+- If ~ORG_GTD~ is something else (e.g., "Projects"): it's not in tickler, nothing to reactivate
+- If manually edited: set ~ORG_GTD~ back to "Tickler" or just manually restore the state
+- If ~PREVIOUS_*~ properties are missing: you'll need to manually set states
+
+**** See Also
+
+- [[#commands-reference][Commands Reference]] for ~org-gtd-tickler~ and ~org-gtd-reactivate~ full command details
+- [[#tutorial-your-first-project][Tutorial: Your First Project]] for project basics before tickler'ing
+- [[#graph-first-contact][Why Visual Project Management?]] for understanding project structure
+- [[#properties-reference][Properties Reference]] for ~PREVIOUS_ORG_GTD~, ~PREVIOUS_TODO~, ~ORG_GTD_TIMESTAMP~ details
+
+*** Project Progress Cookies: See Your Progress at a Glance
+:PROPERTIES:
+:CUSTOM_ID: project-progress-cookies
+:END:
+
+**** First Contact: What Are Progress Cookies?
+
+Progress cookies show how far along your project is: ~[3/7][42%]~ means 3 of 7 tasks done.
+
+They appear directly on project headings, so you can scan your project list and instantly know which projects are nearly complete, which are just starting, and which might need attention.
+
+*Who needs this?* Anyone managing multiple projects who wants quick visual feedback without opening each project to count tasks.
+
+**** Black Triangle: See Progress in 30 Seconds
+
+Your projects already have progress cookies—they're enabled by default.
+
+1. Open your engage view: ~C-c d e~
+2. Find any project task
+3. Press ~RET~ to jump to the project heading
+
+You'll see something like:
+
+#+begin_example
+,* PROJ Buy a house [0/5][0%]                      :home:
+#+end_example
+
+That's it. The ~[0/5][0%]~ shows 0 of 5 tasks completed.
+
+**** Tutorial: Watch Cookies Update Automatically
+
+Let's see progress cookies in action:
+
+1. *Find a project with tasks:*
+   - Open engage view: ~C-c d e~
+   - Navigate to a project task, press ~RET~ to go to the project heading
+   - Note the current cookie: ~[0/3][0%]~ (or similar)
+
+2. *Complete a task:*
+   - Find a NEXT task in that project
+   - Mark it done: ~C-c C-t DONE~ (or cycle to DONE)
+
+3. *Check the project heading:*
+   - Scroll up to the project heading
+   - The cookie updated: ~[1/3][33%]~
+
+No manual refresh needed. Complete tasks, cookies update automatically.
+
+**** Understanding How Cookies Work
+
+**What gets counted?**
+
+Progress cookies count all tasks linked to the project via ~ORG_GTD_PROJECT_IDS~. This is different from org-mode's built-in ~[/]~ cookies which only count direct children.
+
+Why does this matter? In org-gtd v4, projects are DAGs (directed acyclic graphs)—tasks can live anywhere in your GTD files and link to projects by ID. The cookie counts ALL linked tasks, regardless of where they're located in your files.
+
+**When do cookies update?**
+
+- *Task state changes:* Complete a task → cookie updates immediately
+- *Project creation:* New projects get cookies automatically
+- *Manual refresh:* ~M-x org-gtd-project-update-all-cookies~ refreshes everything
+- *Fix TODO keywords:* ~M-x org-gtd-projects-fix-all-todo-keywords~ also refreshes cookies
+
+**** Configuring Cookie Position
+
+Control where cookies appear with ~org-gtd-project-progress-cookie-position~:
+
+#+begin_src emacs-lisp
+;; At end of heading, before tags (default)
+(setq org-gtd-project-progress-cookie-position 'end)
+
+;; After TODO keyword, before title
+(setq org-gtd-project-progress-cookie-position 'start)
+
+;; Disable cookies entirely
+(setq org-gtd-project-progress-cookie-position nil)
+#+end_src
+
+Visual comparison:
+
+#+begin_example
+;; 'end (default):
+,* PROJ Buy a house [3/7][42%]                    :home:
+
+;; 'start:
+,* PROJ [3/7][42%] Buy a house                    :home:
+
+;; nil:
+,* PROJ Buy a house                               :home:
+#+end_example
+
+**** Common Scenarios
+
+**Cookies look wrong after external edits**
+
+You edited tasks outside org-gtd (mobile app, manual edit) and cookies don't match reality.
+
+*Fix:* ~M-x org-gtd-project-update-all-cookies~
+
+This scans all projects and recalculates from scratch.
+
+**Want to disable cookies for performance**
+
+If you have hundreds of projects and notice slowness:
+
+#+begin_src emacs-lisp
+(setq org-gtd-project-progress-cookie-position nil)
+#+end_src
+
+Cookies won't update or display.
+
+**Cookies showing 0/0**
+
+This means no tasks are linked to the project. Either:
+- The project has no tasks yet (add some)
+- Tasks don't have ~ORG_GTD_PROJECT_IDS~ pointing to this project (check properties)
+
+**** Technical Reference
+
+**Format:** ~[completed/total][percent%]~
+
+**Calculation:** Scans all headings with ~ORG_GTD_PROJECT_IDS~ matching the project's ID. Counts tasks with TODO keyword in ~org-done-keywords~ as completed.
+
+**Storage:** Actual text on the heading (not computed at display time). This means cookies persist and are visible even in non-Emacs editors.
+
+**Hook:** ~org-after-todo-state-change-hook~ triggers recalculation when task states change.
+
+**Related commands:**
+- ~org-gtd-project-update-all-cookies~ :: Refresh all project cookies
+- ~org-gtd-projects-fix-all-todo-keywords~ :: Fixes keywords AND refreshes cookies
+
+*See also:* [[#org-gtd-project-progress-cookie-position][~org-gtd-project-progress-cookie-position~]] in Configuration Variables Reference.
+
+*** Cleaning up / archiving completed work
+:PROPERTIES:
+:CUSTOM_ID: cleaning-up-the-system
+:END:
+Doing this without user intervention is tricky, as it makes undoing actions more complicated. As such, Org GTD provides a function that will go through the ~org-gtd-directory~ files, find the headings that belong to Org GTD (see [[#refiling-after-organizing][Refiling to the appropriate area]]), and archive the finished items.
+
+The variable ~org-gtd-archive-location~ points to a *function* that returns a string matching the ~org-archive-location~ definition. It is a function in order to allow the filename to be dynamic.
+
+The function to archive everything is ~M-x org-gtd-archive-completed-items~.
+*** Commands you can call on org-agenda
+Since Org provides the agenda, it is a convenient base of operations for interacting with things that come up through ~org-gtd-engage~.
+
+Here are the actions available to you:
+
+- ~M-x org-gtd-delegate-agenda-item~ :: When the point is on an action, this will properly delegate the action to someone else.
+- ~M-x org-gtd-project-cancel-from-agenda~ :: When the point is on a project action, this command will cancel the remaining actions in the project.
+- ~M-x org-gtd-clarify-agenda-item~ :: If you would like to clarify and organize an item through the agenda view, for whatever reason, this is your entry point.
+
+*** Defining your own agenda views
+You can define your own agenda views by defining functions with custom agenda commands. As long as you have ~org-gtd-directory~ in your ~org-agenda-files~ (required for org-gtd to work), your views will include GTD items automatically.
+
+#+begin_src elisp
+  (defun my-agenda ()
+    (let ((org-agenda-custom-commands '(your-definition-here)))
+      (org-agenda nil "x")))
+#+end_src
+
+Where =x= is whatever your defined key is.
+
+*See also*: For a much easier way to create custom views, see [[#view-dsl-reference][View DSL Filter Reference]], which provides a declarative language for defining views without writing skip functions.
+*** Adding your own hooks when organizing
+:PROPERTIES:
+:CUSTOM_ID: hooks-framework
+:END:
+Adding useful metadata to the tasks allows you to enhance the agenda view to make it more useful to you, whether it be effort, tags, priority, or any other amount of information you might like.
+
+This being said, different types of tasks or items are not even created equal. For instance, there may be metadata you want to add to a project heading but not its tasks, or to a calendar item and not to a trash item.
+
+Org GTD therefore provides a helper function, ~org-gtd-organize-type-member-p~, which you can use when creating your own hooks. The function takes one argument, a list of types (provided in the function's documentation).
+When called as part of a hook, this function will check a buffer-local variable called ~org-gtd--organize-type~, managed by Org GTD, to determine truthiness.
+
+For an example, see the source code for ~org-gtd-areas-of-focus--set~, which will not run if the task being organized is a project task, trash, knowledge, or a quick action.
+
+*See also*: For complete documentation on the hooks framework, including many examples and best practices, see [[#hooks-reference][Hooks Framework Reference]].
+** Automating through emacs
+There's now a few functions you can use when you are doing work within emacs and would like GTD to track something for you as a result:
+- ~org-gtd-habit-create~
+- ~org-gtd-calendar-create~
+- ~org-gtd-delegate-create~
+- ~org-gtd-tickler-create~
+- ~org-gtd-someday-create~
+- ~org-gtd-single-action-create~
+
+See the documentation for each, but suffice it to say they all take, at the very least, a string that will be used as the text part of the org heading that gets stored in org-gtd.
+
+For instance, one way this could work:
+
+#+begin_src emacs-lisp
+  (defun org-gtd-email-reminder ()
+    (let ((topic (message-fetch-field "subject"))
+          (delegated-to (message-fetch-field "to"))
+          (reminder-date (org-read-date nil nil "+3d")))
+      (org-gtd-delegate-create (format "Reminder: %s" topic)
+                               delegated-to
+                               reminder-date)))
+
+  (add-hook 'message-send-hook 'org-gtd-email-reminder)
+#+end_src
+
+*See also*: [[#commands-reference][Commands Reference]] for complete documentation of all programmatic creation commands.

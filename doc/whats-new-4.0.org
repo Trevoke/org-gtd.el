@@ -1,0 +1,107 @@
+* What's new in 4.0
+:PROPERTIES:
+:CUSTOM_ID: new-in-4.0
+:END:
+
+Version 4.0 is a major release that transforms how Org GTD handles projects and configuration, while maintaining compatibility with your existing GTD data.
+
+** Flexible project dependencies (the big one!)
+Projects are no longer limited to sequential tasks! You can now create complex project structures with parallel tasks and custom dependencies.
+
+- *Define any dependency relationship* - Tasks can block other tasks, creating a directed acyclic graph (DAG) of dependencies
+- *Parallel work streams* - Multiple tasks can be NEXT at the same time if they don't depend on each other
+- *Automatic dependency detection* - Org GTD finds all tasks that are ready to work on based on the dependency graph
+- *Cycle prevention* - The system prevents circular dependencies that would create deadlocks
+- *Visual dependency helper* (optional) - See task relationships in a side window while clarifying projects
+
+Tasks without explicit dependencies still work sequentially (as before), so your existing projects continue to work unchanged.
+
+** Simplified keyword configuration
+The new keyword configuration system is clearer and more maintainable:
+
+- *One mapping instead of many variables* - Replace individual keyword variables (~org-gtd-next~, ~org-gtd-todo~, etc.) with a single ~org-gtd-keyword-mapping~ structure
+- *Global TODO keywords* - No more file-level ~#+TODO:~ lines that can conflict. Use Emacs' global ~org-todo-keywords~ configuration instead
+- *Automatic validation* - Org GTD validates your keyword configuration and provides helpful error messages if something is wrong
+- *Better Emacs 29+ support* - Use ~setopt~ for automatic validation when setting variables
+
+See [[#all-the-levers][Configuration options]] for details.
+
+** Data-driven configuration
+New configuration system allows you to customize item properties declaratively:
+
+- *Configure by item type* - Define what properties each GTD item type should have
+- *Prompt for user input* - Automatically prompt for dates, text, or custom data when organizing
+- *Extensible* - Easy to add your own custom configuration for new item types
+
+** Declarative view language
+Creating custom agenda views is now much easier with a declarative syntax:
+
+- *Specify what you want, not how to get it* - Define views using simple filters instead of complex skip functions
+- *Native org-agenda integration* - Uses org-agenda's built-in skip functions for performance
+- *More maintainable* - View definitions are data structures, not code
+
+** Better project modification
+- *Add tasks to projects anywhere* - You can now add tasks to projects even if the project file is outside ~org-gtd-directory~
+- *Modify project structure* - Commands to create task dependencies and manage complex projects
+
+** Updated terminology: Review → Reflect
+Following David Allen's updated terminology from his more recent books, all "review" and "oops" commands are now named "reflect":
+
+- ~org-gtd-review-*~ → ~org-gtd-reflect-*~
+- ~org-gtd-oops-*~ → ~org-gtd-reflect-*~
+
+The old names still work as aliases but are marked obsolete.
+
+** Updated terminology: Incubate → Tickler + Someday/Maybe
+The "Incubate" category has been split into two distinct types to better align with GTD concepts:
+
+- *Tickler* - Items with a specific review date (formerly "Incubated"). Use this for time-based reminders and paused projects with a date to revisit.
+- *Someday/Maybe* - Items with no specific timeframe. Use this for ideas and possibilities you might pursue eventually.
+
+This clarifies the distinction between "remind me on a specific date" (Tickler) and "maybe someday with no commitment" (Someday/Maybe).
+
+Changes:
+- ~org-gtd-incubate~ → ~org-gtd-tickler~ (creates tickler items with timestamps)
+- New ~org-gtd-someday~ command (creates someday items without timestamps)
+- New ~org-gtd-reflect-someday-review~ command - Walk through someday items one-by-one with single-keystroke defer/clarify/quit actions. Optionally group items into named lists for focused reviews. See [[#someday-review][Reviewing Someday/Maybe Items]].
+- Property value: ~ORG_GTD: Incubated~ → ~ORG_GTD: Tickler~ or ~ORG_GTD: Someday~
+
+The old ~org-gtd-incubate~ command still works as an alias to ~org-gtd-tickler~ but is marked obsolete.
+
+** Enhanced reflect capabilities
+- *Find missed items* - New ~org-gtd-reflect-missed-items~ command to catch things that slipped through
+- *Better stuck project detection* - Improved identification of projects that need attention
+
+** Simplified configuration
+- *org-gtd-mode has a new purpose* - The mode is no longer about wrapping agenda commands. It now provides a mode-line indicator showing your inbox count (e.g., =GTD[5]=), giving you at-a-glance visibility into how many items need processing.
+
+** Per-type refile prompting
+You can now control refile prompting behavior for each GTD item type independently:
+
+- *Fine-grained control* - Configure which item types prompt for refile target selection vs. auto-refile to first target
+- *Sensible defaults* - Most item types prompt by default; quick actions, knowledge, and trash auto-refile
+- *Deprecates ~org-gtd-refile-to-any-target~* - The old boolean is replaced by ~org-gtd-refile-prompt-for-types~, a list of types that should prompt
+
+See [[#refiling-after-organizing][Refiling to the appropriate area]] for configuration details.
+
+** Capture timestamps
+Captured items now automatically receive an ~ORG_GTD_CAPTURED_AT~ property with an inactive timestamp recording when the item was captured. This is useful for:
+
+- *Inbox reviews* - See how long items have been sitting in your inbox
+- *Weekly reviews* - Identify items that have been captured but not processed
+- *Auditing* - Track when ideas and tasks entered your system
+
+This happens automatically for all captures using the default templates. No configuration needed.
+
+** What you need to do
+If you're upgrading from 3.x, see the [[#upgrading][Upgrading section]] for complete step-by-step instructions. The required changes are:
+
+1. Update your keyword configuration to use ~org-gtd-keyword-mapping~
+2. Remove any ~#+TODO:~ lines from your GTD files
+3. *Run the migration: ~M-x org-gtd-upgrade-v3-to-v4~* (required for projects to work!)
+
+For new installations, just configure ~org-todo-keywords~ and ~org-gtd-keyword-mapping~ and you're ready to go.
+
+** Previous versions
+For changes in earlier versions, see:
+- [[file:whats-new-3.0.org][What's new in 3.0]]

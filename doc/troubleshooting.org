@@ -1,0 +1,144 @@
+* Troubleshooting
+:PROPERTIES:
+:CUSTOM_ID: troubleshooting
+:END:
+
+This section covers common problems and their solutions. For complete command documentation, see [[#commands-reference][Commands Reference]].
+
+** Finding lost tasks
+
+Sometimes items get stuck or fall through the cracks. org-gtd provides several commands to find problematic items:
+
+- ~org-gtd-reflect-stuck-calendar-items~ :: Calendar items with invalid or missing timestamps
+- ~org-gtd-reflect-stuck-tickler-items~ :: Tickler items with invalid or missing review dates
+- ~org-gtd-reflect-stuck-habit-items~ :: Habits with incorrect configuration
+- ~org-gtd-reflect-stuck-delegated-items~ :: Delegated items missing delegate or date information
+- ~org-gtd-reflect-stuck-single-action-items~ :: Single actions that aren't marked as NEXT
+- ~org-gtd-reflect-stuck-projects~ :: Projects that have tasks but no NEXT actions
+- ~org-gtd-reflect-missed-items~ :: Items that should have been processed but weren't
+
+See [[#commands-reference][Commands Reference]] for detailed documentation of these commands.
+
+** Projects without a NEXT item
+
+If a project has active tasks but none are marked NEXT, this usually indicates:
+1. Missing dependency configuration (no ~ORG_GTD_FIRST_TASKS~ property)
+2. org-edna is not enabled
+3. Dependency properties need recalculation
+4. Task states are inconsistent after external edits (mobile apps, sync conflicts)
+
+*Solution for one project*: Put the point on the project heading and run ~M-x org-gtd-projects-fix-todo-keywords-for-project-at-point~.
+
+*Solution for all projects*: Run ~M-x org-gtd-projects-fix-all-todo-keywords~ to fix all projects at once. This is especially useful after:
+- Editing tasks on mobile apps or web interfaces
+- Resolving sync conflicts
+- Bulk manual edits outside org-gtd
+- Migrating or importing data
+
+*Note*: Make sure org-edna is enabled: ~(org-edna-mode 1)~ in your init file. See [[#configuring][Configuring]] for setup instructions.
+
+See also: [[#working-with-projects-advanced][Working with Projects (Advanced)]] for complete project troubleshooting guide.
+
+** I can't create a project when clarifying an inbox item!
+
+When organizing an item as a project, org-gtd expects a specific structure:
+
+#+begin_example
+,* Project heading
+,** First task
+,** Second task
+,** Third task
+#+end_example
+
+*Common issues*:
+- Top-level heading must be a single asterisk ~*~
+- Tasks must be second-level headings ~**~
+- Must have at least one task under the project heading
+
+See [[#data-shape-requirement-while-clarifying][data shape requirements]] for complete details.
+
+If this doesn't solve your problem, please open an issue at https://github.com/Trevoke/org-gtd.el/issues with:
+1. The exact structure of your item in the clarify buffer
+2. What happens when you try to organize it
+3. Any error messages
+
+** Configuration problems
+
+*** Keywords not working
+
+If TODO keywords aren't changing correctly:
+
+1. *Check ~org-todo-keywords~ includes all GTD keywords in one sequence*:
+   #+begin_src emacs-lisp
+   (setq org-todo-keywords
+         '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+   #+end_src
+
+2. *Check ~org-gtd-keyword-mapping~ maps to those keywords*:
+   #+begin_src emacs-lisp
+   (setq org-gtd-keyword-mapping
+         '((todo . "TODO")
+           (next . "NEXT")
+           (wait . "WAIT")
+           (done . "DONE")
+           (canceled . "CNCL")))
+   #+end_src
+
+3. *Remove any ~#+TODO:~ lines from GTD org files*
+
+See [[#configuring][Configuring]] for complete setup instructions.
+
+*** Items not showing in engage view
+
+If items aren't appearing in ~org-gtd-engage~:
+
+1. *Check org-agenda-files includes org-gtd-directory*:
+   #+begin_src emacs-lisp
+   ;; Must be set after org-gtd loads
+   (with-eval-after-load 'org-gtd
+     (setq org-agenda-files (list org-gtd-directory)))
+   #+end_src
+   For ~use-package~, put this in the ~:config~ section.
+
+2. *Check item has correct properties*:
+   - Single actions should have ~ORG_GTD: Actions~ and TODO keyword NEXT
+   - Project tasks should have ~ORG_GTD: Actions~ and be part of a project
+
+3. *Verify org-edna is enabled*:
+   #+begin_src emacs-lisp
+   (org-edna-mode 1)
+   #+end_src
+
+See [[#config-vars-reference][Configuration Variables Reference]] for all configuration options.
+
+** Tasks still showing after tickler'ing or someday'ing project
+
+*Symptom*: Moved a project to tickler or someday/maybe, but some tasks still appear in engage view.
+
+*Diagnosis*:
+- Multi-project tasks (tasks shared between projects) use "last active project" logic
+- If task belongs to Project A and Project B, and you only tickler/someday Project A, the task stays visible because Project B is still active
+- This is intentional—the task is genuinely needed by an active project
+
+*Solution*:
+- Check task's ~ORG_GTD_PROJECT_IDS~ property to see which projects it belongs to
+- Each project that's still active (~ORG_GTD: Projects~, not done/cancelled) keeps the task visible
+- Incubate all active projects the task belongs to if you want it fully hidden
+
+*How it works*:
+1. When incubating Project X, org-gtd checks each task's other projects
+2. If any other project is still active, the task stays active (correct behavior)
+3. If Project X is the task's /last/ active project, the task gets incubated
+
+** Still stuck?
+
+If you're still having problems:
+
+1. Check [[#reference][Reference]] for complete documentation
+2. Search existing issues: https://github.com/Trevoke/org-gtd.el/issues
+3. Ask on Discord: https://discord.gg/2kAK6TfqJq
+4. Open a new issue with:
+   - Your org-gtd configuration
+   - Steps to reproduce the problem
+   - Expected vs actual behavior
+   - Any error messages

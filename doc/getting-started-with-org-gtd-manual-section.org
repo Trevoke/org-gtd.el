@@ -1,0 +1,557 @@
+* Getting Started with Org GTD
+:PROPERTIES:
+:DESCRIPTION: Tutorials to get you productive quickly
+:CUSTOM_ID: getting-started
+:END:
+
+You've configured org-gtd. Now let's see it in action with real examples that demonstrate why org-gtd is powerful.
+
+** Quick Start Reference
+
+If you haven't done the 5-minute Quick Start in the README yet, do that first. It walks you through:
+1. Capturing a single action
+2. Processing your inbox
+3. Organizing the item
+4. Seeing it in your engage view
+
+That Quick Start proves the basic cycle works. Now let's see what makes org-gtd special: automatic project management and custom views.
+
+** Tutorial: Your First Project
+:PROPERTIES:
+:CUSTOM_ID: tutorial-your-first-project
+:END:
+
+You've captured and organized a single action. That's great for simple tasks, but GTD's real power is managing multi-step projects. Let's create one and watch org-gtd handle the complexity automatically.
+
+*** What You'll Learn
+
+- How to capture and structure a project
+- How org-gtd automatically manages task dependencies
+- How tasks advance from TODO → NEXT when dependencies are satisfied
+- How the engage view shows you what's immediately actionable
+
+*** The Project
+
+We'll plan a small house renovation with three sequential steps:
+1. Review blueprints
+2. Order windows
+3. Schedule carpenter
+
+This demonstrates sequential project execution - the default behavior where each task must complete before the next begins.
+
+*** Step 1: Capture the Project
+
+Press ~C-c d c~ (or ~M-x org-gtd-capture~).
+
+Type (or paste) this structure:
+
+#+begin_example
+,* House Renovation
+,** Review blueprints
+,** Order windows of the right size
+,** Schedule carpenter
+#+end_example
+
+*Important*: Projects in org-gtd have a specific structure:
+- Top-level heading (~*~) is the project name
+- Second-level headings (~**~) are the tasks
+
+Press ~C-c C-c~ to save.
+
+*** Step 2: Process the Inbox
+
+Press ~C-c d p~ (or ~M-x org-gtd-process-inbox~).
+
+You'll see your project in a clarify buffer. This is your chance to refine it:
+- Add details to tasks (we already added "of the right size" to clarify what we need)
+- Fix typos
+- Make everything crystal clear
+
+When you're satisfied, press ~C-c c~ to organize.
+
+*** Step 3: Organize as a Project
+
+The transient menu appears with organization options. Press *[p]* for "Project".
+
+Watch what org-gtd does automatically:
+1. Marks the first task ("Review blueprints") as *NEXT*
+2. Marks other tasks as *TODO*
+3. Sets up dependency relationships (task 1 blocks task 2, task 2 blocks task 3)
+4. Refiles the entire project to your projects file
+
+You'll see a prompt for tags (optional). Press ~RET~ to skip or add tags if you want.
+
+The project is now in your GTD system!
+
+*** Step 4: View in Engage
+
+Press ~C-c d e~ (or ~M-x org-gtd-engage~).
+
+You'll see an agenda view showing:
+- *NEXT: Review blueprints* - This is immediately actionable
+- The project "House Renovation" appears in the list
+- Other tasks ("Order windows", "Schedule carpenter") don't show as NEXT - they're waiting for the first task
+
+This is your daily engagement view - it shows *only* what you can act on right now, not everything in your system.
+
+*** Step 5: Complete the First Task
+
+In the agenda view, move your cursor to "Review blueprints".
+
+Press *t* to cycle the TODO state.
+
+Select *DONE*.
+
+*Magic happens*: Watch "Order windows of the right size" automatically become NEXT!
+
+This is org-edna in action - the automatic dependency system org-gtd uses.
+
+*** Step 6: Refresh and See the Change
+
+Press *g* to refresh the agenda view.
+
+You'll now see:
+- ✓ "Review blueprints" is DONE (depending on your agenda settings, it may be hidden)
+- *NEXT: Order windows of the right size* - Now actionable!
+- "Schedule carpenter" is still TODO - waiting for "Order windows" to complete
+
+*** What Just Happened?
+
+Let's understand the automatic workflow:
+
+1. *When you organized as a project*, org-gtd:
+   - Created a dependency chain: Task 1 → Task 2 → Task 3
+   - Set properties (~ORG_GTD_BLOCKS~, ~ORG_GTD_DEPENDS_ON~) to track relationships
+   - Marked only the first task as NEXT
+
+2. *When you marked "Review blueprints" DONE*, org-gtd:
+   - Checked which tasks were blocked by this one
+   - Found "Order windows" had no remaining blockers
+   - Automatically changed it from TODO to NEXT
+
+3. *"Schedule carpenter" stays TODO* because:
+   - It depends on "Order windows" completing
+   - org-gtd won't mark it NEXT until its dependencies are satisfied
+
+You didn't manually manage any of this. You just *did the work* and marked tasks complete. org-gtd handled the workflow automatically.
+
+*** Continue the Project
+
+Complete "Order windows" the same way:
+1. Go to the engage view (~C-c d e~)
+2. Find "Order windows of the right size"
+3. When done, press *t* and select *DONE*
+4. Watch "Schedule carpenter" automatically become NEXT
+
+When all tasks are done, the project is complete. You can archive it with ~M-x org-gtd-archive-completed-items~ during your weekly review.
+
+*** Key Takeaways
+
+- *Projects are multi-step actions* with automatic dependency management
+- *Sequential execution is the default* - tasks progress one after another
+- *The engage view shows only actionable items* - not everything in your system
+- *You focus on doing work, not managing workflows* - org-gtd handles task progression
+- *Completing tasks automatically advances projects* - no manual state management needed
+
+*** What's Next?
+
+This was a sequential project (A → B → C). Later, you'll learn how to:
+- Create *parallel tasks* (A and B can both be NEXT simultaneously)
+- Set *custom dependencies* (A blocks C, B blocks C, but A and B are parallel)
+- Manage *complex project structures* with the dependency graph
+
+For now, practice with a few simple sequential projects. The pattern is always:
+1. *Capture* with project structure
+2. *Clarify* to make it clear
+3. *Organize* as a project
+4. *Engage* to see what's actionable
+5. *Complete* tasks and watch progression happen automatically
+
+** Tutorial: Creating Your First Custom View
+
+The built-in ~org-gtd-engage~ view is powerful, but you'll want custom views for different contexts. org-gtd 4.0 has a declarative View DSL that makes this easy. Let's create a view that shows all your active projects.
+
+*** What You'll Learn
+
+- How the View DSL works (declarative syntax)
+- How to create a simple custom view
+- How to call your view and see results
+- How to modify views for different needs
+
+*** Why This View?
+
+The engage view shows *today's actionable items* - what you should work on right now.
+
+But sometimes you want the *big picture*:
+- What projects am I working on?
+- Which ones have active tasks?
+- What's the status of each project?
+
+This view answers those questions by showing all active projects at a glance.
+
+*** Understanding the View DSL
+
+Views in org-gtd are *declarative* - you describe *what* you want to see, not *how* to find it.
+
+Here's the view we'll create:
+
+#+begin_src emacs-lisp
+'((name . "My Active Projects")
+  (type . active-project))
+#+end_src
+
+Let's break this down:
+
+- ~name~ :: What displays in the view header
+- ~type . active-project~ :: Show projects with at least one active task
+
+That's it! The View DSL translates this into an org-agenda view and shows results.
+
+*** Creating the View Function
+
+Add this to your init file (after your org-gtd configuration):
+
+#+begin_src emacs-lisp
+(with-eval-after-load 'org-gtd
+  (defun my-org-gtd-active-projects ()
+    "Show all active projects."
+    (interactive)
+    (org-gtd-view-show
+     '((name . "My Active Projects")
+       (type . active-project)))))
+#+end_src
+
+Save your init file and reload it (~M-x eval-buffer~ or restart Emacs).
+
+*** Using Your View
+
+Now you can call it:
+
+#+begin_example
+M-x my-org-gtd-active-projects
+#+end_example
+
+You'll see a list of all your active projects!
+
+*** Binding to a Key
+
+For quick access, bind it to a key. Add this to your configuration:
+
+#+begin_src emacs-lisp
+;; If using vanilla Emacs
+(global-set-key (kbd "C-c d P") 'my-org-gtd-active-projects)
+
+;; If using Doom Emacs, add to your org-gtd config:
+(map! :leader
+      (:prefix "d"
+       :desc "Active projects" "P" #'my-org-gtd-active-projects))
+
+;; If using Spacemacs, add to your config:
+(spacemacs/set-leader-keys "od P" 'my-org-gtd-active-projects)
+#+end_src
+
+Now press ~C-c d P~ (or your binding) to see active projects instantly!
+
+*** What You'll See
+
+The view shows:
+- All projects that have at least one active task
+- Each project's current state (what tasks are NEXT, TODO, etc.)
+- Project names and context
+
+Projects that are:
+- Completely DONE - Won't appear (no active tasks)
+- Canceled - Won't appear (no active tasks)
+- Have only TODO/NEXT/WAIT tasks - Will appear
+
+*** Experiment: Modify the View
+
+Try these variations to see how the View DSL works:
+
+*Show ALL projects (including completed):*
+
+#+begin_src emacs-lisp
+(defun my-org-gtd-all-projects ()
+  "Show all projects, including completed ones."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "All Projects")
+     (type . project))))
+#+end_src
+
+*Show stuck projects:*
+
+#+begin_src emacs-lisp
+(defun my-org-gtd-stuck-projects ()
+  "Show projects that have work but no NEXT actions."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Stuck Projects")
+     (type . stuck-project))))
+#+end_src
+
+*Show projects in a specific area of focus* (if you use areas):
+
+#+begin_src emacs-lisp
+(defun my-org-gtd-work-projects ()
+  "Show only work projects."
+  (interactive)
+  (org-gtd-view-show
+   '((name . "Work Projects")
+     (type . active-project)
+     (area-of-focus . "Work"))))
+#+end_src
+
+*** Available Filters
+
+For the complete View DSL reference, see [[#view-dsl-reference][View DSL Filter Reference]].
+
+Here are common filters you can use in your views:
+
+*GTD Types:*
+- ~(type . next-action)~ :: Single actions ready to do
+- ~(type . delegated)~ :: Items delegated to others
+- ~(type . calendar)~ :: Time-specific appointments
+- ~(type . tickler)~ :: Time-based reminders
+- ~(type . someday)~ :: Someday/Maybe items
+- ~(type . project)~ :: Multi-step outcomes
+- ~(type . habit)~ :: Recurring routines
+
+*Computed Types:*
+- ~(type . active-project)~ :: Projects with at least one active task
+- ~(type . stuck-project)~ :: Projects with no NEXT/WAIT tasks
+- ~(type . completed-project)~ :: Projects with all tasks done
+- ~(type . incubated-project)~ :: Projects in Tickler or Someday/Maybe
+
+*Time Filters:*
+- ~(when . past)~ :: Type's timestamp in the past (requires type)
+- ~(when . today)~ :: Type's timestamp is today
+- ~(when . future)~ :: Type's timestamp in the future
+- ~(scheduled . past)~ :: Scheduled in the past
+- ~(deadline . past)~ :: Deadline in the past
+
+*Completion Filters:*
+- ~(done . t)~ :: Any completed item
+- ~(done . NUMBER)~ :: Completed in last NUMBER days (e.g., ~(done . 14)~)
+- ~(done . recent)~ :: Completed in last 7 days
+- ~(done . past-week)~ :: Completed in last week
+- ~(not-done . t)~ :: Incomplete items
+
+*Metadata Filters:*
+- ~(area-of-focus . "Work")~ :: Filter by area of focus
+- ~(todo . ("NEXT" "TODO"))~ :: Filter by TODO keywords
+- ~(level . 2)~ :: Filter by heading level
+- ~(priority . A)~ :: Filter by priority (also supports lists and comparisons)
+- ~(effort . (< "30min"))~ :: Filter by effort estimate
+- ~(clocked . (> "1:00"))~ :: Filter by time clocked
+
+You can combine multiple filters - they all must match (AND logic).
+
+*** Key Takeaways
+
+- *Views are declarative* - you describe what you want, not how to get it
+- *The View DSL is readable* - it's data, not complex code
+- *Views are easy to create and modify* - just change the filter list
+- *You can create unlimited views* - for different contexts and needs
+- *Native org-agenda* - efficient skip functions without external dependencies
+
+*** What's Next?
+
+Now that you understand views, you can create:
+- *Review views* - For your weekly/monthly reviews
+- *Context views* - Show work items, home items, errands, etc.
+- *Time-based views* - Overdue items, upcoming deadlines, this week's schedule
+- *Focus views* - Deep work items (~priority~, ~clocked~), quick wins (~effort~)
+
+Now that you can create views, let's build some that match real workflows.
+
+** Tutorial: Quick Wins and Focus Work Views
+
+You've learned to create views. Now let's create views that match *how you actually work*---views that answer: "What can I knock out in 10 minutes?" and "What deserves my deep focus?"
+
+*** Why This Matters
+
+Think about your typical day:
+
+- *10 minutes before a meeting* → You want quick tasks you can complete
+- *2-hour focus block* → You want substantial work, not busywork
+- *Weekly review* → You want to find tasks missing estimates
+
+These three scenarios need different views. The engage view shows *everything actionable*. These views show *what matches your available time and energy*.
+
+*** Your First Quick Wins View (30 seconds)
+
+Let's start with the most immediately useful view: tasks under 15 minutes.
+
+Try this right now in your ~*scratch*~ buffer:
+
+#+begin_src emacs-lisp
+(org-gtd-view-show
+ '((name . "Quick Wins")
+   (type . next-action)
+   (effort . (< "15min"))))
+#+end_src
+
+Place your cursor at the end and press ~C-x C-e~.
+
+*What you'll see:* Only NEXT actions that have an effort estimate under 15 minutes. Perfect for those short gaps in your day.
+
+*** The Effort Filter Explained
+
+The ~effort~ filter works with your items' Effort property---the same one org-mode uses for time estimates.
+
+The pattern is simple:
+
+#+begin_src emacs-lisp
+(effort . (< "TIME"))    ;; less than TIME
+(effort . (> "TIME"))    ;; more than TIME
+(effort . (between "MIN" "MAX"))  ;; within range
+#+end_src
+
+Time formats work how you'd expect:
+- ~"15min"~ or ~"0:15"~ → 15 minutes
+- ~"1:30"~ or ~"1h30min"~ → 1 hour 30 minutes
+- ~"2:00"~ or ~"2h"~ → 2 hours
+
+*The mental model:* Think of effort as "how big is this bite?" Quick wins are small bites. Deep work is a full meal.
+
+*** Building a Focus Work View
+
+Now let's create a view for when you have real time to focus. You want tasks that:
+- Are important (priority A or B)
+- Are substantial (over 30 minutes)
+
+#+begin_src emacs-lisp
+(org-gtd-view-show
+ '((name . "Focus Work")
+   (type . next-action)
+   (priority . (>= B))
+   (effort . (> "30min"))))
+#+end_src
+
+*What this shows:* NEXT actions that are priority B or higher AND estimated over 30 minutes. These are tasks worth blocking time for.
+
+*** The Priority Filter Explained
+
+Priority in org-mode goes A (highest) → B → C (lowest). The ~priority~ filter matches this:
+
+#+begin_src emacs-lisp
+(priority . A)           ;; exactly priority A
+(priority . (A B))       ;; priority A or B
+(priority . (>= B))      ;; B or higher (A and B)
+(priority . nil)         ;; no priority set
+#+end_src
+
+*Important:* A is *highest* priority. So ~(>= B)~ means "B or better"---which is A and B.
+
+*The mental model:* Priority answers "how important is this?" Effort answers "how long will it take?" Together they help you match tasks to your available time and energy.
+
+*** Finding Tasks to Triage
+
+One more powerful pattern: finding items missing metadata. During your weekly review, you want to catch tasks that need estimates.
+
+#+begin_src emacs-lisp
+(org-gtd-view-show
+ '((name . "Needs Effort Estimate")
+   (type . next-action)
+   (effort . nil)))
+#+end_src
+
+~(effort . nil)~ matches items with NO effort property set. Same works for priority:
+
+#+begin_src emacs-lisp
+(org-gtd-view-show
+ '((name . "Needs Priority")
+   (type . next-action)
+   (priority . nil)))
+#+end_src
+
+These triage views help maintain your system.
+
+*** Bonus: The Clocked Filter
+
+There's one more filter: ~clocked~. It matches by how much time you've *already invested* in a task.
+
+#+begin_src emacs-lisp
+;; Tasks I've started but not finished (some time clocked)
+(org-gtd-view-show
+ '((name . "In Progress")
+   (type . next-action)
+   (clocked . (> "0:00"))))
+
+;; Tasks I haven't touched yet
+(org-gtd-view-show
+ '((name . "Not Started")
+   (type . next-action)
+   (clocked . nil)))
+#+end_src
+
+*Why this is useful:* Sometimes you want to continue work you've already invested in. Sometimes you want fresh tasks. The clocked filter gives you both options.
+
+*** Putting It All Together
+
+Here's a complete setup with three views for different contexts:
+
+#+begin_src emacs-lisp
+(with-eval-after-load 'org-gtd
+  (defun my-quick-wins ()
+    "Tasks under 15 minutes - perfect for short gaps."
+    (interactive)
+    (org-gtd-view-show
+     '((name . "Quick Wins (< 15min)")
+       (type . next-action)
+       (effort . (< "15min")))))
+
+  (defun my-focus-work ()
+    "Important substantial tasks - for deep work blocks."
+    (interactive)
+    (org-gtd-view-show
+     '((name . "Focus Work")
+       (type . next-action)
+       (priority . (>= B))
+       (effort . (> "30min")))))
+
+  (defun my-needs-estimates ()
+    "Tasks missing effort or priority - for weekly review."
+    (interactive)
+    (org-gtd-view-show
+     '(((name . "Needs Priority")
+        (type . next-action)
+        (priority . nil))
+       ((name . "Needs Effort")
+        (type . next-action)
+        (effort . nil))))))
+#+end_src
+
+*** Key Takeaways
+
+- ~effort~ filter matches time estimates → "How big is this task?"
+- ~priority~ filter matches A/B/C → "How important is this?"
+- ~clocked~ filter matches time invested → "How much have I worked on this?"
+- Use ~nil~ to find items missing metadata
+- Combine filters to match your available time and energy
+
+*** Where to Go From Here
+
+You've completed the tutorials. You now know how to:
+1. Create and manage projects (Tutorial 1)
+2. Create custom views for any context (Tutorial 2)
+3. Build quick wins, focus work, and triage views (Tutorial 3)
+
+*This is enough to be productive with org-gtd!*
+
+Read those sections as you need them. For now, *start using what you've learned*:
+- Capture items as they come up
+- Process your inbox regularly (daily if possible)
+- Use the engage view to see what's actionable
+- Create a few simple projects
+- Experiment with custom views
+
+The best way to learn GTD is to practice the workflow. org-gtd handles the complexity---you just do the work.
+
+For complete filter syntax and all options, see [[#view-dsl-reference][View DSL Filter Reference]].
+
+*Quick reference*:
+- [[#using-org-gtd][Using Org GTD]] - Deep dive into daily workflow and all item types
+- [[#reference][Reference]] - Complete documentation for configuration, commands, properties, views, and hooks
+- [[#troubleshooting][Troubleshooting]] - Solutions to common problems
