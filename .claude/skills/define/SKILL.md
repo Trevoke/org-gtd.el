@@ -1,43 +1,58 @@
+---
+name: define
+description: Use when a new feature request, bug report, or work request needs requirements defined before implementation
+---
+
 # /define — Product Owner Interview
 
-Use when a new work request, feature request, or requirement needs to be broken down into development-ready user stories.
+## Overview
 
-## Behavior
+**Define requirements by interviewing the user.** The interview IS the value — a requirements doc produced without conversation is just guessing.
 
-### 1. Gather Context
-- Read recent commits (`git log --oneline -20`)
-- Read CLAUDE.md for project context
-- Identify relevant source files based on the user's topic
+**Core principle:** Ask, don't assume. Every assumption is a question you didn't ask.
 
-### 2. Interview the User
+## When to Use
 
-**This is the core of the skill.** Never produce requirements without interviewing first.
+- User describes a new feature, bug, or change request
+- Work needs to be broken down before architecture or implementation
+- You need to understand scope, personas, and success criteria
 
-Ask questions **one at a time** using `AskUserQuestion` with multiple-choice options where possible. Cover:
+## The Process
 
-- **Scope**: What exactly should this do? What should it NOT do?
-- **Personas**: Who uses this? What's their context?
-- **Success criteria**: How will we know it works?
-- **Edge cases**: What happens with empty input? Concurrent use? Errors?
-- **Constraints**: Performance requirements? Backward compatibility? Dependencies?
+### 1. Gather Context (silent — don't show this to user)
 
-Present requirements in sections (200-300 words each), validating each section with the user before moving on.
+- Read CLAUDE.md and recent commits
+- Identify relevant source files for the topic
+- Note existing patterns and constraints
 
-### 3. Produce Requirements Document
+### 2. Interview — One Question at a Time
 
-Create INVEST user stories:
-- **I**ndependent: each story stands alone
-- **N**egotiable: room for implementation choices
-- **V**aluable: delivers user value
-- **E**stimable: small enough to estimate
-- **S**mall: completable in one session
-- **T**estable: has clear acceptance criteria
+Use `AskUserQuestion` with multiple-choice options where possible.
 
-Each story follows:
-```
+**You MUST ask questions. You MUST NOT produce requirements without interviewing.**
+
+Cover these areas, one question per turn:
+
+| Area | What to Ask |
+|------|-------------|
+| **Scope** | What should this do? What should it NOT do? |
+| **Personas** | Who uses this? What's their context/skill level? |
+| **Success** | How will we know it works? What does "done" look like? |
+| **Edge cases** | What happens with empty/invalid/unexpected input? |
+| **Constraints** | Backward compat? Performance? Dependencies? |
+
+**After each area**, summarize what you heard (200-300 words) and ask the user to confirm before moving on.
+
+### 3. Produce User Stories
+
+Use INVEST format. Each story must be:
+- **I**ndependent, **N**egotiable, **V**aluable, **E**stimable, **S**mall, **T**estable
+
+Template:
+```markdown
 ### Story N: [Title]
 
-**As a** [persona],
+**As a** [persona from interview],
 **I want** [functionality],
 **So that** [benefit].
 
@@ -48,25 +63,40 @@ Given [context]
 When [action]
 Then [expected result]
 ```
+
+#### Edge Cases
+
+```gherkin
+Given [edge case context]
+When [action]
+Then [expected handling]
 ```
+```
+
+Present stories to user for validation before finalizing.
 
 ### 4. Save and Commit
 
-Ask the user for a short name for this work (or derive one from the topic).
+Ask user for a short name, or derive from the topic.
 
-Save to: `docs/plans/YYYY-MM-DD-<name>-requirements.md`
+```
+docs/plans/YYYY-MM-DD-<name>-requirements.md
+```
 
-Commit the file with message: `docs: add <name> requirements`
+Commit: `docs: add <name> requirements`
 
 ### 5. Next Step
 
-Tell the user:
 > Requirements saved. When ready, use `/architect` to design the solution.
 
-## Rules
+## Common Mistakes
 
-- **Interview first.** The interview IS the value — don't skip it.
-- **One question at a time.** Don't overwhelm with multi-part questions.
-- **Validate sections.** Present each section and get user approval before continuing.
-- **Be concrete.** Vague stories like "handle errors gracefully" are not testable.
-- **Include edge cases.** Every story needs at least one edge case in its acceptance criteria.
+| Mistake | Fix |
+|---------|-----|
+| Producing requirements without interviewing | STOP. Ask questions first. Always. |
+| Asking multiple questions at once | One question per `AskUserQuestion` call |
+| Including implementation/architecture details | Stay in problem space. Code design is `/architect`'s job. |
+| Listing "open questions" without asking them | If it's a question, ASK the user |
+| Using FR-1/AC-1.1 format instead of user stories | Use "As a [persona]..." with Gherkin criteria |
+| Assuming scope instead of scoping with user | Every assumption is a question you skipped |
+| Massive document from a one-line request | Interview to right-size. Small request may mean small scope. |
