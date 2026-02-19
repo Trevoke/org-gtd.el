@@ -1,90 +1,100 @@
+---
+name: implement
+description: Use when a design exists and it's time to break it into tasks and execute with subagent dispatch and review
+---
+
 # /implement — Plan + Execute
 
-Use when a design exists and it's time to break it into tasks, then execute them with subagent dispatch and review.
+## Overview
 
-## Behavior
+**Break a design into bite-sized TDD tasks, execute each with a fresh subagent, review every task before moving on.**
+
+**Core principle:** Small tasks + fresh subagents + two-stage review = high quality.
+
+## When to Use
+
+- Design exists (from `/architect` or provided by user)
+- Ready to write code
+- Work can be broken into independent TDD steps
+
+## The Process
 
 ### 1. Find Design
 
-Look for the most recent design doc in `docs/plans/`:
-```
-docs/plans/*-design.md
-```
-
-If multiple exist, ask the user which one. If none exist, suggest running `/architect` first.
+Look for the most recent `*-design.md` in `docs/plans/`. If none found or multiple exist, ask the user which to use. If no design exists, suggest `/architect` first.
 
 ### 2. Break Into Tasks
 
-Read the design and break it into bite-sized tasks. Each task should be:
-- **2-5 minutes** of focused work
+Each task must be:
 - **One TDD cycle**: one test + its implementation
-- **Independent** where possible (note dependencies where not)
-- **Self-contained**: includes all context needed
+- **2-5 minutes** of focused work
+- **Self-contained**: all context provided inline
 
-For each task, write:
-```
+Template per task:
+```markdown
 ### Task N: [Title]
 
 **Goal**: [one sentence]
-
-**Steps**:
-1. Write test: [describe the test]
-2. Implement: [describe the code]
-3. Verify: [what to check]
-
+**Test**: [describe the test to write first]
+**Implementation**: [describe the code to make it pass]
 **Files**: [which files to create/modify]
-
-**Acceptance Criteria**:
-- [specific, testable criterion]
+**Acceptance Criteria**: [specific, testable]
 ```
 
 ### 3. Save the Plan
 
-Derive name from design doc.
-
-Save to: `docs/plans/YYYY-MM-DD-<name>-plan.md`
+```
+docs/plans/YYYY-MM-DD-<name>-plan.md
+```
 
 ### 4. Execute Each Task
 
-Record the base SHA before starting: `git rev-parse HEAD`
+Record base SHA: `git rev-parse HEAD`
 
-For each task:
+For each task, in order:
 
 #### a. Dispatch Implementer
-Use `Task` tool with `subagent_type: "tdd"` to dispatch the `implementer` agent. Include in the prompt:
-- Full task text (copy it inline — the subagent can't read plan files)
-- Relevant code context (file contents, patterns to follow)
+
+Use `Task` tool with `subagent_type: "tdd"`. In the prompt, include **inline**:
+- Full task text (don't reference plan files — subagent can't read them)
+- Relevant code snippets (read and paste the actual file content)
+- Patterns to follow (paste examples from existing code)
 - Acceptance criteria
 
-#### b. Handle Questions
-If the implementer asks questions, answer from context (design doc, codebase knowledge).
+**Context goes inline.** The subagent receives everything it needs in the prompt.
 
-#### c. Review: Spec Compliance
-When implementer completes, dispatch `spec-reviewer` agent via `Task` tool with `subagent_type: "superpowers:code-reviewer"`. Include:
-- The task spec (acceptance criteria)
-- List of files changed
+#### b. Spec Review
 
-If FAIL: resume the implementer to fix the issues, then re-review.
+When implementer completes, dispatch `spec-reviewer` via `Task` tool with `subagent_type: "superpowers:code-reviewer"`. Include:
+- The task's acceptance criteria (copy inline)
+- List of changed files
 
-#### d. Review: Code Quality
-Dispatch `quality-reviewer` agent via `Task` tool with `subagent_type: "superpowers:code-reviewer"`. Include:
+If FAIL: resume implementer to fix, then re-review.
+
+#### c. Quality Review
+
+Dispatch `quality-reviewer` via `Task` tool with `subagent_type: "superpowers:code-reviewer"`. Include:
 - Base SHA and current HEAD
 - Feature context
 
 If critical issues: resume implementer to fix, then re-review.
 
-#### e. Mark Complete
-Note the task as done. Move to the next task.
+#### d. Move On
+
+Only proceed to next task when both reviews pass.
 
 ### 5. After All Tasks
 
-Tell the user:
-> Implementation complete. When ready, use `/qa` for adversarial testing, or `/refactor` for a quality pass.
+> Implementation complete. Use `/qa` for adversarial testing, or `/refactor` for a quality pass.
 
-## Rules
+## Common Mistakes
 
-- **Context inline.** Subagents receive everything they need in their prompt. They never read plan files.
-- **Fresh subagent per task.** Don't reuse subagents across tasks — fresh context prevents confusion.
-- **Review every task.** No task is "too simple" to review.
-- **Fix before continuing.** Don't move to the next task if reviews fail.
-- **Small tasks.** If a task takes more than 10 minutes, it's too big — split it.
+| Mistake | Fix |
+|---------|-----|
+| Tasks too large (whole features) | One TDD cycle per task. If it takes >10 min, split it. |
+| Expecting subagent to read plan files | Provide ALL context inline in the dispatch prompt. |
+| Skipping review for "simple" tasks | Every task gets spec review + quality review. No exceptions. |
+| Phase-based grouping instead of task list | Flat numbered list. Dependencies noted, not phase boundaries. |
+| No plan file saved | Always save to `docs/plans/YYYY-MM-DD-<name>-plan.md`. |
+| Moving on despite failed review | Fix first. Never proceed with review failures. |
+| Not referencing next step | End with: "use `/qa` or `/refactor` when ready" |
