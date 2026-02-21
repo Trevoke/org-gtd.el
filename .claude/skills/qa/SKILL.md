@@ -1,104 +1,104 @@
+---
+name: qa
+description: Use when implementation is complete and you want to verify quality through adversarial testing that writes code and provides evidence
+---
+
 # /qa — Adversarial Testing
 
-Use when implementation is complete and you want to verify quality through adversarial testing. QA actively tries to break things.
+## Overview
 
-## Behavior
+**QA writes tests and runs them. It provides evidence, not opinions.** Every claim is backed by a test or command output.
+
+**Core principle:** Your job is to break things. Write code. Run it. Show evidence.
+
+## When to Use
+
+- Implementation is complete (or a chunk of work needs verification)
+- You want to check acceptance criteria coverage
+- You want adversarial edge-case testing
+
+## The Process
 
 ### 1. Find Context
 
-Look for requirements and design docs in `docs/plans/`:
-```
-docs/plans/*-requirements.md
-docs/plans/*-design.md
-```
+Look for requirements and design docs in `docs/plans/`. Read both to understand what was built and what was promised.
 
-Read both to understand what was built and what was promised.
-
-### 2. Run Existing Tests
+### 2. Run the Existing Test Suite
 
 ```bash
 ~/bin/eldev etest -r dot
 ```
 
-Report results: how many tests, how many pass, how many fail. If any fail, report them immediately — existing regressions are priority one.
+**Actually run it.** Report exact output: how many tests, how many pass, how many fail. If any fail, report them immediately — existing regressions are priority one.
 
 ### 3. Check Acceptance Criteria Coverage
 
-Read the acceptance criteria from the requirements doc. For each criterion:
+Read acceptance criteria from the requirements doc. For each criterion:
 
-1. **Find the test**: Search for a test that exercises this criterion
-2. **Verify the test**: Read it — does it actually test what the criterion says?
-3. **Report gaps**: List any criteria without adequate test coverage
+1. **Search** for a test that exercises it (`Grep` for keywords)
+2. **Read** the test — does it actually test what the criterion says?
+3. **Report**: covered or gap
+
+```markdown
+| Criterion | Test | Status |
+|-----------|------|--------|
+| User can activate focus mode | focus-test.el:42 | COVERED |
+| Calendar items always visible | (none found) | GAP |
+```
 
 ### 4. Write Missing Tests
 
-For any uncovered acceptance criterion, write a test. Follow existing test patterns in the codebase.
+For each gap, **write the test**. Follow existing patterns in the codebase.
+
+Run it. Report whether it passes or fails.
 
 ### 5. Write Adversarial Tests
 
-Actively try to break things:
+Actively try to break things. **Write actual test code, don't just describe it.**
 
-#### Edge Cases
-- Empty inputs (nil, empty string, empty list)
-- Boundary values (0, 1, max, min)
-- Single-element collections
-- Very large inputs
+Target areas:
+- **Nil/empty inputs**: What happens with nil arguments, empty strings, empty lists?
+- **Boundary values**: 0, 1, max, min
+- **Missing state**: Required properties absent, buffers killed mid-operation
+- **Invalid inputs**: Wrong types, malformed data
+- **Repeated calls**: What if the function is called twice in a row?
 
-#### Error Paths
-- What happens when a file doesn't exist?
-- What happens when a buffer is killed mid-operation?
-- What happens with malformed org content?
-- What happens when required properties are missing?
-
-#### Invalid Inputs
-- Wrong types (string where number expected, etc.)
-- Malformed data
-- Missing required arguments
-
-#### State Issues
-- What if called twice in a row?
-- What if called with no GTD directory configured?
-- What if the org file is read-only?
-
-### 6. Run All Tests
+### 6. Run Everything and Report
 
 ```bash
 ~/bin/eldev etest -r dot
 ```
 
-Report with evidence:
-```
+Report with **evidence** — actual test output, not fabricated numbers:
+
+```markdown
 ## QA Report
 
-**Test Suite**: [N] tests, [M] passing, [K] failing
+**Test Suite**: [paste actual eldev output]
 
 ### Acceptance Criteria Coverage
-- [criterion 1]: COVERED by test_xyz
-- [criterion 2]: COVERED by test_abc
-- [criterion 3]: GAP — wrote test_def to cover
+| Criterion | Test | Status |
+|-----------|------|--------|
+| ... | ... | ... |
 
-### New Tests Written
-- [test name]: tests [what it tests]
+### Tests Written
+- [test name]: tests [what] — [PASS/FAIL]
 
-### Adversarial Tests
-- [test name]: [what it tries to break] — [PASS/FAIL]
-
-### Failures
-- [test name]: [what failed, how to reproduce]
+### Failures Found
+- [test name]: [what failed]
+  - **Reproduction**: [exact command or test invocation]
+  - **Expected**: [what should happen]
+  - **Actual**: [what happened]
 ```
 
-### 7. Report Failures Clearly
+## Common Mistakes
 
-For each failure, provide:
-- **What**: which test failed
-- **Why**: root cause if identifiable
-- **Reproduction**: exact steps or test invocation
-- **Suggestion**: likely fix if obvious
-
-## Rules
-
-- **Write code.** QA doesn't just report — it writes tests and provides evidence.
-- **Be adversarial.** Your job is to find problems, not confirm things work.
-- **Provide evidence.** Every claim needs a test or command output backing it up.
-- **Don't fix bugs.** Report them with evidence. Fixing is the implementer's job.
-- **Run tests, don't imagine them.** Execute every test you write.
+| Mistake | Fix |
+|---------|-----|
+| Describing tests without writing code | WRITE the test. Create the file. Run it. |
+| Fabricating test results | RUN the tests. Paste actual output. |
+| Reporting opinions instead of evidence | Every claim needs a test or command output. |
+| Suggesting implementation fixes | Report problems with evidence. Fixing is the implementer's job. |
+| Categorizing tests instead of running them | Less taxonomy, more `eldev etest`. |
+| Skipping the existing test suite | ALWAYS run the full suite first. Regressions are priority one. |
+| Not checking requirements doc | Cross-reference acceptance criteria. That's what "done" means. |
