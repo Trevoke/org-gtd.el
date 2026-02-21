@@ -594,22 +594,27 @@ Matches items in Tickler OR Someday that were previously Projects."
 (defun org-gtd-view-lang--build-skip-function-for-stuck-single-action ()
   "Build a skip function for stuck-single-action type.
 Matches undone single actions (ORG_GTD=Actions) that are not in NEXT state.
-These need attention because single actions should always be in NEXT."
+These need attention because single actions should always be in NEXT.
+Tasks from fully inactive (cancelled/done) projects are skipped."
   (let ((actions-val (org-gtd-type-org-gtd-value 'next-action))
-        (next-keyword (org-gtd-keywords--next)))
+        (next-keyword (org-gtd-keywords--next))
+        (active-project-pred (org-gtd-pred--task-has-active-project)))
     (lambda ()
       (let ((end (org-entry-end-position)))
         ;; Must be an Actions item
         (if (not (equal (org-entry-get (point) "ORG_GTD") actions-val))
             end  ; Skip - not a single action
-          ;; Must not be done
-          (if (org-entry-is-done-p)
-              end  ; Skip - done
-            ;; Is stuck if NOT in NEXT state
-            (let ((todo-state (org-entry-get (point) "TODO")))
-              (if (equal todo-state next-keyword)
-                  end   ; Skip - properly in NEXT state
-                nil)))))))) ; Include - stuck (not in NEXT)
+          ;; Must belong to at least one active project (or have no project)
+          (if (not (funcall active-project-pred))
+              end  ; Skip - all projects inactive
+            ;; Must not be done
+            (if (org-entry-is-done-p)
+                end  ; Skip - done
+              ;; Is stuck if NOT in NEXT state
+              (let ((todo-state (org-entry-get (point) "TODO")))
+                (if (equal todo-state next-keyword)
+                    end   ; Skip - properly in NEXT state
+                  nil)))))))))
 
 (defun org-gtd-view-lang--done-filter-days (done-value)
   "Return the number of days to look back for DONE-VALUE filter.
