@@ -1960,8 +1960,9 @@ These commands only work when point is on an agenda item:
 
 *What it does*:
 - Finds the project containing the agenda item
-- Marks all remaining tasks as CNCL
-- Updates project status
+- Prompts for confirmation before proceeding
+- Marks all remaining incomplete tasks as CNCL (preserves DONE tasks)
+- Sets the project heading to CNCL
 
 *** Timestamp Commands (DWIM)
 
@@ -2530,6 +2531,7 @@ These commands create GTD items programmatically (useful for automation and Emac
 - Counts items across main inbox and additional inbox files
 - Refreshes periodically to catch external file changes
 - Enables org-edna for task dependencies
+- Detects when a project heading is manually set to CNCL (e.g., via ~C-c C-t~) and prompts for confirmation before cascading the cancellation to incomplete child tasks
 
 *How to enable*:
 #+begin_src emacs-lisp
