@@ -1,77 +1,86 @@
+---
+name: refactor
+description: Use when code quality needs improvement after implementation, without changing behavior
+---
+
 # /refactor — Code Quality Pass
 
-Use after implementation and QA pass, or anytime you want to improve code quality without changing behavior.
+## Overview
 
-## Behavior
+**Improve code structure without changing behavior.** Propose changes, get approval, make one change at a time with tests between each.
 
-### 1. Identify What Changed
+**Core principle:** Never change behavior. Tests must stay green after every change.
 
-Get the recent changes:
+## When to Use
+
+- After implementation and QA pass
+- User requests a quality check on recent work
+- You notice structural issues while working
+
+## The Process
+
+### 1. Establish Baseline
+
+**Run the test suite first. Actually run it.**
+
+```bash
+~/bin/eldev etest -r dot
+```
+
+Record the result. This is your safety net. If tests aren't green before you start, fix that first.
+
+### 2. Identify What Changed
+
 ```bash
 git diff main...HEAD    # if on a branch
-git diff HEAD~N         # if on main, user specifies N
+git log --oneline -N    # user specifies range
 ```
 
-Read all changed files in full — not just the diff.
+Read all changed files **in full** — not just the diff. Context matters.
 
-### 2. Check for Issues
+### 3. Find Issues
 
-Review the code for:
+Look for:
 
-#### DRY Violations
-- Duplicated logic across functions or files
-- Copy-pasted code with minor variations
-- Same concept expressed in multiple places
+| Issue | Signal |
+|-------|--------|
+| **DRY violations** | Same logic in two places |
+| **SRP violations** | Function hard to name (doing too much) |
+| **Naming** | Names don't match what the code does |
+| **Unnecessary complexity** | Abstraction not earning its keep |
+| **Dead code** | Unreachable branches, unused functions |
 
-#### SRP Violations
-- Functions doing more than one thing
-- Modules with mixed responsibilities
-- Functions that are hard to name (sign of doing too much)
+**Don't look for:**
+- Style preferences (tab vs space, quote style)
+- Missing documentation on unchanged code
+- "Improvements" to code you didn't change
 
-#### Naming Clarity
-- Does the code read like prose?
-- Are variable names descriptive?
-- Do function names say what they do?
-- Are naming conventions consistent with the codebase?
+### 4. Propose Changes — Get Approval
 
-#### Unnecessary Complexity
-- Abstractions that aren't earning their keep
-- Indirection that adds confusion without value
-- Over-engineered solutions to simple problems
+Present refactorings ordered by **highest impact, lowest risk** first:
 
-#### Dead Code
-- Unused functions, variables, or imports
-- Commented-out code
-- Unreachable branches
+```markdown
+### 1. [Title] — Impact: High, Risk: Low
 
-### 3. Propose Changes
-
-Present refactoring suggestions in order of impact (highest first):
-
-```
-## Refactoring Proposals
-
-### 1. [Title] — [Impact: High/Medium/Low]
 **What**: [what to change]
 **Why**: [why it improves the code]
 **Risk**: [what could go wrong]
-
-### 2. ...
 ```
 
-Get user approval before making changes.
+**Ask the user which to do.** Don't start changing code without approval.
 
-### 4. Make Changes
+### 5. Make Changes — One at a Time
 
 For each approved refactoring:
-1. Run tests — confirm they pass before starting
-2. Make one refactoring change
-3. Run tests — confirm they still pass
-4. Commit with message describing the refactoring
 
-**Never change behavior.** If a test fails after refactoring, you introduced a bug — revert and try again.
+1. **Run tests** — confirm green before starting
+2. **Make one change** — a single, atomic refactoring
+3. **Run tests** — confirm still green
+4. **Commit** — describe the refactoring, not the code
 
-### 5. Final Verification
+If tests fail after a change: **revert immediately.** You introduced a bug.
+
+### 6. Final Verification
 
 ```bash
 ~/bin/eldev etest -r dot
@@ -79,11 +88,14 @@ For each approved refactoring:
 
 All tests must pass. Report the final state.
 
-## Rules
+## Common Mistakes
 
-- **Never change behavior.** Refactoring changes structure, not behavior. Tests must stay green.
-- **One change at a time.** Each refactoring is atomic and committed separately.
-- **Tests between every change.** If tests break, revert immediately.
-- **Ask before acting.** Present proposals and get approval — don't surprise the user.
-- **Impact order.** Highest-impact, lowest-risk changes first.
-- **Know when to stop.** Not every suggestion needs to be acted on.
+| Mistake | Fix |
+|---------|-----|
+| Changing behavior ("while I'm here") | Refactoring changes structure ONLY. If tests break, revert. |
+| Not running tests before starting | Run tests FIRST. No green baseline = no refactoring. |
+| Making changes without user approval | Propose, get approval, then act. |
+| Multiple changes at once | One change, one test run, one commit. Atomic. |
+| Renaming public API | That's a breaking change, not a refactoring. |
+| Proposing 10+ changes | Focus on 3-5 highest-impact items. Less is more. |
+| Describing changes without making them | Actually edit the files. Actually run the tests. |
