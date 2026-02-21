@@ -21,6 +21,13 @@
                   (or load-file-name byte-compile-current-file buffer-file-name))
                  "../helpers/prelude.el"))
 
+(e-unit-initialize)
+
+(around-each (proceed context)
+  (let ((native-comp-enable-subr-trampolines nil))
+    (ogt-eunit-with-mock-gtd
+      (funcall proceed context))))
+
 ;;; org-gtd-clarify-map Keymap Tests
 
 (deftest keymap/clarify-map-triggers-organize-transient ()
