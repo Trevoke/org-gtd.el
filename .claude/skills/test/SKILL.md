@@ -1,6 +1,6 @@
 ---
 name: test
-description: Use when running eldev etest for this project - parses output, filters noise, returns concise summary
+description: Use EVERY TIME you need to run tests, verify tests pass, or check for regressions. ALWAYS use this instead of running eldev directly.
 ---
 
 # /test — Run Tests with Clean Output

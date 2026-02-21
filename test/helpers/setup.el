@@ -35,6 +35,16 @@
 
 (require 'org-gtd)
 
+;; Capture the project root at load time (this file is at test/helpers/setup.el)
+(defvar ogt-eunit--project-root
+  (file-name-directory
+   (directory-file-name
+    (file-name-directory
+     (directory-file-name
+      (file-name-directory
+       (or load-file-name byte-compile-current-file buffer-file-name))))))
+  "Absolute path to the project root directory.")
+
 ;;; Custom Assertions
 
 (defun assert-same-items (expected actual)
@@ -223,9 +233,16 @@ Kills GTD-related buffers and clears org-mode internal state."
 (defmacro ogt-eunit-with-mock-gtd (&rest body)
   "Execute BODY within a mock GTD filesystem context.
 Sets up the mock filesystem, configures Emacs for testing,
-executes BODY, and cleans up afterward."
+executes BODY, and cleans up afterward.
+Resets `default-directory' to prevent mock paths from leaking
+between tests."
   (declare (indent 0) (debug t))
   `(progn
+     ;; Reset default-directory to the project root before anything else.
+     ;; A previous test may have left it pointing to /mock:/gtd/ after
+     ;; the mock filesystem was torn down. Some tests use relative paths
+     ;; to fixture files, so we need the project root.
+     (setq default-directory ogt-eunit--project-root)
      ;; Clear state BEFORE test to ensure clean start
      (ogt-eunit--clear-org-state)
      (with-mock-fs (ogt-eunit--mock-fs-spec)
