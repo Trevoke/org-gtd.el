@@ -17,3 +17,4 @@ org-gtd-autoloads.el
 .claude/settings.local.json
 org-gtd.log
 .worktrees
+.claude/local/state/
