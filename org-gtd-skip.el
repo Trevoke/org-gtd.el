@@ -39,6 +39,7 @@
 (declare-function org-gtd-projects--has-active-tasks-p "org-gtd-projects")
 (declare-function org-gtd-projects--is-stuck-p "org-gtd-projects")
 (declare-function org-gtd-project-last-clock-out-time "org-gtd-projects")
+(declare-function org-gtd-project--active-p "org-gtd-projects")
 
 ;;;; Functions
 
@@ -374,6 +375,27 @@ active tasks but no immediately actionable (NEXT/WAIT) tasks."
   (lambda ()
     (when (string-equal (org-entry-get nil "ORG_GTD") org-gtd-projects)
       (org-gtd-projects--is-stuck-p (point-marker)))))
+
+(defun org-gtd-pred--task-has-active-project ()
+  "Return predicate checking if task belongs to at least one active project.
+For tasks with ORG_GTD_PROJECT_IDS, checks that at least one project is active.
+Returns t (include) if:
+- No ORG_GTD_PROJECT_IDS (standalone action, not filtered)
+- At least one project ID resolves to an active project
+- Any project ID cannot be found (fail open)
+Returns nil (skip) only when ALL project IDs resolve to inactive projects."
+  (lambda ()
+    (let ((project-ids (org-entry-get-multivalued-property (point) org-gtd-prop-project-ids)))
+      (if (null project-ids)
+          t
+        (let ((any-active nil)
+              (any-unresolvable nil))
+          (dolist (pid project-ids)
+            (if (org-id-find pid 'marker)
+                (when (org-gtd-project--active-p pid)
+                  (setq any-active t))
+              (setq any-unresolvable t)))
+          (or any-active any-unresolvable))))))
 
 ;;;; Timestamp Comparison Predicates
 
