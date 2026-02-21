@@ -552,7 +552,8 @@ Returns a function suitable for `org-agenda-skip-function'."
 
 (defun org-gtd-view-lang--build-skip-function-for-project-type (project-type)
   "Build a skip function for computed PROJECT-TYPE.
-PROJECT-TYPE is one of stuck-project, active-project, completed-project."
+PROJECT-TYPE is one of stuck-project, active-project, completed-project.
+Done/cancelled projects are skipped from stuck-project and active-project views."
   (lambda ()
     (let ((end (org-entry-end-position)))
       ;; Must be a project
@@ -560,13 +561,17 @@ PROJECT-TYPE is one of stuck-project, active-project, completed-project."
           end  ; Skip - not a project
         (cond
          ((eq project-type 'stuck-project)
-          (if (funcall (org-gtd-pred--project-is-stuck))
-              nil    ; Include - project is stuck
-            end))    ; Skip - project is not stuck
+          (if (org-entry-is-done-p)
+              end  ; Skip - done/cancelled project
+            (if (funcall (org-gtd-pred--project-is-stuck))
+                nil    ; Include - project is stuck
+              end)))   ; Skip - project is not stuck
          ((eq project-type 'active-project)
-          (if (funcall (org-gtd-pred--project-has-active-tasks))
-              nil    ; Include - has active tasks
-            end))    ; Skip - no active tasks
+          (if (org-entry-is-done-p)
+              end  ; Skip - done/cancelled project
+            (if (funcall (org-gtd-pred--project-has-active-tasks))
+                nil    ; Include - has active tasks
+              end)))   ; Skip - no active tasks
          ((eq project-type 'completed-project)
           (if (not (funcall (org-gtd-pred--project-has-active-tasks)))
               nil    ; Include - no active tasks (completed)
