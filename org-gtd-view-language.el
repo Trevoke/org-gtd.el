@@ -517,33 +517,38 @@ Returns a string like \"LEVEL>0+ORG_GTD=\\\"Calendar\\\"/TODO=\\\"NEXT\\\"\"."
 (defun org-gtd-view-lang--build-skip-function-for-stuck-type (base-type)
   "Build a skip function for stuck items of BASE-TYPE.
 Stuck items are included if they have ANY missing/invalid metadata.
+Tasks from fully inactive (cancelled/done) projects are skipped.
 Returns a function suitable for `org-agenda-skip-function'."
   (let ((org-gtd-val (org-gtd-type-org-gtd-value base-type))
         (when-prop (org-gtd-type-property base-type :when))
-        (who-prop (org-gtd-type-property base-type :who)))
+        (who-prop (org-gtd-type-property base-type :who))
+        (active-project-pred (org-gtd-pred--task-has-active-project)))
     (lambda ()
       (let ((end (org-entry-end-position)))
         ;; Must match the base type
         (if (not (equal (org-entry-get (point) "ORG_GTD") org-gtd-val))
             end  ; Skip - wrong type
-          ;; Item is stuck if ANY of the following are true:
-          ;; - Invalid timestamp (when type has :when property)
-          ;; - Missing/empty who (when type has :who property)
-          (let ((is-stuck nil))
-            (when when-prop
-              (let ((ts-value (org-entry-get (point) when-prop)))
-                (when (or (not ts-value)
-                          (string-empty-p (string-trim ts-value))
-                          (not (string-match org-ts-regexp-both ts-value)))
-                  (setq is-stuck t))))
-            (when (and who-prop (not is-stuck))
-              (let ((who-value (org-entry-get (point) who-prop)))
-                (when (or (not who-value)
-                          (string-empty-p (string-trim who-value)))
-                  (setq is-stuck t))))
-            (if is-stuck
-                nil   ; Include - item is stuck
-              end))))))) ; Skip - item is not stuck
+          ;; Must belong to at least one active project (or have no project)
+          (if (not (funcall active-project-pred))
+              end  ; Skip - all projects inactive
+            ;; Item is stuck if ANY of the following are true:
+            ;; - Invalid timestamp (when type has :when property)
+            ;; - Missing/empty who (when type has :who property)
+            (let ((is-stuck nil))
+              (when when-prop
+                (let ((ts-value (org-entry-get (point) when-prop)))
+                  (when (or (not ts-value)
+                            (string-empty-p (string-trim ts-value))
+                            (not (string-match org-ts-regexp-both ts-value)))
+                    (setq is-stuck t))))
+              (when (and who-prop (not is-stuck))
+                (let ((who-value (org-entry-get (point) who-prop)))
+                  (when (or (not who-value)
+                            (string-empty-p (string-trim who-value)))
+                    (setq is-stuck t))))
+              (if is-stuck
+                  nil   ; Include - item is stuck
+                end)))))))) ; Skip - item is not stuck
 
 (defun org-gtd-view-lang--build-skip-function-for-project-type (project-type)
   "Build a skip function for computed PROJECT-TYPE.
@@ -879,6 +884,8 @@ The function composes predicates from the view spec filters."
         ;; Add todo keyword predicate
         (when-let ((todo-filter (alist-get 'todo gtd-view-spec)))
           (push (org-gtd-pred--todo-matches todo-filter) predicates))
+        ;; Exclude tasks from fully inactive projects
+        (push (org-gtd-pred--task-has-active-project) predicates)
         ;; Always exclude done items from native blocks
         (push (org-gtd-pred--not-done) predicates)
         ;; Compose predicates into skip function
