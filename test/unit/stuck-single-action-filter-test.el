@@ -1,6 +1,6 @@
 ;;; stuck-single-action-filter-test.el --- Tests for stuck-single-action inactive project filtering -*- lexical-binding: t; coding: utf-8 -*-
 
-;; Copyright (C) 2025 Aldric Giacomoni
+;; Copyright (C) 2026 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -70,6 +70,34 @@
     (let ((skip-fn (org-gtd-view-lang--build-skip-function-for-stuck-single-action)))
       (org-with-point-at (nth 0 task-markers)
         (assert-true (funcall skip-fn))))))
+
+(deftest stuck-sa-filter/done-project-task-skipped ()
+  "Task from a DONE project is skipped by stuck-single-action filter."
+  (let* ((project-info
+          (with-current-buffer (org-gtd--default-file)
+            (goto-char (point-max))
+            (make-project "Done Project"
+                          :tasks '((:description "Task 1" :status todo)))))
+         (project-marker (plist-get project-info :marker))
+         (task-markers (plist-get project-info :task-markers)))
+    ;; Set project heading to DONE
+    (org-with-point-at project-marker
+      (let ((org-inhibit-logging 'note))
+        (org-todo "DONE")))
+    ;; Now test the skip function on the task
+    (let ((skip-fn (org-gtd-view-lang--build-skip-function-for-stuck-single-action)))
+      (org-with-point-at (nth 0 task-markers)
+        (assert-true (funcall skip-fn))))))
+
+(deftest stuck-sa-filter/standalone-stuck-task-included ()
+  "A stuck single action with no project is included."
+  (let ((task-marker
+         (with-current-buffer (org-gtd--default-file)
+           (goto-char (point-max))
+           (make-task "Orphan stuck task" :status 'todo :level 1))))
+    (let ((skip-fn (org-gtd-view-lang--build-skip-function-for-stuck-single-action)))
+      (org-with-point-at task-marker
+        (assert-nil (funcall skip-fn))))))
 
 (provide 'stuck-single-action-filter-test)
 ;;; stuck-single-action-filter-test.el ends here
