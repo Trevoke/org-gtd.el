@@ -36,6 +36,7 @@
 (declare-function org-gtd-agenda-property-add-properties "org-gtd-agenda-property")
 (declare-function org-gtd-wip--cleanup-all-temp-files "org-gtd-wip")
 (declare-function org-gtd-single-action--maybe-convert-to-delegated "org-gtd-single-action")
+(declare-function org-gtd-project--maybe-cancel-from-hook "org-gtd-projects")
 
 ;;;; Constants
 
@@ -115,6 +116,8 @@ previous values."
   (remove-hook 'org-after-todo-state-change-hook #'org-gtd-project--maybe-update-cookies)
   ;; Remove single action WAIT conversion hook
   (remove-hook 'org-after-todo-state-change-hook #'org-gtd-single-action--maybe-convert-to-delegated)
+  ;; Remove project cancel detection hook
+  (remove-hook 'org-after-todo-state-change-hook #'org-gtd-project--maybe-cancel-from-hook)
   ;; Remove agenda property hooks
   (remove-hook 'org-agenda-finalize-hook #'org-gtd-agenda-property-add-properties)
   (remove-hook 'org-finalize-agenda-hook #'org-gtd-agenda-property-add-properties)
@@ -143,6 +146,8 @@ configuration."
   (add-hook 'org-after-todo-state-change-hook #'org-gtd-project--maybe-update-cookies)
   ;; Add single action WAIT conversion hook
   (add-hook 'org-after-todo-state-change-hook #'org-gtd-single-action--maybe-convert-to-delegated)
+  ;; Add project cancel detection hook
+  (add-hook 'org-after-todo-state-change-hook #'org-gtd-project--maybe-cancel-from-hook)
   ;; Add agenda property hooks (support both old and new hook names)
   (if (boundp 'org-agenda-finalize-hook)
       (add-hook 'org-agenda-finalize-hook #'org-gtd-agenda-property-add-properties)

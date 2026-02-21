@@ -52,6 +52,10 @@
 ;; Defined in org-gtd-someday.el - forward declared to avoid circular dependency.
 (defvar org-gtd-someday-lists)
 
+;; Dynamically bound by org-mode during state change hooks
+(defvar org-state)
+(defvar org-last-state)
+
 ;;;; External Function Declarations
 
 ;; Functions from org-gtd-context.el (loaded lazily in DWIM commands)
@@ -116,6 +120,44 @@ instead.")
 (defconst org-gtd-project--cookie-regexp
   "\\s-*\\[\\([0-9]+\\)/\\([0-9]+\\)\\]\\[\\([0-9]+\\)%\\]\\s-*"
   "Regexp matching progress cookies [N/M][P%].")
+
+(defvar org-gtd-project--cancel-in-progress nil
+  "Guard variable to prevent re-entrant cancellation prompts.
+When non-nil, the `org-after-todo-state-change-hook' handler for
+project cancellation is suppressed.")
+
+(defun org-gtd-project--maybe-cancel-from-hook ()
+  "Hook function for `org-after-todo-state-change-hook'.
+When a project heading is changed to CNCL, prompts for confirmation
+and cancels child tasks.  If declined, reverts the heading state."
+  (unless org-gtd-project--cancel-in-progress
+    (when (and (equal org-state (org-gtd-keywords--canceled))
+               (equal (org-entry-get (point) "ORG_GTD")
+                      (org-gtd-type-org-gtd-value 'project)))
+      (let ((heading-name (org-get-heading t t t t)))
+        (if (yes-or-no-p (format "Cancel project '%s'? " heading-name))
+            (progn
+              (setq org-gtd-project--cancel-in-progress t)
+              (unwind-protect
+                  (progn
+                    (org-edna-mode -1)
+                    ;; Cancel all incomplete child tasks
+                    (let ((task-markers (org-gtd-dependencies-collect-project-tasks (point-marker))))
+                      (dolist (task-marker task-markers)
+                        (org-with-point-at task-marker
+                          (when (org-gtd-projects--incomplete-task-p)
+                            (let ((org-inhibit-logging 'note))
+                              (org-todo (org-gtd-keywords--canceled)))))))
+                    (save-buffer))
+                (org-edna-mode 1)
+                (setq org-gtd-project--cancel-in-progress nil)))
+          ;; User declined: revert heading to previous state
+          (when org-last-state
+            (setq org-gtd-project--cancel-in-progress t)
+            (unwind-protect
+                (let ((org-inhibit-logging 'note))
+                  (org-todo org-last-state))
+              (setq org-gtd-project--cancel-in-progress nil))))))))
 
 ;;;; Context Helpers
 
@@ -321,10 +363,8 @@ Works from graph view or agenda context.
 Marks all incomplete tasks in the project as canceled."
   (interactive)
   (let ((project-marker (org-gtd-project--get-marker-from-context)))
-    (when (yes-or-no-p "Really cancel this project? ")
-      (org-with-point-at project-marker
-        (org-gtd-project-cancel))
-      (message "Project canceled"))))
+    (org-with-point-at project-marker
+      (org-gtd-project-cancel))))
 
 ;;;###autoload
 (defun org-gtd-stuck-projects ()
@@ -340,19 +380,30 @@ constitutes a stuck project in the GTD system."
 
 ;;;###autoload
 (defun org-gtd-project-cancel ()
-  "With point on topmost project heading, mark all undone tasks canceled."
+  "With point on topmost project heading, mark all undone tasks canceled.
+Prompts for confirmation with the project heading name before canceling."
   (interactive)
-  (org-edna-mode -1)
-  ;; v4: No need for with-org-gtd-context - operation doesn't need macro bindings
-  (let ((task-markers (org-gtd-dependencies-collect-project-tasks (point-marker))))
-    (dolist (task-marker task-markers)
-      (org-with-point-at task-marker
-        (when (org-gtd-projects--incomplete-task-p)
-          (let ((org-inhibit-logging 'note))
-            (org-todo (org-gtd-keywords--canceled)))))))
-  (org-edna-mode 1)
-  ;; Save changes to disk
-  (save-buffer))
+  (let ((heading-name (org-get-heading t t t t)))
+    (when (yes-or-no-p (format "Cancel project '%s'? " heading-name))
+      (setq org-gtd-project--cancel-in-progress t)
+      (unwind-protect
+          (progn
+            (org-edna-mode -1)
+            ;; Set project heading to CNCL if not already
+            (unless (string= (org-get-todo-state) (org-gtd-keywords--canceled))
+              (let ((org-inhibit-logging 'note))
+                (org-todo (org-gtd-keywords--canceled))))
+            ;; Cancel all incomplete child tasks
+            (let ((task-markers (org-gtd-dependencies-collect-project-tasks (point-marker))))
+              (dolist (task-marker task-markers)
+                (org-with-point-at task-marker
+                  (when (org-gtd-projects--incomplete-task-p)
+                    (let ((org-inhibit-logging 'note))
+                      (org-todo (org-gtd-keywords--canceled)))))))
+            ;; Save changes to disk
+            (save-buffer))
+        (org-edna-mode 1)
+        (setq org-gtd-project--cancel-in-progress nil)))))
 
 ;;;###autoload
 (defun org-gtd-project-cancel-from-agenda ()

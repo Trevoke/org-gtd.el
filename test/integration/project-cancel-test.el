@@ -20,6 +20,7 @@
          (concat (file-name-directory
                   (or load-file-name byte-compile-current-file buffer-file-name))
                  "../helpers/prelude.el"))
+(require 'with-simulated-input)
 
 ;;; Test Setup
 
@@ -39,7 +40,8 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
   (with-current-buffer org-agenda-buffer
     (goto-char (point-min))
     (search-forward "Task 1")
-    (org-gtd-project-cancel-from-agenda)
+    (with-simulated-input "yes RET"
+      (org-gtd-project-cancel-from-agenda))
     (org-gtd-archive-completed-items))
 
   (let ((archived-projects (archive-string)))
@@ -51,7 +53,8 @@ Disable native compilation trampolines to avoid mock-fs conflicts with /tmp/."
   (with-current-buffer (org-gtd--default-file)
     (goto-char (point-min))
     (search-forward "project tailline")
-    (org-gtd-project-cancel)
+    (with-simulated-input "yes RET"
+      (org-gtd-project-cancel))
     (org-gtd-archive-completed-items)
     (basic-save-buffer))
 
@@ -121,7 +124,8 @@ Must find project via ORG_GTD_PROJECT_IDS, not via org-up-heading-safe."
         (goto-char (point-min))
         (search-forward "Task in other file")
         ;; This should cancel the whole project, even though task is not outline child
-        (org-gtd-project-cancel-from-agenda))
+        (with-simulated-input "yes RET"
+          (org-gtd-project-cancel-from-agenda)))
 
       ;; Verify project was canceled by checking that tasks are CNCL
       (with-current-buffer (org-gtd--default-file)
