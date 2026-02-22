@@ -26,7 +26,7 @@
 
 ;;; Code:
 
-(define-package "org-gtd" "4.5.1"
+(define-package "org-gtd" "4.6.0"
   "An implementation of GTD."
   '((emacs "28.1")
     (compat "30.0.0.0")

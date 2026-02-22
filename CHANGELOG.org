@@ -1,3 +1,33 @@
+* 4.6.0 - 2026-02-21
+
+** Added
+*** Project cancel confirmation (Issue #283)
+When ~org-gtd-mode~ is enabled and you change a project heading's TODO state to
+~CNCL~ (e.g. via ~C-c C-t~), org-gtd now detects this and offers to cancel all
+incomplete child tasks automatically. A confirmation prompt lets you choose
+whether to cascade the cancellation.
+
+This complements the existing ~org-gtd-project-cancel~ command by catching manual
+state changes that bypass the command.
+
+*** Inactive project tasks filtered from active views (Issue #283)
+Tasks belonging exclusively to cancelled or done projects no longer appear in
+active-task views (stuck single actions, stuck calendar/delegated/tickler/habit,
+engage views, etc.). This is automatic—no configuration needed.
+
+- Tasks with no project (~ORG_GTD_PROJECT_IDS~ absent) are unaffected
+- Multi-project tasks: only hidden when *all* projects are inactive
+- Unresolvable project IDs: task stays visible (fail-open)
+
+Done and cancelled project headings are also excluded from stuck-project and
+active-project views. The completed-project view is unaffected.
+
+** Fixed
+*** Flaky tests from ~default-directory~ leak
+Test ordering could cause intermittent failures when ~default-directory~ was left
+pointing to ~​/mock:/gtd/~ after a test's mock filesystem was torn down. Fixed by
+resetting ~default-directory~ to the project root at the start of each test.
+
 * 4.5.1 - 2026-02-11
 
 ** Fixed
