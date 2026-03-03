@@ -675,6 +675,31 @@
       (assert-match "Calendar" content)
       (assert-match "Actions" content))))
 
+(deftest clarify/duplicate-rename-full-workflow ()
+  "Renamed duplicates have correct titles throughout the workflow."
+  (capture-inbox-item "Generic task")
+  (org-gtd-process-inbox)
+  ;; Create a renamed duplicate
+  (with-wip-buffer
+    (with-simulated-input "C-a C-k Specific SPC task RET"
+      (org-gtd-clarify-duplicate)))
+  ;; Organize original
+  (with-wip-buffer
+    (organize-as-single-action))
+  ;; Now processing the renamed duplicate
+  (with-wip-buffer
+    ;; Heading should be the renamed title
+    (goto-char (point-min))
+    (assert-equal "Specific task" (nth 4 (org-heading-components))))
+  ;; Organize the duplicate
+  (with-wip-buffer
+    (organize-as-single-action))
+  ;; Verify both exist in GTD system
+  (with-current-buffer (org-gtd--default-file)
+    (let ((content (buffer-string)))
+      (assert-match "Generic task" content)
+      (assert-match "Specific task" content))))
+
 (provide 'clarify-test)
 
 ;;; clarify-test.el ends here
