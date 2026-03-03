@@ -667,8 +667,9 @@
 
   ;; Verify items exist in GTD system - all should be "Meeting prep"
   ;; (the original plus two exact duplicates)
+  ;; Read buffer directly — org-refile modifies the buffer in memory
+  ;; without saving, so revert-buffer would lose unsaved refile content.
   (with-current-buffer (org-gtd--default-file)
-    (revert-buffer t t)
     (let ((content (buffer-string)))
       ;; Should have Calendar and Actions sections with "Meeting prep"
       (assert-match "Meeting prep" content)
