@@ -30,6 +30,7 @@
 (require 'org-agenda)
 
 (require 'org-gtd-core)
+(require 'org-gtd-id)
 (require 'org-gtd-wip)
 (require 'org-gtd-horizons)
 
@@ -629,33 +630,44 @@ Creates or updates the queue buffer with current queue contents."
 
 ;;;;; Queue Processing
 
-(defun org-gtd-clarify--process-next-queued-item (queue window-config continuation)
+(defun org-gtd-clarify--process-next-queued-item (queue window-config continuation old-task-id)
   "Process the next item from the duplicate QUEUE.
 WINDOW-CONFIG is restored after all items are processed.
-CONTINUATION is called after the queue is empty."
+CONTINUATION is called after the queue is empty.
+OLD-TASK-ID is the clarify-id of the buffer being reused."
   (let ((item (pop queue)))
     (if item
         (let* ((content (plist-get item :content))
-               (clarify-id (org-id-new))
-               (processing-buffer (org-gtd-wip--get-buffer clarify-id)))
-          ;; Initialize buffer with queued content
+               (temp-file (gethash old-task-id org-gtd-wip--temp-files))
+               (processing-buffer (if temp-file
+                                      (find-buffer-visiting temp-file)
+                                    (org-gtd-wip--get-buffer (org-id-new)))))
           (with-current-buffer processing-buffer
+            ;; Clear buffer and insert new content
+            (let ((inhibit-read-only t))
+              (erase-buffer))
             (insert content)
             (goto-char (point-min))
-            (unless (derived-mode-p 'org-gtd-clarify-mode)
-              (org-gtd-clarify-mode))
-            (setq-local org-gtd-clarify--window-config window-config
-                        org-gtd-clarify--clarify-id clarify-id
-                        org-gtd-clarify--continuation continuation
-                        org-gtd-clarify--source-heading-marker nil
-                        org-gtd-clarify--duplicate-queue queue))
-          ;; Update queue display or cleanup if empty
-          (with-current-buffer processing-buffer
+            ;; Delete stale ID from original, generate fresh one
+            (org-entry-delete nil "ID")
+            (let ((new-id (org-gtd-id-get-create)))
+              (org-gtd-wip--rekey old-task-id new-id)
+              ;; Ensure mode is active
+              (unless (derived-mode-p 'org-gtd-clarify-mode)
+                (org-gtd-clarify-mode))
+              ;; Update buffer-local state
+              (setq-local org-gtd-clarify--window-config window-config
+                          org-gtd-clarify--clarify-id new-id
+                          org-gtd-clarify--continuation continuation
+                          org-gtd-clarify--source-heading-marker nil
+                          org-gtd-clarify--duplicate-queue queue))
+            ;; Update queue display or cleanup if empty
             (if (org-gtd-clarify--queue-empty-p)
                 (org-gtd-clarify--queue-cleanup)
-              (org-gtd-clarify--queue-display)))
-          (org-gtd-clarify-setup-windows processing-buffer))
+              (org-gtd-clarify--queue-display))))
       ;; No more items - cleanup and continue
+      (when old-task-id
+        (org-gtd-wip--cleanup-temp-file old-task-id))
       (org-gtd-clarify--queue-cleanup)
       (message "All duplicates processed")
       (when window-config

@@ -134,14 +134,14 @@ This handles the internal bits of `org-gtd'."
                   (goto-char position)
                   (with-temp-message ""
                     (org-cut-subtree)))))))
-        (when task-id
-          (org-gtd-wip--cleanup-temp-file task-id))
         ;; Check if we have queued duplicates to process
         (if duplicate-queue
-            ;; Process queued duplicates before calling continuation
+            ;; Reuse current buffer for next queued item
             (org-gtd-clarify--process-next-queued-item
-             duplicate-queue window-config continuation)
-          ;; No queue - proceed with normal flow
+             duplicate-queue window-config continuation task-id)
+          ;; No queue - clean up and proceed with normal flow
+          (when task-id
+            (org-gtd-wip--cleanup-temp-file task-id))
           (when window-config
             (set-window-configuration window-config))
           (when continuation (funcall continuation)))

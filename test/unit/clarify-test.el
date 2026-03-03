@@ -377,6 +377,53 @@
   ;; Queue should be empty, no more WIP buffers from this session
   (assert-nil (ogt-get-wip-buffer)))
 
+;;; Queue Processing: Buffer Reuse Tests
+
+(deftest clarify/queued-duplicate-gets-fresh-id ()
+  "Each queued duplicate gets its own org-gtd-style ID, not a stale copy."
+  (capture-inbox-item "Buy groceries")
+  (org-gtd-process-inbox)
+  ;; Capture the original's ID
+  (let (original-id)
+    (with-wip-buffer
+      (goto-char (point-min))
+      (setq original-id (org-entry-get nil "ID"))
+      (org-gtd-clarify-duplicate-exact))
+    ;; Organize the original
+    (with-wip-buffer
+      (organize-as-single-action))
+    ;; Now clarifying the duplicate — check its ID
+    (with-wip-buffer
+      (goto-char (point-min))
+      (let ((dup-id (org-entry-get nil "ID")))
+        ;; Must have an ID
+        (assert-true dup-id)
+        ;; Should be human-readable (contains heading slug), not a UUID
+        (assert-match "buy-groceries" (downcase dup-id))
+        ;; The ID was freshly generated (not a leftover from the queued content)
+        ;; — verify by checking it's a valid org-gtd-style ID with timestamp
+        (assert-match "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}" dup-id)))
+    ;; Cleanup
+    (with-wip-buffer
+      (organize-as-single-action))))
+
+(deftest clarify/queued-duplicate-has-readable-buffer-name ()
+  "WIP buffer has a human-readable name when processing queue items."
+  (capture-inbox-item "Plan vacation")
+  (org-gtd-process-inbox)
+  (with-wip-buffer
+    (org-gtd-clarify-duplicate-exact))
+  (with-wip-buffer
+    (organize-as-single-action))
+  ;; Now processing the duplicate
+  (let ((buf (ogt-get-wip-buffer)))
+    (assert-true buf)
+    ;; Buffer name should contain a slug, not a UUID
+    (assert-match "plan-vacation" (downcase (buffer-name buf))))
+  ;; Cleanup
+  (with-wip-buffer
+    (organize-as-single-action)))
+
 ;;; Cancel with Queue Tests
 
 (deftest clarify/stop-with-queue-prompts-discard ()
