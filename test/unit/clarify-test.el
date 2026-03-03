@@ -426,34 +426,57 @@
 
 ;;; Cancel with Queue Tests
 
-(deftest clarify/stop-with-queue-prompts-discard ()
-  "Stopping with pending duplicates - discard clears queue."
+(deftest clarify/stop-with-queue-skips-to-next ()
+  "Stopping with pending duplicates skips to next item in queue."
   (capture-inbox-item "Original item")
   (org-gtd-process-inbox)
   (with-wip-buffer
     (org-gtd-clarify-duplicate-exact)
     (org-gtd-clarify-duplicate-exact))
-  ;; Simulate choosing discard
+  ;; Organize the original
   (with-wip-buffer
-    (with-simulated-input "d"
-      (org-gtd-clarify-stop)))
-  ;; Queue should be cleared, no queue window
-  (assert-nil (get-buffer "*Org GTD Duplicate Queue*")))
+    (organize-as-single-action))
+  ;; Now on first duplicate — stop/skip it
+  (with-wip-buffer
+    (org-gtd-clarify-stop))
+  ;; Should still have a WIP buffer (second duplicate)
+  (assert-true (ogt-get-wip-buffer))
+  ;; Organize the remaining one
+  (with-wip-buffer
+    (organize-as-single-action))
+  (assert-nil (ogt-get-wip-buffer)))
 
-(deftest clarify/stop-save-to-inbox-preserves-duplicates ()
-  "Choosing save-to-inbox preserves duplicates in inbox."
+(deftest clarify/stop-without-queue-restores-window-config ()
+  "Stopping without a queue restores the original window configuration."
   (capture-inbox-item "Original item")
   (org-gtd-process-inbox)
+  ;; Stop without adding any duplicates
   (with-wip-buffer
+    (org-gtd-clarify-stop))
+  ;; No WIP buffer should remain
+  (assert-nil (ogt-get-wip-buffer)))
+
+(deftest clarify/stop-continues-queue-with-next-item ()
+  "Stopping discards only the current item and processes next in queue."
+  (capture-inbox-item "Multi task")
+  (org-gtd-process-inbox)
+  ;; Create two duplicates
+  (with-wip-buffer
+    (org-gtd-clarify-duplicate-exact)
     (org-gtd-clarify-duplicate-exact))
-  ;; Simulate choosing save
+  ;; Organize original
   (with-wip-buffer
-    (with-simulated-input "s"
-      (org-gtd-clarify-stop)))
-  ;; Check inbox has the duplicate (need to refresh buffer)
-  (with-current-buffer (find-file-noselect (org-gtd-inbox-path))
-    (revert-buffer t t)
-    (assert-match "Original item" (buffer-string))))
+    (organize-as-single-action))
+  ;; Now clarifying first duplicate — cancel it
+  (with-wip-buffer
+    (org-gtd-clarify-stop))
+  ;; Should now be clarifying the second duplicate, not done
+  (assert-true (ogt-get-wip-buffer))
+  ;; Organize the second one
+  (with-wip-buffer
+    (organize-as-single-action))
+  ;; Now done
+  (assert-nil (ogt-get-wip-buffer)))
 
 ;;; Kill-Emacs Query Tests
 

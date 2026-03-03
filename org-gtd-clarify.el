@@ -286,36 +286,32 @@ WINDOW-CONFIG is the window config to set after clarification finishes."
 
 (defun org-gtd-clarify-stop ()
   "Stop clarifying the current item and restore previous state.
-Closes the horizons view, restores the window configuration,
-cleans up temp file, and kills the WIP buffer without organizing the item.
-If there are pending duplicates, prompts whether to discard or save them."
+If there are pending duplicates in the queue, discards only the current
+item and moves to the next queued item. Otherwise restores the window
+configuration and cleans up."
   (interactive)
-  ;; Handle pending duplicates first
-  (when (and (boundp 'org-gtd-clarify--duplicate-queue)
-             (not (org-gtd-clarify--queue-empty-p)))
-    (pcase (org-gtd-clarify--prompt-queue-action)
-      ('save (org-gtd-clarify--queue-save-to-inbox))
-      ('cancel (keyboard-quit))
-      ('discard nil)))  ; Just continue with cleanup
-
-  (let ((window-config org-gtd-clarify--window-config)
+  (let ((queue (copy-sequence org-gtd-clarify--duplicate-queue))
+        (window-config org-gtd-clarify--window-config)
         (task-id org-gtd-clarify--clarify-id)
+        (continuation org-gtd-clarify--continuation)
         (inbox-p org-gtd-clarify--inbox-p))
-    ;; Clean up queue display
-    (org-gtd-clarify--queue-cleanup)
-    ;; Clean up horizons view
-    (org-gtd-clarify--cleanup-horizons-view)
-    ;; Clean up temp file and kill buffer
-    (when task-id
-      (org-gtd-wip--cleanup-temp-file task-id))
-    ;; Clear inbox processing session state if we were processing inbox
-    (when inbox-p
-      (setq org-gtd-process--session-active nil
-            org-gtd-process--pending-inboxes nil))
-    ;; Restore window configuration
-    (when window-config
-      (set-window-configuration window-config))
-    (message "Stopped clarifying")))
+    ;; Clear queue on current buffer so kill hooks don't prompt
+    (setq org-gtd-clarify--duplicate-queue nil)
+    (if queue
+        ;; Queue has items — discard current, process next
+        (org-gtd-clarify--process-next-queued-item
+         queue window-config continuation task-id)
+      ;; No queue — full cleanup
+      (org-gtd-clarify--queue-cleanup)
+      (org-gtd-clarify--cleanup-horizons-view)
+      (when task-id
+        (org-gtd-wip--cleanup-temp-file task-id))
+      (when inbox-p
+        (setq org-gtd-process--session-active nil
+              org-gtd-process--pending-inboxes nil))
+      (when window-config
+        (set-window-configuration window-config))
+      (message "Stopped clarifying"))))
 
 (defun org-gtd-clarify-duplicate ()
   "Duplicate current item with a new title.
