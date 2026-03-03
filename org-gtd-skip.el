@@ -165,6 +165,17 @@ Falls back to checking parent project headings via ORG_GTD_PROJECT_IDS."
              (let ((proj-tags (org-get-tags nil t)))
                (cl-some (lambda (tag) (member tag proj-tags)) tags))))))))
 
+(defun org-gtd-pred--area-of-focus-matches (value)
+  "Return predicate checking if item's area of focus matches VALUE.
+Checks item's own CATEGORY property first.  If not set, falls back to
+parent project's CATEGORY via ORG_GTD_PROJECT_IDS."
+  (lambda ()
+    (let ((aof (or (org-entry-get (point) org-gtd-prop-area-of-focus)
+                   (org-gtd-pred--any-project-satisfies
+                    (lambda ()
+                      (org-entry-get (point) org-gtd-prop-area-of-focus))))))
+      (equal aof value))))
+
 ;;;; Deadline/Scheduled Predicates
 
 (defun org-gtd-pred--deadline-matches (time-spec)

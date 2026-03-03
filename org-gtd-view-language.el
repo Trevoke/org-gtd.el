@@ -793,9 +793,9 @@ The function composes predicates from the view spec filters."
           (let ((org-gtd-val (org-gtd-type-org-gtd-value type-filter)))
             (when org-gtd-val
               (push (org-gtd-pred--property-equals "ORG_GTD" org-gtd-val) predicates))))
-        ;; Add area-of-focus predicate (uses CATEGORY property)
+        ;; Add area-of-focus predicate (inherits from parent project)
         (when area-filter
-          (push (org-gtd-pred--property-equals org-gtd-prop-area-of-focus area-filter) predicates))
+          (push (org-gtd-pred--area-of-focus-matches area-filter) predicates))
         ;; Add when predicate based on type's semantic property
         (when (and when-filter type-filter)
           (let ((when-prop (org-gtd-type-property type-filter :when)))
