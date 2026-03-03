@@ -15,9 +15,14 @@
 
 ;;; Code:
 
-(require 'e-unit)
-(require 'org-gtd)
+(require 'ogt-eunit-prelude
+         (concat (file-name-directory
+                  (or load-file-name byte-compile-current-file buffer-file-name))
+                 "../helpers/prelude.el"))
 (require 'org-gtd-view-language)
+
+;; Initialize e-unit short syntax
+(e-unit-initialize)
 
 ;;; GTD View Language Specification - Native Tests Only
 
@@ -1336,6 +1341,41 @@
 (deftest view-lang/done-filter-accepts-implicit-negative ()
   "Done filter accepts implicit negative (no sign means past)."
   (assert-nil (org-gtd-view-lang--validate-done-comparison '(< "7d"))))
+
+;;;; Project Inheritance Integration
+
+(deftest view-lang/tags-filter-inherits-from-project ()
+  "View DSL tags filter includes project tasks via project tag inheritance."
+  (let ((native-comp-enable-subr-trampolines nil))
+    (ogt-eunit-with-mock-gtd
+      (let* ((project-info
+              (with-current-buffer (org-gtd--default-file)
+                (goto-char (point-max))
+                (make-project "Build app"
+                              :tags '("@work")
+                              :tasks '("Write code"))))
+             (task-marker (car (plist-get project-info :task-markers))))
+        (org-with-point-at task-marker
+          (let* ((spec '((type . next-action) (tags . ("@work"))))
+                 (skip-fn (org-gtd-view-lang--build-skip-function spec)))
+            ;; Task should NOT be skipped (included via project inheritance)
+            (assert-nil (funcall skip-fn))))))))
+
+(deftest view-lang/area-of-focus-filter-inherits-from-project ()
+  "View DSL area-of-focus filter includes project tasks via inheritance."
+  (let ((native-comp-enable-subr-trampolines nil))
+    (ogt-eunit-with-mock-gtd
+      (let* ((project-info
+              (with-current-buffer (org-gtd--default-file)
+                (goto-char (point-max))
+                (make-project "Build app"
+                              :properties '(("CATEGORY" . "Work"))
+                              :tasks '("Write code"))))
+             (task-marker (car (plist-get project-info :task-markers))))
+        (org-with-point-at task-marker
+          (let* ((spec '((type . next-action) (area-of-focus . "Work")))
+                 (skip-fn (org-gtd-view-lang--build-skip-function spec)))
+            (assert-nil (funcall skip-fn))))))))
 
 (provide 'gtd-view-language-test)
 
