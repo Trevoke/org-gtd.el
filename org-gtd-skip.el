@@ -155,10 +155,15 @@ VALUE can be:
 (defun org-gtd-pred--tags-matches (tags)
   "Return predicate checking if item has any of TAGS.
 TAGS is a list of tag strings (e.g., (\"@work\" \"@home\")).
-Uses OR semantics: returns t if entry has ANY of the specified tags."
+Uses OR semantics: returns t if entry has ANY of the specified tags.
+Falls back to checking parent project headings via ORG_GTD_PROJECT_IDS."
   (lambda ()
     (let ((entry-tags (org-get-tags nil t)))  ; nil=current, t=local only
-      (cl-some (lambda (tag) (member tag entry-tags)) tags))))
+      (or (cl-some (lambda (tag) (member tag entry-tags)) tags)
+          (org-gtd-pred--any-project-satisfies
+           (lambda ()
+             (let ((proj-tags (org-get-tags nil t)))
+               (cl-some (lambda (tag) (member tag proj-tags)) tags))))))))
 
 ;;;; Deadline/Scheduled Predicates
 
