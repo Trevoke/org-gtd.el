@@ -333,6 +333,20 @@
   ;; Cleanup
   (org-gtd-clarify--queue-cleanup))
 
+(deftest clarify/duplicate-with-rename-updates-content-heading ()
+  "Duplicate with rename updates the heading inside :content."
+  (capture-inbox-item "Original item")
+  (org-gtd-process-inbox)
+  (with-wip-buffer
+    (with-simulated-input "C-a C-k New SPC title RET"
+      (org-gtd-clarify-duplicate))
+    (let* ((queued (car org-gtd-clarify--duplicate-queue))
+           (content (plist-get queued :content)))
+      ;; The org heading inside content should be "New title", not "Original item"
+      (assert-match "^\\* New title" content)
+      (refute-match "^\\* Original item" content)))
+  (org-gtd-clarify--queue-cleanup))
+
 (deftest clarify/duplicate-fails-on-empty-buffer ()
   "Duplicate fails when buffer has no content."
   (with-temp-buffer

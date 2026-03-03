@@ -327,8 +327,15 @@ Prompts for a new title, then adds the duplicate to the queue."
       (user-error "Nothing to duplicate"))
     (let* ((default-title (plist-get content-plist :title))
            (new-title (read-string "Duplicate title: " default-title))
-           (content (plist-get content-plist :content)))
-      (org-gtd-clarify--queue-add new-title content)
+           (content (plist-get content-plist :content))
+           (updated-content
+            (with-temp-buffer
+              (insert content)
+              (goto-char (point-min))
+              (org-mode)
+              (org-edit-headline new-title)
+              (buffer-string))))
+      (org-gtd-clarify--queue-add new-title updated-content)
       (org-gtd-clarify--queue-display)
       (message "Duplicated: %s" new-title))))
 
