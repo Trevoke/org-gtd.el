@@ -10,7 +10,10 @@
 
 ;;; Code:
 
-(require 'e-unit)
+(require 'ogt-eunit-prelude
+         (concat (file-name-directory
+                  (or load-file-name byte-compile-current-file buffer-file-name))
+                 "../helpers/prelude.el"))
 (require 'org-gtd-skip)
 
 ;; Initialize e-unit short syntax
@@ -413,6 +416,54 @@
     (org-next-visible-heading 1)
     (let ((skip-fn (org-gtd-skip--compose '())))
       (assert-nil (funcall skip-fn)))))
+
+;;;; org-gtd-pred--any-project-satisfies tests
+
+(deftest skip-pred/any-project-satisfies-finds-matching-project ()
+  "Returns non-nil when project heading satisfies predicate."
+  (let ((native-comp-enable-subr-trampolines nil))
+    (ogt-eunit-with-mock-gtd
+      (let* ((project-info
+              (with-current-buffer (org-gtd--default-file)
+                (goto-char (point-max))
+                (make-project "Work Project"
+                              :tags '("@work")
+                              :tasks '("Design API"))))
+             (task-marker (car (plist-get project-info :task-markers))))
+        (org-with-point-at task-marker
+          (assert-true (org-gtd-pred--any-project-satisfies
+                        (lambda ()
+                          (member "@work" (org-get-tags))))))))))
+
+(deftest skip-pred/any-project-satisfies-nil-when-no-match ()
+  "Returns nil when no project heading satisfies predicate."
+  (let ((native-comp-enable-subr-trampolines nil))
+    (ogt-eunit-with-mock-gtd
+      (let* ((project-info
+              (with-current-buffer (org-gtd--default-file)
+                (goto-char (point-max))
+                (make-project "Home Project"
+                              :tags '("@home")
+                              :tasks '("Buy groceries"))))
+             (task-marker (car (plist-get project-info :task-markers))))
+        (org-with-point-at task-marker
+          (assert-nil (org-gtd-pred--any-project-satisfies
+                       (lambda ()
+                         (member "@work" (org-get-tags))))))))))
+
+(deftest skip-pred/any-project-satisfies-nil-for-standalone-task ()
+  "Returns nil for task without ORG_GTD_PROJECT_IDS."
+  (let ((native-comp-enable-subr-trampolines nil))
+    (ogt-eunit-with-mock-gtd
+      (with-current-buffer (org-gtd--default-file)
+        (goto-char (point-max))
+        (make-task "Standalone task" :id "standalone-any-pred")
+        (goto-char (point-min))
+        (search-forward "Standalone task")
+        (org-back-to-heading t)
+        (assert-nil (org-gtd-pred--any-project-satisfies
+                     (lambda ()
+                       (member "@work" (org-get-tags)))))))))
 
 (provide 'skip-predicates-test)
 

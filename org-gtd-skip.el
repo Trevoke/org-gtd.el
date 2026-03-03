@@ -397,6 +397,19 @@ Returns nil (skip) only when ALL project IDs resolve to inactive projects."
               (setq any-unresolvable t)))
           (or any-active any-unresolvable))))))
 
+(defun org-gtd-pred--any-project-satisfies (pred-fn)
+  "Return non-nil if PRED-FN returns non-nil at any parent project heading.
+PRED-FN is a zero-arg function called with point at each project heading.
+Looks up parent projects via ORG_GTD_PROJECT_IDS property.
+Returns nil for standalone items (no ORG_GTD_PROJECT_IDS)."
+  (let ((project-ids (org-entry-get-multivalued-property
+                      (point) org-gtd-prop-project-ids)))
+    (cl-some (lambda (pid)
+               (when-let ((marker (org-id-find pid 'marker)))
+                 (org-with-point-at marker
+                   (funcall pred-fn))))
+             project-ids)))
+
 ;;;; Timestamp Comparison Predicates
 
 (defun org-gtd-pred--property-ts< (property reference-date)
