@@ -129,6 +129,8 @@ VALUE can be nil, a symbol/string, a list, or a comparison."
              (highest (or org-priority-highest ?A))
              (item-num (1+ (- (aref item-priority 0) highest)))
              (ref-num (1+ (- (aref (symbol-name ref) 0) highest))))
+        ;; Priority A=1, B=2, C=3: higher priority = lower number.
+        ;; So (>= B) meaning "priority B or higher" is numerically (<= B).
         (pcase op
           ('< (< item-num ref-num))
           ('> (> item-num ref-num))
@@ -433,8 +435,10 @@ Returns nil for standalone items (no ORG_GTD_PROJECT_IDS)."
                       (point) org-gtd-prop-project-ids)))
     (cl-some (lambda (pid)
                (when-let ((marker (org-id-find pid 'marker)))
-                 (org-with-point-at marker
-                   (funcall pred-fn))))
+                 (unwind-protect
+                     (org-with-point-at marker
+                       (funcall pred-fn))
+                   (set-marker marker nil))))
              project-ids)))
 
 ;;;; Timestamp Comparison Predicates
