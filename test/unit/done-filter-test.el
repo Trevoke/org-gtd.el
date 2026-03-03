@@ -79,7 +79,7 @@ Note: This tests current implementation which uses exact time comparison,
 not calendar day comparison. Items closed earlier 'today' are skipped."
   (with-temp-buffer
     (org-mode)
-    (let ((earlier-today (format-time-string "[%Y-%m-%d %a 09:00]"
+    (let ((earlier-today (format-time-string "[%Y-%m-%d %a %H:%M]"
                                              (time-subtract (current-time) (days-to-time 0.2)))))
       (insert (format "* DONE Earlier task\nCLOSED: %s\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n" earlier-today))
       (goto-char (point-min))
