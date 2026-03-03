@@ -465,6 +465,44 @@
                      (lambda ()
                        (member "@work" (org-get-tags)))))))))
 
+;;;; Priority inheritance tests
+
+(deftest skip-pred/priority-inherits-from-project ()
+  "Priority predicate matches when project has priority but task does not."
+  (let ((native-comp-enable-subr-trampolines nil))
+    (ogt-eunit-with-mock-gtd
+      (let* ((project-info
+              (with-current-buffer (org-gtd--default-file)
+                (goto-char (point-max))
+                (make-project "[#A] Important project"
+                              :tasks '("Do something"))))
+             (task-marker (car (plist-get project-info :task-markers))))
+        (org-with-point-at task-marker
+          (org-back-to-heading t)
+          (let ((pred (org-gtd-pred--priority-matches 'A)))
+            (assert-true (funcall pred))))))))
+
+(deftest skip-pred/priority-task-own-wins ()
+  "Task's own priority takes precedence over project's."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* [#A] Important project\n:PROPERTIES:\n:ID: proj-1\n:ORG_GTD: Projects\n:END:\n")
+    (insert "** TODO [#C] Low prio task\n:PROPERTIES:\n:ORG_GTD: Actions\n:ORG_GTD_PROJECT_IDS: proj-1\n:END:\n")
+    (goto-char (point-min))
+    (search-forward "Low prio task")
+    (org-back-to-heading t)
+    (let ((pred (org-gtd-pred--priority-matches 'A)))
+      (assert-nil (funcall pred)))))
+
+(deftest skip-pred/priority-standalone-no-inheritance ()
+  "Standalone task does not inherit priority."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* TODO Task without priority\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n")
+    (goto-char (point-min))
+    (let ((pred (org-gtd-pred--priority-matches 'A)))
+      (assert-nil (funcall pred)))))
+
 (provide 'skip-predicates-test)
 
 ;;; skip-predicates-test.el ends here
