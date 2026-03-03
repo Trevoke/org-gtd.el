@@ -1,3 +1,25 @@
+* 4.6.1 - 2026-03-03
+
+** Fixed
+*** Duplicate clarification queue fixes (Issue #281)
+Multiple fixes to the duplicate item workflow during clarification:
+
+- Queued duplicates now have the user-entered title in their content (previously
+  kept the original heading)
+- Queue processing reuses the existing WIP buffer instead of killing and
+  recreating it, preserving window layout (side windows, queue display)
+- Each queued duplicate gets a fresh human-readable org ID instead of reusing the
+  original item's ID
+- Canceling (~org-gtd-clarify-stop~) during queue processing now discards only
+  the current item and moves to the next, instead of discarding all remaining
+  items
+- WIP buffer prefix changed from "Org-GTD" to "Org GTD" for consistency with
+  other buffer names
+
+*** Flaky done-filter test
+Fixed a test that used a hardcoded 09:00 timestamp, causing intermittent
+failures when tests ran before 9 AM.
+
 * 4.6.0 - 2026-02-21
 
 ** Added
