@@ -271,6 +271,25 @@ files regardless of symlink resolution, unlike get-file-buffer."
       ;; Directory should be created
       (assert-true (file-directory-p temp-dir)))))
 
+;;; Rekey Tests
+
+(deftest wip/rekey-updates-hash-and-buffer-name ()
+  "Rekeying a WIP buffer updates hash tracking and buffer name."
+  (let* ((old-id "old-test-id")
+         (new-id "new-test-id")
+         (buf (org-gtd-wip--get-buffer old-id)))
+    ;; Verify initial state
+    (assert-true (gethash old-id org-gtd-wip--temp-files))
+    (assert-match "old-test-id" (buffer-name buf))
+    ;; Rekey
+    (org-gtd-wip--rekey old-id new-id)
+    ;; Old key gone, new key present, same file
+    (assert-nil (gethash old-id org-gtd-wip--temp-files))
+    (assert-true (gethash new-id org-gtd-wip--temp-files))
+    (assert-match "new-test-id" (buffer-name buf))
+    ;; Cleanup
+    (org-gtd-wip--cleanup-temp-file new-id)))
+
 (provide 'wip-temp-file-test)
 
 ;;; wip-temp-file-test.el ends here

@@ -124,6 +124,17 @@ activating any additional modes (e.g., `org-gtd-clarify-mode')."
       ;; Remove from tracking
       (remhash org-id org-gtd-wip--temp-files))))
 
+(defun org-gtd-wip--rekey (old-id new-id)
+  "Update the tracking for a WIP buffer from OLD-ID to NEW-ID.
+Moves the temp file hash entry and renames the buffer."
+  (let ((temp-file (gethash old-id org-gtd-wip--temp-files)))
+    (when temp-file
+      (remhash old-id org-gtd-wip--temp-files)
+      (puthash new-id temp-file org-gtd-wip--temp-files)
+      (when-let ((buffer (find-buffer-visiting temp-file)))
+        (with-current-buffer buffer
+          (rename-buffer (org-gtd-wip--buffer-name new-id) t))))))
+
 (defun org-gtd-wip--cleanup-all-temp-files ()
   "Clean up all temp files (for emergency cleanup or exit)."
   (maphash
