@@ -273,7 +273,7 @@ WINDOW-CONFIG is the window config to set after clarification finishes."
     (if buf-names
         (let ((chosen-buf-name (completing-read "Choose a buffer: " buf-names nil t)))
           (org-gtd-clarify-setup-windows chosen-buf-name))
-      (message "There are no Org-GTD WIP buffers."))))
+      (message "There are no Org GTD WIP buffers."))))
 
 (defun org-gtd-clarify-toggle-horizons-window ()
   "Toggle the window with the horizons buffer."
@@ -656,6 +656,7 @@ OLD-TASK-ID is the clarify-id of the buffer being reused."
                           org-gtd-clarify--clarify-id new-id
                           org-gtd-clarify--continuation continuation
                           org-gtd-clarify--source-heading-marker nil
+                          org-gtd-clarify--skip-refile nil
                           org-gtd-clarify--duplicate-queue queue))
             ;; Update queue display or cleanup if empty
             (if (org-gtd-clarify--queue-empty-p)

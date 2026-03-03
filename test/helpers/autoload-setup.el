@@ -28,7 +28,7 @@ before running BODY."
   ;; Kill any WIP buffers created during the test
   (dolist (buf (buffer-list))
     (when (and (buffer-live-p buf)
-               (string-match-p "Org-GTD WIP" (buffer-name buf)))
+               (string-match-p "Org GTD Clarify" (buffer-name buf)))
       (with-current-buffer buf
         (set-buffer-modified-p nil))
       (kill-buffer buf)))
