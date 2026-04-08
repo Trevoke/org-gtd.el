@@ -38,25 +38,25 @@
 
 ;;;; Customization
 
-;;;; Constants
-
-(defconst org-gtd-delegate-func #'org-gtd-delegate--apply
-  "Function called when organizing item at at point as delegated.")
-
 ;;;; Commands
 
 (defun org-gtd-delegate (&optional delegated-to checkin-date)
-  "Organize and refile item at point as a delegated item.
+  "DWIM: organize the heading at point as a delegated item.
 
-You can pass DELEGATED-TO as the name of the person to whom this was delegated
-and CHECKIN-DATE as the YYYY-MM-DD string of when you want `org-gtd' to remind
-you if you want to call this non-interactively."
+DELEGATED-TO is the name of the person, CHECKIN-DATE the YYYY-MM-DD
+string, both optional for non-interactive use.  When invoked from
+within the clarify/WIP transient flow, keeps the
+`org-gtd-organize--call' wrapping so queue/source-cut/window-restore
+behavior is preserved.  Otherwise dispatches directly via
+`org-gtd--dispatch'."
   (interactive)
-  (let ((config-override (when (or delegated-to checkin-date)
-                           `(,@(when delegated-to `((:who . ,delegated-to)))
-                             ,@(when checkin-date `((:when . ,(format "<%s>" checkin-date))))))))
-    (org-gtd-organize--call
-     (lambda () (org-gtd-delegate--apply config-override)))))
+  (let ((config (when (or delegated-to checkin-date)
+                  `(,@(when delegated-to `((:who . ,delegated-to)))
+                    ,@(when checkin-date `((:when . ,(format "<%s>" checkin-date))))))))
+    (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
+        (org-gtd-organize--call
+         (lambda () (org-gtd-process-heading (point-marker) 'delegated config)))
+      (org-gtd--dispatch 'delegated))))
 
 ;;;###autoload
 (defun org-gtd-delegate-agenda-item ()
@@ -89,20 +89,23 @@ DELEGATED-TO is the name of the person to whom this was delegated.
 CHECKIN-DATE is the YYYY-MM-DD string of when you want `org-gtd' to remind
 you."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd"))
+        (org-id-overriding-file-name "org-gtd")
+        (config `((:who . ,delegated-to)
+                  (:when . ,(format "<%s>" checkin-date)))))
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
-      (org-gtd-delegate delegated-to checkin-date))
+      (goto-char (point-min))
+      (org-gtd-process-heading (point-marker) 'delegated config))
     (kill-buffer buffer)))
 
 ;;;;; Private
 
-(defun org-gtd-delegate--configure (&optional config-override)
-  "Configure item at point as a delegated item.
-
-CONFIG-OVERRIDE is an alist with :who and/or :when keys for non-interactive use."
-  (org-gtd-configure-as-type 'delegated config-override))
+(defun org-gtd-delegate--organize (type config)
+  "Configure heading at point as TYPE (delegated) and add delegation note.
+CONFIG is forwarded to `org-gtd-configure-as-type'."
+  (org-gtd-configure-as-type type config)
+  (org-gtd-delegate--add-delegation-note))
 
 (defun org-gtd-delegate--add-delegation-note ()
   "Add delegation note with person's name from the delegated type's :who property."
@@ -111,28 +114,6 @@ CONFIG-OVERRIDE is an alist with :who and/or :when keys for non-interactive use.
       (save-excursion
         (goto-char (org-log-beginning t))
         (insert (format "programmatically delegated to %s\n" person))))))
-
-(defun org-gtd-delegate--finalize ()
-  "Finalize delegated item organization and refile."
-  (setq-local org-gtd--organize-type 'delegated)
-  (org-gtd-organize-apply-hooks)
-  (if org-gtd-clarify--skip-refile
-      (org-gtd-organize--update-in-place)
-    (org-gtd-refile--do org-gtd-action org-gtd-action-template)))
-
-(defun org-gtd-delegate--apply (&optional config-override)
-  "Process GTD inbox item by transforming it into a delegated item.
-
-Orchestrates the delegation workflow:
-1. Configure with delegation settings
-2. Add delegation note
-3. Finalize and refile to actions file
-
-CONFIG-OVERRIDE can provide input configuration to override default
-prompting behavior."
-  (org-gtd-delegate--configure config-override)
-  (org-gtd-delegate--add-delegation-note)
-  (org-gtd-delegate--finalize))
 
 ;;;; Footer
 
