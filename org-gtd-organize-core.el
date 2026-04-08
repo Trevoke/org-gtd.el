@@ -34,6 +34,8 @@
 (require 'org-gtd-core)
 (require 'org-gtd-wip)
 (require 'org-gtd-clarify)
+(require 'org-gtd-types)
+(require 'org-gtd-hooks)
 
 ;;;; Customization
 
@@ -150,6 +152,46 @@ This handles the internal bits of `org-gtd'."
         ;; Clean up horizons view for one-off clarification
         (unless continuation
           (org-gtd-clarify--cleanup-horizons-view))))))
+
+;;;;; Pipeline primitives
+
+(defun org-gtd--clear-foreign-properties (_type)
+  "Placeholder — full implementation in Task 3.3."
+  nil)
+
+(defun org-gtd--run-disposition (_type _pom)
+  "Placeholder — full implementation in Task 3.2."
+  nil)
+
+(defun org-gtd-process-heading (pom type &optional config)
+  "Organize the heading at POM as TYPE, running the full hook pipeline.
+
+POM is a point or marker identifying the heading to organize.  TYPE is
+a symbol naming a registered org-gtd type.  CONFIG is an optional alist
+forwarded to the type's :organize-fn for non-interactive invocation.
+
+Pipeline, executed with point at POM:
+
+  1. If TYPE declares :supports reactivate, call `org-gtd-save-state'.
+  2. Clear properties belonging to the previously-active type
+     (`org-gtd--clear-foreign-properties').
+  3. Run :before-organize hooks (global then local).
+  4. Call the type's :organize-fn with TYPE and CONFIG.
+  5. Run :after-organize hooks.
+  6. Run :before-file hooks.
+  7. Run the type's disposition (`org-gtd--run-disposition').
+  8. Run :after-file hooks."
+  (org-with-point-at pom
+    (when (org-gtd-type-supports-p type 'reactivate)
+      (when (fboundp 'org-gtd-save-state)
+        (org-gtd-save-state)))
+    (org-gtd--clear-foreign-properties type)
+    (org-gtd-hooks-run :before-organize type pom)
+    (funcall (org-gtd-type-organize-fn type) type config)
+    (org-gtd-hooks-run :after-organize type pom)
+    (org-gtd-hooks-run :before-file type pom)
+    (org-gtd--run-disposition type pom)
+    (org-gtd-hooks-run :after-file type pom)))
 
 ;;;; Footer
 
