@@ -115,5 +115,51 @@ is not declared."
       (assert-raises 'error
         (org-gtd-process-heading (point-marker) 'fake)))))
 
+(deftest clear-foreign-properties-removes-previous-type-only ()
+  "Properties declared on the previous type but not the new type are cleared."
+  (let ((org-gtd-types
+         '((from-type :org-gtd "From" :state nil
+                      :properties
+                      ((:a :org-property "PROP_A" :type text)
+                       (:b :org-property "PROP_B" :type text)))
+           (to-type   :org-gtd "To" :state nil
+                      :properties
+                      ((:b :org-property "PROP_B" :type text)
+                       (:c :org-property "PROP_C" :type text))))))
+    (with-temp-buffer
+      (org-mode)
+      (insert "* Thing\n:PROPERTIES:\n:ORG_GTD: From\n:PROP_A: a-val\n:PROP_B: b-val\n:END:\n")
+      (goto-char (point-min))
+      (org-next-visible-heading 1)
+      (org-gtd--clear-foreign-properties 'to-type)
+      (assert-nil (org-entry-get (point) "PROP_A"))
+      (assert-equal "b-val" (org-entry-get (point) "PROP_B")))))
+
+(deftest clear-foreign-properties-noop-when-no-previous-type ()
+  "With no ORG_GTD set, the function touches nothing."
+  (let ((org-gtd-types
+         '((to-type :org-gtd "To" :state nil
+                    :properties ((:a :org-property "PROP_A" :type text))))))
+    (with-temp-buffer
+      (org-mode)
+      (insert "* Thing\n:PROPERTIES:\n:SOME_OTHER: val\n:END:\n")
+      (goto-char (point-min))
+      (org-next-visible-heading 1)
+      (org-gtd--clear-foreign-properties 'to-type)
+      (assert-equal "val" (org-entry-get (point) "SOME_OTHER")))))
+
+(deftest clear-foreign-properties-noop-when-previous-type-unknown ()
+  "If ORG_GTD names a type not in the registry, do nothing."
+  (let ((org-gtd-types
+         '((to-type :org-gtd "To" :state nil
+                    :properties ((:a :org-property "PROP_A" :type text))))))
+    (with-temp-buffer
+      (org-mode)
+      (insert "* Thing\n:PROPERTIES:\n:ORG_GTD: Mystery\n:PROP_A: a-val\n:END:\n")
+      (goto-char (point-min))
+      (org-next-visible-heading 1)
+      (org-gtd--clear-foreign-properties 'to-type)
+      (assert-equal "a-val" (org-entry-get (point) "PROP_A")))))
+
 (provide 'organize-core-test)
 ;;; organize-core-test.el ends here

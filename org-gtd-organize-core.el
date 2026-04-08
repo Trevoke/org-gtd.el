@@ -156,9 +156,27 @@ This handles the internal bits of `org-gtd'."
 
 ;;;;; Pipeline primitives
 
-(defun org-gtd--clear-foreign-properties (_type)
-  "Placeholder — full implementation in Task 3.3."
-  nil)
+(defun org-gtd--clear-foreign-properties (new-type)
+  "Remove org-properties belonging to the prior type at point.
+
+A property is considered foreign when it appears in the previously
+active type's :properties list but NOT in NEW-TYPE's :properties list.
+The previously active type is derived from the current `ORG_GTD'
+property value via `org-gtd-type-from-org-gtd-value'.
+
+Does nothing when the heading has no `ORG_GTD' property, or when the
+value does not name a registered type.  Operates on the entry at point."
+  (let* ((prev-value (org-entry-get (point) "ORG_GTD"))
+         (prev-type (and prev-value
+                         (org-gtd-type-from-org-gtd-value prev-value))))
+    (when prev-type
+      (let ((new-props (mapcar (lambda (p) (plist-get (cdr p) :org-property))
+                               (org-gtd-type-properties new-type)))
+            (old-props (mapcar (lambda (p) (plist-get (cdr p) :org-property))
+                               (org-gtd-type-properties prev-type))))
+        (dolist (prop old-props)
+          (unless (member prop new-props)
+            (org-entry-delete (point) prop)))))))
 
 (defun org-gtd--default-refile-template (type)
   "Construct a default refile-target-element string for TYPE.
