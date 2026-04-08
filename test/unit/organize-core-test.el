@@ -203,5 +203,85 @@ is not declared."
       (assert-raises 'user-error
         (org-gtd-process-project (point-marker) 'fake)))))
 
+(deftest dispatch-plain-heading-calls-process-heading ()
+  "A heading with no ORG_GTD and no project ids dispatches to process-heading."
+  (let ((heading-called nil)
+        (project-called nil)
+        (org-gtd-types
+         '((fake :org-gtd "Fake" :state nil :properties nil))))
+    (cl-letf (((symbol-function 'org-gtd-process-heading)
+               (lambda (&rest _) (setq heading-called t)))
+              ((symbol-function 'org-gtd-process-project)
+               (lambda (&rest _) (setq project-called t))))
+      (with-temp-buffer
+        (org-mode)
+        (insert "* Thing\n")
+        (goto-char (point-min))
+        (org-gtd--dispatch 'fake)))
+    (assert-true heading-called)
+    (assert-nil project-called)))
+
+(deftest dispatch-project-heading-with-project-handler-calls-process-project ()
+  "ORG_GTD=Projects dispatches to process-project when type supports it."
+  (let ((heading-called nil)
+        (project-called nil)
+        (org-gtd-types
+         `((fake :org-gtd "Fake" :state nil :properties nil
+                 :supports (project-handler)
+                 :project-fn ,(lambda (&rest _) nil)))))
+    (cl-letf (((symbol-function 'org-gtd-process-heading)
+               (lambda (&rest _) (setq heading-called t)))
+              ((symbol-function 'org-gtd-process-project)
+               (lambda (&rest _) (setq project-called t))))
+      (with-temp-buffer
+        (org-mode)
+        (insert "* Some project\n:PROPERTIES:\n:ORG_GTD: Projects\n:END:\n")
+        (goto-char (point-min))
+        (org-next-visible-heading 1)
+        (org-gtd--dispatch 'fake)))
+    (assert-true project-called)
+    (assert-nil heading-called)))
+
+(deftest dispatch-project-task-with-project-handler-prompts-and-dispatches ()
+  "A task with ORG_GTD_PROJECT_IDS routes through project marker selection."
+  (let ((project-called nil)
+        (project-marker (point-marker))
+        (org-gtd-types
+         `((fake :org-gtd "Fake" :state nil :properties nil
+                 :supports (project-handler)
+                 :project-fn ,(lambda (&rest _) nil)))))
+    (cl-letf (((symbol-function 'org-gtd-project--get-marker-at-point)
+               (lambda (&optional _prompt) project-marker))
+              ((symbol-function 'org-gtd-process-project)
+               (lambda (pom _type &optional _config)
+                 (setq project-called pom))))
+      (with-temp-buffer
+        (org-mode)
+        (insert "* Do the thing\n:PROPERTIES:\n:ORG_GTD_PROJECT_IDS: abc-123\n:END:\n")
+        (goto-char (point-min))
+        (org-next-visible-heading 1)
+        (org-gtd--dispatch 'fake)))
+    (assert-same project-marker project-called)))
+
+(deftest dispatch-project-task-without-project-handler-calls-process-heading ()
+  "A task with ORG_GTD_PROJECT_IDS still reclassifies as a single heading
+when the type does not support project-handler."
+  (let ((heading-called nil)
+        (project-called nil)
+        (org-gtd-types
+         '((fake :org-gtd "Fake" :state nil :properties nil))))
+    (cl-letf (((symbol-function 'org-gtd-process-heading)
+               (lambda (&rest _) (setq heading-called t)))
+              ((symbol-function 'org-gtd-process-project)
+               (lambda (&rest _) (setq project-called t))))
+      (with-temp-buffer
+        (org-mode)
+        (insert "* A project task\n:PROPERTIES:\n:ORG_GTD_PROJECT_IDS: abc-123\n:END:\n")
+        (goto-char (point-min))
+        (org-next-visible-heading 1)
+        (org-gtd--dispatch 'fake)))
+    (assert-true heading-called)
+    (assert-nil project-called)))
+
 (provide 'organize-core-test)
 ;;; organize-core-test.el ends here

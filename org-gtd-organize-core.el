@@ -254,6 +254,45 @@ support or lacks a `:project-fn'."
       (user-error "Type %s has project-handler support but no :project-fn" type))
     (funcall fn pom config)))
 
+(defun org-gtd--dispatch (type)
+  "Dispatch a per-type command for TYPE based on the heading at point.
+
+Reads the marker at beginning-of-line first (for agenda compatibility)
+or falls back to point-marker.  At the resolved marker, routes to:
+
+- `org-gtd-process-project' when ORG_GTD=Projects and TYPE supports
+  project-handler.
+- `org-gtd-process-project' with a user-selected project marker when
+  the heading is a task belonging to at least one project and TYPE
+  supports project-handler.
+- `org-gtd-process-heading' otherwise (plain headings, and project
+  tasks when TYPE does not declare project-handler support)."
+  ;; `org-gtd-projects' requires `org-gtd-organize-core', so we cannot
+  ;; require it here without creating a cycle.  Load it lazily and rely
+  ;; on `fboundp' as a defensive guard.
+  (let* ((marker (or (org-get-at-bol 'org-marker)
+                     (point-marker))))
+    (org-with-point-at marker
+      (let* ((org-gtd-value (org-entry-get (point) "ORG_GTD"))
+             (project-ids (org-entry-get-multivalued-property
+                           (point) "ORG_GTD_PROJECT_IDS"))
+             (is-project-heading (string= org-gtd-value "Projects"))
+             (is-project-task (> (length project-ids) 0))
+             (supports-project (org-gtd-type-supports-p type 'project-handler)))
+        (cond
+         ((and is-project-heading supports-project)
+          (org-gtd-process-project (point-marker) type))
+         ((and is-project-task supports-project)
+          (require 'org-gtd-projects)
+          (unless (fboundp 'org-gtd-project--get-marker-at-point)
+            (error "org-gtd-project--get-marker-at-point unavailable"))
+          (let ((project-marker
+                 (org-gtd-project--get-marker-at-point
+                  (format "Which project to process as %s? " type))))
+            (org-gtd-process-project project-marker type)))
+         (t
+          (org-gtd-process-heading (point-marker) type)))))))
+
 ;;;; Footer
 
 (provide 'org-gtd-organize-core)
