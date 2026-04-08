@@ -21,6 +21,7 @@ before-file, after-file in that order for a fake type."
          (org-gtd-after-organize-hook  (list (funcall record 'a-org)))
          (org-gtd-before-file-hook     (list (funcall record 'b-file)))
          (org-gtd-after-file-hook      (list (funcall record 'a-file)))
+         (org-gtd-organize-hooks nil)
          (org-gtd-types
           `((fake :org-gtd "Fake" :state nil :properties nil
                   :organize-fn ,(lambda (&rest _) (push 'org-fn log))))))
@@ -32,10 +33,33 @@ before-file, after-file in that order for a fake type."
         (org-gtd-process-heading (point-marker) 'fake)))
     (assert-equal '(b-org org-fn a-org b-file a-file) (reverse log))))
 
+(deftest process-heading-runs-organize-apply-hooks ()
+  "process-heading fires each function in `org-gtd-organize-hooks'
+for every type, between :organize-fn and :after-organize."
+  (let* ((log nil)
+         (sentinel (lambda () (push 'apply-hook log)))
+         (org-gtd-organize-hooks (list sentinel))
+         (org-gtd-before-organize-hook nil)
+         (org-gtd-after-organize-hook
+          (list (lambda (_pom) (push 'after-organize log))))
+         (org-gtd-before-file-hook nil)
+         (org-gtd-after-file-hook nil)
+         (org-gtd-types
+          `((fake :org-gtd "Fake" :state nil :properties nil
+                  :organize-fn ,(lambda (&rest _) (push 'org-fn log))))))
+    (cl-letf (((symbol-function 'org-gtd-refile--do) (lambda (&rest _) nil)))
+      (with-temp-buffer
+        (org-mode)
+        (insert "* Thing\n")
+        (goto-char (point-min))
+        (org-gtd-process-heading (point-marker) 'fake)))
+    (assert-equal '(org-fn apply-hook after-organize) (reverse log))))
+
 (deftest process-heading-respects-reactivate-support ()
   "process-heading calls org-gtd-save-state when the type declares
 :supports reactivate."
-  (let ((save-state-called nil))
+  (let ((save-state-called nil)
+        (org-gtd-organize-hooks nil))
     (cl-letf (((symbol-function 'org-gtd-save-state)
                (lambda () (setq save-state-called t)))
               ((symbol-function 'org-gtd-refile--do) (lambda (&rest _) nil)))
@@ -53,7 +77,8 @@ before-file, after-file in that order for a fake type."
 (deftest process-heading-skips-save-state-without-reactivate ()
   "process-heading does not call org-gtd-save-state when reactivate
 is not declared."
-  (let ((save-state-called nil))
+  (let ((save-state-called nil)
+        (org-gtd-organize-hooks nil))
     (cl-letf (((symbol-function 'org-gtd-save-state)
                (lambda () (setq save-state-called t)))
               ((symbol-function 'org-gtd-refile--do) (lambda (&rest _) nil)))
@@ -70,6 +95,7 @@ is not declared."
 (deftest run-disposition-list-calls-refile ()
   "Disposition 'list dispatches to org-gtd-refile--do."
   (let ((called-with nil)
+        (org-gtd-organize-hooks nil)
         (org-gtd-types
          '((fake :org-gtd "Fake" :state nil :properties nil
                  :organize-fn ignore :disposition list))))
@@ -87,6 +113,7 @@ is not declared."
   "When skip-refile is set, dispatch calls update-in-place, not refile."
   (let ((refile-called nil)
         (update-called nil)
+        (org-gtd-organize-hooks nil)
         (org-gtd-types
          '((fake :org-gtd "Fake" :state nil :properties nil
                  :organize-fn ignore :disposition list))))
@@ -105,7 +132,8 @@ is not declared."
 
 (deftest run-disposition-unknown-disposition-errors ()
   "An unrecognized :disposition signals a user-error."
-  (let ((org-gtd-types
+  (let ((org-gtd-organize-hooks nil)
+        (org-gtd-types
          '((fake :org-gtd "Fake" :state nil :properties nil
                  :organize-fn ignore :disposition weird-value))))
     (with-temp-buffer

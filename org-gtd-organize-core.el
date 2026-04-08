@@ -223,10 +223,12 @@ Pipeline, executed with point at POM:
      (`org-gtd--clear-foreign-properties').
   3. Run :before-organize hooks (global then local).
   4. Call the type's :organize-fn with TYPE and CONFIG.
-  5. Run :after-organize hooks.
-  6. Run :before-file hooks.
-  7. Run the type's disposition (`org-gtd--run-disposition').
-  8. Run :after-file hooks."
+  5. Apply the user's classic `org-gtd-organize-hooks' (tags/effort/etc.)
+     via `org-gtd-organize-apply-hooks'.  Runs for every type.
+  6. Run :after-organize hooks.
+  7. Run :before-file hooks.
+  8. Run the type's disposition (`org-gtd--run-disposition').
+  9. Run :after-file hooks."
   (org-with-point-at pom
     (when (org-gtd-type-supports-p type 'reactivate)
       (when (fboundp 'org-gtd-save-state)
@@ -234,6 +236,8 @@ Pipeline, executed with point at POM:
     (org-gtd--clear-foreign-properties type)
     (org-gtd-hooks-run :before-organize type pom)
     (funcall (org-gtd-type-organize-fn type) type config)
+    (setq-local org-gtd--organize-type type)
+    (org-gtd-organize-apply-hooks)
     (org-gtd-hooks-run :after-organize type pom)
     (org-gtd-hooks-run :before-file type pom)
     (org-gtd--run-disposition type pom)
