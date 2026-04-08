@@ -57,22 +57,16 @@ setting as part of following the instructions to add your own refile targets."
 
 (defcustom org-gtd-refile-prompt-for-types
   '(single-action project-heading project-task calendar someday delegated tickler habit)
-  "List of GTD types that should prompt for refile target selection.
+  "Obsolete since 4.1.0.  List of GTD types that should prompt for refile.
 
-IMPORTANT: This variable only takes effect when `org-gtd-refile-to-any-target'
-is set to nil.  By default that variable is t, which means org-gtd auto-refiles
-everything without prompting.  To enable per-type control:
+The contents of this list are migrated once, at load time, into per-type
+`:prompt-to-refile t' entries in the `org-gtd-types' registry.  Further
+mutations of this variable are not honored -- setting it after load will
+have no effect on refile behavior.
 
-  (setq org-gtd-refile-to-any-target nil)
-
-When this variable is active and an item's type is in the list, org-gtd
-will prompt you to choose from available refile targets (ORG_GTD_REFILE
-targets + user's `org-refile-targets').  Types not in the list auto-refile
-to the first available target.
-
-Valid type symbols:
-  single-action, project-heading, project-task, calendar, someday,
-  delegated, tickler, habit, knowledge, quick-action, trash"
+To configure prompting behavior now, use `org-gtd-customize-type' to set
+`:prompt-to-refile' on individual types, or set `org-gtd-refile-prompt-default'
+as a global fallback for types that do not declare the property explicitly."
   :group 'org-gtd-organize
   :package-version '(org-gtd . "4.0.0")
   :type '(repeat symbol))
@@ -88,11 +82,9 @@ Valid type symbols:
 ;; per-type module files, which may not have been loaded yet when this
 ;; form runs.  This migration is one-shot at load time; mutating
 ;; `org-gtd-refile-prompt-for-types' afterward has no effect.
-(dolist (org-gtd-refile--migrated-type
-         (with-no-warnings org-gtd-refile-prompt-for-types))
-  (when (assq org-gtd-refile--migrated-type org-gtd-types)
-    (org-gtd-customize-type org-gtd-refile--migrated-type
-                            :prompt-to-refile t)))
+(dolist (type (with-no-warnings org-gtd-refile-prompt-for-types))
+  (when (assq type org-gtd-types)
+    (org-gtd-customize-type type :prompt-to-refile t)))
 
 (defcustom org-gtd-refile-prompt-default nil
   "Fallback value for whether refile should prompt for a target.
