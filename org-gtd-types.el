@@ -32,6 +32,9 @@
   '((next-action
      :org-gtd "Actions"
      :state :next
+     :disposition list
+     :transient-key "s"
+     :prompt-to-refile t
      :properties nil)
 
     (delegated

@@ -87,6 +87,12 @@
   (assert-same t (org-gtd-type-prompt-to-refile 'delegated))
   (assert-equal 'org-gtd-delegate--organize (org-gtd-type-organize-fn 'delegated)))
 
+(deftest types-next-action-declares-wiring-fields ()
+  "next-action type declares disposition, transient-key, prompt-to-refile."
+  (assert-same 'list (org-gtd-type-disposition 'next-action))
+  (assert-equal "s" (org-gtd-type-transient-key 'next-action))
+  (assert-same t (org-gtd-type-prompt-to-refile 'next-action)))
+
 ;;; org-gtd-type-get
 
 (deftest type-get-returns-definition-for-valid-type ()
