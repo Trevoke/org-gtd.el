@@ -38,6 +38,10 @@
      :org-gtd "Delegated"
      :refile-target "Actions"
      :state :wait
+     :disposition list
+     :transient-key "d"
+     :prompt-to-refile t
+     :organize-fn org-gtd-delegate--organize
      :properties
      ((:who  :org-property "DELEGATED_TO"      :type text      :required t
              :prompt "Who will do this?")

@@ -80,6 +80,13 @@
   (assert-equal "c" (org-gtd-type-transient-key 'calendar))
   (assert-same t (org-gtd-type-prompt-to-refile 'calendar)))
 
+(deftest types-delegated-declares-wiring-fields ()
+  "delegated type declares disposition, transient-key, prompt-to-refile, organize-fn."
+  (assert-same 'list (org-gtd-type-disposition 'delegated))
+  (assert-equal "d" (org-gtd-type-transient-key 'delegated))
+  (assert-same t (org-gtd-type-prompt-to-refile 'delegated))
+  (assert-equal 'org-gtd-delegate--organize (org-gtd-type-organize-fn 'delegated)))
+
 ;;; org-gtd-type-get
 
 (deftest type-get-returns-definition-for-valid-type ()
