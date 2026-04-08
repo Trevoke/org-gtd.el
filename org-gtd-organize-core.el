@@ -178,11 +178,16 @@ value does not name a registered type.  Operates on the entry at point."
           (unless (member prop new-props)
             (org-entry-delete (point) prop)))))))
 
+(defun org-gtd--refile-target-for (type)
+  "Return the refile target heading string for TYPE."
+  (org-gtd-type-refile-target type))
+
 (defun org-gtd--default-refile-template (type)
   "Construct a default refile-target-element string for TYPE.
-Uses the type's :org-gtd value and `org-gtd-prop-refile' so that the
-refile engine can create the top-level heading if it is missing."
-  (let ((value (org-gtd-type-org-gtd-value type)))
+Uses the type's refile-target heading and `org-gtd-prop-refile' so
+that the refile engine can create the top-level heading if it is
+missing."
+  (let ((value (org-gtd--refile-target-for type)))
     (format "* %s\n:PROPERTIES:\n:%s: %s\n:END:\n"
             value org-gtd-prop-refile value)))
 
@@ -198,7 +203,7 @@ dispositions that need it."
     (let ((disp (org-gtd-type-disposition type)))
       (cond
        ((eq disp 'list)
-        (org-gtd-refile--do (org-gtd-type-org-gtd-value type)
+        (org-gtd-refile--do (org-gtd--refile-target-for type)
                             (org-gtd--default-refile-template type)))
        ((eq disp 'done-and-archive)
         (error "Disposition done-and-archive not implemented yet (type %s)" type))

@@ -104,6 +104,24 @@
   "org-gtd-type-org-gtd-value returns nil for unknown type."
   (assert-nil (org-gtd-type-org-gtd-value 'nonexistent)))
 
+;;; org-gtd-type-refile-target
+
+(deftest type-refile-target-falls-back-to-org-gtd-value ()
+  "refile-target falls back to :org-gtd when :refile-target not set."
+  (assert-equal "Calendar" (org-gtd-type-refile-target 'calendar)))
+
+(deftest type-refile-target-uses-override-for-delegated ()
+  "delegated type declares :refile-target \"Actions\"."
+  (assert-equal "Actions" (org-gtd-type-refile-target 'delegated)))
+
+(deftest type-refile-target-uses-override-for-habit ()
+  "habit type declares :refile-target \"Habits\"."
+  (assert-equal "Habits" (org-gtd-type-refile-target 'habit)))
+
+(deftest type-refile-target-returns-nil-for-unknown ()
+  "refile-target returns nil for unregistered types."
+  (assert-nil (org-gtd-type-refile-target 'nonexistent)))
+
 ;;; org-gtd-type-state
 
 (deftest type-state-returns-semantic-for-type ()

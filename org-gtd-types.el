@@ -36,6 +36,7 @@
 
     (delegated
      :org-gtd "Delegated"
+     :refile-target "Actions"
      :state :wait
      :properties
      ((:who  :org-property "DELEGATED_TO"      :type text      :required t
@@ -72,6 +73,7 @@
 
     (habit
      :org-gtd "Habit"
+     :refile-target "Habits"
      :state nil
      :properties
      ((:when :org-property "SCHEDULED" :type repeating-timestamp :required t
@@ -290,6 +292,15 @@ Returns the full type entry (TYPE-NAME . PLIST) or nil if not found."
 Returns nil if type not found."
   (when-let ((type-def (org-gtd-type-get type-name)))
     (plist-get (cdr type-def) :org-gtd)))
+
+(defun org-gtd-type-refile-target (type-name)
+  "Return the refile-target heading string for TYPE-NAME.
+Returns the type's :refile-target plist value when set, otherwise
+falls back to the :org-gtd value.  Returns nil if TYPE-NAME is not
+a registered type."
+  (when-let ((type-def (org-gtd-type-get type-name)))
+    (or (plist-get (cdr type-def) :refile-target)
+        (plist-get (cdr type-def) :org-gtd))))
 
 (defun org-gtd-type-state (type-name)
   "Get the TODO state semantic for TYPE-NAME.

@@ -109,6 +109,39 @@ is not declared."
     (assert-equal "Fake" (car called-with))
     (assert-true (stringp (cadr called-with)))))
 
+(deftest run-disposition-list-uses-refile-target-override ()
+  "Disposition 'list uses :refile-target when declared, not :org-gtd."
+  (let ((called-with nil)
+        (org-gtd-organize-hooks nil)
+        (org-gtd-types
+         '((fake :org-gtd "Foo" :refile-target "Custom"
+                 :state nil :properties nil
+                 :organize-fn ignore :disposition list))))
+    (cl-letf (((symbol-function 'org-gtd-refile--do)
+               (lambda (target _template) (setq called-with target))))
+      (with-temp-buffer
+        (org-mode)
+        (insert "* Thing\n")
+        (goto-char (point-min))
+        (org-gtd-process-heading (point-marker) 'fake)))
+    (assert-equal "Custom" called-with)))
+
+(deftest run-disposition-list-falls-back-to-org-gtd-value ()
+  "Disposition 'list falls back to :org-gtd when no :refile-target."
+  (let ((called-with nil)
+        (org-gtd-organize-hooks nil)
+        (org-gtd-types
+         '((fake :org-gtd "Foo" :state nil :properties nil
+                 :organize-fn ignore :disposition list))))
+    (cl-letf (((symbol-function 'org-gtd-refile--do)
+               (lambda (target _template) (setq called-with target))))
+      (with-temp-buffer
+        (org-mode)
+        (insert "* Thing\n")
+        (goto-char (point-min))
+        (org-gtd-process-heading (point-marker) 'fake)))
+    (assert-equal "Foo" called-with)))
+
 (deftest run-disposition-respects-skip-refile ()
   "When skip-refile is set, dispatch calls update-in-place, not refile."
   (let ((refile-called nil)
