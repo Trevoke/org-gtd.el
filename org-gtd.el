@@ -58,6 +58,7 @@
 (require 'org-gtd-files)
 (require 'org-gtd-horizons)
 (require 'org-gtd-areas-of-focus)
+(require 'org-gtd-hooks)
 (require 'org-gtd-clarify)
 (require 'org-gtd-delegate)
 (require 'org-gtd-archive)
