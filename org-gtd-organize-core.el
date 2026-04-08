@@ -36,6 +36,7 @@
 (require 'org-gtd-clarify)
 (require 'org-gtd-types)
 (require 'org-gtd-hooks)
+(require 'org-gtd-refile)
 
 ;;;; Customization
 
@@ -159,9 +160,36 @@ This handles the internal bits of `org-gtd'."
   "Placeholder — full implementation in Task 3.3."
   nil)
 
-(defun org-gtd--run-disposition (_type _pom)
-  "Placeholder — full implementation in Task 3.2."
-  nil)
+(defun org-gtd--default-refile-template (type)
+  "Construct a default refile-target-element string for TYPE.
+Uses the type's :org-gtd value and `org-gtd-prop-refile' so that the
+refile engine can create the top-level heading if it is missing."
+  (let ((value (org-gtd-type-org-gtd-value type)))
+    (format "* %s\n:PROPERTIES:\n:%s: %s\n:END:\n"
+            value org-gtd-prop-refile value)))
+
+(defun org-gtd--run-disposition (type _pom)
+  "Dispatch on TYPE's :disposition.
+Honors `org-gtd-clarify--skip-refile' by calling
+`org-gtd-organize--update-in-place' instead of the type-specific
+disposition.  POM is currently unused but reserved for future
+dispositions that need it."
+  (if (and (boundp 'org-gtd-clarify--skip-refile)
+           org-gtd-clarify--skip-refile)
+      (org-gtd-organize--update-in-place)
+    (let ((disp (org-gtd-type-disposition type)))
+      (cond
+       ((eq disp 'list)
+        (org-gtd-refile--do (org-gtd-type-org-gtd-value type)
+                            (org-gtd--default-refile-template type)))
+       ((eq disp 'done-and-archive)
+        (error "Disposition done-and-archive not implemented yet (type %s)" type))
+       ((eq disp 'cancel-and-archive)
+        (error "Disposition cancel-and-archive not implemented yet (type %s)" type))
+       ((eq disp 'externalize)
+        (error "Disposition externalize not implemented yet (type %s)" type))
+       (t
+        (error "Unknown disposition %s for type %s" disp type))))))
 
 (defun org-gtd-process-heading (pom type &optional config)
   "Organize the heading at POM as TYPE, running the full hook pipeline.
