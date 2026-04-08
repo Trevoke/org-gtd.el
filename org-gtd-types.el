@@ -46,6 +46,9 @@
     (calendar
      :org-gtd "Calendar"
      :state nil
+     :disposition list
+     :transient-key "c"
+     :prompt-to-refile t
      :properties
      ((:when :org-property "ORG_GTD_TIMESTAMP" :type timestamp :required t
              :prompt "When is this happening?")))

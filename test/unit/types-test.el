@@ -74,6 +74,12 @@
   (assert-equal :done
                 (plist-get (cdr (assq 'quick-action org-gtd-types)) :state)))
 
+(deftest types-calendar-declares-wiring-fields ()
+  "calendar type declares disposition, transient-key, and prompt-to-refile."
+  (assert-same 'list (org-gtd-type-disposition 'calendar))
+  (assert-equal "c" (org-gtd-type-transient-key 'calendar))
+  (assert-same t (org-gtd-type-prompt-to-refile 'calendar)))
+
 ;;; org-gtd-type-get
 
 (deftest type-get-returns-definition-for-valid-type ()
