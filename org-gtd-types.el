@@ -247,6 +247,30 @@ Returns NAME."
       (push (cons name plist) org-gtd-types)))
   name)
 
+;;;###autoload
+(defun org-gtd-customize-type (name-or-names &rest plist)
+  "Merge PLIST into the type definition(s) named by NAME-OR-NAMES.
+
+NAME-OR-NAMES is either a type symbol or a list of type symbols.
+When it is a list, PLIST is applied to each named type using the
+same merge rules.
+
+Merge rules (see `org-gtd--merge-type-definitions'):
+- Scalar fields (:state, :organize-fn, :disposition, :project-fn,
+  :prompt-to-refile, :transient-key) replace the existing value.
+- :supports appends to the existing list.
+- :properties merge by semantic name.
+- :hooks merge per stage -- each stage's function list appends.
+- :org-gtd is never changed.
+
+Signals an error if any named type is not registered."
+  (dolist (name (if (listp name-or-names) name-or-names (list name-or-names)))
+    (let ((existing (assq name org-gtd-types)))
+      (unless existing
+        (error "Unknown org-gtd type: %s" name))
+      (let ((merged (org-gtd--merge-type-definitions existing (cons name plist))))
+        (setcdr existing (cdr merged))))))
+
 ;;;; Accessor Functions
 
 (defun org-gtd-type-get (type-name)

@@ -363,6 +363,41 @@
                    :state nil
                    :properties nil))))
 
+;;; org-gtd-customize-type
+
+(deftest customize-type-single-merges-scalar ()
+  "Single-type customize-type replaces a scalar field."
+  (let ((org-gtd-types (copy-tree org-gtd-types)))
+    (org-gtd-customize-type 'calendar :prompt-to-refile t)
+    (assert-same t (org-gtd-type-prompt-to-refile 'calendar))))
+
+(deftest customize-type-list-applies-to-each ()
+  "List-form customize-type merges into every listed type."
+  (let ((org-gtd-types (copy-tree org-gtd-types)))
+    (org-gtd-customize-type '(calendar tickler) :prompt-to-refile t)
+    (assert-same t (org-gtd-type-prompt-to-refile 'calendar))
+    (assert-same t (org-gtd-type-prompt-to-refile 'tickler))))
+
+(deftest customize-type-hooks-append-across-calls ()
+  "Successive customize-type calls append to the same hook stage."
+  (let ((org-gtd-types (copy-tree org-gtd-types)))
+    (org-gtd-customize-type 'calendar :hooks '(:after-file (fn-a)))
+    (org-gtd-customize-type 'calendar :hooks '(:after-file (fn-b)))
+    (assert-equal '(fn-a fn-b)
+                  (plist-get (org-gtd-type-hooks 'calendar) :after-file))))
+
+(deftest customize-type-supports-appends ()
+  "customize-type appends to :supports rather than replacing."
+  (let ((org-gtd-types (copy-tree org-gtd-types)))
+    (org-gtd-customize-type 'calendar :supports '(reactivate))
+    (assert-true (org-gtd-type-supports-p 'calendar 'reactivate))))
+
+(deftest customize-type-unknown-type-errors ()
+  "Customizing an unregistered type signals an error."
+  (let ((org-gtd-types (copy-tree org-gtd-types)))
+    (assert-raises 'error
+                   (org-gtd-customize-type 'nonsense :prompt-to-refile t))))
+
 (provide 'types-test)
 
 ;;; types-test.el ends here
