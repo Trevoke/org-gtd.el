@@ -343,6 +343,12 @@ Returns nil if TYPE-NAME is not a registered type."
   (when-let ((type-def (org-gtd-type-get type-name)))
     (plist-get (cdr type-def) :prompt-to-refile)))
 
+(defun org-gtd-type-prompt-to-refile-set-p (type-name)
+  "Return non-nil if TYPE-NAME explicitly declares :prompt-to-refile.
+Distinguishes an explicit nil value from an absent key."
+  (when-let ((type-def (org-gtd-type-get type-name)))
+    (and (plist-member (cdr type-def) :prompt-to-refile) t)))
+
 (defun org-gtd-type-transient-key (type-name)
   "Return the :transient-key for TYPE-NAME, or nil."
   (when-let ((type-def (org-gtd-type-get type-name)))

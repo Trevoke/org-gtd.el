@@ -32,6 +32,7 @@
 
 (require 'org-gtd-core)
 (require 'org-gtd-files)
+(require 'org-gtd-types)
 
 ;;;; Customization
 
@@ -75,6 +76,15 @@ Valid type symbols:
   :group 'org-gtd-organize
   :package-version '(org-gtd . "4.0.0")
   :type '(repeat symbol))
+
+(defcustom org-gtd-refile-prompt-default nil
+  "Fallback value for whether refile should prompt for a target.
+
+Used by `org-gtd-refile--should-prompt-p' when the item's GTD type does
+not declare `:prompt-to-refile' explicitly in the type registry."
+  :group 'org-gtd-organize
+  :package-version '(org-gtd . "4.1.0")
+  :type 'boolean)
 
 ;;;; Variables
 
@@ -128,17 +138,25 @@ The function filters targets as follows:
 (defun org-gtd-refile--should-prompt-p (type)
   "Return non-nil if refiling TYPE should prompt for target selection.
 
-Checks `org-gtd-refile-to-any-target' first (deprecated, takes precedence
-when non-nil).  If nil, checks if TYPE is in `org-gtd-refile-prompt-for-types'."
-  (if org-gtd-refile-to-any-target
-      (progn
-        (unless org-gtd-refile--deprecated-warning-shown
-          (display-warning 'org-gtd
-                           "`org-gtd-refile-to-any-target' is deprecated as of 4.0.0.
+Precedence:
+1. If `org-gtd-refile-to-any-target' is non-nil, emit the deprecation
+   warning and return nil (legacy behavior).
+2. Otherwise, if the type registry declares `:prompt-to-refile' for
+   TYPE (even explicitly nil), return that value.
+3. Otherwise, honor the legacy `org-gtd-refile-prompt-for-types' list.
+4. Otherwise, fall back to `org-gtd-refile-prompt-default'."
+  (cond
+   (org-gtd-refile-to-any-target
+    (unless org-gtd-refile--deprecated-warning-shown
+      (display-warning 'org-gtd
+                       "`org-gtd-refile-to-any-target' is deprecated as of 4.0.0.
 Set it to nil and customize `org-gtd-refile-prompt-for-types' instead.")
-          (setq org-gtd-refile--deprecated-warning-shown t))
-        nil)
-    (memq type org-gtd-refile-prompt-for-types)))
+      (setq org-gtd-refile--deprecated-warning-shown t))
+    nil)
+   ((org-gtd-type-prompt-to-refile-set-p type)
+    (org-gtd-type-prompt-to-refile type))
+   ((memq type org-gtd-refile-prompt-for-types) t)
+   (t org-gtd-refile-prompt-default)))
 
 ;;;;; Private
 
