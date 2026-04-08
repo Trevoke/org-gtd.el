@@ -208,18 +208,26 @@ Returns the `org-mode' property name string, or nil if not found."
       (plist-get (cdr prop) :org-property))))
 
 (defun org-gtd-type-organize-fn (type-name)
-  "Return the :organize-fn for TYPE-NAME, or `org-gtd-configure-as-type'."
-  (or (plist-get (cdr (org-gtd-type-get type-name)) :organize-fn)
-      #'org-gtd-configure-as-type))
+  "Return the :organize-fn for TYPE-NAME.
+Defaults to `org-gtd-configure-as-type' when the type exists but does
+not declare one.  Returns nil if TYPE-NAME is not a registered type."
+  (when-let ((type-def (org-gtd-type-get type-name)))
+    (or (plist-get (cdr type-def) :organize-fn)
+        #'org-gtd-configure-as-type)))
 
 (defun org-gtd-type-disposition (type-name)
-  "Return the :disposition for TYPE-NAME (default `list')."
-  (or (plist-get (cdr (org-gtd-type-get type-name)) :disposition)
-      'list))
+  "Return the :disposition for TYPE-NAME.
+Defaults to `list' when the type exists but does not declare one.
+Returns nil if TYPE-NAME is not a registered type."
+  (when-let ((type-def (org-gtd-type-get type-name)))
+    (or (plist-get (cdr type-def) :disposition)
+        'list)))
 
 (defun org-gtd-type-supports (type-name)
-  "Return the :supports list declared on TYPE-NAME."
-  (plist-get (cdr (org-gtd-type-get type-name)) :supports))
+  "Return the :supports list declared on TYPE-NAME.
+Returns nil if TYPE-NAME is not a registered type."
+  (when-let ((type-def (org-gtd-type-get type-name)))
+    (plist-get (cdr type-def) :supports)))
 
 (defun org-gtd-type-supports-p (type-name flag)
   "Return non-nil if TYPE-NAME declares FLAG in :supports."
@@ -227,19 +235,23 @@ Returns the `org-mode' property name string, or nil if not found."
 
 (defun org-gtd-type-project-fn (type-name)
   "Return the :project-fn declared on TYPE-NAME, or nil."
-  (plist-get (cdr (org-gtd-type-get type-name)) :project-fn))
+  (when-let ((type-def (org-gtd-type-get type-name)))
+    (plist-get (cdr type-def) :project-fn)))
 
 (defun org-gtd-type-prompt-to-refile (type-name)
   "Return the :prompt-to-refile flag for TYPE-NAME, or nil."
-  (plist-get (cdr (org-gtd-type-get type-name)) :prompt-to-refile))
+  (when-let ((type-def (org-gtd-type-get type-name)))
+    (plist-get (cdr type-def) :prompt-to-refile)))
 
 (defun org-gtd-type-transient-key (type-name)
   "Return the :transient-key for TYPE-NAME, or nil."
-  (plist-get (cdr (org-gtd-type-get type-name)) :transient-key))
+  (when-let ((type-def (org-gtd-type-get type-name)))
+    (plist-get (cdr type-def) :transient-key)))
 
 (defun org-gtd-type-hooks (type-name)
   "Return the :hooks plist declared on TYPE-NAME, or nil."
-  (plist-get (cdr (org-gtd-type-get type-name)) :hooks))
+  (when-let ((type-def (org-gtd-type-get type-name)))
+    (plist-get (cdr type-def) :hooks)))
 
 (defun org-gtd-type-from-org-gtd-value (org-gtd-value)
   "Get type name for ORG_GTD property ORG-GTD-VALUE.

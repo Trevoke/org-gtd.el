@@ -237,7 +237,19 @@
     ;; Builtin types should still work
     (assert-true (org-gtd-type-get 'delegated))))
 
-(deftest type-wiring-fields-have-documented-defaults ()
+(deftest type-wiring-accessors-return-nil-for-unknown-type ()
+  "All wiring-field accessors return nil for unregistered types."
+  (let ((org-gtd-types '((known :org-gtd "K" :state nil :properties nil))))
+    (assert-nil (org-gtd-type-organize-fn 'bogus))
+    (assert-nil (org-gtd-type-disposition 'bogus))
+    (assert-nil (org-gtd-type-supports 'bogus))
+    (assert-nil (org-gtd-type-supports-p 'bogus 'reactivate))
+    (assert-nil (org-gtd-type-project-fn 'bogus))
+    (assert-nil (org-gtd-type-prompt-to-refile 'bogus))
+    (assert-nil (org-gtd-type-transient-key 'bogus))
+    (assert-nil (org-gtd-type-hooks 'bogus))))
+
+(deftest type-wiring-fields-return-defaults-when-absent ()
   "Wiring-field accessors return documented defaults when not declared."
   (let ((org-gtd-types '((fake :org-gtd "Fake" :state nil :properties nil))))
     (assert-same #'org-gtd-configure-as-type (org-gtd-type-organize-fn 'fake))
