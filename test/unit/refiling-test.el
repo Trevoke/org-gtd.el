@@ -152,6 +152,7 @@
     (basic-save-buffer))
 
   (let ((org-gtd-refile-to-any-target nil)
+        (org-gtd-refile-prompt-default t)
         (new-buffer (create-additional-project-target "more-projects"))
         (temp-buffer (get-buffer-create (generate-new-buffer-name "wip"))))
 
@@ -179,12 +180,15 @@
         (org-gtd-refile--deprecated-warning-shown t)) ; suppress warning in test
     (assert-nil (org-gtd-refile--should-prompt-p 'single-action))))
 
-(deftest refile/should-prompt-checks-list-when-deprecated-var-nil ()
-  "Checks org-gtd-refile-prompt-for-types when deprecated var is nil."
+(deftest refile/should-prompt-honors-registry-when-deprecated-var-nil ()
+  "Consults the type registry `:prompt-to-refile' when deprecated var is nil.
+The load-time migration populates this for built-in types in the default
+`org-gtd-refile-prompt-for-types' list (e.g. `calendar', `delegated').
+`trash' is not in the migration default, so it should not prompt."
   (let ((org-gtd-refile-to-any-target nil)
-        (org-gtd-refile-prompt-for-types '(single-action calendar)))
-    (assert-true (org-gtd-refile--should-prompt-p 'single-action))
+        (org-gtd-refile-prompt-default nil))
     (assert-true (org-gtd-refile--should-prompt-p 'calendar))
+    (assert-true (org-gtd-refile--should-prompt-p 'delegated))
     (assert-nil (org-gtd-refile--should-prompt-p 'trash))))
 
 (deftest refile/deprecated-var-shows-warning-once ()

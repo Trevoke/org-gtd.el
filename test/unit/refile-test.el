@@ -54,12 +54,22 @@ Also binds `org-gtd-refile-to-any-target' to nil by default."
     (let ((org-gtd-refile-prompt-default nil))
       (assert-nil (org-gtd-refile--should-prompt-p 'test-type)))))
 
-(deftest refile-should-prompt-p-legacy-memq-fallback ()
-  "Legacy `org-gtd-refile-prompt-for-types' still honored when registry absent."
+(deftest refile-should-prompt-p-legacy-var-no-longer-consulted ()
+  "Mutating `org-gtd-refile-prompt-for-types' after load has no effect.
+The legacy variable is migrated at load time and then ignored."
   (refile-test--with-type '(:org-gtd "TestType")
     (let ((org-gtd-refile-prompt-for-types '(test-type))
           (org-gtd-refile-prompt-default nil))
-      (assert-true (org-gtd-refile--should-prompt-p 'test-type)))))
+      (assert-nil (org-gtd-refile--should-prompt-p 'test-type)))))
+
+(deftest refile-load-time-migration-populates-registry ()
+  "Load-time migration set :prompt-to-refile t on legacy default types.
+`calendar' is in the default `org-gtd-refile-prompt-for-types' and is a
+registered type, so the migration should have marked it."
+  (assert-true (org-gtd-type-prompt-to-refile-set-p 'calendar))
+  (assert-true (org-gtd-type-prompt-to-refile 'calendar))
+  (assert-true (org-gtd-type-prompt-to-refile-set-p 'delegated))
+  (assert-true (org-gtd-type-prompt-to-refile 'delegated)))
 
 (deftest refile-should-prompt-p-any-target-deprecated-returns-nil ()
   "`org-gtd-refile-to-any-target' non-nil short-circuits to nil."
