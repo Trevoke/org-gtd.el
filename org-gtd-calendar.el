@@ -32,27 +32,23 @@
 (require 'org-gtd-configure)
 (require 'org-gtd-organize-core)
 
-;;;; Constants
-
-(defconst org-gtd-calendar-template
-  (format "* Calendar
-:PROPERTIES:
-:%s: %s
-:END:
-" org-gtd-prop-refile org-gtd-calendar))
-
 ;;;; Commands
 
 (defun org-gtd-calendar (&optional appointment-date)
-  "Decorate and refile item at point as a calendar item.
+  "DWIM: organize the heading at point as a calendar item.
 
-You can pass APPOINTMENT-DATE as a YYYY-MM-DD string if you want to use this
-non-interactively."
+APPOINTMENT-DATE is an optional YYYY-MM-DD string for non-interactive use.
+When invoked from within the clarify/WIP transient flow, keeps the
+`org-gtd-organize--call' wrapping so queue/source-cut/window-restore
+behavior is preserved.  Otherwise dispatches directly via
+`org-gtd--dispatch'."
   (interactive)
-  (let ((config-override (when appointment-date
-                           `((:when . ,(format "<%s>" appointment-date))))))
-    (org-gtd-organize--call
-     (lambda () (org-gtd-calendar--apply config-override)))))
+  (let ((config (when appointment-date
+                  `((:when . ,(format "<%s>" appointment-date))))))
+    (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
+        (org-gtd-organize--call
+         (lambda () (org-gtd-process-heading (point-marker) 'calendar config)))
+      (org-gtd--dispatch 'calendar))))
 
 ;;;; Functions
 
@@ -64,40 +60,14 @@ non-interactively."
 Takes TOPIC as the string from which to make the heading to add to `org-gtd' and
 APPOINTMENT-DATE as a YYYY-MM-DD string."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd"))
+        (org-id-overriding-file-name "org-gtd")
+        (config `((:when . ,(format "<%s>" appointment-date)))))
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
-      (org-gtd-calendar appointment-date))
+      (goto-char (point-min))
+      (org-gtd-process-heading (point-marker) 'calendar config))
     (kill-buffer buffer)))
-
-;;;;; Private
-
-(defun org-gtd-calendar--configure (&optional config-override)
-  "Configure item at point as a calendar item.
-
-CONFIG-OVERRIDE is an alist with :when key for non-interactive use."
-  (org-gtd-configure-as-type 'calendar config-override))
-
-(defun org-gtd-calendar--finalize ()
-  "Finalize calendar item organization and refile."
-  (setq-local org-gtd--organize-type 'calendar)
-  (org-gtd-organize-apply-hooks)
-  (if org-gtd-clarify--skip-refile
-      (org-gtd-organize--update-in-place)
-    (org-gtd-refile--do org-gtd-calendar org-gtd-calendar-template)))
-
-(defun org-gtd-calendar--apply (&optional config-override)
-  "Process GTD inbox item by transforming it into a calendar item.
-
-Orchestrates the calendar item organization workflow:
-1. Configure with calendar settings
-2. Finalize and refile to calendar file
-
-CONFIG-OVERRIDE can provide input configuration to override default
-prompting behavior."
-  (org-gtd-calendar--configure config-override)
-  (org-gtd-calendar--finalize))
 
 ;;;; Footer
 
