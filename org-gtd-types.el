@@ -150,26 +150,64 @@ User properties with same semantic name replace builtin ones."
             (push user-prop result))))
       result)))
 
+(defconst org-gtd--type-scalar-fields
+  '(:state :organize-fn :disposition :project-fn :prompt-to-refile :transient-key)
+  "Type-plist keys where a user value replaces the builtin value.
+Note: :org-gtd is intentionally excluded and can never be overridden.")
+
+(defconst org-gtd--type-list-append-fields
+  '(:supports)
+  "Type-plist keys where user values are appended to builtin values.")
+
+(defun org-gtd--merge-hooks (builtin-hooks user-hooks)
+  "Merge two :hooks plists by appending per-stage function lists.
+BUILTIN-HOOKS functions come first, USER-HOOKS functions appended."
+  (let ((result (copy-sequence builtin-hooks))
+        (tail user-hooks))
+    (while tail
+      (let ((stage (car tail))
+            (fns (cadr tail)))
+        (setq result
+              (plist-put result stage
+                         (append (plist-get result stage) fns))))
+      (setq tail (cddr tail)))
+    result))
+
 (defun org-gtd--merge-type-definitions (builtin user)
   "Merge USER type definition into BUILTIN.
-Properties are merged by semantic name.  User properties override builtin.
-:org-gtd is never overridden from user config."
-  (let* ((builtin-plist (cdr builtin))
+:org-gtd is never overridden from user config.  Scalar wiring fields
+replace, list-append fields append (builtin first), :properties merge
+by semantic name, and :hooks merge per stage (builtin first)."
+  (let* ((type-name (car builtin))
+         (builtin-plist (cdr builtin))
          (user-plist (cdr user))
-         (type-name (car builtin))
-         ;; Never allow overriding :org-gtd
-         (org-gtd-val (plist-get builtin-plist :org-gtd))
-         ;; Allow overriding :state
-         (state (or (plist-get user-plist :state)
-                    (plist-get builtin-plist :state)))
-         ;; Merge properties
-         (builtin-props (plist-get builtin-plist :properties))
-         (user-props (plist-get user-plist :properties))
-         (merged-props (org-gtd--merge-properties builtin-props user-props)))
-    (cons type-name
-          (list :org-gtd org-gtd-val
-                :state state
-                :properties merged-props))))
+         (out (copy-sequence builtin-plist)))
+    ;; Scalar replace: only when user actually mentions the key, so an
+    ;; explicit nil from the user can clear a builtin value but a missing
+    ;; key leaves the builtin alone.
+    (dolist (k org-gtd--type-scalar-fields)
+      (when (plist-member user-plist k)
+        (setq out (plist-put out k (plist-get user-plist k)))))
+    ;; List-append fields.
+    (dolist (k org-gtd--type-list-append-fields)
+      (when (plist-member user-plist k)
+        (setq out (plist-put out k
+                             (append (plist-get builtin-plist k)
+                                     (plist-get user-plist k))))))
+    ;; Properties: merge by semantic name (existing helper).
+    (when (plist-member user-plist :properties)
+      (setq out (plist-put out :properties
+                           (org-gtd--merge-properties
+                            (plist-get builtin-plist :properties)
+                            (plist-get user-plist :properties)))))
+    ;; Hooks: per-stage append.
+    (when (plist-member user-plist :hooks)
+      (setq out (plist-put out :hooks
+                           (org-gtd--merge-hooks
+                            (plist-get builtin-plist :hooks)
+                            (plist-get user-plist :hooks)))))
+    ;; :org-gtd is never overridden — copy-sequence preserved the builtin.
+    (cons type-name out)))
 
 ;;;; Accessor Functions
 

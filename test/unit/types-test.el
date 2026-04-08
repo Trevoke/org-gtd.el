@@ -269,6 +269,63 @@
     (assert-true (org-gtd-type-supports-p 'fake 'project-handler))
     (assert-nil (org-gtd-type-supports-p 'fake 'nonsense))))
 
+(deftest merge-preserves-builtin-wiring-when-user-omits ()
+  "Builtin wiring fields survive a user override that does not mention them."
+  (let* ((builtin '(t1 :org-gtd "T1" :state nil :properties nil
+                       :organize-fn my/fn
+                       :disposition done-and-archive
+                       :supports (reactivate)
+                       :project-fn my/proj
+                       :prompt-to-refile t
+                       :transient-key "c"))
+         (user    '(t1 :properties nil))
+         (merged  (org-gtd--merge-type-definitions builtin user))
+         (plist   (cdr merged)))
+    (assert-same 'my/fn (plist-get plist :organize-fn))
+    (assert-same 'done-and-archive (plist-get plist :disposition))
+    (assert-equal '(reactivate) (plist-get plist :supports))
+    (assert-same 'my/proj (plist-get plist :project-fn))
+    (assert-same t (plist-get plist :prompt-to-refile))
+    (assert-equal "c" (plist-get plist :transient-key))))
+
+(deftest merge-scalar-user-value-replaces-builtin ()
+  "A user scalar value replaces the builtin value."
+  (let* ((builtin '(t1 :org-gtd "T1" :state nil :properties nil
+                       :prompt-to-refile nil
+                       :disposition list))
+         (user    '(t1 :prompt-to-refile t :disposition done-and-archive))
+         (merged  (org-gtd--merge-type-definitions builtin user))
+         (plist   (cdr merged)))
+    (assert-same t (plist-get plist :prompt-to-refile))
+    (assert-same 'done-and-archive (plist-get plist :disposition))))
+
+(deftest merge-supports-list-appends ()
+  "User :supports values append to builtin values (builtin first)."
+  (let* ((builtin '(t1 :org-gtd "T1" :state nil :properties nil
+                       :supports (reactivate)))
+         (user    '(t1 :supports (project-handler)))
+         (merged  (org-gtd--merge-type-definitions builtin user))
+         (plist   (cdr merged)))
+    (assert-equal '(reactivate project-handler) (plist-get plist :supports))))
+
+(deftest merge-hooks-per-stage-append ()
+  "Local hooks append per stage; stages not touched by user are preserved."
+  (let* ((builtin '(t1 :org-gtd "T1" :state nil :properties nil
+                       :hooks (:after-organize (fn-a)
+                               :before-file (fn-x))))
+         (user    '(t1 :hooks (:after-organize (fn-b))))
+         (merged  (org-gtd--merge-type-definitions builtin user))
+         (hooks   (plist-get (cdr merged) :hooks)))
+    (assert-equal '(fn-a fn-b) (plist-get hooks :after-organize))
+    (assert-equal '(fn-x) (plist-get hooks :before-file))))
+
+(deftest merge-never-overrides-org-gtd-value ()
+  "User cannot override the :org-gtd property value."
+  (let* ((builtin '(t1 :org-gtd "T1" :state nil :properties nil))
+         (user    '(t1 :org-gtd "Hacked"))
+         (merged  (org-gtd--merge-type-definitions builtin user)))
+    (assert-equal "T1" (plist-get (cdr merged) :org-gtd))))
+
 (provide 'types-test)
 
 ;;; types-test.el ends here
