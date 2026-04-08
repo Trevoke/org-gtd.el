@@ -161,5 +161,47 @@ is not declared."
       (org-gtd--clear-foreign-properties 'to-type)
       (assert-equal "a-val" (org-entry-get (point) "PROP_A")))))
 
+(deftest process-project-calls-project-fn-with-pom ()
+  "process-project invokes the type's :project-fn with POM."
+  (let* ((received-pom nil)
+         (received-config nil)
+         (org-gtd-types
+          `((fake :org-gtd "Fake" :state nil :properties nil
+                  :supports (project-handler)
+                  :project-fn ,(lambda (pom config)
+                                 (setq received-pom pom)
+                                 (setq received-config config))))))
+    (with-temp-buffer
+      (org-mode)
+      (insert "* Project\n")
+      (goto-char (point-min))
+      (let ((m (point-marker)))
+        (org-gtd-process-project m 'fake '((:when . "2026-05-01")))
+        (assert-same m received-pom)
+        (assert-equal '((:when . "2026-05-01")) received-config)))))
+
+(deftest process-project-errors-without-project-handler-support ()
+  "Types that do not declare :supports project-handler raise user-error."
+  (let ((org-gtd-types
+         '((fake :org-gtd "Fake" :state nil :properties nil))))
+    (with-temp-buffer
+      (org-mode)
+      (insert "* Project\n")
+      (goto-char (point-min))
+      (assert-raises 'user-error
+        (org-gtd-process-project (point-marker) 'fake)))))
+
+(deftest process-project-errors-when-project-fn-missing ()
+  "A project-handler type without :project-fn raises user-error."
+  (let ((org-gtd-types
+         '((fake :org-gtd "Fake" :state nil :properties nil
+                 :supports (project-handler)))))
+    (with-temp-buffer
+      (org-mode)
+      (insert "* Project\n")
+      (goto-char (point-min))
+      (assert-raises 'user-error
+        (org-gtd-process-project (point-marker) 'fake)))))
+
 (provide 'organize-core-test)
 ;;; organize-core-test.el ends here

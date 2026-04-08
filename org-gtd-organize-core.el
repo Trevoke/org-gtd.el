@@ -239,6 +239,21 @@ Pipeline, executed with point at POM:
     (org-gtd--run-disposition type pom)
     (org-gtd-hooks-run :after-file type pom)))
 
+(defun org-gtd-process-project (pom type &optional config)
+  "Reclassify the project at POM as TYPE using the type's :project-fn.
+
+POM is a point or marker identifying a project heading or a task that
+belongs to a project.  TYPE must declare `:supports project-handler'
+and supply a `:project-fn', which is called with POM and CONFIG.
+Signals a `user-error' if TYPE does not declare project-handler
+support or lacks a `:project-fn'."
+  (unless (org-gtd-type-supports-p type 'project-handler)
+    (user-error "Type %s does not support project-level handling" type))
+  (let ((fn (org-gtd-type-project-fn type)))
+    (unless fn
+      (user-error "Type %s has project-handler support but no :project-fn" type))
+    (funcall fn pom config)))
+
 ;;;; Footer
 
 (provide 'org-gtd-organize-core)
