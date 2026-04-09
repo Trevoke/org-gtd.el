@@ -43,22 +43,20 @@
 
 ;;;; Constants
 
-(defconst org-gtd-action-template
-  (format "* Actions
-:PROPERTIES:
-:%s: %s
-:END:
-" org-gtd-prop-refile org-gtd-action))
-
-(defconst org-gtd-next-action-func #'org-gtd-next-action--apply
-  "Function called when organizing item at point as a next action.")
-
 ;;;; Commands
 
 (defun org-gtd-next-action ()
-  "Organize, decorate and refile item at point as a next action."
+  "DWIM: organize the heading at point as a next action.
+
+When invoked from within the clarify/WIP transient flow, keeps the
+`org-gtd-organize--call' wrapping so queue/source-cut/window-restore
+behavior is preserved.  Otherwise dispatches directly via
+`org-gtd--dispatch'."
   (interactive)
-  (org-gtd-organize--call org-gtd-next-action-func))
+  (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
+      (org-gtd-organize--call
+       (lambda () (org-gtd-process-heading (point-marker) 'next-action nil)))
+    (org-gtd--dispatch 'next-action)))
 
 ;;;; Functions
 
@@ -73,7 +71,8 @@ TOPIC is what you want to see in the agenda view."
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
-      (org-gtd-next-action))
+      (goto-char (point-min))
+      (org-gtd-process-heading (point-marker) 'next-action nil))
     (kill-buffer buffer)))
 
 ;;;;; Private
@@ -109,27 +108,6 @@ the item's properties accordingly."
     (org-entry-put (point) (org-gtd-type-property 'delegated :when)
                    (format "<%s>" when-date))))
 
-(defun org-gtd-next-action--configure ()
-  "Configure item at point as a next action."
-  (org-gtd-configure-as-type 'next-action))
-
-(defun org-gtd-next-action--finalize ()
-  "Finalize next action organization and refile."
-  (setq-local org-gtd--organize-type 'next-action)
-  (org-gtd-organize-apply-hooks)
-  (if org-gtd-clarify--skip-refile
-      (org-gtd-organize--update-in-place)
-    (org-gtd-refile--do org-gtd-action org-gtd-action-template)))
-
-(defun org-gtd-next-action--apply ()
-  "Process GTD inbox item by transforming it into a next action.
-
-Orchestrates the next action organization workflow:
-1. Configure as next action
-2. Finalize and refile to actions file"
-  (org-gtd-next-action--configure)
-  (org-gtd-next-action--finalize))
-
 ;;;;; Obsolete aliases (public surface)
 
 (define-obsolete-function-alias 'org-gtd-single-action
@@ -140,9 +118,6 @@ Orchestrates the next action organization workflow:
   'org-gtd-next-action--maybe-convert-to-delegated "4.1.0")
 (define-obsolete-function-alias 'org-gtd-single-action--convert-to-delegated
   'org-gtd-next-action--convert-to-delegated "4.1.0")
-(defvaralias 'org-gtd-single-action-func 'org-gtd-next-action-func)
-(make-obsolete-variable 'org-gtd-single-action-func 'org-gtd-next-action-func "4.1.0")
-
 ;;;; Footer
 
 (provide 'org-gtd-next-action)
