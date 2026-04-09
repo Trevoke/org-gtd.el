@@ -21,34 +21,65 @@
 
 (e-unit-initialize)
 
-(defun org-gtd-test--transient-keys (prefix)
-  "Return the set of suffix keys declared on transient PREFIX.
-Walks the stored prefix layout and collects every :key attribute as
-a string.  Transient stores keys as symbols in the raw layout, so we
-normalize to strings via `symbol-name'."
+(defun org-gtd-test--transient-key-commands (prefix)
+  "Return an alist of (KEY . COMMAND) declared on transient PREFIX.
+Walks the stored prefix layout and collects every suffix's
+:key (normalized to a string) and :command pair."
   (let ((layout (get prefix 'transient--layout))
-        (keys nil))
+        (pairs nil))
     (cl-labels
         ((walk (node)
            (cond
             ((vectorp node) (mapc #'walk (append node nil)))
             ((and (consp node) (eq (car-safe node) 'transient-suffix))
-             (let ((key (plist-get (cdr node) :key)))
-               (when key
-                 (push (if (symbolp key) (symbol-name key) key) keys))))
+             (let ((key (plist-get (cdr node) :key))
+                   (cmd (plist-get (cdr node) :command)))
+               (when (and key cmd)
+                 (push (cons (if (symbolp key) (symbol-name key) key)
+                             cmd)
+                       pairs))))
             ((consp node)
              (mapc #'walk node)))))
       (walk layout))
-    keys))
+    pairs))
+
+(defvar org-gtd-test--type-command-exceptions
+  '((reference . org-gtd-knowledge)
+    (delegated . org-gtd-delegate))
+  "Registry types whose transient command name does NOT follow the
+default `org-gtd-<type-name>' convention.  Phase F parity test
+consults this map for each type.")
+
+(defun org-gtd-test--expected-command-for-type (type-name)
+  "Return the symbol the `org-gtd-organize' transient should
+dispatch to for TYPE-NAME.  Defaults to `org-gtd-<type-name>',
+with `org-gtd-test--type-command-exceptions' overriding."
+  (or (alist-get type-name org-gtd-test--type-command-exceptions)
+      (intern (format "org-gtd-%s" type-name))))
 
 (deftest transient/every-type-with-transient-key-appears-in-menu ()
   "Every built-in type declaring :transient-key has a matching suffix."
-  (let ((transient-keys (org-gtd-test--transient-keys 'org-gtd-organize)))
+  (let ((transient-keys
+         (mapcar #'car
+                 (org-gtd-test--transient-key-commands 'org-gtd-organize))))
     (dolist (entry org-gtd-types)
       (let* ((type (car entry))
              (key (plist-get (cdr entry) :transient-key)))
         (when key
           (assert-true (member key transient-keys)))))))
+
+(deftest transient/every-type-with-transient-key-dispatches-to-expected-command ()
+  "Every built-in type's :transient-key suffix dispatches to the
+command named by the <type-name> convention (plus known
+exceptions listed in `org-gtd-test--type-command-exceptions')."
+  (let ((pairs (org-gtd-test--transient-key-commands 'org-gtd-organize)))
+    (dolist (entry org-gtd-types)
+      (let* ((type (car entry))
+             (key (plist-get (cdr entry) :transient-key))
+             (expected (org-gtd-test--expected-command-for-type type)))
+        (when key
+          (let ((actual (cdr (assoc key pairs))))
+            (assert-equal expected actual)))))))
 
 (provide 'transient-registry-parity-test)
 
