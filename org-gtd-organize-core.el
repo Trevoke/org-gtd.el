@@ -263,11 +263,13 @@ support or lacks a `:project-fn'."
       (user-error "Type %s has project-handler support but no :project-fn" type))
     (funcall fn pom config)))
 
-(defun org-gtd--dispatch (type)
+(defun org-gtd--dispatch (type &optional config)
   "Dispatch a per-type command for TYPE based on the heading at point.
 
 Reads the marker at beginning-of-line first (for agenda compatibility)
-or falls back to point-marker.  At the resolved marker, routes to:
+or falls back to point-marker.  CONFIG, when non-nil, is an alist
+forwarded to `org-gtd-process-heading' or `org-gtd-process-project'
+for non-interactive/override use.  At the resolved marker, routes to:
 
 - `org-gtd-process-project' when ORG_GTD=Projects and TYPE supports
   project-handler.
@@ -290,7 +292,7 @@ or falls back to point-marker.  At the resolved marker, routes to:
              (supports-project (org-gtd-type-supports-p type 'project-handler)))
         (cond
          ((and is-project-heading supports-project)
-          (org-gtd-process-project (point-marker) type))
+          (org-gtd-process-project (point-marker) type config))
          ((and is-project-task supports-project)
           (require 'org-gtd-projects)
           (unless (fboundp 'org-gtd-project--get-marker-at-point)
@@ -298,9 +300,9 @@ or falls back to point-marker.  At the resolved marker, routes to:
           (let ((project-marker
                  (org-gtd-project--get-marker-at-point
                   (format "Which project to process as %s? " type))))
-            (org-gtd-process-project project-marker type)))
+            (org-gtd-process-project project-marker type config)))
          (t
-          (org-gtd-process-heading (point-marker) type)))))))
+          (org-gtd-process-heading (point-marker) type config)))))))
 
 ;;;; Footer
 

@@ -265,7 +265,7 @@
    (org-back-to-heading t)
    ;; Tickler the item (stub the date prompt)
    (with-stub org-gtd-prompt-for-active-date "<2025-01-01>"
-     (org-gtd-tickler--configure))
+     (org-gtd-tickler--organize (quote tickler) nil))
    ;; Verify tickler state
    (assert-equal "Tickler" (org-entry-get (point) "ORG_GTD"))
    (assert-equal "Calendar" (org-entry-get (point) "PREVIOUS_ORG_GTD"))
@@ -291,7 +291,7 @@
      (org-todo "WAIT")
      ;; Tickler the item (stub the date prompt)
      (with-stub org-gtd-prompt-for-active-date "<2025-02-01>"
-       (org-gtd-tickler--configure))
+       (org-gtd-tickler--organize (quote tickler) nil))
      ;; Verify tickler state - TODO keyword should be cleared
      (assert-equal "Tickler" (org-entry-get (point) "ORG_GTD"))
      (assert-equal "Delegated" (org-entry-get (point) "PREVIOUS_ORG_GTD"))

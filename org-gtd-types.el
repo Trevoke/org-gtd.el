@@ -63,6 +63,12 @@
 
     (tickler
      :org-gtd "Tickler"
+     :disposition list
+     :transient-key "i"
+     :prompt-to-refile t
+     :supports (project-handler)
+     :organize-fn org-gtd-tickler--organize
+     :project-fn org-gtd-tickler--project-handler
      :state nil
      :properties
      ((:when :org-property "ORG_GTD_TIMESTAMP" :type timestamp :required t
