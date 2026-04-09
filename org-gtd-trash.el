@@ -31,28 +31,15 @@
 (require 'org-gtd-configure)
 (require 'org-gtd-organize-core)
 
-;;;; Constants
-
-(defconst org-gtd-trash-func #'org-gtd-trash--apply
-  "Function called when organizing item at point as trash.")
-
 ;;;; Commands
 
 (defun org-gtd-trash ()
-  "Organize and refile item at point as trash."
+  "DWIM: mark the heading at point as trash and archive it."
   (interactive)
-  (org-gtd-organize--call org-gtd-trash-func))
-
-;;;; Functions
-
-;;;;; Private
-
-(defun org-gtd-trash--apply ()
-  "Mark GTD inbox item as cancelled and move it to the org-gtd task archives."
-  (org-gtd-configure-as-type 'trash)
-  (setq-local org-gtd--organize-type 'trash)
-  (org-gtd-organize-apply-hooks)
-  (org-gtd-archive-item-at-point))
+  (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
+      (org-gtd-organize--call
+       (lambda () (org-gtd-process-heading (point-marker) 'trash nil)))
+    (org-gtd--dispatch 'trash)))
 
 ;;;; Footer
 

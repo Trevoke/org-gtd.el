@@ -31,40 +31,15 @@
 (require 'org-gtd-configure)
 (require 'org-gtd-organize-core)
 
-;;;; Constants
-
-(defconst org-gtd-quick-action-func #'org-gtd-quick-action--apply
-  "Function called when organizing item at point as quick action.")
-
 ;;;; Commands
 
 (defun org-gtd-quick-action ()
-  "Organize, decorate and refile item at point as a quick action."
+  "DWIM: organize the heading at point as a quick action."
   (interactive)
-  (org-gtd-organize--call org-gtd-quick-action-func))
-
-;;;; Functions
-
-;;;;; Private
-
-(defun org-gtd-quick-action--configure ()
-  "Configure item at point as a quick action."
-  (org-gtd-configure-as-type 'quick-action))
-
-(defun org-gtd-quick-action--finalize ()
-  "Finalize quick action organization and archive."
-  (setq-local org-gtd--organize-type 'quick-action)
-  (org-gtd-organize-apply-hooks)
-  (org-gtd-archive-item-at-point))
-
-(defun org-gtd-quick-action--apply ()
-  "Process GTD inbox item by doing it now.
-
-Orchestrates the quick action organization workflow:
-1. Configure as quick action
-2. Finalize and archive"
-  (org-gtd-quick-action--configure)
-  (org-gtd-quick-action--finalize))
+  (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
+      (org-gtd-organize--call
+       (lambda () (org-gtd-process-heading (point-marker) 'quick-action nil)))
+    (org-gtd--dispatch 'quick-action)))
 
 ;;;; Footer
 

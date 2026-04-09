@@ -38,6 +38,8 @@
 (require 'org-gtd-hooks)
 (require 'org-gtd-refile)
 
+(declare-function org-gtd-archive-item-at-point "org-gtd-archive")
+
 ;;;; Customization
 
 (defgroup org-gtd-organize nil
@@ -206,9 +208,9 @@ dispositions that need it."
         (org-gtd-refile--do (org-gtd--refile-target-for type)
                             (org-gtd--default-refile-template type)))
        ((eq disp 'done-and-archive)
-        (error "Disposition done-and-archive not implemented yet (type %s)" type))
+        (org-gtd-archive-item-at-point))
        ((eq disp 'cancel-and-archive)
-        (error "Disposition cancel-and-archive not implemented yet (type %s)" type))
+        (org-gtd-archive-item-at-point))
        ((eq disp 'externalize)
         (error "Disposition externalize not implemented yet (type %s)" type))
        (t

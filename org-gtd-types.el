@@ -104,16 +104,22 @@
 
     (reference
      :org-gtd "Reference"
+     :disposition done-and-archive
+     :transient-key "k"
      :state :done
      :properties nil)
 
     (trash
      :org-gtd "Trash"
+     :disposition cancel-and-archive
+     :transient-key "t"
      :state :canceled
      :properties nil)
 
     (quick-action
      :org-gtd "Quick"
+     :disposition done-and-archive
+     :transient-key "q"
      :state :done
      :properties nil))
   "GTD type definitions.

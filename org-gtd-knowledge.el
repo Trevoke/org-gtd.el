@@ -32,45 +32,15 @@
 (require 'org-gtd-configure)
 (require 'org-gtd-organize-core)
 
-;;;; Constants
-
-(defconst org-gtd-knowledge-func #'org-gtd-knowledge--apply
-  "Function called when item at point is knowledge to be stored.
-Note that this function is used inside loops,for instance to process the inbox,
-so if you have manual steps you need to take when storing a heading
-as knowledge, take them before calling this function
-\(for instance, during inbox processing, take the manual steps during the
-clarify step, before you call `org-gtd-organize').")
-
 ;;;; Commands
 
 (defun org-gtd-knowledge ()
-  "Decorate, organize and refile item at point as knowledge."
+  "DWIM: organize the heading at point as knowledge (reference)."
   (interactive)
-  (org-gtd-organize--call org-gtd-knowledge-func))
-
-;;;; Functions
-
-;;;;; Private
-
-(defun org-gtd-knowledge--configure ()
-  "Configure item at point as knowledge."
-  (org-gtd-configure-as-type 'reference))
-
-(defun org-gtd-knowledge--finalize ()
-  "Finalize knowledge organization and archive."
-  (setq-local org-gtd--organize-type 'knowledge)
-  (org-gtd-organize-apply-hooks)
-  (org-gtd-archive-item-at-point))
-
-(defun org-gtd-knowledge--apply ()
-  "Process GTD inbox item by transforming it into knowledge.
-
-Orchestrates the knowledge organization workflow:
-1. Configure as knowledge
-2. Finalize and archive"
-  (org-gtd-knowledge--configure)
-  (org-gtd-knowledge--finalize))
+  (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
+      (org-gtd-organize--call
+       (lambda () (org-gtd-process-heading (point-marker) 'reference nil)))
+    (org-gtd--dispatch 'reference)))
 
 ;;;; Footer
 
