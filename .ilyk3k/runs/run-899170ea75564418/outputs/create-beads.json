@@ -1,0 +1,26 @@
+{
+  "beads": [
+    "orggtd-0t2",
+    "orggtd-cm1",
+    "orggtd-vg8",
+    "orggtd-swo",
+    "orggtd-7p2",
+    "orggtd-beu"
+  ],
+  "dependency_graph": {
+    "orggtd-0t2": [],
+    "orggtd-cm1": ["orggtd-0t2"],
+    "orggtd-vg8": ["orggtd-cm1"],
+    "orggtd-swo": ["orggtd-vg8"],
+    "orggtd-7p2": ["orggtd-vg8"],
+    "orggtd-beu": ["orggtd-swo", "orggtd-7p2"]
+  },
+  "parallelizable_groups": [
+    ["orggtd-0t2"],
+    ["orggtd-cm1"],
+    ["orggtd-vg8"],
+    ["orggtd-swo", "orggtd-7p2"],
+    ["orggtd-beu"]
+  ],
+  "status": "success"
+}

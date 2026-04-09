@@ -1,0 +1,25 @@
+# Project Requirements
+#
+# Add tools and runtimes needed by your project here.
+# The image builder agent reads this file when creating the Docker image.
+#
+# Format: one tool per line, optional comment with reason
+# Example:
+#   python3 (for validation hooks)
+#   emacs (for elisp syntax checking)
+#
+
+# Auto-discovered (missing at runtime)
+emacs (The PreToolUse hook (.claude/hooks/validate_elisp_syntax.py) requires emacs to validate elisp syntax on Edit operations, but emacs is not installed in this environment. All .el file edits are blocked until emacs is available.)
+
+# Auto-discovered (missing at runtime)
+emacs (The PreToolUse hook (.claude/hooks/validate_elisp_syntax.py) requires emacs on PATH to validate elisp syntax for Edit/Write operations on .el files. emacs is not installed in this environment. Install emacs or emacs-nox in the container image so the hook can validate edits.)
+
+# Auto-discovered (missing at runtime)
+emacs (Bead orggtd-8xp requires running the full Emacs test suite (eldev etest) and compilation (eldev compile), both of which require Emacs to be installed. Emacs is not available in this environment. Install emacs (e.g., apt-get install emacs-nox) and retry.)
+
+# Auto-discovered (missing at runtime)
+emacs (Need emacs-nox to run eldev tests for the org-gtd.el elisp project. The Dockerfile at .ilyk3k/Dockerfile specifies installing emacs-nox but the current container does not have it. Cannot verify tests pass/fail without emacs.)
+
+# Auto-discovered (missing at runtime)
+emacs (The PreToolUse hook (.claude/hooks/validate_elisp_syntax.py) requires emacs to validate elisp syntax on Edit/Write operations to .el files. emacs is not installed in this environment, causing all .el file edits to be blocked with: 'Validation error: [Errno 2] No such file or directory: emacs')

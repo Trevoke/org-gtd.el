@@ -1,0 +1,22 @@
+{
+  "status": "success",
+  "summary": "Added property filter validation to org-gtd-view-lang--build-skip-function. Validates that property filter value is a list of cons cells with string keys and values. Also added 8 property filter tests (5 behavior + 3 validation). The 3 validation tests pass; 5 behavior tests await implementation in bead orggtd-vg8.",
+  "files_changed": [
+    "org-gtd-view-language.el",
+    "test/unit/gtd-view-language-test.el"
+  ],
+  "tests_added": [
+    "view-lang/skip-property-includes-match",
+    "view-lang/skip-property-skips-non-match",
+    "view-lang/skip-property-skips-missing",
+    "view-lang/skip-property-multiple-all-match",
+    "view-lang/skip-property-multiple-partial-skips",
+    "view-lang/skip-property-invalid-non-list-errors",
+    "view-lang/skip-property-invalid-entry-errors",
+    "view-lang/skip-property-invalid-name-errors"
+  ],
+  "commits": [
+    "50c7ad5 test: add property filter tests for view DSL",
+    "41ef98a feat: add property filter validation in skip function builder"
+  ]
+}

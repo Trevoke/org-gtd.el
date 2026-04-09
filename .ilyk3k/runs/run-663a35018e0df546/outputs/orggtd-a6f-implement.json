@@ -1,0 +1,6 @@
+{
+  "status": "failed",
+  "error": "missing_tool",
+  "tool": "emacs",
+  "context": "Need emacs-nox to run eldev tests for the org-gtd.el elisp project. The Dockerfile at .ilyk3k/Dockerfile specifies installing emacs-nox but the current container does not have it. Cannot verify tests pass/fail without emacs."
+}

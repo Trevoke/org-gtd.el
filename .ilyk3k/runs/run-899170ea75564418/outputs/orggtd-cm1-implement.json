@@ -1,0 +1,1 @@
+{"status": "failed", "error": "missing_tool", "tool": "emacs", "context": "The PreToolUse hook (.claude/hooks/validate_elisp_syntax.py) requires emacs on PATH to validate elisp syntax for Edit/Write operations on .el files. emacs is not installed in this environment. Install emacs or emacs-nox in the container image so the hook can validate edits."}

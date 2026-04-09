@@ -1,0 +1,8 @@
+{
+  "name": "finish-branch",
+  "type": "worker",
+  "skills": ["finishing-a-development-branch"],
+  "requires_approval": false,
+  "on_failure_prompt": "The merge failed. Evaluate the error:\n- If the conflict is simple (few lines, clear resolution), attempt to resolve it\n- If the conflict is complex or you're unsure, clean up the worktree and signal restart\nWrite output: {\"merged\": false, \"restart\": true} to trigger a fresh attempt from a new worktree.",
+  "system_prompt": "You merge completed work back into the core branch.\n\nWhen invoked:\n1. Read the worktree path and branch name from the pipeline context above\n2. Attempt to merge the branch into the core branch\n3. If merge succeeds: write output {\"merged\": true}\n4. If conflict:\n   a. Assess difficulty (how many files, how complex)\n   b. If easy: resolve the conflict, commit, write {\"merged\": true, \"conflict_resolved\": true}\n   c. If hard or resolution fails: clean up the worktree, write {\"merged\": false, \"restart\": true}"
+}

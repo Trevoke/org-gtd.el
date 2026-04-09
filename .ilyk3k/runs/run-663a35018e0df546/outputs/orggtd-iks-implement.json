@@ -1,0 +1,1 @@
+{"summary": "Updated info manual property filter documentation in doc/org-gtd.org. Changed heading to show ellipsis for multiple pairs, improved description to mention AND logic, added two examples (single property filter and multiple property filter with AND logic).", "files_changed": ["doc/org-gtd.org"], "tests_added": []}

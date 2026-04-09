@@ -1,0 +1,879 @@
+{
+  "setup-worktree": {
+    "assigned_to": null,
+    "blocked_by": [
+      "create-beads"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "setup-worktree"
+    },
+    "error": null,
+    "id": "setup-worktree",
+    "output": null,
+    "parent": null,
+    "started_at": null,
+    "status": "pending",
+    "title": "Setup Worktree",
+    "type": "implement"
+  },
+  "orggtd-vg8-implement": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-vg8-setup-worktree"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "implement",
+      "bead_description": "In org-gtd-view-lang--build-skip-function (org-gtd-view-language.el), in the t branch (simple types), after the who predicate block and before the deadline predicate block, add the property predicate block. Uses when-let to extract property filter from spec, dolist to iterate pairs, push org-gtd-pred--property-equals for each pair. Run all 8 property filter tests to confirm pass. Run full test suite. Commit with: feat: add property filter to skip function builder",
+      "bead_id": "orggtd-vg8",
+      "bead_title": "Implement property filter in skip function builder"
+    },
+    "error": null,
+    "id": "orggtd-vg8-implement",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Implement (TDD)",
+    "type": "implement"
+  },
+  "orggtd-0t2-implement": {
+    "assigned_to": "agent-fed02e1b",
+    "blocked_by": [
+      "orggtd-0t2-setup-worktree"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "implement",
+      "bead_description": "Add 8 unit tests (5 behavior + 3 validation) for the property filter in the view DSL to test/unit/gtd-view-language-test.el. Insert after the Clocked Skip Predicate Tests block. Tests cover: single property match/skip/missing, multiple property match/partial-skip, and 3 validation error tests. Run tests to verify they fail. Commit with message: test: add failing tests for property filter in view DSL",
+      "bead_id": "orggtd-0t2",
+      "bead_title": "Add failing tests for property filter"
+    },
+    "error": "missing_tool: emacs",
+    "id": "orggtd-0t2-implement",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": "2026-02-01T01:39:04.993443Z",
+    "status": "failed",
+    "title": "Implement (TDD)",
+    "type": "implement"
+  },
+  "orggtd-vg8-setup-worktree": {
+    "assigned_to": "agent-dd580c3f",
+    "blocked_by": [
+      "create-beads"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "setup-worktree",
+      "bead_description": "In org-gtd-view-lang--build-skip-function (org-gtd-view-language.el), in the t branch (simple types), after the who predicate block and before the deadline predicate block, add the property predicate block. Uses when-let to extract property filter from spec, dolist to iterate pairs, push org-gtd-pred--property-equals for each pair. Run all 8 property filter tests to confirm pass. Run full test suite. Commit with: feat: add property filter to skip function builder",
+      "bead_id": "orggtd-vg8",
+      "bead_title": "Implement property filter in skip function builder"
+    },
+    "error": "no_output",
+    "id": "orggtd-vg8-setup-worktree",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": "2026-02-01T01:38:36.426645Z",
+    "status": "failed",
+    "title": "Setup Worktree",
+    "type": "implement"
+  },
+  "prep-image": {
+    "assigned_to": "agent-063a03a9",
+    "blocked_by": [
+      "write-plan"
+    ],
+    "completed_at": "2026-02-01T01:36:40.339802Z",
+    "data": {
+      "agent_config": "prep-image"
+    },
+    "error": null,
+    "id": "prep-image",
+    "output": {
+      "dockerfile": ".ilyk3k/Dockerfile",
+      "status": "success"
+    },
+    "parent": null,
+    "started_at": "2026-02-01T01:35:51.889091Z",
+    "status": "completed",
+    "title": "Prepare Project Image",
+    "type": "implement"
+  },
+  "orggtd-vg8-cleanup-worktree": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-vg8-finish-branch"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "cleanup-worktree",
+      "bead_description": "In org-gtd-view-lang--build-skip-function (org-gtd-view-language.el), in the t branch (simple types), after the who predicate block and before the deadline predicate block, add the property predicate block. Uses when-let to extract property filter from spec, dolist to iterate pairs, push org-gtd-pred--property-equals for each pair. Run all 8 property filter tests to confirm pass. Run full test suite. Commit with: feat: add property filter to skip function builder",
+      "bead_id": "orggtd-vg8",
+      "bead_title": "Implement property filter in skip function builder"
+    },
+    "error": null,
+    "id": "orggtd-vg8-cleanup-worktree",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Cleanup Worktree",
+    "type": "implement"
+  },
+  "orggtd-7p2-setup-worktree": {
+    "assigned_to": "agent-4f63e7dc",
+    "blocked_by": [
+      "create-beads"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "setup-worktree",
+      "bead_description": "In doc/org-gtd.org, replace the property filter documentation section (lines 7657-7672) with an expanded version documenting multi-property AND logic and better examples. Show both single property and multiple properties (AND logic) usage. Commit with: docs: expand property filter manual with multi-property examples",
+      "bead_id": "orggtd-7p2",
+      "bead_title": "Update Info manual for property filter"
+    },
+    "error": "no_output",
+    "id": "orggtd-7p2-setup-worktree",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": "2026-02-01T01:38:36.818271Z",
+    "status": "failed",
+    "title": "Setup Worktree",
+    "type": "implement"
+  },
+  "orggtd-swo-code-review": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-swo-implement"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "code-review",
+      "bead_description": "In org-gtd-view-language.el, in the ;;; Commentary: section, after the Metadata Filters block and before the Clock Time Filters block, add Property Filters documentation showing single and multiple property match syntax. Commit with: docs: add property filter to view DSL commentary",
+      "bead_id": "orggtd-swo",
+      "bead_title": "Update Commentary documentation for property filter"
+    },
+    "error": null,
+    "id": "orggtd-swo-code-review",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Code Review",
+    "type": "implement"
+  },
+  "orggtd-beu-setup-worktree": {
+    "assigned_to": "agent-663db170",
+    "blocked_by": [
+      "create-beads"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "setup-worktree",
+      "bead_description": "Run the full test suite with ~/bin/eldev -p -dtT etest and verify all tests pass. Run ~/bin/eldev clean && ~/bin/eldev compile and verify clean compilation with no warnings. This is the final verification step after all implementation and documentation beads are complete.",
+      "bead_id": "orggtd-beu",
+      "bead_title": "Final verification: full test suite and compilation"
+    },
+    "error": "no_output",
+    "id": "orggtd-beu-setup-worktree",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": "2026-02-01T01:38:37.692275Z",
+    "status": "failed",
+    "title": "Setup Worktree",
+    "type": "implement"
+  },
+  "image-builder-orggtd-cm1-implement": {
+    "assigned_to": "agent-5ab927b5",
+    "blocked_by": [],
+    "completed_at": "2026-02-01T01:40:10.286783Z",
+    "data": {
+      "agent_config": "image-builder",
+      "context": "The PreToolUse hook (.claude/hooks/validate_elisp_syntax.py) requires emacs on PATH to validate elisp syntax for Edit/Write operations on .el files. emacs is not installed in this environment. Install emacs or emacs-nox in the container image so the hook can validate edits.",
+      "rebuild_for": "orggtd-cm1-implement",
+      "tool": "emacs"
+    },
+    "error": null,
+    "id": "image-builder-orggtd-cm1-implement",
+    "output": {},
+    "parent": null,
+    "started_at": "2026-02-01T01:39:54.069420Z",
+    "status": "completed",
+    "title": "Rebuild image for orggtd-cm1-implement",
+    "type": "implement"
+  },
+  "orggtd-swo-setup-worktree": {
+    "assigned_to": "agent-0a4c9dcb",
+    "blocked_by": [
+      "create-beads"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "setup-worktree",
+      "bead_description": "In org-gtd-view-language.el, in the ;;; Commentary: section, after the Metadata Filters block and before the Clock Time Filters block, add Property Filters documentation showing single and multiple property match syntax. Commit with: docs: add property filter to view DSL commentary",
+      "bead_id": "orggtd-swo",
+      "bead_title": "Update Commentary documentation for property filter"
+    },
+    "error": "no_output",
+    "id": "orggtd-swo-setup-worktree",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": "2026-02-01T01:38:38.074259Z",
+    "status": "failed",
+    "title": "Setup Worktree",
+    "type": "implement"
+  },
+  "orggtd-swo-cleanup-worktree": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-swo-finish-branch"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "cleanup-worktree",
+      "bead_description": "In org-gtd-view-language.el, in the ;;; Commentary: section, after the Metadata Filters block and before the Clock Time Filters block, add Property Filters documentation showing single and multiple property match syntax. Commit with: docs: add property filter to view DSL commentary",
+      "bead_id": "orggtd-swo",
+      "bead_title": "Update Commentary documentation for property filter"
+    },
+    "error": null,
+    "id": "orggtd-swo-cleanup-worktree",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Cleanup Worktree",
+    "type": "implement"
+  },
+  "orggtd-beu-finish-branch": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-beu-code-review"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "finish-branch",
+      "bead_description": "Run the full test suite with ~/bin/eldev -p -dtT etest and verify all tests pass. Run ~/bin/eldev clean && ~/bin/eldev compile and verify clean compilation with no warnings. This is the final verification step after all implementation and documentation beads are complete.",
+      "bead_id": "orggtd-beu",
+      "bead_title": "Final verification: full test suite and compilation"
+    },
+    "error": null,
+    "id": "orggtd-beu-finish-branch",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Finish Branch",
+    "type": "implement"
+  },
+  "image-builder-orggtd-0t2-implement": {
+    "assigned_to": "agent-127e95f2",
+    "blocked_by": [],
+    "completed_at": null,
+    "data": {
+      "agent_config": "image-builder",
+      "context": "The PreToolUse hook (.claude/hooks/validate_elisp_syntax.py) requires emacs to validate elisp syntax on Edit operations, but emacs is not installed in this environment. All .el file edits are blocked until emacs is available.",
+      "rebuild_for": "orggtd-0t2-implement",
+      "tool": "emacs"
+    },
+    "error": "no_output",
+    "id": "image-builder-orggtd-0t2-implement",
+    "output": null,
+    "parent": null,
+    "started_at": "2026-02-01T01:39:53.683777Z",
+    "status": "failed",
+    "title": "Rebuild image for orggtd-0t2-implement",
+    "type": "implement"
+  },
+  "orggtd-swo-finish-branch": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-swo-code-review"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "finish-branch",
+      "bead_description": "In org-gtd-view-language.el, in the ;;; Commentary: section, after the Metadata Filters block and before the Clock Time Filters block, add Property Filters documentation showing single and multiple property match syntax. Commit with: docs: add property filter to view DSL commentary",
+      "bead_id": "orggtd-swo",
+      "bead_title": "Update Commentary documentation for property filter"
+    },
+    "error": null,
+    "id": "orggtd-swo-finish-branch",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Finish Branch",
+    "type": "implement"
+  },
+  "orggtd-0t2-cleanup-worktree": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-0t2-finish-branch"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "cleanup-worktree",
+      "bead_description": "Add 8 unit tests (5 behavior + 3 validation) for the property filter in the view DSL to test/unit/gtd-view-language-test.el. Insert after the Clocked Skip Predicate Tests block. Tests cover: single property match/skip/missing, multiple property match/partial-skip, and 3 validation error tests. Run tests to verify they fail. Commit with message: test: add failing tests for property filter in view DSL",
+      "bead_id": "orggtd-0t2",
+      "bead_title": "Add failing tests for property filter"
+    },
+    "error": null,
+    "id": "orggtd-0t2-cleanup-worktree",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Cleanup Worktree",
+    "type": "implement"
+  },
+  "retry-orggtd-0t2-implement": {
+    "assigned_to": null,
+    "blocked_by": [
+      "image-builder-orggtd-0t2-implement"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "implement",
+      "bead_description": "Add 8 unit tests (5 behavior + 3 validation) for the property filter in the view DSL to test/unit/gtd-view-language-test.el. Insert after the Clocked Skip Predicate Tests block. Tests cover: single property match/skip/missing, multiple property match/partial-skip, and 3 validation error tests. Run tests to verify they fail. Commit with message: test: add failing tests for property filter in view DSL",
+      "bead_id": "orggtd-0t2",
+      "bead_title": "Add failing tests for property filter"
+    },
+    "error": null,
+    "id": "retry-orggtd-0t2-implement",
+    "output": null,
+    "parent": null,
+    "started_at": null,
+    "status": "pending",
+    "title": "Retry Implement (TDD)",
+    "type": "implement"
+  },
+  "orggtd-cm1-code-review": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-cm1-implement"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "code-review",
+      "bead_description": "In org-gtd-view-lang--build-skip-function (org-gtd-view-language.el), after the unknown-keys check block and before the let* binding of type-filter, add input validation for the property filter. Validate: value is a list, each entry is a cons cell, property name is string, property value is string. Uses when-let, dolist, user-error. Run the 3 validation tests to confirm they pass. Commit with: feat: add property filter validation in skip function builder",
+      "bead_id": "orggtd-cm1",
+      "bead_title": "Add property filter validation"
+    },
+    "error": null,
+    "id": "orggtd-cm1-code-review",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Code Review",
+    "type": "implement"
+  },
+  "orggtd-cm1-implement": {
+    "assigned_to": "agent-707e7802",
+    "blocked_by": [
+      "orggtd-cm1-setup-worktree"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "implement",
+      "bead_description": "In org-gtd-view-lang--build-skip-function (org-gtd-view-language.el), after the unknown-keys check block and before the let* binding of type-filter, add input validation for the property filter. Validate: value is a list, each entry is a cons cell, property name is string, property value is string. Uses when-let, dolist, user-error. Run the 3 validation tests to confirm they pass. Commit with: feat: add property filter validation in skip function builder",
+      "bead_id": "orggtd-cm1",
+      "bead_title": "Add property filter validation"
+    },
+    "error": "missing_tool: emacs",
+    "id": "orggtd-cm1-implement",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": "2026-02-01T01:39:04.602995Z",
+    "status": "failed",
+    "title": "Implement (TDD)",
+    "type": "implement"
+  },
+  "orggtd-cm1-setup-worktree": {
+    "assigned_to": "agent-54967a54",
+    "blocked_by": [
+      "create-beads"
+    ],
+    "completed_at": "2026-02-01T01:39:03.841557Z",
+    "data": {
+      "agent_config": "setup-worktree",
+      "bead_description": "In org-gtd-view-lang--build-skip-function (org-gtd-view-language.el), after the unknown-keys check block and before the let* binding of type-filter, add input validation for the property filter. Validate: value is a list, each entry is a cons cell, property name is string, property value is string. Uses when-let, dolist, user-error. Run the 3 validation tests to confirm they pass. Commit with: feat: add property filter validation in skip function builder",
+      "bead_id": "orggtd-cm1",
+      "bead_title": "Add property filter validation"
+    },
+    "error": null,
+    "id": "orggtd-cm1-setup-worktree",
+    "output": {
+      "branch_name": "orggtd-cm1",
+      "worktree_path": "/home/stag/src/projects/org-gtd.el/.worktrees/orggtd-cm1"
+    },
+    "parent": "setup-worktree",
+    "started_at": "2026-02-01T01:38:38.780996Z",
+    "status": "completed",
+    "title": "Setup Worktree",
+    "type": "implement"
+  },
+  "orggtd-vg8-finish-branch": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-vg8-code-review"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "finish-branch",
+      "bead_description": "In org-gtd-view-lang--build-skip-function (org-gtd-view-language.el), in the t branch (simple types), after the who predicate block and before the deadline predicate block, add the property predicate block. Uses when-let to extract property filter from spec, dolist to iterate pairs, push org-gtd-pred--property-equals for each pair. Run all 8 property filter tests to confirm pass. Run full test suite. Commit with: feat: add property filter to skip function builder",
+      "bead_id": "orggtd-vg8",
+      "bead_title": "Implement property filter in skip function builder"
+    },
+    "error": null,
+    "id": "orggtd-vg8-finish-branch",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Finish Branch",
+    "type": "implement"
+  },
+  "orggtd-beu-cleanup-worktree": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-beu-finish-branch"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "cleanup-worktree",
+      "bead_description": "Run the full test suite with ~/bin/eldev -p -dtT etest and verify all tests pass. Run ~/bin/eldev clean && ~/bin/eldev compile and verify clean compilation with no warnings. This is the final verification step after all implementation and documentation beads are complete.",
+      "bead_id": "orggtd-beu",
+      "bead_title": "Final verification: full test suite and compilation"
+    },
+    "error": null,
+    "id": "orggtd-beu-cleanup-worktree",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Cleanup Worktree",
+    "type": "implement"
+  },
+  "orggtd-beu-implement": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-beu-setup-worktree"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "implement",
+      "bead_description": "Run the full test suite with ~/bin/eldev -p -dtT etest and verify all tests pass. Run ~/bin/eldev clean && ~/bin/eldev compile and verify clean compilation with no warnings. This is the final verification step after all implementation and documentation beads are complete.",
+      "bead_id": "orggtd-beu",
+      "bead_title": "Final verification: full test suite and compilation"
+    },
+    "error": null,
+    "id": "orggtd-beu-implement",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Implement (TDD)",
+    "type": "implement"
+  },
+  "orggtd-7p2-cleanup-worktree": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-7p2-finish-branch"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "cleanup-worktree",
+      "bead_description": "In doc/org-gtd.org, replace the property filter documentation section (lines 7657-7672) with an expanded version documenting multi-property AND logic and better examples. Show both single property and multiple properties (AND logic) usage. Commit with: docs: expand property filter manual with multi-property examples",
+      "bead_id": "orggtd-7p2",
+      "bead_title": "Update Info manual for property filter"
+    },
+    "error": null,
+    "id": "orggtd-7p2-cleanup-worktree",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Cleanup Worktree",
+    "type": "implement"
+  },
+  "orggtd-7p2-implement": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-7p2-setup-worktree"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "implement",
+      "bead_description": "In doc/org-gtd.org, replace the property filter documentation section (lines 7657-7672) with an expanded version documenting multi-property AND logic and better examples. Show both single property and multiple properties (AND logic) usage. Commit with: docs: expand property filter manual with multi-property examples",
+      "bead_id": "orggtd-7p2",
+      "bead_title": "Update Info manual for property filter"
+    },
+    "error": null,
+    "id": "orggtd-7p2-implement",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Implement (TDD)",
+    "type": "implement"
+  },
+  "orggtd-0t2-setup-worktree": {
+    "assigned_to": "agent-edfb8003",
+    "blocked_by": [
+      "create-beads"
+    ],
+    "completed_at": "2026-02-01T01:39:04.618260Z",
+    "data": {
+      "agent_config": "setup-worktree",
+      "bead_description": "Add 8 unit tests (5 behavior + 3 validation) for the property filter in the view DSL to test/unit/gtd-view-language-test.el. Insert after the Clocked Skip Predicate Tests block. Tests cover: single property match/skip/missing, multiple property match/partial-skip, and 3 validation error tests. Run tests to verify they fail. Commit with message: test: add failing tests for property filter in view DSL",
+      "bead_id": "orggtd-0t2",
+      "bead_title": "Add failing tests for property filter"
+    },
+    "error": null,
+    "id": "orggtd-0t2-setup-worktree",
+    "output": {
+      "branch_name": "orggtd-0t2",
+      "worktree_path": "/home/stag/src/projects/org-gtd.el/.worktrees/orggtd-0t2"
+    },
+    "parent": "setup-worktree",
+    "started_at": "2026-02-01T01:38:39.177196Z",
+    "status": "completed",
+    "title": "Setup Worktree",
+    "type": "implement"
+  },
+  "orggtd-vg8-code-review": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-vg8-implement"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "code-review",
+      "bead_description": "In org-gtd-view-lang--build-skip-function (org-gtd-view-language.el), in the t branch (simple types), after the who predicate block and before the deadline predicate block, add the property predicate block. Uses when-let to extract property filter from spec, dolist to iterate pairs, push org-gtd-pred--property-equals for each pair. Run all 8 property filter tests to confirm pass. Run full test suite. Commit with: feat: add property filter to skip function builder",
+      "bead_id": "orggtd-vg8",
+      "bead_title": "Implement property filter in skip function builder"
+    },
+    "error": null,
+    "id": "orggtd-vg8-code-review",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Code Review",
+    "type": "implement"
+  },
+  "orggtd-beu-code-review": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-beu-implement"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "code-review",
+      "bead_description": "Run the full test suite with ~/bin/eldev -p -dtT etest and verify all tests pass. Run ~/bin/eldev clean && ~/bin/eldev compile and verify clean compilation with no warnings. This is the final verification step after all implementation and documentation beads are complete.",
+      "bead_id": "orggtd-beu",
+      "bead_title": "Final verification: full test suite and compilation"
+    },
+    "error": null,
+    "id": "orggtd-beu-code-review",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Code Review",
+    "type": "implement"
+  },
+  "create-beads": {
+    "assigned_to": "agent-b8070cc6",
+    "blocked_by": [
+      "prep-image"
+    ],
+    "completed_at": "2026-02-01T01:38:35.686917Z",
+    "data": {
+      "agent_config": "create-beads"
+    },
+    "error": null,
+    "id": "create-beads",
+    "output": {
+      "beads": [
+        "orggtd-0t2",
+        "orggtd-cm1",
+        "orggtd-vg8",
+        "orggtd-swo",
+        "orggtd-7p2",
+        "orggtd-beu"
+      ],
+      "dependency_graph": {
+        "orggtd-0t2": [],
+        "orggtd-7p2": [
+          "orggtd-vg8"
+        ],
+        "orggtd-beu": [
+          "orggtd-swo",
+          "orggtd-7p2"
+        ],
+        "orggtd-cm1": [
+          "orggtd-0t2"
+        ],
+        "orggtd-swo": [
+          "orggtd-vg8"
+        ],
+        "orggtd-vg8": [
+          "orggtd-cm1"
+        ]
+      },
+      "parallelizable_groups": [
+        [
+          "orggtd-0t2"
+        ],
+        [
+          "orggtd-cm1"
+        ],
+        [
+          "orggtd-vg8"
+        ],
+        [
+          "orggtd-swo",
+          "orggtd-7p2"
+        ],
+        [
+          "orggtd-beu"
+        ]
+      ],
+      "status": "success"
+    },
+    "parent": null,
+    "started_at": "2026-02-01T01:36:41.022184Z",
+    "status": "completed",
+    "title": "Create Beads",
+    "type": "implement"
+  },
+  "orggtd-0t2-finish-branch": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-0t2-code-review"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "finish-branch",
+      "bead_description": "Add 8 unit tests (5 behavior + 3 validation) for the property filter in the view DSL to test/unit/gtd-view-language-test.el. Insert after the Clocked Skip Predicate Tests block. Tests cover: single property match/skip/missing, multiple property match/partial-skip, and 3 validation error tests. Run tests to verify they fail. Commit with message: test: add failing tests for property filter in view DSL",
+      "bead_id": "orggtd-0t2",
+      "bead_title": "Add failing tests for property filter"
+    },
+    "error": null,
+    "id": "orggtd-0t2-finish-branch",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Finish Branch",
+    "type": "implement"
+  },
+  "orggtd-cm1-finish-branch": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-cm1-code-review"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "finish-branch",
+      "bead_description": "In org-gtd-view-lang--build-skip-function (org-gtd-view-language.el), after the unknown-keys check block and before the let* binding of type-filter, add input validation for the property filter. Validate: value is a list, each entry is a cons cell, property name is string, property value is string. Uses when-let, dolist, user-error. Run the 3 validation tests to confirm they pass. Commit with: feat: add property filter validation in skip function builder",
+      "bead_id": "orggtd-cm1",
+      "bead_title": "Add property filter validation"
+    },
+    "error": null,
+    "id": "orggtd-cm1-finish-branch",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Finish Branch",
+    "type": "implement"
+  },
+  "orggtd-cm1-cleanup-worktree": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-cm1-finish-branch"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "cleanup-worktree",
+      "bead_description": "In org-gtd-view-lang--build-skip-function (org-gtd-view-language.el), after the unknown-keys check block and before the let* binding of type-filter, add input validation for the property filter. Validate: value is a list, each entry is a cons cell, property name is string, property value is string. Uses when-let, dolist, user-error. Run the 3 validation tests to confirm they pass. Commit with: feat: add property filter validation in skip function builder",
+      "bead_id": "orggtd-cm1",
+      "bead_title": "Add property filter validation"
+    },
+    "error": null,
+    "id": "orggtd-cm1-cleanup-worktree",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Cleanup Worktree",
+    "type": "implement"
+  },
+  "retry-orggtd-cm1-implement": {
+    "assigned_to": "agent-4a04efb2",
+    "blocked_by": [
+      "image-builder-orggtd-cm1-implement"
+    ],
+    "completed_at": "2026-02-01T01:48:05.276998Z",
+    "data": {
+      "agent_config": "implement",
+      "bead_description": "In org-gtd-view-lang--build-skip-function (org-gtd-view-language.el), after the unknown-keys check block and before the let* binding of type-filter, add input validation for the property filter. Validate: value is a list, each entry is a cons cell, property name is string, property value is string. Uses when-let, dolist, user-error. Run the 3 validation tests to confirm they pass. Commit with: feat: add property filter validation in skip function builder",
+      "bead_id": "orggtd-cm1",
+      "bead_title": "Add property filter validation"
+    },
+    "error": null,
+    "id": "retry-orggtd-cm1-implement",
+    "output": {
+      "commits": [
+        "50c7ad5 test: add property filter tests for view DSL",
+        "41ef98a feat: add property filter validation in skip function builder"
+      ],
+      "files_changed": [
+        "org-gtd-view-language.el",
+        "test/unit/gtd-view-language-test.el"
+      ],
+      "status": "success",
+      "summary": "Added property filter validation to org-gtd-view-lang--build-skip-function. Validates that property filter value is a list of cons cells with string keys and values. Also added 8 property filter tests (5 behavior + 3 validation). The 3 validation tests pass; 5 behavior tests await implementation in bead orggtd-vg8.",
+      "tests_added": [
+        "view-lang/skip-property-includes-match",
+        "view-lang/skip-property-skips-non-match",
+        "view-lang/skip-property-skips-missing",
+        "view-lang/skip-property-multiple-all-match",
+        "view-lang/skip-property-multiple-partial-skips",
+        "view-lang/skip-property-invalid-non-list-errors",
+        "view-lang/skip-property-invalid-entry-errors",
+        "view-lang/skip-property-invalid-name-errors"
+      ]
+    },
+    "parent": null,
+    "started_at": "2026-02-01T01:40:11.020402Z",
+    "status": "completed",
+    "title": "Retry Implement (TDD)",
+    "type": "implement"
+  },
+  "orggtd-7p2-finish-branch": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-7p2-code-review"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "finish-branch",
+      "bead_description": "In doc/org-gtd.org, replace the property filter documentation section (lines 7657-7672) with an expanded version documenting multi-property AND logic and better examples. Show both single property and multiple properties (AND logic) usage. Commit with: docs: expand property filter manual with multi-property examples",
+      "bead_id": "orggtd-7p2",
+      "bead_title": "Update Info manual for property filter"
+    },
+    "error": null,
+    "id": "orggtd-7p2-finish-branch",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Finish Branch",
+    "type": "implement"
+  },
+  "orggtd-0t2-code-review": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-0t2-implement"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "code-review",
+      "bead_description": "Add 8 unit tests (5 behavior + 3 validation) for the property filter in the view DSL to test/unit/gtd-view-language-test.el. Insert after the Clocked Skip Predicate Tests block. Tests cover: single property match/skip/missing, multiple property match/partial-skip, and 3 validation error tests. Run tests to verify they fail. Commit with message: test: add failing tests for property filter in view DSL",
+      "bead_id": "orggtd-0t2",
+      "bead_title": "Add failing tests for property filter"
+    },
+    "error": null,
+    "id": "orggtd-0t2-code-review",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Code Review",
+    "type": "implement"
+  },
+  "pipeline-complete": {
+    "assigned_to": null,
+    "blocked_by": [
+      "setup-worktree"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": null
+    },
+    "error": null,
+    "id": "pipeline-complete",
+    "output": null,
+    "parent": null,
+    "started_at": null,
+    "status": "pending",
+    "title": "Pipeline Complete",
+    "type": "implement"
+  },
+  "orggtd-7p2-code-review": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-7p2-implement"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "code-review",
+      "bead_description": "In doc/org-gtd.org, replace the property filter documentation section (lines 7657-7672) with an expanded version documenting multi-property AND logic and better examples. Show both single property and multiple properties (AND logic) usage. Commit with: docs: expand property filter manual with multi-property examples",
+      "bead_id": "orggtd-7p2",
+      "bead_title": "Update Info manual for property filter"
+    },
+    "error": null,
+    "id": "orggtd-7p2-code-review",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Code Review",
+    "type": "implement"
+  },
+  "orggtd-swo-implement": {
+    "assigned_to": null,
+    "blocked_by": [
+      "orggtd-swo-setup-worktree"
+    ],
+    "completed_at": null,
+    "data": {
+      "agent_config": "implement",
+      "bead_description": "In org-gtd-view-language.el, in the ;;; Commentary: section, after the Metadata Filters block and before the Clock Time Filters block, add Property Filters documentation showing single and multiple property match syntax. Commit with: docs: add property filter to view DSL commentary",
+      "bead_id": "orggtd-swo",
+      "bead_title": "Update Commentary documentation for property filter"
+    },
+    "error": null,
+    "id": "orggtd-swo-implement",
+    "output": null,
+    "parent": "setup-worktree",
+    "started_at": null,
+    "status": "pending",
+    "title": "Implement (TDD)",
+    "type": "implement"
+  },
+  "write-plan": {
+    "assigned_to": "agent-007eb920",
+    "blocked_by": [],
+    "completed_at": "2026-02-01T01:35:51.175491Z",
+    "data": {
+      "agent_config": "write-plan"
+    },
+    "error": null,
+    "id": "write-plan",
+    "output": {
+      "output_file": "docs/plans/2026-02-01-property-filter-implementation.md"
+    },
+    "parent": null,
+    "started_at": "2026-02-01T01:33:26.775993Z",
+    "status": "completed",
+    "title": "Write Implementation Plan",
+    "type": "implement"
+  }
+}

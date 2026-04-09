@@ -1,0 +1,24 @@
+{
+  "_comment": "Pipeline starts at write-plan. Brainstorming happens with lead agent before pipeline.",
+  "nodes": [
+    {"id": "write-plan", "agent_config": "write-plan", "name": "Write Implementation Plan", "description": "Create detailed implementation plan from design"},
+    {"id": "prep-image", "agent_config": "prep-image", "name": "Prepare Project Image", "description": "Analyze plan and create project-specific Dockerfile"},
+    {"id": "create-beads", "agent_config": "create-beads", "name": "Create Beads", "description": "Break plan into parallelizable bead units"},
+    {"id": "setup-worktree", "agent_config": "setup-worktree", "name": "Setup Worktree", "description": "Create isolated git worktree for parallel development"},
+    {"id": "implement", "agent_config": "implement", "name": "Implement (TDD)", "description": "Implement bead task using test-driven development"},
+    {"id": "code-review", "agent_config": "code-review", "name": "Code Review", "description": "Review implementation and fix issues via TDD"},
+    {"id": "finish-branch", "agent_config": "finish-branch", "name": "Finish Branch", "description": "Merge worktree branch back to core branch"},
+    {"id": "cleanup-worktree", "agent_config": "cleanup-worktree", "name": "Cleanup Worktree", "description": "Remove worktree after successful merge"},
+    {"id": "pipeline-complete", "name": "Pipeline Complete", "description": "All branches merged successfully"}
+  ],
+  "edges": [
+    {"from": "write-plan", "to": "prep-image"},
+    {"from": "prep-image", "to": "create-beads"},
+    {"from": "create-beads", "to": "setup-worktree", "fan_out": true},
+    {"from": "setup-worktree", "to": "implement"},
+    {"from": "implement", "to": "code-review"},
+    {"from": "code-review", "to": "finish-branch"},
+    {"from": "finish-branch", "to": "cleanup-worktree"},
+    {"from": "cleanup-worktree", "to": "pipeline-complete", "fan_in": true}
+  ]
+}

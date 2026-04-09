@@ -1,0 +1,14 @@
+{
+  "summary": "Added 8 failing unit tests for property filter in view DSL to test/unit/gtd-view-language-test.el. Tests cover: single property match (include/skip/missing), multiple property AND logic (all match/partial match), and input validation (non-list, non-cons entry, non-string name). 6 of 8 tests fail as expected since the property filter is not yet implemented. The 2 passing tests (includes-match, multiple-all-match) pass because without the property predicate, items pass through if the type matches.",
+  "files_changed": ["test/unit/gtd-view-language-test.el"],
+  "tests_added": [
+    "view-lang/skip-property-includes-match",
+    "view-lang/skip-property-skips-non-match",
+    "view-lang/skip-property-skips-missing",
+    "view-lang/skip-property-multiple-all-match",
+    "view-lang/skip-property-multiple-partial-skips",
+    "view-lang/skip-property-invalid-non-list-errors",
+    "view-lang/skip-property-invalid-entry-errors",
+    "view-lang/skip-property-invalid-name-errors"
+  ]
+}

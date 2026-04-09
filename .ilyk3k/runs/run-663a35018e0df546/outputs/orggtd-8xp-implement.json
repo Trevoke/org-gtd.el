@@ -1,0 +1,6 @@
+{
+  "status": "failed",
+  "error": "missing_tool",
+  "tool": "emacs",
+  "context": "Bead orggtd-8xp requires running the full Emacs test suite (eldev etest) and compilation (eldev compile), both of which require Emacs to be installed. Emacs is not available in this environment. Install emacs (e.g., apt-get install emacs-nox) and retry."
+}

@@ -1,0 +1,1 @@
+{"status": "failed", "error": "missing_tool", "tool": "emacs", "context": "The PreToolUse hook (.claude/hooks/validate_elisp_syntax.py) requires emacs to validate elisp syntax on Edit operations, but emacs is not installed in this environment. All .el file edits are blocked until emacs is available."}

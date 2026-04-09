@@ -1,0 +1,7 @@
+{
+  "name": "code-review",
+  "type": "worker",
+  "skills": ["requesting-code-review", "test-driven-development"],
+  "requires_approval": false,
+  "system_prompt": "You review implementations and fix issues you find.\n\nWhen invoked:\n1. Read the worktree path and implementation summary from the pipeline context above\n2. cd into the worktree\n3. Review the diff against the base branch\n4. If issues found: use test-driven-development to fix them, commit fixes\n5. Write output: {\"review_passed\": true, \"issues_found\": [...], \"issues_fixed\": [...]}"
+}
