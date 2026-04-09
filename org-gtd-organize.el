@@ -68,24 +68,53 @@ normalized to `next-action' at lookup time.")
   :reader (lambda (&rest _) (if org-gtd-clarify--skip-refile nil t))
   :description "Update in place (no refile)")
 
-(transient-define-prefix org-gtd-organize ()
-  "Choose how to categorize the current item."
-  [:if (lambda () (not org-gtd-clarify--inbox-p))
-   "Options"
-   ("-n" org-gtd-organize--skip-refile-infix)]
-  ["Actionable"
-   [("q" "Quick action" org-gtd-quick-action)
-    ("s" "Next action" org-gtd-next-action)]
-   [("d" "Delegate" org-gtd-delegate)
-    ("c" "Calendar" org-gtd-calendar)
-    ("h" "Habit" org-gtd-habit)]]
-  [("p" "Project (multi-step)" org-gtd-project-new)
-   ("a" "Add this task to an existing project" org-gtd-project-extend)]
-  ["Non-actionable"
-   [("i" "Tickler" org-gtd-tickler)
-    ("y" "Someday/Maybe" org-gtd-someday)]
-   [("k" "Knowledge to be stored" org-gtd-knowledge)
-    ("t" "Trash" org-gtd-trash)]])
+(eval-and-compile
+  (defconst org-gtd-organize--command-exceptions
+    '((reference . org-gtd-knowledge)
+      (delegated . org-gtd-delegate))
+    "Types whose transient command does NOT follow the default
+`org-gtd-<type-name>' convention.  Kept in sync with
+`org-gtd-test--type-command-exceptions' in the parity test.")
+
+  (defun org-gtd-organize--command-for-type (type)
+    "Return the command symbol the transient should dispatch to for TYPE."
+    (or (alist-get type org-gtd-organize--command-exceptions)
+        (intern (format "org-gtd-%s" type))))
+
+  (defun org-gtd-organize--suffixes-for-group (group)
+    "Return a list of transient suffix triples for the :menu-group GROUP.
+Walks `org-gtd-types' and emits (KEY DESCRIPTION COMMAND) for each
+type whose :menu-group matches GROUP and whose :transient-key is set."
+    (let (result)
+      (dolist (entry org-gtd-types)
+        (let* ((type (car entry))
+               (plist (cdr entry))
+               (key (plist-get plist :transient-key))
+               (type-group (plist-get plist :menu-group))
+               (label (plist-get plist :org-gtd)))
+          (when (and key (eq type-group group))
+            (push (list key label (org-gtd-organize--command-for-type type))
+                  result))))
+      (nreverse result))))
+
+(defmacro org-gtd-organize--define-prefix ()
+  "Expand to the `org-gtd-organize' transient-define-prefix form
+with type-driven suffix columns spliced in at load time."
+  (let ((actionable (org-gtd-organize--suffixes-for-group 'actionable))
+        (non-actionable (org-gtd-organize--suffixes-for-group 'non-actionable)))
+    `(transient-define-prefix org-gtd-organize ()
+       "Choose how to categorize the current item."
+       [:if (lambda () (not org-gtd-clarify--inbox-p))
+        "Options"
+        ("-n" org-gtd-organize--skip-refile-infix)]
+       ["Actionable"
+        ,@actionable]
+       [("p" "Project (multi-step)" org-gtd-project-new)
+        ("a" "Add this task to an existing project" org-gtd-project-extend)]
+       ["Non-actionable"
+        ,@non-actionable])))
+
+(org-gtd-organize--define-prefix)
 
 ;;;; Functions
 
