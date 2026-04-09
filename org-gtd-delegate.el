@@ -59,22 +59,10 @@ behavior is preserved.  Otherwise dispatches directly via
       (org-gtd--dispatch 'delegated))))
 
 ;;;###autoload
-(defun org-gtd-delegate-agenda-item ()
-  "Delegate item at point on agenda view."
-  (interactive)
-  (org-agenda-check-type t 'agenda 'todo 'tags 'search)
-  (org-agenda-check-no-diary)
-  (let* ((heading-marker (or (org-get-at-bol 'org-marker)
-                             (org-agenda-error)))
-         (heading-buffer (marker-buffer heading-marker))
-         (heading-position (marker-position heading-marker)))
-    (with-current-buffer heading-buffer
-      (goto-char heading-position)
-      (let ((current-prefix-arg '(4)))  ; Force skip-refile for agenda delegation
-        (org-gtd-clarify-item heading-marker (current-window-configuration)))
-      ;; Now delegate via the organize menu
-      (with-current-buffer (car (org-gtd-wip--get-buffers))
-        (org-gtd-delegate)))))
+(define-obsolete-function-alias 'org-gtd-delegate-agenda-item
+  #'org-gtd-delegate "4.1.0"
+  "Use `org-gtd-delegate' directly; it reads the agenda marker via
+`org-get-at-bol' in its DWIM dispatch.")
 
 
 ;;;; Functions
