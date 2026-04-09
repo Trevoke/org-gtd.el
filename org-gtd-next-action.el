@@ -1,4 +1,4 @@
-;;; org-gtd-single-action.el --- Define single action items in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
+;;; org-gtd-next-action.el --- Define next action items in org-gtd -*- lexical-binding: t; coding: utf-8 -*-
 ;;
 ;; Copyright © 2019-2023, 2025 Aldric Giacomoni
 
@@ -20,7 +20,11 @@
 
 ;;; Commentary:
 ;;
-;; Single action items have their own logic, defined here
+;; Next action items have their own logic, defined here.  Historically
+;; this module was named `org-gtd-single-action'; `single-action' and
+;; `next-action' are synonyms, with `next-action' being the canonical
+;; GTD term.  Obsolete function aliases preserve backward compatibility
+;; for user keybindings and external callers.
 ;;
 ;;; Code:
 
@@ -46,22 +50,22 @@
 :END:
 " org-gtd-prop-refile org-gtd-action))
 
-(defconst org-gtd-single-action-func #'org-gtd-single-action--apply
-  "Function called when organizing item at point as a single next action.")
+(defconst org-gtd-next-action-func #'org-gtd-next-action--apply
+  "Function called when organizing item at point as a next action.")
 
 ;;;; Commands
 
-(defun org-gtd-single-action ()
-  "Organize, decorate and refile item at point as a single action."
+(defun org-gtd-next-action ()
+  "Organize, decorate and refile item at point as a next action."
   (interactive)
-  (org-gtd-organize--call org-gtd-single-action-func))
+  (org-gtd-organize--call org-gtd-next-action-func))
 
 ;;;; Functions
 
 ;;;;; Public
 
-(defun org-gtd-single-action-create (topic)
-  "Automatically create a single action in the GTD flow.
+(defun org-gtd-next-action-create (topic)
+  "Automatically create a next action in the GTD flow.
 
 TOPIC is what you want to see in the agenda view."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
@@ -69,17 +73,17 @@ TOPIC is what you want to see in the agenda view."
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
-      (org-gtd-single-action))
+      (org-gtd-next-action))
     (kill-buffer buffer)))
 
 ;;;;; Private
 
-(defun org-gtd-single-action--maybe-convert-to-delegated ()
-  "Prompt to convert single action to delegated item when changed to WAIT.
+(defun org-gtd-next-action--maybe-convert-to-delegated ()
+  "Prompt to convert next action to delegated item when changed to WAIT.
 
 This function is intended for `org-after-todo-state-change-hook'.
 It checks if:
-1. The item is a single action (ORG_GTD=Actions)
+1. The item is a next action (ORG_GTD=Actions)
 2. The new state is WAIT
 
 If conditions are met, prompts the user to convert to a delegated item.
@@ -88,10 +92,10 @@ If they confirm, prompts for who to delegate to and when to check in."
              (equal (org-entry-get (point) "ORG_GTD")
                     (org-gtd-type-org-gtd-value 'next-action)))
     (when (y-or-n-p "Convert to delegated item? ")
-      (org-gtd-single-action--convert-to-delegated))))
+      (org-gtd-next-action--convert-to-delegated))))
 
-(defun org-gtd-single-action--convert-to-delegated ()
-  "Convert current single action to a delegated item.
+(defun org-gtd-next-action--convert-to-delegated ()
+  "Convert current next action to a delegated item.
 
 Prompts for who to delegate to and when to check in, then updates
 the item's properties accordingly."
@@ -105,29 +109,44 @@ the item's properties accordingly."
     (org-entry-put (point) (org-gtd-type-property 'delegated :when)
                    (format "<%s>" when-date))))
 
-(defun org-gtd-single-action--configure ()
-  "Configure item at point as a single action."
+(defun org-gtd-next-action--configure ()
+  "Configure item at point as a next action."
   (org-gtd-configure-as-type 'next-action))
 
-(defun org-gtd-single-action--finalize ()
-  "Finalize single action organization and refile."
-  (setq-local org-gtd--organize-type 'single-action)
+(defun org-gtd-next-action--finalize ()
+  "Finalize next action organization and refile."
+  (setq-local org-gtd--organize-type 'next-action)
   (org-gtd-organize-apply-hooks)
   (if org-gtd-clarify--skip-refile
       (org-gtd-organize--update-in-place)
     (org-gtd-refile--do org-gtd-action org-gtd-action-template)))
 
-(defun org-gtd-single-action--apply ()
-  "Process GTD inbox item by transforming it into a single action.
+(defun org-gtd-next-action--apply ()
+  "Process GTD inbox item by transforming it into a next action.
 
-Orchestrates the single action organization workflow:
+Orchestrates the next action organization workflow:
 1. Configure as next action
 2. Finalize and refile to actions file"
-  (org-gtd-single-action--configure)
-  (org-gtd-single-action--finalize))
+  (org-gtd-next-action--configure)
+  (org-gtd-next-action--finalize))
+
+;;;;; Obsolete aliases (public surface)
+
+(define-obsolete-function-alias 'org-gtd-single-action
+  'org-gtd-next-action "4.1.0")
+(define-obsolete-function-alias 'org-gtd-single-action-create
+  'org-gtd-next-action-create "4.1.0")
+(define-obsolete-function-alias 'org-gtd-single-action--maybe-convert-to-delegated
+  'org-gtd-next-action--maybe-convert-to-delegated "4.1.0")
+(define-obsolete-function-alias 'org-gtd-single-action--convert-to-delegated
+  'org-gtd-next-action--convert-to-delegated "4.1.0")
+(defvaralias 'org-gtd-single-action-func 'org-gtd-next-action-func)
+(make-obsolete-variable 'org-gtd-single-action-func 'org-gtd-next-action-func "4.1.0")
 
 ;;;; Footer
 
+(provide 'org-gtd-next-action)
+;; Back-compat: old feature name for users/modules that still `(require 'org-gtd-single-action)'.
 (provide 'org-gtd-single-action)
 
-;;; org-gtd-single-action.el ends here
+;;; org-gtd-next-action.el ends here

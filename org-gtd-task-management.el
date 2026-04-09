@@ -34,7 +34,7 @@
 (require 'org-gtd-id)
 (require 'org-gtd-configure)
 (require 'org-gtd-refile)
-(require 'org-gtd-single-action)
+(require 'org-gtd-next-action)
 (require 'org-gtd-accessors)
 (require 'org-gtd-dependencies)
 (require 'org-gtd-projects)

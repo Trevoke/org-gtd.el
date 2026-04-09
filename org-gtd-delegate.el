@@ -30,7 +30,7 @@
 
 (require 'org-gtd-core)
 (require 'org-gtd-types)
-(require 'org-gtd-single-action)
+(require 'org-gtd-next-action)
 (require 'org-gtd-clarify)
 (require 'org-gtd-refile)
 (require 'org-gtd-configure)

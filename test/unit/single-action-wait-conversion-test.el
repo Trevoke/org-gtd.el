@@ -36,7 +36,7 @@
 
 (deftest single-action-wait/hook-function-exists ()
   "The hook function exists."
-  (assert-true (fboundp 'org-gtd-single-action--maybe-convert-to-delegated)))
+  (assert-true (fboundp 'org-gtd-next-action--maybe-convert-to-delegated)))
 
 ;;; Integration with org-gtd-mode Tests
 
@@ -44,7 +44,7 @@
   "Hook is added to org-after-todo-state-change-hook when org-gtd-mode is enabled."
   (org-gtd-mode 1)
   (unwind-protect
-      (assert-true (memq 'org-gtd-single-action--maybe-convert-to-delegated
+      (assert-true (memq 'org-gtd-next-action--maybe-convert-to-delegated
                          org-after-todo-state-change-hook))
     (org-gtd-mode -1)))
 
@@ -52,7 +52,7 @@
   "Hook is removed from org-after-todo-state-change-hook when org-gtd-mode is disabled."
   (org-gtd-mode 1)
   (org-gtd-mode -1)
-  (assert-nil (memq 'org-gtd-single-action--maybe-convert-to-delegated
+  (assert-nil (memq 'org-gtd-next-action--maybe-convert-to-delegated
                     org-after-todo-state-change-hook)))
 
 ;;; Trigger Condition Tests
@@ -73,7 +73,7 @@
       (unwind-protect
           (progn
             (fset 'y-or-n-p (lambda (_prompt) (setq prompted t) nil))
-            (org-gtd-single-action--maybe-convert-to-delegated)
+            (org-gtd-next-action--maybe-convert-to-delegated)
             (assert-true prompted))
         (fset 'y-or-n-p orig-fn)))))
 
@@ -91,7 +91,7 @@
       (unwind-protect
           (progn
             (fset 'y-or-n-p (lambda (_prompt) (setq prompted t) nil))
-            (org-gtd-single-action--maybe-convert-to-delegated)
+            (org-gtd-next-action--maybe-convert-to-delegated)
             (assert-nil prompted))
         (fset 'y-or-n-p orig-fn)))))
 
@@ -109,7 +109,7 @@
       (unwind-protect
           (progn
             (fset 'y-or-n-p (lambda (_prompt) (setq prompted t) nil))
-            (org-gtd-single-action--maybe-convert-to-delegated)
+            (org-gtd-next-action--maybe-convert-to-delegated)
             (assert-nil prompted))
         (fset 'y-or-n-p orig-fn)))))
 
@@ -129,7 +129,7 @@
           (progn
             (fset 'y-or-n-p (lambda (_prompt) t))
             (with-simulated-input "John SPC Doe RET 2025-06-15 RET"
-              (org-gtd-single-action--maybe-convert-to-delegated)))
+              (org-gtd-next-action--maybe-convert-to-delegated)))
         (fset 'y-or-n-p orig-yn)))
     ;; Verify conversion
     (assert-equal "Delegated" (org-entry-get (point) "ORG_GTD"))
@@ -149,7 +149,7 @@
       (unwind-protect
           (progn
             (fset 'y-or-n-p (lambda (_prompt) nil))
-            (org-gtd-single-action--maybe-convert-to-delegated))
+            (org-gtd-next-action--maybe-convert-to-delegated))
         (fset 'y-or-n-p orig-fn)))
     ;; Verify nothing changed
     (assert-equal "Actions" (org-entry-get (point) "ORG_GTD"))

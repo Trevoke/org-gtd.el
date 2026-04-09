@@ -36,7 +36,7 @@
 (require 'org-gtd-tickler)
 (require 'org-gtd-someday)
 (require 'org-gtd-quick-action)
-(require 'org-gtd-single-action)
+(require 'org-gtd-next-action)
 (require 'org-gtd-trash)
 (require 'org-gtd-delegate)
 (require 'org-gtd-agenda)
@@ -47,10 +47,12 @@
 ;;;; Constants
 
 (defconst org-gtd-organize-action-types
-  '(quick-action single-action calendar habit
+  '(quick-action next-action single-action calendar habit
                  delegated tickler someday knowledge trash
                  project-heading project-task everything)
-  "Valid actions types as input for `org-gtd-organize-type-member-p'.")
+  "Valid actions types as input for `org-gtd-organize-type-member-p'.
+`single-action' is an obsolete synonym for `next-action' and is
+normalized to `next-action' at lookup time.")
 
 ;;;; Variables
 
@@ -73,7 +75,7 @@
    ("-n" org-gtd-organize--skip-refile-infix)]
   ["Actionable"
    [("q" "Quick action" org-gtd-quick-action)
-    ("s" "Single action" org-gtd-single-action)]
+    ("s" "Next action" org-gtd-next-action)]
    [("d" "Delegate" org-gtd-delegate)
     ("c" "Calendar" org-gtd-calendar)
     ("h" "Habit" org-gtd-habit)]]
@@ -94,7 +96,7 @@
 
 Valid members of LIST include:
 - \\='quick-action (done in less than two minutes)
-- \\='single-action (do when possible)
+- \\='next-action (do when possible; \\='single-action is an obsolete synonym)
 - \\='calendar (do at a given time)
 - \\='delegated (done by someone else)
 - \\='habit (a recurring action)
@@ -103,7 +105,7 @@ Valid members of LIST include:
 - \\='knowledge (stored as reference)
 - \\='trash (self-explanatory)
 - \\='project-heading (top-level project info, e.g. area of focus)
-- \\='project-task (task-specific info, similar in spirit to single-action)
+- \\='project-task (task-specific info, similar in spirit to next-action)
 - \\='everything (if this is in the list, always return t)"
   (let ((list (ensure-list list)))
     (unless (seq-every-p
@@ -111,8 +113,16 @@ Valid members of LIST include:
              list)
       (signal 'org-gtd-invalid-organize-action-type-error
               `(,list ,org-gtd-organize-action-types)))
-    (or (member 'everything list)
-        (member org-gtd--organize-type list))))
+    ;; Normalize obsolete `single-action' to `next-action' on both
+    ;; sides so filters and stored values interoperate regardless of
+    ;; which spelling the caller used.
+    (let ((list (mapcar (lambda (x) (if (eq x 'single-action) 'next-action x))
+                        list))
+          (current (if (eq org-gtd--organize-type 'single-action)
+                       'next-action
+                     org-gtd--organize-type)))
+      (or (member 'everything list)
+          (member current list)))))
 
 (define-error
   'org-gtd-invalid-organize-action-type-error
