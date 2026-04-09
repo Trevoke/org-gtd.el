@@ -35,6 +35,7 @@
      :disposition list
      :transient-key "s"
      :prompt-to-refile t
+     :menu-group actionable
      :properties nil)
 
     (delegated
@@ -44,6 +45,7 @@
      :disposition list
      :transient-key "d"
      :prompt-to-refile t
+     :menu-group actionable
      :organize-fn org-gtd-delegate--organize
      :properties
      ((:who  :org-property "DELEGATED_TO"      :type text      :required t
@@ -57,6 +59,7 @@
      :disposition list
      :transient-key "c"
      :prompt-to-refile t
+     :menu-group actionable
      :properties
      ((:when :org-property "ORG_GTD_TIMESTAMP" :type timestamp :required t
              :prompt "When is this happening?")))
@@ -66,6 +69,7 @@
      :disposition list
      :transient-key "i"
      :prompt-to-refile t
+     :menu-group non-actionable
      :supports (project-handler)
      :organize-fn org-gtd-tickler--organize
      :project-fn org-gtd-tickler--project-handler
@@ -79,6 +83,7 @@
      :disposition list
      :transient-key "y"
      :prompt-to-refile t
+     :menu-group non-actionable
      :supports (project-handler)
      :organize-fn org-gtd-someday--organize
      :project-fn org-gtd-someday--project-handler
@@ -96,6 +101,7 @@
      :disposition list
      :transient-key "h"
      :prompt-to-refile t
+     :menu-group actionable
      :state nil
      :properties
      ((:when :org-property "SCHEDULED" :type repeating-timestamp :required t
@@ -106,6 +112,7 @@
      :org-gtd "Reference"
      :disposition done-and-archive
      :transient-key "k"
+     :menu-group non-actionable
      :state :done
      :properties nil)
 
@@ -113,6 +120,7 @@
      :org-gtd "Trash"
      :disposition cancel-and-archive
      :transient-key "t"
+     :menu-group non-actionable
      :state :canceled
      :properties nil)
 
@@ -120,6 +128,7 @@
      :org-gtd "Quick"
      :disposition done-and-archive
      :transient-key "q"
+     :menu-group actionable
      :state :done
      :properties nil))
   "GTD type definitions.
@@ -184,7 +193,8 @@ User properties with same semantic name replace builtin ones."
       result)))
 
 (defconst org-gtd--type-scalar-fields
-  '(:state :organize-fn :disposition :project-fn :prompt-to-refile :transient-key)
+  '(:state :organize-fn :disposition :project-fn :prompt-to-refile
+    :transient-key :menu-group)
   "Type-plist keys where a user value replaces the builtin value.
 Note: :org-gtd is intentionally excluded and can never be overridden.")
 
@@ -397,6 +407,13 @@ Distinguishes an explicit nil value from an absent key."
   "Return the :transient-key for TYPE-NAME, or nil."
   (when-let ((type-def (org-gtd-type-get type-name)))
     (plist-get (cdr type-def) :transient-key)))
+
+(defun org-gtd-type-menu-group (type-name)
+  "Return the :menu-group symbol declared on TYPE-NAME, or nil.
+Used by `org-gtd-organize' to autogenerate transient columns.
+Returns nil if the type is not registered."
+  (when-let ((type-def (org-gtd-type-get type-name)))
+    (plist-get (cdr type-def) :menu-group)))
 
 (defun org-gtd-type-hooks (type-name)
   "Return the :hooks plist declared on TYPE-NAME, or nil."
