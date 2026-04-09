@@ -40,7 +40,7 @@
      "* Test item"
      (org-back-to-heading t)
      (with-simulated-input "Work SPC Ideas TAB RET"
-       (org-gtd-someday--configure))
+       (org-gtd-someday--organize (quote someday) nil))
      (assert-equal "Work Ideas" (org-entry-get (point) "ORG_GTD_SOMEDAY_LIST")))))
 
 (deftest someday/skips-list-prompt-when-no-lists-configured ()
@@ -49,7 +49,7 @@
     (ogt--with-temp-org-buffer
      "* Test item"
      (org-back-to-heading t)
-     (org-gtd-someday--configure)
+     (org-gtd-someday--organize (quote someday) nil)
      (assert-nil (org-entry-get (point) "ORG_GTD_SOMEDAY_LIST")))))
 
 ;;; Someday/Maybe Organization Tests

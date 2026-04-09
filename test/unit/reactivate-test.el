@@ -239,7 +239,7 @@
    (let ((org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL"))))
      (org-todo "WAIT")
      ;; Someday the item
-     (org-gtd-someday--configure)
+     (org-gtd-someday--organize (quote someday) nil)
      ;; Verify someday state - TODO keyword should be cleared
      (assert-equal "Someday" (org-entry-get (point) "ORG_GTD"))
      (assert-equal "Delegated" (org-entry-get (point) "PREVIOUS_ORG_GTD"))

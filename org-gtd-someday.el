@@ -45,60 +45,20 @@ When populated, user is prompted to select which list to review."
   :package-version '(org-gtd . "4.0")
   :type '(repeat string))
 
-;;;; Constants
-
-(defconst org-gtd-someday-func #'org-gtd-someday--apply
-  "Function called when organizing item as someday/maybe.")
-
-(defconst org-gtd-someday-template
-  (format "* Someday/Maybe
-:PROPERTIES:
-:%s: %s
-:END:
-" org-gtd-prop-refile org-gtd-someday)
-  "Template for the GTD someday/maybe list.")
-
 ;;;; Commands
 
 (defun org-gtd-someday ()
-  "Decorate, organize and refile item at point as someday/maybe.
+  "DWIM: organize the heading at point as a someday/maybe item.
 
-Smart dispatcher that detects context:
-- On project heading (ORG_GTD: Projects): someday entire project
-- On project task (has ORG_GTD_PROJECT_IDS): someday project(s)
-- On single item: use existing single-item someday logic
-
-Someday/maybe items are for things you might want to do eventually,
-but with no specific timeframe."
+Dispatches to the project-handler when on a project heading or
+project task; otherwise processes the plain heading.  Someday/maybe
+items are for things you might want to do eventually, but with no
+specific timeframe."
   (interactive)
-
-  ;; Get the actual marker - works from both org buffers and agenda buffers
-  (let* ((marker (or (org-get-at-bol 'org-marker)
-                     (point-marker))))
-    (org-with-point-at marker
-      ;; Detect context
-      (let* ((org-gtd-value (org-entry-get (point) "ORG_GTD"))
-             (project-ids (org-entry-get-multivalued-property (point) "ORG_GTD_PROJECT_IDS"))
-             (is-project-heading (string= org-gtd-value "Projects"))
-             (is-project-task (> (length project-ids) 0)))
-
-        (cond
-         ;; Case 1: On project heading - someday the project
-         (is-project-heading
-          (require 'org-gtd-projects)
-          (org-gtd-project-someday (point-marker)))
-
-         ;; Case 2: On project task - someday the project(s)
-         (is-project-task
-          (require 'org-gtd-projects)
-          (let ((project-marker (org-gtd-project--get-marker-at-point
-                                 "Which project to put on someday? ")))
-            (org-gtd-project-someday project-marker)))
-
-         ;; Case 3: Single item - use existing logic
-         (t
-          (org-gtd-organize--call
-           (lambda () (org-gtd-someday--apply)))))))))
+  (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
+      (org-gtd-organize--call
+       (lambda () (org-gtd-process-heading (point-marker) 'someday nil)))
+    (org-gtd--dispatch 'someday)))
 
 ;;;; Functions
 
@@ -113,52 +73,31 @@ TOPIC is the string you want to see when reviewing someday/maybe items."
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
-      (org-gtd-someday))
+      (goto-char (point-min))
+      (org-gtd-process-heading (point-marker) 'someday nil))
     (kill-buffer buffer)))
 
 ;;;;; Private
 
-(defun org-gtd-someday--configure ()
-  "Configure item at point as someday/maybe.
-
-Saves current state to PREVIOUS_* properties, then sets ORG_GTD
-property to Someday, clears TODO keyword, and removes any timestamp properties.
-If `org-gtd-someday-lists' is configured, prompts for list selection."
-  ;; Save current state before changing type
+(defun org-gtd-someday--organize (type _config)
+  "Configure heading at point as TYPE (someday/maybe).
+Saves previous state, configures as TYPE, optionally prompts for a
+list when `org-gtd-someday-lists' is populated, clears the TODO
+keyword, and removes any timestamp properties."
   (org-gtd-save-state)
-
-  ;; Configure as someday type (no properties needed - no timestamps!)
-  (org-gtd-configure-as-type 'someday)
-
-  ;; Prompt for list if configured
+  (org-gtd-configure-as-type type)
   (when org-gtd-someday-lists
     (let ((list (completing-read "Someday list: " org-gtd-someday-lists nil t)))
       (org-entry-put nil org-gtd-prop-someday-list list)))
-
-  ;; Clear TODO keyword - someday items are not actionable
   (org-todo "")
-
-  ;; Explicitly remove any timestamp properties that might exist
   (org-entry-delete (point) org-gtd-timestamp)
   (org-entry-delete (point) "SCHEDULED")
   (org-entry-delete (point) "DEADLINE"))
 
-(defun org-gtd-someday--finalize ()
-  "Finalize someday/maybe item organization and refile."
-  (setq-local org-gtd--organize-type 'someday)
-  (org-gtd-organize-apply-hooks)
-  (if org-gtd-clarify--skip-refile
-      (org-gtd-organize--update-in-place)
-    (org-gtd-refile--do org-gtd-someday org-gtd-someday-template)))
-
-(defun org-gtd-someday--apply ()
-  "Process GTD inbox item by transforming it into a someday/maybe item.
-
-Orchestrates the someday/maybe organization workflow:
-1. Configure with someday settings (no timestamps)
-2. Finalize and refile to someday/maybe category"
-  (org-gtd-someday--configure)
-  (org-gtd-someday--finalize))
+(defun org-gtd-someday--project-handler (pom _config)
+  "Move project at POM to someday/maybe."
+  (require 'org-gtd-projects)
+  (org-gtd-project-someday pom))
 
 ;;;; Footer
 

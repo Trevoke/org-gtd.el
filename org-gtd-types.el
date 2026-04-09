@@ -76,6 +76,12 @@
 
     (someday
      :org-gtd "Someday"
+     :disposition list
+     :transient-key "y"
+     :prompt-to-refile t
+     :supports (project-handler)
+     :organize-fn org-gtd-someday--organize
+     :project-fn org-gtd-someday--project-handler
      :state nil
      :properties nil)
 
