@@ -39,6 +39,7 @@
 (require 'org-gtd-refile)
 
 (declare-function org-gtd-archive-item-at-point "org-gtd-archive")
+(declare-function org-gtd-project--get-marker-at-point "org-gtd-projects")
 
 ;;;; Customization
 

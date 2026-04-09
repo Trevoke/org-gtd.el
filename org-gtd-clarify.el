@@ -185,7 +185,8 @@ Each element is a plist with :title and :content keys.")
   "Keymap for `org-gtd-clarify-mode'.")
 
 ;; Backward compatibility alias (obsolete)
-(defvaralias 'org-gtd-clarify-map 'org-gtd-clarify-mode-map)
+(with-no-warnings
+  (defvaralias 'org-gtd-clarify-map 'org-gtd-clarify-mode-map))
 (make-obsolete-variable 'org-gtd-clarify-map 'org-gtd-clarify-mode-map "4.0")
 
 ;; code to make windows atomic, from emacs manual

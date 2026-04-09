@@ -59,6 +59,7 @@
 ;;;; External Function Declarations
 
 ;; Functions from org-gtd-context.el (loaded lazily in DWIM commands)
+(declare-function org-gtd-someday "org-gtd-someday")
 (declare-function org-gtd-context-at-point "org-gtd-context")
 (declare-function org-gtd-context-mode "org-gtd-context")
 
@@ -208,7 +209,8 @@ Returns project marker, or signals error if not a project task."
 In graph-view-mode: return buffer-local project marker.
 In agenda-mode: get marker from agenda item, then resolve project.
 Otherwise: signal error.
-PROMPT is passed to `org-gtd-project--get-marker-at-point' for multi-project selection."
+PROMPT is passed to `org-gtd-project--get-marker-at-point' for
+multi-project selection."
   (cond
    ;; Graph view - use buffer-local marker
    ((and (derived-mode-p 'org-gtd-graph-view-mode)

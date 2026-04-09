@@ -1,3 +1,57 @@
+* Unreleased
+
+** Added
+*** Unified type and hook model
+org-gtd now ships a unified dispatch pipeline for all built-in types.
+Each type in ~org-gtd-types~ can declare wiring fields — ~:organize-fn~,
+~:disposition~, ~:supports~, ~:project-fn~, ~:prompt-to-refile~,
+~:transient-key~, ~:refile-target~, and ~:hooks~ — that drive a single
+~org-gtd-process-heading~ primitive. A companion ~org-gtd-process-project~
+primitive handles project-level reclassification via the type's
+~:project-fn~, and the new ~org-gtd--dispatch~ DWIM helper routes
+heading-vs-project cases at invocation time (including from agenda
+buffers).
+
+Per-type commands (~org-gtd-calendar~, ~org-gtd-delegate~,
+~org-gtd-next-action~, ~org-gtd-habit~, ~org-gtd-tickler~,
+~org-gtd-someday~, ~org-gtd-knowledge~, ~org-gtd-quick-action~,
+~org-gtd-trash~) now delegate to this pipeline instead of carrying
+their own configure/finalize/apply trios.
+
+*** Six-stage hook pipeline
+~org-gtd-hooks-run~ now fires six observation-only stages around each
+classification: ~:before-organize~, ~:after-organize~, ~:before-file~,
+~:after-file~, ~:before-clarify~, ~:after-clarify~. Each stage supports
+global and per-type local listeners.
+
+*** ~org-gtd-create-item~
+New unified programmatic entry point for creating a GTD item of any
+registered type. Replaces the scatter of per-type ~*-create~ helpers
+(which remain for backward compatibility).
+
+*** Per-type ~:prompt-to-refile~
+Types now declare whether the refile engine should prompt the user via
+~:prompt-to-refile~. The legacy ~org-gtd-refile-prompt-for-types~
+customization variable still works (its values are migrated to per-type
+settings at load time) but is marked obsolete.
+
+*** next-action (was single-action)
+The registry module and command have been renamed from
+~single-action~ to the GTD-canonical ~next-action~. Full backward
+compatibility via ~define-obsolete-function-alias~, ~defvaralias~, and a
+dual ~(provide 'org-gtd-single-action)~.
+
+** Deprecated
+- ~org-gtd-delegate-agenda-item~ — use ~org-gtd-delegate~ directly; the
+  DWIM dispatch reads ~org-get-at-bol~ so it works from agenda buffers.
+- ~org-gtd-refile-prompt-for-types~ — use ~:prompt-to-refile~ per type.
+- ~org-gtd-single-action~ and its private functions — use
+  ~org-gtd-next-action~ equivalents.
+
+** Design docs
+- ~docs/plans/2026-04-07-unified-type-and-hook-model-design.md~
+- ~docs/plans/2026-04-07-unified-type-and-hook-model-plan.md~
+
 * 4.6.1 - 2026-03-03
 
 ** Fixed

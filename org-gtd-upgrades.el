@@ -385,9 +385,10 @@ Safe to run multiple times."
      'agenda)))
 
 (defun org-gtd-upgrade--set-project-ids-on-tasks (project-marker)
-  "Set ORG_GTD_PROJECT_IDS, ORG_GTD_PROJECT, and TRIGGER on tasks under PROJECT-MARKER.
-Safe to run multiple times - only adds ID if not already present.
-Sets TRIGGER to org-gtd-update-project-after-task-done! on all."
+  "Set project metadata on tasks under PROJECT-MARKER.
+Sets ORG_GTD_PROJECT_IDS, ORG_GTD_PROJECT, and TRIGGER.  Safe to run
+multiple times - only adds ID if not already present.  Sets TRIGGER
+to org-gtd-update-project-after-task-done! on all."
   (org-with-point-at project-marker
     (let ((project-id (or (org-entry-get (point) "ID")
                           (org-gtd-id-get-create)))

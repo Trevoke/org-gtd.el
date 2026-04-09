@@ -349,6 +349,8 @@ Returns the `org-mode' property name string, or nil if not found."
     (when-let ((prop (seq-find (lambda (p) (eq (car p) semantic-name)) props)))
       (plist-get (cdr prop) :org-property))))
 
+(declare-function org-gtd-configure-as-type "org-gtd-configure")
+
 (defun org-gtd-type-organize-fn (type-name)
   "Return the :organize-fn for TYPE-NAME.
 Defaults to `org-gtd-configure-as-type' when the type exists but does
