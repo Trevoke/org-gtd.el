@@ -198,7 +198,7 @@ Includes both filter keys and reserved structural keys.")
     (stuck-habit . ((name . "Habits (Needs Attention)")))
     (stuck-tickler . ((name . "Tickler (Needs Attention)")))
     (stuck-project . ((name . "Projects (Needs Attention)")))
-    (stuck-single-action . ((name . "Single Actions (Needs Attention)")))
+    (stuck-next-action . ((name . "Single Actions (Needs Attention)")))
     (tickler-project . ((name . "Tickler Projects")))
     (completed-project . ((name . "Completed Projects"))))
   "Smart defaults for each GTD type.
@@ -221,7 +221,7 @@ These types have straightforward ORG_GTD property matches.")
   '(stuck-project active-project completed-project
     tickler-project incubated-project
     stuck-delegated stuck-calendar stuck-tickler stuck-habit
-    stuck-single-action)
+    stuck-next-action)
   "List of complex GTD types that require special predicate handling.
 These are computed types that need additional logic beyond property matches.")
 
@@ -472,7 +472,7 @@ Returns nil for types that need OR logic (handled by skip function)."
     (org-gtd-type-org-gtd-value 'tickler))
    ((eq type-name 'stuck-habit)
     (org-gtd-type-org-gtd-value 'habit))
-   ((eq type-name 'stuck-single-action)
+   ((eq type-name 'stuck-next-action)
     (org-gtd-type-org-gtd-value 'next-action))
    (t nil)))
 
@@ -601,8 +601,27 @@ Matches items in Tickler OR Someday that were previously Projects."
           nil    ; Include - incubated project
         end))))  ; Skip - not matching
 
-(defun org-gtd-view-lang--build-skip-function-for-stuck-single-action ()
-  "Build a skip function for stuck-single-action type.
+(defun org-gtd-view-lang--normalize-type-key (type-key)
+  "Normalize obsolete view-DSL type keys to their canonical names.
+Currently maps `stuck-single-action' to `stuck-next-action'.  Any
+other key is returned unchanged.  Called at the view-DSL entry
+point so existing user configurations keep working."
+  (pcase type-key
+    ('stuck-single-action 'stuck-next-action)
+    (_ type-key)))
+
+(defun org-gtd-view-lang--normalize-view-spec (view-spec)
+  "Return VIEW-SPEC with obsolete type keys normalized.
+Each `type' cell has its value passed through
+`org-gtd-view-lang--normalize-type-key'."
+  (mapcar (lambda (cell)
+            (if (and (consp cell) (eq (car cell) 'type))
+                (cons 'type (org-gtd-view-lang--normalize-type-key (cdr cell)))
+              cell))
+          view-spec))
+
+(defun org-gtd-view-lang--build-skip-function-for-stuck-next-action ()
+  "Build a skip function for stuck-next-action type.
 Matches undone single actions (ORG_GTD=Actions) that are not in NEXT state.
 These need attention because single actions should always be in NEXT.
 Tasks from fully inactive (cancelled/done) projects are skipped."
@@ -775,8 +794,8 @@ The function composes predicates from the view spec filters."
      ((eq type-filter 'stuck-habit)
       (org-gtd-view-lang--build-skip-function-for-stuck-type 'habit))
      ;; Stuck single actions - not in NEXT state
-     ((eq type-filter 'stuck-single-action)
-      (org-gtd-view-lang--build-skip-function-for-stuck-single-action))
+     ((eq type-filter 'stuck-next-action)
+      (org-gtd-view-lang--build-skip-function-for-stuck-next-action))
      ;; Project computed types
      ((memq type-filter '(stuck-project active-project completed-project))
       (org-gtd-view-lang--build-skip-function-for-project-type type-filter))
@@ -1114,6 +1133,8 @@ documentation including type, time, area-of-focus, done, and tag filters."
                          (list view-spec-or-specs)
                        ;; Multiple view-specs (list of alists)
                        view-spec-or-specs))
+         ;; Normalize obsolete type keys before further processing
+         (view-specs (mapcar #'org-gtd-view-lang--normalize-view-spec view-specs))
          ;; Expand implicit blocks for each spec
          (expanded-specs (mapcar #'org-gtd-view-lang--expand-implicit-blocks view-specs))
          (title (alist-get 'name (car expanded-specs)))

@@ -167,14 +167,18 @@ indicating they need attention to identify the next actionable step."
    '((name . "Stuck Projects")
      (type . stuck-project))))
 
-(defun org-gtd-reflect-stuck-single-action-items ()
+(defun org-gtd-reflect-stuck-next-action-items ()
   "Agenda view with single actions that need attention.
 Shows single actions (ORG_GTD=Actions) that are undone but not in NEXT state.
 Single actions should always be in NEXT state since they are ready to work on."
   (interactive)
   (org-gtd-view-show
    '((name . "Stuck Single Actions")
-     (type . stuck-single-action))))
+     (type . stuck-next-action))))
+
+;;;###autoload
+(define-obsolete-function-alias 'org-gtd-reflect-stuck-single-action-items
+  #'org-gtd-reflect-stuck-next-action-items "4.1.0")
 
 ;;;###autoload
 (defun org-gtd-reflect-completed-items (&optional days-back)
@@ -363,7 +367,7 @@ Example:
 
 ;;;###autoload
 (define-obsolete-function-alias 'org-gtd-review-stuck-single-action-items
-  #'org-gtd-reflect-stuck-single-action-items "4.0")
+  #'org-gtd-reflect-stuck-next-action-items "4.0")
 
 ;;;###autoload
 (define-obsolete-function-alias 'org-gtd-review-completed-items

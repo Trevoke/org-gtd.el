@@ -1114,7 +1114,7 @@ Finds habit items with incorrect configuration.
 
 Finds delegated items with missing delegate or date information.
 
-**** ~org-gtd-reflect-stuck-single-action-items~
+**** ~org-gtd-reflect-stuck-next-action-items~
 
 Finds single actions that aren't marked as NEXT.
 

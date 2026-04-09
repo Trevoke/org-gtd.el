@@ -13,7 +13,7 @@ Sometimes items get stuck or fall through the cracks. org-gtd provides several c
 - ~org-gtd-reflect-stuck-tickler-items~ :: Tickler items with invalid or missing review dates
 - ~org-gtd-reflect-stuck-habit-items~ :: Habits with incorrect configuration
 - ~org-gtd-reflect-stuck-delegated-items~ :: Delegated items missing delegate or date information
-- ~org-gtd-reflect-stuck-single-action-items~ :: Single actions that aren't marked as NEXT
+- ~org-gtd-reflect-stuck-next-action-items~ :: Single actions that aren't marked as NEXT
 - ~org-gtd-reflect-stuck-projects~ :: Projects that have tasks but no NEXT actions
 - ~org-gtd-reflect-missed-items~ :: Items that should have been processed but weren't
 

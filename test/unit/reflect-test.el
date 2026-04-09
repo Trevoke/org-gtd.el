@@ -112,11 +112,11 @@
   "Provides the org-gtd-reflect-upcoming-delegated function."
   (assert-true (fboundp 'org-gtd-reflect-upcoming-delegated)))
 
-;;; Stuck Single Actions
+;;; Stuck Next Actions
 
-(deftest reflect/stuck-single-action-function-exists ()
-  "Provides the org-gtd-reflect-stuck-single-action-items function."
-  (assert-true (fboundp 'org-gtd-reflect-stuck-single-action-items)))
+(deftest reflect/stuck-next-action-function-exists ()
+  "Provides the org-gtd-reflect-stuck-next-action-items function."
+  (assert-true (fboundp 'org-gtd-reflect-stuck-next-action-items)))
 
 (provide 'reflect-test)
 

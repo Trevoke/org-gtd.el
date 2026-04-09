@@ -1,4 +1,4 @@
-;;; stuck-single-action-filter-test.el --- Tests for stuck-single-action inactive project filtering -*- lexical-binding: t; coding: utf-8 -*-
+;;; stuck-next-action-filter-test.el --- Tests for stuck-next-action inactive project filtering -*- lexical-binding: t; coding: utf-8 -*-
 
 ;; Copyright (C) 2026 Aldric Giacomoni
 
@@ -7,7 +7,7 @@
 
 ;;; Commentary:
 ;;
-;; Tests that the stuck-single-action skip function correctly excludes
+;; Tests that the stuck-next-action skip function correctly excludes
 ;; tasks from cancelled/done projects.
 ;;
 
@@ -26,8 +26,8 @@
     (ogt-eunit-with-mock-gtd
       (funcall proceed context))))
 
-(deftest stuck-sa-filter/cancelled-project-task-skipped ()
-  "Task from a cancelled project is skipped by stuck-single-action filter."
+(deftest stuck-na-filter/cancelled-project-task-skipped ()
+  "Task from a cancelled project is skipped by stuck-next-action filter."
   (let* ((project-info
           (with-current-buffer (org-gtd--default-file)
             (goto-char (point-max))
@@ -40,11 +40,11 @@
       (let ((org-inhibit-logging 'note))
         (org-todo "CNCL")))
     ;; Now test the skip function on the task
-    (let ((skip-fn (org-gtd-view-lang--build-skip-function-for-stuck-single-action)))
+    (let ((skip-fn (org-gtd-view-lang--build-skip-function-for-stuck-next-action)))
       (org-with-point-at (nth 0 task-markers)
         (assert-true (funcall skip-fn))))))
 
-(deftest stuck-sa-filter/active-project-stuck-task-included ()
+(deftest stuck-na-filter/active-project-stuck-task-included ()
   "Task from an active project in TODO state (stuck) is included."
   (let* ((project-info
           (with-current-buffer (org-gtd--default-file)
@@ -54,11 +54,11 @@
          (task-markers (plist-get project-info :task-markers)))
     ;; Project is active (default state, no TODO keyword on heading)
     ;; Task is in TODO state (not NEXT), so it is stuck
-    (let ((skip-fn (org-gtd-view-lang--build-skip-function-for-stuck-single-action)))
+    (let ((skip-fn (org-gtd-view-lang--build-skip-function-for-stuck-next-action)))
       (org-with-point-at (nth 0 task-markers)
         (assert-nil (funcall skip-fn))))))
 
-(deftest stuck-sa-filter/active-project-next-task-skipped ()
+(deftest stuck-na-filter/active-project-next-task-skipped ()
   "Task from an active project in NEXT state (not stuck) is skipped."
   (let* ((project-info
           (with-current-buffer (org-gtd--default-file)
@@ -67,12 +67,12 @@
                           :tasks '((:description "Task 1" :status next)))))
          (task-markers (plist-get project-info :task-markers)))
     ;; Project is active, task is in NEXT state (not stuck)
-    (let ((skip-fn (org-gtd-view-lang--build-skip-function-for-stuck-single-action)))
+    (let ((skip-fn (org-gtd-view-lang--build-skip-function-for-stuck-next-action)))
       (org-with-point-at (nth 0 task-markers)
         (assert-true (funcall skip-fn))))))
 
-(deftest stuck-sa-filter/done-project-task-skipped ()
-  "Task from a DONE project is skipped by stuck-single-action filter."
+(deftest stuck-na-filter/done-project-task-skipped ()
+  "Task from a DONE project is skipped by stuck-next-action filter."
   (let* ((project-info
           (with-current-buffer (org-gtd--default-file)
             (goto-char (point-max))
@@ -85,19 +85,19 @@
       (let ((org-inhibit-logging 'note))
         (org-todo "DONE")))
     ;; Now test the skip function on the task
-    (let ((skip-fn (org-gtd-view-lang--build-skip-function-for-stuck-single-action)))
+    (let ((skip-fn (org-gtd-view-lang--build-skip-function-for-stuck-next-action)))
       (org-with-point-at (nth 0 task-markers)
         (assert-true (funcall skip-fn))))))
 
-(deftest stuck-sa-filter/standalone-stuck-task-included ()
+(deftest stuck-na-filter/standalone-stuck-task-included ()
   "A stuck single action with no project is included."
   (let ((task-marker
          (with-current-buffer (org-gtd--default-file)
            (goto-char (point-max))
            (make-task "Orphan stuck task" :status 'todo :level 1))))
-    (let ((skip-fn (org-gtd-view-lang--build-skip-function-for-stuck-single-action)))
+    (let ((skip-fn (org-gtd-view-lang--build-skip-function-for-stuck-next-action)))
       (org-with-point-at task-marker
         (assert-nil (funcall skip-fn))))))
 
-(provide 'stuck-single-action-filter-test)
-;;; stuck-single-action-filter-test.el ends here
+(provide 'stuck-next-action-filter-test)
+;;; stuck-next-action-filter-test.el ends here

@@ -72,7 +72,7 @@
    ("d" "Delegated" org-gtd-reflect-stuck-delegated-items)
    ("h" "Habits" org-gtd-reflect-stuck-habit-items)
    ("t" "Tickler" org-gtd-reflect-stuck-tickler-items)
-   ("s" "Single actions" org-gtd-reflect-stuck-single-action-items)]
+   ("s" "Single actions" org-gtd-reflect-stuck-next-action-items)]
   [("q" "Back" transient-quit-one)])
 
 (transient-define-prefix org-gtd-command-center--missed ()
