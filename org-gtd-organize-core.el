@@ -41,6 +41,8 @@
 (declare-function org-gtd-archive-item-at-point "org-gtd-archive")
 (declare-function org-gtd-project--get-marker-at-point "org-gtd-projects")
 
+(defvar org-gtd--organize-type)
+
 ;;;; Customization
 
 (defgroup org-gtd-organize nil
@@ -60,7 +62,7 @@ To run a hook only for specific item types, use
 `org-gtd-organize-type-member-p' in your hook function.  For example:
 
   (defun my-add-effort ()
-    (when (org-gtd-organize-type-member-p \\='(single-action project-heading))
+    (when (org-gtd-organize-type-member-p \\='(next-action project-heading))
       (call-interactively #\\='org-set-effort)))
 
 Once you have your ground items managed, you might like to set the variable
@@ -236,7 +238,11 @@ on that hook should be tolerant of that firing position."
         (org-todo (org-gtd-keywords--canceled))
         (org-gtd-archive-item-at-point))
        ((eq disp 'externalize)
-        (error "Disposition externalize not implemented yet (type %s)" type))
+        ;; Reserved for future types that want to externalize to a
+        ;; non-org backend (e.g., GitHub issues, Linear).  No built-in
+        ;; type uses this yet; remove the branch if it doesn't find a
+        ;; user before the next major release.
+        (error "Disposition `externalize' is reserved but not implemented (type %s)" type))
        (t
         (error "Unknown disposition %s for type %s" disp type))))))
 
