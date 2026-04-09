@@ -292,10 +292,17 @@ support or lacks a `:project-fn'."
 (defun org-gtd--dispatch (type &optional config)
   "Dispatch a per-type command for TYPE based on the heading at point.
 
-Reads the marker at beginning-of-line first (for agenda compatibility)
-or falls back to point-marker.  CONFIG, when non-nil, is an alist
-forwarded to `org-gtd-process-heading' or `org-gtd-process-project'
-for non-interactive/override use.  At the resolved marker, routes to:
+When invoked from inside the clarify/WIP flow (i.e. the variable
+`org-gtd-clarify--clarify-id' is non-nil), the dispatch always
+routes through `org-gtd-organize--call' + `org-gtd-process-heading'
+so queue/source-cut/window-restore behavior is preserved.  The
+project-handler branch is skipped in this mode because the clarify
+flow operates on a single heading, never a whole project.
+
+Otherwise, reads the marker at beginning-of-line first (for agenda
+compatibility) or falls back to point-marker.  CONFIG, when non-nil,
+is an alist forwarded to `org-gtd-process-heading' or
+`org-gtd-process-project'.  At the resolved marker, routes to:
 
 - `org-gtd-process-project' when ORG_GTD=Projects and TYPE supports
   project-handler.
@@ -304,31 +311,34 @@ for non-interactive/override use.  At the resolved marker, routes to:
   supports project-handler.
 - `org-gtd-process-heading' otherwise (plain headings, and project
   tasks when TYPE does not declare project-handler support)."
-  ;; `org-gtd-projects' requires `org-gtd-organize-core', so we cannot
-  ;; require it here without creating a cycle.  Load it lazily and rely
-  ;; on `fboundp' as a defensive guard.
-  (let* ((marker (or (org-get-at-bol 'org-marker)
-                     (point-marker))))
-    (org-with-point-at marker
-      (let* ((org-gtd-value (org-entry-get (point) "ORG_GTD"))
-             (project-ids (org-entry-get-multivalued-property
-                           (point) "ORG_GTD_PROJECT_IDS"))
-             (is-project-heading (string= org-gtd-value "Projects"))
-             (is-project-task (> (length project-ids) 0))
-             (supports-project (org-gtd-type-supports-p type 'project-handler)))
-        (cond
-         ((and is-project-heading supports-project)
-          (org-gtd-process-project (point-marker) type config))
-         ((and is-project-task supports-project)
-          (require 'org-gtd-projects)
-          (unless (fboundp 'org-gtd-project--get-marker-at-point)
-            (error "org-gtd-project--get-marker-at-point unavailable"))
-          (let ((project-marker
-                 (org-gtd-project--get-marker-at-point
-                  (format "Which project to process as %s? " type))))
-            (org-gtd-process-project project-marker type config)))
-         (t
-          (org-gtd-process-heading (point-marker) type config)))))))
+  (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
+      (org-gtd-organize--call
+       (lambda () (org-gtd-process-heading (point-marker) type config)))
+    ;; `org-gtd-projects' requires `org-gtd-organize-core', so we cannot
+    ;; require it here without creating a cycle.  Load it lazily and rely
+    ;; on `fboundp' as a defensive guard.
+    (let* ((marker (or (org-get-at-bol 'org-marker)
+                       (point-marker))))
+      (org-with-point-at marker
+        (let* ((org-gtd-value (org-entry-get (point) "ORG_GTD"))
+               (project-ids (org-entry-get-multivalued-property
+                             (point) "ORG_GTD_PROJECT_IDS"))
+               (is-project-heading (string= org-gtd-value "Projects"))
+               (is-project-task (> (length project-ids) 0))
+               (supports-project (org-gtd-type-supports-p type 'project-handler)))
+          (cond
+           ((and is-project-heading supports-project)
+            (org-gtd-process-project (point-marker) type config))
+           ((and is-project-task supports-project)
+            (require 'org-gtd-projects)
+            (unless (fboundp 'org-gtd-project--get-marker-at-point)
+              (error "org-gtd-project--get-marker-at-point unavailable"))
+            (let ((project-marker
+                   (org-gtd-project--get-marker-at-point
+                    (format "Which project to process as %s? " type))))
+              (org-gtd-process-project project-marker type config)))
+           (t
+            (org-gtd-process-heading (point-marker) type config))))))))
 
 ;;;; Footer
 
