@@ -18,6 +18,7 @@
 (require 'ogt-eunit-prelude "test/helpers/prelude.el")
 (require 'org-gtd-organize-core)
 (require 'org-gtd-types)
+(require 'cl-lib)  ; for cl-letf
 
 (e-unit-initialize)
 
@@ -33,41 +34,44 @@ owns the done/canceled state transition."
 
 (deftest disposition/done-and-archive-sets-done-state ()
   "done-and-archive disposition must leave the item marked DONE
-even when the type's :organize-fn does not set the state."
+before archive runs, even when the type's :organize-fn does not
+set the state."
   (let ((org-gtd-user-types
          '((reference
-            :organize-fn dispo-test--minimal-organize-fn))))
+            :organize-fn dispo-test--minimal-organize-fn)))
+        (org-inhibit-logging t)
+        (seen-state nil))
     (with-temp-buffer
       (org-mode)
       (insert "* TODO Test heading\n")
       (goto-char (point-min))
       (org-back-to-heading t)
-      ;; Intercept archive so the heading stays in the buffer and
-      ;; we can assert on its TODO state.
+      ;; Capture the TODO state at the moment archive is called, so
+      ;; a future regression that swaps (archive . state-change)
+      ;; still fails this test.
       (cl-letf (((symbol-function 'org-gtd-archive-item-at-point)
-                 (lambda () nil)))
+                 (lambda () (setq seen-state (org-get-todo-state)))))
         (org-gtd-process-heading (point-marker) 'reference nil))
-      (org-back-to-heading t)
-      (assert-equal (org-gtd-keywords--done)
-                    (org-get-todo-state)))))
+      (assert-equal (org-gtd-keywords--done) seen-state))))
 
 (deftest disposition/cancel-and-archive-sets-canceled-state ()
   "cancel-and-archive disposition must leave the item marked CNCL
-even when the type's :organize-fn does not set the state."
+before archive runs, even when the type's :organize-fn does not
+set the state."
   (let ((org-gtd-user-types
          '((trash
-            :organize-fn dispo-test--minimal-organize-fn))))
+            :organize-fn dispo-test--minimal-organize-fn)))
+        (org-inhibit-logging t)
+        (seen-state nil))
     (with-temp-buffer
       (org-mode)
       (insert "* TODO Test heading\n")
       (goto-char (point-min))
       (org-back-to-heading t)
       (cl-letf (((symbol-function 'org-gtd-archive-item-at-point)
-                 (lambda () nil)))
+                 (lambda () (setq seen-state (org-get-todo-state)))))
         (org-gtd-process-heading (point-marker) 'trash nil))
-      (org-back-to-heading t)
-      (assert-equal (org-gtd-keywords--canceled)
-                    (org-get-todo-state)))))
+      (assert-equal (org-gtd-keywords--canceled) seen-state))))
 
 (provide 'disposition-runner-test)
 

@@ -199,7 +199,28 @@ missing."
 Honors `org-gtd-clarify--skip-refile' by calling
 `org-gtd-organize--update-in-place' instead of the type-specific
 disposition.  POM is currently unused but reserved for future
-dispositions that need it."
+dispositions that need it.
+
+Contract notes:
+
+- `list' — refiles to the type's :refile-target.
+
+- `done-and-archive' — unconditionally sets the TODO state to the
+  done keyword via `org-todo', then archives.  The state override
+  is intentional: the disposition NAME declares the end-state, so
+  a custom type with `:state :wait' and `:disposition done-and-archive'
+  will still end up DONE.  If you want a different end-state, use
+  the `list' disposition with a custom hook.
+
+- `cancel-and-archive' — same contract as `done-and-archive' but
+  with the canceled keyword.
+
+- `externalize' — reserved, not yet implemented.
+
+Both archive dispositions fire `org-after-todo-state-change-hook'
+at the moment they set the state, which is between the
+`:before-file' and `:after-file' pipeline hooks.  User listeners
+on that hook should be tolerant of that firing position."
   (if (and (boundp 'org-gtd-clarify--skip-refile)
            org-gtd-clarify--skip-refile)
       (org-gtd-organize--update-in-place)
