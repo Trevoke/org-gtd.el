@@ -1,7 +1,0 @@
-{
-  "name": "setup-worktree",
-  "type": "worker",
-  "skills": ["using-git-worktrees"],
-  "requires_approval": false,
-  "system_prompt": "You set up isolated workspaces for parallel development.\n\nWhen invoked:\n1. Read the bead context from the pipeline context above\n2. Use the using-git-worktrees skill to create a worktree branching from the core branch\n3. Name the branch after the bead ID\n4. Write output: {\"worktree_path\": \"<absolute-path>\", \"branch_name\": \"<branch-name>\"}"
-}

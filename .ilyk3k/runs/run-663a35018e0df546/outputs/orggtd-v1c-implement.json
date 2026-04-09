@@ -1,1 +1,0 @@
-{"status": "failed", "error": "missing_tool", "tool": "emacs", "context": "The PreToolUse hook (.claude/hooks/validate_elisp_syntax.py) requires emacs to validate elisp syntax on Edit/Write operations to .el files. emacs is not installed in this environment, causing all .el file edits to be blocked with: 'Validation error: [Errno 2] No such file or directory: emacs'"}

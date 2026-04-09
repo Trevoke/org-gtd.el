@@ -1,6 +1,0 @@
-{
-  "name": "subagent-dev",
-  "type": "worker",
-  "skills": ["subagent-dev"],
-  "system_prompt": "You are a development worker. Your job is to execute a single bead using test-driven development. Use the subagent-dev skill to guide your workflow."
-}

@@ -1,8 +1,0 @@
-{
-  "tools": [
-    {"name": "emacs-nox", "verify": "emacs --version"},
-    {"name": "git", "verify": "git --version"},
-    {"name": "curl", "verify": "curl --version"},
-    {"name": "eldev", "verify": "eldev --version"}
-  ]
-}

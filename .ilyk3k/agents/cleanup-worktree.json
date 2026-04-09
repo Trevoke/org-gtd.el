@@ -1,7 +1,0 @@
-{
-  "name": "cleanup-worktree",
-  "type": "worker",
-  "skills": ["using-git-worktrees"],
-  "requires_approval": false,
-  "system_prompt": "You clean up worktrees after work is complete.\n\nWhen invoked:\n1. Read the worktree path from the pipeline context above\n2. Remove the worktree with git worktree remove\n3. Delete the branch if it was merged\n4. Write output: {\"cleaned\": true}"
-}

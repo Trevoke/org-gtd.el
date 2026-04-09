@@ -18,3 +18,5 @@ org-gtd-autoloads.el
 org-gtd.log
 .worktrees
 .claude/local/state/
+/.beads/
+/.ilyk3k/

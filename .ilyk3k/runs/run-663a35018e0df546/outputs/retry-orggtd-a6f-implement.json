@@ -1,5 +1,0 @@
-{
-  "summary": "Added property filter validation to org-gtd-view-lang--build-skip-function. The validation checks that the property filter value is a list of cons cells where both car (property name) and cdr (property value) are strings, signaling user-error for invalid input. All 3 validation tests now pass (invalid-non-list-errors, invalid-entry-errors, invalid-name-errors).",
-  "files_changed": ["org-gtd-view-language.el"],
-  "tests_added": []
-}
