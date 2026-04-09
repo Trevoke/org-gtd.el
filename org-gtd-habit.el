@@ -32,31 +32,23 @@
 (require 'org-gtd-configure)
 (require 'org-gtd-organize-core)
 
-;;;; Constants
-
-(defconst org-gtd-habit-func #'org-gtd-habit--apply
-  "Function called when organizing item as a habit.")
-
-(defconst org-gtd-habit-template
-  (format "* Habits
-:PROPERTIES:
-:%s: %s
-:END:
-" org-gtd-prop-refile org-gtd-habit))
-
 ;;;; Commands
 
 (defun org-gtd-habit (&optional repeater)
-  "Organize and refile item at point as a calendar item.
+  "DWIM: organize the heading at point as a habit.
 
-If you want to call this non-interactively,
-REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
-determine how often you'll be reminded of this habit."
+REPEATER is an `org-mode'-style repeater string (e.g. \".+3d\") for
+non-interactive use.  When invoked from within the clarify/WIP
+transient flow, keeps the `org-gtd-organize--call' wrapping so
+queue/source-cut/window-restore behavior is preserved.  Otherwise
+dispatches directly via `org-gtd--dispatch'."
   (interactive)
-  (let ((config-override (when repeater
-                           `((:when . ,(format "<%s %s>" (format-time-string "%F") repeater))))))
-    (org-gtd-organize--call
-     (lambda () (org-gtd-habit--apply config-override)))))
+  (let ((config (when repeater
+                  `((:when . ,(format "<%s %s>" (format-time-string "%F") repeater))))))
+    (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
+        (org-gtd-organize--call
+         (lambda () (org-gtd-process-heading (point-marker) 'habit config)))
+      (org-gtd--dispatch 'habit))))
 
 ;;;; Functions
 
@@ -69,40 +61,14 @@ TOPIC is the string you want to see in the `org-agenda' view.
 REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
 determine how often you'll be reminded of this habit."
   (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd"))
+        (org-id-overriding-file-name "org-gtd")
+        (config `((:when . ,(format "<%s %s>" (format-time-string "%F") repeater)))))
     (with-current-buffer buffer
       (org-mode)
       (insert (format "* %s" topic))
-      (org-gtd-habit repeater))
+      (goto-char (point-min))
+      (org-gtd-process-heading (point-marker) 'habit config))
     (kill-buffer buffer)))
-
-;;;;; Private
-
-(defun org-gtd-habit--configure (&optional config-override)
-  "Configure item at point as a habit.
-
-CONFIG-OVERRIDE is an alist with :when key for non-interactive use."
-  (org-gtd-configure-as-type 'habit config-override))
-
-(defun org-gtd-habit--finalize ()
-  "Finalize habit organization and refile."
-  (setq-local org-gtd--organize-type 'habit)
-  (org-gtd-organize-apply-hooks)
-  (if org-gtd-clarify--skip-refile
-      (org-gtd-organize--update-in-place)
-    (org-gtd-refile--do org-gtd-habit org-gtd-habit-template)))
-
-(defun org-gtd-habit--apply (&optional config-override)
-  "Process GTD inbox item by transforming it into a habit.
-
-Orchestrates the habit organization workflow:
-1. Configure with habit settings
-2. Finalize and refile to habits file
-
-CONFIG-OVERRIDE can provide input configuration to override default
-prompting behavior."
-  (org-gtd-habit--configure config-override)
-  (org-gtd-habit--finalize))
 
 ;;;; Footer
 

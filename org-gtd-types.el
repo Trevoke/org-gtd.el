@@ -81,6 +81,9 @@
     (habit
      :org-gtd "Habit"
      :refile-target "Habits"
+     :disposition list
+     :transient-key "h"
+     :prompt-to-refile t
      :state nil
      :properties
      ((:when :org-property "SCHEDULED" :type repeating-timestamp :required t

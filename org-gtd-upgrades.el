@@ -91,8 +91,11 @@ planning keyword in `org-mode'."
   "Move habits from wherever they may be to their own subtree."
   ;; v4: Explicitly bind settings for upgrade. Property inheritance needed
   ;; for v3-style data where ORG_GTD is on parent headings.
-  (let ((org-agenda-files (org-gtd-core--agenda-files))
-        (org-use-property-inheritance "ORG_GTD"))
+  (let* ((org-agenda-files (org-gtd-core--agenda-files))
+         (org-use-property-inheritance "ORG_GTD")
+         (org-gtd-habit-template
+          (format "* Habits\n:PROPERTIES:\n:%s: %s\n:END:\n"
+                  org-gtd-prop-refile org-gtd-habit)))
     (org-gtd-refile--add-target org-gtd-habit-template)
 
     (with-suppressed-warnings ((obsolete org-gtd-refile-to-any-target))
@@ -141,7 +144,10 @@ planning keyword in `org-mode'."
                                                          (org-element-at-point))
                                    1))
     (org-entry-put (point) "ORG_GTD" org-gtd-habit)
-    (org-gtd-refile--do org-gtd-habit org-gtd-habit-template)))
+    (let ((org-gtd-habit-template
+           (format "* Habits\n:PROPERTIES:\n:%s: %s\n:END:\n"
+                   org-gtd-prop-refile org-gtd-habit)))
+      (org-gtd-refile--do org-gtd-habit org-gtd-habit-template))))
 
 (defun org-gtd-upgrades--scheduled-item-p ()
   "Return t if item at point is SCHEDULED and not a habit."
