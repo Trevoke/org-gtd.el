@@ -43,21 +43,13 @@
 
 (defun org-gtd-delegate (&optional delegated-to checkin-date)
   "DWIM: organize the heading at point as a delegated item.
-
 DELEGATED-TO is the name of the person, CHECKIN-DATE the YYYY-MM-DD
-string, both optional for non-interactive use.  When invoked from
-within the clarify/WIP transient flow, keeps the
-`org-gtd-organize--call' wrapping so queue/source-cut/window-restore
-behavior is preserved.  Otherwise dispatches directly via
-`org-gtd--dispatch'."
+string, both optional for non-interactive use."
   (interactive)
   (let ((config (when (or delegated-to checkin-date)
                   `(,@(when delegated-to `((:who . ,delegated-to)))
                     ,@(when checkin-date `((:when . ,(format "<%s>" checkin-date))))))))
-    (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
-        (org-gtd-organize--call
-         (lambda () (org-gtd-process-heading (point-marker) 'delegated config)))
-      (org-gtd--dispatch 'delegated))))
+    (org-gtd--dispatch 'delegated config)))
 
 ;;;###autoload
 (define-obsolete-function-alias 'org-gtd-delegate-agenda-item

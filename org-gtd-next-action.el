@@ -48,16 +48,10 @@
 
 (defun org-gtd-next-action ()
   "DWIM: organize the heading at point as a next action.
-
-When invoked from within the clarify/WIP transient flow, keeps the
-`org-gtd-organize--call' wrapping so queue/source-cut/window-restore
-behavior is preserved.  Otherwise dispatches directly via
-`org-gtd--dispatch'."
+Dispatches via `org-gtd--dispatch', which handles agenda-buffer
+markers and the clarify/WIP flow."
   (interactive)
-  (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
-      (org-gtd-organize--call
-       (lambda () (org-gtd-process-heading (point-marker) 'next-action nil)))
-    (org-gtd--dispatch 'next-action)))
+  (org-gtd--dispatch 'next-action))
 
 ;;;; Functions
 

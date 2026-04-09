@@ -37,10 +37,7 @@
 (defun org-gtd-knowledge ()
   "DWIM: organize the heading at point as knowledge (reference)."
   (interactive)
-  (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
-      (org-gtd-organize--call
-       (lambda () (org-gtd-process-heading (point-marker) 'reference nil)))
-    (org-gtd--dispatch 'reference)))
+  (org-gtd--dispatch 'reference))
 
 ;;;; Footer
 

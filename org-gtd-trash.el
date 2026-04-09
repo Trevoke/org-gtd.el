@@ -36,10 +36,7 @@
 (defun org-gtd-trash ()
   "DWIM: mark the heading at point as trash and archive it."
   (interactive)
-  (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
-      (org-gtd-organize--call
-       (lambda () (org-gtd-process-heading (point-marker) 'trash nil)))
-    (org-gtd--dispatch 'trash)))
+  (org-gtd--dispatch 'trash))
 
 ;;;; Footer
 

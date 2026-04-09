@@ -50,16 +50,10 @@ When populated, user is prompted to select which list to review."
 
 (defun org-gtd-someday ()
   "DWIM: organize the heading at point as a someday/maybe item.
-
 Dispatches to the project-handler when on a project heading or
-project task; otherwise processes the plain heading.  Someday/maybe
-items are for things you might want to do eventually, but with no
-specific timeframe."
+project task; otherwise processes the plain heading."
   (interactive)
-  (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
-      (org-gtd-organize--call
-       (lambda () (org-gtd-process-heading (point-marker) 'someday nil)))
-    (org-gtd--dispatch 'someday)))
+  (org-gtd--dispatch 'someday))
 
 ;;;; Functions
 

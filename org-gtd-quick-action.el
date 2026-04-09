@@ -36,10 +36,7 @@
 (defun org-gtd-quick-action ()
   "DWIM: organize the heading at point as a quick action."
   (interactive)
-  (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
-      (org-gtd-organize--call
-       (lambda () (org-gtd-process-heading (point-marker) 'quick-action nil)))
-    (org-gtd--dispatch 'quick-action)))
+  (org-gtd--dispatch 'quick-action))
 
 ;;;; Footer
 

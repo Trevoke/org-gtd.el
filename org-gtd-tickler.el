@@ -47,10 +47,7 @@ an optional YYYY-MM-DD string for non-interactive use."
   (interactive)
   (let ((config (when reminder-date
                   `((:when . ,(format "<%s>" reminder-date))))))
-    (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
-        (org-gtd-organize--call
-         (lambda () (org-gtd-process-heading (point-marker) 'tickler config)))
-      (org-gtd--dispatch 'tickler config))))
+    (org-gtd--dispatch 'tickler config)))
 
 ;;;; Functions
 

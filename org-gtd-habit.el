@@ -37,19 +37,12 @@
 
 (defun org-gtd-habit (&optional repeater)
   "DWIM: organize the heading at point as a habit.
-
-REPEATER is an `org-mode'-style repeater string (e.g. \".+3d\") for
-non-interactive use.  When invoked from within the clarify/WIP
-transient flow, keeps the `org-gtd-organize--call' wrapping so
-queue/source-cut/window-restore behavior is preserved.  Otherwise
-dispatches directly via `org-gtd--dispatch'."
+REPEATER is an `org-mode'-style repeater string (e.g. \".+3d\")
+for non-interactive use."
   (interactive)
   (let ((config (when repeater
                   `((:when . ,(format "<%s %s>" (format-time-string "%F") repeater))))))
-    (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
-        (org-gtd-organize--call
-         (lambda () (org-gtd-process-heading (point-marker) 'habit config)))
-      (org-gtd--dispatch 'habit))))
+    (org-gtd--dispatch 'habit config)))
 
 ;;;; Functions
 

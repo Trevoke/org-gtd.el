@@ -37,19 +37,12 @@
 
 (defun org-gtd-calendar (&optional appointment-date)
   "DWIM: organize the heading at point as a calendar item.
-
-APPOINTMENT-DATE is an optional YYYY-MM-DD string for non-interactive use.
-When invoked from within the clarify/WIP transient flow, keeps the
-`org-gtd-organize--call' wrapping so queue/source-cut/window-restore
-behavior is preserved.  Otherwise dispatches directly via
-`org-gtd--dispatch'."
+APPOINTMENT-DATE is an optional YYYY-MM-DD string for non-interactive
+use."
   (interactive)
   (let ((config (when appointment-date
                   `((:when . ,(format "<%s>" appointment-date))))))
-    (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
-        (org-gtd-organize--call
-         (lambda () (org-gtd-process-heading (point-marker) 'calendar config)))
-      (org-gtd--dispatch 'calendar))))
+    (org-gtd--dispatch 'calendar config)))
 
 ;;;; Functions
 
