@@ -52,8 +52,9 @@
 
 (deftest someday-review/finds-all-someday-items ()
   "Finds all items with ORG_GTD: Someday."
-  (org-gtd-someday-create "Item one")
-  (org-gtd-someday-create "Item two")
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "Item one")
+    (org-gtd-someday-create "Item two"))
   (let ((items (org-gtd-someday-review--find-items nil)))
     (assert-equal 2 (length items))))
 
@@ -61,20 +62,22 @@
   "Filters items by ORG_GTD_SOMEDAY_LIST property."
   (let ((org-gtd-someday-lists '("Work" "Personal")))
     ;; Create items with different lists
-    (with-simulated-input "Work RET"
-      (org-gtd-someday-create "Work idea"))
-    (with-simulated-input "Personal RET"
-      (org-gtd-someday-create "Personal idea")))
+    (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+      (with-simulated-input "Work RET"
+        (org-gtd-someday-create "Work idea"))
+      (with-simulated-input "Personal RET"
+        (org-gtd-someday-create "Personal idea"))))
   (let ((work-items (org-gtd-someday-review--find-items "Work")))
     (assert-equal 1 (length work-items))))
 
 (deftest someday-review/finds-unassigned-items ()
   "Finds items without ORG_GTD_SOMEDAY_LIST when filtering for unassigned."
-  (let ((org-gtd-someday-lists nil))
-    (org-gtd-someday-create "Unassigned item"))
-  (let ((org-gtd-someday-lists '("Work")))
-    (with-simulated-input "Work RET"
-      (org-gtd-someday-create "Work item")))
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (let ((org-gtd-someday-lists nil))
+      (org-gtd-someday-create "Unassigned item"))
+    (let ((org-gtd-someday-lists '("Work")))
+      (with-simulated-input "Work RET"
+        (org-gtd-someday-create "Work item"))))
   (let ((unassigned (org-gtd-someday-review--find-items 'unassigned)))
     (assert-equal 1 (length unassigned))))
 
@@ -82,8 +85,9 @@
 
 (deftest someday-review/initializes-session-state ()
   "Initializes review session state with item queue."
-  (org-gtd-someday-create "Item one")
-  (org-gtd-someday-create "Item two")
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "Item one")
+    (org-gtd-someday-create "Item two"))
   (org-gtd-someday-review--start-session nil)
   (assert-true org-gtd-someday-review--session-active)
   (assert-equal 2 (length (plist-get org-gtd-someday-review--state :queue)))
@@ -93,7 +97,8 @@
 
 (deftest someday-review/tracks-statistics ()
   "Tracks review statistics (reviewed count, clarified count)."
-  (org-gtd-someday-create "Item one")
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "Item one"))
   (org-gtd-someday-review--start-session nil)
   (assert-equal 0 (plist-get org-gtd-someday-review--state :reviewed))
   (assert-equal 0 (plist-get org-gtd-someday-review--state :clarified))
@@ -104,7 +109,8 @@
 
 (deftest someday-review/creates-wip-buffer-with-review-mode ()
   "Creates WIP buffer with review mode active."
-  (org-gtd-someday-create "Review me")
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "Review me"))
   (org-gtd-someday-review--start-session nil)
   (org-gtd-someday-review--display-current-item)
   ;; Should use WIP buffer infrastructure
@@ -120,7 +126,8 @@
 
 (deftest someday-review/shows-keybindings-in-header-line ()
   "Shows available keybindings in header-line."
-  (org-gtd-someday-create "Review me")
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "Review me"))
   (org-gtd-someday-review--start-session nil)
   (org-gtd-someday-review--display-current-item)
   (let ((bufs (org-gtd-wip--get-buffers)))
@@ -159,7 +166,8 @@
 
 (deftest someday-review/defer-adds-logbook-entry ()
   "Defer command adds reviewed entry to item's LOGBOOK."
-  (org-gtd-someday-create "Defer me")
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "Defer me"))
   (org-gtd-someday-review--start-session nil)
   (let ((item-id (car (plist-get org-gtd-someday-review--state :queue))))
     (org-gtd-someday-review--display-current-item)
@@ -177,8 +185,9 @@
 
 (deftest someday-review/defer-advances-to-next-item ()
   "Defer command advances to the next item."
-  (org-gtd-someday-create "First item")
-  (org-gtd-someday-create "Second item")
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "First item")
+    (org-gtd-someday-create "Second item"))
   (org-gtd-someday-review--start-session nil)
   (org-gtd-someday-review--display-current-item)
   (org-gtd-someday-review-defer)
@@ -190,7 +199,8 @@
 
 (deftest someday-review/defer-ends-session-when-done ()
   "Defer ends session when last item is deferred."
-  (org-gtd-someday-create "Only item")
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "Only item"))
   (org-gtd-someday-review--start-session nil)
   (org-gtd-someday-review--display-current-item)
   (org-gtd-someday-review-defer)
@@ -200,7 +210,8 @@
 
 (deftest someday-review/clarify-increments-clarified-count ()
   "Clarify command increments the clarified count."
-  (org-gtd-someday-create "Clarify me")
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "Clarify me"))
   (org-gtd-someday-review--start-session nil)
   (org-gtd-someday-review--display-current-item)
   ;; Mock reactivate to avoid side effects
@@ -212,8 +223,9 @@
 
 (deftest someday-review/clarify-advances-to-next-item ()
   "Clarify command advances to the next item."
-  (org-gtd-someday-create "First item")
-  (org-gtd-someday-create "Second item")
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "First item")
+    (org-gtd-someday-create "Second item"))
   (org-gtd-someday-review--start-session nil)
   (org-gtd-someday-review--display-current-item)
   ;; Mock reactivate
@@ -229,7 +241,8 @@
 
 (deftest someday-review/quit-ends-session ()
   "Quit command ends the review session."
-  (org-gtd-someday-create "Item")
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "Item"))
   (org-gtd-someday-review--start-session nil)
   (org-gtd-someday-review--display-current-item)
   (org-gtd-someday-review-quit)
@@ -237,7 +250,8 @@
 
 (deftest someday-review/quit-cleans-up-wip-buffer ()
   "Quit command cleans up the WIP buffer."
-  (org-gtd-someday-create "Item")
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "Item"))
   (org-gtd-someday-review--start-session nil)
   (org-gtd-someday-review--display-current-item)
   (let ((wip-bufs-before (length (org-gtd-wip--get-buffers))))
@@ -250,7 +264,8 @@
 
 (deftest someday-review/entry-point-starts-session ()
   "org-gtd-reflect-someday-review starts a review session."
-  (org-gtd-someday-create "Item")
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "Item"))
   (org-gtd-reflect-someday-review)
   (assert-true org-gtd-someday-review--session-active)
   ;; Should create a WIP buffer
@@ -267,8 +282,9 @@
 (deftest someday-review/entry-point-accepts-list-argument ()
   "Entry point accepts optional list argument to skip prompt."
   (let ((org-gtd-someday-lists '("Work" "Personal")))
-    (with-simulated-input "Work RET"
-      (org-gtd-someday-create "Work item"))
+    (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+      (with-simulated-input "Work RET"
+        (org-gtd-someday-create "Work item")))
     (org-gtd-reflect-someday-review "Work")
     (assert-equal "Work" (plist-get org-gtd-someday-review--state :list-name)))
   ;; Cleanup

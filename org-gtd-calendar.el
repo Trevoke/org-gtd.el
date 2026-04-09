@@ -31,6 +31,7 @@
 (require 'org-gtd-clarify)
 (require 'org-gtd-configure)
 (require 'org-gtd-organize-core)
+(require 'org-gtd-create)
 
 ;;;; Commands
 
@@ -55,19 +56,17 @@ behavior is preserved.  Otherwise dispatches directly via
 ;;;;; Public
 
 (defun org-gtd-calendar-create (topic appointment-date)
-  "Automatically create a calendar task in the GTD flow.
+  "Automatically create a calendar item in the GTD flow.
 
-Takes TOPIC as the string from which to make the heading to add to `org-gtd' and
-APPOINTMENT-DATE as a YYYY-MM-DD string."
-  (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd")
-        (config `((:when . ,(format "<%s>" appointment-date)))))
-    (with-current-buffer buffer
-      (org-mode)
-      (insert (format "* %s" topic))
-      (goto-char (point-min))
-      (org-gtd-process-heading (point-marker) 'calendar config))
-    (kill-buffer buffer)))
+TOPIC is the string you want to see in the agenda view.
+APPOINTMENT-DATE is the YYYY-MM-DD string of the event.
+
+Obsolete: use `org-gtd-create-item' instead.
+
+\(fn TOPIC APPOINTMENT-DATE)"
+  (declare (obsolete org-gtd-create-item "4.1.0"))
+  (org-gtd-create-item 'calendar topic
+                       `((:when . ,(format "<%s>" appointment-date)))))
 
 ;;;; Footer
 

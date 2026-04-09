@@ -38,7 +38,10 @@ TYPE is a symbol naming a registered org-gtd type (for example
 `habit', `reference', `quick-action', or `trash').  TOPIC is the
 heading text.  CONFIG is an optional alist forwarded to the type's
 `:organize-fn' for non-interactive use (e.g. `((:when . \"<2026-05-01>\")
-(:who . \"Alice\"))')."
+(:who . \"Alice\"))').
+
+Signals `user-error' if TYPE is not a registered type in
+`org-gtd-types'."
   (unless (org-gtd-type-get type)
     (user-error "Unknown org-gtd type: %s" type))
   (let ((buffer (generate-new-buffer "*org-gtd-create*"))

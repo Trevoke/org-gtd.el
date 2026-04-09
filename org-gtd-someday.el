@@ -34,6 +34,7 @@
 (require 'org-gtd-configure)
 (require 'org-gtd-reactivate)
 (require 'org-gtd-organize-core)
+(require 'org-gtd-create)
 
 ;;;; Customization
 
@@ -67,15 +68,11 @@ specific timeframe."
 (defun org-gtd-someday-create (topic)
   "Automatically create a someday/maybe item in the GTD flow.
 
-TOPIC is the string you want to see when reviewing someday/maybe items."
-  (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd"))
-    (with-current-buffer buffer
-      (org-mode)
-      (insert (format "* %s" topic))
-      (goto-char (point-min))
-      (org-gtd-process-heading (point-marker) 'someday nil))
-    (kill-buffer buffer)))
+TOPIC is the string you want to see when reviewing someday/maybe items.
+
+Obsolete: use `org-gtd-create-item' instead."
+  (declare (obsolete org-gtd-create-item "4.1.0"))
+  (org-gtd-create-item 'someday topic nil))
 
 ;;;;; Private
 

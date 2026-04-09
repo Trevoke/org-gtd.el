@@ -56,7 +56,8 @@
 
 (deftest someday/has-no-timestamp-properties ()
   "Someday items have no timestamp properties (no ORG_GTD_TIMESTAMP, SCHEDULED, or DEADLINE)."
-  (org-gtd-someday-create "Build a treehouse")
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "Build a treehouse"))
   (with-current-buffer (org-gtd--default-file)
     (goto-char (point-min))
     (search-forward "Build a treehouse")
@@ -66,7 +67,8 @@
 
 (deftest someday/refiled-to-heading-with-someday-refile-property ()
   "Someday items are refiled to a heading with ORG_GTD_REFILE: Someday property."
-  (org-gtd-someday-create "Visit Japan")
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "Visit Japan"))
   (with-current-buffer (org-gtd--default-file)
     (goto-char (point-min))
     (search-forward "Visit Japan")

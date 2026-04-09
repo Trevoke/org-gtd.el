@@ -52,9 +52,13 @@
 
 (deftest create-item/rejects-unknown-type ()
   "Creating an item with an unregistered type symbol signals a
-clean user-error."
-  (assert-raises 'user-error
-                 (org-gtd-create-item 'bogus-type "x")))
+clean user-error mentioning the bad symbol."
+  (condition-case err
+      (progn
+        (org-gtd-create-item 'bogus-type "x")
+        (assert-true nil))  ; only reached if no error — force fail
+    (user-error
+     (assert-true (string-match-p "bogus-type" (error-message-string err))))))
 
 (provide 'create-item-test)
 

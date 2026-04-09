@@ -388,7 +388,8 @@
 (deftest single-action-programmatic-create ()
   "Verifies single action appears in daily agenda after programmatic creation."
   ;; Use the programmatic API instead of capture → organize flow
-  (org-gtd-single-action-create "Write this test")
+  (with-suppressed-warnings ((obsolete org-gtd-single-action-create))
+    (org-gtd-single-action-create "Write this test"))
 
   ;; Verify it shows in engage view
   (org-gtd-engage)
@@ -397,8 +398,9 @@
 (deftest calendar-item-programmatic-create ()
   "Verifies calendar item appears in daily agenda after programmatic creation."
   ;; Use the programmatic API with today's date
-  (org-gtd-calendar-create "Dentist appointment"
-                           (format-time-string "%Y-%m-%d"))
+  (with-suppressed-warnings ((obsolete org-gtd-calendar-create))
+    (org-gtd-calendar-create "Dentist appointment"
+                             (format-time-string "%Y-%m-%d")))
 
   ;; Verify it shows in engage view
   (org-gtd-engage)
@@ -407,8 +409,9 @@
 (deftest tickler-item-programmatic-create ()
   "Verifies tickler item appears in daily agenda when review date arrives."
   ;; Use the programmatic API with today's date (so it shows immediately)
-  (org-gtd-tickler-create "Review insurance policy"
-                          (format-time-string "%Y-%m-%d"))
+  (with-suppressed-warnings ((obsolete org-gtd-tickler-create))
+    (org-gtd-tickler-create "Review insurance policy"
+                            (format-time-string "%Y-%m-%d")))
 
   ;; Verify it shows in engage view (today is the review date)
   (org-gtd-engage)
@@ -417,9 +420,10 @@
 (deftest delegate-item-programmatic-create ()
   "Verifies delegated item appears in daily agenda with WAIT state."
   ;; Use the programmatic API with delegatee and check-in date
-  (org-gtd-delegate-create "Talk to university"
-                           "Favorite student"
-                           (format-time-string "%Y-%m-%d"))
+  (with-suppressed-warnings ((obsolete org-gtd-delegate-create))
+    (org-gtd-delegate-create "Talk to university"
+                             "Favorite student"
+                             (format-time-string "%Y-%m-%d")))
 
   ;; Verify it shows in engage view
   (org-gtd-engage)
@@ -428,8 +432,9 @@
 (deftest habit-item-programmatic-create ()
   "Verifies habit item appears in daily agenda with recurring schedule."
   ;; Use the programmatic API with recurring schedule
-  (org-gtd-habit-create "Morning exercise"
-                        ".+1d")
+  (with-suppressed-warnings ((obsolete org-gtd-habit-create))
+    (org-gtd-habit-create "Morning exercise"
+                          ".+1d"))
 
   ;; Verify it shows in engage view
   (org-gtd-engage)
@@ -438,7 +443,8 @@
 (deftest someday-item-programmatic-create ()
   "Verifies someday/maybe item has correct ORG_GTD property."
   ;; Use the programmatic API
-  (org-gtd-someday-create "Learn Spanish")
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "Learn Spanish"))
 
   ;; Verify the item was created with correct ORG_GTD property
   (with-current-buffer (org-gtd--default-file)

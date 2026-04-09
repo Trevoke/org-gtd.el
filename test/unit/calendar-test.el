@@ -69,7 +69,8 @@
       (assert-equal "Actions" (task-property (current-task) "ORG_GTD"))
 
       ;; Test that a calendar item created programmatically is clean
-      (org-gtd-calendar-create topic date)
+      (with-suppressed-warnings ((obsolete org-gtd-calendar-create))
+        (org-gtd-calendar-create topic date))
 
       ;; Verify that a properly created calendar item appears in agenda
       (org-gtd-engage)

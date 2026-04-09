@@ -36,6 +36,7 @@
 (require 'org-gtd-refile)
 (require 'org-gtd-configure)
 (require 'org-gtd-organize-core)
+(require 'org-gtd-create)
 
 ;;;; Variables
 
@@ -65,15 +66,11 @@ behavior is preserved.  Otherwise dispatches directly via
 (defun org-gtd-next-action-create (topic)
   "Automatically create a next action in the GTD flow.
 
-TOPIC is what you want to see in the agenda view."
-  (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd"))
-    (with-current-buffer buffer
-      (org-mode)
-      (insert (format "* %s" topic))
-      (goto-char (point-min))
-      (org-gtd-process-heading (point-marker) 'next-action nil))
-    (kill-buffer buffer)))
+TOPIC is what you want to see in the agenda view.
+
+Obsolete: use `org-gtd-create-item' instead."
+  (declare (obsolete org-gtd-create-item "4.1.0"))
+  (org-gtd-create-item 'next-action topic nil))
 
 ;;;;; Private
 
@@ -112,8 +109,9 @@ the item's properties accordingly."
 
 (define-obsolete-function-alias 'org-gtd-single-action
   'org-gtd-next-action "4.1.0")
-(define-obsolete-function-alias 'org-gtd-single-action-create
-  'org-gtd-next-action-create "4.1.0")
+(with-suppressed-warnings ((obsolete org-gtd-next-action-create))
+  (define-obsolete-function-alias 'org-gtd-single-action-create
+    'org-gtd-next-action-create "4.1.0"))
 (define-obsolete-function-alias 'org-gtd-single-action--maybe-convert-to-delegated
   'org-gtd-next-action--maybe-convert-to-delegated "4.1.0")
 (define-obsolete-function-alias 'org-gtd-single-action--convert-to-delegated

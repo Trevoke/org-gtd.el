@@ -32,6 +32,7 @@
 (require 'org-gtd-configure)
 (require 'org-gtd-reactivate)
 (require 'org-gtd-organize-core)
+(require 'org-gtd-create)
 
 (declare-function org-gtd-project-incubate "org-gtd-projects")
 
@@ -59,16 +60,14 @@ an optional YYYY-MM-DD string for non-interactive use."
   "Automatically create a tickler task in the GTD flow.
 
 TOPIC is the string you want to see in the `org-agenda' view.
-REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again."
-  (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd")
-        (config `((:when . ,(format "<%s>" reminder-date)))))
-    (with-current-buffer buffer
-      (org-mode)
-      (insert (format "* %s" topic))
-      (goto-char (point-min))
-      (org-gtd-process-heading (point-marker) 'tickler config))
-    (kill-buffer buffer)))
+REMINDER-DATE is the YYYY-MM-DD string for when you want this to come up again.
+
+Obsolete: use `org-gtd-create-item' instead.
+
+\(fn TOPIC REMINDER-DATE)"
+  (declare (obsolete org-gtd-create-item "4.1.0"))
+  (org-gtd-create-item 'tickler topic
+                       `((:when . ,(format "<%s>" reminder-date)))))
 
 ;;;;; Private
 
@@ -103,8 +102,9 @@ review date.  Otherwise the user is prompted."
   #'org-gtd-tickler "4.0")
 
 ;;;###autoload
-(define-obsolete-function-alias 'org-gtd-incubate-create
-  #'org-gtd-tickler-create "4.0")
+(with-suppressed-warnings ((obsolete org-gtd-tickler-create))
+  (define-obsolete-function-alias 'org-gtd-incubate-create
+    #'org-gtd-tickler-create "4.0"))
 
 ;;;; Footer
 

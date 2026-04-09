@@ -31,6 +31,7 @@
 (require 'org-gtd-refile)
 (require 'org-gtd-configure)
 (require 'org-gtd-organize-core)
+(require 'org-gtd-create)
 
 ;;;; Commands
 
@@ -59,16 +60,16 @@ dispatches directly via `org-gtd--dispatch'."
 
 TOPIC is the string you want to see in the `org-agenda' view.
 REPEATER is `org-mode'-style repeater string (.e.g \".+3d\") which will
-determine how often you'll be reminded of this habit."
-  (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd")
-        (config `((:when . ,(format "<%s %s>" (format-time-string "%F") repeater)))))
-    (with-current-buffer buffer
-      (org-mode)
-      (insert (format "* %s" topic))
-      (goto-char (point-min))
-      (org-gtd-process-heading (point-marker) 'habit config))
-    (kill-buffer buffer)))
+determine how often you'll be reminded of this habit.
+
+Obsolete: use `org-gtd-create-item' instead.
+
+\(fn TOPIC REPEATER)"
+  (declare (obsolete org-gtd-create-item "4.1.0"))
+  (org-gtd-create-item 'habit topic
+                       `((:when . ,(format "<%s %s>"
+                                           (format-time-string "%F")
+                                           repeater)))))
 
 ;;;; Footer
 

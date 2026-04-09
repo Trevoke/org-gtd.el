@@ -35,6 +35,7 @@
 (require 'org-gtd-refile)
 (require 'org-gtd-configure)
 (require 'org-gtd-organize-core)
+(require 'org-gtd-create)
 
 ;;;; Customization
 
@@ -72,20 +73,18 @@ behavior is preserved.  Otherwise dispatches directly via
 (defun org-gtd-delegate-create (topic delegated-to checkin-date)
   "Automatically create a delegated task in the GTD flow.
 
-TOPIC is the string you want to see in the agenda when this comes up.
+TOPIC is what you want to see in the agenda when this comes up.
 DELEGATED-TO is the name of the person to whom this was delegated.
 CHECKIN-DATE is the YYYY-MM-DD string of when you want `org-gtd' to remind
-you."
-  (let ((buffer (generate-new-buffer "Org GTD programmatic temp buffer"))
-        (org-id-overriding-file-name "org-gtd")
-        (config `((:who . ,delegated-to)
-                  (:when . ,(format "<%s>" checkin-date)))))
-    (with-current-buffer buffer
-      (org-mode)
-      (insert (format "* %s" topic))
-      (goto-char (point-min))
-      (org-gtd-process-heading (point-marker) 'delegated config))
-    (kill-buffer buffer)))
+you.
+
+Obsolete: use `org-gtd-create-item' instead.
+
+\(fn TOPIC DELEGATED-TO CHECKIN-DATE)"
+  (declare (obsolete org-gtd-create-item "4.1.0"))
+  (org-gtd-create-item 'delegated topic
+                       `((:who  . ,delegated-to)
+                         (:when . ,(format "<%s>" checkin-date)))))
 
 ;;;;; Private
 
