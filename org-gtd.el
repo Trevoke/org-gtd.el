@@ -77,6 +77,7 @@
 (require 'org-gtd-agenda-property)
 (require 'org-gtd-organize)
 (require 'org-gtd-process)
+(require 'org-gtd-create)
 (require 'org-gtd-mode)
 (require 'org-gtd-reflect)
 (require 'org-gtd-someday-review)
