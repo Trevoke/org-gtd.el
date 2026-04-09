@@ -50,6 +50,12 @@
     (assert-equal "Delegated" (org-entry-get nil "ORG_GTD" t))
     (assert-equal "Alice" (org-entry-get nil "DELEGATED_TO" t))))
 
+(deftest create-item/rejects-unknown-type ()
+  "Creating an item with an unregistered type symbol signals a
+clean user-error."
+  (assert-raises 'user-error
+                 (org-gtd-create-item 'bogus-type "x")))
+
 (provide 'create-item-test)
 
 ;;; create-item-test.el ends here

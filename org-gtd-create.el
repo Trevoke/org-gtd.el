@@ -39,6 +39,8 @@ TYPE is a symbol naming a registered org-gtd type (for example
 heading text.  CONFIG is an optional alist forwarded to the type's
 `:organize-fn' for non-interactive use (e.g. `((:when . \"<2026-05-01>\")
 (:who . \"Alice\"))')."
+  (unless (org-gtd-type-get type)
+    (user-error "Unknown org-gtd type: %s" type))
   (let ((buffer (generate-new-buffer "*org-gtd-create*"))
         (org-id-overriding-file-name "org-gtd"))
     (unwind-protect
