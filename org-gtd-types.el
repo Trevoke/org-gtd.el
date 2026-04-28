@@ -252,44 +252,6 @@ by semantic name, and :hooks merge per stage (builtin first)."
     ;; :org-gtd is never overridden — copy-sequence preserved the builtin.
     (cons type-name out)))
 
-;;;; Registration
-
-;;;###autoload
-(defun org-gtd-define-type (name &rest plist)
-  "Register or replace GTD type NAME with PLIST.
-
-PLIST is a property list of type fields.  Supported keys:
-
-  :org-gtd           String value of the ORG_GTD property (required for
-                     a newly-defined type).
-  :state             Semantic TODO state (:next, :wait, :done, :canceled,
-                     or nil).
-  :properties        List of semantic property descriptors.  See
-                     `org-gtd-types' for shape.
-  :organize-fn       Function that configures the heading as this type.
-                     Defaults to `org-gtd-configure-as-type'.
-  :disposition       How items of this type leave the clarify flow:
-                     `list', `done-and-archive', `cancel-and-archive',
-                     `externalize'.  Defaults to `list'.
-  :supports          List of capability flags (e.g. `reactivate',
-                     `project-handler').
-  :project-fn        Function called when the command fires on a
-                     project heading (requires `project-handler' in
-                     :supports).
-  :prompt-to-refile  Whether refile should prompt for a destination.
-  :transient-key     Key binding to expose this type in the organize
-                     transient menu.
-  :hooks             Plist of per-stage local hook lists (:before-clarify,
-                     :after-clarify, :before-organize, :after-organize,
-                     :before-file, :after-file).
-
-Returns NAME."
-  (let ((existing (assq name org-gtd-types)))
-    (if existing
-        (setcdr existing plist)
-      (push (cons name plist) org-gtd-types)))
-  name)
-
 ;;;###autoload
 (defun org-gtd-customize-type (name-or-names &rest plist)
   "Merge PLIST into the type definition(s) named by NAME-OR-NAMES.

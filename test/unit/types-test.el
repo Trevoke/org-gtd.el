@@ -363,43 +363,6 @@
          (merged  (org-gtd--merge-type-definitions builtin user)))
     (assert-equal "T1" (plist-get (cdr merged) :org-gtd))))
 
-;;; org-gtd-define-type
-
-(deftest define-type-registers-new-type ()
-  "org-gtd-define-type adds a new entry to org-gtd-types."
-  (let ((org-gtd-types (copy-tree org-gtd-types)))
-    (org-gtd-define-type 'watching
-      :org-gtd "Watching"
-      :state :wait
-      :properties '((:when :org-property "ORG_GTD_TIMESTAMP"
-                           :type repeating-timestamp :required t
-                           :prompt "Check back on: "))
-      :disposition 'list
-      :supports '(reactivate))
-    (assert-equal "Watching" (org-gtd-type-org-gtd-value 'watching))
-    (assert-same :wait (org-gtd-type-state 'watching))
-    (assert-same 'list (org-gtd-type-disposition 'watching))
-    (assert-true (org-gtd-type-supports-p 'watching 'reactivate))))
-
-(deftest define-type-replaces-existing-entry ()
-  "Calling org-gtd-define-type on an existing type replaces its plist."
-  (let ((org-gtd-types (copy-tree org-gtd-types)))
-    (org-gtd-define-type 'next-action
-      :org-gtd "Actions"
-      :state :next
-      :properties nil
-      :disposition 'done-and-archive)
-    (assert-same 'done-and-archive (org-gtd-type-disposition 'next-action))))
-
-(deftest define-type-returns-the-type-name ()
-  "org-gtd-define-type returns the type name symbol."
-  (let ((org-gtd-types (copy-tree org-gtd-types)))
-    (assert-same 'watching
-                 (org-gtd-define-type 'watching
-                   :org-gtd "Watching"
-                   :state nil
-                   :properties nil))))
-
 ;;; org-gtd-customize-type
 
 (deftest customize-type-single-merges-scalar ()

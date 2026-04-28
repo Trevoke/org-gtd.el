@@ -9,10 +9,11 @@ org-gtd provides public API functions for building custom functionality.
 
 The built-in GTD types (next-action, calendar, delegated, tickler, someday,
 habit, reference, trash, quick-action, project) are entries in the
-~org-gtd-types~ registry.  Each entry can declare wiring fields that drive
-a unified dispatch pipeline: ~:organize-fn~, ~:disposition~, ~:supports~,
+~org-gtd-types~ registry.  Each entry declares wiring fields that drive
+the unified dispatch pipeline: ~:organize-fn~, ~:disposition~, ~:supports~,
 ~:project-fn~, ~:prompt-to-refile~, ~:transient-key~, ~:refile-target~,
-and ~:hooks~.  Two public entry points let you customize the registry.
+and ~:hooks~.  Use ~org-gtd-customize-type~ to override fields on a
+built-in type — you cannot register new top-level types.
 
 *** ~org-gtd-customize-type~
 
@@ -30,26 +31,6 @@ types this way — only customize existing ones.
                         '((:who :org-property "DELEGATED_TO" :type text
                                 :required t :prompt "Delegate to"
                                 :input-fn my/ebdb-completing-read)))
-#+end_src
-
-*** ~org-gtd-define-type~
-
-Register an entirely new type.  Give it a symbol name, an ~:org-gtd~
-property value (stored on headings as ~ORG_GTD~), and any wiring fields
-it needs.  The type becomes available everywhere the registry is
-consulted: hooks, filters, disposition runner, and (for types with
-~:transient-key~) the transient menu.
-
-#+begin_src emacs-lisp
-;; A "Watching" type for things you want to passively follow:
-(org-gtd-define-type 'watching
-  :org-gtd "Watching"
-  :disposition list
-  :refile-target "Watching"
-  :transient-key "w"
-  :prompt-to-refile t
-  :state nil
-  :properties nil)
 #+end_src
 
 *** Hook stages
