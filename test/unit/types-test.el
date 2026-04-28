@@ -280,7 +280,7 @@
     (assert-nil (org-gtd-type-organize-fn 'bogus))
     (assert-nil (org-gtd-type-disposition 'bogus))
     (assert-nil (org-gtd-type-supports 'bogus))
-    (assert-nil (org-gtd-type-supports-p 'bogus 'reactivate))
+    (assert-nil (org-gtd-type-supports-p 'bogus 'mock-flag))
     (assert-nil (org-gtd-type-project-fn 'bogus))
     (assert-nil (org-gtd-type-prompt-to-refile 'bogus))
     (assert-nil (org-gtd-type-transient-key 'bogus))
@@ -301,8 +301,8 @@
   "org-gtd-type-supports-p returns t/nil for flag membership."
   (let ((org-gtd-types
          '((fake :org-gtd "Fake" :state nil :properties nil
-                 :supports (reactivate project-handler)))))
-    (assert-true (org-gtd-type-supports-p 'fake 'reactivate))
+                 :supports (mock-flag project-handler)))))
+    (assert-true (org-gtd-type-supports-p 'fake 'mock-flag))
     (assert-true (org-gtd-type-supports-p 'fake 'project-handler))
     (assert-nil (org-gtd-type-supports-p 'fake 'nonsense))))
 
@@ -311,7 +311,7 @@
   (let* ((builtin '(t1 :org-gtd "T1" :state nil :properties nil
                        :organize-fn my/fn
                        :disposition done-and-archive
-                       :supports (reactivate)
+                       :supports (mock-flag)
                        :project-fn my/proj
                        :prompt-to-refile t
                        :transient-key "c"))
@@ -320,7 +320,7 @@
          (plist   (cdr merged)))
     (assert-same 'my/fn (plist-get plist :organize-fn))
     (assert-same 'done-and-archive (plist-get plist :disposition))
-    (assert-equal '(reactivate) (plist-get plist :supports))
+    (assert-equal '(mock-flag) (plist-get plist :supports))
     (assert-same 'my/proj (plist-get plist :project-fn))
     (assert-same t (plist-get plist :prompt-to-refile))
     (assert-equal "c" (plist-get plist :transient-key))))
@@ -339,11 +339,11 @@
 (deftest merge-supports-list-appends ()
   "User :supports values append to builtin values (builtin first)."
   (let* ((builtin '(t1 :org-gtd "T1" :state nil :properties nil
-                       :supports (reactivate)))
+                       :supports (mock-flag)))
          (user    '(t1 :supports (project-handler)))
          (merged  (org-gtd--merge-type-definitions builtin user))
          (plist   (cdr merged)))
-    (assert-equal '(reactivate project-handler) (plist-get plist :supports))))
+    (assert-equal '(mock-flag project-handler) (plist-get plist :supports))))
 
 (deftest merge-hooks-per-stage-append ()
   "Local hooks append per stage; stages not touched by user are preserved."
@@ -389,8 +389,8 @@
 (deftest customize-type-supports-appends ()
   "customize-type appends to :supports rather than replacing."
   (let ((org-gtd-types (copy-tree org-gtd-types)))
-    (org-gtd-customize-type 'calendar :supports '(reactivate))
-    (assert-true (org-gtd-type-supports-p 'calendar 'reactivate))))
+    (org-gtd-customize-type 'calendar :supports '(mock-flag))
+    (assert-true (org-gtd-type-supports-p 'calendar 'mock-flag))))
 
 (deftest customize-type-unknown-type-errors ()
   "Customizing an unregistered type signals an error."
