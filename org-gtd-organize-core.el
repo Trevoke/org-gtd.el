@@ -42,7 +42,6 @@
 (declare-function org-gtd-project--get-marker-at-point "org-gtd-projects")
 
 (defvar org-gtd--organize-type)
-(defvar org-gtd-clarify--clarify-id)
 
 ;;;; Customization
 
@@ -99,8 +98,7 @@ Uses `org-gtd-clarify--source-heading-marker' to find the original location."
                        (current-kill 0)))
         ;; Capture marker value while still in WIP buffer
         (source-marker org-gtd-clarify--source-heading-marker))
-    (when (and (boundp 'org-gtd-clarify--source-heading-marker)
-               source-marker
+    (when (and source-marker
                (markerp source-marker)
                (marker-buffer source-marker))
       (with-current-buffer (marker-buffer source-marker)
@@ -133,8 +131,7 @@ This handles the internal bits of `org-gtd'."
         (setq org-gtd-clarify--duplicate-queue nil)
         ;; Only cut original if we refiled (not updated in place)
         (unless skip-refile
-          (when (and (boundp 'org-gtd-clarify--source-heading-marker)
-                     org-gtd-clarify--source-heading-marker
+          (when (and org-gtd-clarify--source-heading-marker
                      (markerp org-gtd-clarify--source-heading-marker))
             (let ((buffer (marker-buffer org-gtd-clarify--source-heading-marker))
                   (position (marker-position org-gtd-clarify--source-heading-marker)))
@@ -224,8 +221,7 @@ Both archive dispositions fire `org-after-todo-state-change-hook'
 at the moment they set the state, which is between the
 `:before-file' and `:after-file' pipeline hooks.  User listeners
 on that hook should be tolerant of that firing position."
-  (if (and (boundp 'org-gtd-clarify--skip-refile)
-           org-gtd-clarify--skip-refile)
+  (if org-gtd-clarify--skip-refile
       (org-gtd-organize--update-in-place)
     (let ((disp (org-gtd-type-disposition type)))
       (cond
@@ -239,10 +235,6 @@ on that hook should be tolerant of that firing position."
         (org-todo (org-gtd-keywords--canceled))
         (org-gtd-archive-item-at-point))
        ((eq disp 'externalize)
-        ;; Reserved for future types that want to externalize to a
-        ;; non-org backend (e.g., GitHub issues, Linear).  No built-in
-        ;; type uses this yet; remove the branch if it doesn't find a
-        ;; user before the next major release.
         (error "Disposition `externalize' is reserved but not implemented (type %s)" type))
        (t
         (error "Unknown disposition %s for type %s" disp type))))))
@@ -325,11 +317,11 @@ is an alist forwarded to `org-gtd-process-heading' or
                              (point) "ORG_GTD_PROJECT_IDS"))
                (is-project-heading (string= org-gtd-value "Projects"))
                (is-project-task (> (length project-ids) 0))
-               (supports-project (and (org-gtd-type-organize-project-fn type) t)))
+               (project-fn (org-gtd-type-organize-project-fn type)))
           (cond
-           ((and is-project-heading supports-project)
+           ((and is-project-heading project-fn)
             (org-gtd-process-project (point-marker) type config))
-           ((and is-project-task supports-project)
+           ((and is-project-task project-fn)
             (require 'org-gtd-projects)
             (unless (fboundp 'org-gtd-project--get-marker-at-point)
               (error "org-gtd-project--get-marker-at-point unavailable"))
