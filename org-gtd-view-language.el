@@ -766,7 +766,12 @@ Returns nil if valid, signals user-error if invalid."
 (defun org-gtd-view-lang--build-skip-function (gtd-view-spec)
   "Build a skip function from GTD-VIEW-SPEC.
 Returns a function suitable for `org-agenda-skip-function'.
-The function composes predicates from the view spec filters."
+The function composes predicates from the view spec filters.
+
+Callers must pass a GTD-VIEW-SPEC whose `type' cell has already
+been normalized via `org-gtd-view-lang--normalize-type-key'.  The
+single normalization point is `org-gtd-view-show'; other call
+sites must normalize before calling this function."
   ;; Validate filter keys
   (let ((unknown-keys (cl-set-difference
                        (mapcar #'car gtd-view-spec)
