@@ -279,7 +279,7 @@
   (let ((org-gtd-types '((known :org-gtd "K" :state nil :properties nil))))
     (assert-nil (org-gtd-type-organize-fn 'bogus))
     (assert-nil (org-gtd-type-disposition 'bogus))
-    (assert-nil (org-gtd-type-project-fn 'bogus))
+    (assert-nil (org-gtd-type-organize-project-fn 'bogus))
     (assert-nil (org-gtd-type-prompt-to-refile 'bogus))
     (assert-nil (org-gtd-type-transient-key 'bogus))
     (assert-nil (org-gtd-type-hooks 'bogus))))
@@ -289,7 +289,7 @@
   (let ((org-gtd-types '((fake :org-gtd "Fake" :state nil :properties nil))))
     (assert-same #'org-gtd-configure-as-type (org-gtd-type-organize-fn 'fake))
     (assert-same 'list (org-gtd-type-disposition 'fake))
-    (assert-nil (org-gtd-type-project-fn 'fake))
+    (assert-nil (org-gtd-type-organize-project-fn 'fake))
     (assert-nil (org-gtd-type-prompt-to-refile 'fake))
     (assert-nil (org-gtd-type-transient-key 'fake))
     (assert-nil (org-gtd-type-hooks 'fake))))
@@ -299,7 +299,7 @@
   (let* ((builtin '(t1 :org-gtd "T1" :state nil :properties nil
                        :organize-fn my/fn
                        :disposition done-and-archive
-                       :project-fn my/proj
+                       :organize-project-fn my/proj
                        :prompt-to-refile t
                        :transient-key "c"))
          (user    '(t1 :properties nil))
@@ -307,7 +307,7 @@
          (plist   (cdr merged)))
     (assert-same 'my/fn (plist-get plist :organize-fn))
     (assert-same 'done-and-archive (plist-get plist :disposition))
-    (assert-same 'my/proj (plist-get plist :project-fn))
+    (assert-same 'my/proj (plist-get plist :organize-project-fn))
     (assert-same t (plist-get plist :prompt-to-refile))
     (assert-equal "c" (plist-get plist :transient-key))))
 

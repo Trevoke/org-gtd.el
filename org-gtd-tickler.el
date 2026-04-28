@@ -41,9 +41,10 @@
 (defun org-gtd-tickler (&optional reminder-date)
   "DWIM: tickler the heading at point.
 
-Dispatches to project-handler when on a project heading or project
-task; otherwise processes as a plain tickler item.  REMINDER-DATE is
-an optional YYYY-MM-DD string for non-interactive use."
+Dispatches to the project organize-fn when on a project heading or
+project task; otherwise processes as a plain tickler item.
+REMINDER-DATE is an optional YYYY-MM-DD string for non-interactive
+use."
   (interactive)
   (let ((config (when reminder-date
                   `((:when . ,(format "<%s>" reminder-date))))))
@@ -76,7 +77,7 @@ the TODO keyword since tickler items are not actionable."
   (org-gtd-configure-as-type type config)
   (org-todo ""))
 
-(defun org-gtd-tickler--project-handler (pom config)
+(defun org-gtd-tickler--organize-project (pom config)
   "Tickler the project at POM.
 CONFIG is an alist; when it contains a :when entry its value (a
 timestamp string like \"<2026-05-01>\") is parsed to a YYYY-MM-DD

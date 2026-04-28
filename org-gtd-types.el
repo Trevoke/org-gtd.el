@@ -67,7 +67,7 @@
      :transient-key "i"
      :prompt-to-refile t
      :organize-fn org-gtd-tickler--organize
-     :project-fn org-gtd-tickler--project-handler
+     :organize-project-fn org-gtd-tickler--organize-project
      :state nil
      :properties
      ((:when :org-property "ORG_GTD_TIMESTAMP" :type timestamp :required t
@@ -79,7 +79,7 @@
      :transient-key "y"
      :prompt-to-refile t
      :organize-fn org-gtd-someday--organize
-     :project-fn org-gtd-someday--project-handler
+     :organize-project-fn org-gtd-someday--organize-project
      :state nil
      :properties nil)
 
@@ -140,10 +140,10 @@ Each type is a cons of (TYPE-NAME . PLIST).  Recognized PLIST keys:
                     to :org-gtd when absent.
 - :organize-fn      Function called to configure the heading as this
                     type.  Defaults to `org-gtd-configure-as-type'.
-- :project-fn       Function called when the dispatch lands on a
-                    project heading.  When set, the type is
-                    project-capable; absence means project-level
-                    routing is not supported.
+- :organize-project-fn  Function called when the dispatch lands on a
+                        project heading.  When set, the type is
+                        project-capable; absence means project-level
+                        routing is not supported.
 - :hooks            Plist of per-stage local hooks (:before-clarify,
                     :after-clarify, :before-organize, :after-organize,
                     :before-file, :after-file).")
@@ -204,7 +204,7 @@ User properties with same semantic name replace builtin ones."
       result)))
 
 (defconst org-gtd--type-scalar-fields
-  '(:state :organize-fn :disposition :project-fn :prompt-to-refile
+  '(:state :organize-fn :disposition :organize-project-fn :prompt-to-refile
     :transient-key)
   "Type-plist keys where a user value replaces the builtin value.
 Note: :org-gtd is intentionally excluded and can never be overridden.")
@@ -264,7 +264,7 @@ When it is a list, PLIST is applied to each named type using the
 same merge rules.
 
 Merge rules (see `org-gtd--merge-type-definitions'):
-- Scalar fields (:state, :organize-fn, :disposition, :project-fn,
+- Scalar fields (:state, :organize-fn, :disposition, :organize-project-fn,
   :prompt-to-refile, :transient-key) replace the existing value.
 - :properties merge by semantic name.
 - :hooks merge per stage -- each stage's function list appends.
@@ -341,10 +341,10 @@ Returns nil if TYPE-NAME is not a registered type."
     (or (plist-get (cdr type-def) :disposition)
         'list)))
 
-(defun org-gtd-type-project-fn (type-name)
-  "Return the :project-fn declared on TYPE-NAME, or nil."
+(defun org-gtd-type-organize-project-fn (type-name)
+  "Return the :organize-project-fn declared on TYPE-NAME, or nil."
   (when-let ((type-def (org-gtd-type-get type-name)))
-    (plist-get (cdr type-def) :project-fn)))
+    (plist-get (cdr type-def) :organize-project-fn)))
 
 (defun org-gtd-type-prompt-to-refile (type-name)
   "Return the :prompt-to-refile flag for TYPE-NAME, or nil."

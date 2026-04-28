@@ -50,7 +50,7 @@ When populated, user is prompted to select which list to review."
 
 (defun org-gtd-someday ()
   "DWIM: organize the heading at point as a someday/maybe item.
-Dispatches to the project-handler when on a project heading or
+Dispatches to the project organize-fn when on a project heading or
 project task; otherwise processes the plain heading."
   (interactive)
   (org-gtd--dispatch 'someday))
@@ -85,7 +85,7 @@ keyword, and removes any timestamp properties."
   (org-entry-delete (point) "SCHEDULED")
   (org-entry-delete (point) "DEADLINE"))
 
-(defun org-gtd-someday--project-handler (pom _config)
+(defun org-gtd-someday--organize-project (pom _config)
   "Move project at POM to someday/maybe."
   (require 'org-gtd-projects)
   (org-gtd-project-someday pom))

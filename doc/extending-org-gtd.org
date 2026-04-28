@@ -11,7 +11,7 @@ The built-in GTD types (next-action, calendar, delegated, tickler, someday,
 habit, reference, trash, quick-action, project) are entries in the
 ~org-gtd-types~ registry.  Each entry declares wiring fields that drive
 the unified dispatch pipeline: ~:organize-fn~, ~:disposition~,
-~:project-fn~, ~:prompt-to-refile~, ~:transient-key~, ~:refile-target~,
+~:organize-project-fn~, ~:prompt-to-refile~, ~:transient-key~, ~:refile-target~,
 and ~:hooks~.  Use ~org-gtd-customize-type~ to override fields on a
 built-in type — you cannot register new top-level types.
 

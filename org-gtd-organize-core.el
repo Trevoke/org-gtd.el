@@ -278,13 +278,13 @@ Pipeline, executed with point at POM:
     (org-gtd-hooks-run :after-file type pom)))
 
 (defun org-gtd-process-project (pom type &optional config)
-  "Reclassify the project at POM as TYPE using the type's :project-fn.
+  "Reclassify the project at POM as TYPE using the type's :organize-project-fn.
 
 POM is a point or marker identifying a project heading or a task that
-belongs to a project.  TYPE must supply a `:project-fn', which is
-called with POM and CONFIG.  Signals a `user-error' if TYPE does not
-declare a `:project-fn' (i.e. cannot handle projects)."
-  (let ((fn (org-gtd-type-project-fn type)))
+belongs to a project.  TYPE must supply an `:organize-project-fn', which
+is called with POM and CONFIG.  Signals a `user-error' if TYPE does not
+declare an `:organize-project-fn' (i.e. cannot handle projects)."
+  (let ((fn (org-gtd-type-organize-project-fn type)))
     (unless fn
       (user-error "Type %s does not support project-level handling" type))
     (funcall fn pom config)))
@@ -304,13 +304,13 @@ compatibility) or falls back to point-marker.  CONFIG, when non-nil,
 is an alist forwarded to `org-gtd-process-heading' or
 `org-gtd-process-project'.  At the resolved marker, routes to:
 
-- `org-gtd-process-project' when ORG_GTD=Projects and TYPE declares a
-  `:project-fn'.
+- `org-gtd-process-project' when ORG_GTD=Projects and TYPE declares an
+  `:organize-project-fn'.
 - `org-gtd-process-project' with a user-selected project marker when
   the heading is a task belonging to at least one project and TYPE
-  declares a `:project-fn'.
+  declares an `:organize-project-fn'.
 - `org-gtd-process-heading' otherwise (plain headings, and project
-  tasks when TYPE has no `:project-fn')."
+  tasks when TYPE has no `:organize-project-fn')."
   (if org-gtd-clarify--clarify-id
       (org-gtd-organize--call
        (lambda () (org-gtd-process-heading (point-marker) type config)))
@@ -325,7 +325,7 @@ is an alist forwarded to `org-gtd-process-heading' or
                              (point) "ORG_GTD_PROJECT_IDS"))
                (is-project-heading (string= org-gtd-value "Projects"))
                (is-project-task (> (length project-ids) 0))
-               (supports-project (and (org-gtd-type-project-fn type) t)))
+               (supports-project (and (org-gtd-type-organize-project-fn type) t)))
           (cond
            ((and is-project-heading supports-project)
             (org-gtd-process-project (point-marker) type config))

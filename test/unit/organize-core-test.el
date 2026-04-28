@@ -185,15 +185,15 @@ for every type, between :organize-fn and :after-organize."
       (org-gtd--clear-foreign-properties 'to-type)
       (assert-equal "a-val" (org-entry-get (point) "PROP_A")))))
 
-(deftest process-project-calls-project-fn-with-pom ()
-  "process-project invokes the type's :project-fn with POM."
+(deftest process-project-calls-organize-project-fn-with-pom ()
+  "process-project invokes the type's :organize-project-fn with POM."
   (let* ((received-pom nil)
          (received-config nil)
          (org-gtd-types
           `((fake :org-gtd "Fake" :state nil :properties nil
-                  :project-fn ,(lambda (pom config)
-                                 (setq received-pom pom)
-                                 (setq received-config config))))))
+                  :organize-project-fn ,(lambda (pom config)
+                                          (setq received-pom pom)
+                                          (setq received-config config))))))
     (with-temp-buffer
       (org-mode)
       (insert "* Project\n")
@@ -203,8 +203,8 @@ for every type, between :organize-fn and :after-organize."
         (assert-same m received-pom)
         (assert-equal '((:when . "2026-05-01")) received-config)))))
 
-(deftest process-project-without-project-fn-raises-user-error ()
-  "Types without a :project-fn raise user-error from process-project."
+(deftest process-project-without-organize-project-fn-raises-user-error ()
+  "Types without an :organize-project-fn raise user-error from process-project."
   (let ((org-gtd-types
          '((fake :org-gtd "Fake" :state nil :properties nil))))
     (with-temp-buffer
@@ -238,7 +238,7 @@ for every type, between :organize-fn and :after-organize."
         (project-called nil)
         (org-gtd-types
          `((fake :org-gtd "Fake" :state nil :properties nil
-                 :project-fn ,(lambda (&rest _) nil)))))
+                 :organize-project-fn ,(lambda (&rest _) nil)))))
     (cl-letf (((symbol-function 'org-gtd-process-heading)
                (lambda (&rest _) (setq heading-called t)))
               ((symbol-function 'org-gtd-process-project)
@@ -258,7 +258,7 @@ for every type, between :organize-fn and :after-organize."
         (project-marker (point-marker))
         (org-gtd-types
          `((fake :org-gtd "Fake" :state nil :properties nil
-                 :project-fn ,(lambda (&rest _) nil)))))
+                 :organize-project-fn ,(lambda (&rest _) nil)))))
     (cl-letf (((symbol-function 'org-gtd-project--get-marker-at-point)
                (lambda (&optional _prompt) project-marker))
               ((symbol-function 'org-gtd-process-project)
@@ -274,7 +274,7 @@ for every type, between :organize-fn and :after-organize."
 
 (deftest dispatch-project-task-without-project-handler-calls-process-heading ()
   "A task with ORG_GTD_PROJECT_IDS still reclassifies as a single heading
-when the type does not declare a :project-fn."
+when the type does not declare an :organize-project-fn."
   (let ((heading-called nil)
         (project-called nil)
         (org-gtd-types
