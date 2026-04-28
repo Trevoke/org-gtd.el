@@ -123,10 +123,35 @@
      :state :done
      :properties nil))
   "GTD type definitions.
-Each type is a cons of (TYPE-NAME . PLIST) where PLIST contains:
-- :org-gtd - The ORG_GTD property value for this type
-- :state - The semantic TODO state (:next, :wait, :done, :canceled, or nil)
-- :properties - List of semantic property definitions")
+Each type is a cons of (TYPE-NAME . PLIST).  Recognized PLIST keys:
+
+- :org-gtd          The ORG_GTD property value (string).  Stored on
+                    headings and used as the default refile-target
+                    heading.  Never user-overridable.
+- :state            Semantic TODO state: :next, :wait, :done, :canceled,
+                    or nil.
+- :properties       List of semantic property descriptors that the
+                    clarify flow prompts for.
+- :disposition      How items leave the clarify flow: `list',
+                    `done-and-archive', `cancel-and-archive', or
+                    `externalize'.  Defaults to `list'.
+- :transient-key    Key string that exposes this type in the
+                    `org-gtd-organize' transient menu.
+- :prompt-to-refile Whether refile should prompt for a destination.
+- :refile-target    Heading string this type refiles into.  Falls back
+                    to :org-gtd when absent.
+- :organize-fn      Function called to configure the heading as this
+                    type.  Defaults to `org-gtd-configure-as-type'.
+- :supports         List of capability flags.  Currently only
+                    `project-handler' is recognized; it pairs with
+                    :project-fn so the type can reclassify a whole
+                    project, not just a heading.
+- :project-fn       Function called when the dispatch lands on a
+                    project heading.  Requires `project-handler' in
+                    :supports.
+- :hooks            Plist of per-stage local hooks (:before-clarify,
+                    :after-clarify, :before-organize, :after-organize,
+                    :before-file, :after-file).")
 
 (defcustom org-gtd-user-types '()
   "User customizations for built-in GTD types.
