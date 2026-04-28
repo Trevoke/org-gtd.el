@@ -214,17 +214,6 @@ for every type, between :organize-fn and :after-organize."
       (assert-raises 'user-error
         (org-gtd-process-project (point-marker) 'fake)))))
 
-(deftest process-project-errors-when-project-fn-missing ()
-  "A type without :project-fn raises user-error from process-project."
-  (let ((org-gtd-types
-         '((fake :org-gtd "Fake" :state nil :properties nil))))
-    (with-temp-buffer
-      (org-mode)
-      (insert "* Project\n")
-      (goto-char (point-min))
-      (assert-raises 'user-error
-        (org-gtd-process-project (point-marker) 'fake)))))
-
 (deftest dispatch-plain-heading-calls-process-heading ()
   "A heading with no ORG_GTD and no project ids dispatches to process-heading."
   (let ((heading-called nil)
