@@ -55,43 +55,6 @@ for every type, between :organize-fn and :after-organize."
         (org-gtd-process-heading (point-marker) 'fake)))
     (assert-equal '(org-fn apply-hook after-organize) (reverse log))))
 
-(deftest process-heading-respects-reactivate-support ()
-  "process-heading calls org-gtd-save-state when the type declares
-:supports reactivate."
-  (let ((save-state-called nil)
-        (org-gtd-organize-hooks nil))
-    (cl-letf (((symbol-function 'org-gtd-save-state)
-               (lambda () (setq save-state-called t)))
-              ((symbol-function 'org-gtd-refile--do) (lambda (&rest _) nil)))
-      (let ((org-gtd-types
-             '((fake :org-gtd "Fake" :state nil :properties nil
-                     :organize-fn ignore
-                     :supports (reactivate)))))
-        (with-temp-buffer
-          (org-mode)
-          (insert "* Thing\n")
-          (goto-char (point-min))
-          (org-gtd-process-heading (point-marker) 'fake))
-        (assert-true save-state-called)))))
-
-(deftest process-heading-skips-save-state-without-reactivate ()
-  "process-heading does not call org-gtd-save-state when reactivate
-is not declared."
-  (let ((save-state-called nil)
-        (org-gtd-organize-hooks nil))
-    (cl-letf (((symbol-function 'org-gtd-save-state)
-               (lambda () (setq save-state-called t)))
-              ((symbol-function 'org-gtd-refile--do) (lambda (&rest _) nil)))
-      (let ((org-gtd-types
-             '((fake :org-gtd "Fake" :state nil :properties nil
-                     :organize-fn ignore))))
-        (with-temp-buffer
-          (org-mode)
-          (insert "* Thing\n")
-          (goto-char (point-min))
-          (org-gtd-process-heading (point-marker) 'fake))
-        (assert-nil save-state-called)))))
-
 (deftest run-disposition-list-calls-refile ()
   "Disposition 'list dispatches to org-gtd-refile--do."
   (let ((called-with nil)

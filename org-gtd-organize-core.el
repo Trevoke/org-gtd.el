@@ -255,21 +255,17 @@ forwarded to the type's :organize-fn for non-interactive invocation.
 
 Pipeline, executed with point at POM:
 
-  1. If TYPE declares :supports reactivate, call `org-gtd-save-state'.
-  2. Clear properties belonging to the previously-active type
+  1. Clear properties belonging to the previously-active type
      (`org-gtd--clear-foreign-properties').
-  3. Run :before-organize hooks (global then local).
-  4. Call the type's :organize-fn with TYPE and CONFIG.
-  5. Apply the user's classic `org-gtd-organize-hooks' (tags/effort/etc.)
+  2. Run :before-organize hooks (global then local).
+  3. Call the type's :organize-fn with TYPE and CONFIG.
+  4. Apply the user's classic `org-gtd-organize-hooks' (tags/effort/etc.)
      via `org-gtd-organize-apply-hooks'.  Runs for every type.
-  6. Run :after-organize hooks.
-  7. Run :before-file hooks.
-  8. Run the type's disposition (`org-gtd--run-disposition').
-  9. Run :after-file hooks."
+  5. Run :after-organize hooks.
+  6. Run :before-file hooks.
+  7. Run the type's disposition (`org-gtd--run-disposition').
+  8. Run :after-file hooks."
   (org-with-point-at pom
-    (when (org-gtd-type-supports-p type 'reactivate)
-      (when (fboundp 'org-gtd-save-state)
-        (org-gtd-save-state)))
     (org-gtd--clear-foreign-properties type)
     (org-gtd-hooks-run :before-organize type pom)
     (funcall (org-gtd-type-organize-fn type) type config)
