@@ -42,6 +42,7 @@
 (declare-function org-gtd-project--get-marker-at-point "org-gtd-projects")
 
 (defvar org-gtd--organize-type)
+(defvar org-gtd-clarify--clarify-id)
 
 ;;;; Customization
 
@@ -313,7 +314,7 @@ is an alist forwarded to `org-gtd-process-heading' or
   supports project-handler.
 - `org-gtd-process-heading' otherwise (plain headings, and project
   tasks when TYPE does not declare project-handler support)."
-  (if (and (boundp 'org-gtd-clarify--clarify-id) org-gtd-clarify--clarify-id)
+  (if org-gtd-clarify--clarify-id
       (org-gtd-organize--call
        (lambda () (org-gtd-process-heading (point-marker) type config)))
     ;; `org-gtd-projects' requires `org-gtd-organize-core', so we cannot
