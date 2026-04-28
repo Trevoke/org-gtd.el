@@ -66,7 +66,6 @@
      :disposition list
      :transient-key "i"
      :prompt-to-refile t
-     :supports (project-handler)
      :organize-fn org-gtd-tickler--organize
      :project-fn org-gtd-tickler--project-handler
      :state nil
@@ -79,7 +78,6 @@
      :disposition list
      :transient-key "y"
      :prompt-to-refile t
-     :supports (project-handler)
      :organize-fn org-gtd-someday--organize
      :project-fn org-gtd-someday--project-handler
      :state nil
@@ -142,13 +140,10 @@ Each type is a cons of (TYPE-NAME . PLIST).  Recognized PLIST keys:
                     to :org-gtd when absent.
 - :organize-fn      Function called to configure the heading as this
                     type.  Defaults to `org-gtd-configure-as-type'.
-- :supports         List of capability flags.  Currently only
-                    `project-handler' is recognized; it pairs with
-                    :project-fn so the type can reclassify a whole
-                    project, not just a heading.
 - :project-fn       Function called when the dispatch lands on a
-                    project heading.  Requires `project-handler' in
-                    :supports.
+                    project heading.  When set, the type is
+                    project-capable; absence means project-level
+                    routing is not supported.
 - :hooks            Plist of per-stage local hooks (:before-clarify,
                     :after-clarify, :before-organize, :after-organize,
                     :before-file, :after-file).")
@@ -214,10 +209,6 @@ User properties with same semantic name replace builtin ones."
   "Type-plist keys where a user value replaces the builtin value.
 Note: :org-gtd is intentionally excluded and can never be overridden.")
 
-(defconst org-gtd--type-list-append-fields
-  '(:supports)
-  "Type-plist keys where user values are appended to builtin values.")
-
 (defun org-gtd--merge-hooks (builtin-hooks user-hooks)
   "Merge two :hooks plists by appending per-stage function lists.
 BUILTIN-HOOKS functions come first, USER-HOOKS functions appended."
@@ -235,8 +226,8 @@ BUILTIN-HOOKS functions come first, USER-HOOKS functions appended."
 (defun org-gtd--merge-type-definitions (builtin user)
   "Merge USER type definition into BUILTIN.
 :org-gtd is never overridden from user config.  Scalar wiring fields
-replace, list-append fields append (builtin first), :properties merge
-by semantic name, and :hooks merge per stage (builtin first)."
+replace, :properties merge by semantic name, and :hooks merge per stage
+(builtin first)."
   (let* ((type-name (car builtin))
          (builtin-plist (cdr builtin))
          (user-plist (cdr user))
@@ -247,12 +238,6 @@ by semantic name, and :hooks merge per stage (builtin first)."
     (dolist (k org-gtd--type-scalar-fields)
       (when (plist-member user-plist k)
         (setq out (plist-put out k (plist-get user-plist k)))))
-    ;; List-append fields.
-    (dolist (k org-gtd--type-list-append-fields)
-      (when (plist-member user-plist k)
-        (setq out (plist-put out k
-                             (append (plist-get builtin-plist k)
-                                     (plist-get user-plist k))))))
     ;; Properties: merge by semantic name (existing helper).
     (when (plist-member user-plist :properties)
       (setq out (plist-put out :properties
@@ -281,7 +266,6 @@ same merge rules.
 Merge rules (see `org-gtd--merge-type-definitions'):
 - Scalar fields (:state, :organize-fn, :disposition, :project-fn,
   :prompt-to-refile, :transient-key) replace the existing value.
-- :supports appends to the existing list.
 - :properties merge by semantic name.
 - :hooks merge per stage -- each stage's function list appends.
 - :org-gtd is never changed.
@@ -356,16 +340,6 @@ Returns nil if TYPE-NAME is not a registered type."
   (when-let ((type-def (org-gtd-type-get type-name)))
     (or (plist-get (cdr type-def) :disposition)
         'list)))
-
-(defun org-gtd-type-supports (type-name)
-  "Return the :supports list declared on TYPE-NAME.
-Returns nil if TYPE-NAME is not a registered type."
-  (when-let ((type-def (org-gtd-type-get type-name)))
-    (plist-get (cdr type-def) :supports)))
-
-(defun org-gtd-type-supports-p (type-name flag)
-  "Return non-nil if TYPE-NAME declares FLAG in :supports."
-  (and (memq flag (org-gtd-type-supports type-name)) t))
 
 (defun org-gtd-type-project-fn (type-name)
   "Return the :project-fn declared on TYPE-NAME, or nil."
