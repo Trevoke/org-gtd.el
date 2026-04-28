@@ -1,0 +1,155 @@
+* Quick start: from blank inbox to your first NEXT action
+:PROPERTIES:
+:CUSTOM_ID: quick-start
+:END:
+
+In this tutorial, we will capture a real task into org-gtd, file it as a
+next action, and watch it appear on our daily engage view --- the
+complete capture-clarify-organize-engage loop, in about five minutes.
+
+By the end, you'll have one tangible thing waiting for you on your
+agenda: =Buy milk on the way home=.
+
+** Before we start
+
+We assume:
+
+- Emacs is running.
+- org-gtd is already installed and loaded. (If it isn't, follow
+  [[#install-and-configure][How to install and configure org-gtd]] first, then come back.)
+- Your inbox is currently empty. (Brand-new install is the easy case.
+  If you've used org-gtd before, the steps still work --- you'll just
+  see your existing items too.)
+
+We won't type any keybindings; we'll call commands by name with =M-x= so
+this works no matter how your config is set up.
+
+** Step 1: capture an item
+
+Type:
+
+#+begin_example
+M-x org-gtd-capture RET
+#+end_example
+
+A small capture buffer opens. The cursor is sitting on a line that
+starts with a single =*= (an org headline). Type:
+
+#+begin_example
+Buy milk on the way home
+#+end_example
+
+Save and close the capture buffer:
+
+#+begin_example
+C-c C-c
+#+end_example
+
+You should see the capture window close and a brief message in the
+echo area. The text we typed is now sitting in our inbox file (default
+=~/gtd/inbox.org=). We don't need to look at the file --- we'll see the
+item again in a moment.
+
+** Step 2: open the inbox to clarify it
+
+Type:
+
+#+begin_example
+M-x org-gtd-process-inbox RET
+#+end_example
+
+A new buffer opens, showing the heading =Buy milk on the way home=.
+This is the *clarify* step. The buffer is in =org-gtd-clarify-mode= ---
+a special editing mode where we polish the wording until it's a clear,
+actionable item.
+
+Our wording is already clear, so we don't need to change anything.
+(Ordinarily this is where we'd rephrase vague captures like "Mom" into
+something like "Call Mom about Sunday lunch".)
+
+** Step 3: organize it as a next action
+
+While still in the clarify buffer, type:
+
+#+begin_example
+M-x org-gtd-organize RET
+#+end_example
+
+A transient menu pops up at the bottom of the screen, grouped under
+*Actionable* and *Non-actionable* headings. We can see entries like
+=Quick action=, =Next action=, =Delegate=, =Calendar=, =Habit=,
+=Project (multi-step)=, =Tickler=, =Someday/Maybe=, =Knowledge to be
+stored=, and =Trash=.
+
+We want this to show up on our agenda whenever we have a chance, so
+press:
+
+#+begin_example
+s
+#+end_example
+
+That's the key for *Next action*.
+
+** Step 4: accept the default refile
+
+org-gtd now asks where to file the item. The minibuffer prompt shows a
+default location (your tasks file). We'll accept it:
+
+#+begin_example
+RET
+#+end_example
+
+The clarify buffer closes. The echo area confirms the move. Behind the
+scenes, org-gtd has:
+
+- Set the heading's TODO state to =NEXT=.
+- Filed it under your tasks file.
+- Removed it from the inbox.
+
+If you had captured several items, =org-gtd-process-inbox= would now
+loop to the next one. With just one captured item, processing is done.
+
+** Step 5: see it on the engage view
+
+Time to confirm our task is ready to act on. Type:
+
+#+begin_example
+M-x org-gtd-engage RET
+#+end_example
+
+An agenda buffer opens. Under the *NEXT* section, you should see:
+
+#+begin_example
+NEXT Buy milk on the way home
+#+end_example
+
+That's it. We have a real, actionable item, in the right state, on the
+right view, ready to do.
+
+** What we just did
+
+In five steps we moved one thought through the GTD pipeline:
+
+1. *Capture* --- got it out of our head into the inbox.
+2. *Clarify* --- looked at it in a focused buffer.
+3. *Organize* --- told org-gtd what kind of thing it is.
+4. *Refile* --- let org-gtd put it in the right file.
+5. *Engage* --- saw it on the list of things we can do.
+
+If we wanted to dig into /why/ org-gtd splits the loop this way ---
+why clarify is separate from organize, why next actions live on a
+different file from someday/maybe items --- see
+[[#about-the-pipeline][About the pipeline]] and [[#about-gtd][About GTD]].
+
+** What's next
+
+- Ready for something with multiple steps? Continue to
+  [[#your-first-project][Your first project]] --- we'll capture a
+  multi-step project and watch org-gtd advance the next action
+  automatically as we tick tasks off.
+- To set up keybindings, capture templates, or tweak file locations,
+  see the [[#how-to-guides][How-to guides]] --- in particular
+  [[#install-and-configure][Install and configure]] and
+  [[#capture-and-process][Capture and process]].
+- For a lookup of every command we used here, see [[#commands][the
+  command reference]].

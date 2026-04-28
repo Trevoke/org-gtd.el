@@ -1,0 +1,148 @@
+* About the pipeline
+:PROPERTIES:
+:CUSTOM_ID: about-the-pipeline
+:END:
+
+When you classify a heading as a next action, a calendar item, a
+delegated task, or anything else, the same code path runs. That path
+is what this document calls the *pipeline*: a fixed sequence in
+~org-gtd-process-heading~ that wraps per-type behavior in six
+observation slots. It is the package's central extensibility surface,
+and its shape was chosen deliberately.
+
+** The shape
+
+The body of ~org-gtd-process-heading~ runs, in order:
+
+1. Clear properties belonging to the previously-active type.
+2. Run ~:before-organize~ hooks.
+3. Call the type's ~:organize-fn~.
+4. Apply ~org-gtd-organize-hooks~ (tags, effort, priority...).
+5. Run ~:after-organize~ hooks.
+6. Run ~:before-file~ hooks.
+7. Run the disposition (~org-gtd--run-disposition~).
+8. Run ~:after-file~ hooks.
+
+Two more hook stages, ~:before-clarify~ and ~:after-clarify~, fire on
+either side of the clarify/WIP buffer flow that precedes organize. So
+the user-visible structure is six observation slots arranged around
+three actions:
+
+#+begin_example
+   :before-clarify   →   CLARIFY   →   :after-clarify
+   :before-organize  →   ORGANIZE  →   :after-organize
+   :before-file      →   FILE      →   :after-file
+#+end_example
+
+Every stage supports two kinds of listener:
+
+- *Global hooks* --- functions on
+  ~org-gtd-before-organize-hook~, ~org-gtd-after-file-hook~, and the
+  four siblings. These run for /every/ type. Global hooks are right
+  for cross-cutting concerns ("log every classification to a file,"
+  "send a desktop notification on any inbox processing").
+
+- *Per-type local hooks* --- declared on the type itself via the
+  ~:hooks~ plist. These run only when items of that type are
+  processed. Local hooks are right for type-specific integrations
+  ("when an item becomes knowledge, push it to org-roam").
+
+Both fire from the same dispatcher, ~org-gtd-hooks-run~, which calls
+global listeners first and per-type listeners second.
+
+** Why six stages
+
+Six is the number of /observable transition points/ that have ever
+mattered to a real user. Clarify, organize, and file are three real
+actions; before/after each is six. Going finer --- inserting stages
+between "set the property" and "set the timestamp" inside organize
+--- would expose the dispatcher's internals as part of its contract,
+which is brittle. Going coarser --- a single "around" hook --- would
+make it impossible to express "do X /before/ refile but /after/ the
+type's organize-fn runs," which is exactly where the org-roam
+archiving use case lives.
+
+The strongest signal that six was the right number came from a
+long-running issue (#109) about archiving knowledge items into
+org-roam instead of the standard org archive. The user did not need
+a new disposition, a new type, or a core patch --- they needed a
+*seam* between organize-fn finishing and the archive happening. That
+seam is exactly ~:before-file~. One feature request, taken
+seriously, produces precisely this set of stages.
+
+** Hooks observe; they do not gate
+
+The pipeline's contract is one-directional: hooks see what happens,
+they do not change what happens. ~org-gtd-hooks-run~ ignores hook
+return values and catches errors so that a buggy hook cannot break
+classification:
+
+#+begin_quote
+Hooks observe; they cannot gate the pipeline. Errors are caught and
+logged so a buggy hook cannot break organization. ---
+~org-gtd-hooks-run~ docstring
+#+end_quote
+
+That is a stronger guarantee than ~run-hooks~ provides. A hook can read the heading, log, notify, dispatch external
+integrations, or update its own state. A hook cannot return ~nil~ to
+abort organize, throw an error to abort organize, or move the
+pipeline to a different stage --- the dispatcher ignores return
+values and catches errors.
+
+If you need to change /what/ org-gtd does for a type, the slot you
+want is ~:organize-fn~ or ~:organize-project-fn~ on the type entry,
+not a hook. Those slots, discussed in
+[[#about-the-type-system][About the type system]], /replace/ pipeline
+behavior. Hooks observe around it. That separation is what keeps the
+pipeline predictable in the presence of arbitrary user code.
+
+** The disposition contract
+
+Step 7, "run the disposition," is where the heading actually leaves
+the clarify flow. ~org-gtd--run-disposition~ branches on the type's
+~:disposition~ field:
+
+- ~list~ --- refile to the type's ~:refile-target~.
+- ~done-and-archive~ --- set TODO state to the done keyword, then
+  archive.
+- ~cancel-and-archive~ --- set TODO state to the canceled keyword,
+  then archive.
+
+The state-setting on the two archive dispositions is a deliberate
+contract:
+
+#+begin_quote
+This is a deliberate contract: the disposition name declares the
+end-state, regardless of the type's =:state= field. ---
+=CHANGELOG.org=, "Disposition runner now sets TODO state before
+archiving"
+#+end_quote
+
+~done-and-archive~ /means/ "this ends in DONE." If a type declares
+~:state :wait~ but ~:disposition done-and-archive~, the disposition
+wins. The disposition name is a stronger statement than the type's
+nominal state.
+
+One user-visible side effect: calling ~org-todo~ to set the closing
+state fires ~org-after-todo-state-change-hook~ between
+~:before-file~ and ~:after-file~. With ~org-log-done~ enabled, you
+may see closing notes appear on archived items that previously went
+straight to archive without a state change. That is intentional ---
+silently archiving without a state transition produced ambiguous data
+--- but it is worth knowing about when reasoning about hook ordering.
+
+** Summary
+
+The pipeline is a fixed sequence of three actions, six observation
+points, and a disposition that honors its name. Per-type behavior
+plugs in at two clearly separated layers: *replace* via the
+function-pointer slots on the type entry, *observe* via hooks. Keep
+those two distinct and the rest of the package's extensibility falls
+out of the design naturally.
+
+** Further reading
+
+- Tutorial --- try it: [[#your-first-project][Your first project]]
+- How-to --- apply it: [[#write-a-hook][How to write a hook]]
+- Reference --- look it up: [[#hooks][Hooks reference]]
+- Sibling explanations: [[#about-gtd][About GTD]], [[#about-the-type-system][About the type system]]

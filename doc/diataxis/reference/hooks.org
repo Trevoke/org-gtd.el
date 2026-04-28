@@ -1,0 +1,155 @@
+* Hooks
+:PROPERTIES:
+:CUSTOM_ID: hooks
+:END:
+
+org-gtd exposes a six-stage pipeline that runs every time a heading is
+organized. Each stage has a global hook variable plus an optional
+per-type local hook list declared via =:hooks= on a type entry. Hooks
+are observe-only — they cannot abort the pipeline. Errors raised by a
+hook are caught and logged through =message=; subsequent hooks still
+run.
+
+** Pipeline stages
+:PROPERTIES:
+:CUSTOM_ID: hooks-stages
+:END:
+
+~org-gtd-process-heading~ executes the following sequence with point
+positioned at the heading:
+
+1. Clear properties belonging to the previously-active type
+   (=org-gtd--clear-foreign-properties=).
+2. Run =:before-organize= hooks (global then local).
+3. Call the type's =:organize-fn= as =(FN TYPE CONFIG)=.
+4. Apply ~org-gtd-organize-hooks~ via
+   ~org-gtd-organize-apply-hooks~ (the classic tag/effort hook list).
+5. Run =:after-organize= hooks.
+6. Run =:before-file= hooks.
+7. Run the type's disposition (=org-gtd--run-disposition=). For =list=
+   this means refile; for =done-and-archive= and =cancel-and-archive=
+   the heading's TODO state is set and the subtree archived.
+8. Run =:after-file= hooks.
+
+The =:before-clarify= and =:after-clarify= stages are exposed as
+global hook variables and as keys on the per-type =:hooks= plist; they
+fire from the clarify entry/exit code path (see ~org-gtd-clarify-item~
+and ~org-gtd-organize--call~) rather than from
+~org-gtd-process-heading~ directly.
+
+| Stage              | Fires                                                   | Pipeline body slot                              |
+|--------------------+---------------------------------------------------------+-------------------------------------------------|
+| =:before-clarify=  | Just before the clarify buffer opens.                    | Clarify path (~org-gtd-clarify-item~).           |
+| =:after-clarify=   | After the clarify buffer is committed.                   | Clarify path (~org-gtd-organize--call~).         |
+| =:before-organize= | Step 2 above.                                            | ~org-gtd-process-heading~.                       |
+| =:after-organize=  | Step 5 above.                                            | ~org-gtd-process-heading~.                       |
+| =:before-file=     | Step 6 above; immediately before refile/archive.         | ~org-gtd-process-heading~.                       |
+| =:after-file=      | Step 8 above; after refile/archive completes.            | ~org-gtd-process-heading~.                       |
+
+The two archive dispositions (=done-and-archive=, =cancel-and-archive=)
+fire =org-after-todo-state-change-hook= as part of step 7 — between
+=:before-file= and =:after-file=. Listeners on that org-mode hook must
+be tolerant of this firing point.
+
+** Hook contract
+:PROPERTIES:
+:CUSTOM_ID: hooks-contract
+:END:
+
+- Each hook function is called with one argument, =POM= — the
+  point-or-marker of the heading being organized.
+- Return values are ignored.
+- Hooks observe; they cannot gate the pipeline.
+- Errors are caught and logged through =message=. The pipeline
+  continues on the next hook.
+- Hooks may inspect the heading at =POM= and add/modify org
+  properties, log to external systems, etc. Mutating the heading's
+  TODO state or =ORG_GTD= property is permitted but may interfere
+  with the disposition step.
+
+The =CONFIG= alist passed to the type's =:organize-fn= is not exposed
+to hooks. Hooks that need to coordinate with non-interactive callers
+should read properties already set on the heading.
+
+** Global hook variables
+:PROPERTIES:
+:CUSTOM_ID: hooks-globals
+:END:
+
+Defined in =org-gtd-hooks.el=. Each is a plain =defvar= (not a
+=defcustom=); add functions with =add-hook=.
+
+| Variable                          | Stage              |
+|-----------------------------------+--------------------|
+| =org-gtd-before-clarify-hook=     | =:before-clarify=  |
+| =org-gtd-after-clarify-hook=      | =:after-clarify=   |
+| =org-gtd-before-organize-hook=    | =:before-organize= |
+| =org-gtd-after-organize-hook=     | =:after-organize=  |
+| =org-gtd-before-file-hook=        | =:before-file=     |
+| =org-gtd-after-file-hook=         | =:after-file=      |
+
+Example:
+
+#+begin_src emacs-lisp
+(add-hook 'org-gtd-after-file-hook
+          (lambda (pom)
+            (org-with-point-at pom
+              (org-entry-put nil "MY_AUDIT" (current-time-string)))))
+#+end_src
+
+** Per-type local hooks
+:PROPERTIES:
+:CUSTOM_ID: hooks-local
+:END:
+
+A type entry may declare a =:hooks= plist mapping each stage to a list
+of functions. Local hooks fire after the corresponding global hooks.
+
+#+begin_src emacs-lisp
+(org-gtd-customize-type
+ 'delegated
+ :hooks
+ (list :after-organize (list #'my/notify-delegate-pinged)
+       :after-file     (list #'my/log-delegated-write)))
+#+end_src
+
+User-supplied =:hooks= are appended to any built-in =:hooks= during
+the merge performed by ~org-gtd--merge-type-definitions~ — built-in
+hooks run first, user hooks second. Setting =:hooks= via
+=org-gtd-user-types= follows the same merge rules.
+
+~org-gtd-type-hooks~ returns the merged plist for a type, or =nil=.
+
+** Dispatcher
+:PROPERTIES:
+:CUSTOM_ID: hooks-dispatcher
+:END:
+
+#+begin_src emacs-lisp
+(org-gtd-hooks-run STAGE TYPE POM)
+#+end_src
+
+- =STAGE= is one of the six stage keywords.
+- =TYPE= is a registered org-gtd type symbol, or =nil= / unknown — in
+  which case only global hooks fire.
+- =POM= is forwarded unchanged to each hook function.
+
+Behavior:
+
+1. Resolve =STAGE= to its global hook variable; signal
+   =Unknown org-gtd hook stage= for unrecognised stages.
+2. Run global hooks in order.
+3. Run local hooks (from =:hooks= on =TYPE=) in order.
+4. Each call is wrapped in =org-gtd-hooks--call-safely=, which catches
+   any error and logs it as =org-gtd hook FN errored: MESSAGE=.
+
+** Cross-references
+:PROPERTIES:
+:CUSTOM_ID: hooks-xref
+:END:
+
+- Type entries that own =:hooks=: [[#type-registry][type registry]].
+- Classic per-organize hook list: ~org-gtd-organize-hooks~ in
+  [[#customization][customization]].
+- Practical examples: [[#write-a-hook][How to write a hook]].
+- Conceptual model: [[#about-the-pipeline][About the pipeline]].

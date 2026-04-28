@@ -1,0 +1,159 @@
+* About the type system
+:PROPERTIES:
+:CUSTOM_ID: about-the-type-system
+:END:
+
+org-gtd's type registry --- the constant ~org-gtd-types~ in
+=org-gtd-types.el= --- reflects two design choices made during the v4
+cleanup arc: the registry is the single source of truth for every
+kind of GTD item, and the set of types is *closed*. This document
+explains why both choices are right even though they constrain what
+end users can do.
+
+** A registry, not a scatter
+
+Earlier versions of org-gtd gave each category its own module with
+its own configure/finalize/apply trio. Adding a feature that touched
+every category --- per-type hooks, per-type prompt-to-refile ---
+meant editing nine or ten files in lockstep.
+
+The unified registry collapses that. Each entry in ~org-gtd-types~ is
+~(TYPE-NAME . PLIST)~, where the plist declares wiring fields the
+unified pipeline reads:
+
+- ~:org-gtd~ --- the =ORG_GTD= property value stored on headings of
+  this type. Never user-overridable.
+- ~:state~ --- the semantic TODO state (~:next~, ~:wait~, ~:done~,
+  ~:canceled~, or nil).
+- ~:disposition~ --- how the heading leaves the clarify flow:
+  ~list~ (refile), ~done-and-archive~, ~cancel-and-archive~, or
+  ~externalize~ (reserved).
+- ~:transient-key~ --- the key string that exposes this type in the
+  ~org-gtd-organize~ menu.
+- ~:prompt-to-refile~ --- whether the refile engine prompts for a
+  destination instead of using the default.
+- ~:refile-target~ --- the top-level heading this type lives under.
+- ~:organize-fn~ / ~:organize-project-fn~ --- function pointers that
+  /replace/ pipeline behavior (more on these below).
+- ~:hooks~ --- per-type local hook listeners, by stage.
+- ~:properties~ --- the semantic properties the clarify flow prompts
+  for, each declaring its underlying org-property name, type,
+  prompt, and so on.
+
+The dispatcher (~org-gtd-process-heading~) reads these fields. Adding
+or removing a per-type behavior is now an edit in one place. The
+interesting part is what got left out.
+
+** Why "user-defined types" was deliberately removed
+
+A pre-release of v4 included ~org-gtd-define-type~, a public function
+that let you register a new top-level GTD category --- a "watching"
+list, say, distinct from someday-maybe. The function was *removed*
+before v4 shipped. The supported entry point is now
+~org-gtd-customize-type~, which /modifies/ fields on an existing
+type but cannot add new ones.
+
+The reason is methodological, not technical. Two pieces of evidence
+converged:
+
+- *Allen's orthodoxy is checklists, not categories.* When users in the
+  GTD community ask how to track sub-kinds of someday/maybe ---
+  movies-to-watch, books-to-read, restaurants-to-try --- the
+  consistent answer from Allen and his trainers is to use
+  /sub-lists within reference/, not new top-level types. The cognitive
+  cost of a new type is high (one more decision in the clarify step);
+  the cost of a new heading under reference is essentially zero.
+
+- *Practitioner evidence pointed the same way.* What real users built
+  with the proposed extensibility was overwhelmingly
+  sub-categorization within someday-maybe and reference, plus a few
+  integration shims (notify-on-categorize, archive-into-org-roam)
+  that have nothing to do with adding a category. None required a
+  new type symbol; all could be served by hooks.
+
+Ten built-ins is enough to model the GTD methodology. Further
+fragmentation is a sign the work belongs in a list inside reference
+(or someday) rather than a new sibling to it.
+~org-gtd-someday-lists~ is the surviving named mechanism for that
+pattern --- it lets you declare sub-lists (/Books/, /Movies/,
+/Travel/) within someday-maybe at clarify time, without inflating the
+type space.
+
+The trade-off is named explicitly: org-gtd chose simplicity (a
+static, auditable registry) over generality (an open type system).
+
+** Customize, don't define
+
+~org-gtd-customize-type~ is the supported extension point. It accepts
+a type name and a plist, and merges the plist into the registered
+entry. Scalar fields replace; ~:properties~ merge by semantic name;
+~:hooks~ append per stage; ~:org-gtd~ is never overridden.
+
+The contract is narrow on purpose. Customization can change which
+org-property a semantic field stores into, change a prompt or input
+function, add per-type hook listeners, toggle ~:prompt-to-refile~,
+or override the disposition or organize-fn. It cannot introduce a
+new type symbol, add a transient entry, or change a built-in's
+=ORG_GTD= property value.
+
+The constraint is the feature. Code touching ~ORG_GTD~ values can
+rely on a finite, documented set of values across all installations.
+That predictability is what makes hooks and view-DSL filters reliable
+between users.
+
+** Function-pointer-as-capability
+
+The fields ~:organize-fn~ and ~:organize-project-fn~ are not data;
+they are function pointers, and their /presence/ on a type entry is a
+capability declaration.
+
+~:organize-fn~ is always present (it defaults to
+~org-gtd-configure-as-type~, which runs the generic property-prompt
+loop). The field exists so that types with non-generic configuration
+needs --- delegated needs to prompt for a person and a check-in
+timestamp; tickler needs to stash and restore prior state; someday
+needs to prompt for a sub-list --- can replace just the configure step
+without subclassing the whole pipeline.
+
+~:organize-project-fn~ is more interesting because it is /optional/.
+A type that wants to handle project-level reclassification (move a
+whole project to tickler, to someday, etc.) declares this slot;
+absence means "this type doesn't apply to projects." The dispatcher in
+=org-gtd-organize-core.el= reads the slot and chooses between
+~org-gtd-process-heading~ (single heading) and
+~org-gtd-process-project~ (whole project graph) at invocation time.
+A field's *presence on the plist* is the capability check.
+
+This is exactly the pattern Emacs uses for per-mode behavior overrides
+on its movement primitives. From the Emacs Lisp Reference Manual,
+under /List Motion/:
+
+#+begin_quote
+~forward-sexp~ calls the function that is the value of the variable
+~forward-sexp-function~, if that is non-~nil~, to do the actual work,
+passing it the same arguments as those with which the command was
+called. Major modes can define their own functions for moving over
+balanced expressions as appropriate for the mode, and set this
+variable to that function.
+#+end_quote
+
+The same shape applies here: a default behavior, a slot for replacing
+that behavior, and a non-nil check as the dispatch test. ~indent-line-function~
+and ~beginning-of-defun-function~ work the same way. The pattern is
+old, well-understood, and chosen on purpose --- it lets the registry
+declare /what/ a type is and let the type itself say /how/, without
+inheritance or polymorphism machinery.
+
+A complementary pattern handles /observation/ rather than
+replacement: the six-stage hook pipeline. Function-pointer slots
+replace pipeline behavior; hooks observe around it. Keeping the two
+separate is the design's central constraint. See
+[[#about-the-pipeline][About the pipeline]] for that side of the
+story.
+
+** Further reading
+
+- Tutorial --- try it: [[#your-first-project][Your first project]]
+- How-to --- apply it: [[#customize-a-type][How to customize a type]]
+- Reference --- look it up: [[#type-registry][Type registry]]
+- Sibling explanations: [[#about-gtd][About GTD]], [[#about-the-pipeline][About the pipeline]]

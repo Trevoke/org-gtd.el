@@ -1,0 +1,129 @@
+#+TITLE: Org GTD Documentation
+:PREAMBLE:
+#+AUTHOR: Aldric Giacomoni
+#+EMAIL: trevoke@gmail.com
+#+DATE: 2015-{{{year}}}
+#+LANGUAGE: en
+
+#+TEXINFO_DIR_CATEGORY: Emacs
+#+TEXINFO_DIR_TITLE: Org GTD Documentation: (org-gtd-diataxis)
+#+TEXINFO_DIR_DESC: Tutorials, how-to guides, reference, and explanation for org-gtd
+#+TEXINFO_FILENAME: org-gtd-diataxis.info
+#+SUBTITLE: for version 4.0.0
+#+TEXINFO_DEFFN: t
+#+OPTIONS: H:4 num:3 toc:2
+#+PROPERTY: header-args :eval never
+#+MACRO: year (eval (format-time-string "%Y"))
+
+This is a Diataxis-style documentation set for Org GTD.  It is
+organized so each document serves one purpose for one kind of reader,
+not a mix.  Find the quadrant that matches what you are doing right
+now.
+
+#+TEXINFO: @noindent
+
+| Reader's intent                          | Quadrant     | Where to start                               |
+|------------------------------------------+--------------+----------------------------------------------|
+| "I want to learn org-gtd by doing"       | Tutorials    | [[#tutorials][Tutorials]]                                    |
+| "I have a specific task to accomplish"   | How-to       | [[#how-to-guides][How-to guides]]                                |
+| "I need to look up a flag or function"   | Reference    | [[#reference][Reference]]                                    |
+| "I want to understand why it works"      | Explanation  | [[#explanation][Explanation]]                                  |
+
+If you are completely new, read [[#about-gtd][About GTD]] for context, then
+start with the [[#quick-start][Quick start tutorial]].
+
+This documentation lives alongside the existing Info manual at
+[[info:org-gtd]] and does not replace it.  The two are complementary:
+the older manual is the reference users have been reading; this set is
+organized for discoverability.
+
+:END:
+* Copying
+:PROPERTIES:
+:copying:  t
+:END:
+Copyright (C) 2018-{{{year}}} Aldric Giacomoni <trevoke@gmail.com>
+
+You can redistribute this document and/or modify it under the terms
+of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any
+later version.
+
+This document is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+* Tutorials
+:PROPERTIES:
+:DESCRIPTION: Learn org-gtd by doing — guided walkthroughs for newcomers
+:CUSTOM_ID: tutorials
+:END:
+
+Tutorials are guided lessons.  Each one takes you from zero to a
+working result on a small example, so you can build the muscle memory
+of using org-gtd before you have to figure out anything on your own.
+
+If you finish a tutorial and find yourself wanting to do something
+different in your own files, that is the cue to leave the tutorial and
+look at a [[#how-to-guides][how-to guide]] instead.
+
+#+INCLUDE: "tutorials/quick-start.org" :minlevel 2
+#+INCLUDE: "tutorials/your-first-project.org" :minlevel 2
+
+* How-to guides
+:PROPERTIES:
+:DESCRIPTION: Step-by-step recipes for accomplishing specific tasks
+:CUSTOM_ID: how-to-guides
+:END:
+
+How-to guides answer real-world questions.  Each one assumes you
+already have org-gtd installed and you know roughly what you are
+trying to do; the guide fills in the steps.
+
+If you don't yet have org-gtd installed, start with [[#install-and-configure][Install and
+configure]].  If you don't know what you're trying to do, the
+[[#tutorials][tutorials]] are a better starting point.
+
+#+INCLUDE: "how-to/install-and-configure.org" :minlevel 2
+#+INCLUDE: "how-to/capture-and-process.org" :minlevel 2
+#+INCLUDE: "how-to/customize-a-type.org" :minlevel 2
+#+INCLUDE: "how-to/write-a-hook.org" :minlevel 2
+#+INCLUDE: "how-to/create-items-programmatically.org" :minlevel 2
+#+INCLUDE: "how-to/diagnose-and-repair.org" :minlevel 2
+
+* Reference
+:PROPERTIES:
+:DESCRIPTION: Complete catalogue of commands, configuration, types, and hooks
+:CUSTOM_ID: reference
+:END:
+
+Reference describes the machinery.  It is dense, complete, and
+neutral — facts you look up while you work.  It is not a place to
+start learning; if you find yourself reading it cover to cover, jump
+back to the [[#tutorials][tutorials]] or [[#explanation][explanation]] instead.
+
+#+INCLUDE: "reference/commands.org" :minlevel 2
+#+INCLUDE: "reference/type-registry.org" :minlevel 2
+#+INCLUDE: "reference/customization.org" :minlevel 2
+#+INCLUDE: "reference/hooks.org" :minlevel 2
+
+* Explanation
+:PROPERTIES:
+:DESCRIPTION: Background, design decisions, and conceptual context
+:CUSTOM_ID: explanation
+:END:
+
+Explanation is reading you do away from the keyboard.  It connects
+the dots: why GTD, why this design, why these defaults.  Read it when
+the package's behavior surprises you, or when you want a mental model
+strong enough to make your own configuration decisions confidently.
+
+#+INCLUDE: "explanation/about-gtd.org" :minlevel 2
+#+INCLUDE: "explanation/about-the-type-system.org" :minlevel 2
+#+INCLUDE: "explanation/about-the-pipeline.org" :minlevel 2
+
+* Index
+:PROPERTIES:
+:INDEX: cp
+:END:

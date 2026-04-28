@@ -1,0 +1,347 @@
+* Customization
+:PROPERTIES:
+:CUSTOM_ID: customization
+:END:
+
+Every user-facing =defcustom= shipped by org-gtd, grouped by topic.
+Variable types use =defcustom= notation. Defaults are listed verbatim.
+
+Obsolete and OBSOLETE-marked variables are listed at the end. Internal
+=defvar= declarations and the per-type registry overrides
+(=org-gtd-user-types=, see [[#type-registry][type registry]]) are not
+repeated here.
+
+** Directories and files
+:PROPERTIES:
+:CUSTOM_ID: customization-files
+:END:
+
+*** ~org-gtd-directory~
+- Type: =directory=
+- Default: ="~/gtd/"=
+
+Root of the GTD workspace. =inbox.org= and =org-gtd-tasks.org= are
+created inside this directory the first time they are needed. All
+built-in types refile into top-level headings within
+=org-gtd-tasks.org= unless a user-defined refile target redirects
+them.
+
+*** ~org-gtd-additional-inbox-files~
+- Type: =(repeat file)=
+- Default: =nil=
+
+Extra inbox files processed in order after the main inbox is empty.
+~org-gtd-process-inbox~ visits each entry exactly once per session;
+~org-gtd-mode~ counts headings across the main inbox and these files
+for the mode-line lighter.
+
+*** ~org-gtd-horizons-file~
+- Type: =file=
+- Default: ="horizons.org"=
+
+Filename (resolved against =org-gtd-directory=) holding GTD horizons.
+The clarify flow can display this file as a side window — see
+~org-gtd-clarify-show-horizons~.
+
+*** ~org-gtd-archive-location~
+- Type: =(choice (const nil) function)=
+- Default: ~#'org-gtd-archive-location-func~
+
+Archive location used by ~org-gtd-archive-completed-items~ and
+~org-gtd-archive-item-at-point~. =nil= delegates to
+=org-archive-location=. A function is called with no arguments and
+must return a valid archive-location string. The default function
+yields =gtd_archive_<year>::datetree/= inside =org-gtd-directory=.
+
+** Capture
+:PROPERTIES:
+:CUSTOM_ID: customization-capture
+:END:
+
+*** ~org-gtd-capture-templates~
+- Type: =sexp= (list of org-capture template specs)
+- Default: two templates, =i= ("Inbox") and =l= ("Inbox with link"),
+  both targeting =(file ,#'org-gtd-inbox-path)= and using the
+  =:before-finalize= hook ~org-gtd-capture--add-captured-at-timestamp~.
+
+Templates passed to =org-capture= when ~org-gtd-capture~ is called.
+Every template string must start with =* = (level-one heading) and
+target =(file ,#'org-gtd-inbox-path)=. The =:before-finalize= hook
+stamps =ORG_GTD_CAPTURED_AT= on each level-1 heading captured.
+
+** Process
+:PROPERTIES:
+:CUSTOM_ID: customization-process
+:END:
+
+See ~org-gtd-additional-inbox-files~ above.
+
+** Clarify
+:PROPERTIES:
+:CUSTOM_ID: customization-clarify
+:END:
+
+*** ~org-gtd-clarify-project-templates~
+- Type: =(alist :key-type string :value-type string)=
+- Default: =nil=
+
+Named project templates inserted by
+~org-gtd-clarify-project-insert-template~ during clarification of an
+item being turned into a project.
+
+*** ~org-gtd-clarify-show-horizons~
+- Type: =symbol= (one of =nil=, =top=, =right=, =left=, =bottom=)
+- Default: =nil=
+
+Side on which to display the horizons file during clarification. =nil=
+disables auto-display; ~org-gtd-clarify-toggle-horizons-window~ still
+works.
+
+*** ~org-gtd-clarify-show-organize-help~
+- Type: =symbol= (one of =nil=, =top=, =right=, =left=, =bottom=)
+- Default: =nil=
+
+Side for the organize-keys help buffer during clarification.
+
+*** ~org-gtd-clarify-display-helper-buffer~
+- Type: =boolean=
+- Default: =nil=
+
+When non-nil, multi-task project clarify buffers display a live
+dependency-helper window via
+~org-gtd-clarify-display-dependency-helper~.
+
+*** ~org-gtd-clarify-duplicate-queue-position~
+- Type: =(choice top right left bottom)=
+- Default: =bottom=
+
+Side window used to display the duplicate queue created with
+~org-gtd-clarify-duplicate~ and ~org-gtd-clarify-duplicate-exact~.
+
+** Organize and refile
+:PROPERTIES:
+:CUSTOM_ID: customization-organize
+:END:
+
+*** ~org-gtd-organize-hooks~
+- Type: =hook=
+- Default: =(org-set-tags-command)=
+- Group: =org-gtd-organize=
+
+Functions invoked on every item during the organize step (after the
+type's =:organize-fn=, before disposition). Each function receives no
+arguments and runs at point on the heading. Built-in suggestions in
+the customize UI: ~org-set-tags-command~, ~org-set-effort~,
+~org-priority~. Type-aware hooks can use
+~org-gtd-organize-type-member-p~ to gate themselves on the chosen
+type.
+
+*** ~org-gtd-save-after-organize~
+- Type: =boolean=
+- Default: =nil=
+
+Save all modified buffers after each organize step. Useful with mobile
+sync workflows.
+
+*** ~org-gtd-refile-prompt-default~
+- Type: =boolean=
+- Default: =nil=
+
+Fallback for ~org-gtd-refile--should-prompt-p~ when a type does not
+declare =:prompt-to-refile= explicitly.
+
+*** ~org-gtd-refile-to-any-target~ (obsolete)
+- Type: =boolean=
+- Default: =t=
+- Obsolete since 4.0.0; replaced by per-type =:prompt-to-refile=.
+
+When non-nil, refile auto-selects the first valid target without
+prompting. A deprecation warning is emitted on use.
+
+*** ~org-gtd-refile-prompt-for-types~ (obsolete)
+- Type: =(repeat symbol)=
+- Default: =(single-action project-heading project-task calendar someday delegated tickler habit)=
+- Obsolete since 4.1.0.
+
+Migrated once at load time into per-type =:prompt-to-refile t=
+entries. Subsequent edits have no effect; configure types via
+~org-gtd-customize-type~ instead.
+
+** Areas of focus and horizons
+:PROPERTIES:
+:CUSTOM_ID: customization-areas
+:END:
+
+*** ~org-gtd-areas-of-focus~
+- Type: =(repeat string)=
+- Default: =("Home" "Health" "Family" "Career")=
+- Group: =org-gtd-horizons=
+
+Major life areas. Used by ~org-gtd-area-of-focus-set-on-item-at-point~,
+~org-gtd-set-area-of-focus~, and the area-of-focus reflect view.
+
+** Engage and agenda
+:PROPERTIES:
+:CUSTOM_ID: customization-engage
+:END:
+
+*** ~org-gtd-prefix-width~
+- Type: =integer=
+- Default: =12=
+
+Width of the agenda prefix column in org-gtd views (project name,
+area-of-focus). Replaces the obsolete =org-gtd-engage-prefix-width=.
+
+*** ~org-gtd-agenda-truncate-ellipsis~
+- Type: =string=
+- Default: ="…"=
+
+Suffix used when truncating long values to fit ~org-gtd-prefix-width~.
+
+*** ~org-gtd-project-progress-cookie-position~
+- Type: =(choice (const nil) (const start) (const end))=
+- Default: =end=
+
+Where the progress cookie =[X/Y]= is rendered on project headings.
+=nil= disables cookies. =start= places the cookie immediately after
+the TODO keyword; =end= places it before tags.
+
+*** ~org-gtd-agenda-property-list~
+- Type: =(list string)=
+- Default: =("LOCATION")=
+- Group: =org-gtd-agenda-property=
+
+Org properties appended to agenda lines by
+~org-gtd-agenda-property-add-properties~.
+
+*** ~org-gtd-agenda-property-separator~
+- Type: =string=
+- Default: ="|"=
+
+Separator used between properties when more than one is shown.
+
+*** ~org-gtd-agenda-property-column~
+- Type: =integer=
+- Default: =60=
+
+Minimum column at which agenda properties are inserted in same-line
+mode.
+
+*** ~org-gtd-agenda-property-position~
+- Type: =symbol= (=same-line=, =next-line=, =where-it-fits=)
+- Default: =where-it-fits=
+
+Layout for agenda property text: same line as the item, the line
+below, or whichever fits the window.
+
+** Mode line
+:PROPERTIES:
+:CUSTOM_ID: customization-mode
+:END:
+
+*** ~org-gtd-mode-update-interval~
+- Type: =(choice integer (const nil))=
+- Default: =60=
+
+Seconds between automatic inbox count refreshes when ~org-gtd-mode= is
+enabled. =nil= disables periodic refresh; the count still updates on
+mode-line redraws.
+
+*** ~org-gtd-mode-lighter-display~
+- Type: =(choice (const always) (const never) (const when-non-zero))=
+- Default: =always=
+
+When to show the =GTD[N]= mode-line lighter.
+
+** Review (reflect)
+:PROPERTIES:
+:CUSTOM_ID: customization-review
+:END:
+
+*** ~org-gtd-someday-lists~
+- Type: =(repeat string)=
+- Default: =nil=
+
+Names of someday/maybe sub-lists. When non-nil, ~org-gtd-someday~ and
+~org-gtd-reflect-someday-review~ prompt for one of the list names.
+
+*** ~org-gtd-reflect-missed-custom-views~
+- Type: =(repeat (alist :key-type symbol :value-type sexp))=
+- Default: =nil=
+
+Additional view specs appended by ~org-gtd-reflect-missed-with-custom~
+to the standard missed-engagements set.
+
+** Keyword mapping
+:PROPERTIES:
+:CUSTOM_ID: customization-keywords
+:END:
+
+*** ~org-gtd-keyword-mapping~
+- Type: =(alist :key-type (choice todo next wait done canceled) :value-type string)=
+- Default:
+
+#+begin_src emacs-lisp
+((todo . "TODO") (next . "NEXT") (wait . "WAIT")
+ (done . "DONE") (canceled . "CNCL"))
+#+end_src
+
+Maps GTD semantic states (=todo=, =next=, =wait=, =done=, =canceled=)
+to entries in =org-todo-keywords=. Validation enforces:
+
+- All five mappings are present.
+- Each keyword exists in =org-todo-keywords=.
+- All five keywords appear in the same =sequence=.
+
+Set with ~setopt~, ~customize-set-variable~, or
+~customize-save-variable~ to invoke validation. ~org-gtd-setup-keywords-wizard~
+walks through the configuration interactively.
+
+The legacy variables ~org-gtd-todo-keyword~, ~org-gtd-next-keyword~,
+~org-gtd-wait-keyword~, ~org-gtd-canceled-keyword~ are obsolete and
+have no effect.
+
+** Graph view
+:PROPERTIES:
+:CUSTOM_ID: customization-graph
+:END:
+
+*** ~org-gtd-graph-render-mode~
+- Type: =symbol= (typically =svg= or =ascii=)
+- Default: =svg=
+
+Renderer used by ~org-gtd-show-project-graph~.
+~org-gtd-graph-toggle-render-mode~ flips between renderers at runtime.
+
+*** ~org-gtd-graph-ui-split-ratio~
+- Type: =number=
+- Default: =0.7=
+
+Fraction of the frame given to the graph buffer when the graph view
+opens.
+
+*** ~org-gtd-graph-sibling-mode~
+- Type: =symbol=
+- Default: =any-same-blocker=
+
+Sibling-navigation strategy in the graph view (which tasks count as
+siblings when pressing =TAB= / =backtab=).
+
+** Hooks
+:PROPERTIES:
+:CUSTOM_ID: customization-hooks
+:END:
+
+The classic per-organize hook list is ~org-gtd-organize-hooks~ (above).
+The six-stage pipeline hooks (=org-gtd-before-clarify-hook=,
+=org-gtd-after-clarify-hook=, =org-gtd-before-organize-hook=,
+=org-gtd-after-organize-hook=, =org-gtd-before-file-hook=,
+=org-gtd-after-file-hook=) and per-type =:hooks= are documented in
+[[#hooks][hooks reference]].
+
+** Cross-references
+
+- Type-level overrides: [[#type-registry][type registry]],
+  =org-gtd-user-types=, ~org-gtd-customize-type~.
+- Pipeline hooks: [[#hooks][hooks]].
+- Configuration walkthrough: [[#install-and-configure][How to install and configure]].

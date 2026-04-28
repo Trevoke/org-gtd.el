@@ -1,0 +1,164 @@
+* How to install and configure org-gtd
+:PROPERTIES:
+:CUSTOM_ID: install-and-configure
+:END:
+
+You have Emacs and you want a working GTD setup. This guide gets
+=org-gtd= loaded, configured, and verified end-to-end.
+
+If you are coming from version 3.x and need to migrate existing data,
+follow the upgrade chapter in the manual: [[info:org-gtd#upgrading]].
+
+** Install from MELPA
+
+org-gtd is published on MELPA. Make sure your =package-archives= include
+MELPA, then:
+
+#+begin_src emacs-lisp
+M-x package-install RET org-gtd RET
+#+end_src
+
+You also need =org-edna= installed and active — it is what makes
+project task dependencies work. =package-install= pulls it in as a
+dependency; you still have to enable it (~(org-edna-mode 1)~).
+
+** Apply the minimum required configuration
+
+Three settings are required for org-gtd to work:
+
+1. =org-todo-keywords= — your TODO sequence, with all GTD keywords in
+   the *same* sequence.
+2. =org-gtd-keyword-mapping= — which of those keywords means
+   "next-action" vs "waiting" vs "done", etc.
+3. =org-edna-mode= — turned on, so projects advance correctly.
+
+Two more settings are strongly recommended:
+
+- =org-agenda-files= — include =org-gtd-directory= so engage and
+  reflect commands have something to scan.
+- =org-gtd-update-ack= — set to the major version you installed, so
+  the upgrade banner stays quiet.
+
+** Recipe: vanilla =use-package=
+
+Drop this in your init file:
+
+#+begin_src emacs-lisp
+(use-package org-gtd
+  :ensure t
+  :after org
+  :demand t
+  :init
+  (setq org-gtd-update-ack "4.0.0")
+  ;; (setq org-gtd-directory "~/gtd/")  ; default is ~/gtd/
+  :custom
+  (org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+  (org-gtd-keyword-mapping '((todo . "TODO")
+                             (next . "NEXT")
+                             (wait . "WAIT")
+                             (done . "DONE")
+                             (canceled . "CNCL")))
+  :config
+  (org-edna-mode 1)
+  (setq org-agenda-files (list org-gtd-directory))
+  :bind
+  (("C-c d c" . org-gtd-capture)
+   ("C-c d e" . org-gtd-engage)
+   ("C-c d p" . org-gtd-process-inbox)
+   :map org-gtd-clarify-mode-map
+   ("C-c c" . org-gtd-organize)
+   :map org-agenda-mode-map
+   ("C-c ." . org-gtd-agenda-transient)))
+#+end_src
+
+The =org-agenda-files= line lives in =:config= because
+=org-gtd-directory= is not bound until org-gtd has loaded.
+
+** Recipe: Doom Emacs
+
+Add to =packages.el=:
+
+#+begin_src emacs-lisp
+(package! org-gtd)
+#+end_src
+
+Then in =config.el=:
+
+#+begin_src emacs-lisp
+(use-package! org-gtd
+  :after org
+  :init
+  (setq org-gtd-update-ack "4.0.0")
+  :custom
+  (org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+  (org-gtd-keyword-mapping '((todo . "TODO") (next . "NEXT")
+                             (wait . "WAIT") (done . "DONE")
+                             (canceled . "CNCL")))
+  :config
+  (org-edna-mode)
+  (setq org-agenda-files (list org-gtd-directory))
+  (map! :leader
+        (:prefix ("d" . "org-gtd")
+         :desc "Capture"        "c"  #'org-gtd-capture
+         :desc "Engage"         "e"  #'org-gtd-engage
+         :desc "Process inbox"  "p"  #'org-gtd-process-inbox))
+  (map! :map org-gtd-clarify-mode-map
+        :desc "Organize this item" "C-c c" #'org-gtd-organize))
+#+end_src
+
+After editing, run =doom sync= and restart.
+
+** Recipe: Spacemacs
+
+In =dotspacemacs/user-config=:
+
+#+begin_src emacs-lisp
+(use-package org-gtd
+  :ensure t
+  :after org
+  :init
+  (setq org-gtd-update-ack "4.0.0")
+  (setq org-todo-keywords
+        '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
+  (setq org-gtd-keyword-mapping
+        '((todo . "TODO") (next . "NEXT") (wait . "WAIT")
+          (done . "DONE") (canceled . "CNCL")))
+  :config
+  (org-edna-mode 1)
+  (setq org-agenda-files (list org-gtd-directory))
+  (spacemacs/set-leader-keys
+    "od c" 'org-gtd-capture
+    "od e" 'org-gtd-engage
+    "od p" 'org-gtd-process-inbox))
+(with-eval-after-load 'org-gtd
+  (define-key org-gtd-clarify-mode-map (kbd "C-c c") 'org-gtd-organize))
+#+end_src
+
+** Confirm it is working
+
+After restarting Emacs:
+
+1. Run =M-x org-gtd-capture= (or your binding, =C-c d c= in the
+   recipes above). A capture buffer opens for the inbox. Type a
+   short heading, then =C-c C-c= to save.
+2. Open =~/gtd/inbox.org=. Your captured heading should be there
+   with an =ORG_GTD_CAPTURED_AT= property.
+3. Run =M-x org-gtd-process-inbox=. A clarify buffer opens with the
+   item you just captured.
+
+If any of those steps fail, see [[#diagnose-and-repair][How to diagnose and repair]].
+
+** Where to go next
+
+- [[#quick-start][Tutorial: Quick start]] walks the first capture →
+  organize → engage cycle in five minutes.
+- [[#capture-and-process][How to capture and process]] explains the
+  daily inbox routine.
+- [[#customization][Reference: Customization]] lists every variable
+  you can tune.
+
+** See also
+
+- [[#commands][Reference: Commands]]
+- [[#about-gtd][Explanation: About GTD]]
+- [[info:org-gtd#upgrading]] for migrating from 3.x

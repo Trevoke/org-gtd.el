@@ -1,0 +1,155 @@
+* How to customize a GTD type
+:PROPERTIES:
+:CUSTOM_ID: customize-a-type
+:END:
+
+The built-in types — =next-action=, =delegated=, =calendar=,
+=tickler=, =someday=, =project=, =habit=, =reference=, =trash=,
+=quick-action= — live in the =org-gtd-types= registry. You cannot add
+*new* top-level types, but you can override individual fields on the
+existing ones using ~org-gtd-customize-type~.
+
+This guide shows the three most common customizations. For the full
+list of fields and merge rules, see [[#type-registry][Reference: type
+registry]].
+
+** The customizable fields
+
+Every type entry is a plist with these keys:
+
+| Key                      | What it controls                                           |
+|--------------------------+------------------------------------------------------------|
+| =:state=                 | Semantic TODO state (=:next=, =:wait=, =:done=, =:canceled=, nil) |
+| =:disposition=           | What happens at end of pipeline (=list=, =done-and-archive=, =cancel-and-archive=) |
+| =:organize-fn=           | Function called to configure the heading                   |
+| =:organize-project-fn=   | Function called when dispatch lands on a project heading   |
+| =:prompt-to-refile=      | Whether refile prompts for a destination                   |
+| =:transient-key=         | Key string for the organize transient menu                 |
+| =:refile-target=         | Heading string to refile under                             |
+| =:properties=            | List of property descriptors prompted during clarify       |
+| =:hooks=                 | Per-type hook functions, by stage                          |
+
+=:org-gtd= (the ORG_GTD property value) is intentionally not
+overridable — it is the type's identity in your org files.
+
+~org-gtd-customize-type~ takes a type name and a plist of overrides.
+Scalar fields replace; =:properties= merge by semantic name; =:hooks=
+append per stage.
+
+** Example 1: Always prompt to choose where calendar items refile
+
+By default, =calendar= already has =:prompt-to-refile t=. If you
+flipped it off in the past and want it back:
+
+#+begin_src emacs-lisp
+(org-gtd-customize-type 'calendar :prompt-to-refile t)
+#+end_src
+
+This is the simplest form — one scalar field replaced.
+
+** Example 2: Use EBDB completion for the delegated =:who= field
+
+The =delegated= type prompts for two properties: =:who= (who you
+delegated to) and =:when= (when to check in). By default =:who= is a
+plain =read-string=. Replace its prompt with an EBDB-aware
+completing-read:
+
+#+begin_src emacs-lisp
+(defun my/ebdb-pick-name (prompt)
+  "Return a contact name from EBDB, prompting with PROMPT."
+  (let ((records (ebdb-search (ebdb-records) nil)))
+    (completing-read prompt
+                     (mapcar #'ebdb-record-name records)
+                     nil nil)))
+
+(org-gtd-customize-type 'delegated
+  :properties
+  '((:who :org-property "DELEGATED_TO" :type text :required t
+          :prompt "Delegate to: "
+          :input-fn my/ebdb-pick-name)))
+#+end_src
+
+The =:input-fn= takes a prompt string and returns the value to
+store. Because =:properties= merge by semantic name (=:who=), you do
+not need to repeat the =:when= property — it stays as the built-in
+defined it.
+
+** Example 3: Add a default tag whenever next-action fires
+
+There are two ways to do this. The right one depends on whether you
+want it everywhere or just for one type.
+
+*** Everywhere: =org-gtd-organize-hooks=
+
+For "after every classification, run this function," append to
+=org-gtd-organize-hooks=. The default value is
+=(org-set-tags-command)=, which prompts for tags. Add your own:
+
+#+begin_src emacs-lisp
+(defun my/auto-tag-by-area ()
+  "Auto-tag the current heading from `org-gtd-areas-of-focus'."
+  (when (org-gtd-organize-type-member-p '(next-action))
+    (org-set-tags (completing-read "Area: " org-gtd-areas-of-focus))))
+
+(add-hook 'org-gtd-organize-hooks #'my/auto-tag-by-area)
+#+end_src
+
+The ~org-gtd-organize-type-member-p~ predicate (declared in
+=org-gtd-organize.el=) returns true when the current organize is
+for one of the listed types — use it to gate per-type behavior
+inside a global =org-gtd-organize-hooks= function.
+
+The hook runs once per organize, after the type's =:organize-fn=,
+before the disposition.
+
+*** Just for next-action: per-type =:hooks=
+
+For "do this thing only when type X is being organized," put it in
+the type's =:hooks= plist via ~org-gtd-customize-type~:
+
+#+begin_src emacs-lisp
+(defun my/tag-next-action (pom)
+  "Tag the heading at POM with its area of focus."
+  (org-with-point-at pom
+    (org-set-tags
+     (completing-read "Area: " org-gtd-areas-of-focus))))
+
+(org-gtd-customize-type 'next-action
+  :hooks (list :after-organize (list #'my/tag-next-action)))
+#+end_src
+
+Per-type hooks run only for that type. They receive the heading
+marker as their argument. See [[#write-a-hook][How to write a hook]]
+for the six stages and what each receives.
+
+** When you cannot fit it into the registry
+
+Some customizations need a custom function instead of just a
+field override. Example: a per-type =:organize-fn= that does
+something the built-in does not.
+
+#+begin_src emacs-lisp
+(defun my/calendar-organize (type config)
+  "Custom organize-fn for calendar items."
+  ;; Custom logic here, then delegate to the standard configure-as-type
+  (org-gtd-configure-as-type type config)
+  ;; ...your extra logic...
+  )
+
+(org-gtd-customize-type 'calendar :organize-fn #'my/calendar-organize)
+#+end_src
+
+The signature is =(TYPE CONFIG)=. =CONFIG= is the optional alist
+forwarded from ~org-gtd-process-heading~ (used for non-interactive
+calls); when called interactively, =CONFIG= is nil and your function
+prompts as needed.
+
+** See also
+
+- [[#type-registry][Reference: type registry]] — full schema for type
+  plists.
+- [[#customization][Reference: customization]] — every variable.
+- [[#write-a-hook][How to write a hook]] — for cross-cutting
+  customizations.
+- [[#about-the-type-system][Explanation: about the type system]] for
+  the why.

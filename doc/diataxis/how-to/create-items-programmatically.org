@@ -1,0 +1,144 @@
+* How to create GTD items programmatically
+:PROPERTIES:
+:CUSTOM_ID: create-items-programmatically
+:END:
+
+When you wire org-gtd to an external source — an email integration, a
+webhook receiver, a script that converts meeting notes into tasks —
+you want to skip the interactive capture/clarify/organize loop and
+just create a fully classified item directly.
+
+The single supported entry point for that is ~org-gtd-create-item~.
+
+** The signature
+
+#+begin_src emacs-lisp
+(org-gtd-create-item TYPE TITLE &optional CONFIG)
+#+end_src
+
+- =TYPE= is a symbol naming a registered org-gtd type:
+  =next-action=, =calendar=, =delegated=, =tickler=, =someday=,
+  =habit=, =reference=, =quick-action=, or =trash=. (=project= is in
+  the registry but is not creatable this way — projects need
+  multiple tasks and are built interactively.)
+- =TITLE= is the heading text (a string).
+- =CONFIG= is an optional alist that supplies values for the type's
+  properties. Use it to skip the prompts the type would otherwise
+  raise.
+
+The function signals =user-error= if =TYPE= is not a registered
+type. Otherwise it runs the same pipeline as the interactive flow —
+=:organize-fn=, the user's =org-gtd-organize-hooks=, the disposition
+(refile or archive), and all six stage hooks — just without showing
+you a clarify buffer.
+
+** Recipe: a next-action
+
+The simplest case. =next-action= has no required properties.
+
+#+begin_src emacs-lisp
+(org-gtd-create-item 'next-action "Buy milk")
+#+end_src
+
+The item lands under the =Actions= heading, marked NEXT, ready to
+appear in =org-gtd-engage=.
+
+** Recipe: a calendar item
+
+=calendar= requires a =:when= timestamp. Pass it via =CONFIG=:
+
+#+begin_src emacs-lisp
+(org-gtd-create-item 'calendar
+                     "Dentist appointment"
+                     '((:when . "<2026-05-01 Fri 09:00>")))
+#+end_src
+
+The =:when= alist key matches the =:when= semantic name in the
+=calendar= type's =:properties=. Internally it ends up as the
+=ORG_GTD_TIMESTAMP= property on the heading.
+
+** Recipe: a delegated item
+
+=delegated= requires =:who= and =:when=:
+
+#+begin_src emacs-lisp
+(org-gtd-create-item 'delegated
+                     "Review draft"
+                     '((:who  . "Alice")
+                       (:when . "<2026-05-10 Sun>")))
+#+end_src
+
+This sets =DELEGATED_TO= to "Alice", =ORG_GTD_TIMESTAMP= to the
+follow-up date, and the TODO state to whatever you mapped =wait= to
+in =org-gtd-keyword-mapping=.
+
+** Recipe: a quick action that is already done
+
+=quick-action= has the =done-and-archive= disposition, so the
+heading goes straight to your archive file marked DONE:
+
+#+begin_src emacs-lisp
+(org-gtd-create-item 'quick-action "Replied to Bob's email")
+#+end_src
+
+Useful for logging things you've already handled but want a record
+of.
+
+** When to pass =CONFIG= and when to skip it
+
+Every property descriptor on a type has a =:prompt= and may have a
+=:default=. If you do not pass that property in =CONFIG=:
+
+- If the property declares =:default=, the default is used.
+- Otherwise, the type's =:organize-fn= prompts interactively for it.
+
+That means you can call ~org-gtd-create-item~ from interactive code
+and let users fill in any missing properties, or you can pass the
+full =CONFIG= and run silently from a non-interactive context.
+
+** Example: integrate with another package
+
+A minimal email-to-task integration. Suppose your email package can
+give you a subject and a sender. Wire it like this:
+
+#+begin_src emacs-lisp
+(defun my/email-to-gtd-task (subject sender)
+  "Create a delegated GTD task tracking SUBJECT from SENDER."
+  (org-gtd-create-item
+   'delegated
+   (format "Reply: %s" subject)
+   `((:who  . ,sender)
+     (:when . ,(format-time-string
+                "<%Y-%m-%d>"
+                (time-add (current-time) (days-to-time 3)))))))
+#+end_src
+
+** A note on the =*-create= helpers
+
+You may see references to per-type =*-create= helpers (for example
+=org-gtd-next-action-create=). These are obsolete adapters that
+delegate to ~org-gtd-create-item~. Use ~org-gtd-create-item~ in new
+code — there is no behavioral difference, and you avoid carrying
+deprecated names forward.
+
+** Side effects to expect
+
+Calling ~org-gtd-create-item~:
+
+- Creates a transient buffer named =*org-gtd-create*=, runs the
+  pipeline there, and kills it before returning.
+- Refiles the resulting heading into the type's destination file in
+  =org-gtd-directory=.
+- Fires every stage hook (see [[#write-a-hook][How to write a hook]])
+  exactly as if you had organized the item interactively.
+- Saves modified GTD buffers when =org-gtd-save-after-organize= is
+  set.
+
+** See also
+
+- [[#commands][Reference: commands]]
+- [[#type-registry][Reference: type registry]] for the property keys
+  each type accepts in =CONFIG=.
+- [[#about-the-type-system][Explanation: about the type system]]
+- [[#capture-and-process][How to capture and process]] for the
+  interactive route.

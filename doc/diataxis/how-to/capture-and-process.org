@@ -1,0 +1,142 @@
+* How to capture and process the inbox
+:PROPERTIES:
+:CUSTOM_ID: capture-and-process
+:END:
+
+This is the daily routine: get items out of your head into the inbox,
+then walk the inbox to zero by clarifying and organizing each one.
+The recipes below assume the keybindings from
+[[#install-and-configure][How to install and configure]].
+
+** Capture from anywhere
+
+Run =M-x org-gtd-capture= (default binding =C-c d c=). It opens an
+=org-capture= buffer with two templates:
+
+- =i= — Inbox. The default. Plain heading, then notes.
+- =l= — Inbox with link. Same, plus a link back to wherever you were
+  when you triggered capture.
+
+Type a short heading. Don't try to make it perfect — capture is for
+emptying your head, not for deciding. Press =C-c C-c= to save and
+close, or =C-c C-k= to abandon.
+
+Captured items get an =ORG_GTD_CAPTURED_AT= timestamp automatically.
+
+** Capture from the agenda
+
+When the cursor is on a task in =org-agenda= and you decide it
+belongs in the inbox instead, you can re-capture it. The marker at
+beginning-of-line is =org-get-at-bol 'org-marker= — most users do not
+need to call this directly; running =M-x org-gtd-capture= from the
+agenda still files into the inbox normally.
+
+If you instead want to *re-clarify* an existing org heading (whether
+in the agenda, a project file, or anywhere else), put your cursor on
+it and run =M-x org-gtd-clarify-item=. That opens the same WIP
+clarify buffer used for inbox items, without going through capture.
+
+** Process the inbox
+
+Run =M-x org-gtd-process-inbox= (default binding =C-c d p=). It walks
+each heading in =inbox.org= one at a time. After the main inbox is
+empty, processing continues into anything you listed in
+=org-gtd-additional-inbox-files=.
+
+For each item, a clarify buffer (in =org-gtd-clarify-mode=) opens.
+This is your decision point.
+
+** What clarify gives you
+
+The clarify buffer is a temp-file-backed copy of the heading. You
+can edit it freely — title, notes, sub-headings. Nothing you do here
+touches your real GTD files until you finish.
+
+Common edits during clarify:
+
+- Rewrite the title to be specific and actionable
+  ("Email Alex about Q3 budget" beats "Alex").
+- Add notes you want to keep with the item.
+- For projects, add tasks as second-level headings ~**~.
+
+When you are happy with the wording, organize it: =C-c c= (or
+=M-x org-gtd-organize=). A transient menu appears.
+
+** Decide on a type
+
+The transient lays out GTD's classification choices. Pick by what
+the item actually is:
+
+- =q= — *Quick action*. You can do it in under two minutes. Just do
+  it now; org-gtd will mark it DONE and archive.
+- =s= — *Next action*. A single concrete task you'll do when you
+  can. Most one-off to-dos land here.
+- =c= — *Calendar*. The task is tied to a specific time. Prompts for
+  a timestamp.
+- =d= — *Delegate*. Someone else owns it. Prompts for who, and when
+  you want to follow up.
+- =h= — *Habit*. A recurring action with a repeating schedule.
+- =p= — *Project (multi-step)*. The current heading becomes the
+  project; child headings become its tasks.
+- =a= — *Add to existing project*. Treat the current item as a task
+  belonging to a project you already have.
+- =i= — *Tickler*. Bring it back on a specific date.
+- =y= — *Someday/Maybe*. No date, no commitment yet.
+- =k= — *Knowledge*. Reference material; archive into your
+  knowledge area.
+- =t= — *Trash*. Cancel and archive.
+
+After you pick, =org-gtd-organize-hooks= run (by default that
+prompts for tags), then the disposition fires (refile, archive, or
+update in place). The next inbox item appears.
+
+For the complete list of types and their fields, see
+[[#type-registry][Reference: type registry]]. For the underlying
+mechanics, see [[#about-the-pipeline][Explanation: about the pipeline]].
+
+** When one item is actually several
+
+You captured "Plan birthday party" but in clarify you realize it is
+really five separate things. You have two options:
+
+1. *Make it a project.* Add child headings under the captured
+   heading — one task per ~**~ — then pick =p= (project) in the
+   transient.
+
+2. *Split it into independent items.* In the clarify buffer, run
+   =M-x org-gtd-clarify-duplicate= to spawn a queued duplicate with
+   a new title. Each duplicate becomes its own item to organize. Use
+   =org-gtd-clarify-duplicate-exact= if you want a verbatim copy
+   without retitling.
+
+Splitting is the right call when the items belong to different
+contexts ("Buy gift" is a next-action, "Reserve venue" is a project
+of its own).
+
+** Skip and stop
+
+- =M-x org-gtd-clarify-stop= — abandon the current item without
+  organizing. If there are more items in the inbox, processing
+  continues with the next one.
+- The default disposition for organize is to refile out of the
+  inbox. If you ran clarify with =C-u= (or toggled "Update in place"
+  in the transient), the heading is rewritten where it sits instead
+  of being refiled.
+
+** Verify by engaging
+
+After processing, run =M-x org-gtd-engage= (=C-c d e=). You should
+see your NEXT actions and any calendar items in the agenda. Items
+filed as someday/tickler do not show here — they only return when
+their date arrives or you reflect on them.
+
+** See also
+
+- [[#commands][Reference: Commands]] for every command, including the
+  full list of stuck/missed/reflect commands.
+- [[#type-registry][Reference: Type registry]] for the data shape of
+  each item type.
+- [[#about-gtd][Explanation: About GTD]] for the methodology behind
+  the workflow.
+- [[#diagnose-and-repair][How to diagnose and repair]] when items
+  don't behave as expected.

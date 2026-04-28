@@ -1,0 +1,153 @@
+* How to diagnose and repair org-gtd
+:PROPERTIES:
+:CUSTOM_ID: diagnose-and-repair
+:END:
+
+Things go wrong. Items vanish, projects stall, the transient refuses
+to open. This guide collects the most common failure modes and the
+specific commands that fix them. It is not exhaustive — when none of
+these recipes apply, use the bug-report channels at the end.
+
+** Symptom: a project has no NEXT action
+
+You marked a task DONE inside a project. The next task in the chain
+should now be NEXT. It still says TODO, and =org-gtd-engage= shows
+nothing for that project.
+
+This usually means one of:
+
+1. The project was never wired with dependency properties (=ORG_GTD_FIRST_TASKS=).
+2. =org-edna-mode= is not enabled.
+3. Task states drifted out of sync after manual edits or a sync
+   conflict.
+
+Diagnose by running:
+
+#+begin_src emacs-lisp
+M-x org-gtd-reflect-stuck-projects
+#+end_src
+
+That opens an agenda view of every project with active tasks but no
+NEXT action. From the listing, jump to a project and either:
+
+- Fix one project at a time:
+  =M-x org-gtd-projects-fix-todo-keywords-for-project-at-point=
+- Fix all of them at once:
+  =M-x org-gtd-projects-fix-all-todo-keywords=
+
+Then verify =org-edna= is on:
+
+#+begin_src emacs-lisp
+M-x describe-variable RET org-edna-mode RET   ; should be t
+#+end_src
+
+If it is nil, add =(org-edna-mode 1)= to your config and restart.
+
+** Symptom: a task vanished after a manual edit
+
+You edited =org-gtd-tasks.org= directly (or via a mobile client),
+and now the task is gone from your engage view.
+
+Inspect its properties: cursor on the heading, =M-x
+org-entry-properties=. You expect to see =ORG_GTD= set to one of
+=Actions=, =Calendar=, =Delegated=, =Tickler=, =Someday=,
+=Projects=, =Habit=, =Reference=, =Quick=, =Trash=. Project tasks
+also carry =ORG_GTD_PROJECT_IDS=; delegated and calendar items
+carry =ORG_GTD_TIMESTAMP=; delegated items carry =DELEGATED_TO=.
+
+If =ORG_GTD= is missing or wrong, re-clarify the item: cursor on
+the heading, =M-x org-gtd-clarify-item=. That walks the same
+clarify/organize flow as the inbox and rewrites the properties
+cleanly.
+
+** Symptom: capture goes nowhere
+
+You run =M-x org-gtd-capture=, type a heading, press =C-c C-c=, and
+nothing visible happens. Check, in order:
+
+1. =M-x describe-variable RET org-gtd-directory RET= — confirm it
+   points where you expect. A typo in your init file silently sends
+   captures to the wrong place.
+2. The inbox is =inbox.org= inside =org-gtd-directory=.
+   ~org-gtd-inbox-path~ creates it on demand, so it should appear
+   after the first successful capture (unless you have permission
+   errors on the directory).
+3. =M-x customize-variable RET org-gtd-capture-templates RET= — if
+   you customized the templates and broke the format, capture may
+   abort silently.
+
+** Symptom: the organize transient won't open
+
+You're in a clarify buffer. You hit =C-c c= (or =M-x
+org-gtd-organize=) and nothing happens, or you get an error like
+"Wrong type argument".
+
+Most common causes:
+
+1. *You are not in =org-gtd-clarify-mode=.* The =C-c c= binding
+   lives on =org-gtd-clarify-mode-map=. Run =M-x describe-mode= and
+   confirm the major mode line includes =Org GTD Clarify=. If not,
+   you are in plain =org-mode= — close the buffer and re-enter
+   through =org-gtd-clarify-item= or =org-gtd-process-inbox=.
+
+2. *Required dependencies are not loaded.* =org-gtd-organize=
+   requires =transient= ≥ 0.3.7. Check =M-x list-packages= and
+   confirm =transient= is current.
+
+3. *A previous customization broke the registry.* If you call
+   =org-gtd-customize-type= with bad arguments — for example, an
+   unknown type name — the call signals an error. Until you remove
+   the bad call from your init file, the type registry stays
+   intact, but other type-driven code may misbehave. Re-evaluate
+   your customizations one at a time and watch for errors in
+   =*Messages*=.
+
+** Inspect a heading's GTD shape directly
+
+When in doubt, read the properties drawer. From the heading:
+
+#+begin_src emacs-lisp
+M-x org-entry-properties RET   ; lists every property
+#+end_src
+
+Or programmatically, from elsewhere:
+
+#+begin_src emacs-lisp
+(org-with-point-at marker
+  (org-entry-get nil "ORG_GTD"))
+#+end_src
+
+The =ORG_GTD= value is the canonical source of truth for "what type
+is this." Anything else is derived from it.
+
+** The reflect family
+
+These commands surface every common variety of stuck or missing item.
+Run them as a weekly review pass:
+
+| Command                                       | What it finds                                  |
+|-----------------------------------------------+------------------------------------------------|
+| =org-gtd-reflect-stuck-projects=              | Projects with active tasks but no NEXT action  |
+| =org-gtd-reflect-stuck-calendar-items=        | Calendar items with bad/missing timestamps     |
+| =org-gtd-reflect-stuck-tickler-items=         | Tickler items with bad/missing review dates    |
+| =org-gtd-reflect-stuck-habit-items=           | Habits with broken configuration               |
+| =org-gtd-reflect-stuck-delegated-items=       | Delegated items missing delegate or follow-up  |
+| =org-gtd-reflect-stuck-next-action-items=     | Next-actions that aren't actually marked NEXT  |
+| =org-gtd-reflect-missed-items=                | Items that should have been processed but weren't |
+
+For the full descriptions, see [[#commands][Reference: commands]].
+
+** When none of this helps
+
+org-gtd has more failure modes than this guide covers. If nothing
+above applies, search the issues
+(https://github.com/Trevoke/org-gtd.el/issues), ask on Discord
+(https://discord.gg/2kAK6TfqJq), or open a new issue with your
+=org-gtd= version, relevant configuration, steps to reproduce, and
+expected vs. actual behavior.
+
+** See also
+
+- [[#commands][Reference: Commands]]
+- [[#capture-and-process][How to capture and process]]
+- [[#about-the-pipeline][Explanation: about the pipeline]]

@@ -1,0 +1,158 @@
+* About GTD
+:PROPERTIES:
+:CUSTOM_ID: about-gtd
+:END:
+
+org-gtd implements a methodology, not just a workflow. To use the
+package well it helps to understand what the methodology is for and
+which of its ideas the package models directly versus which it leaves
+to you. This document is reflection, not instruction; when you want
+to *do* something, the cross-links at the end will point you at the
+right tutorial or how-to.
+
+** Why GTD exists at all
+
+David Allen's /Getting Things Done/ (2001) is, at its core, a single
+claim: the human mind is excellent at *having* ideas and terrible at
+*holding* them. Every commitment you keep in your head occupies a
+slice of attention even when you are not actively thinking about it.
+The solution is to move those commitments out of your head and into a
+system you trust enough to stop checking.
+
+The product GTD sells is not a list. It is the calm that comes from
+knowing nothing important is forgotten.
+
+#+begin_quote
+"Your mind is for having ideas, not holding them." --- David Allen
+#+end_quote
+
+That framing tells you what "good org-gtd usage" looks like. If
+capturing feels like a chore, or your agenda makes you anxious, the
+system is failing at its real job. Method-purity is not the goal;
+trust is.
+
+** The five steps
+
+Allen's methodology has five activities. They are sequential at the
+level of a single item but cyclical at the level of a practice.
+
+1. *Capture.* Get every open loop --- task, idea, worry, errand ---
+   out of your head and into an inbox. The inbox is a single trusted
+   bucket. ~org-gtd-capture~ provides one.
+2. *Clarify.* Look at each captured item and decide what it actually
+   means. Is it actionable? If yes, what is the very next physical
+   action? If no, is it reference material, someday/maybe, or trash?
+   This is the step most people skip and the step that does the most
+   cognitive work.
+3. *Organize.* Once you know what an item is, put it where it
+   belongs: a project, a calendar slot, a delegation, a reference
+   note. Org-gtd's transient organize menu is the dispatcher for this
+   step.
+4. *Reflect.* Periodically review the whole system --- weekly is
+   Allen's prescription --- so it stays trusted. Stale lists become
+   anxiety; reviewed lists become certainty.
+5. *Engage.* Look at what is actually in front of you right now and
+   pick something to do.
+
+These map onto org-gtd commands directly: ~org-gtd-capture~,
+~org-gtd-clarify-item~, ~org-gtd-organize~ (and the inbox-processing
+loop ~org-gtd-process-inbox~), ~org-gtd-review~, and
+~org-gtd-engage~. The naming is intentional --- learning the package
+and learning the methodology reinforce each other.
+
+If you have never read /Getting Things Done/, do. This document is a
+sketch; the book is the canonical source.
+
+** The categories
+
+Clarify produces a small set of decisions, and those decisions are the
+package's type system. Each one represents a different relationship
+between you and the work.
+
+- *Next action* --- a single, concrete physical step you could take
+  the next time you sit down. "Email Alice for project budget," not
+  "follow up with Alice." Next actions are the atoms of GTD.
+- *Project* --- any outcome that requires more than one next action.
+  In Allen's vocabulary "project" is much smaller than the everyday
+  word: replacing a lightbulb is not a project, but "have the kitchen
+  repainted" is. Projects exist to /generate/ next actions; org-gtd
+  uses ~org-edna~ to chain tasks so completing one reveals the next.
+- *Calendar* --- something tied to a specific moment. The defining
+  test is: if it doesn't happen at that time, it doesn't happen.
+  Dentist appointments belong here; "do laundry sometime Saturday"
+  does not.
+- *Delegated (waiting for)* --- the work has moved to someone else,
+  but you still own the outcome. The waiting list is the thing that
+  prevents items from disappearing into other people's inboxes.
+- *Someday/Maybe* --- not committed, but worth keeping in view. The
+  honest answer for a lot of inbox items. Pulling something onto the
+  someday list is a real decision, not a deferral; it says "I am
+  choosing not to act on this now and I want to revisit it later."
+- *Reference (knowledge)* --- not a task at all. Information you
+  keep. In org-gtd this is the =knowledge= type, which archives the
+  heading rather than carrying it as work.
+- *Trash* --- not worth keeping in any form. Naming this as a
+  category matters; "should I just delete this?" is a real
+  clarify-step decision.
+
+The package adds three GTD-adjacent types: *habit* (recurring tasks
+on org-mode's habit system), *tickler* (deferred items that re-enter
+the inbox at a future date), and *quick-action* (the "if it takes
+less than two minutes, do it now" shortcut). They aren't in the
+original methodology but they fit its spirit.
+
+For an exhaustive description of what each type stores and how, see
+the [[#type-registry][type registry reference]]; for the design
+reasoning behind the closed set, see
+[[#about-the-type-system][About the type system]].
+
+** Horizons of focus
+
+Allen also describes a vertical axis he calls the /Horizons of Focus/,
+running from the runway of daily action up through a 50,000-foot view
+of your life's purpose:
+
+- *H1 --- Projects* (current commitments)
+- *H2 --- Areas of Focus and Accountability* (the standing roles and
+  domains that generate projects: career, family, health, finances)
+- *H3 --- Goals and Objectives* (1--2 year horizon)
+- *H4 --- Vision* (3--5 years)
+- *H5 --- Purpose and Principles* (life-long)
+
+Projects should be in service of areas, areas in service of goals,
+and so on; the higher horizons keep the lower ones honest.
+
+org-gtd does not model the horizons. They are reflective; the package
+is operational. The one exception is ~org-gtd-areas-of-focus~, which
+lets you list your H2 areas and assign one to a project or task
+during clarification. That single hook keeps the "which area does
+this serve?" question in the workflow without the package pretending
+to manage your life vision for you.
+
+** How org-gtd lands the methodology in org-mode
+
+GTD is method-agnostic; Allen wrote it before electronic systems were
+common. The choices org-gtd makes when mapping the method onto
+org-mode are deliberate:
+
+- Categories live in an org property, =ORG_GTD=, on the heading
+  (=ORG_GTD: Actions=, =ORG_GTD: Projects=, and so on).
+- TODO keywords carry the action state (~NEXT~, ~TODO~, ~WAIT~,
+  ~DONE~, ~CNCL~). Org-gtd does not invent its own state machine; it
+  rides on org-mode's, with ~org-gtd-keyword-mapping~ telling it
+  which of /your/ keywords mean which GTD state.
+- Refile targets are top-level headings in =org-gtd-tasks.org=,
+  identified by an =ORG_GTD_REFILE= property. Categorizing is a
+  refile, reusing one of org-mode's most battle-tested primitives.
+- The agenda is the engage view. ~org-gtd-engage~ is a custom agenda
+  command --- everything you know about org-agenda transfers.
+
+The further org-gtd stays from reinventing org-mode, the better it
+composes with the rest of your Emacs.
+
+** Further reading
+
+- Tutorial --- try it: [[#quick-start][Quick start: from blank inbox to your first NEXT action]]
+- How-to --- apply it: [[#capture-and-process][How to capture and process the inbox]]
+- Reference --- look it up: [[#type-registry][Type registry]]
+- Sibling explanation: [[#about-the-type-system][About the type system]]

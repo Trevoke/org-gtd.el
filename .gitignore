@@ -8,6 +8,8 @@
 /dev/.config/
 /doc/org-gtd.info
 /doc/org-gtd.texi
+/doc/diataxis/org-gtd-diataxis.info
+/doc/diataxis/org-gtd-diataxis.texi
 /dev/gtd
 /gtd-test
 dist/

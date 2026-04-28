@@ -1,0 +1,215 @@
+* Commands
+:PROPERTIES:
+:CUSTOM_ID: commands
+:END:
+
+Every interactive command shipped by org-gtd, grouped by GTD workflow
+step. Commands marked /autoloaded/ are available before the package is
+fully loaded; the rest become available after =(require 'org-gtd)=.
+
+org-gtd does not bind any command to a key by default. The single
+exception is =org-gtd-clarify-mode-map=, which is active inside the
+clarify (WIP) buffer.
+
+** Capture
+:PROPERTIES:
+:CUSTOM_ID: commands-capture
+:END:
+
+| Command                  | Default key | Purpose                                                       |
+|--------------------------+-------------+---------------------------------------------------------------|
+| ~org-gtd-capture~        | none        | Open an org-capture session targeting the GTD inbox.          |
+| ~org-gtd-inbox-path~     | n/a         | Return the inbox file path; creates the file if missing.      |
+
+~org-gtd-capture~ accepts the same optional =GOTO= and =KEYS= arguments
+as ~org-capture~. ~org-gtd-inbox-path~ is autoloaded but primarily used
+internally and inside ~org-gtd-capture-templates~.
+
+** Process
+:PROPERTIES:
+:CUSTOM_ID: commands-process
+:END:
+
+| Command                  | Default key | Purpose                                                                    |
+|--------------------------+-------------+----------------------------------------------------------------------------|
+| ~org-gtd-process-inbox~  | none        | Walk every heading in the inbox (and any =org-gtd-additional-inbox-files=). |
+
+Processing opens each item in a clarify buffer in turn. The session
+ends when all configured inboxes are empty.
+
+** Clarify
+:PROPERTIES:
+:CUSTOM_ID: commands-clarify
+:END:
+
+| Command                                  | Default key      | Purpose                                                          |
+|------------------------------------------+------------------+------------------------------------------------------------------|
+| ~org-gtd-clarify-item~                   | none             | Open the clarify buffer for the heading at point.                |
+| ~org-gtd-clarify-agenda-item~            | none             | Same, dispatched from an agenda line.                            |
+| ~org-gtd-clarify-stop~                   | =C-c C-k=        | Abandon the current clarify buffer (and queue, if any).          |
+| ~org-gtd-clarify-duplicate~              | =C-c d=          | Queue a duplicate of the current item with a new title.          |
+| ~org-gtd-clarify-duplicate-exact~        | =C-c D=          | Queue an exact duplicate of the current item.                    |
+| ~org-gtd-clarify-toggle-horizons-window~ | none             | Show or hide the horizons side window.                           |
+| ~org-gtd-clarify-toggle-organize-help~   | none             | Show or hide the organize-keys help side window.                 |
+| ~org-gtd-clarify-switch-to-buffer~       | none             | Pick an existing WIP buffer with completion.                     |
+| ~org-gtd-clarify-project-insert-template~ | none            | Insert a template from ~org-gtd-clarify-project-templates~.       |
+| ~org-gtd-clarify-display-dependency-helper~ | none          | Open the project-dependency helper window.                       |
+
+The =C-c C-k=, =C-c d=, =C-c D= bindings are defined in
+~org-gtd-clarify-mode-map~ and apply only inside clarify buffers.
+~org-gtd-clarify-item~ and ~org-gtd-clarify-agenda-item~ accept a
+prefix argument (=C-u=) to mark the item for in-place update instead of
+refile.
+
+** Organize
+:PROPERTIES:
+:CUSTOM_ID: commands-organize
+:END:
+
+The organize step is dispatched through the ~org-gtd-organize~
+transient. Each transient suffix is also a standalone interactive
+command and can be called by name.
+
+*** Transient and per-type commands
+
+| Command                | Transient key | Purpose                                                       |
+|------------------------+---------------+---------------------------------------------------------------|
+| ~org-gtd-organize~     | n/a           | Transient menu for the heading at point.                      |
+| ~org-gtd-quick-action~ | =q=           | Mark item DONE and archive it.                                |
+| ~org-gtd-next-action~  | =s=           | File item as a NEXT action.                                   |
+| ~org-gtd-delegate~     | =d=           | File item as delegated; prompts for who and check-in date.    |
+| ~org-gtd-calendar~     | =c=           | File item with a fixed timestamp.                             |
+| ~org-gtd-habit~        | =h=           | File item as a recurring habit.                               |
+| ~org-gtd-project-new~  | =p=           | Convert item into a multi-step project.                       |
+| ~org-gtd-project-extend~ | =a=         | Attach the item as a task in an existing project.             |
+| ~org-gtd-tickler~      | =i=           | File as tickler with a future review date.                    |
+| ~org-gtd-someday~      | =y=           | File as someday/maybe.                                        |
+| ~org-gtd-knowledge~    | =k=           | File as reference and archive.                                |
+| ~org-gtd-trash~        | =t=           | Cancel and archive.                                           |
+
+~org-gtd-delegate~ and ~org-gtd-delegate-create~ accept optional
+non-interactive arguments (=DELEGATED-TO=, =CHECKIN-DATE=, plus =TOPIC=
+for the latter). For all other types, see [[#commands-creation][Item creation]]
+for the unified ~org-gtd-create-item~ entry point.
+
+*** Item creation
+:PROPERTIES:
+:CUSTOM_ID: commands-creation
+:END:
+
+| Command                    | Purpose                                                          |
+|----------------------------+------------------------------------------------------------------|
+| ~org-gtd-create-item~      | Programmatically create an item of any registered type.          |
+| ~org-gtd-delegate-create~  | Programmatic helper for delegated items (kept for compatibility). |
+
+See [[#create-items-programmatically][How to create items programmatically]] and
+[[#type-registry][the type registry reference]] for the per-type
+=:organize-fn= contract that =CONFIG= must match.
+
+** Engage
+:PROPERTIES:
+:CUSTOM_ID: commands-engage
+:END:
+
+| Command                    | Default key | Purpose                                                  |
+|----------------------------+-------------+----------------------------------------------------------|
+| ~org-gtd-engage~           | none        | Open the standard engage agenda block (calendar + next). |
+| ~org-gtd-engage-tagged~    | none        | Show next actions filtered by tag (prompts for tag).     |
+| ~org-gtd-show-all-next~    | none        | List every NEXT action across agenda files.              |
+
+~org-gtd-engage-grouped-by-context~ is an obsolete alias for
+~org-gtd-engage-tagged~ (since 4.0).
+
+** Review (reflect)
+:PROPERTIES:
+:CUSTOM_ID: commands-review
+:END:
+
+| Command                                 | Purpose                                                              |
+|-----------------------------------------+----------------------------------------------------------------------|
+| ~org-gtd-reflect-area-of-focus~         | Multi-block agenda for one area of focus.                            |
+| ~org-gtd-reflect-someday-maybe~         | All someday/maybe items.                                             |
+| ~org-gtd-reflect-someday-review~        | Walk someday/maybe items one at a time, optionally filtered by list. |
+| ~org-gtd-reflect-stuck-projects~        | Projects with TODO tasks but no NEXT/WAIT.                           |
+| ~org-gtd-reflect-stuck-next-action-items~ | Next actions not in NEXT state.                                    |
+| ~org-gtd-reflect-stuck-calendar-items~  | Calendar items missing a timestamp.                                  |
+| ~org-gtd-reflect-stuck-delegated-items~ | Delegated items missing timestamp or person.                         |
+| ~org-gtd-reflect-stuck-habit-items~     | Habit items missing a timestamp.                                     |
+| ~org-gtd-reflect-stuck-tickler-items~   | Tickler items missing a timestamp.                                   |
+| ~org-gtd-reflect-completed-items~       | Items closed in the last N days (prefix arg sets N; default 7).      |
+| ~org-gtd-reflect-completed-projects~    | Projects whose tasks are all done.                                   |
+| ~org-gtd-reflect-missed-engagements~    | Combined view of missed delegated, calendar, and overdue projects.   |
+| ~org-gtd-reflect-missed-delegated~      | Missed delegated check-ins only.                                     |
+| ~org-gtd-reflect-missed-calendar~       | Missed calendar appointments only.                                   |
+| ~org-gtd-reflect-missed-projects~       | Overdue projects only.                                               |
+| ~org-gtd-reflect-upcoming-delegated~    | Future delegated check-ins.                                          |
+| ~org-gtd-reflect-missed-with-custom~    | ~org-gtd-reflect-missed-engagements~ plus user-defined views.         |
+| ~org-gtd-reflect-missed-items~          | Past-due tickler, delegated, and calendar items.                     |
+| ~org-gtd-reactivate~                    | Restore a tickler/someday item to its previous state.                |
+
+The legacy =org-gtd-oops-*= and =org-gtd-review-*= names are obsolete
+aliases retained for 4.0 compatibility.
+
+** Project and task management
+:PROPERTIES:
+:CUSTOM_ID: commands-projects
+:END:
+
+| Command                                       | Purpose                                                         |
+|-----------------------------------------------+-----------------------------------------------------------------|
+| ~org-gtd-project-add-successor~               | Add a successor task to the project at point.                   |
+| ~org-gtd-project-add-blocker~                 | Add a blocker task.                                             |
+| ~org-gtd-project-add-root-task~               | Add a root task with no dependencies.                           |
+| ~org-gtd-project-remove-task~                 | Remove the task at point from its project.                      |
+| ~org-gtd-project-trash-task~                  | Trash the task at point.                                        |
+| ~org-gtd-project-change-state~                | Change the TODO state of the task at point.                     |
+| ~org-gtd-project-incubate~                    | Incubate a project (move to tickler) with a review date.        |
+| ~org-gtd-project-incubate-from-context~       | Incubate the project for the current context.                   |
+| ~org-gtd-project-someday~                     | Move project to someday/maybe.                                  |
+| ~org-gtd-project-someday-from-context~        | Same, dispatched from agenda or graph context.                  |
+| ~org-gtd-project-cancel~                      | Cancel a project (mark all undone tasks canceled).              |
+| ~org-gtd-project-cancel-from-agenda~          | Cancel the project for the current agenda item.                 |
+| ~org-gtd-project-cancel-from-context~         | Cancel from graph or agenda context.                            |
+| ~org-gtd-project-reactivate~                  | Reactivate a previously suspended project.                      |
+| ~org-gtd-stuck-projects~                      | Return =org-stuck-projects= configuration for org-agenda.        |
+| ~org-gtd-projects-fix-todo-keywords-for-project-at-point~ | Repair TODO keywords on the project at point.       |
+| ~org-gtd-projects-fix-all-todo-keywords~      | Repair TODO keywords on every project.                          |
+| ~org-gtd-show-project-graph~                  | Open the SVG/ASCII dependency graph for a project.              |
+| ~org-gtd-task-add-blockers~                   | Add tasks that block the current task.                          |
+| ~org-gtd-task-remove-blockers~                | Remove blocker relationships.                                   |
+| ~org-gtd-task-add-dependent~                  | Add a single dependent task.                                    |
+| ~org-gtd-task-add-dependents~                 | Add multiple dependent tasks.                                   |
+| ~org-gtd-task-clear-relationships~            | Remove all BLOCKS / DEPENDS_ON relationships from the task.     |
+| ~org-gtd-task-show-relationships~             | Display the task's blockers and dependents.                     |
+| ~org-gtd-validate-project-dependencies~       | Validate dependency consistency across projects.                |
+| ~org-gtd-remove-task-from-project~            | Detach the task at point from its project.                      |
+
+** Maintenance and configuration
+:PROPERTIES:
+:CUSTOM_ID: commands-maintenance
+:END:
+
+| Command                              | Purpose                                                                |
+|--------------------------------------+------------------------------------------------------------------------|
+| ~org-gtd-mode~                       | Toggle the global minor mode (mode-line lighter, hooks, edna setup).   |
+| ~org-gtd-archive-completed-items~    | Archive completed/canceled actions, projects, delegated, calendar.     |
+| ~org-gtd-archive-item-at-point~      | Archive the subtree at point to the GTD archive location.              |
+| ~org-gtd-setup-keywords-wizard~      | Walk through ~org-gtd-keyword-mapping~ setup.                          |
+| ~org-gtd-set-timestamp~              | Set =ORG_GTD_TIMESTAMP= on the heading at point.                       |
+| ~org-gtd-area-of-focus-set-on-item-at-point~ | Set the area-of-focus =CATEGORY= on the heading at point.       |
+| ~org-gtd-area-of-focus-set-on-agenda-item~   | Same, for an agenda line.                                       |
+| ~org-gtd-customize-type~             | Merge a plist into one or more registered types.                       |
+| ~org-gtd-view-show~                  | Render a [[#hooks][view spec]] in =org-agenda=.                        |
+| ~org-gtd-agenda-property-add-properties~ | Append agenda-property text to agenda lines (used as agenda hook).  |
+| ~org-gtd-upgrade-v3-to-v4~           | Run the v3 → v4 migration once.                                        |
+
+** Cross-references
+:PROPERTIES:
+:CUSTOM_ID: commands-xref
+:END:
+
+- Configure these commands: see [[#customization][Customization]].
+- Add metadata or behavior at organize time: see [[#hooks][Hooks]] and the
+  ~org-gtd-organize-hooks~ entry under [[#customization][Customization]].
+- Type-aware command behavior is documented in [[#type-registry][the type registry]].
+- Tutorial walkthrough: [[#quick-start][Quick start]] and [[#your-first-project][Your first project]].

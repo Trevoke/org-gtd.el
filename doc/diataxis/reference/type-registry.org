@@ -1,0 +1,198 @@
+* Type registry
+:PROPERTIES:
+:CUSTOM_ID: type-registry
+:END:
+
+org-gtd's catalogue of GTD item categories lives in =org-gtd-types=, a
+constant alist whose entries are =(TYPE-NAME . PLIST)=. The same plist
+schema is used by ~org-gtd-customize-type~ and the
+=org-gtd-user-types= customization variable to override built-in
+values.
+
+** Schema
+:PROPERTIES:
+:CUSTOM_ID: type-registry-schema
+:END:
+
+The plist keys recognised on a type entry, in the order in which the
+pipeline consumes them.
+
+| Key                    | Type                              | Default                               | Effect                                                                                                                  |
+|------------------------+-----------------------------------+---------------------------------------+-------------------------------------------------------------------------------------------------------------------------|
+| =:org-gtd=             | string                            | required                              | Value written to the =ORG_GTD= property; default refile-target heading. Never user-overridable.                          |
+| =:state=               | =:next= / =:wait= / =:done= / =:canceled= / =nil= | =nil=                  | Semantic TODO state assigned by the type's =:organize-fn=. =nil= clears the keyword.                                    |
+| =:disposition=         | =list= / =done-and-archive= / =cancel-and-archive= / =externalize= | =list= | How the item leaves the pipeline. =list= refiles; the archive variants set the corresponding done state and archive. =externalize= is reserved. |
+| =:transient-key=       | string                            | =nil=                                 | Key shown in the ~org-gtd-organize~ transient menu. Types without a key remain dispatchable by name.                    |
+| =:prompt-to-refile=    | boolean                           | unset                                 | When non-nil, the refile engine prompts for a destination. Set to explicit =nil= to suppress prompting.                  |
+| =:refile-target=       | string                            | falls back to =:org-gtd=              | Heading the type refiles into.                                                                                          |
+| =:organize-fn=         | function                          | ~org-gtd-configure-as-type~           | Function called as =(FN TYPE CONFIG)= to configure the heading. Custom functions replace the default outright.          |
+| =:organize-project-fn= | function                          | =nil=                                 | Function for project-level dispatch. When unset, the type cannot reclassify a project heading.                          |
+| =:properties=          | list of property descriptors      | =nil=                                 | Semantic properties prompted for during clarify. Each entry is =(:semantic-name :org-property STR :type T :required B :prompt STR :default V :input-fn F)=. |
+| =:hooks=               | plist of stage → list of fns      | =nil=                                 | Per-type hook functions. Stages: =:before-clarify=, =:after-clarify=, =:before-organize=, =:after-organize=, =:before-file=, =:after-file=. See [[#hooks][hooks]]. |
+
+User overrides are merged through ~org-gtd--merge-type-definitions~:
+
+- Scalar fields (=:state=, =:organize-fn=, =:disposition=,
+  =:organize-project-fn=, =:prompt-to-refile=, =:transient-key=)
+  replace the built-in value when the user plist mentions the key.
+- =:properties= merges by =semantic-name=; user descriptors with the
+  same head replace the built-in descriptor.
+- =:hooks= appends per-stage; built-in functions run first.
+- =:org-gtd= is never overridden.
+
+Property descriptor attributes:
+
+| Attribute      | Type     | Required | Effect                                                                  |
+|----------------+----------+----------+-------------------------------------------------------------------------|
+| =:org-property= | string  | yes      | The org-mode property name written on the heading.                      |
+| =:type=        | symbol   | yes      | Input type — =text=, =timestamp=, or =repeating-timestamp=.             |
+| =:required=    | boolean  | no       | When non-nil, clarify rejects an empty answer.                          |
+| =:prompt=      | string   | no       | Minibuffer prompt.                                                      |
+| =:default=     | any      | no       | Pre-filled value; presence skips prompting.                             |
+| =:input-fn=    | function | no       | Custom reader =(FN PROMPT)= returning the value.                        |
+
+** Built-in types
+:PROPERTIES:
+:CUSTOM_ID: type-registry-builtins
+:END:
+
+| Type           | =:org-gtd=  | =:state=    | =:disposition=        | =:transient-key= | =:refile-target= | Project handler                       |
+|----------------+-------------+-------------+-----------------------+------------------+------------------+---------------------------------------|
+| =next-action=  | =Actions=   | =:next=     | =list=                | =s=              | =Actions=        | none                                  |
+| =delegated=    | =Delegated= | =:wait=     | =list=                | =d=              | =Actions=        | none                                  |
+| =calendar=     | =Calendar=  | =nil=       | =list=                | =c=              | =Calendar=       | none                                  |
+| =tickler=      | =Tickler=   | =nil=       | =list=                | =i=              | =Tickler=        | ~org-gtd-tickler--organize-project~   |
+| =someday=      | =Someday=   | =nil=       | =list=                | =y=              | =Someday=        | ~org-gtd-someday--organize-project~   |
+| =project=      | =Projects=  | =nil=       | =list=                | none             | =Projects=       | n/a (project itself)                  |
+| =habit=        | =Habit=     | =nil=       | =list=                | =h=              | =Habits=         | none                                  |
+| =reference=    | =Reference= | =:done=     | =done-and-archive=    | =k=              | =Reference=      | none                                  |
+| =trash=        | =Trash=     | =:canceled= | =cancel-and-archive=  | =t=              | =Trash=          | none                                  |
+| =quick-action= | =Quick=     | =:done=     | =done-and-archive=    | =q=              | =Quick=          | none                                  |
+
+All types except =project= ship with =:prompt-to-refile t= when the
+legacy ~org-gtd-refile-prompt-for-types~ variable seeds them at load
+time; the =knowledge=, =trash=, and =quick-action= types do not appear
+in that legacy default and refile silently.
+
+*** next-action
+=:organize-fn= defaults to ~org-gtd-configure-as-type~ (no override).
+No properties.
+
+*** delegated
+=:organize-fn= is ~org-gtd-delegate--organize~. Properties:
+
+| Semantic | =:org-property=        | =:type=    | =:required= | Prompt                  |
+|----------+------------------------+------------+-------------+-------------------------|
+| =:who=   | =DELEGATED_TO=         | =text=      | yes         | "Who will do this?"     |
+| =:when=  | =ORG_GTD_TIMESTAMP=    | =timestamp= | yes         | "When to check in?"     |
+
+*** calendar
+=:organize-fn= defaults. Property:
+
+| Semantic | =:org-property=     | =:type=    | =:required= | Prompt                       |
+|----------+---------------------+------------+-------------+------------------------------|
+| =:when=  | =ORG_GTD_TIMESTAMP= | =timestamp= | yes         | "When is this happening?"    |
+
+*** tickler
+=:organize-fn= is ~org-gtd-tickler--organize=; project handler is
+~org-gtd-tickler--organize-project~. Property:
+
+| Semantic | =:org-property=     | =:type=    | =:required= | Prompt              |
+|----------+---------------------+------------+-------------+---------------------|
+| =:when=  | =ORG_GTD_TIMESTAMP= | =timestamp= | yes         | "When to revisit?"  |
+
+*** someday
+=:organize-fn= is ~org-gtd-someday--organize=; project handler is
+~org-gtd-someday--organize-project~. No properties. The customization
+variable ~org-gtd-someday-lists~ may add a list-name prompt.
+
+*** project
+A registry entry that holds the =Projects= heading value. It has no
+=:transient-key=, =:state=, or =:disposition= and is never the target
+of ~org-gtd-organize~ directly — projects are created and modified via
+~org-gtd-project-new~, ~org-gtd-project-extend~, and the project
+management commands.
+
+*** habit
+=:organize-fn= defaults. Properties:
+
+| Semantic | =:org-property= | =:type=               | =:required= | =:default= | Prompt                  |
+|----------+-----------------+-----------------------+-------------+------------+-------------------------|
+| =:when=  | =SCHEDULED=     | =repeating-timestamp= | yes         | n/a        | "When and how often?"   |
+| =:style= | =STYLE=         | =text=                | yes         | "habit"    | n/a                     |
+
+The =:style= default is fixed; the type stamps =STYLE: habit= without
+prompting.
+
+*** reference
+=:state= is =:done=, =:disposition= is =done-and-archive=. The item is
+moved to =Reference= and archived in one step. No properties.
+
+*** trash
+=:state= is =:canceled=, =:disposition= is =cancel-and-archive=. The
+item is canceled and archived. No properties.
+
+*** quick-action
+=:state= is =:done=, =:disposition= is =done-and-archive=. Used for
+2-minute tasks; the heading is recorded as completed and archived. No
+properties.
+
+** Customizing types
+:PROPERTIES:
+:CUSTOM_ID: type-registry-customize
+:END:
+
+Two entry points modify the registry:
+
+#+begin_src emacs-lisp
+(setq org-gtd-user-types
+      '((delegated
+         :properties
+         ((:who :org-property "DELEGATED_TO" :type text :required t
+                :prompt "Delegate to" :input-fn my/ebdb-completing-read)))))
+#+end_src
+
+#+begin_src emacs-lisp
+(org-gtd-customize-type 'next-action
+                        :hooks (list :after-organize (list #'my/log-action)))
+#+end_src
+
+The =org-gtd-user-types= variable applies merges at lookup time;
+~org-gtd-customize-type~ mutates the registry in place.
+~org-gtd-type-get~ returns the merged entry.
+
+See [[#customize-a-type][How to customize a type]] for more involved
+examples and [[#about-the-type-system][About the type system]] for
+design rationale.
+
+** Accessor reference
+:PROPERTIES:
+:CUSTOM_ID: type-registry-accessors
+:END:
+
+Read-only accessors for the merged registry entry. All accept a type
+symbol and return =nil= for unknown types unless noted otherwise.
+
+| Accessor                                  | Returns                                                  |
+|-------------------------------------------+----------------------------------------------------------|
+| ~org-gtd-type-get~                        | Full =(TYPE-NAME . PLIST)= entry.                        |
+| ~org-gtd-type-org-gtd-value~              | =:org-gtd= string.                                       |
+| ~org-gtd-type-refile-target~              | =:refile-target=, falling back to =:org-gtd=.            |
+| ~org-gtd-type-state~                      | =:state= keyword or =nil=.                               |
+| ~org-gtd-type-disposition~                | =:disposition= symbol; defaults to =list=.               |
+| ~org-gtd-type-organize-fn~                | =:organize-fn= or ~org-gtd-configure-as-type~.           |
+| ~org-gtd-type-organize-project-fn~        | =:organize-project-fn= or =nil=.                         |
+| ~org-gtd-type-properties~                 | List of property descriptors.                            |
+| ~org-gtd-type-property~                   | Org property name for a semantic name.                   |
+| ~org-gtd-type-prompt-to-refile~           | =:prompt-to-refile= value.                               |
+| ~org-gtd-type-prompt-to-refile-set-p~     | =t= when the key is explicitly declared.                  |
+| ~org-gtd-type-transient-key~              | =:transient-key= string.                                 |
+| ~org-gtd-type-hooks~                      | =:hooks= plist.                                          |
+| ~org-gtd-type-from-org-gtd-value~         | Inverse lookup: type symbol from the =ORG_GTD= string.   |
+
+** Cross-references
+
+- Pipeline that consumes these fields: [[#hooks][Hooks]].
+- User-facing customization: [[#customization][Customization]].
+- Conceptual model: [[#about-the-type-system][About the type system]].
+- Programmatic creation: [[#create-items-programmatically][How to create items programmatically]].

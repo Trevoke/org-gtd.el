@@ -1,0 +1,216 @@
+* Your first project: order a birthday cake
+:PROPERTIES:
+:CUSTOM_ID: your-first-project
+:END:
+
+In this tutorial, we will capture a multi-step project ---
+"Order a birthday cake" --- file it as a project in org-gtd, and watch
+the system advance the next action automatically as we complete each
+step.
+
+By the end, we'll have seen the single most useful org-gtd behaviour
+in action: only the /currently actionable/ task ever shows up as
+=NEXT=, and the moment we mark it done, the following task takes its
+place.
+
+** Before we start
+
+We assume:
+
+- You've completed [[#quick-start][the quick start]]. You know how to
+  capture, process, and engage.
+- org-edna is enabled (=(org-edna-mode 1)= in your config). org-gtd
+  uses it to drive the automatic state transitions we'll see. If you
+  haven't done this, [[#install-and-configure][install and configure]]
+  shows the setup.
+- Your inbox is empty. Not strictly required, but it keeps the screen
+  clean.
+
+** The project we'll build
+
+Three sub-tasks, in order:
+
+1. Pick a flavour
+2. Call the bakery
+3. Pick up the cake
+
+Linear, easy to imagine, easy to verify on screen.
+
+** Step 1: capture the project with its sub-tasks
+
+Type:
+
+#+begin_example
+M-x org-gtd-capture RET
+#+end_example
+
+In the capture buffer, the cursor is on a line that already starts
+with =*=. Type the project name on that line, then add three
+second-level headings underneath. The buffer should look like this:
+
+#+begin_src org
+,* Order a birthday cake
+,** Pick a flavour
+,** Call the bakery
+,** Pick up the cake
+#+end_src
+
+The structure matters: the top heading (=*=) is the project, and each
+sub-heading (=**=) is a task within it. org-gtd reads this shape
+directly.
+
+Save and close:
+
+#+begin_example
+C-c C-c
+#+end_example
+
+** Step 2: start processing the inbox
+
+Type:
+
+#+begin_example
+M-x org-gtd-process-inbox RET
+#+end_example
+
+A clarify buffer opens, showing =Order a birthday cake= and its three
+sub-tasks. We can edit anything we want here --- rename a sub-task,
+add notes, even add or remove sub-tasks. Our wording is already clear,
+so let's move on.
+
+** Step 3: organize as a project
+
+Type:
+
+#+begin_example
+M-x org-gtd-organize RET
+#+end_example
+
+The transient menu appears. The options we saw last time --- =Quick
+action=, =Next action=, =Delegate=, =Calendar=, =Habit= --- are still
+there, plus a row that's the one we want now:
+
+#+begin_example
+p   Project (multi-step)
+a   Add this task to an existing project
+#+end_example
+
+Press:
+
+#+begin_example
+p
+#+end_example
+
+org-gtd may prompt for tags --- press =RET= to skip. It then asks where
+to refile; accept the default with =RET=.
+
+The clarify buffer closes. Behind the scenes, org-gtd has:
+
+- Marked =Pick a flavour= (the first sub-task) as =NEXT=.
+- Marked =Call the bakery= and =Pick up the cake= as =TODO=.
+- Wired dependencies between them so each task unblocks the one after
+  it.
+- Filed the whole project (parent heading and sub-tasks together)
+  into your tasks file.
+
+** Step 4: see only the first task on engage
+
+Type:
+
+#+begin_example
+M-x org-gtd-engage RET
+#+end_example
+
+In the agenda buffer, find the section listing =NEXT= items. You
+should see exactly one task from this project:
+
+#+begin_example
+NEXT Pick a flavour
+#+end_example
+
+=Call the bakery= and =Pick up the cake= are /not/ on the engage view.
+They exist, they're filed, but they aren't actionable yet --- they're
+waiting for =Pick a flavour= to finish. This is the point of the
+project structure: we're never confronted with steps we can't do yet.
+
+** Step 5: complete the first task and watch the next one promote
+
+Move the cursor onto =NEXT Pick a flavour=. Cycle its TODO state:
+
+#+begin_example
+t
+#+end_example
+
+A small menu appears with the keyword choices. Pick =DONE= (it's
+usually =d=). The line updates to:
+
+#+begin_example
+DONE Pick a flavour
+#+end_example
+
+Now refresh the agenda view:
+
+#+begin_example
+g
+#+end_example
+
+The =DONE= line disappears (completed items don't clutter engage), and
+in its place you should see:
+
+#+begin_example
+NEXT Call the bakery
+#+end_example
+
+That keyword change --- =TODO= → =NEXT= --- happened automatically. We
+didn't open the project, we didn't edit anything; we just marked one
+task done. =Pick up the cake= is still =TODO=, patiently waiting its
+turn.
+
+** Step 6: do it once more to confirm the pattern
+
+With the cursor on =NEXT Call the bakery=, press =t= and pick =DONE=
+again. Refresh with =g=.
+
+You should now see:
+
+#+begin_example
+NEXT Pick up the cake
+#+end_example
+
+One last task. Mark it =DONE= the same way, refresh, and the project
+is finished --- nothing from it appears on engage, because there's
+nothing left to act on.
+
+** What we just did
+
+We captured a project with three steps, and the system handled all the
+state management for us:
+
+- /Capturing/ used the same =org-gtd-capture= we already knew, but with
+  a multi-line shape: parent heading plus children.
+- /Organizing as a project/ told org-gtd to treat the structure as a
+  pipeline: only the first task is =NEXT=, the rest are =TODO=, and
+  they're chained.
+- /Completing each task/ triggered org-edna, which org-gtd sets up
+  during organize, to promote the next =TODO= up to =NEXT=.
+
+This is the pattern for every project: capture the steps, organize
+once, then just do work and tick tasks off. The agenda always shows
+you exactly what's actionable today --- nothing earlier, nothing
+later.
+
+** What's next
+
+- Want parallel sub-tasks (more than one =NEXT= at a time), or to
+  reshape an existing project's dependencies? See the how-to guides on
+  [[#capture-and-process][capture and process]] and
+  [[#customize-a-type][customizing a type]].
+- Curious about how project dependencies actually work under the
+  hood --- properties, blockers, the org-edna integration? Read
+  [[#about-the-type-system][About the type system]] and
+  [[#about-the-pipeline][About the pipeline]].
+- For the full list of GTD types and what each one does, see the
+  [[#type-registry][type registry]] reference.
+- To make tasks bend toward your own habits (auto-tagging, effort
+  defaults, integrations), see [[#write-a-hook][how to write a hook]]
+  and the [[#hooks][hooks reference]].

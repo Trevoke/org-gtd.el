@@ -1,0 +1,151 @@
+* How to write a hook
+:PROPERTIES:
+:CUSTOM_ID: write-a-hook
+:END:
+
+org-gtd's classification pipeline fires six observation hooks per
+item. They let you run code at well-defined moments without changing
+the pipeline itself. Use this guide when you want to log, decorate,
+or integrate — not when you want to *change* what classification
+does (for that, see [[#customize-a-type][How to customize a type]]).
+
+** The six stages
+
+When you organize an item, the pipeline runs in this order. Hooks
+fire at the boundaries marked below. Each receives the heading
+marker as its sole argument.
+
+| Stage              | Fires                                          |
+|--------------------+------------------------------------------------|
+| =:before-clarify=  | before the heading enters the clarify buffer   |
+| =:after-clarify=   | after clarify finishes, before organize begins |
+| =:before-organize= | before the type's =:organize-fn= runs          |
+| =:after-organize=  | after =:organize-fn= and =org-gtd-organize-hooks= |
+| =:before-file=     | before the disposition (refile/archive)        |
+| =:after-file=      | after the disposition                          |
+
+Each stage has a global hook variable you can add functions to:
+
+| Stage              | Variable                       |
+|--------------------+--------------------------------|
+| =:before-clarify=  | =org-gtd-before-clarify-hook=  |
+| =:after-clarify=   | =org-gtd-after-clarify-hook=   |
+| =:before-organize= | =org-gtd-before-organize-hook= |
+| =:after-organize=  | =org-gtd-after-organize-hook=  |
+| =:before-file=     | =org-gtd-before-file-hook=     |
+| =:after-file=      | =org-gtd-after-file-hook=      |
+
+For per-type hooks, set =:hooks= on the type via
+~org-gtd-customize-type~ (see Example 2 below).
+
+** Hook contract
+
+- *Signature.* Every hook function takes one argument: a
+  point-or-marker locating the heading being organized.
+- *Return value.* Ignored. Hooks observe; they cannot gate the
+  pipeline.
+- *Errors.* Caught and logged. A buggy hook will not break
+  organization.
+- *Order.* For a given stage, global hooks run first, then per-type
+  hooks. Within a list, functions run in the order they were added.
+
+The pipeline lives in ~org-gtd-process-heading~ (see
+=org-gtd-organize-core.el=); the dispatcher is ~org-gtd-hooks-run~
+in =org-gtd-hooks.el=.
+
+** Example 1: Log every classification to a file
+
+A global =:after-organize= hook that appends a line to a CSV every
+time anything is classified. Useful for analytics or just curiosity.
+
+#+begin_src emacs-lisp
+(defun my/log-gtd-classification (pom)
+  "Append the heading at POM and its type to a log file."
+  (org-with-point-at pom
+    (let* ((title  (org-get-heading t t t t))
+           (type   (or (org-entry-get nil "ORG_GTD") "(none)"))
+           (stamp  (format-time-string "%FT%T%z"))
+           (line   (format "%s,%s,%S\n" stamp type title)))
+      (with-temp-buffer
+        (insert line)
+        (append-to-file (point-min) (point-max)
+                        (expand-file-name "~/gtd/classifications.csv"))))))
+
+(add-hook 'org-gtd-after-organize-hook #'my/log-gtd-classification)
+#+end_src
+
+This fires after the type's organize-fn ran and tags/effort were
+applied, but before the heading is refiled — at this point the
+=ORG_GTD= property is set, so we can read the new type cleanly.
+
+** Example 2: Auto-tag next-actions by area of focus
+
+A *per-type* =:after-organize= hook that prompts for an area of
+focus and applies it as a tag. Only runs for =next-action=, not for
+calendar or projects.
+
+#+begin_src emacs-lisp
+(defun my/tag-next-action-by-area (pom)
+  "Tag the heading at POM with one of `org-gtd-areas-of-focus'."
+  (org-with-point-at pom
+    (let ((area (completing-read "Area of focus: "
+                                 org-gtd-areas-of-focus)))
+      (org-set-tags (list area)))))
+
+(org-gtd-customize-type 'next-action
+  :hooks (list :after-organize (list #'my/tag-next-action-by-area)))
+#+end_src
+
+Per-type hooks merge per stage when you call
+~org-gtd-customize-type~ more than once on the same type, so adding
+a hook never clobbers a previously registered one.
+
+** Picking the right stage
+
+A few rules of thumb:
+
+- *Read the heading before any classification has happened*: use
+  =:before-clarify= or =:before-organize=. The =ORG_GTD= property
+  still reflects the *previous* type at that point (or is missing
+  for fresh inbox items).
+- *Read the new classification*: use =:after-organize= or later.
+  =ORG_GTD= and any type-specific properties are set.
+- *Mutate the heading*: use =:after-organize=. By the time
+  =:before-file= fires, refile is imminent and your changes need to
+  be saved already.
+- *Notify external systems*: use =:after-file=. The heading is in
+  its final location.
+
+The user-facing classic hook =org-gtd-organize-hooks= still runs
+between =:after-organize='s start and end — it's actually invoked
+from inside ~org-gtd-process-heading~ between the type's
+=:organize-fn= and the =:after-organize= hook stage. Keep using it
+for "decorate every item" tasks like setting tags or effort; reserve
+the six-stage hooks for finer placement or per-type behavior.
+
+** Removing a hook
+
+Same as any Emacs hook:
+
+#+begin_src emacs-lisp
+(remove-hook 'org-gtd-after-organize-hook #'my/log-gtd-classification)
+#+end_src
+
+For per-type hooks, call ~org-gtd-customize-type~ again with a new
+=:hooks= list — it merges with what you set previously, so it is
+generally easier to remove a function programmatically:
+
+#+begin_src emacs-lisp
+;; Reset (drops all per-type hooks for this stage):
+(org-gtd-customize-type 'next-action
+  :hooks (list :after-organize nil))
+#+end_src
+
+** See also
+
+- [[#hooks][Reference: hooks]] for the exact variable names and
+  signatures.
+- [[#about-the-pipeline][Explanation: about the pipeline]] for why
+  hooks are observation-only and where they sit in the data flow.
+- [[#customize-a-type][How to customize a type]] for the rest of the
+  type registry.
