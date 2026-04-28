@@ -252,6 +252,8 @@ by semantic name, and :hooks merge per stage (builtin first)."
     ;; :org-gtd is never overridden — copy-sequence preserved the builtin.
     (cons type-name out)))
 
+;;;; Customization
+
 ;;;###autoload
 (defun org-gtd-customize-type (name-or-names &rest plist)
   "Merge PLIST into the type definition(s) named by NAME-OR-NAMES.

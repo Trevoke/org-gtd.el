@@ -5,7 +5,7 @@
 
 org-gtd provides public API functions for building custom functionality.
 
-** Defining your own types
+** Customizing types
 
 The built-in GTD types (next-action, calendar, delegated, tickler, someday,
 habit, reference, trash, quick-action, project) are entries in the
