@@ -41,6 +41,20 @@ The registry module and command have been renamed from
 compatibility via ~define-obsolete-function-alias~, ~defvaralias~, and a
 dual ~(provide 'org-gtd-single-action)~.
 
+** Changed
+*** Disposition runner now sets TODO state before archiving
+The =done-and-archive= and =cancel-and-archive= dispositions explicitly
+call =org-todo= to set the closing keyword (DONE / CANCELED) before
+archiving the heading.  This is a deliberate contract: the disposition
+name declares the end-state, regardless of the type's =:state= field.
+
+Side effect: =org-after-todo-state-change-hook= fires at the moment the
+state is set (between the =:before-file= and =:after-file= pipeline
+hooks).  Users who configure =org-log-done= or rely on that hook may
+notice closing notes or timestamps appearing on items that previously
+went straight to archive without a state change.  No action is required
+unless your hook listeners are intolerant of this firing position.
+
 ** Deprecated
 - ~org-gtd-delegate-agenda-item~ — use ~org-gtd-delegate~ directly; the
   DWIM dispatch reads ~org-get-at-bol~ so it works from agenda buffers.
