@@ -82,19 +82,21 @@ yx state "task name" blocked --format json
 1. **File issues for remaining work** - Create issues for anything that needs follow-up
 2. **Run quality gates** (if code changed) - Tests, linters, builds
 3. **Update issue status** - Close finished work, update in-progress items
-4. **PUSH TO REMOTE** - This is MANDATORY:
+4. **PUSH TO REMOTE** - Push your branch, but **never auto-push `master`** (it deploys to MELPA):
    ```bash
    git pull --rebase
    yx sync
-   git push
-   git status  # MUST show "up to date with origin"
+   # Only push if NOT on master:
+   [[ "$(git branch --show-current)" != "master" ]] && git push
+   git status
    ```
+   If on `master`, stop here and ask the user to review before pushing.
 5. **Clean up** - Clear stashes, prune remote branches
 6. **Verify** - All changes committed AND pushed
 7. **Hand off** - Provide context for next session
 
 **CRITICAL RULES:**
-- Work is NOT complete until `git push` succeeds
-- NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
+- On any branch other than `master`: push automatically, work is NOT complete until `git push` succeeds
+- On `master`: do NOT push — ask the user to review first, as `master` auto-deploys to MELPA
+- NEVER say "ready to push when you are" on a feature branch — YOU must push
 - If push fails, resolve and retry until it succeeds
