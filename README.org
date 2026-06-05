@@ -75,7 +75,10 @@ If you use ~use-package~, copy this entire block into your init file - it includ
   ;; REQUIRED: Enable org-edna for project dependencies
   (org-edna-mode 1)
 
-  ;; Add org-gtd files to your agenda (must be in :config so org-gtd-directory is defined)
+  ;; Add org-gtd files to your agenda (must be in :config so org-gtd-directory is defined).
+  ;; A directory entry is valid: org-mode scans every .org file inside it.
+  ;; Already using org-agenda-files? Don't overwrite it - merge instead, e.g.:
+  ;;   (add-to-list 'org-agenda-files org-gtd-directory)
   (setq org-agenda-files (list org-gtd-directory))
 
   :bind
@@ -96,6 +99,8 @@ If you use ~use-package~, copy this entire block into your init file - it includ
 #+end_src
 
 *Existing org-mode users*: If you already have ~org-todo-keywords~ configured, add a separate sequence for GTD keywords rather than mixing them into existing sequences. See the full documentation for details.
+
+*Existing org-agenda-files users*: The snippets above use ~(setq org-agenda-files (list org-gtd-directory))~, which *replaces* any agenda files you already have. If you have an existing ~org-agenda-files~, merge instead, e.g. ~(add-to-list 'org-agenda-files org-gtd-directory)~. Note that ~org-gtd-directory~ is a directory, and listing a directory is valid: org-mode scans every ~.org~ file inside it, so any new GTD file is picked up automatically (but so is any unrelated ~.org~ file you drop there).
 
 ** Alternative: Manual Configuration
 
@@ -121,7 +126,10 @@ If you don't use ~use-package~, copy this into your init file and restart Emacs:
 ;; Optional: Set GTD directory (defaults to ~/gtd/)
 ;; (setq org-gtd-directory "~/gtd/")
 
-;; Add org-gtd files to your agenda
+;; Add org-gtd files to your agenda.
+;; A directory entry is valid: org-mode scans every .org file inside it.
+;; Already using org-agenda-files? Merge instead of overwriting, e.g.:
+;;   (add-to-list 'org-agenda-files org-gtd-directory)
 (setq org-agenda-files (list org-gtd-directory))
 
 ;; REQUIRED: Enable org-edna for project dependencies
