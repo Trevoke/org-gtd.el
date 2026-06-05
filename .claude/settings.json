@@ -30,7 +30,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/validate_elisp_syntax.py"
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate_elisp_syntax.py\"",
+            "if": "Write(**/*.el)"
           }
         ]
       },
@@ -39,7 +40,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/validate_elisp_syntax.py"
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate_elisp_syntax.py\"",
+            "if": "Edit(**/*.el)"
           }
         ]
       },
@@ -48,7 +50,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/validate_elisp_syntax.py"
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate_elisp_syntax.py\"",
+            "if": "MultiEdit(**/*.el)"
           }
         ]
       }
