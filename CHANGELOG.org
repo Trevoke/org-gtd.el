@@ -76,6 +76,14 @@ heading to level 1.  The write-back now re-levels the clarified subtree to
 match the original heading's outline level instead of inserting the WIP
 buffer's level-1 text verbatim.
 
+*** Re-organizing an item no longer refiles the wrong subtree (Issue #288)
+Re-organizing an item that already lives in ~org-gtd-tasks.org~ (e.g.
+calling ~org-gtd-someday~ on a next action) no longer errors with "Cannot
+refile to position inside the tree or region" or moves the wrong subtree.
+Creating a missing refile target left point at end-of-buffer in the same
+buffer, so the subsequent refile acted on the wrong heading; point is now
+preserved.
+
 ** Design docs
 - ~docs/plans/2026-04-07-unified-type-and-hook-model-design.md~
 - ~docs/plans/2026-04-07-unified-type-and-hook-model-plan.md~

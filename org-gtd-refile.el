@@ -226,10 +226,15 @@ Creates the target in `org-gtd--default-file' to ensure consistent location.
 In future, this could be enhanced to prompt for file location when multiple
 org-gtd files exist."
   (with-current-buffer (org-gtd--default-file)
-    (goto-char (point-max))
-    (newline)
-    (insert refile-target-element)
-    (basic-save-buffer)))
+    ;; Preserve point: when the item being organized lives in this same
+    ;; buffer (standalone re-organize), `with-current-buffer' does not
+    ;; restore point, so moving to `point-max' would leave the subsequent
+    ;; `org-refile' acting on the wrong subtree (issue #288).
+    (save-excursion
+      (goto-char (point-max))
+      (newline)
+      (insert refile-target-element)
+      (basic-save-buffer))))
 
 (defun org-gtd-refile--group-p (type)
   "Determine whether the current heading is of a given gtd TYPE.

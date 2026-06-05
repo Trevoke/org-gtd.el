@@ -75,6 +75,35 @@
     (org-back-to-heading t)
     (assert-equal "Someday" (org-entry-get (point) "ORG_GTD"))))
 
+(deftest someday-dispatch/on-single-action-somedays-only-that-item ()
+  "Calling org-gtd-someday on a single action moves only that item,
+even when no Someday refile target exists yet (issue #288).
+
+Regression: standalone re-organize from within the default file used to
+raise \"Cannot refile to position inside the tree or region\" because
+creating the missing refile target left point at end-of-buffer."
+  (create-single-action "First action")
+  (create-single-action "Second action")
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward "First action")
+    (org-back-to-heading t)
+
+    ;; Standalone someday on the single action (no Someday target exists yet).
+    (org-gtd-someday)
+
+    ;; First action is now someday.
+    (goto-char (point-min))
+    (search-forward "First action")
+    (org-back-to-heading t)
+    (assert-equal "Someday" (org-entry-get (point) "ORG_GTD"))
+
+    ;; Second action is untouched: still a next action.
+    (goto-char (point-min))
+    (search-forward "Second action")
+    (org-back-to-heading t)
+    (assert-equal "Actions" (org-entry-get (point) "ORG_GTD"))))
+
 (provide 'someday-dispatcher-test)
 
 ;;; someday-dispatcher-test.el ends here
