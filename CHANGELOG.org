@@ -69,6 +69,13 @@ cancel, cycle) now use ~org-agenda-todo~ instead of ~org-todo~, so the
 new state is reflected in the agenda line immediately instead of only in
 the underlying Org file.
 
+*** Clarify in place preserves outline level (Issue #291)
+Clarifying an item in place (~org-gtd-clarify-item~ or
+~org-gtd-clarify-agenda-item~ with no refile) no longer promotes a nested
+heading to level 1.  The write-back now re-levels the clarified subtree to
+match the original heading's outline level instead of inserting the WIP
+buffer's level-1 text verbatim.
+
 ** Design docs
 - ~docs/plans/2026-04-07-unified-type-and-hook-model-design.md~
 - ~docs/plans/2026-04-07-unified-type-and-hook-model-plan.md~

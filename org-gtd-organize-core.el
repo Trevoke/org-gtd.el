@@ -104,8 +104,12 @@ Uses `org-gtd-clarify--source-heading-marker' to find the original location."
       (with-current-buffer (marker-buffer source-marker)
         (goto-char source-marker)
         (org-back-to-heading t)
-        (org-cut-subtree)
-        (insert new-content)
+        ;; Capture the original outline level: the WIP subtree is always
+        ;; pasted at level 1, so re-level it to match the source heading
+        ;; instead of inserting raw level-1 text (issue #291).
+        (let ((level (org-outline-level)))
+          (org-cut-subtree)
+          (org-paste-subtree level new-content))
         (save-buffer)))))
 
 (defun org-gtd-organize--call (func)

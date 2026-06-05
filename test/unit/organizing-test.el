@@ -166,6 +166,33 @@
       (goto-char (point-min))
       (assert-nil (search-forward "Original title" nil t)))))
 
+(deftest update-in-place/preserves-outline-level ()
+  "Preserves the source heading's outline level (issue #291).
+A nested (level 2) heading clarified in place must not be promoted to
+level 1 when written back."
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-max))
+    (insert "\n* Parent heading\n** Original title\n:PROPERTIES:\n:ID: repro-291\n:ORG_GTD: Actions\n:END:\nbody\n")
+    (goto-char (point-min))
+    (search-forward "Original title")
+    (org-back-to-heading t)
+    ;; Sanity: the source heading starts at level 2
+    (assert-equal 2 (org-outline-level))
+    ;; Clarify in place (sets source marker, builds the WIP buffer)
+    (org-gtd-clarify-item)
+    (let ((wip-buffer (car (org-gtd-wip--get-buffers))))
+      (with-current-buffer wip-buffer
+        (goto-char (point-min))
+        (search-forward "Original title")
+        (replace-match "Modified title")
+        (org-gtd-organize--update-in-place)))
+    ;; The written-back heading must still be at level 2
+    (with-current-buffer (org-gtd--default-file)
+      (goto-char (point-min))
+      (assert-true (search-forward "Modified title" nil t))
+      (org-back-to-heading t)
+      (assert-equal 2 (org-outline-level)))))
+
 ;;; Transient tests
 
 (deftest transient/skip-refile-infix-defined ()
