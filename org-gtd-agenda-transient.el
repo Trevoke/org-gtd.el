@@ -81,35 +81,43 @@ Excludes Habit since deferring habits has different semantics."
 
 ;;;; State Change Actions
 
+(defun org-gtd-agenda-transient--change-state (&optional state)
+  "Change the TODO STATE of the agenda item at point.
+
+Uses `org-agenda-todo' rather than `org-todo' so the change is
+reflected in the agenda display immediately (and in every agenda line
+referring to the same heading), then saves the underlying Org buffer.
+With STATE nil, cycles the TODO state like the agenda \\`t' command."
+  (let ((marker (org-get-at-bol 'org-marker)))
+    (org-agenda-todo state)
+    (when (and marker (buffer-live-p (marker-buffer marker)))
+      (with-current-buffer (marker-buffer marker)
+        (save-buffer)))))
+
 (defun org-gtd-agenda-transient--done ()
   "Mark task at point as DONE."
   (interactive)
-  (org-gtd-agenda-transient--with-task
-   (org-todo (org-gtd-keywords--done))))
+  (org-gtd-agenda-transient--change-state (org-gtd-keywords--done)))
 
 (defun org-gtd-agenda-transient--waiting ()
   "Set task to WAITING state."
   (interactive)
-  (org-gtd-agenda-transient--with-task
-   (org-todo (org-gtd-keywords--wait))))
+  (org-gtd-agenda-transient--change-state (org-gtd-keywords--wait)))
 
 (defun org-gtd-agenda-transient--next ()
   "Set task to NEXT state."
   (interactive)
-  (org-gtd-agenda-transient--with-task
-   (org-todo (org-gtd-keywords--next))))
+  (org-gtd-agenda-transient--change-state (org-gtd-keywords--next)))
 
 (defun org-gtd-agenda-transient--cancel ()
   "Cancel task at point."
   (interactive)
-  (org-gtd-agenda-transient--with-task
-   (org-todo (org-gtd-keywords--canceled))))
+  (org-gtd-agenda-transient--change-state (org-gtd-keywords--canceled)))
 
 (defun org-gtd-agenda-transient--cycle-todo ()
   "Cycle TODO state of task at point."
   (interactive)
-  (org-gtd-agenda-transient--with-task
-   (org-todo)))
+  (org-gtd-agenda-transient--change-state))
 
 ;;;; Time Operations
 

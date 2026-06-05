@@ -62,6 +62,13 @@ unless your hook listeners are intolerant of this firing position.
 - ~org-gtd-single-action~ and its private functions — use
   ~org-gtd-next-action~ equivalents.
 
+** Fixed
+*** Agenda state changes now refresh the display (Issue #289)
+State-change actions in ~org-gtd-agenda-transient~ (DONE, WAITING, NEXT,
+cancel, cycle) now use ~org-agenda-todo~ instead of ~org-todo~, so the
+new state is reflected in the agenda line immediately instead of only in
+the underlying Org file.
+
 ** Design docs
 - ~docs/plans/2026-04-07-unified-type-and-hook-model-design.md~
 - ~docs/plans/2026-04-07-unified-type-and-hook-model-plan.md~

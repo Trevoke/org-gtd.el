@@ -180,6 +180,126 @@
   (when (get-buffer "*Org Agenda*")
     (kill-buffer "*Org Agenda*")))
 
+;;; State Change Display Tests (issue #289)
+;;
+;; These assert the AGENDA LINE reflects the new state, not just the
+;; underlying Org file.  The state actions previously used `org-todo' via
+;; the item marker, which updated the file but left the agenda display
+;; showing the stale keyword.
+
+(deftest state-display/done-updates-agenda-line ()
+  "Marking DONE updates the agenda line and saves the file (issue #289)."
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-max))
+    (insert "* TODO Display done task\n")
+    (forward-line -1)
+    (org-back-to-heading t)
+    (org-id-get-create)
+    (org-entry-put (point) "ORG_GTD" "Actions")
+    (basic-save-buffer))
+
+  (org-agenda nil "t")
+  (goto-char (point-min))
+  (search-forward "Display done task")
+  (beginning-of-line)
+
+  (org-gtd-agenda-transient--done)
+
+  ;; The agenda line itself must now show the DONE keyword.
+  (goto-char (point-min))
+  (search-forward "Display done task")
+  (let ((line (buffer-substring-no-properties
+               (line-beginning-position) (line-end-position))))
+    (assert-match (regexp-quote (org-gtd-keywords--done)) line))
+
+  ;; The underlying file must be saved (no lingering modifications).
+  (with-current-buffer (org-gtd--default-file)
+    (assert-nil (buffer-modified-p)))
+
+  (when (get-buffer "*Org Agenda*")
+    (kill-buffer "*Org Agenda*")))
+
+(deftest state-display/waiting-updates-agenda-line ()
+  "Setting WAITING updates the agenda line (issue #289)."
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-max))
+    (insert "* TODO Display waiting task\n")
+    (forward-line -1)
+    (org-back-to-heading t)
+    (org-id-get-create)
+    (org-entry-put (point) "ORG_GTD" "Actions")
+    (basic-save-buffer))
+
+  (org-agenda nil "t")
+  (goto-char (point-min))
+  (search-forward "Display waiting task")
+  (beginning-of-line)
+
+  (org-gtd-agenda-transient--waiting)
+
+  (goto-char (point-min))
+  (search-forward "Display waiting task")
+  (let ((line (buffer-substring-no-properties
+               (line-beginning-position) (line-end-position))))
+    (assert-match (regexp-quote (org-gtd-keywords--wait)) line))
+
+  (when (get-buffer "*Org Agenda*")
+    (kill-buffer "*Org Agenda*")))
+
+(deftest state-display/next-updates-agenda-line ()
+  "Setting NEXT updates the agenda line (issue #289)."
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-max))
+    (insert "* TODO Display next task\n")
+    (forward-line -1)
+    (org-back-to-heading t)
+    (org-id-get-create)
+    (org-entry-put (point) "ORG_GTD" "Actions")
+    (basic-save-buffer))
+
+  (org-agenda nil "t")
+  (goto-char (point-min))
+  (search-forward "Display next task")
+  (beginning-of-line)
+
+  (org-gtd-agenda-transient--next)
+
+  (goto-char (point-min))
+  (search-forward "Display next task")
+  (let ((line (buffer-substring-no-properties
+               (line-beginning-position) (line-end-position))))
+    (assert-match (regexp-quote (org-gtd-keywords--next)) line))
+
+  (when (get-buffer "*Org Agenda*")
+    (kill-buffer "*Org Agenda*")))
+
+(deftest state-display/cancel-updates-agenda-line ()
+  "Cancelling updates the agenda line (issue #289)."
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-max))
+    (insert "* TODO Display cancel task\n")
+    (forward-line -1)
+    (org-back-to-heading t)
+    (org-id-get-create)
+    (org-entry-put (point) "ORG_GTD" "Actions")
+    (basic-save-buffer))
+
+  (org-agenda nil "t")
+  (goto-char (point-min))
+  (search-forward "Display cancel task")
+  (beginning-of-line)
+
+  (org-gtd-agenda-transient--cancel)
+
+  (goto-char (point-min))
+  (search-forward "Display cancel task")
+  (let ((line (buffer-substring-no-properties
+               (line-beginning-position) (line-end-position))))
+    (assert-match (regexp-quote (org-gtd-keywords--canceled)) line))
+
+  (when (get-buffer "*Org Agenda*")
+    (kill-buffer "*Org Agenda*")))
+
 ;;; Time Operation Tests
 
 (deftest time/defers-calendar-item-by-one-day ()
