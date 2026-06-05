@@ -21,4 +21,5 @@ org-gtd.log
 .worktrees
 .claude/local/state/
 /.beads/
+.yaks
 /.ilyk3k/

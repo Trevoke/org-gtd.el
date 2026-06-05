@@ -2,107 +2,76 @@
 
 This document provides guidance for AI agents working on the org-gtd.el project.
 
-## Issue Tracking with bd (beads)
+## Issue Tracking with yaks
 
-**IMPORTANT**: This project uses **bd (beads)** for ALL issue tracking. Do NOT use markdown TODOs, task lists, or other tracking methods.
+**IMPORTANT**: This project uses **yaks** (`yx`) for ALL issue tracking. Do NOT use markdown TODOs, task lists, or other tracking methods.
 
-### Why bd?
+### Why yaks?
 
-- Dependency-aware: Track blockers and relationships between issues
-- Git-friendly: Auto-syncs to JSONL for version control
-- Agent-optimized: JSON output, ready work detection, discovered-from links
-- Prevents duplicate tracking systems and confusion
+- Git-native: Stored as git objects, shares via `yx sync` / `git push`
+- Simple states: todo → wip → blocked → done
+- Hierarchical: Nest tasks under parents with `--under`
+- Agent-friendly: JSON output with `--format json`
 
 ### Quick Start
 
-The executable is either just `bd` or at `~/go/bin/bd`. For short, we'll just say `bd` here.
-
-**Check for ready work:**
+Install with:
 ```bash
-bd ready --json
+curl -fsSL https://raw.githubusercontent.com/mattwynne/yaks/main/install.sh | bash
 ```
 
-**Create new issues:**
+**List work to do:**
 ```bash
-bd create "Issue title" -t bug|feature|task -p 0-4 --json
-bd create "Issue title" -p 1 --deps discovered-from:bd-123 --json
+yx list --only not-done --format json
 ```
 
-**Claim and update:**
+**Create new task:**
 ```bash
-bd update bd-42 --status in_progress --json
-bd update bd-42 --priority 1 --json
+yx add "Task title" --format json
+yx add "Sub-task" --under "Parent task" --format json
+```
+
+**Start working:**
+```bash
+yx start "task name" --format json
 ```
 
 **Complete work:**
 ```bash
-bd close bd-42 --reason "Completed" --json
+yx done "task name" --format json
 ```
 
-### Issue Types
+**Block a task:**
+```bash
+yx state "task name" blocked --format json
+```
 
-- `bug` - Something broken
-- `feature` - New functionality
-- `task` - Work item (tests, docs, refactoring)
-- `epic` - Large feature with subtasks
-- `chore` - Maintenance (dependencies, tooling)
+### States
 
-### Priorities
-
-- `0` - Critical (security, data loss, broken builds)
-- `1` - High (major features, important bugs)
-- `2` - Medium (default, nice-to-have)
-- `3` - Low (polish, optimization)
-- `4` - Backlog (future ideas)
+- `todo` - Not started (default)
+- `wip` - In progress
+- `blocked` - Waiting on something
+- `done` - Complete
 
 ### Workflow for AI Agents
 
-1. **Check ready work**: `bd ready` shows unblocked issues
-2. **Claim your task**: `bd update <id> --status in_progress`
+1. **Check ready work**: `yx list --only not-done` shows what needs doing
+2. **Start your task**: `yx start "task name"`
 3. **Work on it**: Implement, test, document
-4. **Discover new work?** Create linked issue:
-   - `bd create "Found bug" -p 1 --deps discovered-from:<parent-id>`
-5. **Complete**: `bd close <id> --reason "Done"`
-6. **Commit together**: Always commit the `.beads/issues.jsonl` file together with the code changes so issue state stays in sync with code state
-
-### Auto-Sync
-
-bd automatically syncs with git:
-- Exports to `.beads/issues.jsonl` after changes (5s debounce)
-- Imports from JSONL when newer (e.g., after `git pull`)
-- No manual export/import needed!
-
-### MCP Server (Recommended)
-
-If using Claude or MCP-compatible clients, install the beads MCP server:
-
-```bash
-pip install beads-mcp
-```
-
-Add to MCP config (e.g., `~/.config/claude/config.json`):
-```json
-{
-  "beads": {
-    "command": "beads-mcp",
-    "args": []
-  }
-}
-```
-
-Then use `mcp__beads__*` functions instead of CLI commands.
+4. **Discover new work?** Create a linked task:
+   - `yx add "Found issue" --under "current task name"`
+5. **Complete**: `yx done "task name"`
+6. **Sync**: `yx sync` to share via git
 
 ### Important Rules
 
-- ✅ Use bd for ALL task tracking
-- ✅ Always use `--json` flag for programmatic use
-- ✅ Link discovered work with `discovered-from` dependencies
-- ✅ Check `bd ready` before asking "what should I work on?"
+- ✅ Use yaks for ALL task tracking
+- ✅ Use `--format json` for programmatic use
+- ✅ Nest discovered work under the current task with `--under`
+- ✅ Check `yx list --only not-done` before asking "what should I work on?"
 - ❌ Do NOT create markdown TODO lists
 - ❌ Do NOT use external issue trackers
 - ❌ Do NOT duplicate tracking systems
-
-For more details, see README.md and QUICKSTART.md.
 
 ## Landing the Plane (Session Completion)
 
@@ -116,7 +85,7 @@ For more details, see README.md and QUICKSTART.md.
 4. **PUSH TO REMOTE** - This is MANDATORY:
    ```bash
    git pull --rebase
-   bd sync
+   yx sync
    git push
    git status  # MUST show "up to date with origin"
    ```
