@@ -23,3 +23,6 @@ org-gtd.log
 /.beads/
 .yaks
 /.ilyk3k/
+
+# Copyrighted GTD source material (books, converted text, extractions) — not for redistribution
+/docs/source-material/
