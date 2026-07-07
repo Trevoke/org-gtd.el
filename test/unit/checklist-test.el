@@ -16,6 +16,7 @@
 
 (require 'ogt-eunit-prelude "test/helpers/prelude.el")
 (require 'org-gtd-checklist)
+(require 'with-simulated-input)
 
 (e-unit-initialize)
 
@@ -66,6 +67,35 @@
 (deftest checklist/items-nil-for-unknown-name ()
   "Unknown checklist name returns nil, no error."
   (assert-nil (org-gtd-checklist--items "No such list")))
+
+;;; Insert Tests
+
+(deftest checklist/insert-copies-subtree-at-point ()
+  "Insert spawns the named template as a subtree at point."
+  (with-temp-buffer
+    (org-mode)
+    (with-simulated-input "Weekly SPC Review SPC triggers RET"
+      (call-interactively #'org-gtd-checklist-insert))
+    (assert-match "^\\* Weekly Review triggers" (buffer-string))
+    (assert-match "- \\[ \\] Projects started" (buffer-string))))
+
+(deftest checklist/insert-adapts-level-to-context ()
+  "Inserting under an existing heading demotes the copy."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* Trip to the beach\n")
+    (goto-char (point-max))
+    (org-gtd-checklist-insert "Mind sweep prompts")
+    (assert-match "^\\*\\* Mind sweep prompts" (buffer-string))))
+
+(deftest checklist/insert-unknown-name-errors-cleanly ()
+  "Unknown name signals a user-error naming the file."
+  (with-temp-buffer
+    (org-mode)
+    (assert-true
+     (condition-case e
+         (progn (org-gtd-checklist-insert "Nope") nil)
+       (user-error e)))))
 
 (provide 'checklist-test)
 

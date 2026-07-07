@@ -108,6 +108,31 @@ Return nil when no checklist NAME exists or it has no items."
 ;;;;; Commands
 
 ;;;###autoload
+(defun org-gtd-checklist-insert (name)
+  "Insert a fresh instance of checklist NAME as a subtree at point.
+The copy is an ordinary org subtree — org-gtd does not track it.
+To make it a recurring task, organize it (e.g. as a habit) with
+`org-gtd-clarify-item' after inserting."
+  (interactive
+   (list (completing-read "Checklist: " (org-gtd-checklist-names) nil t)))
+  (let ((subtree
+         (with-current-buffer (org-gtd-checklist--file-buffer)
+           (org-with-wide-buffer
+            (goto-char (point-min))
+            (unless (re-search-forward
+                     (format "^\\* +%s[ \t]*$" (regexp-quote name)) nil t)
+              (user-error "No checklist named '%s' — edit %s"
+                          name (org-gtd-checklist--file-path)))
+            (buffer-substring-no-properties
+             (line-beginning-position)
+             (save-excursion (org-end-of-subtree t t) (point))))))
+        ;; Insert as a child of the heading point is under, or at
+        ;; top level when the buffer has no heading above point.
+        (target-level (1+ (or (org-current-level) 0))))
+    (unless (bolp) (insert "\n"))
+    (org-paste-subtree target-level subtree)))
+
+;;;###autoload
 (defun org-gtd-checklist-visit ()
   "Visit the checklist templates file.
 Each top-level heading is a reusable checklist template."
