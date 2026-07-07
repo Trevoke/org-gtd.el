@@ -12,7 +12,7 @@
 ;; Test Coverage:
 ;; - Default Weekly Review profile shape (2 tests)
 ;; - Session lifecycle: start, advance, complete, skip (4 tests)
-;; - Entry guards, profile validation, teardown safety (7 tests)
+;; - Entry guards, profile validation, teardown safety (9 tests)
 ;;
 ;;; Code:
 
@@ -132,6 +132,27 @@
       (assert-true err))
     (assert-nil org-gtd-review--state)
     (assert-nil (get-buffer org-gtd-review--buffer-name))))
+
+(deftest review/dotted-phase-errors-cleanly ()
+  "A dotted phase list user-errors instead of crashing."
+  (let ((org-gtd-review-profiles '(("Broken" ("Phase" . :notalist)))))
+    (let ((err (condition-case e
+                   (progn (org-gtd-review "Broken") nil)
+                 (user-error e))))
+      (assert-true err)
+      (assert-match "should be a list starting with a name string"
+                    (cadr err)))
+    (assert-nil org-gtd-review--state)))
+
+(deftest review/zero-step-phase-errors-cleanly ()
+  "A named phase with no steps user-errors instead of rendering junk."
+  (let ((org-gtd-review-profiles '(("EmptySteps" ("Nothing here")))))
+    (let ((err (condition-case e
+                   (progn (org-gtd-review "EmptySteps") nil)
+                 (user-error e))))
+      (assert-true err)
+      (assert-match "has no steps" (cadr err)))
+    (assert-nil org-gtd-review--state)))
 
 (deftest review/step-missing-type-errors-cleanly ()
   "A step without :type user-errors in teaching voice."

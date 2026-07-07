@@ -133,10 +133,14 @@ step looks like so the error teaches the fix."
        "Review profile '%s' has no phases — give it at least one (PHASE-NAME STEP...) list"
        name))
     (dolist (phase phases)
-      (unless (and (consp phase) (stringp (car phase)))
+      (unless (and (proper-list-p phase) (stringp (car phase)))
         (user-error
          "Review profile '%s': phase %S should be a list starting with a name string, like (\"Get Clear\" STEP...)"
          name phase))
+      (unless (cdr phase)
+        (user-error
+         "Review profile '%s': phase '%s' has no steps — give it at least one step plist"
+         name (car phase)))
       (dolist (step (cdr phase))
         (unless (and (listp step) (keywordp (car-safe step)))
           (user-error
