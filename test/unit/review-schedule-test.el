@@ -14,7 +14,7 @@
 ;; Test Coverage:
 ;; - Scheduling creates a typed, repeating habit (1 test)
 ;; - Body line targets the created habit, decoys and tags aside (2 tests)
-;; - Repeater validation and empty-profiles guard (2 tests)
+;; - Repeater validation and empty-profiles guard (3 tests)
 ;; - Duplicate-reminder confirmation guard (2 tests)
 ;; - Reminder detection before and after scheduling (2 tests)
 ;; - Session completion tip conditional on a reminder existing (2 tests)
@@ -93,6 +93,22 @@
   (ogt--save-all-buffers)
   (with-current-buffer (org-gtd--default-file)
     (assert-nil (string-match-p "Weekly Review" (buffer-string)))))
+
+(deftest review-schedule/rejects-zero-interval-repeater ()
+  "A zero-interval repeater never re-arms, so it is refused.
+Multi-digit intervals like .+10d remain accepted."
+  (let ((err (condition-case e
+                 (progn
+                   (org-gtd-review-schedule "Weekly Review" "2026-07-10" ".+0w")
+                   nil)
+               (user-error e))))
+    (assert-true err)
+    (assert-match "\\.\\+1w" (cadr err)))
+  (org-gtd-review-schedule "Weekly Review" "2026-07-10" ".+10d")
+  (ogt--save-all-buffers)
+  (with-current-buffer (org-gtd--default-file)
+    (assert-match "SCHEDULED: <2026-07-10 [A-Za-z]+ \\.\\+10d>"
+                  (buffer-string))))
 
 (deftest review-schedule/no-profiles-configured-errors ()
   "Scheduling with no profiles signals a clean user-error."

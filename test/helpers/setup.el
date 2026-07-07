@@ -146,7 +146,14 @@ Kills GTD-related buffers and clears org-mode internal state."
                      (string-match-p "\\*Warnings\\*" (buffer-name buffer))
                      (and (buffer-file-name buffer)
                           (or (string-match-p "org-gtd" (buffer-file-name buffer))
-                              (string-match-p "/mock:" (buffer-file-name buffer))))))
+                              (string-match-p "/mock:" (buffer-file-name buffer))))
+                     ;; Any buffer living in the mock filesystem (e.g.
+                     ;; *GTD Review*, created with default-directory under
+                     ;; /mock:) must not survive into later tests: after
+                     ;; mock-fs teardown its directory no longer exists.
+                     (let ((dir (buffer-local-value 'default-directory buffer)))
+                       (and (stringp dir)
+                            (string-prefix-p "/mock:" dir)))))
         (push buffer buffers-to-kill)))
 
     (when buffers-to-kill

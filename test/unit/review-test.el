@@ -12,7 +12,9 @@
 ;; Test Coverage:
 ;; - Default Weekly Review profile shape (2 tests)
 ;; - Session lifecycle: start, advance, complete, skip (4 tests)
-;; - Entry guards, profile validation, teardown safety (10 tests)
+;; - Entry guards, profile validation, teardown safety (12 tests)
+;; - Checklist walks and mid-walk capture (4 tests)
+;; - Full default-profile end-to-end run (1 test)
 ;; - Pause / resume / quit persistence and checkpointing (14 tests)
 ;;
 ;;; Code:
@@ -349,6 +351,24 @@
     (assert-nil (plist-get org-gtd-review--state :walk-items))
     (assert-nil (plist-get org-gtd-review--state :acted))))
 
+(deftest review/capture-mid-walk-keeps-position ()
+  "c mid-walk fires capture without moving the walk position."
+  (let ((org-gtd-review-profiles review-test--walk-profile)
+        (captures 0))
+    (cl-letf (((symbol-function 'org-gtd-capture)
+               (lambda (&rest _)
+                 (interactive)
+                 (setq captures (1+ captures)))))
+      (org-gtd-review "Walk")
+      (with-current-buffer org-gtd-review--buffer-name
+        (org-gtd-review-next)              ; load walk, item 1
+        (org-gtd-review-next)              ; item 2
+        (org-gtd-review-capture)
+        (assert-equal 1 captures)
+        ;; The walk did not move: still on item 2, same step.
+        (assert-equal 1 (plist-get org-gtd-review--state :walk-pos))
+        (assert-match "(2/8)" (buffer-string))))))
+
 (deftest review/checklist-step-missing-template-auto-advances ()
   "A missing/empty checklist self-satisfies instead of erroring."
   (let ((org-gtd-review-profiles
@@ -358,6 +378,46 @@
     (with-current-buffer org-gtd-review--buffer-name
       (org-gtd-review-next)
       (assert-match "After" (buffer-string)))))
+
+;;; Default Profile Integration Test
+
+(defun review-test--step-presses (step)
+  "Return how many presses of n STEP consumes in a session.
+A prompt advances on one press; command and view steps take one
+press to act and one to confirm; a checklist walk takes one press
+to load plus one per item after the first plus one to leave — or a
+single press when the checklist is empty or missing."
+  (pcase (plist-get step :type)
+    ('prompt 1)
+    ((or 'command 'view) 2)
+    ('checklist
+     (let ((items (org-gtd-checklist--items (plist-get step :checklist))))
+       (if items (1+ (length items)) 1)))))
+
+(deftest review/default-weekly-profile-runs-end-to-end ()
+  "The shipped Weekly Review profile completes under n alone.
+The profile's command and view symbols are stubbed to interactive
+no-ops so the run is deterministic; the press count is derived from
+the profile structure, not hardcoded."
+  (let* ((phases (cdr (assoc "Weekly Review" org-gtd-review-profiles)))
+         (steps (apply #'append (mapcar #'cdr phases)))
+         (actions (delq nil (mapcar (lambda (s)
+                                      (or (plist-get s :command)
+                                          (plist-get s :view)))
+                                    steps)))
+         (originals (mapcar #'symbol-function actions))
+         (presses (apply #'+ (mapcar #'review-test--step-presses steps))))
+    (unwind-protect
+        (progn
+          (dolist (action actions)
+            (fset action (lambda () (interactive))))
+          (org-gtd-review "Weekly Review")
+          (with-current-buffer org-gtd-review--buffer-name
+            (dotimes (_ presses) (org-gtd-review-next)))
+          (assert-nil org-gtd-review--state)
+          (assert-nil (get-buffer org-gtd-review--buffer-name))
+          (assert-nil (file-exists-p (org-gtd-review--state-file))))
+      (cl-mapc #'fset actions originals))))
 
 ;;; Pause / Resume / Quit Tests
 
@@ -451,6 +511,22 @@
                  (user-error e))))
       (assert-true err))
     (assert-equal 1 (plist-get (org-gtd-review--load-state) :step))))
+
+(deftest review/next-without-session-teaches ()
+  "A stray M-x next with no session user-errors instead of crashing."
+  (let ((err (condition-case e
+                 (progn (org-gtd-review-next) nil)
+               (user-error e))))
+    (assert-true err)
+    (assert-match "No review session is active" (cadr err))))
+
+(deftest review/skip-without-session-teaches ()
+  "A stray M-x skip with no session user-errors instead of crashing."
+  (let ((err (condition-case e
+                 (progn (org-gtd-review-skip) nil)
+               (user-error e))))
+    (assert-true err)
+    (assert-match "No review session is active" (cadr err))))
 
 (deftest review/quit-without-session-errors-and-preserves-save ()
   "A stray M-x quit with no session must not delete a saved pause."

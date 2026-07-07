@@ -62,9 +62,9 @@ Each top-level heading is a template:
 ### 1.2 `org-gtd-checklist-insert` (autoloaded)
 
 `completing-read` over template headings, then copies the chosen subtree to point.
-With a prefix argument, prompts for a refile-style target instead. **Pure copy** —
-no repeater prompt, no properties added. A spawned instance is an ordinary org
-subtree; org-gtd tracks nothing about it.
+**Pure copy** — no repeater prompt, no properties added. A spawned instance is an
+ordinary org subtree; org-gtd tracks nothing about it. (Prefix-arg refile-style
+targeting was considered and deferred — see §7.)
 
 ### 1.3 Checkbox reset on repeat
 
@@ -170,13 +170,15 @@ SCHEDULED: <2026-07-10 Fri .+1w>
 Run M-x org-gtd-review when you sit down for this.
 ```
 
-Offered from the command center, mentioned in the manual, and hinted once on the
-review completion screen.
+Not a command-center row of its own: it is reachable via `M-x`, hinted once on
+the review completion screen (the one-time tip), offered by `org-gtd-init-system`,
+and mentioned in the manual.
 
 ### 3.2 `org-gtd-init-system`
 
-A thin, **idempotent** concierge for first-time setup; each step reports
-"already done ✓" and skips when satisfied. Lazy init stays fully intact —
+A thin, **idempotent** concierge for first-time setup; steps skip when already
+satisfied. (As implemented, it reports one consolidated "✓ GTD files ready"
+line rather than a per-step ✓ line.) Lazy init stays fully intact —
 nothing ever requires having run this. Steps (deliberately minimal):
 
 1. Ensure `org-gtd-directory`, `org-gtd-tasks.org`, and `checklists.org`
@@ -230,8 +232,8 @@ All in the teaching voice — message + skip, never a stack trace.
 
 Via the `/test` skill, using existing builders and mock-gtd helpers.
 
-- **Unit:** items parser; file seeding (content, idempotence); insert (at point,
-  prefix-arg target); reset hook (repeat vs. plain DONE; nested boxes); profile
+- **Unit:** items parser; file seeding (content, idempotence); insert at point;
+  reset hook (repeat vs. plain DONE; nested boxes); profile
   shape validation; state-file round-trip; init-system idempotence.
 - **Integration:** full Weekly Review run with `with-simulated-input`, including
   a checklist walk with mid-walk capture; pause then resume across two sessions;
@@ -241,6 +243,8 @@ Via the `/test` skill, using existing builders and mock-gtd helpers.
 
 - Stats block, review-completion log, back-step (`b`), invariant guard on
   project walks (REF-02 §4/§6).
+- Prefix-arg refile-style targeting for `org-gtd-checklist-insert` (v1 inserts
+  at point only).
 - Generalizing `org-gtd-someday-review` into a profile of this engine.
 - Checklist manager transient / Cluster-E CRUD conformance.
 - `CHECKLIST_KIND` (revisit if a consumer ever needs filtering by kind).

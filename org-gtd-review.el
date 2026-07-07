@@ -105,11 +105,13 @@ Keys: :profile (name string), :phase (index), :step (index),
 (defconst org-gtd-review--buffer-name "*GTD Review*")
 
 (defconst org-gtd-review--repeater-re
-  "\\`[.+]?\\+[0-9]+[hdwmy]\\(?:/[0-9]+[hdwmy]\\)?\\'"
+  "\\`[.+]?\\+0*[1-9][0-9]*[hdwmy]\\(?:/0*[1-9][0-9]*[hdwmy]\\)?\\'"
   "Regexp matching a standalone org repeater.
 The repeater core of `org-repeat-re': +N, ++N, or .+N with an
 h/d/w/m/y unit, optionally followed by a /N[hdwmy] habit maximum
-interval (e.g. \".+2d/4d\").")
+interval (e.g. \".+2d/4d\").  N must be nonzero: org treats a
+zero-interval repeater as cancelled, so a \".+0w\" reminder would
+never re-arm.")
 
 ;;;; Accessors
 
@@ -425,6 +427,8 @@ lands on the item the user was looking at."
 (defun org-gtd-review-next ()
   "Do the current step, or advance past it."
   (interactive)
+  (unless org-gtd-review--state
+    (user-error "No review session is active — start one with M-x org-gtd-review"))
   (let* ((step (org-gtd-review--current-step))
          (type (plist-get step :type)))
     (pcase type
@@ -452,6 +456,8 @@ lands on the item the user was looking at."
 (defun org-gtd-review-skip ()
   "Skip the current step for this run only."
   (interactive)
+  (unless org-gtd-review--state
+    (user-error "No review session is active — start one with M-x org-gtd-review"))
   (org-gtd-review--complete-step t))
 
 (defun org-gtd-review-capture ()
