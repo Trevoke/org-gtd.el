@@ -11,8 +11,10 @@
 ;; completed and re-armed by org.
 ;;
 ;; Test Coverage:
-;; - Repeating heading resets its checkboxes on completion (1 test)
+;; - Repeating heading resets its checkboxes and cookie on completion (1 test)
 ;; - Non-repeating heading keeps its checkboxes on completion (1 test)
+;; - Cancelled (zero-interval) repeater keeps its checkboxes (1 test)
+;; - Done-to-done transition on a repeating heading keeps boxes (1 test)
 ;; - org-gtd-mode installs and removes the reset hook (1 test)
 ;;
 ;;; Code:
@@ -46,11 +48,36 @@ with the reset hook installed."
 (deftest checklist-reset/repeating-heading-resets-boxes-on-done ()
   "Completing a repeating heading clears its checkboxes and re-arms."
   (checklist-reset--with-heading
-      "* TODO Weekly triggers\nSCHEDULED: <2026-07-10 Fri .+1w>\n- [X] Boss?\n- [ ] Car?\n"
+      "* TODO Weekly triggers [1/2]\nSCHEDULED: <2026-07-10 Fri .+1w>\n- [X] Boss?\n- [ ] Car?\n"
     (let ((org-inhibit-logging t) (org-log-repeat nil))
       (org-todo "DONE"))
     (assert-nil (string-match-p "\\[X\\]" (buffer-string)))
-    (assert-match "\\* TODO Weekly triggers" (buffer-string))))
+    (assert-match "\\* TODO Weekly triggers \\[0/2\\]" (buffer-string))))
+
+(deftest checklist-reset/cancelled-repeater-keeps-boxes ()
+  "Finishing a repeating task for good keeps its checkboxes.
+`org-todo' with -1 cancels the repeater first (interval becomes zero,
+the documented C-- 1 C-c C-t flow); org does not re-arm, so the
+completion record must stay intact."
+  (let ((org-todo-keywords '((sequence "TODO" "|" "DONE"))))
+    (checklist-reset--with-heading
+        "* TODO Weekly triggers\nSCHEDULED: <2026-07-10 Fri .+1w>\n- [X] Boss?\n- [ ] Car?\n"
+      (let ((org-inhibit-logging t) (org-log-repeat nil))
+        (org-todo -1))
+      (assert-match "\\[X\\] Boss\\?" (buffer-string))
+      (assert-match "\\* DONE Weekly triggers" (buffer-string)))))
+
+(deftest checklist-reset/done-to-done-keeps-boxes ()
+  "A done-to-done transition on a repeating heading does not reset.
+Org only re-arms when a done state is entered from a non-done one;
+the reset guard must match."
+  (let ((org-todo-keywords '((sequence "TODO" "|" "DONE" "CANCELED"))))
+    (checklist-reset--with-heading
+        "* DONE Weekly triggers\nSCHEDULED: <2026-07-10 Fri .+1w>\n- [X] Boss?\n- [ ] Car?\n"
+      (let ((org-inhibit-logging t) (org-log-repeat nil))
+        (org-todo "CANCELED"))
+      (assert-match "\\[X\\] Boss\\?" (buffer-string))
+      (assert-match "\\* CANCELED Weekly triggers" (buffer-string)))))
 
 (deftest checklist-reset/plain-done-keeps-boxes ()
   "Completing a non-repeating heading leaves checkboxes alone."

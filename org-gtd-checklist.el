@@ -34,6 +34,10 @@
 (require 'org-gtd-core)
 (require 'org-gtd-files)
 
+;; Dynamically bound by `org-todo' around `org-after-todo-state-change-hook'.
+(defvar org-state)
+(defvar org-last-state)
+
 ;;;; Constants
 
 (defconst org-gtd-checklist-file-name "checklists"
@@ -100,12 +104,18 @@ matches NAME, in which case point is left unspecified."
 (defun org-gtd-checklist--maybe-reset-checkboxes ()
   "Clear checkboxes in the subtree when a repeating heading is completed.
 Meant for `org-after-todo-state-change-hook'.  When the heading at
-point carries a repeater and just entered a done state, org re-arms
-it; clearing the boxes makes the next run start fresh.  A plain DONE
-on a non-repeating heading is left untouched."
-  (when (and (org-get-repeat)
-             (member org-state org-done-keywords))
-    (org-reset-checkbox-state-subtree)))
+point carries a live repeater and just entered a done state from a
+non-done one, org re-arms it; clearing the boxes makes the next run
+start fresh.  The guard mirrors `org-auto-repeat-maybe' exactly, so
+whenever org does not re-arm — a non-repeating heading, a cancelled
+\(zero-interval) repeater, a done-to-done transition — the completion
+record is left untouched."
+  (let ((repeat (org-get-repeat)))
+    (when (and repeat
+               (/= 0 (string-to-number (substring repeat 1)))
+               (member org-state org-done-keywords)
+               (not (member org-last-state org-done-keywords)))
+      (org-reset-checkbox-state-subtree))))
 
 (defun org-gtd-checklist--items (name)
   "Return the ordered checkbox item strings of checklist NAME.
