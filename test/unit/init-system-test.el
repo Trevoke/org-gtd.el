@@ -112,6 +112,7 @@ trips native-comp trampolines under the mock fs)."
                  (user-error e))))
       (assert-true err)
       (assert-match "Could not create GTD files" (cadr err))
+      (assert-match "Permission denied" (cadr err))
       (assert-match "org-gtd-directory" (cadr err)))))
 
 (provide 'init-system-test)
