@@ -33,6 +33,13 @@
 (require 'org-gtd-files)
 (require 'org-gtd-checklist)
 (require 'org-gtd-create)
+(require 'org-gtd-capture)
+
+;;;; External Function Declarations
+
+;; Evil functions (only called inside with-eval-after-load 'evil)
+(declare-function evil-set-initial-state "evil-core")
+(declare-function evil-emacs-state "evil-states")
 
 ;;;; Customization
 
@@ -111,6 +118,178 @@ Keys: :profile (name string), :phase (index), :step (index),
   "Return the step plist the session is on."
   (nth (plist-get org-gtd-review--state :step)
        (cdr (org-gtd-review--current-phase))))
+
+;;;; Keymap and Mode
+
+(defvar org-gtd-review-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "n") #'org-gtd-review-next)
+    (define-key map (kbd "s") #'org-gtd-review-skip)
+    (define-key map (kbd "c") #'org-gtd-review-capture)
+    (define-key map (kbd "p") #'org-gtd-review-pause)
+    (define-key map (kbd "q") #'org-gtd-review-quit)
+    map)
+  "Keymap for `org-gtd-review-mode'.")
+
+(define-derived-mode org-gtd-review-mode special-mode "GTD-Review"
+  "Major mode for the guided review session console.
+
+\\{org-gtd-review-mode-map}"
+  :group 'org-gtd)
+
+;; When evil-mode is loaded, start review-mode in emacs state.
+;; We use both evil-set-initial-state AND a mode hook for robustness:
+;; - evil-set-initial-state: handles new buffers entering this mode
+;; - mode hook: forces emacs state even if evil-collection or user config
+;;   has set a different state
+(with-eval-after-load 'evil
+  (evil-set-initial-state 'org-gtd-review-mode 'emacs)
+  (add-hook 'org-gtd-review-mode-hook #'evil-emacs-state))
+
+;;;; Rendering
+
+(defun org-gtd-review--header-line (step)
+  "Compute the header line advertising keys for STEP."
+  (concat "[n] Do/advance  [s] Skip  [p] Pause  [q] Quit"
+          (when (eq (plist-get step :type) 'checklist)
+            "  [c] Capture")))
+
+(defun org-gtd-review--phase-tracker ()
+  "Render the phase tracker line."
+  (let ((current (plist-get org-gtd-review--state :phase)))
+    (mapconcat
+     (lambda (pair)
+       (let ((i (car pair)) (name (car (cdr pair))))
+         (cond ((< i current) (format "[✓ %s]" name))
+               ((= i current) (format "▸ %s ◂" name))
+               (t (format "[ %s ]" name)))))
+     (seq-map-indexed (lambda (ph i) (cons i ph)) (org-gtd-review--phases))
+     "  ")))
+
+(defun org-gtd-review--render ()
+  "Render the session buffer from `org-gtd-review--state'."
+  (let* ((state org-gtd-review--state)
+         (phase (org-gtd-review--current-phase))
+         (steps (cdr phase))
+         (step (org-gtd-review--current-step)))
+    (with-current-buffer (get-buffer-create org-gtd-review--buffer-name)
+      (unless (derived-mode-p 'org-gtd-review-mode) (org-gtd-review-mode))
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert (format "%s\n\n" (plist-get state :profile)))
+        (insert (org-gtd-review--phase-tracker) "\n\n")
+        (insert (format "%s — step %d/%d\n\n"
+                        (car phase)
+                        (1+ (plist-get state :step))
+                        (length steps)))
+        (insert (format "  %s\n" (plist-get step :title)))
+        (when-let ((instr (plist-get step :instruction)))
+          (insert (format "\n  %s\n" instr)))
+        (when (and (eq (plist-get step :type) 'checklist)
+                   (plist-get state :walk-items))
+          (let ((items (plist-get state :walk-items))
+                (pos (plist-get state :walk-pos)))
+            (insert (format "\n    → %s   (%d/%d)\n"
+                            (nth pos items) (1+ pos) (length items)))))
+        (goto-char (point-min)))
+      (setq header-line-format (org-gtd-review--header-line step))
+      (pop-to-buffer (current-buffer)))))
+
+;;;; Step Advancement
+
+(defun org-gtd-review--complete-step (&optional skipped)
+  "Advance past the current step, tallying SKIPPED or done."
+  (let ((state org-gtd-review--state)
+        (counter (if skipped :skipped :done)))
+    (plist-put state counter (1+ (plist-get state counter)))
+    (plist-put state :acted nil)
+    (plist-put state :walk-items nil)
+    (plist-put state :walk-pos 0)
+    (let ((steps (cdr (org-gtd-review--current-phase)))
+          (next-step (1+ (plist-get state :step))))
+      (if (< next-step (length steps))
+          (progn (plist-put state :step next-step)
+                 (org-gtd-review--render))
+        (let ((phases (org-gtd-review--phases))
+              (next-phase (1+ (plist-get state :phase))))
+          (if (< next-phase (length phases))
+              (progn
+                (message "%s complete — on to %s."
+                         (car (nth (plist-get state :phase) phases))
+                         (car (nth next-phase phases)))
+                (plist-put state :phase next-phase)
+                (plist-put state :step 0)
+                (org-gtd-review--render))
+            (org-gtd-review--finish)))))))
+
+(defun org-gtd-review--teardown ()
+  "Kill the session buffer, clear state, restore windows."
+  (setq org-gtd-review--state nil)
+  (when (get-buffer org-gtd-review--buffer-name)
+    (kill-buffer org-gtd-review--buffer-name))
+  (when org-gtd-review--window-config
+    (set-window-configuration org-gtd-review--window-config)
+    (setq org-gtd-review--window-config nil)))
+
+(defun org-gtd-review--finish ()
+  "Complete the session: report, clean up."
+  (let ((done (plist-get org-gtd-review--state :done))
+        (skipped (plist-get org-gtd-review--state :skipped)))
+    (org-gtd-review--teardown)
+    (message (concat "Review complete: %d steps done, %d skipped.  "
+                     "Tip: M-x org-gtd-review-schedule puts this on your calendar.")
+             done skipped)))
+
+;;;; Commands
+
+(defun org-gtd-review-next ()
+  "Do the current step, or advance past it."
+  (interactive)
+  (let* ((step (org-gtd-review--current-step))
+         (type (plist-get step :type)))
+    (pcase type
+      ('prompt (org-gtd-review--complete-step))
+      (_ (message "Step type %s not implemented yet" type)))))
+
+(defun org-gtd-review-skip ()
+  "Skip the current step for this run only."
+  (interactive)
+  (org-gtd-review--complete-step t))
+
+(defun org-gtd-review-capture ()
+  "Capture something to the inbox mid-review."
+  (interactive)
+  (call-interactively #'org-gtd-capture))
+
+(defun org-gtd-review-pause ()
+  "Pause the session; placeholder until persistence lands."
+  (interactive))
+
+(defun org-gtd-review-quit ()
+  "Quit the session, tearing it down."
+  (interactive)
+  (org-gtd-review--teardown))
+
+;;;; Entry Point
+
+;;;###autoload
+(defun org-gtd-review (&optional profile-name)
+  "Run a guided review session.
+With more than one profile in `org-gtd-review-profiles', prompt;
+PROFILE-NAME selects one non-interactively."
+  (interactive)
+  (let* ((names (mapcar #'car org-gtd-review-profiles))
+         (name (or profile-name
+                   (if (cdr names)
+                       (completing-read "Review profile: " names nil t)
+                     (car names)))))
+    (unless (assoc name org-gtd-review-profiles)
+      (user-error "No review profile named '%s'" name))
+    (setq org-gtd-review--window-config (current-window-configuration))
+    (setq org-gtd-review--state
+          (list :profile name :phase 0 :step 0 :acted nil
+                :walk-items nil :walk-pos 0 :done 0 :skipped 0))
+    (org-gtd-review--render)))
 
 ;;;; Footer
 

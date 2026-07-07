@@ -11,6 +11,7 @@
 ;;
 ;; Test Coverage:
 ;; - Default Weekly Review profile shape (2 tests)
+;; - Session lifecycle: start, advance, complete, skip (4 tests)
 ;;
 ;;; Code:
 
@@ -41,6 +42,58 @@
          (sweep (seq-find (lambda (s) (eq (plist-get s :type) 'checklist))
                           get-clear)))
     (assert-equal "Weekly Review triggers" (plist-get sweep :checklist))))
+
+;;; Session Engine Tests
+
+(defvar review-test--tiny-profile
+  '(("Tiny"
+     ("Phase A"
+      (:title "Step one" :type prompt :instruction "Do one.")
+      (:title "Step two" :type prompt))
+     ("Phase B"
+      (:title "Step three" :type prompt))))
+  "Minimal all-prompt profile for engine tests.")
+
+(deftest review/start-opens-session-buffer-on-first-step ()
+  "Starting a session renders profile, phase, and step 1."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (assert-match "Tiny" (buffer-string))
+      (assert-match "Phase A" (buffer-string))
+      (assert-match "step 1/2" (buffer-string))
+      (assert-match "Step one" (buffer-string)))))
+
+(deftest review/n-advances-through-steps-and-phases ()
+  "n on prompt steps advances; crossing a phase boundary re-renders."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (assert-match "Step two" (buffer-string))
+      (org-gtd-review-next)
+      (assert-match "Phase B" (buffer-string))
+      (assert-match "Step three" (buffer-string)))))
+
+(deftest review/completing-last-step-ends-session ()
+  "Finishing the last step tears the session down."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (org-gtd-review-next)
+      (org-gtd-review-next))
+    (assert-nil org-gtd-review--state)
+    (assert-nil (get-buffer org-gtd-review--buffer-name))))
+
+(deftest review/skip-counts-separately ()
+  "s advances but tallies into :skipped."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-skip))
+    (assert-equal 1 (plist-get org-gtd-review--state :skipped))
+    (assert-equal 0 (plist-get org-gtd-review--state :done))))
 
 (provide 'review-test)
 
