@@ -119,7 +119,7 @@ interval (e.g. \".+2d/4d\").")
               org-gtd-review-profiles)))
 
 (defun org-gtd-review--current-phase ()
-  "Return the (NAME . STEPS) phase the session is in."
+  "Return the phase the session is in, a cons of name and step list."
   (nth (plist-get org-gtd-review--state :phase) (org-gtd-review--phases)))
 
 (defun org-gtd-review--current-step ()
