@@ -248,7 +248,64 @@ Via the `/test` skill, using existing builders and mock-gtd helpers.
 - `org-agenda-files` and keywords steps in `org-gtd-init-system`.
 - Daily/monthly/quarterly cadence profiles (ship as documented examples first).
 
-## 8. Provenance
+## 8. Corpus impact — what to pull from the feature-analysis corpus later
+
+Status of every corpus element this design touches, so future work can keep
+pulling from `docs/feature-analysis/` without re-litigating. **Rejected** means
+"do not implement later — the decision went the other way"; **still open** means
+"valid future work; read it through this design's contracts."
+
+### REC-CHK-01
+
+- **Implemented (as specified):** named reusable checklists; insert command;
+  bundled starter trigger lists; checkbox reset so lists are re-runnable.
+- **Implemented (differently — read this design, not the corpus doc):**
+  storage is `checklists.org`, not an `org-gtd-checklists` defcustom;
+  reset keys off repeater re-arm, not a reset-policy field.
+- **Rejected:** checklist type in the registry; `CHECKLIST_KIND` and
+  `RESET_CHECK_BOXES` properties; org-edna `RESET` recurrence; the Cluster-E
+  CRUD manager/builder transient pair for checklists; `ORG_GTD: Checklist`
+  instances.
+- **Still open:** a slim manager transient *over the file* (list/jump/insert)
+  if discoverability warrants; instance↔template linking; `kind` filtering if
+  a consumer ever needs it.
+- **Contract for downstream corpus docs** (REC-PRJ-10, REC-CAP-09, REC-CHK-02,
+  REC-CAP-06, REC-PRJ-07 all cite CHK-01's data model): a checklist is a named
+  top-level subtree in `checklists.org`; consumers reference it **by name** and
+  read items via `org-gtd-checklist--items`. Their references to `kind`,
+  spec alists, or the manager surface are stale.
+
+### REC-REF-02
+
+- **Implemented (lean):** guided multi-phase session; configurable profiles
+  (defcustom, Weekly default); step types `prompt`/`command`/`view`/`checklist`;
+  session keys `n s p q`; phase checkpoints; pause/resume; completion counts;
+  the REF-01 reminder rider via `org-gtd-review-schedule`.
+- **Rejected:** org-edna involvement; hidden `.review-state.el`
+  (now visible `review-state.eld`).
+- **Still open (deferred, valid pulls):**
+  - the **`walk` step type** — iterating *org headings* (projects, someday
+    items) one at a time in WIP buffers with per-item actions (`c x d`) and the
+    no-next-action **invariant guard**. Note our `checklist` step walks item
+    *strings*, not headings; the org-item walk is the missing piece REF-06 and
+    the someday-review generalization both need;
+  - stats block (the X-15 completeness readout), review-completion log,
+    back-step `b`, in-session `,` customize;
+  - generalizing `org-gtd-someday-review` into a profile;
+  - cadence-ladder profiles (daily/monthly/quarterly/annual, REF-05/WF-22);
+  - action bars generated from `:allowed-actions` (the corpus's registry-parity
+    idea) — steps currently declare behavior via `:type` only.
+- **Contract for Cluster A siblings** (REC-REF-06, REC-CAP-09, REC-X-15): the
+  engine they inherit is profiles + typed steps + `n s p q` + pause/resume —
+  *not* the full console in the corpus doc. REF-06/CAP-09 are "just another
+  profile" only once the `walk` step type lands; X-15 still needs the stats
+  block.
+
+When implementation lands, update `docs/feature-analysis/audit/` and
+`gaps/recommended-not-implemented.md` from this section — the mapping above is
+meant to make that mechanical.
+
+## 9. Provenance
 
 - `docs/feature-analysis/ux-workflows/REC-REF-02.md`, `REC-CHK-01.md` (UX corpus);
   adjudications 2026-06-05 #1 and V-10.
