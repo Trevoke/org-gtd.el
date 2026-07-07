@@ -30,7 +30,6 @@
 ;;;; Requirements
 
 (require 'org)
-(require 'f)
 
 (require 'org-gtd-core)
 (require 'org-gtd-files)
@@ -78,14 +77,32 @@ A newly created file is seeded with starter templates."
     (org-gtd--ensure-file-exists path org-gtd-checklist--starter-contents)
     (find-file-noselect path)))
 
+(defun org-gtd-checklist--heading-name ()
+  "Return the normalized template name of the heading at point.
+The name is the bare heading title, without tags, TODO keyword,
+priority cookie or COMMENT keyword."
+  (substring-no-properties (org-get-heading t t t t)))
+
+(defun org-gtd-checklist--goto-template (name)
+  "Move point to the template heading whose normalized title is NAME.
+Search the current buffer's top-level headings, skipping COMMENT
+headings.  Return the heading position, or nil when no template
+matches NAME, in which case point is left unspecified."
+  (goto-char (point-min))
+  (let (found)
+    (while (and (not found)
+                (re-search-forward "^\\* " nil t))
+      (when (and (not (org-in-commented-heading-p t))
+                 (string= name (org-gtd-checklist--heading-name)))
+        (setq found (line-beginning-position))))
+    (when found (goto-char found))))
+
 (defun org-gtd-checklist--items (name)
   "Return the ordered checkbox item strings of checklist NAME.
 Return nil when no checklist NAME exists or it has no items."
   (with-current-buffer (org-gtd-checklist--file-buffer)
     (org-with-wide-buffer
-     (goto-char (point-min))
-     (when (re-search-forward
-            (format "^\\* +%s[ \t]*$" (regexp-quote name)) nil t)
+     (when (org-gtd-checklist--goto-template name)
        (let ((end (save-excursion (org-end-of-subtree t t) (point)))
              items)
          (while (re-search-forward
@@ -96,13 +113,16 @@ Return nil when no checklist NAME exists or it has no items."
 ;;;;; Public
 
 (defun org-gtd-checklist-names ()
-  "Return the list of checklist template names, in file order."
+  "Return the list of checklist template names, in file order.
+Names are the bare heading titles, without tags, TODO keywords or
+priority cookies.  Headings commented out with COMMENT are excluded."
   (with-current-buffer (org-gtd-checklist--file-buffer)
     (org-with-wide-buffer
      (goto-char (point-min))
      (let (names)
-       (while (re-search-forward "^\\* +\\(.+?\\)[ \t]*$" nil t)
-         (push (match-string-no-properties 1) names))
+       (while (re-search-forward "^\\* " nil t)
+         (unless (org-in-commented-heading-p t)
+           (push (org-gtd-checklist--heading-name) names)))
        (nreverse names)))))
 
 ;;;;; Commands
@@ -115,21 +135,25 @@ To make it a recurring task, organize it (e.g. as a habit) with
 `org-gtd-clarify-item' after inserting."
   (interactive
    (list (completing-read "Checklist: " (org-gtd-checklist-names) nil t)))
+  (unless (derived-mode-p 'org-mode)
+    (user-error "Not in an org buffer"))
   (let ((subtree
          (with-current-buffer (org-gtd-checklist--file-buffer)
            (org-with-wide-buffer
-            (goto-char (point-min))
-            (unless (re-search-forward
-                     (format "^\\* +%s[ \t]*$" (regexp-quote name)) nil t)
+            (unless (org-gtd-checklist--goto-template name)
               (user-error "No checklist named '%s' — edit %s"
                           name (org-gtd-checklist--file-path)))
             (buffer-substring-no-properties
-             (line-beginning-position)
+             (point)
              (save-excursion (org-end-of-subtree t t) (point))))))
         ;; Insert as a child of the heading point is under, or at
         ;; top level when the buffer has no heading above point.
         (target-level (1+ (or (org-current-level) 0))))
-    (unless (bolp) (insert "\n"))
+    ;; On a heading line, insert as first child below that heading;
+    ;; never split the heading text at point.
+    (if (org-at-heading-p)
+        (progn (end-of-line) (insert "\n"))
+      (unless (bolp) (insert "\n")))
     (org-paste-subtree target-level subtree)))
 
 ;;;###autoload
