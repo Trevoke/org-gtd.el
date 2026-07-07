@@ -97,6 +97,16 @@ matches NAME, in which case point is left unspecified."
         (setq found (line-beginning-position))))
     (when found (goto-char found))))
 
+(defun org-gtd-checklist--maybe-reset-checkboxes ()
+  "Clear checkboxes in the subtree when a repeating heading is completed.
+Meant for `org-after-todo-state-change-hook'.  When the heading at
+point carries a repeater and just entered a done state, org re-arms
+it; clearing the boxes makes the next run start fresh.  A plain DONE
+on a non-repeating heading is left untouched."
+  (when (and (org-get-repeat)
+             (member org-state org-done-keywords))
+    (org-reset-checkbox-state-subtree)))
+
 (defun org-gtd-checklist--items (name)
   "Return the ordered checkbox item strings of checklist NAME.
 Return nil when no checklist NAME exists or it has no items."
