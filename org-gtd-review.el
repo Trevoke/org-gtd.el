@@ -119,6 +119,38 @@ Keys: :profile (name string), :phase (index), :step (index),
   (nth (plist-get org-gtd-review--state :step)
        (cdr (org-gtd-review--current-phase))))
 
+;;;; Profile Validation
+
+(defun org-gtd-review--check-profile (profile)
+  "Signal a `user-error' when PROFILE is malformed.
+PROFILE is an entry of `org-gtd-review-profiles', that is
+\(PROFILE-NAME . PHASES).  Explain what a well-formed phase or
+step looks like so the error teaches the fix."
+  (let ((name (car profile))
+        (phases (cdr profile)))
+    (unless phases
+      (user-error
+       "Review profile '%s' has no phases — give it at least one (PHASE-NAME STEP...) list"
+       name))
+    (dolist (phase phases)
+      (unless (and (consp phase) (stringp (car phase)))
+        (user-error
+         "Review profile '%s': phase %S should be a list starting with a name string, like (\"Get Clear\" STEP...)"
+         name phase))
+      (dolist (step (cdr phase))
+        (unless (and (listp step) (keywordp (car-safe step)))
+          (user-error
+           "Review profile '%s', phase '%s': step %S should be a plist like (:title \"...\" :type prompt)"
+           name (car phase) step))
+        (unless (plist-get step :title)
+          (user-error
+           "Review profile '%s', phase '%s': a step is missing :title — every step needs one"
+           name (car phase)))
+        (unless (plist-get step :type)
+          (user-error
+           "Review profile '%s', phase '%s': step \"%s\" is missing :type — one of prompt, command, view, or checklist"
+           name (car phase) (plist-get step :title)))))))
+
 ;;;; Keymap and Mode
 
 (defvar org-gtd-review-mode-map
@@ -135,7 +167,8 @@ Keys: :profile (name string), :phase (index), :step (index),
   "Major mode for the guided review session console.
 
 \\{org-gtd-review-mode-map}"
-  :group 'org-gtd)
+  :group 'org-gtd
+  (add-hook 'kill-buffer-hook #'org-gtd-review--on-buffer-kill nil t))
 
 ;; When evil-mode is loaded, start review-mode in emacs state.
 ;; We use both evil-set-initial-state AND a mode hook for robustness:
@@ -148,11 +181,10 @@ Keys: :profile (name string), :phase (index), :step (index),
 
 ;;;; Rendering
 
-(defun org-gtd-review--header-line (step)
-  "Compute the header line advertising keys for STEP."
-  (concat "[n] Do/advance  [s] Skip  [p] Pause  [q] Quit"
-          (when (eq (plist-get step :type) 'checklist)
-            "  [c] Capture")))
+(defun org-gtd-review--header-line ()
+  "Compute the header line advertising the session keys.
+Capture is always available: any step can shake something loose."
+  "[n] Do/advance  [s] Skip  [c] Capture  [p] Pause  [q] Quit")
 
 (defun org-gtd-review--phase-tracker ()
   "Render the phase tracker line."
@@ -192,7 +224,7 @@ Keys: :profile (name string), :phase (index), :step (index),
             (insert (format "\n    → %s   (%d/%d)\n"
                             (nth pos items) (1+ pos) (length items)))))
         (goto-char (point-min)))
-      (setq header-line-format (org-gtd-review--header-line step))
+      (setq header-line-format (org-gtd-review--header-line))
       (pop-to-buffer (current-buffer)))))
 
 ;;;; Step Advancement
@@ -222,14 +254,26 @@ Keys: :profile (name string), :phase (index), :step (index),
                 (org-gtd-review--render))
             (org-gtd-review--finish)))))))
 
-(defun org-gtd-review--teardown ()
-  "Kill the session buffer, clear state, restore windows."
+(defun org-gtd-review--reset-session ()
+  "Clear the session state and restore the saved window configuration."
   (setq org-gtd-review--state nil)
-  (when (get-buffer org-gtd-review--buffer-name)
-    (kill-buffer org-gtd-review--buffer-name))
   (when org-gtd-review--window-config
     (set-window-configuration org-gtd-review--window-config)
     (setq org-gtd-review--window-config nil)))
+
+(defun org-gtd-review--on-buffer-kill ()
+  "End the session when its buffer is killed out from under it.
+Buffer-local `kill-buffer-hook' for `org-gtd-review-mode'.  No-op
+when the session already ended, so `org-gtd-review--teardown' does
+not recurse through the kill it performs itself."
+  (when org-gtd-review--state
+    (org-gtd-review--reset-session)))
+
+(defun org-gtd-review--teardown ()
+  "Kill the session buffer, clear state, restore windows."
+  (org-gtd-review--reset-session)
+  (when (get-buffer org-gtd-review--buffer-name)
+    (kill-buffer org-gtd-review--buffer-name)))
 
 (defun org-gtd-review--finish ()
   "Complete the session: report, clean up."
@@ -278,6 +322,13 @@ Keys: :profile (name string), :phase (index), :step (index),
 With more than one profile in `org-gtd-review-profiles', prompt;
 PROFILE-NAME selects one non-interactively."
   (interactive)
+  (when org-gtd-review--state
+    (user-error
+     "A review session is already active — finish it or press q in %s first"
+     org-gtd-review--buffer-name))
+  (unless org-gtd-review-profiles
+    (user-error
+     "No review profiles configured — see `org-gtd-review-profiles'"))
   (let* ((names (mapcar #'car org-gtd-review-profiles))
          (name (or profile-name
                    (if (cdr names)
@@ -285,11 +336,16 @@ PROFILE-NAME selects one non-interactively."
                      (car names)))))
     (unless (assoc name org-gtd-review-profiles)
       (user-error "No review profile named '%s'" name))
+    (org-gtd-review--check-profile (assoc name org-gtd-review-profiles))
     (setq org-gtd-review--window-config (current-window-configuration))
     (setq org-gtd-review--state
           (list :profile name :phase 0 :step 0 :acted nil
                 :walk-items nil :walk-pos 0 :done 0 :skipped 0))
-    (org-gtd-review--render)))
+    (condition-case err
+        (org-gtd-review--render)
+      (error
+       (org-gtd-review--teardown)
+       (signal (car err) (cdr err))))))
 
 ;;;; Footer
 

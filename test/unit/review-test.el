@@ -12,11 +12,13 @@
 ;; Test Coverage:
 ;; - Default Weekly Review profile shape (2 tests)
 ;; - Session lifecycle: start, advance, complete, skip (4 tests)
+;; - Entry guards, profile validation, teardown safety (7 tests)
 ;;
 ;;; Code:
 
 (require 'ogt-eunit-prelude "test/helpers/prelude.el")
 (require 'org-gtd-review)
+(require 'cl-lib)
 
 (e-unit-initialize)
 
@@ -24,6 +26,8 @@
   (ogt-eunit-with-mock-gtd
     (setq org-gtd-review--state nil
           org-gtd-review--window-config nil)
+    (when (get-buffer org-gtd-review--buffer-name)
+      (kill-buffer org-gtd-review--buffer-name))
     (funcall proceed context)))
 
 ;;; Default Profile Tests
@@ -94,6 +98,76 @@
       (org-gtd-review-skip))
     (assert-equal 1 (plist-get org-gtd-review--state :skipped))
     (assert-equal 0 (plist-get org-gtd-review--state :done))))
+
+;;; Entry Guard and Validation Tests
+
+(deftest review/second-invocation-signals-user-error ()
+  "Starting a review while one is active errors, keeping the session."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (let ((err (condition-case e
+                   (progn (org-gtd-review "Tiny") nil)
+                 (user-error e))))
+      (assert-true err)
+      (assert-match "already active" (cadr err)))
+    (assert-equal "Tiny" (plist-get org-gtd-review--state :profile))
+    (assert-equal 0 (plist-get org-gtd-review--state :step))))
+
+(deftest review/no-profiles-configured-errors ()
+  "An empty profiles alist signals a clean user-error."
+  (let ((org-gtd-review-profiles nil))
+    (let ((err (condition-case e
+                   (progn (org-gtd-review) nil)
+                 (user-error e))))
+      (assert-true err)
+      (assert-match "No review profiles configured" (cadr err))))
+  (assert-nil org-gtd-review--state))
+
+(deftest review/malformed-phase-errors-cleanly ()
+  "A non-list phase user-errors; no session or buffer is left behind."
+  (let ((org-gtd-review-profiles '(("Bad" "not-a-phase-list"))))
+    (let ((err (condition-case e
+                   (progn (org-gtd-review "Bad") nil)
+                 (user-error e))))
+      (assert-true err))
+    (assert-nil org-gtd-review--state)
+    (assert-nil (get-buffer org-gtd-review--buffer-name))))
+
+(deftest review/step-missing-type-errors-cleanly ()
+  "A step without :type user-errors in teaching voice."
+  (let ((org-gtd-review-profiles
+         '(("Bad" ("P" (:title "No type here"))))))
+    (let ((err (condition-case e
+                   (progn (org-gtd-review "Bad") nil)
+                 (user-error e))))
+      (assert-true err)
+      (assert-match ":type" (cadr err)))
+    (assert-nil org-gtd-review--state)))
+
+(deftest review/render-error-still-tears-down ()
+  "An unexpected error during session start restores a clean slate."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (cl-letf (((symbol-function 'org-gtd-review--render)
+               (lambda () (error "Boom"))))
+      (condition-case nil (org-gtd-review "Tiny") (error nil)))
+    (assert-nil org-gtd-review--state)
+    (assert-nil org-gtd-review--window-config)))
+
+;;; Teardown Safety Tests
+
+(deftest review/capture-advertised-on-every-step ()
+  "The header line offers c on prompt steps, not only checklist walks."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (assert-match "\\[c\\] Capture" (format "%s" header-line-format)))))
+
+(deftest review/killing-buffer-ends-session ()
+  "Killing *GTD Review* directly clears the session state."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (kill-buffer org-gtd-review--buffer-name)
+    (assert-nil org-gtd-review--state)))
 
 (provide 'review-test)
 
