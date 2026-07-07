@@ -13,7 +13,7 @@
 ;; - Default Weekly Review profile shape (2 tests)
 ;; - Session lifecycle: start, advance, complete, skip (4 tests)
 ;; - Entry guards, profile validation, teardown safety (10 tests)
-;; - Pause / resume / quit persistence (6 tests)
+;; - Pause / resume / quit persistence and checkpointing (14 tests)
 ;;
 ;;; Code:
 
@@ -397,7 +397,10 @@
     (org-gtd-review)                       ; no resume prompt: state invalid
     (with-current-buffer org-gtd-review--buffer-name
       (assert-match "Sole" (buffer-string)))
-    (assert-nil (file-exists-p (org-gtd-review--state-file)))))
+    ;; The stale save is replaced by the fresh session's checkpoint.
+    (assert-equal 0 (plist-get (org-gtd-review--load-state) :step))
+    (assert-true (org-gtd-review--state-valid-p
+                  (org-gtd-review--load-state)))))
 
 (deftest review/completion-deletes-state-file ()
   "Finishing a resumed session removes review-state.eld."
@@ -435,6 +438,156 @@
         (org-gtd-review-quit)))
     (assert-nil org-gtd-review--state)
     (assert-nil (file-exists-p (org-gtd-review--state-file)))))
+
+(deftest review/pause-without-session-errors-and-preserves-save ()
+  "A stray M-x pause with no session must not clobber a saved pause."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (org-gtd-review-pause))            ; save at step two
+    (let ((err (condition-case e
+                   (progn (org-gtd-review-pause) nil)
+                 (user-error e))))
+      (assert-true err))
+    (assert-equal 1 (plist-get (org-gtd-review--load-state) :step))))
+
+(deftest review/quit-without-session-errors-and-preserves-save ()
+  "A stray M-x quit with no session must not delete a saved pause."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (org-gtd-review-pause))
+    (cl-letf (((symbol-function 'y-or-n-p) (lambda (_prompt) nil)))
+      (let ((err (condition-case e
+                     (progn (org-gtd-review-quit) nil)
+                   (user-error e))))
+        (assert-true err)))
+    (assert-equal 1 (plist-get (org-gtd-review--load-state) :step))))
+
+(deftest review/declining-resume-then-abort-keeps-save ()
+  "n to resume, then C-g at the profile picker, keeps the pause resumable."
+  (let ((org-gtd-review-profiles
+         (append review-test--tiny-profile
+                 '(("Other" ("P" (:title "Elsewhere" :type prompt)))))))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (org-gtd-review-pause))
+    (cl-letf (((symbol-function 'y-or-n-p) (lambda (_prompt) nil))
+              ((symbol-function 'completing-read)
+               (lambda (&rest _) (signal 'quit nil))))
+      (condition-case nil (org-gtd-review) (quit nil)))
+    (assert-equal 1 (plist-get (org-gtd-review--load-state) :step))
+    ;; The declined-but-aborted pause is still resumable.
+    (cl-letf (((symbol-function 'y-or-n-p) (lambda (_prompt) t)))
+      (org-gtd-review))
+    (with-current-buffer org-gtd-review--buffer-name
+      (assert-match "Step two" (buffer-string)))))
+
+(deftest review/kill-buffer-leaves-checkpoint-resumable ()
+  "C-x k mid-session leaves a checkpoint; re-entry resumes in place."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (org-gtd-review-next))             ; now on Phase B / Step three
+    (kill-buffer org-gtd-review--buffer-name)
+    (assert-nil org-gtd-review--state)
+    (cl-letf (((symbol-function 'y-or-n-p) (lambda (_prompt) t)))
+      (org-gtd-review))
+    (with-current-buffer org-gtd-review--buffer-name
+      (assert-match "Step three" (buffer-string)))))
+
+(deftest review/kill-mid-walk-resumes-at-item ()
+  "Killing the buffer mid-walk resumes at the checkpointed item."
+  (let ((org-gtd-review-profiles review-test--walk-profile))
+    (org-gtd-review "Walk")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)              ; load walk, item 1
+      (org-gtd-review-next))             ; item 2
+    (kill-buffer org-gtd-review--buffer-name)
+    (cl-letf (((symbol-function 'y-or-n-p) (lambda (_prompt) t)))
+      (org-gtd-review))
+    (with-current-buffer org-gtd-review--buffer-name
+      (assert-match "(2/8)" (buffer-string)))))
+
+(deftest review/mangled-state-file-starts-fresh ()
+  "A readable but incoherent save starts fresh, without an error loop."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (with-temp-file (org-gtd-review--state-file)
+      (prin1 '(:profile "Tiny" :phase 0 :step 0 :acted t
+               :walk-items ("a" "b") :walk-pos 9 :done 0 :skipped 0)
+             (current-buffer)))
+    (org-gtd-review)                     ; no resume prompt: state invalid
+    (with-current-buffer org-gtd-review--buffer-name
+      (assert-match "Step one" (buffer-string)))
+    ;; The mangled save was replaced by the fresh session's checkpoint.
+    (assert-true (org-gtd-review--state-valid-p
+                  (org-gtd-review--load-state)))
+    (assert-equal 0 (plist-get (org-gtd-review--load-state) :walk-pos))))
+
+(deftest review/state-valid-p-rejects-corrupt-fields ()
+  "Negative indices, non-integer tallies, and bad walk shapes are invalid."
+  (let ((org-gtd-review-profiles review-test--tiny-profile)
+        (base '(:profile "Tiny" :phase 0 :step 0 :acted nil
+                :walk-items nil :walk-pos 0 :done 0 :skipped 0)))
+    (cl-flet ((mangle (key val)
+                (plist-put (copy-sequence base) key val)))
+      (assert-true (org-gtd-review--state-valid-p base))
+      (assert-nil (org-gtd-review--state-valid-p (mangle :phase -1)))
+      (assert-nil (org-gtd-review--state-valid-p (mangle :step -1)))
+      (assert-nil (org-gtd-review--state-valid-p (mangle :done "three")))
+      (assert-nil (org-gtd-review--state-valid-p (mangle :skipped nil)))
+      (assert-nil (org-gtd-review--state-valid-p
+                   (mangle :walk-items "not-a-list")))
+      (assert-nil (org-gtd-review--state-valid-p
+                   (plist-put (mangle :walk-items '("a")) :walk-pos -1))))))
+
+(deftest review/explicit-profile-arg-skips-resume-offer ()
+  "An explicit different PROFILE-NAME starts fresh with no resume offer."
+  (let ((org-gtd-review-profiles
+         (append review-test--tiny-profile
+                 '(("Other" ("P" (:title "Elsewhere" :type prompt)))))))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (org-gtd-review-pause))
+    (cl-letf (((symbol-function 'y-or-n-p)
+               (lambda (_prompt) (error "Resume offer should be skipped"))))
+      (org-gtd-review "Other"))
+    (with-current-buffer org-gtd-review--buffer-name
+      (assert-match "Elsewhere" (buffer-string)))
+    ;; No eager delete: the new session's checkpoint took the slot over.
+    (assert-equal "Other" (plist-get (org-gtd-review--load-state) :profile))))
+
+(deftest review/resume-with-edited-bad-profile-teaches-and-deletes ()
+  "A profile edited invalid while paused surfaces the teaching error."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (org-gtd-review-pause)))
+  ;; Same shape (state stays index-valid) but a step lost its :type.
+  (let ((org-gtd-review-profiles
+         '(("Tiny"
+            ("Phase A"
+             (:title "Step one" :type prompt)
+             (:title "No type here"))
+            ("Phase B"
+             (:title "Step three" :type prompt))))))
+    (let ((err (condition-case e
+                   (progn
+                     (cl-letf (((symbol-function 'y-or-n-p)
+                                (lambda (_prompt) t)))
+                       (org-gtd-review))
+                     nil)
+                 (user-error e))))
+      (assert-true err)
+      (assert-match ":type" (cadr err)))
+    (assert-nil (file-exists-p (org-gtd-review--state-file)))
+    (assert-nil org-gtd-review--state)))
 
 (provide 'review-test)
 

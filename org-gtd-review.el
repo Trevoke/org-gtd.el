@@ -170,10 +170,12 @@ step looks like so the error teaches the fix."
            "Review profile '%s', phase '%s': checklist step \"%s\" is missing :checklist — name a template from your checklists file, like :checklist \"Weekly Review triggers\""
            name (car phase) (plist-get step :title)))))))
 
-;;;; Pause and Resume Persistence
+;;;; Checkpoint and Resume Persistence
 
 (defun org-gtd-review--state-file ()
-  "Return the path of the paused-session state file."
+  "Return the path of the session checkpoint file.
+A single slot with no locking: concurrent Emacs sessions writing
+checkpoints race, and the last write wins."
   (f-join org-gtd-directory "review-state.eld"))
 
 (defun org-gtd-review--save-state ()
@@ -197,15 +199,27 @@ step looks like so the error teaches the fix."
     (when (file-exists-p file) (delete-file file))))
 
 (defun org-gtd-review--state-valid-p (state)
-  "Non-nil when STATE still fits `org-gtd-review-profiles'."
+  "Non-nil when STATE still fits `org-gtd-review-profiles'.
+Also rejects internally incoherent states — negative indices,
+non-integer tallies, a walk position outside the walk items — so a
+corrupted checkpoint falls back to a fresh session instead of
+crashing mid-render."
   (when-let* ((profile (assoc (plist-get state :profile)
                               org-gtd-review-profiles))
               (phases (cdr profile))
               (p (plist-get state :phase))
               (s (plist-get state :step)))
-    (and (integerp p) (integerp s)
-         (< p (length phases))
-         (< s (length (cdr (nth p phases)))))))
+    (let ((walk-items (plist-get state :walk-items))
+          (walk-pos (plist-get state :walk-pos)))
+      (and (integerp p) (>= p 0) (< p (length phases))
+           (integerp s) (>= s 0) (< s (length (cdr (nth p phases))))
+           (integerp (plist-get state :done))
+           (integerp (plist-get state :skipped))
+           (listp walk-items)
+           (or (null walk-items)
+               (and (integerp walk-pos)
+                    (>= walk-pos 0)
+                    (< walk-pos (length walk-items))))))))
 
 ;;;; Keymap and Mode
 
@@ -286,7 +300,9 @@ Capture is always available: any step can shake something loose."
 ;;;; Step Advancement
 
 (defun org-gtd-review--complete-step (&optional skipped)
-  "Advance past the current step, tallying SKIPPED or done."
+  "Advance past the current step, tallying SKIPPED or done.
+Checkpoints the new position to disk at every step boundary, so a
+crash or killed buffer resumes where the user left off."
   (let ((state org-gtd-review--state)
         (counter (if skipped :skipped :done)))
     (plist-put state counter (1+ (plist-get state counter)))
@@ -297,6 +313,7 @@ Capture is always available: any step can shake something loose."
           (next-step (1+ (plist-get state :step))))
       (if (< next-step (length steps))
           (progn (plist-put state :step next-step)
+                 (org-gtd-review--save-state)
                  (org-gtd-review--render))
         (let ((phases (org-gtd-review--phases))
               (next-phase (1+ (plist-get state :phase))))
@@ -307,6 +324,7 @@ Capture is always available: any step can shake something loose."
                          (car (nth next-phase phases)))
                 (plist-put state :phase next-phase)
                 (plist-put state :step 0)
+                (org-gtd-review--save-state)
                 (org-gtd-review--render))
             (org-gtd-review--finish)))))))
 
@@ -323,10 +341,11 @@ Buffer-local `kill-buffer-hook' for `org-gtd-review-mode'.  No-op
 when the session already ended, so `org-gtd-review--teardown' does
 not recurse through the kill it performs itself.
 
-Deliberately leaves the state file alone: killing the buffer ends
-the session without saving — the state file only exists when the
-user paused, and a stray \\[kill-buffer] must not destroy that
-earlier pause."
+Deliberately leaves the checkpoint file alone: the session saves at
+every step boundary and walk advance, so the file already holds the
+latest position.  A stray \\[kill-buffer] — or a crash — therefore
+loses nothing: the next `org-gtd-review' offers to resume right
+where the user was."
   (when org-gtd-review--state
     (org-gtd-review--reset-session)))
 
@@ -339,7 +358,7 @@ earlier pause."
 (defun org-gtd-review--finish ()
   "Complete the session: report, clean up.
 Every completion path funnels through here, so this is where the
-paused-session state file (if any survived a resume) is removed."
+checkpoint file is removed."
   (org-gtd-review--delete-state-file)
   (let ((done (plist-get org-gtd-review--state :done))
         (skipped (plist-get org-gtd-review--state :skipped)))
@@ -351,7 +370,9 @@ paused-session state file (if any survived a resume) is removed."
 ;;;; Commands
 
 (defun org-gtd-review--walk-next (step)
-  "Advance the checklist walk for STEP, loading it on first call."
+  "Advance the checklist walk for STEP, loading it on first call.
+Every walk-position change is checkpointed to disk, so resuming
+lands on the item the user was looking at."
   (let ((state org-gtd-review--state))
     (if (not (plist-get state :acted))
         (let ((items (org-gtd-checklist--items (plist-get step :checklist))))
@@ -364,10 +385,12 @@ paused-session state file (if any survived a resume) is removed."
             (plist-put state :acted t)
             (plist-put state :walk-items items)
             (plist-put state :walk-pos 0)
+            (org-gtd-review--save-state)
             (org-gtd-review--render)))
       (let ((next (1+ (plist-get state :walk-pos))))
         (if (< next (length (plist-get state :walk-items)))
             (progn (plist-put state :walk-pos next)
+                   (org-gtd-review--save-state)
                    (org-gtd-review--render))
           (org-gtd-review--complete-step))))))
 
@@ -409,15 +432,23 @@ paused-session state file (if any survived a resume) is removed."
   (call-interactively #'org-gtd-capture))
 
 (defun org-gtd-review-pause ()
-  "Pause the session; `org-gtd-review' resumes it later."
+  "Pause the session; `org-gtd-review' resumes it later.
+Guarded against running with no active session: saving then would
+write an empty state over an existing checkpoint."
   (interactive)
+  (unless org-gtd-review--state
+    (user-error "No review session is active"))
   (org-gtd-review--save-state)
   (org-gtd-review--teardown)
   (message "Review paused — run M-x org-gtd-review to resume."))
 
 (defun org-gtd-review-quit ()
-  "Quit the session, offering to keep or abandon progress."
+  "Quit the session, offering to keep or abandon progress.
+Guarded against running with no active session: abandoning then
+would delete an existing checkpoint."
   (interactive)
+  (unless org-gtd-review--state
+    (user-error "No review session is active"))
   (if (y-or-n-p "Keep progress to resume later? ")
       (org-gtd-review-pause)
     (org-gtd-review--delete-state-file)
@@ -428,9 +459,11 @@ paused-session state file (if any survived a resume) is removed."
 
 ;;;###autoload
 (defun org-gtd-review (&optional profile-name)
-  "Run a guided review session, resuming a paused one when offered.
+  "Run a guided review session, resuming a checkpointed one when offered.
 With more than one profile in `org-gtd-review-profiles', prompt;
-PROFILE-NAME selects one non-interactively."
+PROFILE-NAME selects one non-interactively.  An explicit
+PROFILE-NAME that differs from the checkpointed profile skips the
+resume offer and starts that profile fresh."
   (interactive)
   (when org-gtd-review--state
     (user-error
@@ -441,17 +474,45 @@ PROFILE-NAME selects one non-interactively."
      "No review profiles configured — see `org-gtd-review-profiles'"))
   (let ((saved (org-gtd-review--load-state)))
     (cond
-     ((and saved (not (org-gtd-review--state-valid-p saved)))
+     ((null saved)
+      (org-gtd-review--start-fresh profile-name))
+     ((not (org-gtd-review--state-valid-p saved))
       (org-gtd-review--delete-state-file)
       (message "Saved review no longer matches your profiles — starting over.")
       (org-gtd-review--start-fresh profile-name))
-     ((and saved
-           (y-or-n-p (format "Resume paused '%s' review? "
-                             (plist-get saved :profile))))
-      (org-gtd-review--begin-session saved))
+     ((and profile-name
+           (not (equal profile-name (plist-get saved :profile))))
+      ;; Asked for a different profile by name: no resume offer.  No
+      ;; eager delete either — the new session's first checkpoint
+      ;; claims the slot, so aborting the start keeps the old save.
+      (org-gtd-review--start-fresh profile-name))
+     ((y-or-n-p (format "Resume paused '%s' review? "
+                        (plist-get saved :profile)))
+      (org-gtd-review--resume saved profile-name))
      (t
-      (org-gtd-review--delete-state-file)
+      ;; Declined.  Deleting here would destroy the save if the user
+      ;; then quits the profile picker; the fresh session's first
+      ;; checkpoint overwrites it instead, and nothing between the
+      ;; decline and that overwrite reads the file.
       (org-gtd-review--start-fresh profile-name)))))
+
+(defun org-gtd-review--resume (saved profile-name)
+  "Resume the SAVED session after re-validating its profile.
+The profile may have been edited into an invalid shape while the
+session was paused; in that case surface the teaching error, drop
+the checkpoint, and start over — PROFILE-NAME seeds the fresh
+start, as in the invalid-state branch of `org-gtd-review'."
+  (let ((problem
+         (condition-case err
+             (prog1 nil
+               (org-gtd-review--check-profile
+                (assoc (plist-get saved :profile) org-gtd-review-profiles)))
+           (user-error err))))
+    (if (null problem)
+        (org-gtd-review--begin-session saved)
+      (org-gtd-review--delete-state-file)
+      (message "Saved review's profile is no longer valid — starting over.")
+      (org-gtd-review--start-fresh profile-name))))
 
 (defun org-gtd-review--start-fresh (profile-name)
   "Start a new session for PROFILE-NAME (prompting when nil)."
@@ -468,18 +529,20 @@ PROFILE-NAME selects one non-interactively."
            :walk-items nil :walk-pos 0 :done 0 :skipped 0))))
 
 (defun org-gtd-review--begin-session (state)
-  "Install STATE as the live session and render, tearing down on error.
+  "Install STATE as the live session, render, and checkpoint it.
 Snapshots the current window configuration for restore at session
 end.  A resumed session re-snapshots here rather than restoring a
 saved one: a live window configuration cannot be serialized to the
-state file."
+state file.  The immediate checkpoint means a fresh session claims
+the single save slot as soon as it successfully boots."
   (setq org-gtd-review--window-config (current-window-configuration))
   (setq org-gtd-review--state state)
   (condition-case err
       (org-gtd-review--render)
     (error
      (org-gtd-review--teardown)
-     (signal (car err) (cdr err)))))
+     (signal (car err) (cdr err))))
+  (org-gtd-review--save-state))
 
 ;;;; Footer
 
