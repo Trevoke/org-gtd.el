@@ -123,7 +123,7 @@ Step types (v1):
 | `:type` | keys used | behavior on `n` |
 |---|---|---|
 | `prompt` | shows `:instruction` | mark done, advance |
-| `command` | — | call `:command`; on return, advance |
+| `command` | — | `n` launches `:command`; on the user's next `n`, advance |
 | `view` | — | show `:view` in other window; browse; `n` again advances |
 | `checklist` | `c` capture, `n` next item | walk `:checklist` items one at a time; `c` captures to inbox mid-walk. Ephemeral — the template file is never modified |
 

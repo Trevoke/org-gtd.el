@@ -198,6 +198,18 @@
   (interactive)
   (setq review-test--command-calls (1+ review-test--command-calls)))
 
+(defun review-test--failing-command ()
+  "Test command that records the invocation, then signals."
+  (interactive)
+  (setq review-test--command-calls (1+ review-test--command-calls))
+  (error "Boom"))
+
+(defun review-test--popping-view ()
+  "Test view that records the invocation and pops another buffer."
+  (interactive)
+  (setq review-test--command-calls (1+ review-test--command-calls))
+  (pop-to-buffer (get-buffer-create "*review-test-view*")))
+
 (deftest review/command-step-runs-command-then-advances ()
   "First n invokes :command; second n advances."
   (setq review-test--command-calls 0)
@@ -212,18 +224,68 @@
       (org-gtd-review-next)
       (assert-match "After" (buffer-string)))))
 
-(deftest review/view-step-shows-view-then-advances ()
-  "First n calls :view (other window); second n advances."
+(deftest review/command-step-error-leaves-step-retryable ()
+  "A :command that signals leaves the step un-acted so n retries it."
+  (setq review-test--command-calls 0)
   (let ((org-gtd-review-profiles
-         '(("T" ("P" (:title "Look" :type view :view review-test--command)
+         '(("T" ("P" (:title "Flaky" :type command :command review-test--failing-command)
+                     (:title "After" :type prompt))))))
+    (org-gtd-review "T")
+    (with-current-buffer org-gtd-review--buffer-name
+      ;; First n: the command signals; the error propagates.
+      (assert-true (condition-case e
+                       (progn (org-gtd-review-next) nil)
+                     (error e)))
+      ;; The step must not count as acted or done.
+      (assert-nil (plist-get org-gtd-review--state :acted))
+      (assert-equal 0 (plist-get org-gtd-review--state :done))
+      ;; Second n retries the command instead of silently advancing.
+      (assert-true (condition-case e
+                       (progn (org-gtd-review-next) nil)
+                     (error e)))
+      (assert-equal 2 review-test--command-calls)
+      (assert-match "Flaky" (buffer-string)))))
+
+(deftest review/view-step-shows-view-then-advances ()
+  "First n calls :view without stealing the window; second n advances."
+  (let ((org-gtd-review-profiles
+         '(("T" ("P" (:title "Look" :type view :view review-test--popping-view)
                      (:title "After" :type prompt))))))
     (setq review-test--command-calls 0)
     (org-gtd-review "T")
-    (with-current-buffer org-gtd-review--buffer-name
-      (org-gtd-review-next)
-      (assert-equal 1 review-test--command-calls)
-      (org-gtd-review-next)
-      (assert-match "After" (buffer-string)))))
+    (unwind-protect
+        (with-current-buffer org-gtd-review--buffer-name
+          (org-gtd-review-next)
+          (assert-equal 1 review-test--command-calls)
+          ;; The review console must stay the selected window.
+          (assert-equal org-gtd-review--buffer-name
+                        (buffer-name (window-buffer (selected-window))))
+          (org-gtd-review-next)
+          (assert-match "After" (buffer-string)))
+      (when (get-buffer "*review-test-view*")
+        (kill-buffer "*review-test-view*")))))
+
+(deftest review/command-step-missing-command-errors-cleanly ()
+  "A command step without :command is rejected at session start."
+  (let ((org-gtd-review-profiles
+         '(("Bad" ("P" (:title "Run what?" :type command))))))
+    (let ((err (condition-case e
+                   (progn (org-gtd-review "Bad") nil)
+                 (user-error e))))
+      (assert-true err)
+      (assert-match ":command" (cadr err)))
+    (assert-nil org-gtd-review--state)))
+
+(deftest review/view-step-missing-view-errors-cleanly ()
+  "A view step without :view is rejected at session start."
+  (let ((org-gtd-review-profiles
+         '(("Bad" ("P" (:title "Look at what?" :type view))))))
+    (let ((err (condition-case e
+                   (progn (org-gtd-review "Bad") nil)
+                 (user-error e))))
+      (assert-true err)
+      (assert-match ":view" (cadr err)))
+    (assert-nil org-gtd-review--state)))
 
 (deftest review/unknown-step-type-skips-with-message ()
   "An unknown :type never errors; it advances."
@@ -255,6 +317,20 @@
       (assert-match "(2/8)" (buffer-string))
       (dotimes (_ 7) (org-gtd-review-next))       ; through item 8 and out
       (assert-match "After" (buffer-string)))))
+
+(deftest review/skip-mid-walk-exits-whole-step ()
+  "s in the middle of a walk leaves the step, tallied as skipped."
+  (let ((org-gtd-review-profiles review-test--walk-profile))
+    (org-gtd-review "Walk")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)                       ; load walk, item 1
+      (org-gtd-review-next)                       ; item 2
+      (org-gtd-review-skip)
+      (assert-match "After" (buffer-string)))
+    (assert-equal 1 (plist-get org-gtd-review--state :skipped))
+    (assert-equal 0 (plist-get org-gtd-review--state :done))
+    (assert-nil (plist-get org-gtd-review--state :walk-items))
+    (assert-nil (plist-get org-gtd-review--state :acted))))
 
 (deftest review/checklist-step-missing-template-auto-advances ()
   "A missing/empty checklist self-satisfies instead of erroring."

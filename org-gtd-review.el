@@ -153,6 +153,16 @@ step looks like so the error teaches the fix."
         (unless (plist-get step :type)
           (user-error
            "Review profile '%s', phase '%s': step \"%s\" is missing :type — one of prompt, command, view, or checklist"
+           name (car phase) (plist-get step :title)))
+        (when (and (eq (plist-get step :type) 'command)
+                   (not (plist-get step :command)))
+          (user-error
+           "Review profile '%s', phase '%s': command step \"%s\" is missing :command — name the command to run, like :command org-gtd-process-inbox"
+           name (car phase) (plist-get step :title)))
+        (when (and (eq (plist-get step :type) 'view)
+                   (not (plist-get step :view)))
+          (user-error
+           "Review profile '%s', phase '%s': view step \"%s\" is missing :view — name the command that shows the view, like :view org-gtd-engage"
            name (car phase) (plist-get step :title)))))))
 
 ;;;; Keymap and Mode
@@ -318,17 +328,21 @@ not recurse through the kill it performs itself."
          (type (plist-get step :type)))
     (pcase type
       ('prompt (org-gtd-review--complete-step))
+      ;; Command/view steps set :acted only AFTER the call returns, so a
+      ;; signaling command leaves the step un-acted and n retries it.
+      ;; Deliberate: s after the first n tallies :skipped — the user
+      ;; declined to confirm completion.
       ('command
        (if (plist-get org-gtd-review--state :acted)
            (org-gtd-review--complete-step)
-         (plist-put org-gtd-review--state :acted t)
-         (call-interactively (plist-get step :command))))
+         (call-interactively (plist-get step :command))
+         (plist-put org-gtd-review--state :acted t)))
       ('view
        (if (plist-get org-gtd-review--state :acted)
            (org-gtd-review--complete-step)
-         (plist-put org-gtd-review--state :acted t)
          (save-selected-window
-           (call-interactively (plist-get step :view)))))
+           (call-interactively (plist-get step :view)))
+         (plist-put org-gtd-review--state :acted t)))
       ('checklist (org-gtd-review--walk-next step))
       (_
        (message "Step type '%s' is unknown — check org-gtd-review-profiles; skipping this step" type)
