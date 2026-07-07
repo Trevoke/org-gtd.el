@@ -104,6 +104,13 @@ Keys: :profile (name string), :phase (index), :step (index),
 
 (defconst org-gtd-review--buffer-name "*GTD Review*")
 
+(defconst org-gtd-review--repeater-re
+  "\\`[.+]?\\+[0-9]+[hdwmy]\\(?:/[0-9]+[hdwmy]\\)?\\'"
+  "Regexp matching a standalone org repeater.
+The repeater core of `org-repeat-re': +N, ++N, or .+N with an
+h/d/w/m/y unit, optionally followed by a /N[hdwmy] habit maximum
+interval (e.g. \".+2d/4d\").")
+
 ;;;; Accessors
 
 (defun org-gtd-review--phases ()
@@ -362,7 +369,7 @@ Walks the headings of the default tasks file looking for one whose
 title matches a profile name in `org-gtd-review-profiles' and whose
 ORG_GTD property marks it as a habit — the shape
 `org-gtd-review-schedule' creates."
-  (let ((habit-marker (plist-get (cdr (org-gtd-type-get 'habit)) :org-gtd)))
+  (let ((habit-marker (org-gtd-type-org-gtd-value 'habit)))
     (with-current-buffer (org-gtd--default-file)
       (org-with-wide-buffer
        (goto-char (point-min))
@@ -565,33 +572,57 @@ the single save slot as soon as it successfully boots."
      (signal (car err) (cdr err))))
   (org-gtd-review--save-state))
 
+(defun org-gtd-review--insert-reminder-body (profile)
+  "Add the reminder body line under the habit heading titled PROFILE.
+Targets the last habit heading in the default tasks file whose title
+equals PROFILE — the one `org-gtd-review-schedule' just created — so
+pre-existing headings that merely mention PROFILE, or carry tags,
+are never mistaken for it."
+  (let ((habit-marker (org-gtd-type-org-gtd-value 'habit)))
+    (with-current-buffer (org-gtd--default-file)
+      (org-with-wide-buffer
+       (goto-char (point-min))
+       (let (target)
+         (while (re-search-forward org-heading-regexp nil t)
+           (when (and (equal (org-get-heading t t t t) profile)
+                      (equal (org-entry-get (point) "ORG_GTD") habit-marker))
+             (setq target (point))))
+         (when target
+           (goto-char target)
+           (org-end-of-meta-data t)
+           (insert "Run M-x org-gtd-review when you sit down for this.\n")
+           (basic-save-buffer)))))))
+
 ;;;###autoload
 (defun org-gtd-review-schedule (&optional profile-name date repeater)
   "Create a recurring habit reminding you to run a review.
 PROFILE-NAME, DATE (YYYY-MM-DD) and REPEATER (org repeater like
-\".+1w\") are prompted for interactively."
+\".+1w\") are prompted for interactively.  When a reminder already
+exists, ask before scheduling another."
   (interactive)
-  (let* ((names (mapcar #'car org-gtd-review-profiles))
-         (profile (or profile-name
-                      (if (cdr names)
-                          (completing-read "Review profile: " names nil t)
-                        (car names))))
-         (date (or date (org-read-date nil nil nil "First review: ")))
-         (repeater (or repeater
-                       (read-string "How often? (org repeater, e.g. .+1w): "
-                                    nil nil ".+1w"))))
-    (org-gtd-create-item 'habit profile
-                         `((:when . ,(format "<%s %s>" date repeater))))
-    (with-current-buffer (org-gtd--default-file)
-      (org-with-wide-buffer
-       (goto-char (point-min))
-       (when (re-search-forward
-              (format "^\\*+ +.*%s[ \t]*$" (regexp-quote profile)) nil t)
-         (org-end-of-meta-data t)
-         (insert "Run M-x org-gtd-review when you sit down for this.\n")
-         (basic-save-buffer))))
-    (message "'%s' reminder created — it will show up in your engage view."
-             profile)))
+  (unless org-gtd-review-profiles
+    (user-error
+     "No review profiles configured — see `org-gtd-review-profiles'"))
+  (if (and (org-gtd-review--reminder-exists-p)
+           (not (y-or-n-p "A review reminder already exists — schedule another? ")))
+      (message "Keeping the existing reminder.")
+    (let* ((names (mapcar #'car org-gtd-review-profiles))
+           (profile (or profile-name
+                        (if (cdr names)
+                            (completing-read "Review profile: " names nil t)
+                          (car names))))
+           (date (or date (org-read-date nil nil nil "First review: ")))
+           (repeater (or repeater
+                         (read-string "How often? (org repeater, e.g. .+1w): "
+                                      nil nil ".+1w"))))
+      (unless (string-match-p org-gtd-review--repeater-re repeater)
+        (user-error
+         "Org repeaters look like .+1w (dot-plus means 'a week after I actually do it'), +1w, or ++1w"))
+      (org-gtd-create-item 'habit profile
+                           `((:when . ,(format "<%s %s>" date repeater))))
+      (org-gtd-review--insert-reminder-body profile)
+      (message "'%s' reminder created — it will show up in your engage view."
+               profile))))
 
 ;;;; Footer
 
