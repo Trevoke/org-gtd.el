@@ -47,6 +47,19 @@
   (assert-true (fboundp 'org-gtd-reflect-completed-items))
   (assert-true (fboundp 'org-gtd-reflect-completed-projects)))
 
+(deftest command-center-has-checklists-entry ()
+  "The Reflect group binds l to visiting checklists."
+  (assert-true (fboundp 'org-gtd-checklist-visit))
+  ;; Transient stores a suffix's plist either inline, as (CLASS :key ...),
+  ;; or nested, as (LEVEL CLASS (:key ...)), depending on version/compilation.
+  (let* ((suffix (transient-get-suffix 'org-gtd-command-center "l"))
+         (plist (or (seq-find (lambda (elt) (and (consp elt) (keywordp (car elt))))
+                              suffix)
+                    (seq-drop-while (lambda (elt) (not (keywordp elt)))
+                                    suffix))))
+    (assert-equal "l" (plist-get plist :key))
+    (assert-equal 'org-gtd-checklist-visit (plist-get plist :command))))
+
 (deftest command-center-has-stuck-items-submenu ()
   "Command center has a stuck items sub-menu."
   (assert-true (fboundp 'org-gtd-command-center--stuck)))

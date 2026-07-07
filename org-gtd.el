@@ -56,6 +56,7 @@
 (require 'org-gtd-context)
 (require 'org-gtd-id)
 (require 'org-gtd-files)
+(require 'org-gtd-checklist)
 (require 'org-gtd-horizons)
 (require 'org-gtd-areas-of-focus)
 (require 'org-gtd-hooks)
