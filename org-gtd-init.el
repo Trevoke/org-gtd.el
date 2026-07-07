@@ -41,16 +41,23 @@ Ensures the GTD files exist (seeding starter checklists) and offers
 to schedule a recurring Weekly Review.  Every step reports and skips
 when already satisfied — lazy initialization elsewhere is untouched."
   (interactive)
-  (unless (file-directory-p org-gtd-directory)
-    (make-directory org-gtd-directory t))
-  (org-gtd--default-file)
-  (org-gtd-inbox-path)
-  (org-gtd-checklist--file-buffer)
-  (message "✓ GTD files ready in %s" (abbreviate-file-name org-gtd-directory))
+  (condition-case nil
+      (progn
+        (unless (file-directory-p org-gtd-directory)
+          (make-directory org-gtd-directory t))
+        (org-gtd--default-file)
+        (org-gtd-inbox-path)
+        (org-gtd-checklist--file-buffer))
+    (file-error
+     (user-error "Could not create GTD files — check that %s is writable, or customize org-gtd-directory"
+                 (abbreviate-file-name org-gtd-directory))))
   (if (org-gtd-review--reminder-exists-p)
-      (message "✓ A review reminder is already scheduled")
-    (when (y-or-n-p "Schedule a recurring Weekly Review reminder? ")
-      (call-interactively #'org-gtd-review-schedule))))
+      (message "✓ GTD files ready in %s — a review reminder is already scheduled"
+               (abbreviate-file-name org-gtd-directory))
+    (if (y-or-n-p "Schedule a recurring Weekly Review reminder? ")
+        (call-interactively #'org-gtd-review-schedule)
+      (message "✓ GTD files ready in %s"
+               (abbreviate-file-name org-gtd-directory)))))
 
 ;;;; Footer
 

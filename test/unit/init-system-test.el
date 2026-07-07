@@ -15,6 +15,8 @@
 ;; - Running twice neither errors nor duplicates seeds (1 test)
 ;; - Accepting the offer routes into org-gtd-review-schedule (1 test)
 ;; - An existing reminder skips the offer entirely (1 test)
+;; - Declining the offer still closes with a files-ready message (1 test)
+;; - A file-error while ensuring files becomes a teaching user-error (1 test)
 ;;
 ;;; Code:
 
@@ -79,8 +81,38 @@ trips native-comp trampolines under the mock fs)."
                  nil)))
       (org-gtd-init-system))
     (assert-true
-     (seq-find (lambda (m) (string-match-p "already scheduled" m))
+     (seq-find (lambda (m)
+                 (string-match-p "GTD files ready in .*review reminder is already scheduled" m))
                captured))))
+
+(deftest init-system/declined-offer-closes-with-files-ready ()
+  "Declining the offer still ends with a files-ready closing message."
+  (let ((events nil))
+    (cl-letf (((symbol-function 'y-or-n-p)
+               (lambda (_prompt) (push 'prompt events) nil))
+              ((symbol-function 'message)
+               (lambda (fmt &rest args)
+                 (when fmt (push (apply #'format fmt args) events))
+                 nil)))
+      (org-gtd-init-system))
+    ;; events is most-recent-first: the closing message must come after
+    ;; the declined prompt so the n-path doesn't end silently.
+    (assert-true (memq 'prompt events))
+    (assert-true (stringp (car events)))
+    (assert-match "GTD files ready in " (car events))))
+
+;;; Error Handling Tests
+
+(deftest init-system/file-error-becomes-teaching-user-error ()
+  "A file-error while ensuring files becomes a teaching user-error."
+  (cl-letf (((symbol-function 'org-gtd--ensure-file-exists)
+             (lambda (&rest _) (signal 'file-error (list "Permission denied")))))
+    (let ((err (condition-case e
+                   (progn (org-gtd-init-system) nil)
+                 (user-error e))))
+      (assert-true err)
+      (assert-match "Could not create GTD files" (cadr err))
+      (assert-match "org-gtd-directory" (cadr err)))))
 
 (provide 'init-system-test)
 
