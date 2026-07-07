@@ -34,6 +34,7 @@ These are the commands you'll use most:
 | ~org-gtd-engage~ | See actionable items | Daily (your "work from" view) |
 | ~org-gtd-show-all-next~ | See only NEXT actions | When you want to focus on actions |
 | ~org-gtd-review~ | Guided Weekly Review session | Weekly |
+| ~org-gtd-checklist-insert~ | Insert a reusable checklist at point | Packing lists, release steps, mind sweeps |
 | ~org-gtd-reflect-stuck-projects~ | Find stuck projects | Weekly review |
 | ~org-gtd-reflect-someday-review~ | Review someday items one-by-one | Weekly/monthly review |
 | ~org-gtd-projects-fix-all-todo-keywords~ | Fix task states after external edits | After mobile/web edits |
@@ -576,13 +577,15 @@ Now it's a real habit: ~org-gtd-engage~ shows it on schedule, you work through t
 
 When a repeating heading *re-arms* — you mark it done and org's repeater flips it back to a not-done state for the next occurrence — org-gtd clears every checkbox in that heading's subtree, including boxes under child headings, and updates any ~[1/3]~-style statistics cookies. The next run starts fresh.
 
-The guard mirrors org's own re-arm rule exactly, so the reset happens only when org actually re-arms the heading:
+The reset follows org's own re-arm rule exactly — it happens only when org actually re-arms the heading:
 
 - A heading with no repeater never resets: a plain ~DONE~ keeps its record.
 - A zero-interval repeater (like ~.+0w~, org's idiom for "this repeating task is finished for good") does not re-arm, so the checked boxes are preserved.
 - A done-to-done transition (e.g. changing ~DONE~ to ~CANCELED~) doesn't reset.
 
 This applies to *every* repeating heading with checkboxes — spawned from a template or written by hand. The hook is installed by ~org-gtd-mode~.
+
+*See also*: [[#commands-reference][Commands Reference]] for ~org-gtd-checklist-insert~ and ~org-gtd-checklist-visit~.
 
 ** Weekly Review (guided)
 :PROPERTIES:
@@ -700,6 +703,8 @@ If a reminder for one of your profiles already exists, the command asks before s
 Two things it deliberately does *not* do, because they belong in your Emacs configuration: adding your GTD files to ~org-agenda-files~, and TODO keyword setup. Those remain manual steps — see [[#configuring][Configuring]].
 
 You never /have/ to run it: every file it creates is also created lazily the first time something needs it.
+
+*See also*: [[#commands-reference][Commands Reference]] for ~org-gtd-review~, ~org-gtd-review-schedule~, and ~org-gtd-init-system~, and [[#config-vars-reference][Configuration Variables Reference]] for ~org-gtd-review-profiles~.
 
 ** Understanding GTD Item Types
 :PROPERTIES:
@@ -911,6 +916,8 @@ This means a delegated action moved to someday will remember who it was delegate
 - Shows habit graph in agenda views
 
 *Note*: See org-mode documentation for habit repeat patterns and tracking.
+
+*See also*: [[#recurring-checklists][Recurring checklists: compose with habits]] for turning a reusable checklist into a repeating habit whose checkboxes reset on each repeat.
 
 *** Knowledge [K]
 

@@ -55,7 +55,7 @@ a Weekly Review profile ships as the default value of
 ~org-gtd-review-profiles~. Sessions checkpoint to disk at every step,
 so pausing, killing the buffer, or crashing loses nothing.
 ~org-gtd-review-schedule~ creates a recurring habit reminder, and
-~org-gtd-init-system~ is an idempotent first-run concierge that
+~org-gtd-init-system~ is an idempotent first-run setup command that
 creates the GTD files and offers to schedule the review.
 
 *** Command center: =w= and =l=
