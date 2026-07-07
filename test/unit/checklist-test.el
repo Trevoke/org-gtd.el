@@ -40,6 +40,33 @@
     (goto-char (point-min))
     (assert-equal 1 (count-matches "^\\* Weekly Review triggers$"))))
 
+;;; Template Names and Items Tests
+
+(deftest checklist/names-lists-top-level-headings ()
+  "Template names are the top-level heading titles."
+  (assert-equal '("Weekly Review triggers" "Mind sweep prompts")
+                (org-gtd-checklist-names)))
+
+(deftest checklist/items-returns-ordered-item-strings ()
+  "Items of a named checklist come back as ordered plain strings."
+  (let ((items (org-gtd-checklist--items "Mind sweep prompts")))
+    (assert-equal "Boss, partners, colleagues?" (car items))
+    (assert-equal 8 (length items))))
+
+(deftest checklist/items-ignores-checked-state ()
+  "A checked box still yields its item text."
+  (with-current-buffer (org-gtd-checklist--file-buffer)
+    (goto-char (point-min))
+    (search-forward "- [ ] Boss")
+    (replace-match "- [X] Boss")
+    (basic-save-buffer))
+  (assert-equal "Boss, partners, colleagues?"
+                (car (org-gtd-checklist--items "Mind sweep prompts"))))
+
+(deftest checklist/items-nil-for-unknown-name ()
+  "Unknown checklist name returns nil, no error."
+  (assert-nil (org-gtd-checklist--items "No such list")))
+
 (provide 'checklist-test)
 
 ;;; checklist-test.el ends here

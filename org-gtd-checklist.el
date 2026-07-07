@@ -78,6 +78,33 @@ A newly created file is seeded with starter templates."
     (org-gtd--ensure-file-exists path org-gtd-checklist--starter-contents)
     (find-file-noselect path)))
 
+(defun org-gtd-checklist--items (name)
+  "Return the ordered checkbox item strings of checklist NAME.
+Return nil when no checklist NAME exists or it has no items."
+  (with-current-buffer (org-gtd-checklist--file-buffer)
+    (org-with-wide-buffer
+     (goto-char (point-min))
+     (when (re-search-forward
+            (format "^\\* +%s[ \t]*$" (regexp-quote name)) nil t)
+       (let ((end (save-excursion (org-end-of-subtree t t) (point)))
+             items)
+         (while (re-search-forward
+                 "^[ \t]*- \\[[ Xx-]\\] +\\(.+?\\)[ \t]*$" end t)
+           (push (match-string-no-properties 1) items))
+         (nreverse items))))))
+
+;;;;; Public
+
+(defun org-gtd-checklist-names ()
+  "Return the list of checklist template names, in file order."
+  (with-current-buffer (org-gtd-checklist--file-buffer)
+    (org-with-wide-buffer
+     (goto-char (point-min))
+     (let (names)
+       (while (re-search-forward "^\\* +\\(.+?\\)[ \t]*$" nil t)
+         (push (match-string-no-properties 1) names))
+       (nreverse names)))))
+
 ;;;;; Commands
 
 ;;;###autoload
