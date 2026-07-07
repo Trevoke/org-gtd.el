@@ -235,6 +235,37 @@
       (org-gtd-review-next)
       (assert-match "After" (buffer-string)))))
 
+;;; Checklist Walk Step Tests
+
+(defvar review-test--walk-profile
+  '(("Walk"
+     ("P"
+      (:title "Sweep" :type checklist :checklist "Mind sweep prompts")
+      (:title "After" :type prompt)))))
+
+(deftest review/checklist-step-walks-items-one-at-a-time ()
+  "n loads the walk, then advances item by item, then leaves the step."
+  (let ((org-gtd-review-profiles review-test--walk-profile))
+    (org-gtd-review "Walk")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)                       ; load walk, show item 1
+      (assert-match "Boss, partners, colleagues\\?" (buffer-string))
+      (assert-match "(1/8)" (buffer-string))
+      (org-gtd-review-next)                       ; item 2
+      (assert-match "(2/8)" (buffer-string))
+      (dotimes (_ 7) (org-gtd-review-next))       ; through item 8 and out
+      (assert-match "After" (buffer-string)))))
+
+(deftest review/checklist-step-missing-template-auto-advances ()
+  "A missing/empty checklist self-satisfies instead of erroring."
+  (let ((org-gtd-review-profiles
+         '(("W" ("P" (:title "Sweep" :type checklist :checklist "Nope")
+                     (:title "After" :type prompt))))))
+    (org-gtd-review "W")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (assert-match "After" (buffer-string)))))
+
 (provide 'review-test)
 
 ;;; review-test.el ends here

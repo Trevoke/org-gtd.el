@@ -290,9 +290,26 @@ not recurse through the kill it performs itself."
 
 ;;;; Commands
 
-(defun org-gtd-review--walk-next (_step)
-  "Placeholder."
-  nil)
+(defun org-gtd-review--walk-next (step)
+  "Advance the checklist walk for STEP, loading it on first call."
+  (let ((state org-gtd-review--state))
+    (if (not (plist-get state :acted))
+        (let ((items (org-gtd-checklist--items (plist-get step :checklist))))
+          (if (null items)
+              (progn
+                (message "Nothing in checklist '%s' — moving on.  (Edit %s to add items.)"
+                         (plist-get step :checklist)
+                         (org-gtd-checklist--file-path))
+                (org-gtd-review--complete-step))
+            (plist-put state :acted t)
+            (plist-put state :walk-items items)
+            (plist-put state :walk-pos 0)
+            (org-gtd-review--render)))
+      (let ((next (1+ (plist-get state :walk-pos))))
+        (if (< next (length (plist-get state :walk-items)))
+            (progn (plist-put state :walk-pos next)
+                   (org-gtd-review--render))
+          (org-gtd-review--complete-step))))))
 
 (defun org-gtd-review-next ()
   "Do the current step, or advance past it."
