@@ -290,6 +290,10 @@ not recurse through the kill it performs itself."
 
 ;;;; Commands
 
+(defun org-gtd-review--walk-next (_step)
+  "Placeholder."
+  nil)
+
 (defun org-gtd-review-next ()
   "Do the current step, or advance past it."
   (interactive)
@@ -297,7 +301,21 @@ not recurse through the kill it performs itself."
          (type (plist-get step :type)))
     (pcase type
       ('prompt (org-gtd-review--complete-step))
-      (_ (message "Step type %s not implemented yet" type)))))
+      ('command
+       (if (plist-get org-gtd-review--state :acted)
+           (org-gtd-review--complete-step)
+         (plist-put org-gtd-review--state :acted t)
+         (call-interactively (plist-get step :command))))
+      ('view
+       (if (plist-get org-gtd-review--state :acted)
+           (org-gtd-review--complete-step)
+         (plist-put org-gtd-review--state :acted t)
+         (save-selected-window
+           (call-interactively (plist-get step :view)))))
+      ('checklist (org-gtd-review--walk-next step))
+      (_
+       (message "Step type '%s' is unknown — check org-gtd-review-profiles; skipping this step" type)
+       (org-gtd-review--complete-step t)))))
 
 (defun org-gtd-review-skip ()
   "Skip the current step for this run only."

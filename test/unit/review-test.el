@@ -190,6 +190,51 @@
     (kill-buffer org-gtd-review--buffer-name)
     (assert-nil org-gtd-review--state)))
 
+;;; Command and View Step Tests
+
+(defvar review-test--command-calls 0)
+(defun review-test--command ()
+  "Test command that records invocations."
+  (interactive)
+  (setq review-test--command-calls (1+ review-test--command-calls)))
+
+(deftest review/command-step-runs-command-then-advances ()
+  "First n invokes :command; second n advances."
+  (setq review-test--command-calls 0)
+  (let ((org-gtd-review-profiles
+         '(("T" ("P" (:title "Run it" :type command :command review-test--command)
+                     (:title "After" :type prompt))))))
+    (org-gtd-review "T")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (assert-equal 1 review-test--command-calls)
+      (assert-match "Run it" (buffer-string))   ; still on the step
+      (org-gtd-review-next)
+      (assert-match "After" (buffer-string)))))
+
+(deftest review/view-step-shows-view-then-advances ()
+  "First n calls :view (other window); second n advances."
+  (let ((org-gtd-review-profiles
+         '(("T" ("P" (:title "Look" :type view :view review-test--command)
+                     (:title "After" :type prompt))))))
+    (setq review-test--command-calls 0)
+    (org-gtd-review "T")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (assert-equal 1 review-test--command-calls)
+      (org-gtd-review-next)
+      (assert-match "After" (buffer-string)))))
+
+(deftest review/unknown-step-type-skips-with-message ()
+  "An unknown :type never errors; it advances."
+  (let ((org-gtd-review-profiles
+         '(("T" ("P" (:title "Weird" :type frobnicate)
+                     (:title "After" :type prompt))))))
+    (org-gtd-review "T")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (assert-match "After" (buffer-string)))))
+
 (provide 'review-test)
 
 ;;; review-test.el ends here
