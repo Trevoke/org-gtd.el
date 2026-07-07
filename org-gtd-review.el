@@ -163,7 +163,49 @@ step looks like so the error teaches the fix."
                    (not (plist-get step :view)))
           (user-error
            "Review profile '%s', phase '%s': view step \"%s\" is missing :view — name the command that shows the view, like :view org-gtd-engage"
+           name (car phase) (plist-get step :title)))
+        (when (and (eq (plist-get step :type) 'checklist)
+                   (not (plist-get step :checklist)))
+          (user-error
+           "Review profile '%s', phase '%s': checklist step \"%s\" is missing :checklist — name a template from your checklists file, like :checklist \"Weekly Review triggers\""
            name (car phase) (plist-get step :title)))))))
+
+;;;; Pause and Resume Persistence
+
+(defun org-gtd-review--state-file ()
+  "Return the path of the paused-session state file."
+  (f-join org-gtd-directory "review-state.eld"))
+
+(defun org-gtd-review--save-state ()
+  "Serialize the session state to `org-gtd-review--state-file'."
+  (with-temp-file (org-gtd-review--state-file)
+    (let ((print-length nil) (print-level nil))
+      (prin1 org-gtd-review--state (current-buffer)))))
+
+(defun org-gtd-review--load-state ()
+  "Read a saved session state, or nil."
+  (let ((file (org-gtd-review--state-file)))
+    (when (file-exists-p file)
+      (with-temp-buffer
+        (insert-file-contents file)
+        (goto-char (point-min))
+        (ignore-errors (read (current-buffer)))))))
+
+(defun org-gtd-review--delete-state-file ()
+  "Remove the saved session state, if any."
+  (let ((file (org-gtd-review--state-file)))
+    (when (file-exists-p file) (delete-file file))))
+
+(defun org-gtd-review--state-valid-p (state)
+  "Non-nil when STATE still fits `org-gtd-review-profiles'."
+  (when-let* ((profile (assoc (plist-get state :profile)
+                              org-gtd-review-profiles))
+              (phases (cdr profile))
+              (p (plist-get state :phase))
+              (s (plist-get state :step)))
+    (and (integerp p) (integerp s)
+         (< p (length phases))
+         (< s (length (cdr (nth p phases)))))))
 
 ;;;; Keymap and Mode
 
@@ -279,7 +321,12 @@ Capture is always available: any step can shake something loose."
   "End the session when its buffer is killed out from under it.
 Buffer-local `kill-buffer-hook' for `org-gtd-review-mode'.  No-op
 when the session already ended, so `org-gtd-review--teardown' does
-not recurse through the kill it performs itself."
+not recurse through the kill it performs itself.
+
+Deliberately leaves the state file alone: killing the buffer ends
+the session without saving — the state file only exists when the
+user paused, and a stray \\[kill-buffer] must not destroy that
+earlier pause."
   (when org-gtd-review--state
     (org-gtd-review--reset-session)))
 
@@ -290,7 +337,10 @@ not recurse through the kill it performs itself."
     (kill-buffer org-gtd-review--buffer-name)))
 
 (defun org-gtd-review--finish ()
-  "Complete the session: report, clean up."
+  "Complete the session: report, clean up.
+Every completion path funnels through here, so this is where the
+paused-session state file (if any survived a resume) is removed."
+  (org-gtd-review--delete-state-file)
   (let ((done (plist-get org-gtd-review--state :done))
         (skipped (plist-get org-gtd-review--state :skipped)))
     (org-gtd-review--teardown)
@@ -359,19 +409,26 @@ not recurse through the kill it performs itself."
   (call-interactively #'org-gtd-capture))
 
 (defun org-gtd-review-pause ()
-  "Pause the session; placeholder until persistence lands."
-  (interactive))
+  "Pause the session; `org-gtd-review' resumes it later."
+  (interactive)
+  (org-gtd-review--save-state)
+  (org-gtd-review--teardown)
+  (message "Review paused — run M-x org-gtd-review to resume."))
 
 (defun org-gtd-review-quit ()
-  "Quit the session, tearing it down."
+  "Quit the session, offering to keep or abandon progress."
   (interactive)
-  (org-gtd-review--teardown))
+  (if (y-or-n-p "Keep progress to resume later? ")
+      (org-gtd-review-pause)
+    (org-gtd-review--delete-state-file)
+    (org-gtd-review--teardown)
+    (message "Review abandoned.")))
 
 ;;;; Entry Point
 
 ;;;###autoload
 (defun org-gtd-review (&optional profile-name)
-  "Run a guided review session.
+  "Run a guided review session, resuming a paused one when offered.
 With more than one profile in `org-gtd-review-profiles', prompt;
 PROFILE-NAME selects one non-interactively."
   (interactive)
@@ -382,6 +439,22 @@ PROFILE-NAME selects one non-interactively."
   (unless org-gtd-review-profiles
     (user-error
      "No review profiles configured — see `org-gtd-review-profiles'"))
+  (let ((saved (org-gtd-review--load-state)))
+    (cond
+     ((and saved (not (org-gtd-review--state-valid-p saved)))
+      (org-gtd-review--delete-state-file)
+      (message "Saved review no longer matches your profiles — starting over.")
+      (org-gtd-review--start-fresh profile-name))
+     ((and saved
+           (y-or-n-p (format "Resume paused '%s' review? "
+                             (plist-get saved :profile))))
+      (org-gtd-review--begin-session saved))
+     (t
+      (org-gtd-review--delete-state-file)
+      (org-gtd-review--start-fresh profile-name)))))
+
+(defun org-gtd-review--start-fresh (profile-name)
+  "Start a new session for PROFILE-NAME (prompting when nil)."
   (let* ((names (mapcar #'car org-gtd-review-profiles))
          (name (or profile-name
                    (if (cdr names)
@@ -390,15 +463,23 @@ PROFILE-NAME selects one non-interactively."
     (unless (assoc name org-gtd-review-profiles)
       (user-error "No review profile named '%s'" name))
     (org-gtd-review--check-profile (assoc name org-gtd-review-profiles))
-    (setq org-gtd-review--window-config (current-window-configuration))
-    (setq org-gtd-review--state
-          (list :profile name :phase 0 :step 0 :acted nil
-                :walk-items nil :walk-pos 0 :done 0 :skipped 0))
-    (condition-case err
-        (org-gtd-review--render)
-      (error
-       (org-gtd-review--teardown)
-       (signal (car err) (cdr err))))))
+    (org-gtd-review--begin-session
+     (list :profile name :phase 0 :step 0 :acted nil
+           :walk-items nil :walk-pos 0 :done 0 :skipped 0))))
+
+(defun org-gtd-review--begin-session (state)
+  "Install STATE as the live session and render, tearing down on error.
+Snapshots the current window configuration for restore at session
+end.  A resumed session re-snapshots here rather than restoring a
+saved one: a live window configuration cannot be serialized to the
+state file."
+  (setq org-gtd-review--window-config (current-window-configuration))
+  (setq org-gtd-review--state state)
+  (condition-case err
+      (org-gtd-review--render)
+    (error
+     (org-gtd-review--teardown)
+     (signal (car err) (cdr err)))))
 
 ;;;; Footer
 

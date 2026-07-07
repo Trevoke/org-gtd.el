@@ -12,7 +12,8 @@
 ;; Test Coverage:
 ;; - Default Weekly Review profile shape (2 tests)
 ;; - Session lifecycle: start, advance, complete, skip (4 tests)
-;; - Entry guards, profile validation, teardown safety (9 tests)
+;; - Entry guards, profile validation, teardown safety (10 tests)
+;; - Pause / resume / quit persistence (6 tests)
 ;;
 ;;; Code:
 
@@ -28,6 +29,11 @@
           org-gtd-review--window-config nil)
     (when (get-buffer org-gtd-review--buffer-name)
       (kill-buffer org-gtd-review--buffer-name))
+    ;; Inlined path (rather than org-gtd-review--state-file) so cleanup
+    ;; works even before the persistence code exists.
+    (let ((state-file (f-join org-gtd-directory "review-state.eld")))
+      (when (file-exists-p state-file)
+        (delete-file state-file)))
     (funcall proceed context)))
 
 ;;; Default Profile Tests
@@ -287,6 +293,17 @@
       (assert-match ":view" (cadr err)))
     (assert-nil org-gtd-review--state)))
 
+(deftest review/checklist-step-missing-checklist-errors-cleanly ()
+  "A checklist step without :checklist is rejected at session start."
+  (let ((org-gtd-review-profiles
+         '(("Bad" ("P" (:title "Sweep what?" :type checklist))))))
+    (let ((err (condition-case e
+                   (progn (org-gtd-review "Bad") nil)
+                 (user-error e))))
+      (assert-true err)
+      (assert-match ":checklist" (cadr err)))
+    (assert-nil org-gtd-review--state)))
+
 (deftest review/unknown-step-type-skips-with-message ()
   "An unknown :type never errors; it advances."
   (let ((org-gtd-review-profiles
@@ -341,6 +358,83 @@
     (with-current-buffer org-gtd-review--buffer-name
       (org-gtd-review-next)
       (assert-match "After" (buffer-string)))))
+
+;;; Pause / Resume / Quit Tests
+
+(deftest review/pause-persists-state-and-tears-down ()
+  "p writes review-state.eld and closes the session."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (org-gtd-review-pause))
+    (assert-nil org-gtd-review--state)
+    (assert-true (file-exists-p (org-gtd-review--state-file)))))
+
+(deftest review/resume-restores-position ()
+  "Starting again after a pause offers resume and restores the step."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (org-gtd-review-pause))
+    ;; y-or-n-p is stubbed, not fed keys: batch-mode y-or-n-p does not
+    ;; reliably consume simulated input (suite-wide convention).
+    (cl-letf (((symbol-function 'y-or-n-p) (lambda (_prompt) t)))
+      (org-gtd-review))
+    (with-current-buffer org-gtd-review--buffer-name
+      (assert-match "Step two" (buffer-string)))))
+
+(deftest review/resume-with-changed-profile-starts-over ()
+  "Out-of-range saved state falls back to a fresh session."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (org-gtd-review-pause)))
+  (let ((org-gtd-review-profiles
+         '(("Tiny" ("Only" (:title "Sole" :type prompt))))))
+    (org-gtd-review)                       ; no resume prompt: state invalid
+    (with-current-buffer org-gtd-review--buffer-name
+      (assert-match "Sole" (buffer-string)))
+    (assert-nil (file-exists-p (org-gtd-review--state-file)))))
+
+(deftest review/completion-deletes-state-file ()
+  "Finishing a resumed session removes review-state.eld."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-pause))
+    (cl-letf (((symbol-function 'y-or-n-p) (lambda (_prompt) t)))
+      (org-gtd-review))
+    (with-current-buffer org-gtd-review--buffer-name
+      (dotimes (_ 3) (org-gtd-review-next)))
+    (assert-nil (file-exists-p (org-gtd-review--state-file)))))
+
+(deftest review/quit-keeping-progress-pauses ()
+  "q answered y keeps a state file, like a pause."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (cl-letf (((symbol-function 'y-or-n-p) (lambda (_prompt) t)))
+        (org-gtd-review-quit)))
+    (assert-nil org-gtd-review--state)
+    (assert-true (file-exists-p (org-gtd-review--state-file)))))
+
+(deftest review/quit-abandoning-deletes-state-file ()
+  "q answered n abandons: no state file survives, session gone."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-pause))            ; leaves a state file behind
+    (cl-letf (((symbol-function 'y-or-n-p) (lambda (_prompt) t)))
+      (org-gtd-review))                  ; resume the paused session
+    (with-current-buffer org-gtd-review--buffer-name
+      (cl-letf (((symbol-function 'y-or-n-p) (lambda (_prompt) nil)))
+        (org-gtd-review-quit)))
+    (assert-nil org-gtd-review--state)
+    (assert-nil (file-exists-p (org-gtd-review--state-file)))))
 
 (provide 'review-test)
 
