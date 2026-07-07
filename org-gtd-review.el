@@ -33,6 +33,7 @@
 (require 'org-gtd-files)
 (require 'org-gtd-checklist)
 (require 'org-gtd-create)
+(require 'org-gtd-types)
 (require 'org-gtd-capture)
 
 ;;;; External Function Declarations
@@ -216,9 +217,9 @@ crashing mid-render."
            (integerp (plist-get state :done))
            (integerp (plist-get state :skipped))
            (listp walk-items)
+           (integerp walk-pos)
            (or (null walk-items)
-               (and (integerp walk-pos)
-                    (>= walk-pos 0)
+               (and (>= walk-pos 0)
                     (< walk-pos (length walk-items))))))))
 
 ;;;; Keymap and Mode
@@ -355,16 +356,36 @@ where the user was."
   (when (get-buffer org-gtd-review--buffer-name)
     (kill-buffer org-gtd-review--buffer-name)))
 
+(defun org-gtd-review--reminder-exists-p ()
+  "Non-nil when a habit named after a review profile already exists.
+Walks the headings of the default tasks file looking for one whose
+title matches a profile name in `org-gtd-review-profiles' and whose
+ORG_GTD property marks it as a habit — the shape
+`org-gtd-review-schedule' creates."
+  (let ((habit-marker (plist-get (cdr (org-gtd-type-get 'habit)) :org-gtd)))
+    (with-current-buffer (org-gtd--default-file)
+      (org-with-wide-buffer
+       (goto-char (point-min))
+       (catch 'found
+         (while (re-search-forward org-heading-regexp nil t)
+           (when (and (equal (org-entry-get (point) "ORG_GTD") habit-marker)
+                      (assoc (org-get-heading t t t t)
+                             org-gtd-review-profiles))
+             (throw 'found t)))
+         nil)))))
+
 (defun org-gtd-review--finish ()
   "Complete the session: report, clean up.
 Every completion path funnels through here, so this is where the
-checkpoint file is removed."
+checkpoint file is removed.  The scheduling tip is one-time
+teaching: it only appears while no review reminder exists yet."
   (org-gtd-review--delete-state-file)
   (let ((done (plist-get org-gtd-review--state :done))
         (skipped (plist-get org-gtd-review--state :skipped)))
     (org-gtd-review--teardown)
-    (message (concat "Review complete: %d steps done, %d skipped.  "
-                     "Tip: M-x org-gtd-review-schedule puts this on your calendar.")
+    (message (concat "Review complete: %d steps done, %d skipped."
+                     (unless (org-gtd-review--reminder-exists-p)
+                       "  Tip: M-x org-gtd-review-schedule puts this on your calendar."))
              done skipped)))
 
 ;;;; Commands
@@ -543,6 +564,34 @@ the single save slot as soon as it successfully boots."
      (org-gtd-review--teardown)
      (signal (car err) (cdr err))))
   (org-gtd-review--save-state))
+
+;;;###autoload
+(defun org-gtd-review-schedule (&optional profile-name date repeater)
+  "Create a recurring habit reminding you to run a review.
+PROFILE-NAME, DATE (YYYY-MM-DD) and REPEATER (org repeater like
+\".+1w\") are prompted for interactively."
+  (interactive)
+  (let* ((names (mapcar #'car org-gtd-review-profiles))
+         (profile (or profile-name
+                      (if (cdr names)
+                          (completing-read "Review profile: " names nil t)
+                        (car names))))
+         (date (or date (org-read-date nil nil nil "First review: ")))
+         (repeater (or repeater
+                       (read-string "How often? (org repeater, e.g. .+1w): "
+                                    nil nil ".+1w"))))
+    (org-gtd-create-item 'habit profile
+                         `((:when . ,(format "<%s %s>" date repeater))))
+    (with-current-buffer (org-gtd--default-file)
+      (org-with-wide-buffer
+       (goto-char (point-min))
+       (when (re-search-forward
+              (format "^\\*+ +.*%s[ \t]*$" (regexp-quote profile)) nil t)
+         (org-end-of-meta-data t)
+         (insert "Run M-x org-gtd-review when you sit down for this.\n")
+         (basic-save-buffer))))
+    (message "'%s' reminder created — it will show up in your engage view."
+             profile)))
 
 ;;;; Footer
 

@@ -543,7 +543,9 @@
       (assert-nil (org-gtd-review--state-valid-p
                    (mangle :walk-items "not-a-list")))
       (assert-nil (org-gtd-review--state-valid-p
-                   (plist-put (mangle :walk-items '("a")) :walk-pos -1))))))
+                   (plist-put (mangle :walk-items '("a")) :walk-pos -1)))
+      ;; :walk-pos must be an integer even when :walk-items is empty.
+      (assert-nil (org-gtd-review--state-valid-p (mangle :walk-pos "x"))))))
 
 (deftest review/explicit-profile-arg-skips-resume-offer ()
   "An explicit different PROFILE-NAME starts fresh with no resume offer."
