@@ -1,0 +1,1 @@
+QA: checklist-insert should declare valid major modes (org-derived) not just runtime-guard
