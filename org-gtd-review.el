@@ -267,16 +267,34 @@ Capture is always available: any step can shake something loose."
   "[n] Do/advance  [s] Skip  [c] Capture  [p] Pause  [q] Quit")
 
 (defun org-gtd-review--phase-tracker ()
-  "Render the phase tracker line."
+  "Render the phase tracker line.
+Every phase is bracketed for a stable, scannable shape; the marker
+inside distinguishes state: check for done, arrow for the current
+phase, dot for pending."
   (let ((current (plist-get org-gtd-review--state :phase)))
     (mapconcat
      (lambda (pair)
        (let ((i (car pair)) (name (car (cdr pair))))
          (cond ((< i current) (format "[✓ %s]" name))
-               ((= i current) (format "▸ %s ◂" name))
-               (t (format "[ %s ]" name)))))
+               ((= i current) (format "[→ %s]" name))
+               (t (format "[· %s]" name)))))
      (seq-map-indexed (lambda (ph i) (cons i ph)) (org-gtd-review--phases))
      "  ")))
+
+(defun org-gtd-review--step-guidance (step)
+  "Return a one-line guidance string for STEP, or nil for a type with none.
+Command and view steps use a two-press flow: the first advance hands
+off to the action (the buffer switches to it), and a second advance —
+after you return — continues the review.  Spell that out so advancing
+never reads as a stuck key, and so it is clear org-gtd does the work
+rather than the prose being an instruction to act by hand."
+  (pcase (plist-get step :type)
+    ('command
+     "Press n and org-gtd runs this now — you'll switch to it.  \
+Come back, then press n again to continue.")
+    ('view
+     "Press n and org-gtd opens this view — you'll switch to it.  \
+Come back, then press n again to continue.")))
 
 (defun org-gtd-review--render ()
   "Render the session buffer from `org-gtd-review--state'."
@@ -297,6 +315,8 @@ Capture is always available: any step can shake something loose."
         (insert (format "  %s\n" (plist-get step :title)))
         (when-let ((instr (plist-get step :instruction)))
           (insert (format "\n  %s\n" instr)))
+        (when-let ((guide (org-gtd-review--step-guidance step)))
+          (insert (format "\n  %s\n" guide)))
         (when (and (eq (plist-get step :type) 'checklist)
                    (plist-get state :walk-items))
           (let ((items (plist-get state :walk-items))

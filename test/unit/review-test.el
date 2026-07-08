@@ -87,6 +87,38 @@
       (assert-match "Phase B" (buffer-string))
       (assert-match "Step three" (buffer-string)))))
 
+(deftest review/phase-tracker-arrows-current-checks-done-dots-pending ()
+  "The tracker brackets every phase: arrow current, check done, dot pending."
+  (let ((org-gtd-review-profiles review-test--tiny-profile))
+    (org-gtd-review "Tiny")
+    (with-current-buffer org-gtd-review--buffer-name
+      (assert-match "\\[→ Phase A\\]" (buffer-string))
+      (assert-match "\\[· Phase B\\]" (buffer-string))
+      (org-gtd-review-next)
+      (org-gtd-review-next)
+      (assert-match "\\[✓ Phase A\\]" (buffer-string))
+      (assert-match "\\[→ Phase B\\]" (buffer-string)))))
+
+(deftest review/command-step-explains-two-press-flow ()
+  "A command step tells the user advancing runs it and to return to continue."
+  (let ((org-gtd-review-profiles
+         '(("Cmd"
+            ("Only phase"
+             (:title "Process the inbox" :type command :command ignore))))))
+    (org-gtd-review "Cmd")
+    (with-current-buffer org-gtd-review--buffer-name
+      (assert-match "press n again" (buffer-string)))))
+
+(deftest review/view-step-explains-two-press-flow ()
+  "A view step tells the user advancing opens it and to return to continue."
+  (let ((org-gtd-review-profiles
+         '(("View"
+            ("Only phase"
+             (:title "Look at next actions" :type view :view ignore))))))
+    (org-gtd-review "View")
+    (with-current-buffer org-gtd-review--buffer-name
+      (assert-match "press n again" (buffer-string)))))
+
 (deftest review/completing-last-step-ends-session ()
   "Finishing the last step tears the session down."
   (let ((org-gtd-review-profiles review-test--tiny-profile))
