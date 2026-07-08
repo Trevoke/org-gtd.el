@@ -34,6 +34,10 @@
 (require 'org-gtd-wip)
 (require 'org-gtd-horizons)
 
+;; Defined in org-gtd-capture (loaded at the org-gtd.el level); declared
+;; here to avoid a require cycle while silencing the compiler.
+(declare-function org-gtd-inbox-path "org-gtd-capture")
+
 ;;;; Customization
 
 (defgroup org-gtd-clarify nil
