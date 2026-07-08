@@ -58,7 +58,7 @@
     ("d" "Upcoming delegated" org-gtd-reflect-upcoming-delegated)
     ("r" "Completed items" org-gtd-reflect-completed-items)
     ("R" "Completed projects" org-gtd-reflect-completed-projects)
-    ("l" "Checklists" org-gtd-checklist-visit)]
+    ("l" "Checklist templates" org-gtd-checklist-template-visit)]
    ["Archive"
     ("A" "Archive completed" org-gtd-archive-completed-items)]]
   ["Review System"

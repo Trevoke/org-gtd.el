@@ -391,7 +391,7 @@ single press when the checklist is empty or missing."
     ('prompt 1)
     ((or 'command 'view) 2)
     ('checklist
-     (let ((items (org-gtd-checklist--items (plist-get step :checklist))))
+     (let ((items (org-gtd-checklist-template--items (plist-get step :checklist))))
        (if items (1+ (length items)) 1)))))
 
 (deftest review/default-weekly-profile-runs-end-to-end ()

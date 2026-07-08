@@ -88,7 +88,7 @@ Each entry is (PROFILE-NAME . PHASES); each phase is
 \(PHASE-NAME . STEPS); each step is a plist with :title, :type
 \(one of `prompt', `command', `view', `checklist'), an optional
 :instruction, and the type-specific key :command, :view, or
-:checklist (a template name in the checklists file)."
+:checklist (a template name in the checklist templates file)."
   :group 'org-gtd
   :type 'sexp)
 
@@ -177,7 +177,7 @@ step looks like so the error teaches the fix."
         (when (and (eq (plist-get step :type) 'checklist)
                    (not (plist-get step :checklist)))
           (user-error
-           "Review profile '%s', phase '%s': checklist step \"%s\" is missing :checklist — name a template from your checklists file, like :checklist \"Weekly Review triggers\""
+           "Review profile '%s', phase '%s': checklist step \"%s\" is missing :checklist — name a template from your checklist templates file, like :checklist \"Weekly Review triggers\""
            name (car phase) (plist-get step :title)))))))
 
 ;;;; Checkpoint and Resume Persistence
@@ -405,12 +405,12 @@ Every walk-position change is checkpointed to disk, so resuming
 lands on the item the user was looking at."
   (let ((state org-gtd-review--state))
     (if (not (plist-get state :acted))
-        (let ((items (org-gtd-checklist--items (plist-get step :checklist))))
+        (let ((items (org-gtd-checklist-template--items (plist-get step :checklist))))
           (if (null items)
               (progn
                 (message "Nothing in checklist '%s' — moving on.  (Edit %s to add items.)"
                          (plist-get step :checklist)
-                         (org-gtd-checklist--file-path))
+                         (org-gtd-checklist-template--file-path))
                 (org-gtd-review--complete-step))
             (plist-put state :acted t)
             (plist-put state :walk-items items)

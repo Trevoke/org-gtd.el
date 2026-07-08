@@ -42,10 +42,10 @@ compatibility via ~define-obsolete-function-alias~, ~defvaralias~, and a
 dual ~(provide 'org-gtd-single-action)~.
 
 *** Checklists
-New =checklists.org= file of reusable checklist templates in
+New =checklist-templates.org= file of reusable checklist templates in
 ~org-gtd-directory~, seeded on first touch with Weekly Review starter
-lists. Each top-level heading is a template; ~org-gtd-checklist-insert~
-stamps a fresh copy at point, and ~org-gtd-checklist-visit~ opens the
+lists. Each top-level heading is a template; ~org-gtd-checklist-template-insert~
+stamps a fresh copy at point, and ~org-gtd-checklist-template-visit~ opens the
 file for editing. Checkboxes now reset automatically — subtree-wide,
 statistics cookies included — when a repeating heading re-arms.
 
@@ -60,7 +60,7 @@ creates the GTD files and offers to schedule the review.
 
 *** Command center: =w= and =l=
 The Reflect column gains =w= (guided Weekly Review) and =l= (visit the
-checklists file).
+checklist templates file).
 
 ** Changed
 *** Disposition runner now sets TODO state before archiving

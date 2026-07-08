@@ -598,7 +598,7 @@ After configuring, run ~M-x org-gtd-reflect-missed-with-custom~ to see all stand
 
 *Default*: A complete Weekly Review profile in three phases: Get Clear, Get Current, Get Creative
 
-*Purpose*: Defines the ritual ~org-gtd-review~ walks you through. Each phase is ~(PHASE-NAME . STEPS)~; each step is a plist with ~:title~, ~:type~ (one of ~prompt~, ~command~, ~view~, ~checklist~), an optional ~:instruction~, and the type-specific key ~:command~, ~:view~, or ~:checklist~ (a template name from your checklists file).
+*Purpose*: Defines the ritual ~org-gtd-review~ walks you through. Each phase is ~(PHASE-NAME . STEPS)~; each step is a plist with ~:title~, ~:type~ (one of ~prompt~, ~command~, ~view~, ~checklist~), an optional ~:instruction~, and the type-specific key ~:command~, ~:view~, or ~:checklist~ (a template name from your checklist templates file).
 
 *When to customize*: To reorder or trim the Weekly Review, point ~:view~ steps at your own views, or add profiles of your own (a daily shutdown, a monthly horizons review). With several profiles configured, ~org-gtd-review~ prompts for which one to run.
 
@@ -934,7 +934,7 @@ This section lists all interactive commands available in org-gtd, organized by w
 | d   | Reflect: upcoming delegated       |
 | r   | Reflect: completed items          |
 | R   | Reflect: completed projects       |
-| l   | Reflect: checklists               |
+| l   | Reflect: checklist templates      |
 | A   | Archive completed items           |
 | S   | Stuck items sub-menu              |
 | M   | Missed items sub-menu             |
@@ -1526,23 +1526,23 @@ Both are valuable. Missed helps you catch problems. Upcoming helps you prevent t
 
 *** Checklist Commands
 
-**** ~org-gtd-checklist-insert~
+**** ~org-gtd-checklist-template-insert~
 
 *When to use*: Whenever you need a fresh copy of a reusable checklist (a packing list, release steps, mind-sweep triggers)
 
 *What it does*:
-- Offers the template names from =checklists.org= for completion
+- Offers the template names from =checklist-templates.org= for completion
 - Inserts a fresh copy of the chosen template as a subtree at point (on a heading line, as that heading's first child)
 - The copy is plain org; org-gtd does not track it
 
-**** ~org-gtd-checklist-visit~
+**** ~org-gtd-checklist-template-visit~
 
 *Binding*: ~l~ from the command center
 
 *When to use*: To add, edit, or retire checklist templates
 
 *What it does*:
-- Opens =checklists.org= in ~org-gtd-directory~, creating and seeding it with starter templates on first use
+- Opens =checklist-templates.org= in ~org-gtd-directory~, creating and seeding it with starter templates on first use
 - Each top-level heading is a template; editing this file is how you customize your checklists
 
 See [[#checklists][Checklists]] for the file format, the checkbox reset on repeat, and the recurring-checklist pattern.
@@ -2551,7 +2551,7 @@ These commands create GTD items programmatically (useful for automation and Emac
 *When to use*: First-time setup (safe to run again at any time)
 
 *What it does*:
-- Ensures ~org-gtd-directory~ and the GTD files exist: the tasks file, the inbox, and =checklists.org= with its starter templates
+- Ensures ~org-gtd-directory~ and the GTD files exist: the tasks file, the inbox, and =checklist-templates.org= with its starter templates
 - Offers to schedule a recurring Weekly Review via ~org-gtd-review-schedule~ (skips the offer when a reminder already exists)
 - Idempotent: anything already in place is simply reported as ready
 

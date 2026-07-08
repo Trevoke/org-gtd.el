@@ -761,7 +761,7 @@ The command center is organized for both discovery and quick access:
 
 - *Engage* (~e~, ~@~, ~n~) :: What to work on now
 - *Capture & Process* (~c~, ~p~, ~k~) :: Add items and process inbox
-- *Reflect* (~w~, ~a~, ~y~, ~d~, ~r~, ~R~, ~l~) :: Guided Weekly Review, review areas, someday items, completed work, checklists
+- *Reflect* (~w~, ~a~, ~y~, ~d~, ~r~, ~R~, ~l~) :: Guided Weekly Review, review areas, someday items, completed work, checklist templates
 - *Review System* (~S~, ~M~) :: Sub-menus for stuck and missed items
 - *Archive* (~A~) :: Archive completed items
 

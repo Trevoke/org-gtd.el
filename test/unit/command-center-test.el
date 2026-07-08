@@ -50,10 +50,10 @@
 
 (deftest command-center-has-checklists-entry ()
   "The Reflect group binds l to visiting checklists."
-  (assert-true (fboundp 'org-gtd-checklist-visit))
+  (assert-true (fboundp 'org-gtd-checklist-template-visit))
   (let ((plist (ogt--transient-suffix-plist 'org-gtd-command-center "l")))
     (assert-equal "l" (plist-get plist :key))
-    (assert-equal 'org-gtd-checklist-visit (plist-get plist :command))))
+    (assert-equal 'org-gtd-checklist-template-visit (plist-get plist :command))))
 
 (deftest command-center-has-guided-review-entry ()
   "The Reflect group binds w to the guided review."

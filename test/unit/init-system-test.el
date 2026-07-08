@@ -38,14 +38,14 @@
     (org-gtd-init-system))
   (assert-true (file-exists-p (org-gtd--path org-gtd-default-file-name)))
   (assert-true (file-exists-p (org-gtd-inbox-path)))
-  (assert-true (file-exists-p (org-gtd-checklist--file-path))))
+  (assert-true (file-exists-p (org-gtd-checklist-template--file-path))))
 
 (deftest init-system/is-idempotent ()
   "Running init twice neither errors nor duplicates seeds."
   (cl-letf (((symbol-function 'y-or-n-p) (lambda (_prompt) nil)))
     (org-gtd-init-system)
     (org-gtd-init-system))
-  (with-current-buffer (org-gtd-checklist--file-buffer)
+  (with-current-buffer (org-gtd-checklist-template--file-buffer)
     (goto-char (point-min))
     (assert-equal 1 (count-matches "^\\* Weekly Review triggers$"))))
 

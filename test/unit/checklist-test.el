@@ -10,10 +10,10 @@
 ;; Unit tests for org-gtd checklist templates.
 ;;
 ;; Test Coverage:
-;; - Lazy creation and seeding of checklists.org (2 tests)
+;; - Lazy creation and seeding of checklist-templates.org (2 tests)
 ;; - Template name and item parsing, normalization (6 tests)
 ;; - Inserting template instances at point (6 tests)
-;; - Visiting the checklists file (1 test)
+;; - Visiting the checklist templates file (1 test)
 ;;
 ;;; Code:
 
@@ -30,8 +30,8 @@
 ;;; File Creation and Seeding Tests
 
 (deftest checklist/file-is-created-with-starter-templates ()
-  "First touch creates checklists.org seeded with starter trigger lists."
-  (let ((buf (org-gtd-checklist--file-buffer)))
+  "First touch creates checklist-templates.org seeded with starter trigger lists."
+  (let ((buf (org-gtd-checklist-template--file-buffer)))
     (with-current-buffer buf
       (assert-match "\\* Weekly Review triggers" (buffer-string))
       (assert-match "\\* Mind sweep prompts" (buffer-string))
@@ -39,8 +39,8 @@
 
 (deftest checklist/seeding-is-idempotent ()
   "Touching the file twice does not duplicate the starters."
-  (org-gtd-checklist--file-buffer)
-  (with-current-buffer (org-gtd-checklist--file-buffer)
+  (org-gtd-checklist-template--file-buffer)
+  (with-current-buffer (org-gtd-checklist-template--file-buffer)
     (goto-char (point-min))
     (assert-equal 1 (count-matches "^\\* Weekly Review triggers$"))))
 
@@ -49,45 +49,45 @@
 (deftest checklist/names-lists-top-level-headings ()
   "Template names are the top-level heading titles."
   (assert-equal '("Weekly Review triggers" "Mind sweep prompts")
-                (org-gtd-checklist-names)))
+                (org-gtd-checklist-template-names)))
 
 (deftest checklist/items-returns-ordered-item-strings ()
   "Items of a named checklist come back as ordered plain strings."
-  (let ((items (org-gtd-checklist--items "Mind sweep prompts")))
+  (let ((items (org-gtd-checklist-template--items "Mind sweep prompts")))
     (assert-equal "Boss, partners, colleagues?" (car items))
     (assert-equal 8 (length items))))
 
 (deftest checklist/items-ignores-checked-state ()
   "A checked box still yields its item text."
-  (with-current-buffer (org-gtd-checklist--file-buffer)
+  (with-current-buffer (org-gtd-checklist-template--file-buffer)
     (goto-char (point-min))
     (search-forward "- [ ] Boss")
     (replace-match "- [X] Boss")
     (basic-save-buffer))
   (assert-equal "Boss, partners, colleagues?"
-                (car (org-gtd-checklist--items "Mind sweep prompts"))))
+                (car (org-gtd-checklist-template--items "Mind sweep prompts"))))
 
 (deftest checklist/items-nil-for-unknown-name ()
   "Unknown checklist name returns nil, no error."
-  (assert-nil (org-gtd-checklist--items "No such list")))
+  (assert-nil (org-gtd-checklist-template--items "No such list")))
 
 (deftest checklist/tagged-heading-resolves-by-bare-name ()
   "Tags on a template heading do not leak into its name."
-  (with-current-buffer (org-gtd-checklist--file-buffer)
+  (with-current-buffer (org-gtd-checklist-template--file-buffer)
     (goto-char (point-max))
     (insert "* Packing list :travel:\n- [ ] Socks?\n")
     (basic-save-buffer))
-  (assert-true (member "Packing list" (org-gtd-checklist-names)))
-  (assert-equal '("Socks?") (org-gtd-checklist--items "Packing list")))
+  (assert-true (member "Packing list" (org-gtd-checklist-template-names)))
+  (assert-equal '("Socks?") (org-gtd-checklist-template--items "Packing list")))
 
 (deftest checklist/comment-headings-are-excluded ()
   "COMMENT headings are not offered as templates."
-  (with-current-buffer (org-gtd-checklist--file-buffer)
+  (with-current-buffer (org-gtd-checklist-template--file-buffer)
     (goto-char (point-max))
     (insert "* COMMENT Draft list\n- [ ] Not ready?\n")
     (basic-save-buffer))
-  (assert-nil (member "Draft list" (org-gtd-checklist-names)))
-  (assert-nil (member "COMMENT Draft list" (org-gtd-checklist-names))))
+  (assert-nil (member "Draft list" (org-gtd-checklist-template-names)))
+  (assert-nil (member "COMMENT Draft list" (org-gtd-checklist-template-names))))
 
 ;;; Insert Tests
 
@@ -96,7 +96,7 @@
   (with-temp-buffer
     (org-mode)
     (with-simulated-input "Weekly SPC Review SPC triggers RET"
-      (call-interactively #'org-gtd-checklist-insert))
+      (call-interactively #'org-gtd-checklist-template-insert))
     (assert-match "^\\* Weekly Review triggers" (buffer-string))
     (assert-match "- \\[ \\] Projects started" (buffer-string))))
 
@@ -106,7 +106,7 @@
     (org-mode)
     (insert "* Trip to the beach\n")
     (goto-char (point-max))
-    (org-gtd-checklist-insert "Mind sweep prompts")
+    (org-gtd-checklist-template-insert "Mind sweep prompts")
     (assert-match "^\\*\\* Mind sweep prompts" (buffer-string))))
 
 (deftest checklist/insert-unknown-name-errors-cleanly ()
@@ -114,10 +114,10 @@
   (with-temp-buffer
     (org-mode)
     (let ((err (condition-case e
-                   (progn (org-gtd-checklist-insert "Nope") nil)
+                   (progn (org-gtd-checklist-template-insert "Nope") nil)
                  (user-error e))))
       (assert-true err)
-      (assert-match "checklists\\.org" (cadr err)))))
+      (assert-match "checklist-templates\\.org" (cadr err)))))
 
 (deftest checklist/insert-at-heading-bol-inserts-child-below ()
   "Point at bol of a heading inserts the template as a child below it."
@@ -125,7 +125,7 @@
     (org-mode)
     (insert "* Trip to the beach\nsome body text\n")
     (goto-char (point-min))
-    (org-gtd-checklist-insert "Mind sweep prompts")
+    (org-gtd-checklist-template-insert "Mind sweep prompts")
     (assert-match "^\\* Trip to the beach$" (buffer-string))
     (assert-match "^\\*\\* Mind sweep prompts" (buffer-string))
     ;; The template lands after its parent heading, not above it.
@@ -140,7 +140,7 @@
     (insert "* Trip to the beach\n")
     (goto-char (point-min))
     (search-forward "Trip to")
-    (org-gtd-checklist-insert "Mind sweep prompts")
+    (org-gtd-checklist-template-insert "Mind sweep prompts")
     (assert-match "^\\* Trip to the beach$" (buffer-string))
     (assert-match "^\\*\\* Mind sweep prompts" (buffer-string))))
 
@@ -149,15 +149,15 @@
   (with-temp-buffer
     (assert-true
      (condition-case e
-         (progn (org-gtd-checklist-insert "Mind sweep prompts") nil)
+         (progn (org-gtd-checklist-template-insert "Mind sweep prompts") nil)
        (user-error e)))))
 
 ;;; Visit Tests
 
 (deftest checklist/visit-opens-checklists-file ()
   "Visit command selects a buffer visiting the checklists file."
-  (org-gtd-checklist-visit)
-  (assert-match "checklists\\.org" (buffer-file-name)))
+  (org-gtd-checklist-template-visit)
+  (assert-match "checklist-templates\\.org" (buffer-file-name)))
 
 (provide 'checklist-test)
 

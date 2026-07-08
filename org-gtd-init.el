@@ -37,7 +37,7 @@
 ;;;###autoload
 (defun org-gtd-init-system ()
   "Set up org-gtd for first use.  Safe to run again at any time.
-Ensures the GTD files exist (seeding starter checklists) and offers
+Ensures the GTD files exist (seeding starter checklist templates) and offers
 to schedule a recurring Weekly Review.  Every step reports and skips
 when already satisfied — lazy initialization elsewhere is untouched."
   (interactive)
@@ -47,7 +47,7 @@ when already satisfied — lazy initialization elsewhere is untouched."
           (make-directory org-gtd-directory t))
         (org-gtd--default-file)
         (org-gtd-inbox-path)
-        (org-gtd-checklist--file-buffer))
+        (org-gtd-checklist-template--file-buffer))
     (file-error
      (user-error "Could not create GTD files (%s) — check that %s is writable, or customize org-gtd-directory"
                  (error-message-string err)

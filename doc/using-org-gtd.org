@@ -34,7 +34,7 @@ These are the commands you'll use most:
 | ~org-gtd-engage~ | See actionable items | Daily (your "work from" view) |
 | ~org-gtd-show-all-next~ | See only NEXT actions | When you want to focus on actions |
 | ~org-gtd-review~ | Guided Weekly Review session | Weekly |
-| ~org-gtd-checklist-insert~ | Insert a reusable checklist at point | Packing lists, release steps, mind sweeps |
+| ~org-gtd-checklist-template-insert~ | Insert a reusable checklist at point | Packing lists, release steps, mind sweeps |
 | ~org-gtd-reflect-stuck-projects~ | Find stuck projects | Weekly review |
 | ~org-gtd-reflect-someday-review~ | Review someday items one-by-one | Weekly/monthly review |
 | ~org-gtd-projects-fix-all-todo-keywords~ | Fix task states after external edits | After mobile/web edits |
@@ -527,13 +527,13 @@ The command isn't bound by default because org-agenda-mode already has many keyb
 :CUSTOM_ID: checklists
 :END:
 
-Some lists you use over and over: packing for a trip, releasing software, the trigger list of a Weekly Review mind sweep. org-gtd stores these as templates in a file called ~checklists.org~ in ~org-gtd-directory~, and lets you stamp out a fresh copy whenever you need one.
+Some lists you use over and over: packing for a trip, releasing software, the trigger list of a Weekly Review mind sweep. org-gtd stores these as templates in a file called ~checklist-templates.org~ in ~org-gtd-directory~, and lets you stamp out a fresh copy whenever you need one.
 
 The file is created the first time anything touches it, seeded with two starter templates: "Weekly Review triggers" and "Mind sweep prompts". They're yours — edit or delete them freely.
 
 *** The template file
 
-Each top-level heading in ~checklists.org~ is a template; its checkbox items are the checklist:
+Each top-level heading in ~checklist-templates.org~ is a template; its checkbox items are the checklist:
 
 #+begin_example
 ,* Beach packing
@@ -547,13 +547,13 @@ Two conventions to respect:
 - Templates are *top-level headings*. Sub-headings inside a template are copied along when you spawn it, but only top-level headings appear as template names.
 - Items are *dash-style checkboxes* (~- [ ]~). Other list bullets are not recognized as checklist items.
 
-That's the whole format: no TODO keywords, no properties, nothing org-gtd-specific. *Editing this file is how you customize your checklists.* Open it with ~M-x org-gtd-checklist-visit~ (or ~l~ from the command center) and use ordinary org editing. A heading marked with org's ~COMMENT~ keyword is ignored — a handy way to retire a template without deleting it.
+That's the whole format: no TODO keywords, no properties, nothing org-gtd-specific. *Editing this file is how you customize your checklists.* Open it with ~M-x org-gtd-checklist-template-visit~ (or ~l~ from the command center) and use ordinary org editing. A heading marked with org's ~COMMENT~ keyword is ignored — a handy way to retire a template without deleting it.
 
 The file is not part of your agenda: templates are content, not tasks.
 
 *** Spawning a checklist
 
-Call ~M-x org-gtd-checklist-insert~ in any org buffer. It offers your template names for completion, then inserts a fresh copy of the chosen template as a subtree:
+Call ~M-x org-gtd-checklist-template-insert~ in any org buffer. It offers your template names for completion, then inserts a fresh copy of the chosen template as a subtree:
 
 - On a heading line, the copy becomes the *first child* of that heading.
 - In body text, the copy is inserted at point, as a child of the heading you're under (or as a top-level heading when there's no heading above point).
@@ -567,7 +567,7 @@ The copy is plain org. org-gtd does not track it, and checking off its boxes nev
 
 Want your packing list — or your mind-sweep trigger list — as a recurring task in your system? Compose the pieces you already have:
 
-1. In your inbox (or any org file), ~M-x org-gtd-checklist-insert~ and pick the template.
+1. In your inbox (or any org file), ~M-x org-gtd-checklist-template-insert~ and pick the template.
 2. ~M-x org-gtd-clarify-item~ on the new heading; rename it if you like.
 3. Organize it as a *Habit* with a repeater (say, ~.+1w~).
 
@@ -585,7 +585,7 @@ The reset follows org's own re-arm rule exactly — it happens only when org act
 
 This applies to *every* repeating heading with checkboxes — spawned from a template or written by hand. The hook is installed by ~org-gtd-mode~.
 
-*See also*: [[#commands-reference][Commands Reference]] for ~org-gtd-checklist-insert~ and ~org-gtd-checklist-visit~.
+*See also*: [[#commands-reference][Commands Reference]] for ~org-gtd-checklist-template-insert~ and ~org-gtd-checklist-template-visit~.
 
 ** Weekly Review (guided)
 :PROPERTIES:
@@ -620,7 +620,7 @@ A review is made of four kinds of steps. Here's what ~n~ does on each:
 - prompt :: Read the instruction, do the thing in the real world, press ~n~ to move on.
 - command :: Two presses. The first ~n~ runs the step's command (for example ~org-gtd-process-inbox~). When you're done, come back to the review buffer and press ~n~ again to confirm and advance — or ~s~ if you're leaving it unfinished. If the command signals an error, the step doesn't count as started; ~n~ simply retries it.
 - view :: Two presses, same shape. The first ~n~ opens the step's agenda view in another window; browse it and act on what needs acting. The second ~n~ advances.
-- checklist :: Walks the items of a named template from your [[#checklists][checklists file]], one item at a time. The first ~n~ shows the first item; each further ~n~ shows the next; press ~c~ whenever an item shakes something loose. The template file itself is never modified. An empty or missing checklist just says so and moves on.
+- checklist :: Walks the items of a named template from your [[#checklists][checklist templates file]], one item at a time. The first ~n~ shows the first item; each further ~n~ shows the next; press ~c~ whenever an item shakes something loose. The template file itself is never modified. An empty or missing checklist just says so and moves on.
 
 *** Pause, resume, and crash recovery
 
@@ -630,7 +630,7 @@ There is a single checkpoint slot. Declining the resume offer starts a fresh ses
 
 *** Customizing the ritual: org-gtd-review-profiles
 
-The whole ritual is data. ~org-gtd-review-profiles~ is an alist of profiles; each profile is a list of named phases; each phase is a list of steps; each step is a plist with a ~:title~, a ~:type~ (one of ~prompt~, ~command~, ~view~, ~checklist~), an optional ~:instruction~, and the type-specific key ~:command~, ~:view~, or ~:checklist~ (a template name from your checklists file).
+The whole ritual is data. ~org-gtd-review-profiles~ is an alist of profiles; each profile is a list of named phases; each phase is a list of steps; each step is a plist with a ~:title~, a ~:type~ (one of ~prompt~, ~command~, ~view~, ~checklist~), an optional ~:instruction~, and the type-specific key ~:command~, ~:view~, or ~:checklist~ (a template name from your checklist templates file).
 
 The Weekly Review ships as the default value, so customizing means editing this variable — reorder steps, delete what you don't use, point ~:view~ steps at [[#view-dsl-reference][your own views]], or add entirely new profiles (a daily shutdown, a monthly horizons review). When more than one profile is configured, ~org-gtd-review~ asks which one to run. Malformed profiles are rejected up front with an error that names the offending phase or step and shows the expected shape.
 
@@ -698,7 +698,7 @@ If a reminder for one of your profiles already exists, the command asks before s
 
 *** First-time setup: org-gtd-init-system
 
-~M-x org-gtd-init-system~ is a small first-run concierge. It ensures ~org-gtd-directory~ and the GTD files exist — the tasks file, the inbox, and ~checklists.org~ with its starter templates — and then offers to schedule a recurring Weekly Review (skipping the offer when a reminder already exists). It is idempotent: run it again anytime, and anything already in place is simply reported as ready.
+~M-x org-gtd-init-system~ is a small first-run concierge. It ensures ~org-gtd-directory~ and the GTD files exist — the tasks file, the inbox, and ~checklist-templates.org~ with its starter templates — and then offers to schedule a recurring Weekly Review (skipping the offer when a reminder already exists). It is idempotent: run it again anytime, and anything already in place is simply reported as ready.
 
 Two things it deliberately does *not* do, because they belong in your Emacs configuration: adding your GTD files to ~org-agenda-files~, and TODO keyword setup. Those remain manual steps — see [[#configuring][Configuring]].
 
