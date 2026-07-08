@@ -152,6 +152,33 @@
          (progn (org-gtd-checklist-template-insert "Mind sweep prompts") nil)
        (user-error e)))))
 
+(deftest checklist/insert-declared-for-org-mode ()
+  "The command declares org-mode so M-x hides it in other major modes."
+  (assert-equal '(org-mode)
+                (command-modes 'org-gtd-checklist-template-insert)))
+
+(deftest checklist/insert-mid-body-line-not-split ()
+  "Point in the middle of a body line leaves that line intact."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* Heading\nbody before and after\n")
+    (goto-char (point-min))
+    (search-forward "before ")
+    (org-gtd-checklist-template-insert "Mind sweep prompts")
+    (assert-match "^body before and after$" (buffer-string))
+    (assert-match "^\\*\\* Mind sweep prompts" (buffer-string))))
+
+(deftest checklist/insert-in-body-adds-no-blank-line ()
+  "Inserting at the end of a body line adds no blank line before the template."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* Heading\nbody line\n")
+    (goto-char (point-min))
+    (search-forward "body line")
+    (end-of-line)
+    (org-gtd-checklist-template-insert "Mind sweep prompts")
+    (assert-match "^body line\n\\*\\* Mind sweep prompts" (buffer-string))))
+
 ;;; Visit Tests
 
 (deftest checklist/visit-opens-checklists-file ()

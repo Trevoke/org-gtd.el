@@ -153,6 +153,7 @@ priority cookies.  Headings commented out with COMMENT are excluded."
 The copy is an ordinary org subtree — org-gtd does not track it.
 To make it a recurring task, organize it (e.g. as a habit) with
 `org-gtd-clarify-item' after inserting."
+  (declare (modes org-mode))
   (interactive
    (list (completing-read "Checklist: " (org-gtd-checklist-template-names) nil t)))
   (unless (derived-mode-p 'org-mode)
@@ -169,11 +170,10 @@ To make it a recurring task, organize it (e.g. as a habit) with
         ;; Insert as a child of the heading point is under, or at
         ;; top level when the buffer has no heading above point.
         (target-level (1+ (or (org-current-level) 0))))
-    ;; On a heading line, insert as first child below that heading;
-    ;; never split the heading text at point.
-    (if (org-at-heading-p)
-        (progn (end-of-line) (insert "\n"))
-      (unless (bolp) (insert "\n")))
+    ;; Anchor at the end of the current line so we never split heading
+    ;; or body text at point; `org-paste-subtree' then drops the copy as
+    ;; a correctly-leveled subtree on its own line, with no stray blank.
+    (end-of-line)
     (org-paste-subtree target-level subtree)))
 
 ;;;###autoload
