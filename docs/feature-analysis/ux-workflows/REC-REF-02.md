@@ -6,6 +6,54 @@
 
 ---
 
+## Implementation status (2026-07-08) — IMPLEMENTED (lean)
+
+REC-REF-02 was implemented in the checklists + guided-review work (PR #294,
+unmerged at time of writing; not yet in a release). The adjudicated design is
+`docs/plans/2026-07-06-checklists-and-guided-review-design.md` — **read its §8**
+for exactly what shipped. A **lean** engine landed; the full console described in
+§3–§6 below is mostly deferred (see "Still open").
+
+- **Implemented (lean):** a guided multi-phase session (`M-x org-gtd-review`,
+  autoloaded, `org-gtd-review.el`); configurable **profiles**
+  (`org-gtd-review-profiles` defcustom, with the Weekly Review as the default
+  value); step types **`prompt` / `command` / `view` / `checklist`**; session
+  keys **`n s p q`**; phase checkpoint messages; **pause/resume**; simple
+  completion counts (steps done/skipped); REF-01's recurring-reminder rider via
+  `org-gtd-review-schedule` (creates a Weekly Review habit). Home: a
+  command-center `w · Weekly Review (guided…)` row.
+  - *Step-type divergence from this doc:* this doc names types
+    `prompt`/`action`/`view`/`walk`; shipped types are
+    `prompt`/**`command`**/`view`/**`checklist`**. `command` is this doc's
+    `action`. The `checklist` step walks item **strings** from a `checklists.org`
+    template (CHK-01) — **not** org headings; the org-heading `walk` step is
+    deferred (see below).
+- **Rejected — do not re-litigate (design doc §8):** org-edna involvement in the
+  engine; a *hidden* `.review-state.el` — the shipped state file is the **visible
+  `review-state.eld`** in `org-gtd-directory`.
+- **Still open (deferred, valid pulls — everything in §3–§6 beyond the lean cut):**
+  - the **`walk` step type** — iterating *org headings* (projects, someday items)
+    one at a time in WIP buffers with per-item actions (`c`/`x`/`d`) and the
+    no-next-action **invariant guard** (§3 walk step, §4 mock, §6 guard). The
+    shipped `checklist` step walks item *strings*, not headings; the org-item walk
+    is the missing piece REF-06 and the someday-review generalization both need.
+  - the **stats block** (the X-15 completeness readout, §4), the
+    **review-completion log**, the **back-step `b`**, and in-session **`,`
+    customize**.
+  - generalizing **`org-gtd-someday-review`** into a profile (it is untouched).
+  - **cadence-ladder profiles** (daily/monthly/quarterly/annual — REF-05/WF-22);
+    ship as documented examples first.
+  - action bars generated from **`:allowed-actions`** (the §5 registry-parity
+    idea); steps currently declare behavior via `:type` only, and there is no
+    per-step action bar yet.
+- **Contract for Cluster A siblings** (REC-REF-06, REC-CAP-09, REC-X-15): the
+  engine they inherit is **profiles + typed steps + `n s p q` + pause/resume** —
+  *not* the full console (stats block, review log, back-step, generalized
+  someday-review) this doc describes. REF-06/CAP-09 become "just another profile"
+  only once the `walk` step type lands; X-15 still needs the stats block.
+
+---
+
 ## 1. The need (what & why)
 
 - The Weekly Review is GTD's keystone ("an unused system is not a system"), yet org-gtd today only offers a scatter of independent `org-gtd-reflect-*` views. The user must *remember the whole ritual* and run each piece by hand — exactly the mental overhead the system is meant to remove. This feature turns the ritual into one guided session ending in the honest claim: *"I know everything I'm not doing but could be."*
@@ -19,6 +67,8 @@
 - **Discover** — the command-center Reflect group is where users already look for review actions; the `w` mnemonic sits beside the existing per-view rows (`a y d r R`). REF-01's recurring reminder (rider) can drop a "Weekly Review due" tickler that, when engaged, calls the same command — discovery via the agenda they already read.
 
 ## 3. Full-lifecycle walkthrough
+
+> **Partly superseded (2026-07-08).** The lean session shipped, but much of this walkthrough is **deferred, not built** (see the Implementation status block + design doc §8): the running stats block, `walk` steps over org headings with per-item `c`/`x`/`d` actions, the back-step `b`, in-session `,` customize, and the review-completion log. The pause state file shipped as the **visible `review-state.eld`**, not the hidden `.review-state.el` named here (org-edna is not involved).
 
 **Primary path (Weekly profile):**
 
@@ -40,6 +90,8 @@
 - **Repeat / recur** — each profile carries a `:cadence` (weekly, daily, monthly…); REF-01's rider schedules the reminder. The cadence ladder = several profiles, each run at its interval.
 
 ## 4. Interaction sketch
+
+> **Partly superseded (2026-07-08).** Shipped session keys are `n s p q` only. The `b` back-step, `,` customize, the stats block, and the `walk`-step action bar (`c`/`x`/`d`) shown below are **deferred** — see design doc §8.
 
 **Console mock (a walk step, mid-session):**
 ```
@@ -86,6 +138,8 @@ Header-line advertises the step's keys live, exactly as `org-gtd-someday-review`
 - **Release tag** — everything leaned on is **[R]** (4.6.1). The one **rework of [R]**: generalizing `org-gtd-someday-review` into `org-gtd-review` (engine) with someday-review re-expressed as a one-phase profile. Justification: **GTD-fidelity** (the book's ritual is inherently multi-phase and org-gtd has no orchestration) plus **UX** (removes duplicate loops — every guided gap is this loop with different content). Keep `org-gtd-reflect-someday-review` as a thin alias for back-compat.
 
 ### Type / extension-UX opportunities
+
+> **Deferred (2026-07-08).** Action bars generated from `:allowed-actions` did **not** ship; steps declare behavior via `:type` only, and there is no per-step action bar yet (it belongs with the deferred `walk` step). See design doc §8.
 
 - **A step-type registry parallel to the GTD type registry.** Steps have a `:type` (prompt/action/view/walk) and `:allowed-actions`; the action bar should be **generated from `:allowed-actions`**, not hand-authored — directly addressing the primer's "three-places-kept-in-sync-by-hand" smell that also afflicts the organize transient. Building this generator here proves the pattern the organize transient should later adopt.
 - **Profiles are a named-object collection** — same shape as Cluster E's view/checklist managers. Ship the profile store as a plain `defcustom` now, but flag it so E's CRUD-manager idiom can later wrap it (`list → create → preview → edit → save → delete`) without rework.

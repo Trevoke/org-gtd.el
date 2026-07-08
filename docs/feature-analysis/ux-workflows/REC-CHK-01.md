@@ -6,6 +6,49 @@
 
 ---
 
+## Implementation status (2026-07-08) — IMPLEMENTED (differently)
+
+REC-CHK-01 was implemented in the checklists + guided-review work (PR #294,
+unmerged at time of writing; not yet in a release). The adjudicated design is
+`docs/plans/2026-07-06-checklists-and-guided-review-design.md` — **read its §8,
+not this doc's mechanics**, for what actually shipped. The felt-need analysis
+below (§1) stands; the concrete surface (§2–§7) was largely superseded.
+
+- **Implemented as specified:** named reusable checklists; an insert command
+  (`org-gtd-checklist-insert`, autoloaded, `completing-read` over template names);
+  bundled starter trigger lists (Weekly Review triggers, Mind sweep prompts);
+  checkbox reset so a list is re-runnable.
+- **Implemented differently (the design doc supersedes this doc):**
+  - **Storage is a plain org file, `checklists.org`** — each top-level heading is
+    a template, items are its `- [ ]` boxes — **not** the `org-gtd-checklists`
+    `defcustom` alist. Editing the org file directly *is* the authoring UX.
+  - **There is no manager or builder transient.** The whole "manage my checklist
+    interactively" surface (§2 `org-gtd-checklist-manager`, §3 builder lifecycle,
+    §4 manager/builder mocks + keymap, the Cluster-E CRUD conformance) is **gone**;
+    recall is by name via the insert command, discovery via a command-center
+    `l · Checklists` row that visits the file.
+  - **Reset keys off org repeater re-arm** (a hook calls
+    `org-reset-checkbox-state-subtree` only when a repeating heading re-arms on
+    DONE), **not** an `on-done`/`never` reset-policy field.
+  - **Command-center key is `l`** (visit `checklists.org`), not `k`.
+- **Rejected — do not re-litigate (design doc §8):** a `checklist` type in the
+  registry and `ORG_GTD: Checklist` spawned instances; the `CHECKLIST_KIND` and
+  `RESET_CHECK_BOXES` properties; org-edna `RESET` recurrence; the Cluster-E CRUD
+  manager/builder transient pair. Everything in §2–§7 describing those (the
+  manager, the builder, the `kind`/`reset`/`recur` infixes, the spec alist, the
+  `org-gtd-checklists` store, the type-registry addition) is **rejected design**.
+- **Still open (valid future pulls):** a *slim* manager transient over the file
+  (list / jump / insert) if discoverability warrants; instance↔template linking
+  (a `CHECKLIST_SOURCE` back-reference); `kind` filtering if a consumer ever
+  needs it.
+- **Contract for downstream corpus docs** (REC-PRJ-10, REC-CAP-09, REC-CHK-02,
+  REC-CAP-06, REC-PRJ-07 all cite CHK-01's data model): **a checklist is a named
+  top-level subtree in `checklists.org`; consumers reference it by name and read
+  its items via `org-gtd-checklist--items`.** Any reference those docs make to
+  `kind`, a spec alist, or the manager surface is stale.
+
+---
+
 ## 1. The need (what & why)
 
 - **Problem:** GTD leans on **reusable lists**: the Weekly Review *trigger list*, the *mind-sweep* prompts, a *packing* list per trip, a *verb-starter* list to name projects. Each is used many times, and each run should start fresh (all boxes unchecked). org-gtd has **zero checklist infrastructure** (verified by grep) — a user keeps these in a scratch file and copy-pastes, or retypes. That is the paper checklist that never got a digital drawer.
@@ -14,6 +57,8 @@
 
 ## 2. Entry points & discovery
 
+> **Superseded (2026-07-08) — rejected design, see §8 of the design doc.** No `org-gtd-checklist-manager` and no `k`-in-hub entry shipped. Discovery is a command-center `l · Checklists` row that visits `checklists.org`; recall is `org-gtd-checklist-insert`.
+
 - **Invoke:**
   - `M-x org-gtd-checklist-manager` — the top-level list transient (create/edit/delete/preview).
   - `org-gtd-command-center` gains a **`k` "Checklists…"** entry (`k` is free in the hub — the organize-transient's `k`=knowledge is a different surface) → opens the manager. This is the browse/discover surface.
@@ -21,6 +66,8 @@
 - **Discover:** the manager's empty state teaches itself (§6); the bundled starter checklists (weekly-review triggers, mind-sweep) ship pre-loaded so a new user *sees* worked examples the first time they open the manager, and every guided review that walks a trigger list is "one of these."
 
 ## 3. Full-lifecycle walkthrough
+
+> **Superseded (2026-07-08) — rejected design, see §8 of the design doc.** The builder/manager lifecycle below (in-memory spec, `kind`/`reset`/`recur` infixes, save-to-`org-gtd-checklists`, spawned `ORG_GTD: Checklist` instances) did not ship. Checklists are plain top-level headings in `checklists.org`, authored with ordinary org editing.
 
 Primary path — build "Beach packing," save, insert it into a trip project, run it, watch it reset.
 
@@ -37,6 +84,8 @@ Primary path — build "Beach packing," save, insert it into a trip project, run
 - **Delete / back out.** In the list, highlight and press **`D`** → *"Delete checklist 'Beach packing'? (y/n)"* → removed from `org-gtd-checklists`. Deleting a *template* never touches already-spawned instances (they are ordinary org subtrees). Backing out of an unsaved build: **`C-c C-k`** discards, cleans the temp buffer, restores windows; if dirty, one guard prompt *"Discard unsaved checklist? (y/n)."*
 
 ## 4. Interaction sketch
+
+> **Superseded (2026-07-08) — rejected design, see §8 of the design doc.** No manager or builder transient shipped; the mocks and keymap below describe rejected UI.
 
 **Manager (list) transient** `[U]` home in command-center
 
@@ -97,6 +146,8 @@ Primary path — build "Beach packing," save, insert it into a trip project, run
 - **Release tag of what you lean on:** WIP infra, org-edna, and command-center are `[R]`; the CRUD-manager store pattern is `[U]`. No `[R]` surface is *reworked* — the checklist type is an *addition* to the registry, so no GTD-fidelity justification is owed for churn (adding a reusable-list type is itself GTD-faithful: trigger/checklists are named GTD artifacts).
 
 ### Type / extension-UX opportunities
+
+> **Superseded (2026-07-08) — rejected design, see §8 of the design doc.** The `checklist` type-registry addition discussed here was rejected (YAGNI); a checklist is a plain org subtree carrying no `ORG_GTD` type.
 
 - **The CRUD-manager scaffold should be a shared primitive, not copy-pasted.** This is the *second* Cluster-E consumer of the "name→spec `defcustom` store + list-transient + builder-transient + dirty-guard" pattern that `NEW-VIEW-MANAGER` introduces. Building it twice proves it should be **factored generically** (`org-gtd-crud-manager` over a store symbol + a builder function). That same scaffold is exactly what the type registry lacks — it is the friendly front-end the primer wants for `org-gtd-customize-type` `[U]` and the removed `org-gtd-define-type` `[X]`. Recommend: extract the scaffold here so `define-type`'s eventual UI is a third client, not a fourth reimplementation.
 - **Registering the `checklist` type touches the three-places-in-sync friction** the primer flags (type entry + organize-transient layout + help text hand-synced). This feature *deliberately does not add an organize disposition* (a checklist template is a reusable reference artifact, authored in the manager, not a per-item disposition — GTD-orthodox list-work, primer §4), so it sidesteps the friction — but it re-confirms the fix: **generate the organize transient from the registry.**

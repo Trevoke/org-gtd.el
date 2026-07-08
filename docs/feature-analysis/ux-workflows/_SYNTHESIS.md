@@ -8,6 +8,8 @@
 
 ### 1a. Cluster E — NEW-VIEW-MANAGER ↔ REC-CHK-01 (named-object CRUD manager)
 
+> **Superseded for CHK-01 (2026-07-08, PR #294).** The conformance analysis below is now **historical**: REC-CHK-01 shipped *without* a manager — checklists are plain named subtrees in `checklists.org`, edited directly, with `org-gtd-checklist-insert` for recall (no `org-gtd-checklists` store, no builder, no `kind`). The Cluster-E CRUD-manager idiom still stands for `NEW-VIEW-MANAGER`; CHK-01 was deliberately decoupled. See `docs/plans/2026-07-06-checklists-and-guided-review-design.md` §8.
+
 **Conformance is strong.** Both ship a list transient (`org-gtd-view-manager` / `org-gtd-checklist-manager`) with byte-identical manager keys `RET c e d D q`, a "Your saved X" list with a highlighted-item model + per-item badge, a builder with `s`/`C-c C-k`, and a `name→spec` `defcustom` (`org-gtd-saved-views` / `org-gtd-checklists`) saved via `customize-save-variable`. CHK-01 correctly limits its variance to the two sanctioned points: an editable WIP pane instead of a read-only agenda pane, and the extra `i` (insert instance) key.
 
 Residual drift, all minor, to align:

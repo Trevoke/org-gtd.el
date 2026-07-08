@@ -1,6 +1,8 @@
 # Audit: 2026-06-04 GTD Implementation Status vs. Current Code
 
 > Audited 2026-06-10 against working tree at `fa3d30e`. Every cited construct was located by grep/read in the current source (not trusted from the doc). Post-doc code changes are limited to three files: `org-gtd-agenda-transient.el`, `org-gtd-organize-core.el`, `org-gtd-refile.el` (commits `01a1229`, `11e5261`, `d046107`, all 2026-06-05 bug fixes).
+>
+> **Post-audit update (2026-07-08):** two verdicts below are now historical — REF-02 (guided review) and X-07 (checklists) were both **Not-implemented** at `fa3d30e` (audit correct), but have since been implemented in the checklists + guided-review work (PR #294, unmerged). See `docs/plans/2026-07-06-checklists-and-guided-review-design.md` §8. Rows re-annotated inline.
 
 ## Summary
 
@@ -86,7 +88,7 @@ Status legend below: **OK** = confirmed; **OK/drift** = construct moved, verdict
 | ID | Doc verdict | Audit | Findings |
 |---|---|---|---|
 | REF-01 | Partial | OK | `reflect.el:70` `reflect-area-of-focus` + ~15 sibling on-demand commands; no recurring event/completion tracking found. |
-| REF-02 | Not-implemented | OK | No Get Clear / Get Current / Get Creative anywhere (grep = 0). Adjudicated IMPLEMENT, not yet built. |
+| REF-02 | Not-implemented | OK | No Get Clear / Get Current / Get Creative anywhere (grep = 0). Adjudicated IMPLEMENT, not yet built. **Update 2026-07-08:** since implemented (lean) in PR #294 as `org-gtd-review` (profiles + typed steps + `n s p q` + pause/resume) — design doc §8. |
 | REF-03 | Implemented | OK | `reflect.el:160` exact; `view-language.el:553` `--build-skip-function-for-project-type` (stuck-project) exact. |
 | REF-04 | Partial | OK | `command-center.el:42` transient exact; Stuck branch (l.61, 69), Missed branch (l.62, 80). |
 | REF-05 | Via-org/dep | OK | `horizons.el:51` template defconst exact; `reflect.el:70` exact; no cadence wiring found. |
@@ -126,7 +128,7 @@ Status legend below: **OK** = confirmed; **OK/drift** = construct moved, verdict
 | X-04 | Not-implemented | OK | "energy" grep = 0 hits, re-verified 2026-06-10. |
 | X-05 | Implemented | OK | DSL `(when . past/future/today)` + deadline/scheduled comparisons (`view-language.el:58–64`); tickler real. |
 | X-06 | Implemented | OK | `capture.el:96` exact. |
-| X-07 | Not-implemented | OK | checklist/trigger-list grep = 0 hits. |
+| X-07 | Not-implemented | OK | checklist/trigger-list grep = 0 hits. **Update 2026-07-08:** checklist support since implemented in PR #294 — `checklists.org` (named subtrees) + `org-gtd-checklist-insert` + repeater-driven reset (design doc §8). Maps to REC-CHK-01. |
 | X-08 | Implemented | OK | Areas defcustom, user tags, dynamic grouping all confirmed; no hard-coded taxonomy beyond the type table. |
 | X-09 | Implemented | OK | Single-route dispatch (`organize-core.el:288` `org-gtd--dispatch`; `--run-disposition` :201). |
 | X-10 | Implemented | OK/drift | `areas-of-focus.el:93` → **:92** `--set-on-project-tasks` (trivial ±1); CATEGORY inheritance confirmed. |

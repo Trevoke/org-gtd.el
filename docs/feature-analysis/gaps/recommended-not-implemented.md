@@ -30,6 +30,8 @@
 | Not-implemented | 22 | 18% |
 | **Total gaps (Partial + Via-config + Not-implemented)** | **73** | **60%** |
 
+> **Update (2026-07-08):** REC-CHK-01 and REC-REF-02 have since been implemented in the checklists + guided-review work (PR #294, unmerged), so the live Not-implemented count is effectively **20**. Their rows below are re-marked **Implemented** with the deferred pieces tracked as *still open*. See `docs/plans/2026-07-06-checklists-and-guided-review-design.md` §8. (Scoreboard totals above are left at their 2026-06-10 baseline.)
+
 Of the 22 Not-implemented: 1 is a deliberate non-goal (REC-KNO-03, V-09), 3 are
 already adjudicated IMPLEMENT (REC-REF-02, REC-REF-06, REC-DEL-03), 4 have
 planned dispositions (REC-PRJ-06→V-04, REC-NXT-05→V-06, REC-X-04→V-07,
@@ -98,7 +100,7 @@ Each entry: **status** · what exists today · what's missing · `type/strength`
 
 ### Organize: Checklists (CHK)
 
-- **REC-CHK-01** — reusable checklists / trigger lists as first-class reviewable lists · **Not-implemented** · Zero checklist infrastructure in source (verified by grep). · `tool/should` · **V-10: general checklist support + bundled trigger lists — near-term.** Unblocks REC-CAP-06, REC-PRJ-07, REC-PRJ-10, REC-CAP-09.
+- **REC-CHK-01** — reusable checklists / trigger lists as first-class reviewable lists · **Implemented (2026-07, PR #294 — unmerged)** · Shipped as `checklists.org` (each named top-level subtree = a template) + `org-gtd-checklist-insert` + bundled starters (Weekly Review triggers, Mind sweep prompts) + repeater-driven checkbox reset; consumers read items via `org-gtd-checklist--items`. **Rejected** the registry `checklist` type / `CHECKLIST_KIND` / `RESET_CHECK_BOXES` / org-edna RESET / Cluster-E CRUD manager (design doc §8). **Still open:** slim file manager transient, instance↔template linking, `kind` filtering. · `tool/should` · **V-10 delivered** — see `docs/plans/2026-07-06-checklists-and-guided-review-design.md` §8. Unblocks REC-CAP-06, REC-PRJ-07, REC-PRJ-10, REC-CAP-09.
 - **REC-CHK-02** — recurring reflection-prompt lists resurfacing at chosen intervals · **Via-config** · A tickler or habit item whose body is the prompt list resurfaces on schedule today (IMPL-032, IMPL-029); turnkey form awaits V-10 + REC-TIC-02. · `tool/may` · New (orphan B1-D-V2/V3).
 
 ### Organize: Agendas (AGE)
@@ -110,7 +112,7 @@ Each entry: **status** · what exists today · what's missing · `type/strength`
 ### Reflect / Review (REF)
 
 - **REC-REF-01** — Weekly Review as a scheduled recurring event bringing the system current · **Partial** · Exists: on-demand reflect views via command center (IMPL-073–084, IMPL-135). Missing: recurring calendar event, completion tracking; docs themselves say "weekly review is not yet implemented" (implemented-registry Discrepancies §2, DOC-56). · `tool/must` · Baseline REF-01; folded into the REF-02 adjudication.
-- **REC-REF-02** — guided three-phase walkthrough (Get Clear / Get Current / Get Creative) · **Not-implemented** · Exists: all the *ingredients* — guided someday-review session pattern (IMPL-084), command-center hub (IMPL-135), every needed view (IMPL-074–082). Missing: the orchestration across phases. · `tool/must` · **Adjudicated 2026-06-05 #1: IMPLEMENT** — configurable phases, pluggable trigger-list (V-10/V-24), named cadence profiles (V-21). The single biggest UX gap vs. the books.
+- **REC-REF-02** — guided three-phase walkthrough (Get Clear / Get Current / Get Creative) · **Implemented (lean; 2026-07, PR #294 — unmerged)** · Shipped `M-x org-gtd-review` with `org-gtd-review-profiles` (Weekly Review default), step types prompt/command/view/checklist, keys `n s p q`, phase checkpoints, pause/resume (visible `review-state.eld`), and `org-gtd-review-schedule` (REF-01 reminder rider). **Rejected** org-edna involvement + hidden state file (design doc §8). **Still open (deferred):** `walk` step over org headings + no-next-action invariant guard, stats block / X-15 readout, back-step `b`, cadence-ladder profiles, `:allowed-actions` action bars, generalizing `org-gtd-someday-review`. · `tool/must` · **Adjudicated 2026-06-05 #1: IMPLEMENT** — delivered lean; see design doc §8. The single biggest UX gap vs. the books.
 - **REC-REF-04** — review on three triggers incl. "get back on track" recovery flow · **Partial** · Exists: runnable anytime via command center (IMPL-135). Missing: explicit recovery flow. · `tool/should` · Baseline REF-04; largely subsumed by REF-02 build.
 - **REC-REF-05** — review cadence scaling per horizon (daily→annual), each its own process · **Via-config** · Exists: horizons file (IMPL-103) + area review (IMPL-073); cadence via user's own recurring items. · `tool/should` · **V-21: implement configurable per-horizon reminders — near-term.**
 - **REC-REF-06** — system-maintenance review + elevated-horizon calendar events · **Not-implemented** · Archive is single-shot (IMPL-061); no maintenance scaffold. · `tool/should` · **Adjudicated 2026-06-05 #2: IMPLEMENT** via opt-in injection of recurring maintenance/review tasks; cadence ≠ altitude rule recorded; reflect-stuck-* consolidation refactor noted.

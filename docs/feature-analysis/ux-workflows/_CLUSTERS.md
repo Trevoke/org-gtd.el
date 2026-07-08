@@ -23,6 +23,8 @@ The 22 Not-implemented features, resolved: `REC-CAP-08, REC-CAP-09, REC-CLA-10, 
 **Shared contract:** Entered from `org-gtd-command-center`; each is a full-frame session walking a *configured sequence* (REF-02's Get Clear/Current/Creative phases; REF-06's maintenance step-list; CAP-09's trigger-list prompt-walk), showing progress + running stats, offering per-step actions (defer/clarify/capture/quit), restoring the saved window config on finish/abort. They must feel like **one session engine with pluggable content**. The stats affordance must be identical across all.
 > **X-15 is demoted:** it is a *lightweight completeness stat* (the ≥50-actions heuristic) shown **inside** a review, not a full session of its own. Design it as a small stat block the session engine can surface — in Cluster A's orbit, but scoped down, not a standalone walkthrough.
 
+> **Implemented lean (2026-07-08, PR #294).** REF-02's engine shipped as **profiles + typed steps + `n s p q` + pause/resume** — *not* the full console. The shared **stats block** (X-15's home), **back-step `b`**, `,` customize, `:allowed-actions` action bar, and the org-heading **`walk` step** are **deferred**. REF-06/CAP-09 are "just another profile" only once `walk` lands; X-15 still needs the stats block. See `docs/plans/2026-07-06-checklists-and-guided-review-design.md` §8.
+
 ### B — Flag → decide → consent
 **Surface:** a reflect triage loop over a *flagged list*, teaching-error voice.
 **Members:** `REC-CLA-10`, `REC-UI-04`.
@@ -42,6 +44,8 @@ The 22 Not-implemented features, resolved: `REC-CAP-08, REC-CAP-09, REC-CLA-10, 
 **Surface:** a *net-new* transient-driven manager with live preview + a persisted `defcustom` store — the primer's flagship "manage my X interactively" pattern.
 **Members:** `NEW-VIEW-MANAGER`, `REC-CHK-01`.
 **Shared contract:** Both manage a *named, persisted collection* — views for the view-manager, checklists/trigger-lists for CHK-01. Identical lifecycle idiom: **list existing → create → live-preview → edit → save/name → recall → delete**, driven by a transient over the object's fields, backed by a name→spec store. The CRUD keys, the preview-pane behavior, and the "your saved X" list must feel identical across both, even though the backing engines differ (view DSL vs checklist type). **Whichever ships first sets the idiom.** This is the digital folders-and-paper manager.
+
+> **Superseded for CHK-01 (2026-07-08, PR #294).** REC-CHK-01 **no longer conforms to this Cluster-E idiom.** Checklists shipped as plain named subtrees in `checklists.org` edited directly — **no CRUD manager, no builder transient, no `defcustom` store.** The Cluster-E pairing/keys below apply to `NEW-VIEW-MANAGER` (still a valid future pull); CHK-01 was deliberately decoupled. See design doc §8.
 
 ### F — Optional classification metadata
 **Surface:** type property-descriptor / named someday-list, captured at organize, consumed via the view DSL / review — off by default, minimal new UI.

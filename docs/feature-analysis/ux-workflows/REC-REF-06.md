@@ -4,6 +4,8 @@
 
 ---
 
+> **Corpus note (2026-07-08).** REC-REF-02's engine shipped **lean** (PR #294): profiles + typed steps (`prompt`/`command`/`view`/`checklist`) + `n s p q` + pause/resume. The **`walk` step type over org headings**, the per-item action bar generated from `:allowed-actions`, the stats block, and the back-step `b` that this maintenance profile assumes are **deferred, not built** — REF-06 becomes "just another profile" only once the `walk` step lands. REF-06 remains unimplemented. See `docs/plans/2026-07-06-checklists-and-guided-review-design.md` §8.
+
 ## 1. The need (what & why)
 
 - GTD distinguishes the *Weekly Review* (bring lists current) from **system maintenance** — the periodic housekeeping that keeps the container itself trustworthy: purge dead someday items, archive completed project trees, and catch file-integrity rot (projects with no next action, DONE trees never archived, headings missing `ORG_GTD`, dangling org-edna triggers). Allen's rule: **cadence ≠ altitude** — maintenance runs on its own clock, not a horizon's.

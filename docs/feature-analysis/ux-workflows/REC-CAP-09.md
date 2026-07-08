@@ -4,6 +4,8 @@
 
 ---
 
+> **Corpus note (2026-07-08).** Two contracts this doc builds on have been adjudicated and partly shipped (PR #294). (1) **Checklists**: a checklist is a **named top-level subtree in `checklists.org`** referenced by name (no `org-gtd-checklists` store, no manager, no `kind`). (2) **Guided-session engine**: what shipped is **lean** — profiles + typed steps + `n s p q` + pause/resume — **without** the stats block, back-step `b`, or `:allowed-actions`-generated action bars this doc assumes; the shipped `checklist` step walks item *strings*, not the org-heading `walk` this sweep needs. CAP-09 remains unimplemented; when built, inherit the **lean** engine, not the full console. See design doc §8.
+
 ## 1. The need (what & why)
 
 GTD's mind sweep (WF-03) says: when spontaneous capture slows, walk an **incompletion trigger list** item by item so each prompt "jogs loose" commitments you're holding but haven't externalized. org-gtd has zero support for this today — no trigger list, no guided sweep (grep: zero checklist hits). REC-CAP-09 is the *themed* case: a present-tense **"what is true right now?"** sweep — a named trigger list whose prompts are current-reality questions ("what projects are active right now?", "who are you waiting on right now?"). The user hits this when their head still holds unrepresented commitments — during a weekly review, after a trip, or any time the inbox feels lighter than reality. It is pure **capture**: defer all judgment, go for quantity, route the batch afterward.

@@ -6,6 +6,8 @@
 
 ---
 
+> **Corpus note (2026-07-08).** REC-CHK-01 shipped (PR #294) with a **different data model** than assumed below: a checklist is a **named top-level subtree in `checklists.org`**, referenced by name and read via `org-gtd-checklist--items` — there is **no `org-gtd-checklists` defcustom store, no checklist manager, and no `kind`**. This doc's "Project verbs" list would simply be one such heading. References to the store or the manager surface are **stale** — see `docs/plans/2026-07-06-checklists-and-guided-review-design.md` §8. (PRJ-10 itself remains unimplemented.)
+
 ## 1. The need (what & why)
 
 - GTD insists a **project name states the *successful outcome*, not the topic** — the wording should let you know you're done. Beginners (and everyone under load) name projects as nouns ("Taxes", "Basement") that never signal completion. Allen's remedy is a **verb starter list** (Finalize, Resolve, Roll out, Implement, Research, Design, Organize, Update, Maximize, Install, Ensure, Submit, Handle, Look into…) you scan to phrase the outcome.

@@ -6,6 +6,8 @@
 
 ---
 
+> **Corpus note (2026-07-08).** REC-REF-02's engine shipped **lean** (PR #294) and **does not yet include the running stats block** this readout lives in — the stats block is **deferred**, and completion shows simple step counts only. X-15 remains unimplemented and still needs the stats block built first. See `docs/plans/2026-07-06-checklists-and-guided-review-design.md` §8.
+
 ## 1. The need (what & why)
 
 - GTD's rule of thumb: a working system for an engaged adult holds **roughly 30–100 discrete next actions** (Allen's "if you have fewer than ~50, you're probably not writing everything down"). A low count is a *smell*, not a failure — it usually means commitments are still living in your head instead of in the system.
