@@ -27,7 +27,22 @@
         org-gtd-keyword-mapping '((todo . "TODO")
                                   (next . "NEXT")
                                   (wait . "WAIT")
-                                  (canceled . "CNCL"))))
+                                  (canceled . "CNCL")))
+  ;; These are pure unit tests that do not use `ogt-eunit-with-mock-gtd', so
+  ;; they never run `ogt-eunit--clear-org-state'.  Reset org-id's global scan
+  ;; state here so a lookup of a non-existent ID cannot inherit a stale
+  ;; /mock:/... path from an earlier mock-fs test.  `org-id-find' triggers
+  ;; `org-id-update-id-locations', which `file-truename's every path in
+  ;; `org-id-files'/`org-agenda-files'; a leftover /mock: path is dispatched to
+  ;; the (always-registered) mock-fs handler while `mock-fs--current' is nil,
+  ;; signalling `(wrong-type-argument hash-table-p nil)'.  A fresh empty
+  ;; locations hash also stops org-id from reloading the on-disk
+  ;; `.org-id-locations' file, which can itself carry /mock: paths across runs.
+  (setq org-agenda-files nil
+        org-id-files nil
+        org-id-extra-files nil
+        org-id--locations-checksum nil
+        org-id-locations (make-hash-table :test 'equal)))
 
 ;;;; Property Readers - org-gtd-get-task-dependencies
 

@@ -16,9 +16,20 @@
 
 (require 'e-unit)
 (require 'org)
+;; `org-gtd-pred--todo-matches' lives in org-gtd-skip; require it so these
+;; tests do not depend on another test file having loaded org-gtd first.
+(require 'org-gtd-skip)
 
 ;; Initialize e-unit short syntax
 (e-unit-initialize)
+
+;; `org-mode' reads `org-todo-keywords' (global) to decide which words are TODO
+;; states.  Set the GTD sequence before each test so "* NEXT Task" parses as a
+;; NEXT item -- otherwise these tests only pass by inheriting keyword config
+;; leaked from an earlier test (order-dependent flake).
+(setup-each
+ (setq org-todo-keywords '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL"))
+       org-done-keywords '("DONE")))
 
 ;;; Predicate Unit Tests
 

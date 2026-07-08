@@ -45,6 +45,28 @@
        (or load-file-name byte-compile-current-file buffer-file-name))))))
   "Absolute path to the project root directory.")
 
+;;; Mock-FS Subprocess Workaround
+
+(defun ogt-eunit--org-id-new-in-real-dir (orig-fn &rest args)
+  "Call ORIG-FN (`org-id-new') with a real `default-directory'.
+`org-id-new' shells out to the `uuidgen' program, and launching a
+subprocess makes Emacs chdir into `default-directory'.  Inside a test
+the current buffer usually lives under the virtual /mock:/gtd/, which
+has no real backing directory, so the chdir fails with \"Setting current
+directory ... No such file or directory\".  The failure is order
+dependent: it bites whenever a fresh ID is created while a mock-fs
+buffer is current (deterministically reproducible with, e.g., seed
+1783402152928884).
+
+Bind `default-directory' to the real project root for ID creation -- the
+generated ID does not depend on the working directory.  In production
+`org-gtd-directory' is a real path, so this never affects users; it is
+purely a mock-fs test-harness concern."
+  (let ((default-directory ogt-eunit--project-root))
+    (apply orig-fn args)))
+
+(advice-add 'org-id-new :around #'ogt-eunit--org-id-new-in-real-dir)
+
 ;;; Custom Assertions
 
 (defun assert-same-items (expected actual)
@@ -259,6 +281,18 @@ between tests."
          (ogt-eunit--cleanup)))))
 
 (setup-suite
+ ;; Point org-id's persistent location database at a throwaway file for the
+ ;; whole run.  org-id records every ID it sees -- including IDs in temp files
+ ;; created under the mocked /mock:/tmp/ -- and `org-id-locations-save' writes
+ ;; those paths to a *real* on-disk file.  Left at its default, that file lives
+ ;; inside the checkout and accumulates /mock: paths that survive across runs;
+ ;; a later `org-id' lookup reloads them and `file-truename's them through the
+ ;; always-registered mock-fs handler while `mock-fs--current' is nil, crashing
+ ;; with `(wrong-type-argument hash-table-p nil)'.  A fresh temp file each run
+ ;; keeps the poison from persisting.  (Set here, before any test runs and
+ ;; while the real filesystem is still active.)
+ (setq org-id-locations-file
+       (make-temp-file "ogt-eunit-org-id-locations"))
  (setq inhibit-message t)
  ;; Suppress noisy org-mode state change messages during tests
  ;; e.g., "TODO state changed to NEXT", "TODO state was already TODO"
