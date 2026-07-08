@@ -31,6 +31,7 @@
 
 (require 'org-gtd-core)
 (require 'org-gtd-capture)
+(require 'org-gtd-checklist)
 
 (declare-function org-gtd-project--maybe-update-cookies "org-gtd-projects")
 (declare-function org-gtd-agenda-property-add-properties "org-gtd-agenda-property")
@@ -118,6 +119,8 @@ previous values."
   (remove-hook 'org-after-todo-state-change-hook #'org-gtd-next-action--maybe-convert-to-delegated)
   ;; Remove project cancel detection hook
   (remove-hook 'org-after-todo-state-change-hook #'org-gtd-project--maybe-cancel-from-hook)
+  ;; Remove checkbox reset hook for repeating headings
+  (remove-hook 'org-after-todo-state-change-hook #'org-gtd-checklist--maybe-reset-checkboxes)
   ;; Remove agenda property hooks
   (remove-hook 'org-agenda-finalize-hook #'org-gtd-agenda-property-add-properties)
   (remove-hook 'org-finalize-agenda-hook #'org-gtd-agenda-property-add-properties)
@@ -148,6 +151,8 @@ configuration."
   (add-hook 'org-after-todo-state-change-hook #'org-gtd-next-action--maybe-convert-to-delegated)
   ;; Add project cancel detection hook
   (add-hook 'org-after-todo-state-change-hook #'org-gtd-project--maybe-cancel-from-hook)
+  ;; Add checkbox reset hook for repeating headings
+  (add-hook 'org-after-todo-state-change-hook #'org-gtd-checklist--maybe-reset-checkboxes)
   ;; Add agenda property hooks (support both old and new hook names)
   (if (boundp 'org-agenda-finalize-hook)
       (add-hook 'org-agenda-finalize-hook #'org-gtd-agenda-property-add-properties)

@@ -33,6 +33,8 @@ These are the commands you'll use most:
 | ~org-gtd-organize~ | Organize current item | During processing (in clarify buffer) |
 | ~org-gtd-engage~ | See actionable items | Daily (your "work from" view) |
 | ~org-gtd-show-all-next~ | See only NEXT actions | When you want to focus on actions |
+| ~org-gtd-review~ | Guided Weekly Review session | Weekly |
+| ~org-gtd-checklist-template-insert~ | Insert a reusable checklist at point | Packing lists, release steps, mind sweeps |
 | ~org-gtd-reflect-stuck-projects~ | Find stuck projects | Weekly review |
 | ~org-gtd-reflect-someday-review~ | Review someday items one-by-one | Weekly/monthly review |
 | ~org-gtd-projects-fix-all-todo-keywords~ | Fix task states after external edits | After mobile/web edits |
@@ -401,7 +403,7 @@ You can call ~org-gtd-show-all-next~ to only see NEXT actions, nothing scheduled
 
 You can use ~M-x org-gtd-reflect-missed-engagements~ to find appointments you missed, delegated items needing check-ins, and late projects. This is your safety net for catching things that slipped through the cracks.
 
-The weekly review is not yet implemented.
+For the Reflect step's central ritual, org-gtd ships a guided, pausable Weekly Review session: see [[#guided-review][Weekly Review (guided)]].
 
 **** Quick Task Actions from the Agenda
 :PROPERTIES:
@@ -518,6 +520,191 @@ The command isn't bound by default because org-agenda-mode already has many keyb
 #+begin_src emacs-lisp
 (define-key org-agenda-mode-map (kbd "C-c .") #'org-gtd-agenda-transient)
 #+end_src
+
+** Checklists
+:PROPERTIES:
+:DESCRIPTION: Reusable checklist templates you can spawn anywhere
+:CUSTOM_ID: checklists
+:END:
+
+Some lists you use over and over: packing for a trip, releasing software, the trigger list of a Weekly Review mind sweep. org-gtd stores these as templates in a file called ~checklist-templates.org~ in ~org-gtd-directory~, and lets you stamp out a fresh copy whenever you need one.
+
+The file is created the first time anything touches it, seeded with two starter templates: "Weekly Review triggers" and "Mind sweep prompts". They're yours — edit or delete them freely.
+
+*** The template file
+
+Each top-level heading in ~checklist-templates.org~ is a template; its checkbox items are the checklist:
+
+#+begin_example
+,* Beach packing
+- [ ] Sunscreen
+- [ ] Swimsuit
+- [ ] Beach towel
+#+end_example
+
+Two conventions to respect:
+
+- Templates are *top-level headings*. Sub-headings inside a template are copied along when you spawn it, but only top-level headings appear as template names.
+- Items are *dash-style checkboxes* (~- [ ]~). Other list bullets are not recognized as checklist items.
+
+That's the whole format: no TODO keywords, no properties, nothing org-gtd-specific. *Editing this file is how you customize your checklists.* Open it with ~M-x org-gtd-checklist-template-visit~ (or ~l~ from the command center) and use ordinary org editing. A heading marked with org's ~COMMENT~ keyword is ignored — a handy way to retire a template without deleting it.
+
+The file is not part of your agenda: templates are content, not tasks.
+
+*** Spawning a checklist
+
+Call ~M-x org-gtd-checklist-template-insert~ in any org buffer. It offers your template names for completion, then inserts a fresh copy of the chosen template as a subtree:
+
+- On a heading line, the copy becomes the *first child* of that heading.
+- In body text, the copy is inserted at point, as a child of the heading you're under (or as a top-level heading when there's no heading above point).
+
+The copy is plain org. org-gtd does not track it, and checking off its boxes never touches the template file.
+
+*** Recurring checklists: compose with habits
+:PROPERTIES:
+:CUSTOM_ID: recurring-checklists
+:END:
+
+Want your packing list — or your mind-sweep trigger list — as a recurring task in your system? Compose the pieces you already have:
+
+1. In your inbox (or any org file), ~M-x org-gtd-checklist-template-insert~ and pick the template.
+2. ~M-x org-gtd-clarify-item~ on the new heading; rename it if you like.
+3. Organize it as a *Habit* with a repeater (say, ~.+1w~).
+
+Now it's a real habit: ~org-gtd-engage~ shows it on schedule, you work through the boxes, you mark it ~DONE~ — and the checkboxes reset themselves for next time, as described below.
+
+*** Checkbox reset on repeat
+
+When a repeating heading *re-arms* — you mark it done and org's repeater flips it back to a not-done state for the next occurrence — org-gtd clears every checkbox in that heading's subtree, including boxes under child headings, and updates any ~[1/3]~-style statistics cookies. The next run starts fresh.
+
+The reset follows org's own re-arm rule exactly — it happens only when org actually re-arms the heading:
+
+- A heading with no repeater never resets: a plain ~DONE~ keeps its record.
+- A zero-interval repeater (like ~.+0w~, org's idiom for "this repeating task is finished for good") does not re-arm, so the checked boxes are preserved.
+- A done-to-done transition (e.g. changing ~DONE~ to ~CANCELED~) doesn't reset.
+
+This applies to *every* repeating heading with checkboxes — spawned from a template or written by hand. The hook is installed by ~org-gtd-mode~.
+
+*See also*: [[#commands-reference][Commands Reference]] for ~org-gtd-checklist-template-insert~ and ~org-gtd-checklist-template-visit~.
+
+** Weekly Review (guided)
+:PROPERTIES:
+:DESCRIPTION: A pausable, step-by-step guided review session
+:CUSTOM_ID: guided-review
+:END:
+
+GTD's Reflect step asks you to step back regularly and get your system clear, current, and creative. Its central ritual is the Weekly Review. ~M-x org-gtd-review~ (or ~w~ from the command center) walks you through it one step at a time, so you don't have to hold the ritual in your head — sit down and press ~n~.
+
+*** Running a session
+
+The session opens a console buffer, =*GTD Review*=, showing the profile name, a phase tracker, and the current step with its instruction. The keys are advertised in the header line:
+
+| Key | Action |
+|-|-|
+| ~n~ | Do the current step, or advance past it |
+| ~s~ | Skip this step, for this run only |
+| ~c~ | Capture something to the inbox (available on every step) |
+| ~p~ | Pause; resume later with ~M-x org-gtd-review~ |
+| ~q~ | Quit; offers to keep or abandon your progress |
+
+Capture deserves emphasis: any step of a review can shake something loose, and ~c~ is always one keypress away.
+
+Each phase boundary shows a checkpoint message ("Get Clear complete — on to Get Current."). When the session finishes, you get a tally of steps done and skipped, your window configuration is restored, and — until you've scheduled a review reminder — a one-time tip points you at ~org-gtd-review-schedule~.
+
+Only one session runs at a time; if one is already active, ~org-gtd-review~ tells you to finish or quit it first.
+
+*** Step types
+
+A review is made of four kinds of steps. Here's what ~n~ does on each:
+
+- prompt :: Read the instruction, do the thing in the real world, press ~n~ to move on.
+- command :: Two presses. The first ~n~ runs the step's command (for example ~org-gtd-process-inbox~). When you're done, come back to the review buffer and press ~n~ again to confirm and advance — or ~s~ if you're leaving it unfinished. If the command signals an error, the step doesn't count as started; ~n~ simply retries it.
+- view :: Two presses, same shape. The first ~n~ opens the step's agenda view in another window; browse it and act on what needs acting. The second ~n~ advances.
+- checklist :: Walks the items of a named template from your [[#checklists][checklist templates file]], one item at a time. The first ~n~ shows the first item; each further ~n~ shows the next; press ~c~ whenever an item shakes something loose. The template file itself is never modified. An empty or missing checklist just says so and moves on.
+
+*** Pause, resume, and crash recovery
+
+The session checkpoints itself to a small file, =review-state.eld= in ~org-gtd-directory~ — once when it starts, and again at every step boundary and every checklist-walk advance. Pausing with ~p~, killing the buffer, or even a crashed Emacs loses nothing: the next ~M-x org-gtd-review~ offers to resume exactly where you were. Work done mid-step — a half-processed inbox, say — lives in your org files anyway, so resuming a command step simply re-offers it.
+
+There is a single checkpoint slot. Declining the resume offer starts a fresh session, whose first checkpoint replaces the old one. To abandon a session outright, press ~q~ and answer no to "Keep progress" — that deletes the checkpoint. If you edit your profiles while a session is paused and the saved position no longer fits, org-gtd says so and starts over.
+
+*** Customizing the ritual: org-gtd-review-profiles
+
+The whole ritual is data. ~org-gtd-review-profiles~ is an alist of profiles; each profile is a list of named phases; each phase is a list of steps; each step is a plist with a ~:title~, a ~:type~ (one of ~prompt~, ~command~, ~view~, ~checklist~), an optional ~:instruction~, and the type-specific key ~:command~, ~:view~, or ~:checklist~ (a template name from your checklist templates file).
+
+The Weekly Review ships as the default value, so customizing means editing this variable — reorder steps, delete what you don't use, point ~:view~ steps at [[#view-dsl-reference][your own views]], or add entirely new profiles (a daily shutdown, a monthly horizons review). When more than one profile is configured, ~org-gtd-review~ asks which one to run. Malformed profiles are rejected up front with an error that names the offending phase or step and shows the expected shape.
+
+Here is the full default, as a starting point for your own:
+
+#+begin_src elisp
+(setq org-gtd-review-profiles
+      '(("Weekly Review"
+         ("Get Clear"
+          (:title "Gather loose materials"
+           :type prompt
+           :instruction "Collect loose papers, receipts, and notes.  Capture each one into the inbox.")
+          (:title "Mind sweep"
+           :type checklist
+           :checklist "Weekly Review triggers"
+           :instruction "Walk each trigger.  Press c to capture whatever it shakes loose.")
+          (:title "Inbox to zero"
+           :type command
+           :command org-gtd-process-inbox
+           :instruction "Process every inbox item.  Come back here and press n when the inbox is empty."))
+         ("Get Current"
+          (:title "Review missed items"
+           :type view
+           :view org-gtd-reflect-missed-items
+           :instruction "Reschedule, complete, or cancel anything that slipped.")
+          (:title "Review Waiting-For"
+           :type view
+           :view org-gtd-reflect-upcoming-delegated
+           :instruction "Nudge, close, or re-delegate each delegated item.")
+          (:title "Review next actions"
+           :type view
+           :view org-gtd-show-all-next
+           :instruction "Mark done what is done; check these still feel current.")
+          (:title "Review stuck projects"
+           :type view
+           :view org-gtd-reflect-stuck-projects
+           :instruction "Give every active project a next action."))
+         ("Get Creative"
+          (:title "Review Someday/Maybe"
+           :type view
+           :view org-gtd-reflect-someday-maybe
+           :instruction "Reactivate anything whose time has come.")
+          (:title "Capture new ideas"
+           :type prompt
+           :instruction "Any creative, risky, or fun ideas?  Capture them.")))))
+#+end_src
+
+*** Scheduling the review: org-gtd-review-schedule
+
+A Weekly Review only works if it actually happens weekly. ~M-x org-gtd-review-schedule~ prompts for a profile (when you have more than one), a first date, and a repeat interval, then creates an ordinary org-gtd habit named after the profile — so the reminder shows up in your engage view like any other habit:
+
+#+begin_example
+,* Weekly Review
+SCHEDULED: <2026-07-10 Fri .+1w>
+:PROPERTIES:
+:ORG_GTD:  Habit
+:STYLE:    habit
+:END:
+Run M-x org-gtd-review when you sit down for this.
+#+end_example
+
+The repeat interval is a standard org repeater: ~.+1w~ means "a week after I actually do it" (the usual choice for reviews), ~+1w~ is a fixed calendar cadence, and ~++1w~ jumps to the next future occurrence. Units are ~h~, ~d~, ~w~, ~m~, ~y~, and habit-style maximum intervals like ~.+2d/4d~ are accepted. Anything else is rejected with an explanation.
+
+If a reminder for one of your profiles already exists, the command asks before scheduling another one.
+
+*** First-time setup: org-gtd-init-system
+
+~M-x org-gtd-init-system~ is a small first-run concierge. It ensures ~org-gtd-directory~ and the GTD files exist — the tasks file, the inbox, and ~checklist-templates.org~ with its starter templates — and then offers to schedule a recurring Weekly Review (skipping the offer when a reminder already exists). It is idempotent: run it again anytime, and anything already in place is simply reported as ready.
+
+Two things it deliberately does *not* do, because they belong in your Emacs configuration: adding your GTD files to ~org-agenda-files~, and TODO keyword setup. Those remain manual steps — see [[#configuring][Configuring]].
+
+You never /have/ to run it: every file it creates is also created lazily the first time something needs it.
+
+*See also*: [[#commands-reference][Commands Reference]] for ~org-gtd-review~, ~org-gtd-review-schedule~, and ~org-gtd-init-system~, and [[#config-vars-reference][Configuration Variables Reference]] for ~org-gtd-review-profiles~.
 
 ** Understanding GTD Item Types
 :PROPERTIES:
@@ -729,6 +916,8 @@ This means a delegated action moved to someday will remember who it was delegate
 - Shows habit graph in agenda views
 
 *Note*: See org-mode documentation for habit repeat patterns and tracking.
+
+*See also*: [[#recurring-checklists][Recurring checklists: compose with habits]] for turning a reusable checklist into a repeating habit whose checkboxes reset on each repeat.
 
 *** Knowledge [K]
 

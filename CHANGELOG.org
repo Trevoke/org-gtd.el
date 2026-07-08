@@ -41,6 +41,30 @@ The registry module and command have been renamed from
 compatibility via ~define-obsolete-function-alias~, ~defvaralias~, and a
 dual ~(provide 'org-gtd-single-action)~.
 
+*** Checklists
+New =checklist-templates.org= file of reusable checklist templates in
+~org-gtd-directory~, seeded on first touch with Weekly Review starter
+lists. Each top-level heading is a template; ~org-gtd-checklist-template-insert~
+stamps a fresh copy at point, and ~org-gtd-checklist-template-visit~ opens the
+file for editing. Checkboxes now reset automatically — subtree-wide,
+statistics cookies included — when a repeating heading re-arms.
+~org-gtd-upgrade-v4-to-v5~ scans your agenda files and reports existing
+repeating headings that already carry checkboxes, so this new reset
+behavior never takes you by surprise.
+
+*** Guided review sessions
+~org-gtd-review~ runs guided, pausable, customizable review sessions;
+a Weekly Review profile ships as the default value of
+~org-gtd-review-profiles~. Sessions checkpoint to disk at every step,
+so pausing, killing the buffer, or crashing loses nothing.
+~org-gtd-review-schedule~ creates a recurring habit reminder, and
+~org-gtd-init-system~ is an idempotent first-run setup command that
+creates the GTD files and offers to schedule the review.
+
+*** Command center: =w= and =l=
+The Reflect column gains =w= (guided Weekly Review) and =l= (visit the
+checklist templates file).
+
 ** Changed
 *** Disposition runner now sets TODO state before archiving
 The =done-and-archive= and =cancel-and-archive= dispositions explicitly

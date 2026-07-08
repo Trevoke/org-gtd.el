@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 # Run eldev etest and output only a clean summary.
 # Usage:
-#   run-tests.sh                    # all tests
-#   run-tests.sh test/unit/foo.el   # single file
-#   run-tests.sh unit               # category (unit/integration/acceptance)
+#   run-tests.sh                       # all tests
+#   run-tests.sh test/unit/foo.el      # single file
+#   run-tests.sh unit                  # category (unit/integration/acceptance)
+#   run-tests.sh --seed=N              # all tests, pinned ordering (reproduce a flake)
+#   run-tests.sh --seed=N test/unit/foo.el
+#
+# The seed controls e-unit's file/test shuffle order.  The summary always
+# reports the seed that was used, so any failure can be reproduced by passing
+# the same --seed=N back in.
 set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
@@ -12,15 +18,28 @@ cd "$PROJECT_DIR"
 # Build the eldev command
 CMD=(~/bin/eldev etest -r dot)
 
-case "${1:-all}" in
+# Collect an optional --seed=N (order-independent) and a single target argument.
+TARGET=""
+for arg in "$@"; do
+  case "$arg" in
+    --seed=*)
+      CMD+=("$arg")
+      ;;
+    *)
+      TARGET="$arg"
+      ;;
+  esac
+done
+
+case "${TARGET:-all}" in
   all)
     ;; # no extra args
   unit|integration|acceptance)
-    CMD+=("test/$1/")
+    CMD+=("test/$TARGET/")
     ;;
   *)
     # Treat as file path
-    CMD+=("$1")
+    CMD+=("$TARGET")
     ;;
 esac
 
@@ -47,9 +66,11 @@ TIME=$(echo "$DURATION" | grep -oP '[\d.]+s' || echo "?s")
 
 if [ "$FAILED" = "0" ] && [ "$ERRORS" = "0" ]; then
   echo "PASS: $TOTAL tests in $TIME"
+  [ -n "$SEED" ] && echo "Seed: $SEED"
+  exit 0
 else
   echo "FAIL: $SUMMARY ($TIME)"
-  [ -n "$SEED" ] && echo "Seed: $SEED"
+  [ -n "$SEED" ] && echo "Seed: $SEED (reproduce with: run-tests.sh --seed=$SEED)"
   echo ""
   # Extract failure and error blocks — everything from "Failures:" or "Errors:" to "Finished in"
   # Strip file-save noise from the detail blocks

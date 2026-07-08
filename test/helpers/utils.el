@@ -41,6 +41,17 @@ Return the buffer visiting that file."
       (basic-save-buffer))
     buffer))
 
+(defun ogt--transient-suffix-plist (prefix key)
+  "Return the suffix plist bound to KEY in transient PREFIX.
+Transient stores a suffix's plist either inline, as (CLASS :key ...),
+or nested, as (LEVEL CLASS (:key ...)), depending on version/compilation.
+Normalize both shapes to the bare plist."
+  (let ((suffix (transient-get-suffix prefix key)))
+    (or (seq-find (lambda (elt) (and (consp elt) (keywordp (car elt))))
+                  suffix)
+        (seq-drop-while (lambda (elt) (not (keywordp elt)))
+                        suffix))))
+
 (defun ogt--buffer-string (buffer)
   "Return buffer's content."
   (with-current-buffer buffer

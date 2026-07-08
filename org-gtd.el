@@ -56,6 +56,7 @@
 (require 'org-gtd-context)
 (require 'org-gtd-id)
 (require 'org-gtd-files)
+(require 'org-gtd-checklist)
 (require 'org-gtd-horizons)
 (require 'org-gtd-areas-of-focus)
 (require 'org-gtd-hooks)
@@ -81,8 +82,10 @@
 (require 'org-gtd-mode)
 (require 'org-gtd-reflect)
 (require 'org-gtd-someday-review)
+(require 'org-gtd-review)
 (require 'org-gtd-view-language)
 (require 'org-gtd-upgrades)
+(require 'org-gtd-init)
 (require 'org-gtd-command-center)
 
 ;;;; Constants

@@ -102,6 +102,7 @@ mostly of value for testing purposes."
      (when . past)))
   "GTD view specifications for reflecting on missed items.")
 
+;;;###autoload
 (defun org-gtd-reflect-missed-items (&optional _start-date)
   "Show agenda view with past-due tickler, delegated, or calendar items.
 

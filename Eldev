@@ -40,8 +40,12 @@
   "Whether to show verbose output.")
 (defvar org-gtd-etest-stop-on-failure nil
   "Whether to stop on first failure.")
+(defvar org-gtd-etest-seed nil
+  "Fixed random seed for reproducible test ordering.
+When nil, e-unit picks a random seed.  Set with `--seed=N' to
+reproduce a specific ordering (e.g. a seed-dependent flake).")
 
-(eldev-defcommand org-gtd-etest (&rest _parameters)
+(eldev-defcommand org-gtd-etest (&rest parameters)
   "Run e-unit tests.
 
 E-unit tests are in the test/ directory with subdirectories:
@@ -49,7 +53,12 @@ E-unit tests are in the test/ directory with subdirectories:
   - test/integration/ Integration tests
   - test/acceptance/  Acceptance tests
 
-E-unit now searches recursively, so we just point it at the root test directory."
+With no PARAMETERS, runs every test under test/ recursively.
+Each PARAMETER may be a test file or a directory; only the given
+targets are run.  Examples:
+  eldev etest test/unit/accessors-test.el
+  eldev etest test/integration
+  eldev etest --seed=1783402152928884            ; reproduce an ordering"
   :aliases    (etest)
   :category   testing
 
@@ -58,37 +67,51 @@ E-unit now searches recursively, so we just point it at the root test directory.
 
   (eldev-load-project-dependencies 'test)
   (require 'e-unit)
+  ;; Install the short-syntax aliases (deftest, setup-suite, around-each,
+  ;; assert-*, ...) up front.  Test-helper files call these at load time, so
+  ;; they must exist before any single file is loaded -- otherwise running one
+  ;; file in isolation fails with "Symbol's function definition is void:
+  ;; setup-suite" (in a full run an earlier file happens to initialize first).
+  (e-unit-initialize)
 
-  (let ((root-dir "test"))
+  ;; Configure e-unit.  Pin the seed when one was requested so the run
+  ;; is reproducible; otherwise e-unit picks a random seed.
+  (e-unit-configure :verbose org-gtd-etest-verbose
+                    :stop-on-failure org-gtd-etest-stop-on-failure
+                    :seed org-gtd-etest-seed)
 
-    ;; Configure e-unit
-    (e-unit-configure :verbose org-gtd-etest-verbose
-                      :stop-on-failure org-gtd-etest-stop-on-failure)
+  ;; Set reporter
+  (e-unit-set-reporter org-gtd-etest-reporter)
 
-    ;; Set reporter
-    (e-unit-set-reporter org-gtd-etest-reporter)
+  ;; Resolve targets: explicit parameters, or the whole test/ tree.
+  (let ((targets (or parameters '("test"))))
+    (dolist (target targets)
+      (unless (file-exists-p target)
+        (error "Test target does not exist: %s" target)))
 
-    ;; Check if test directory exists
-    (if (not (file-directory-p root-dir))
-        (message "No test directory found (%s). Create it and add *-test.el files to run e-unit tests." root-dir)
+    ;; Run each target (directory -> recursive, file -> single file),
+    ;; accumulating results so the exit code reflects the whole run.
+    (let ((results '()))
+      (dolist (target targets)
+        (setq results
+              (append results
+                      (if (file-directory-p target)
+                          (e-unit-run-directory target)
+                        (e-unit-run-file target)))))
 
-      ;; Run all tests recursively from root directory
-      (let ((results (e-unit-run-directory root-dir)))
+      (if (null results)
+          (message "No e-unit tests executed")
 
-        (if (null results)
-            (message "No e-unit tests executed")
+        (let ((passed (length (cl-remove-if-not
+                               (lambda (r) (eq (plist-get r :status) 'pass))
+                               results)))
+              (failed (length (cl-remove-if-not
+                               (lambda (r) (memq (plist-get r :status) '(fail error)))
+                               results))))
 
-          (let* ((total (length results))
-                 (passed (length (cl-remove-if-not
-                                  (lambda (r) (eq (plist-get r :status) 'pass))
-                                  results)))
-                 (failed (length (cl-remove-if-not
-                                  (lambda (r) (memq (plist-get r :status) '(fail error)))
-                                  results))))
-
-            ;; Update Eldev counters - this sets the exit code
-            (setq eldev-test-num-passed passed)
-            (setq eldev-test-num-failed failed)))))))
+          ;; Update Eldev counters - this sets the exit code
+          (setq eldev-test-num-passed passed)
+          (setq eldev-test-num-failed failed))))))
 
 ;; Define options for etest command
 ;; Note: command name is gtd-etest (eldev strips "org-" prefix)
@@ -111,3 +134,10 @@ E-unit now searches recursively, so we just point it at the root test directory.
   :options        (-s --stop)
   :for-command    gtd-etest
   (setf org-gtd-etest-stop-on-failure t))
+
+(eldev-defoption org-gtd-etest-set-seed (seed)
+  "Pin the random seed for reproducible test ordering"
+  :options        (--seed)
+  :for-command    gtd-etest
+  :value          N
+  (setf org-gtd-etest-seed (string-to-number seed)))

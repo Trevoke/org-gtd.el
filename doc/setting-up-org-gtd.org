@@ -220,6 +220,8 @@ You need to configure three things for org-gtd to work:
 
 See the configuration sections below for details.
 
+To create the GTD files and optionally schedule a recurring Weekly Review reminder in one step, run ~M-x org-gtd-init-system~ (see [[#guided-review][Weekly Review (guided)]]).
+
 *Optional*: Enable ~org-gtd-mode~ if you want to see your inbox count in the mode-line (e.g., =GTD[5]=).
 
 *** Complete Configuration Examples
@@ -759,7 +761,7 @@ The command center is organized for both discovery and quick access:
 
 - *Engage* (~e~, ~@~, ~n~) :: What to work on now
 - *Capture & Process* (~c~, ~p~, ~k~) :: Add items and process inbox
-- *Reflect* (~a~, ~y~, ~d~, ~r~, ~R~) :: Review areas, someday items, completed work
+- *Reflect* (~w~, ~a~, ~y~, ~d~, ~r~, ~R~, ~l~) :: Guided Weekly Review, review areas, someday items, completed work, checklist templates
 - *Review System* (~S~, ~M~) :: Sub-menus for stuck and missed items
 - *Archive* (~A~) :: Archive completed items
 

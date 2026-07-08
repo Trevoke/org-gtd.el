@@ -838,6 +838,62 @@ SCHEDULED: <2023-12-23 Sat 19:00 ++1d>
     (org-back-to-heading t)
     (assert-equal "Habit" (org-entry-get (point) "ORG_GTD"))))
 
+;;; v4 -> v5: detect existing repeating headings with checkboxes
+
+(deftest upgrade-v4-v5/detects-only-live-repeating-checkbox-headings ()
+  "Detection flags a live-repeating heading with checkboxes, and nothing else."
+  (with-current-buffer (org-gtd--default-file)
+    (insert "
+* TODO Water plants
+SCHEDULED: <2026-01-01 Mon .+1w>
+- [ ] living room
+- [ ] balcony
+
+* TODO Pay rent
+SCHEDULED: <2026-01-01 Mon .+1m>
+just a note, no checkboxes
+
+* One-off with boxes
+- [ ] a
+- [ ] b
+
+* TODO Finished for good
+SCHEDULED: <2026-01-01 Mon .+0w>
+- [ ] x
+")
+    (basic-save-buffer))
+  (let ((found (org-gtd-upgrade--repeating-checkbox-headings)))
+    (assert-equal 1 (length found))
+    (assert-match "Water plants" (plist-get (car found) :heading))))
+
+(deftest upgrade-v4-v5/detection-empty-when-no-matches ()
+  "No live-repeating heading with checkboxes means an empty result."
+  (with-current-buffer (org-gtd--default-file)
+    (insert "
+* TODO Pay rent
+SCHEDULED: <2026-01-01 Mon .+1m>
+no boxes here
+")
+    (basic-save-buffer))
+  (assert-nil (org-gtd-upgrade--repeating-checkbox-headings)))
+
+(deftest upgrade-v4-v5/command-reports-affected-headings ()
+  "The command lists affected headings in a report buffer, changing nothing."
+  (with-current-buffer (org-gtd--default-file)
+    (insert "
+* TODO Water plants
+SCHEDULED: <2026-01-01 Mon .+1w>
+- [ ] living room
+")
+    (basic-save-buffer))
+  (org-gtd-upgrade-v4-to-v5)
+  (assert-true (get-buffer "*org-gtd v5 upgrade*"))
+  (with-current-buffer "*org-gtd v5 upgrade*"
+    (assert-match "Water plants" (buffer-string)))
+  ;; The heading's checkbox is untouched (detection is read-only).
+  (with-current-buffer (org-gtd--default-file)
+    (assert-match "- \\[ \\] living room" (buffer-string))))
+
 (provide 'upgrades-test)
 
 ;;; upgrades-test.el ends here

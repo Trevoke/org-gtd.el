@@ -233,6 +233,64 @@ Make a backup before running!"
 
     (message "Migration complete! Your projects now use the dependency system.")))
 
+(defun org-gtd-upgrade-v4-to-v5 ()
+  "Report repeating headings whose checkboxes will auto-reset in v5.
+org-gtd v5 clears the checkbox state in a repeating heading's subtree
+each time the heading re-arms its repeater (see
+`org-gtd-checklist--maybe-reset-checkboxes').  This command scans your
+agenda files and lists every existing repeating heading that already
+contains checkboxes, so you can confirm the new behavior suits them
+before relying on it.  It changes nothing."
+  (interactive)
+  (let ((headings (org-gtd-upgrade--repeating-checkbox-headings)))
+    (if (null headings)
+        (message
+         "org-gtd v5: no existing repeating headings contain checkboxes — nothing changes")
+      (with-current-buffer (get-buffer-create "*org-gtd v5 upgrade*")
+        (let ((inhibit-read-only t))
+          (erase-buffer)
+          (insert "org-gtd v5 — checkbox auto-reset on repeat\n"
+                  "==========================================\n\n"
+                  "Completing a repeating heading now clears the checkboxes in its\n"
+                  "subtree, so the next occurrence starts fresh.  These existing\n"
+                  "repeating headings contain checkboxes and will behave this way.\n"
+                  "Nothing has been changed; review them at your leisure.\n\n")
+          (dolist (heading headings)
+            (insert (format "  - %s\n      %s\n"
+                            (plist-get heading :heading)
+                            (plist-get heading :file))))
+          (goto-char (point-min))
+          (special-mode))
+        (display-buffer (current-buffer)))
+      (message
+       "org-gtd v5: %d repeating heading(s) with checkboxes — see *org-gtd v5 upgrade*"
+       (length headings)))))
+
+(defun org-gtd-upgrade--repeating-checkbox-headings ()
+  "Return existing repeating headings with checkbox items in their subtree.
+Each element is a plist (:file FILE :heading TITLE).  A heading matches
+when it carries a live, non-zero-interval repeater — the same condition
+under which `org-gtd-checklist--maybe-reset-checkboxes' fires — and its
+subtree contains at least one checkbox list item.  Read-only; scans
+`org-agenda-files'."
+  (let ((org-agenda-files (org-gtd-core--agenda-files))
+        (results '()))
+    (org-map-entries
+     (lambda ()
+       (let ((repeat (org-get-repeat)))
+         (when (and repeat
+                    (/= 0 (string-to-number (substring repeat 1)))
+                    (save-excursion
+                      (re-search-forward
+                       "^[ \t]*\\(?:[-+*]\\|[0-9]+[.)]\\)[ \t]+\\[[ Xx-]\\]"
+                       (save-excursion (org-end-of-subtree t t) (point))
+                       t)))
+           (push (list :file (buffer-file-name)
+                       :heading (org-get-heading t t t t))
+                 results))))
+     nil 'agenda)
+    (nreverse results)))
+
 (defun org-gtd-upgrade--migrate-delegated-items ()
   "Migrate delegated items to use ORG_GTD=Delegated (Step 2 of migration).
 

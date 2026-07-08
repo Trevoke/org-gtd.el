@@ -31,10 +31,12 @@
 (require 'transient)
 (require 'org-gtd-archive)
 (require 'org-gtd-capture)
+(require 'org-gtd-checklist)
 (require 'org-gtd-clarify)
 (require 'org-gtd-engage)
 (require 'org-gtd-process)
 (require 'org-gtd-reflect)
+(require 'org-gtd-review)
 
 ;;;; Main Transient
 
@@ -50,11 +52,13 @@
     ("p" "Process inbox" org-gtd-process-inbox)
     ("k" "Clarify at point" org-gtd-clarify-item)]]
   [["Reflect"
+    ("w" "Weekly Review (guided)" org-gtd-review)
     ("a" "Area of focus" org-gtd-reflect-area-of-focus)
     ("y" "Someday/maybe" org-gtd-reflect-someday-maybe)
     ("d" "Upcoming delegated" org-gtd-reflect-upcoming-delegated)
     ("r" "Completed items" org-gtd-reflect-completed-items)
-    ("R" "Completed projects" org-gtd-reflect-completed-projects)]
+    ("R" "Completed projects" org-gtd-reflect-completed-projects)
+    ("l" "Checklist templates" org-gtd-checklist-template-visit)]
    ["Archive"
     ("A" "Archive completed" org-gtd-archive-completed-items)]]
   ["Review System"
