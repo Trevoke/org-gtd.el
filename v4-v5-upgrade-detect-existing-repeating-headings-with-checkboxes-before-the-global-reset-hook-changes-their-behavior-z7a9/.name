@@ -1,0 +1,1 @@
+v4->v5 upgrade: detect existing repeating headings with checkboxes before the global reset hook changes their behavior
