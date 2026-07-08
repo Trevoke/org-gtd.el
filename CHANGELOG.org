@@ -48,6 +48,9 @@ lists. Each top-level heading is a template; ~org-gtd-checklist-template-insert~
 stamps a fresh copy at point, and ~org-gtd-checklist-template-visit~ opens the
 file for editing. Checkboxes now reset automatically — subtree-wide,
 statistics cookies included — when a repeating heading re-arms.
+~org-gtd-upgrade-v4-to-v5~ scans your agenda files and reports existing
+repeating headings that already carry checkboxes, so this new reset
+behavior never takes you by surprise.
 
 *** Guided review sessions
 ~org-gtd-review~ runs guided, pausable, customizable review sessions;
