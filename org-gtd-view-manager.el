@@ -469,6 +469,112 @@ may be void when `org-gtd-reflect' has not been loaded."
     (org-gtd-view-manager--migrate)
     (setq org-gtd-view-manager--migrated t)))
 
+;;;; Section state
+
+;; The infix layer keeps editing `org-gtd-view-manager--build-state' (the ACTIVE
+;; section's alist).  These ops manage the surrounding section list.  Because
+;; `--set-value' can REASSIGN `--build-state' to a fresh list (assq-delete-all on
+;; an unset), every op that changes the active index or the section list first
+;; syncs `--build-state' back into its slot, then reloads it from the new slot.
+
+(defvar org-gtd-view-manager--build-name "Untitled"
+  "The view name being built.  View-level, split out of the section alists.")
+(defvar org-gtd-view-manager--build-sections nil
+  "Ordered list of section alists (each a key -> value alist, NO name).")
+(defvar org-gtd-view-manager--build-active 0
+  "Index of the active section within `org-gtd-view-manager--build-sections'.")
+
+(defun org-gtd-view-manager--build-sync-active ()
+  "Write the live `--build-state' back into its section slot."
+  (when (and org-gtd-view-manager--build-sections
+             (integerp org-gtd-view-manager--build-active)
+             (>= org-gtd-view-manager--build-active 0)
+             (< org-gtd-view-manager--build-active
+                (length org-gtd-view-manager--build-sections)))
+    (setf (nth org-gtd-view-manager--build-active
+               org-gtd-view-manager--build-sections)
+          org-gtd-view-manager--build-state)))
+
+(defun org-gtd-view-manager--build-switch-to (index)
+  "Sync the active section, then make (clamped) INDEX active and load it."
+  (org-gtd-view-manager--build-sync-active)
+  (setq org-gtd-view-manager--build-active
+        (max 0 (min index (1- (length org-gtd-view-manager--build-sections)))))
+  (setq org-gtd-view-manager--build-state
+        (nth org-gtd-view-manager--build-active
+             org-gtd-view-manager--build-sections)))
+
+(defun org-gtd-view-manager--build-add-section ()
+  "Append a default next-action section and switch to it."
+  (org-gtd-view-manager--build-sync-active)
+  (setq org-gtd-view-manager--build-sections
+        (append org-gtd-view-manager--build-sections
+                (list (list (cons 'type 'next-action)))))
+  (org-gtd-view-manager--build-switch-to
+   (1- (length org-gtd-view-manager--build-sections))))
+
+(defun org-gtd-view-manager--build-next-section ()
+  "Switch to the next section (clamped at the last)."
+  (org-gtd-view-manager--build-switch-to
+   (1+ org-gtd-view-manager--build-active)))
+
+(defun org-gtd-view-manager--build-prev-section ()
+  "Switch to the previous section (clamped at the first)."
+  (org-gtd-view-manager--build-switch-to
+   (1- org-gtd-view-manager--build-active)))
+
+(defun org-gtd-view-manager--build-delete-section ()
+  "Delete the active section, refusing to delete the last one.
+Returns non-nil when a section was deleted, nil when refused."
+  (if (<= (length org-gtd-view-manager--build-sections) 1)
+      (progn (message "A view needs at least one section") nil)
+    (org-gtd-view-manager--build-sync-active)
+    (let ((i org-gtd-view-manager--build-active))
+      (setq org-gtd-view-manager--build-sections
+            (append (seq-take org-gtd-view-manager--build-sections i)
+                    (seq-drop org-gtd-view-manager--build-sections (1+ i))))
+      (setq org-gtd-view-manager--build-active
+            (min i (1- (length org-gtd-view-manager--build-sections))))
+      (setq org-gtd-view-manager--build-state
+            (nth org-gtd-view-manager--build-active
+                 org-gtd-view-manager--build-sections))
+      t)))
+
+(defun org-gtd-view-manager--build-move-section-up ()
+  "Swap the active section with the one before it; active follows it.
+No-op at index 0."
+  (when (> org-gtd-view-manager--build-active 0)
+    (org-gtd-view-manager--build-sync-active)
+    (let* ((i org-gtd-view-manager--build-active)
+           (secs (copy-sequence org-gtd-view-manager--build-sections))
+           (above (nth (1- i) secs))
+           (here (nth i secs)))
+      (setf (nth (1- i) secs) here)
+      (setf (nth i secs) above)
+      (setq org-gtd-view-manager--build-sections secs)
+      (setq org-gtd-view-manager--build-active (1- i))
+      (setq org-gtd-view-manager--build-state
+            (nth org-gtd-view-manager--build-active secs))
+      t)))
+
+(defun org-gtd-view-manager--build-move-section-down ()
+  "Swap the active section with the one after it; active follows it.
+No-op at the last index."
+  (when (< org-gtd-view-manager--build-active
+           (1- (length org-gtd-view-manager--build-sections)))
+    (org-gtd-view-manager--build-sync-active)
+    (let* ((i org-gtd-view-manager--build-active)
+           (secs (copy-sequence org-gtd-view-manager--build-sections))
+           (here (nth i secs))
+           (below (nth (1+ i) secs)))
+      (setf (nth i secs) below)
+      (setf (nth (1+ i) secs) here)
+      (setq org-gtd-view-manager--build-sections secs)
+      (setq org-gtd-view-manager--build-active (1+ i))
+      (setq org-gtd-view-manager--build-state
+            (nth org-gtd-view-manager--build-active secs))
+      t)))
+
 ;;;; Builder transient
 
 ;; The builder is a transient prefix whose five infix columns (Type / Time /
