@@ -21,7 +21,7 @@
   - `org-gtd-view-show` (:1081), signature `(view-spec-or-specs &optional keys)`.
 - `org-gtd-command-center.el` (:44) — `v "Views…"` goes in the Engage column (Engage uses `e`/`@`/`n`; `v` is free).
 - `org-gtd-reflect.el` (:296) — `org-gtd-reflect-missed-custom-views`, migration source (NESTED `(filters . (...))` shape).
-- `org-gtd-files.el` (:47) — `org-gtd--ensure-file-exists (path &optional initial-contents)`.
+- `org-gtd-files.el` — `org-gtd-directory` / `org-gtd--path` for locating the store. Do **not** reuse `org-gtd--ensure-file-exists` (:47) for `views.eld`: it runs `org-gtd-core-prepare-buffer` → `org-mode-restart` (`.org`-only). Write the `.eld` directly (Open Questions §1).
 - `org-gtd-clarify.el` — window-config snapshot/restore discipline to mirror (`current-window-configuration` / `set-window-configuration`).
 
 ## Hard constraints (respect in EVERY task)
@@ -181,7 +181,12 @@ Expected: FAIL — `org-gtd-view-manager--store-write` / `--store-read` / `--sto
 Returns nil when the store is empty.  Fail-soft: a corrupt store
 yields nil with a `message', never an error."
   (let ((path (org-gtd-view-manager--store-path)))
-    (org-gtd--ensure-file-exists path org-gtd-view-manager--store-header)
+    ;; Lazily create the store by writing the header DIRECTLY.  Do NOT use
+    ;; `org-gtd--ensure-file-exists' here: it runs `org-gtd-core-prepare-buffer'
+    ;; -> `org-mode-restart', which is for .org files, not a .eld store.
+    (unless (f-exists-p path)
+      (f-mkdir-full-path (f-dirname path))
+      (f-write-text org-gtd-view-manager--store-header 'utf-8 path))
     (condition-case err
         (let ((text (f-read-text path)))
           (if (string-blank-p text) nil (car (read-from-string
@@ -213,7 +218,7 @@ git add org-gtd-view-manager.el org-gtd.el test/unit/view-manager-store-test.el
 git commit -m "feat(view-manager): add lazily-created views.eld store"
 ```
 
-> **Open question flagged in-plan (see Open Questions §):** `org-gtd--ensure-file-exists` runs `org-gtd-core-prepare-buffer`, which org-prepares the buffer. That is harmless for a `.eld` file whose header is `;;` comments, but if it inserts org scaffolding, switch the ensure step to a plain `f-write-text` of the header when the file is absent. Verify the header test passes; if not, do not fight it — write the header directly.
+> **Resolved (Open Questions §1):** the store is created by writing the header **directly** with `f-write-text`, not `org-gtd--ensure-file-exists` — that helper runs `org-gtd-core-prepare-buffer` → `org-mode-restart`, which is `.org`-only and would corrupt a `.eld` store. The code above reflects this.
 
 ---
 
@@ -1219,7 +1224,7 @@ The flat "Your saved views" list (moment-grouping deferred per design). Keys: `R
 ;;   quit restores --list-window-config.
 ```
 
-The `<up>`/`<down>` movers adjust `--highlight` (clamped) and stay in the transient (`:transient t`) so redisplay reflects the new highlight. `--list-render` calls `org-gtd-view-manager--render-preview` (or `org-gtd-view-show`) on the highlighted stored spec. Empty-state `RET` should still render a bundled built-in — **see Open Questions §** for which built-in spec seeds that (design says "a built-in like Engage" but does not pin the exact spec).
+The `<up>`/`<down>` movers adjust `--highlight` (clamped) and stay in the transient (`:transient t`) so redisplay reflects the new highlight. `--list-render` calls `org-gtd-view-manager--render-preview` (or `org-gtd-view-show`) on the highlighted stored spec. **When the store is empty, `RET` calls the existing `org-gtd-engage` command** (Open Questions §2, resolved) — built-ins stay commands, not stored specs, so nothing is seeded into the store.
 
 **Step 4: Run to verify pass** — Expected: PASS (3 thin tests).
 
@@ -1349,9 +1354,9 @@ git commit -m "chore: regenerate info manual and autoloads for view manager"
 
 ## Open questions (design was silent — resolve before/at these tasks; do NOT invent an answer)
 
-1. **`org-gtd--ensure-file-exists` org-prepares the buffer (Task 1).** It calls `org-gtd-core-prepare-buffer`, which sets up an *org* buffer. For a `.eld` file with a `;;`-comment header this is likely harmless, but if `prepare-buffer` injects org scaffolding into `views.eld`, the store creation must instead write the header directly (`f-write-text`) when the file is absent. The plan flags this at Task 1; confirm behavior on first implementation.
+1. **RESOLVED — do not use `org-gtd--ensure-file-exists` for `views.eld` (Task 1).** Verified: it calls `org-gtd-core-prepare-buffer` → `org-mode-restart` (`org-gtd-core.el:557`), forcing the buffer into org-mode — wrong for a `.eld` file. **Task 1 writes the store directly** (a `;;`-comment guidance header + the printed alist, via `f-write-text` / a plain buffer save), created lazily on first access. Design §1/§7 updated to match.
 
-2. **Which bundled built-in seeds the empty-state `RET` (Tasks 11/12).** Design §3 says the empty list must still render "a built-in like Engage" so `RET` is never dead, but `org-gtd-engage` is a *command*, not a view *spec*, and there is no named built-in view-spec in the store. Decide: (a) special-case empty-state `RET` to call `org-gtd-engage`, or (b) seed the store with one or two built-in specs (e.g. an Engage spec, a Weekly-review spec) that are non-deletable. The plan currently leaves `--list-render` operating on stored specs only; wire the empty-state fallback once this is decided.
+2. **RESOLVED — empty-state `RET` invokes `org-gtd-engage` (Tasks 11/12).** Built-ins stay commands, not stored specs (§12 defers folding built-ins into the store), so there is no pseudo-view to seed, delete, or edit. `--list-render` operates on stored specs only; the empty state special-cases `RET` to call the existing `org-gtd-engage` command. Teaching line: *"No saved views yet. Press `c` to build one, or `RET` to open Engage."* Design §3 updated to match.
 
 3. **Infix letter for `prefix-width` (Task 3).** Design §2.1 lists `x → prefix` but only "(width) → prefix-width" with no letter. The plan chose `X` (shift of `x`, staying in the Prefix group). Confirm `X` does not collide with any planned builder footer key and reads sensibly.
 

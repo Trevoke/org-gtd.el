@@ -57,8 +57,11 @@ Discovery: a new **`v` "Views…"** entry in the Engage column of `org-gtd-comma
     (`org-gtd-view-language.el:178`–`226`) — the source of truth for filter keys, type values,
     and prefix semantics.
   - `org-gtd-command-center` (`org-gtd-command-center.el:44`) — the discovery home.
-  - `org-gtd--ensure-file-exists` (`org-gtd-files.el:47`, `(path &optional initial-contents)`) —
-    lazy file creation with a guidance header, the org-gtd idiom for generated files.
+  - `org-gtd-directory` / `org-gtd--path` (`org-gtd-files.el`) for locating the store. **Note:
+    do _not_ reuse `org-gtd--ensure-file-exists` for `views.eld`** — it calls
+    `org-gtd-core-prepare-buffer` → `org-mode-restart` (`org-gtd-core.el:557`), which forces the
+    buffer into org-mode. That helper is for `.org` files only; a `.eld` file is written
+    directly (see §7).
   - `org-gtd-areas-of-focus`, the DSL's duration-regex input, and the window-config discipline
     from `org-gtd-clarify`.
 - **Genuinely new `[U]`:** the `views.eld` store, the two transients
@@ -148,8 +151,11 @@ uses `e` / `@` / `n`). The new entry is `("v" "Views…" org-gtd-view-manager)`.
 | `q` | Quit; restore the saved window configuration. |
 
 - **Empty state (first run):** never a blank pane — a teaching line: *"No saved views yet. Press
-  `c` to build one, or `RET` a built-in like Engage."* Bundled built-ins (Engage, Weekly review)
-  still render so `RET` is never dead.
+  `c` to build one, or `RET` to open Engage."* When the store is empty, **`RET` invokes the
+  existing `org-gtd-engage` command** so the key is never dead. It does _not_ render a stored
+  "built-in" spec — built-ins remain commands (§12 defers folding them into the store), so there
+  is no pseudo-view to delete or edit. This special-cases only the empty state; once the user has
+  saved views, `RET` renders the highlighted one via `org-gtd-view-show` as usual.
 
 ## 4. Surface 2 — `org-gtd-view-manager--build` (builder + live preview)
 
@@ -200,10 +206,11 @@ The builder compiles infix state into a **flat org-gtd view alist** and hands it
 
 ## 7. Storage & migration
 
-**Store:** `org-gtd-directory/views.eld` — Emacs read-syntax, a `name → spec` alist. Created
-lazily via `org-gtd--ensure-file-exists` with a guidance-comment header (org-gtd idiom for
-generated files). Read on manager open; written on save/delete. Consistent with CHK-01's
-`checklists.org` / `review-state.eld` plain-file precedent.
+**Store:** `org-gtd-directory/views.eld` — Emacs read-syntax, a `name → spec` alist. Written
+**directly** (a `;;`-comment guidance header + the printed alist via `f-write-text` / a plain
+buffer save), created lazily on first access — **not** via `org-gtd--ensure-file-exists`, which
+org-mode-restarts the buffer and is `.org`-only (see §1). Read on manager open; written on
+save/delete. Consistent with CHK-01's `checklists.org` / `review-state.eld` plain-file precedent.
 
 **Migration (one-time, fail-soft):** on first run, auto-import existing
 `org-gtd-reflect-missed-custom-views` entries into `views.eld`, then deprecate that defcustom.
@@ -272,7 +279,7 @@ When implementation lands, update `docs/feature-analysis/` from this section (mi
 ## 11. Testing (outline)
 
 - **Store round-trip:** write → read `views.eld` preserves specs; unknown key skipped with a
-  message; missing file created via `org-gtd--ensure-file-exists`.
+  message; missing file created lazily by the store's own writer (not `org-gtd--ensure-file-exists`).
 - **Migration:** a nested-`filters` `org-gtd-reflect-missed-custom-views` entry imports to a flat,
   editable spec; a bad entry is skipped, not fatal.
 - **Spec compile:** infix state → the expected flat alist; unset keys absent; effort/prefix shapes
