@@ -112,19 +112,9 @@ that reads can tell an empty store from a truncated one."
 
 ;;;; Filter-spec metadata (the builder's source of truth, per design 2.1)
 
-;; Placeholder readers.  These are intentionally trivial STUBS so the
-;; filter-spec table below names live symbols and the file byte-compiles
-;; cleanly under `--warnings-as-errors'.  Real bodies arrive in Task 7
-;; (readers) -- do NOT build reader logic here.  The formatters live in the
+;; Readers are defined in the `Infix readers' section below; the filter-spec
+;; table references them by symbol.  The formatters live in the
 ;; `Badge / summary' section below (Task 4).
-(defun org-gtd-view-manager--read-type (&rest _) "Placeholder reader." nil)
-(defun org-gtd-view-manager--read-time (&rest _) "Placeholder reader." nil)
-(defun org-gtd-view-manager--read-string (&rest _) "Placeholder reader." nil)
-(defun org-gtd-view-manager--read-flag (&rest _) "Placeholder reader." nil)
-(defun org-gtd-view-manager--read-area (&rest _) "Placeholder reader." nil)
-(defun org-gtd-view-manager--read-effort (&rest _) "Placeholder reader." nil)
-(defun org-gtd-view-manager--read-prefix (&rest _) "Placeholder reader." nil)
-(defun org-gtd-view-manager--read-width (&rest _) "Placeholder reader." nil)
 
 ;; Each entry: (DSL-KEY :group G :key "L" :reader FN :formatter FN)
 ;; :reader reads a value interactively (returns the value to store, or nil to unset).
@@ -205,6 +195,65 @@ Each key MUST be a member of `org-gtd-view-lang--known-filter-keys'
       (push (car cell) dups)))
   (when dups
     (error "org-gtd-view-manager: duplicate filter-spec :key letters: %S" dups)))
+
+;;;; Infix readers
+
+;; `org-gtd-areas-of-focus' lives in `org-gtd-areas-of-focus', which pulls in a
+;; heavy chain (organize, projects).  We only READ it in the area reader, so a
+;; `defvar' forward-declaration keeps `--warnings-as-errors' clean without a
+;; require that would risk a load cycle -- same pattern as the migration
+;; section's `org-gtd-reflect-missed-custom-views' below.
+(defvar org-gtd-areas-of-focus)
+
+(defconst org-gtd-view-manager--effort-regexp
+  "\\`\\([<>]\\)\\([0-9]+[smhd]\\|[0-9]+:[0-9]+\\)\\'"
+  "Matches a comparison effort like `<30m' or `>1:00'.")
+
+(defun org-gtd-view-manager--effort->dsl (input)
+  "Turn INPUT (e.g. \"<30m\") into a DSL effort list (< \"30m\").
+Fail-soft: a malformed value raises a teaching `user-error'."
+  (if (string-match org-gtd-view-manager--effort-regexp input)
+      (list (intern (match-string 1 input)) (match-string 2 input))
+    (user-error "Effort needs a duration like 30m (e.g. <30m, >1h)")))
+
+(defun org-gtd-view-manager--read-type (&rest _)
+  "Read a GTD type, completing over `org-gtd-view-manager--type-candidates'."
+  (intern (completing-read
+           "Type: " (mapcar #'symbol-name (org-gtd-view-manager--type-candidates))
+           nil t)))
+
+(defun org-gtd-view-manager--read-time (&rest _)
+  "Read a time value: past/today/future or an offset like <30m or +7d."
+  (let ((v (read-string "When (past/today/future or <30m, +7d): ")))
+    (if (member v '("past" "today" "future")) (intern v) v)))
+
+(defun org-gtd-view-manager--read-string (&rest _)
+  "Read a free-form string value, returning nil when left blank."
+  (let ((v (read-string "Value: ")))
+    (if (string-blank-p v) nil v)))
+
+(defun org-gtd-view-manager--read-flag (&rest _)
+  "Read a flag key, which is always on when chosen."
+  t)
+
+(defun org-gtd-view-manager--read-area (&rest _)
+  "Read an area of focus, completing over `org-gtd-areas-of-focus'."
+  (let ((v (completing-read "Area of focus: " org-gtd-areas-of-focus nil nil)))
+    (if (string-blank-p v) nil v)))
+
+(defun org-gtd-view-manager--read-effort (&rest _)
+  "Read a comparison effort and parse it into the DSL shape."
+  (org-gtd-view-manager--effort->dsl
+   (read-string "Effort (e.g. <30m, >1h): ")))
+
+(defun org-gtd-view-manager--read-width (&rest _)
+  "Read the numeric prefix column width."
+  (read-number "Prefix width: "))
+
+(defun org-gtd-view-manager--read-prefix (&rest _)
+  "Read a prefix fallback CHAIN (a list), not a format string (design 2.3)."
+  (read (read-string "Prefix chain (e.g. (project area-of-focus \"—\")): "
+                     (prin1-to-string org-gtd-view-lang--default-prefix))))
 
 ;;;; Badge / summary
 
