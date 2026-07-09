@@ -459,7 +459,7 @@ dirty and asks the preview to refresh (a no-op until Task 10)."
 
 (defun org-gtd-view-manager--preview ()
   "PLACEHOLDER (Task 10): echo the current spec's badge.
-Task 10 replaces this body with the live org-agenda preview render."
+Task 10 replaces this body with the live `org-agenda' preview render."
   (interactive)
   (message "Preview: %s"
            (org-gtd-view-manager--badge
@@ -480,12 +480,14 @@ next command tick (the house idiom, see `run-at-time' in
   (run-at-time 0 nil (lambda () (transient-setup 'org-gtd-view-manager--build))))
 
 (defun org-gtd-view-manager--save ()
-  "Persist the built view, guarding against silent overwrite.
-Prompts for a name (defaulting to the current one).  If a view of
-that name already exists and the user declines to overwrite, the
-save is abandoned and the builder is reopened so another name can be
-chosen (fail-soft).  On a successful save the entry window layout is
-restored."
+  "Persist the built view, guarding against blank names and silent overwrite.
+Prompts for a name (defaulting to the current one).  A blank name is
+rejected with a teaching `user-error' and nothing is written -- the
+builder is reopened so a name can be entered (fail-soft), never
+persisting a nameless `(name . \"\")' entry.  If a view of that name
+already exists and the user declines to overwrite, the save is
+likewise abandoned and the builder reopened.  On a successful save
+the entry window layout is restored."
   (interactive)
   (let* ((current-name (or (cdr (assq 'name org-gtd-view-manager--build-state))
                            "Untitled"))
@@ -494,20 +496,25 @@ restored."
                      (assq-delete-all
                       'name (org-gtd-view-manager--compile
                              org-gtd-view-manager--build-state)))))
-    (if (and (org-gtd-view-manager--store-get name)
-             (not (y-or-n-p (format "A view named '%s' exists — overwrite? " name))))
-        (progn (message "Save cancelled") (org-gtd-view-manager--build-resume))
+    (cond
+     ((string-blank-p name)
+      (org-gtd-view-manager--build-resume)
+      (user-error "A view needs a name"))
+     ((and (org-gtd-view-manager--store-get name)
+           (not (y-or-n-p (format "A view named '%s' exists — overwrite? " name))))
+      (message "Save cancelled")
+      (org-gtd-view-manager--build-resume))
+     (t
       (org-gtd-view-manager--store-upsert name spec)
       (setq org-gtd-view-manager--build-dirty nil)
       (message "Saved view '%s'" name)
-      (org-gtd-view-manager--build-restore-windows))))
+      (org-gtd-view-manager--build-restore-windows)))))
 
 (defun org-gtd-view-manager--abort ()
-  "Abort the builder, guarding unsaved changes.
-When there are unsaved changes the user is asked to confirm the
-discard; declining reopens the builder with its state intact.  On
-confirm (or when nothing is dirty) the entry window layout is
-restored."
+  "Abort the builder, first confirming any discard of unsaved edits.
+When the builder is dirty the user is asked to confirm the discard;
+declining reopens the builder with its state intact.  On confirm (or
+when nothing is dirty) the entry window layout is restored."
   (interactive)
   (if (or (not org-gtd-view-manager--build-dirty)
           (y-or-n-p "Discard unsaved view? "))
@@ -562,7 +569,6 @@ five columns can never drift from the single source of truth."
            groups)))
     `(progn
        ,@set-defuns
-       ;;;###autoload (autoload 'org-gtd-view-manager--build "org-gtd-view-manager" nil t)
        (transient-define-prefix org-gtd-view-manager--build (&optional starting-spec)
          "Build or edit a saved GTD view interactively.
 The five infix columns are generated from
