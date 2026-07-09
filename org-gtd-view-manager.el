@@ -381,6 +381,35 @@ values are already in DSL shape (readers produce them)."
         (push (cons (car cell) (cdr cell)) result)))
     (nreverse result)))
 
+(defun org-gtd-view-manager--compile-section (section)
+  "Compile one SECTION alist (no name) into a filtered spec.
+Keys whose value is nil are omitted so the DSL applies its own
+defaults; only curated filter keys pass through, values already in DSL
+shape.  `name' is NOT in the allow-list, so a stray name is dropped --
+the view name lives at view level, never inside a section."
+  (let ((allowed (mapcar #'car org-gtd-view-manager--filter-specs))
+        result)
+    (dolist (cell section)
+      (when (and (memq (car cell) allowed)
+                 (not (null (cdr cell))))
+        ;; Fresh cons per key (P1): the compiled spec is cached and the
+        ;; build state is mutated in place; sharing a cell would corrupt
+        ;; the cache and defeat `--preview-changed-p'.
+        (push (cons (car cell) (cdr cell)) result)))
+    (nreverse result)))
+
+(defun org-gtd-view-manager--compile-view (name sections)
+  "Assemble a stored view spec from NAME and SECTIONS.
+ONE section yields a FLAT spec identical to today's single-section
+output (back-compat, no `blocks').  TWO OR MORE sections yield a
+`((name . NAME) (blocks . (S0 S1 …)))' spec.  Each Sn is
+`org-gtd-view-manager--compile-section' of the nth section."
+  (let ((compiled (mapcar #'org-gtd-view-manager--compile-section sections)))
+    (if (= (length compiled) 1)
+        (cons (cons 'name name) (car compiled))
+      (list (cons 'name name)
+            (cons 'blocks compiled)))))
+
 ;;;; Migration (one-time, fail-soft)
 
 ;; Forward-declaration: the legacy defcustom lives in `org-gtd-reflect', which
