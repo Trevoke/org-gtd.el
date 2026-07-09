@@ -599,7 +599,11 @@ the entry window layout is restored."
      ((string-blank-p name)
       (org-gtd-view-manager--build-resume)
       (user-error "A view needs a name"))
+     ;; Overwrite guard fires only for a DIFFERENT existing view.  Saving back
+     ;; to the very view being edited (name = original) is not an overwrite, so
+     ;; do not prompt; renaming onto another existing name still prompts.
      ((and (org-gtd-view-manager--store-get name)
+           (not (equal name org-gtd-view-manager--build-original-name))
            (not (y-or-n-p (format "A view named '%s' exists — overwrite? " name))))
       (message "Save cancelled")
       (org-gtd-view-manager--build-resume))
@@ -726,15 +730,19 @@ builder; nil starts a fresh Untitled next-action view."
   (let ((views (org-gtd-view-manager--store-read)))
     (if (null views)
         "No saved views yet.  Press c to build one, or RET to open Engage."
-      (string-join
-       (seq-map-indexed
-        (lambda (v i)
-          (format "%s %-24s %s"
-                  (if (= i org-gtd-view-manager--highlight) "▸" " ")
-                  (car v)
-                  (org-gtd-view-manager--badge (cdr v))))
-        views)
-       "\n"))))
+      ;; Clamp the same way `--list-highlighted-name' does, so the ▸ marker and
+      ;; the action target are provably the same row even if the index is stale.
+      (let ((highlight (min (max org-gtd-view-manager--highlight 0)
+                            (1- (length views)))))
+        (string-join
+         (seq-map-indexed
+          (lambda (v i)
+            (format "%s %-24s %s"
+                    (if (= i highlight) "▸" " ")
+                    (car v)
+                    (org-gtd-view-manager--badge (cdr v))))
+          views)
+         "\n")))))
 
 (defun org-gtd-view-manager--list-highlighted-name ()
   "Return the highlighted view's name, or nil when the store is empty.
@@ -754,13 +762,15 @@ stale index (e.g. after a delete) can never index out of range."
 (defun org-gtd-view-manager--list-render ()
   "Render the highlighted view, or open Engage when the store is empty.
 An empty store's `RET' opens the daily Engage view (built-ins stay
-commands, never seeded specs); otherwise the highlighted stored spec
-is rendered through the shared preview path."
+commands, never seeded specs).  Otherwise this is a REAL recall of the
+saved spec via `org-gtd-view-show' -- NOT the builder's sample-data
+preview (design §5): an empty agenda shows org-agenda's normal `no
+matches' line, never fake sample data or a preview banner."
   (interactive)
   (let ((spec (org-gtd-view-manager--list-highlighted-spec)))
     (if (null spec)
         (org-gtd-engage)
-      (org-gtd-view-manager--render-preview spec))))
+      (org-gtd-view-show spec))))
 
 (defun org-gtd-view-manager--list-create ()
   "Open the builder on a fresh spec."
@@ -775,15 +785,18 @@ Fail-soft: an empty store simply does nothing."
     (when spec (org-gtd-view-manager--build spec))))
 
 (defun org-gtd-view-manager--list-duplicate ()
-  "Duplicate the highlighted view as \"<name> copy\", then edit the copy.
-Fail-soft: an empty store does nothing."
+  "Open the builder on a copy of the highlighted view named \"<name> copy\".
+Fail-soft: an empty store does nothing.  The copy is NOT pre-persisted:
+`--build' seeds `--build-original-name' to the copy name, so `--save'
+creates it on save (and a rename then store-deletes the copy name,
+harmless if it was never written).  Aborting therefore leaves no
+orphan copy behind."
   (interactive)
   (let ((spec (org-gtd-view-manager--list-highlighted-spec)))
     (when spec
       (let* ((copy-name (concat (alist-get 'name spec) " copy"))
              (copy-spec (cons (cons 'name copy-name)
                               (assq-delete-all 'name (copy-alist spec)))))
-        (org-gtd-view-manager--store-upsert copy-name copy-spec)
         (org-gtd-view-manager--build copy-spec)))))
 
 (defun org-gtd-view-manager--list-delete ()

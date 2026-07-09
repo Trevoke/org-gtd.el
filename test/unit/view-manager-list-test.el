@@ -56,4 +56,28 @@ must MOVE (delete the old), not leave an orphan behind."
       (assert-equal nil (assoc "Old" views))
       (assert-true (assoc "New" views)))))
 
+(deftest view-manager-list/edit-save-same-name-no-overwrite-prompt ()
+  "Saving an edited view under its OWN name must not prompt to overwrite.
+The overwrite guard finds the very view being edited; skip it when the
+name equals `--build-original-name' so a plain edit-save is silent."
+  (let ((org-gtd-directory (make-temp-file "vm-list-test" t))
+        (prompted nil))
+    (org-gtd-view-manager--store-upsert
+     "A" (list (cons 'name "A") (cons 'type 'next-action)))
+    (setq org-gtd-view-manager--build-state
+          (list (cons 'name "A") (cons 'type 'single-action)))
+    (setq org-gtd-view-manager--build-original-name "A")
+    (setq org-gtd-view-manager--build-dirty t)
+    (cl-letf (((symbol-function 'read-string) (lambda (&rest _) "A"))
+              ((symbol-function 'y-or-n-p)
+               (lambda (&rest _) (setq prompted t) t))
+              ((symbol-function 'org-gtd-view-manager--build-restore-windows)
+               #'ignore))
+      (org-gtd-view-manager--save))
+    (assert-equal nil prompted)
+    (let ((views (org-gtd-view-manager--store-read)))
+      (assert-true (assoc "A" views))
+      (assert-equal 'single-action
+                    (alist-get 'type (cdr (assoc "A" views)))))))
+
 ;;; view-manager-list-test.el ends here
