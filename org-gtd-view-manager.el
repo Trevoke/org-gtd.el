@@ -283,9 +283,12 @@ rather than a set-only action."
     (if (string-blank-p v) nil v)))
 
 (defun org-gtd-view-manager--read-effort (&rest _)
-  "Read a comparison effort and parse it into the DSL shape."
-  (org-gtd-view-manager--effort->dsl
-   (read-string "Effort (e.g. <30m, >1h): ")))
+  "Read a comparison effort and parse it into the DSL shape.
+A blank entry returns nil (unset), mirroring the other readers, so the
+effort filter can be cleared with an empty input rather than erroring."
+  (let ((v (read-string "Effort (e.g. <30m, >1h): ")))
+    (if (string-blank-p v) nil
+      (org-gtd-view-manager--effort->dsl v))))
 
 (defun org-gtd-view-manager--read-width (&rest _)
   "Read the numeric prefix column width."

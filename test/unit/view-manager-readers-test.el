@@ -16,6 +16,7 @@
 ;;; Code:
 
 (require 'e-unit)
+(require 'cl-lib)
 (require 'org-gtd-view-manager)
 
 ;; Initialize e-unit short syntax
@@ -32,6 +33,21 @@
                  (progn (org-gtd-view-manager--effort->dsl "banana") nil)
                (user-error (error-message-string err)))))
     (assert-true (and msg (string-match-p "duration like 30m" msg)))))
+
+(deftest view-manager-reader/effort-blank-unsets ()
+  "A blank effort entry returns nil (unset), not a teaching error.
+Regression: `--read-effort' passed raw input to `--effort->dsl',
+which `user-error's on a blank string, so `e' + RET could not clear
+the filter the way every other reader can."
+  (cl-letf (((symbol-function 'read-string) (lambda (&rest _) "")))
+    (assert-nil (org-gtd-view-manager--read-effort)))
+  (cl-letf (((symbol-function 'read-string) (lambda (&rest _) "   ")))
+    (assert-nil (org-gtd-view-manager--read-effort))))
+
+(deftest view-manager-reader/effort-parses-through-reader ()
+  "A non-blank effort still parses into the DSL shape via the reader."
+  (cl-letf (((symbol-function 'read-string) (lambda (&rest _) "<30m")))
+    (assert-equal '(< "30m") (org-gtd-view-manager--read-effort))))
 
 (deftest view-manager-reader/time-parses-literals-and-comparison ()
   "Literals become symbols; a comparison becomes the DSL list shape."
