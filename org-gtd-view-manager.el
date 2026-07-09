@@ -112,19 +112,11 @@ that reads can tell an empty store from a truncated one."
 
 ;;;; Filter-spec metadata (the builder's source of truth, per design 2.1)
 
-;; Placeholder readers/formatters.  These are intentionally trivial STUBS so
-;; the filter-spec table below names live symbols and the file byte-compiles
-;; cleanly under `--warnings-as-errors'.  Real bodies arrive in Task 4
-;; (formatters) and Task 7 (readers) -- do NOT build reader/formatter logic
-;; here.
-(defun org-gtd-view-manager--fmt-symbol (v) "Placeholder formatter for V." (format "%s" v))
-(defun org-gtd-view-manager--fmt-string (v) "Placeholder formatter for V." (format "%s" v))
-(defun org-gtd-view-manager--fmt-time (v) "Placeholder formatter for V." (format "%s" v))
-(defun org-gtd-view-manager--fmt-flag (v) "Placeholder formatter for V." (format "%s" v))
-(defun org-gtd-view-manager--fmt-effort (v) "Placeholder formatter for V." (format "%s" v))
-(defun org-gtd-view-manager--fmt-prefix (v) "Placeholder formatter for V." (format "%s" v))
-(defun org-gtd-view-manager--fmt-number (v) "Placeholder formatter for V." (format "%s" v))
-
+;; Placeholder readers.  These are intentionally trivial STUBS so the
+;; filter-spec table below names live symbols and the file byte-compiles
+;; cleanly under `--warnings-as-errors'.  Real bodies arrive in Task 7
+;; (readers) -- do NOT build reader logic here.  The formatters live in the
+;; `Badge / summary' section below (Task 4).
 (defun org-gtd-view-manager--read-type (&rest _) "Placeholder reader." nil)
 (defun org-gtd-view-manager--read-time (&rest _) "Placeholder reader." nil)
 (defun org-gtd-view-manager--read-string (&rest _) "Placeholder reader." nil)
@@ -213,6 +205,38 @@ Each key MUST be a member of `org-gtd-view-lang--known-filter-keys'
       (push (car cell) dups)))
   (when dups
     (error "org-gtd-view-manager: duplicate filter-spec :key letters: %S" dups)))
+
+;;;; Badge / summary
+
+(defun org-gtd-view-manager--fmt-symbol (v) (format "%s" v))
+(defun org-gtd-view-manager--fmt-string (v) (format "%s" v))
+(defun org-gtd-view-manager--fmt-number (v) (format "%s" v))
+(defun org-gtd-view-manager--fmt-flag (_v) nil)         ; label carries the key
+(defun org-gtd-view-manager--fmt-time (v) (format "%s" v))
+(defun org-gtd-view-manager--fmt-effort (v)
+  ;; (< "30m") -> "<30m" ; (> "1h") -> ">1h"
+  (if (and (listp v) (= 2 (length v)))
+      (format "%s%s" (car v) (cadr v))
+    (format "%s" v)))
+(defun org-gtd-view-manager--fmt-prefix (v) (format "%s" v))
+
+(defun org-gtd-view-manager--badge (spec)
+  "Return a compact one-line summary of SPEC (name excluded)."
+  (let (parts)
+    (dolist (entry org-gtd-view-manager--filter-specs)
+      (let* ((key (car entry))
+             (cell (assq key spec)))
+        (when cell
+          (let* ((val (cdr cell))
+                 (fmt (funcall (plist-get (cdr entry) :formatter) val)))
+            (push (cond
+                   ;; flag keys (not-done): show the key name itself
+                   ((eq key 'not-done) "not-done")
+                   ;; who/tags/priority read better as key=value
+                   ((memq key '(who tags priority)) (format "%s=%s" key fmt))
+                   (t fmt))
+                  parts)))))
+    (string-join (nreverse parts) " · ")))
 
 ;;;; Footer
 
