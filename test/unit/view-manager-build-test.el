@@ -78,4 +78,42 @@ so a builder session could not remove it once added."
   (when (timerp org-gtd-view-manager--preview-timer)
     (cancel-timer org-gtd-view-manager--preview-timer)))
 
+(deftest view-manager-build/renders-preview-on-open-fresh ()
+  "Opening a fresh builder renders the preview once for the default spec.
+Regression: the builder used to show nothing until the first RET/infix,
+so a stale agenda from a prior action looked like the builder's preview."
+  (let ((count 0)
+        (captured 'unset)
+        (org-gtd-view-manager--preview-last nil))
+    (cl-letf (((symbol-function 'transient-setup) #'ignore)
+              ((symbol-function 'org-gtd-view-manager--render-preview)
+               (lambda (spec) (cl-incf count) (setq captured spec))))
+      (org-gtd-view-manager--build))
+    (assert-equal 1 count)
+    (assert-equal 'next-action (alist-get 'type captured))
+    (assert-equal "Untitled" (alist-get 'name captured))))
+
+(deftest view-manager-build/renders-preview-on-open-edit ()
+  "Editing an existing view renders that view's stored spec once on open."
+  (let ((count 0)
+        (captured 'unset)
+        (org-gtd-view-manager--preview-last nil))
+    (cl-letf (((symbol-function 'transient-setup) #'ignore)
+              ((symbol-function 'org-gtd-view-manager--render-preview)
+               (lambda (spec) (cl-incf count) (setq captured spec))))
+      (org-gtd-view-manager--build '((name . "Saved") (type . delegated))))
+    (assert-equal 1 count)
+    (assert-equal 'delegated (alist-get 'type captured))
+    (assert-equal "Saved" (alist-get 'name captured))))
+
+(deftest view-manager-build/render-on-open-populates-cache ()
+  "The on-open render seeds `--preview-last', so an identical debounce no-ops.
+RET still force-renders (covered in view-manager-preview-test); this only
+guards that the open render is not itself skipped and does update the cache."
+  (let ((org-gtd-view-manager--preview-last nil))
+    (cl-letf (((symbol-function 'transient-setup) #'ignore)
+              ((symbol-function 'org-gtd-view-manager--render-preview) #'ignore))
+      (org-gtd-view-manager--build '((name . "Saved") (type . delegated))))
+    (assert-equal 'delegated (alist-get 'type org-gtd-view-manager--preview-last))))
+
 ;;; view-manager-build-test.el ends here

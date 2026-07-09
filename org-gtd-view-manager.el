@@ -750,6 +750,14 @@ builder; nil starts a fresh Untitled next-action view."
                                      (cons 'type 'next-action)))))
          (setq org-gtd-view-manager--build-dirty nil)
          (setq org-gtd-view-manager--preview-last nil)
+         ;; Render the starting spec's agenda immediately so the builder shows a
+         ;; live preview the moment it opens, instead of a stale agenda from a
+         ;; prior action until the first RET/infix.  Forced (`--preview-last' was
+         ;; just cleared) and placed BEFORE `transient-setup' so the agenda lands
+         ;; in the invoking window (the one the config snapshot captured), never
+         ;; the transient's own popup window.  Sets `--preview-last', so a later
+         ;; identical debounce no-ops while RET still force-renders (P1).
+         (org-gtd-view-manager--preview-now t)
          (transient-setup 'org-gtd-view-manager--build)))))
 
 (org-gtd-view-manager--define-builder-transient)
