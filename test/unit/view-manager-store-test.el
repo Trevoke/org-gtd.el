@@ -55,5 +55,21 @@
     (assert-true (seq-some (lambda (m) (string-match-p "views store" m))
                            captured))))
 
+(deftest view-manager-store/upsert-adds-and-replaces ()
+  "Upsert adds a new view and replaces an existing one by name."
+  (org-gtd-view-manager--store-upsert "A" '((name . "A") (type . next-action)))
+  (assert-equal '((name . "A") (type . next-action))
+                (org-gtd-view-manager--store-get "A"))
+  (org-gtd-view-manager--store-upsert "A" '((name . "A") (type . delegated)))
+  (assert-equal '((name . "A") (type . delegated))
+                (org-gtd-view-manager--store-get "A"))
+  (assert-equal 1 (length (org-gtd-view-manager--store-read))))
+
+(deftest view-manager-store/delete-removes-entry ()
+  "Delete removes a named view; getting it then returns nil."
+  (org-gtd-view-manager--store-upsert "A" '((name . "A")))
+  (org-gtd-view-manager--store-delete "A")
+  (assert-nil (org-gtd-view-manager--store-get "A")))
+
 (provide 'view-manager-store-test)
 ;;; view-manager-store-test.el ends here

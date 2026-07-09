@@ -95,6 +95,21 @@ that reads can tell an empty store from a truncated one."
       (insert (prin1-to-string views))
       (insert "\n"))))
 
+(defun org-gtd-view-manager--store-get (name)
+  "Return the stored spec for NAME, or nil."
+  (cdr (assoc name (org-gtd-view-manager--store-read))))
+
+(defun org-gtd-view-manager--store-upsert (name spec)
+  "Store SPEC under NAME, replacing any existing entry, and persist."
+  (let ((views (assoc-delete-all name (org-gtd-view-manager--store-read))))
+    (org-gtd-view-manager--store-write
+     (append views (list (cons name spec))))))
+
+(defun org-gtd-view-manager--store-delete (name)
+  "Remove NAME from the store and persist."
+  (org-gtd-view-manager--store-write
+   (assoc-delete-all name (org-gtd-view-manager--store-read))))
+
 ;;;; Footer
 
 (provide 'org-gtd-view-manager)
