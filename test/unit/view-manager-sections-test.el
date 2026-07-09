@@ -111,5 +111,38 @@
   (assert-equal 'next-action
                 (cdr (assq 'type (nth 1 org-gtd-view-manager--build-sections)))))
 
+(deftest view-manager-load/fresh-is-one-default-section ()
+  "A nil spec seeds one Untitled next-action section."
+  (org-gtd-view-manager--build-load nil)
+  (assert-equal "Untitled" org-gtd-view-manager--build-name)
+  (assert-equal 1 (length org-gtd-view-manager--build-sections))
+  (assert-equal 0 org-gtd-view-manager--build-active)
+  (assert-equal 'next-action (cdr (assq 'type org-gtd-view-manager--build-state)))
+  (assert-nil (assq 'name org-gtd-view-manager--build-state)))
+
+(deftest view-manager-load/flat-spec-is-one-section ()
+  "A flat spec loads name + one section (spec minus name)."
+  (org-gtd-view-manager--build-load
+   '((name . "Saved") (type . delegated) (who . "Sam")))
+  (assert-equal "Saved" org-gtd-view-manager--build-name)
+  (assert-equal 1 (length org-gtd-view-manager--build-sections))
+  (assert-nil (assq 'name (nth 0 org-gtd-view-manager--build-sections)))
+  (assert-equal 'delegated (cdr (assq 'type org-gtd-view-manager--build-state)))
+  (assert-equal "Sam" (cdr (assq 'who org-gtd-view-manager--build-state))))
+
+(deftest view-manager-load/blocks-spec-loads-section-list ()
+  "A blocks spec loads name + the section list, active at 0."
+  (org-gtd-view-manager--build-load
+   '((name . "Engage")
+     (blocks . (((type . calendar))
+                ((type . next-action) (area-of-focus . "Work"))))))
+  (assert-equal "Engage" org-gtd-view-manager--build-name)
+  (assert-equal 2 (length org-gtd-view-manager--build-sections))
+  (assert-equal 0 org-gtd-view-manager--build-active)
+  (assert-equal 'calendar (cdr (assq 'type org-gtd-view-manager--build-state)))
+  (assert-equal "Work"
+                (cdr (assq 'area-of-focus
+                           (nth 1 org-gtd-view-manager--build-sections)))))
+
 (provide 'view-manager-sections-test)
 ;;; view-manager-sections-test.el ends here

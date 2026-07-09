@@ -575,6 +575,31 @@ No-op at the last index."
             (nth org-gtd-view-manager--build-active secs))
       t)))
 
+(defun org-gtd-view-manager--build-load (starting-spec)
+  "Seed the builder section state from STARTING-SPEC (or fresh when nil).
+Flat spec -> one section (spec minus name).  `blocks' spec -> its
+section list.  nil -> one default Untitled next-action section.
+Sets `--build-name', `--build-sections', `--build-active' (0) and loads
+`--build-state' from the first section."
+  (cond
+   ((null starting-spec)
+    (setq org-gtd-view-manager--build-name "Untitled")
+    (setq org-gtd-view-manager--build-sections
+          (list (list (cons 'type 'next-action)))))
+   ((assq 'blocks starting-spec)
+    (setq org-gtd-view-manager--build-name
+          (or (alist-get 'name starting-spec) "Untitled"))
+    (setq org-gtd-view-manager--build-sections
+          (mapcar #'copy-alist (alist-get 'blocks starting-spec))))
+   (t
+    (setq org-gtd-view-manager--build-name
+          (or (alist-get 'name starting-spec) "Untitled"))
+    (setq org-gtd-view-manager--build-sections
+          (list (assq-delete-all 'name (copy-alist starting-spec))))))
+  (setq org-gtd-view-manager--build-active 0)
+  (setq org-gtd-view-manager--build-state
+        (nth 0 org-gtd-view-manager--build-sections)))
+
 ;;;; Builder transient
 
 ;; The builder is a transient prefix whose five infix columns (Type / Time /
