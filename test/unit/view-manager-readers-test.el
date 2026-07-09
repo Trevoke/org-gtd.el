@@ -33,5 +33,51 @@
                (user-error (error-message-string err)))))
     (assert-true (and msg (string-match-p "duration like 30m" msg)))))
 
+(deftest view-manager-reader/time-parses-literals-and-comparison ()
+  "Literals become symbols; a comparison becomes the DSL list shape."
+  (assert-equal 'today   (org-gtd-view-manager--time->dsl "today"))
+  (assert-equal 'past    (org-gtd-view-manager--time->dsl "past"))
+  (assert-equal 'future  (org-gtd-view-manager--time->dsl "future"))
+  (assert-equal '(< "7d") (org-gtd-view-manager--time->dsl "<7d"))
+  (assert-equal '(> "-2w") (org-gtd-view-manager--time->dsl ">-2w"))
+  (assert-equal '(= "1M")  (org-gtd-view-manager--time->dsl "=1M")))
+
+(deftest view-manager-reader/time-blank-unsets ()
+  "A blank time entry returns nil (unset)."
+  (assert-nil (org-gtd-view-manager--time->dsl ""))
+  (assert-nil (org-gtd-view-manager--time->dsl "   ")))
+
+(deftest view-manager-reader/time-rejects-garbage ()
+  "A malformed time raises the teaching error, not a stack trace."
+  (let ((msg (condition-case err
+                 (progn (org-gtd-view-manager--time->dsl "banana") nil)
+               (user-error (error-message-string err)))))
+    (assert-true (and msg (string-match-p "past/today/future" msg)))))
+
+(deftest view-manager-reader/prefix-parses-chain ()
+  "A valid list literal becomes the fallback chain list."
+  (assert-equal '(project area-of-focus "—")
+                (org-gtd-view-manager--parse-prefix
+                 "(project area-of-focus \"—\")")))
+
+(deftest view-manager-reader/prefix-blank-unsets ()
+  "A blank prefix returns nil so the DSL uses its default chain."
+  (assert-nil (org-gtd-view-manager--parse-prefix ""))
+  (assert-nil (org-gtd-view-manager--parse-prefix "   ")))
+
+(deftest view-manager-reader/prefix-rejects-unbalanced ()
+  "Unbalanced parens raise the teaching error, not an `end-of-file'."
+  (let ((msg (condition-case err
+                 (progn (org-gtd-view-manager--parse-prefix "(project area") nil)
+               (user-error (error-message-string err)))))
+    (assert-true (and msg (string-match-p "must be a list" msg)))))
+
+(deftest view-manager-reader/prefix-rejects-bare-atom ()
+  "A bare atom is not a chain and raises the teaching error."
+  (let ((msg (condition-case err
+                 (progn (org-gtd-view-manager--parse-prefix "project") nil)
+               (user-error (error-message-string err)))))
+    (assert-true (and msg (string-match-p "must be a list" msg)))))
+
 (provide 'view-manager-readers-test)
 ;;; view-manager-readers-test.el ends here

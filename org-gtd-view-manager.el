@@ -222,10 +222,35 @@ Fail-soft: a malformed value raises a teaching `user-error'."
            "Type: " (mapcar #'symbol-name (org-gtd-view-manager--type-candidates))
            nil t)))
 
+(defconst org-gtd-view-manager--time-regexp
+  "\\`\\([<>=]\\)\\([+-]?[0-9]+[mhdwMy]\\|today\\)\\'"
+  "Matches a comparison time like `<7d', `>-2w' or `=today'.
+Mirrors the DSL's grammar: op in `< > =' and a duration matching
+`org-gtd-view-lang--duration-regexp' (units m h d w M y) or the
+literal `today'.")
+
+(defun org-gtd-view-manager--time->dsl (input)
+  "Turn INPUT into a DSL-consumable time value.
+The literals \"past\"/\"today\"/\"future\" become their symbols; a
+comparison like \"<7d\" becomes the list (< \"7d\"); blank unsets
+\(returns nil).  Anything else raises a teaching `user-error'.
+
+Shared by the when/deadline/scheduled and done keys.  The general
+comparison-list + literals shape is DSL-consumable for all of them;
+the DSL itself rejects key-specific nonsense (e.g. a future duration
+on `done'), so this reader stays deliberately general."
+  (cond
+   ((string-blank-p input) nil)
+   ((member input '("past" "today" "future")) (intern input))
+   ((string-match org-gtd-view-manager--time-regexp input)
+    (list (intern (match-string 1 input)) (match-string 2 input)))
+   (t (user-error
+       "Time needs past/today/future or a comparison like <7d, >2w, =1M"))))
+
 (defun org-gtd-view-manager--read-time (&rest _)
-  "Read a time value: past/today/future or an offset like <30m or +7d."
-  (let ((v (read-string "When (past/today/future or <30m, +7d): ")))
-    (if (member v '("past" "today" "future")) (intern v) v)))
+  "Read a time value and parse it into the DSL shape."
+  (org-gtd-view-manager--time->dsl
+   (read-string "When (past/today/future or <7d, >2w, =1M): ")))
 
 (defun org-gtd-view-manager--read-string (&rest _)
   "Read a free-form string value, returning nil when left blank."
@@ -250,10 +275,27 @@ Fail-soft: a malformed value raises a teaching `user-error'."
   "Read the numeric prefix column width."
   (read-number "Prefix width: "))
 
+(defun org-gtd-view-manager--parse-prefix (input)
+  "Parse INPUT into a prefix fallback CHAIN (a list), fail-soft.
+Blank INPUT returns nil (unset; the DSL falls back to
+`org-gtd-view-lang--default-prefix').  A read failure (empty form,
+unbalanced parens) or a non-list value raises a teaching
+`user-error' rather than surfacing as a stack trace (design 2.3)."
+  (if (string-blank-p input)
+      nil
+    (let ((value (condition-case nil
+                     (car (read-from-string input))
+                   (error (user-error
+                           "Prefix must be a list like (project area-of-focus \"—\")")))))
+      (unless (listp value)
+        (user-error "Prefix must be a list like (project area-of-focus \"—\")"))
+      value)))
+
 (defun org-gtd-view-manager--read-prefix (&rest _)
   "Read a prefix fallback CHAIN (a list), not a format string (design 2.3)."
-  (read (read-string "Prefix chain (e.g. (project area-of-focus \"—\")): "
-                     (prin1-to-string org-gtd-view-lang--default-prefix))))
+  (org-gtd-view-manager--parse-prefix
+   (read-string "Prefix chain (e.g. (project area-of-focus \"—\")): "
+                (prin1-to-string org-gtd-view-lang--default-prefix))))
 
 ;;;; Badge / summary
 
