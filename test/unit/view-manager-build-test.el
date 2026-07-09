@@ -36,6 +36,22 @@
   (let ((plist (ogt--transient-suffix-plist 'org-gtd-view-manager--build "t")))
     (assert-equal "t" (plist-get plist :key))))
 
+(deftest view-manager-build/every-infix-and-action-key-is-bound ()
+  "Every generated infix key and every action key stays bound.
+Regression guard for the multi-column layout: rearranging the five
+infix groups into side-by-side columns must not drop any infix.  Keys
+are read from `org-gtd-view-manager--filter-specs' so this can never
+drift from the single source of truth the builder is generated from."
+  (dolist (entry org-gtd-view-manager--filter-specs)
+    (let* ((key (plist-get (cdr entry) :key))
+           (plist (ogt--transient-suffix-plist
+                   'org-gtd-view-manager--build key)))
+      (assert-equal key (plist-get plist :key))))
+  (dolist (key '("RET" "s" "C-c C-k"))
+    (let ((plist (ogt--transient-suffix-plist
+                  'org-gtd-view-manager--build key)))
+      (assert-equal key (plist-get plist :key)))))
+
 (deftest view-manager-build/save-rejects-blank-name ()
   "A blank name errors, writes nothing, and leaves the builder dirty.
 Guards against silently persisting a nameless `(name . \"\")' entry

@@ -709,7 +709,20 @@ five columns can never drift from the single source of truth."
                                  name
                                  :transient t))))
                      org-gtd-view-manager--filter-specs))))
-           groups)))
+           groups))
+         ;; Lay the five infix groups out as two side-by-side ROWS instead of
+         ;; one tall stack.  In transient, a group whose first child is itself
+         ;; a vector is classed `transient-columns' and renders its child
+         ;; vectors side by side (see `transient--parse-group').  Wrapping each
+         ;; row's per-group vectors in an OUTER vector produces that layout.
+         ;; Row 1: Type Time Structural (columns 0 1 2).  Row 2: Metadata
+         ;; Prefix (columns 3 4).  Indices track the `groups' alist order.
+         (rows
+          (list (apply #'vector (list (nth 0 columns)
+                                      (nth 1 columns)
+                                      (nth 2 columns)))
+                (apply #'vector (list (nth 3 columns)
+                                      (nth 4 columns))))))
     `(progn
        ,@set-defuns
        (transient-define-prefix org-gtd-view-manager--build (&optional starting-spec)
@@ -718,7 +731,7 @@ The five infix columns are generated from
 `org-gtd-view-manager--filter-specs'.  STARTING-SPEC seeds the
 builder; nil starts a fresh Untitled next-action view."
          [:description (lambda () (org-gtd-view-manager--build-summary))]
-         ,@columns
+         ,@rows
          ["Actions"
           ("RET" "Preview" org-gtd-view-manager--preview :transient t)
           ("s" "Save" org-gtd-view-manager--save)
