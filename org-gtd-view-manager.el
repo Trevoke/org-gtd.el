@@ -252,6 +252,21 @@ For example (< \"30m\") -> \"<30m\" and (> \"1h\") -> \">1h\"."
                   parts)))))
     (string-join (nreverse parts) " · ")))
 
+;;;; Compile
+
+(defun org-gtd-view-manager--compile (state)
+  "Compile builder STATE (a key -> value alist) into a flat view spec.
+Keys whose value is nil are omitted so the DSL applies its own
+defaults.  `name' and every curated filter key pass through as-is;
+values are already in DSL shape (readers produce them)."
+  (let ((allowed (cons 'name (mapcar #'car org-gtd-view-manager--filter-specs)))
+        result)
+    (dolist (cell state)
+      (when (and (memq (car cell) allowed)
+                 (not (null (cdr cell))))
+        (push cell result)))
+    (nreverse result)))
+
 ;;;; Footer
 
 (provide 'org-gtd-view-manager)
