@@ -48,5 +48,12 @@
                '((name . "x") (type . next-action) (who . nil)))))
     (assert-nil (assq 'who spec))))
 
+(deftest view-manager-compile/drops-unknown-keys ()
+  "A key not in the filter-spec allow-list is dropped from the compiled spec."
+  (let ((spec (org-gtd-view-manager--compile
+               '((name . "x") (type . next-action) (bogus-key . 1)))))
+    (assert-nil (assq 'bogus-key spec))
+    (assert-equal 'next-action (cdr (assq 'type spec)))))
+
 (provide 'view-manager-compile-test)
 ;;; view-manager-compile-test.el ends here
