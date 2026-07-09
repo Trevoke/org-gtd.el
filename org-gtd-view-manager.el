@@ -267,6 +267,40 @@ values are already in DSL shape (readers produce them)."
         (push cell result)))
     (nreverse result)))
 
+;;;; Migration (one-time, fail-soft)
+
+;; Forward-declaration: the legacy defcustom lives in `org-gtd-reflect', which
+;; already requires `org-gtd-view-language' (the same dependency this file
+;; loads).  We only READ the variable here, so a `defvar' is lighter than a
+;; full `require' and avoids pulling reflect's heavy dependency chain into the
+;; manager.  At runtime the prelude/org-gtd load path binds it; this keeps
+;; `--warnings-as-errors' quiet without risking a load cycle.
+(defvar org-gtd-reflect-missed-custom-views)
+
+(defun org-gtd-view-manager--flatten-entry (entry)
+  "Flatten a legacy ENTRY: hoist any nested `filters' alist to top level.
+Return the flat spec, or signal `error' if it names an unknown key."
+  (let* ((allowed (cons 'name (mapcar #'car org-gtd-view-manager--filter-specs)))
+         (nested (alist-get 'filters entry))
+         (flat (append (assq-delete-all 'filters (copy-alist entry)) nested)))
+    (dolist (cell flat)
+      (unless (memq (car cell) allowed)
+        (error "unknown key %s" (car cell))))
+    flat))
+
+(defun org-gtd-view-manager--migrate ()
+  "Import `org-gtd-reflect-missed-custom-views' into the store, fail-soft.
+Flattens nested `filters'; skips and `message's any bad entry."
+  (dolist (entry org-gtd-reflect-missed-custom-views)
+    (condition-case err
+        (let* ((flat (org-gtd-view-manager--flatten-entry entry))
+               (name (alist-get 'name flat)))
+          (when name
+            (org-gtd-view-manager--store-upsert name flat)))
+      (error (message "org-gtd: skipped migrating view %S: %s"
+                      (alist-get 'name entry)
+                      (error-message-string err))))))
+
 ;;;; Footer
 
 (provide 'org-gtd-view-manager)
