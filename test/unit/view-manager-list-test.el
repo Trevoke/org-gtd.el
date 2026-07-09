@@ -15,13 +15,13 @@
 
 ;;; Code:
 
-(require 'cl-lib)
-(require 'e-unit)
-(require 'org-gtd-view-manager)
-(require 'org-gtd-test-helper-utils "test/helpers/utils.el")
+(require 'ogt-eunit-prelude "test/helpers/prelude.el")
 
-;; Initialize e-unit short syntax
 (e-unit-initialize)
+
+(around-each (proceed context)
+  (ogt-eunit-with-mock-gtd
+    (funcall proceed context)))
 
 (deftest view-manager-list/is-a-transient-prefix ()
   "The manager is defined as a transient prefix command."
@@ -41,27 +41,25 @@
   "Saving an edited view under a new name removes the old entry.
 Editing seeds `--build-original-name'; a save under a changed name
 must MOVE (delete the old), not leave an orphan behind."
-  (let ((org-gtd-directory (make-temp-file "vm-list-test" t)))
-    (org-gtd-view-manager--store-upsert
-     "Old" (list (cons 'name "Old") (cons 'type 'next-action)))
-    (setq org-gtd-view-manager--build-state
-          (list (cons 'name "Old") (cons 'type 'next-action)))
-    (setq org-gtd-view-manager--build-original-name "Old")
-    (setq org-gtd-view-manager--build-dirty t)
-    (cl-letf (((symbol-function 'read-string) (lambda (&rest _) "New"))
-              ((symbol-function 'org-gtd-view-manager--build-restore-windows)
-               #'ignore))
-      (org-gtd-view-manager--save))
-    (let ((views (org-gtd-view-manager--store-read)))
-      (assert-equal nil (assoc "Old" views))
-      (assert-true (assoc "New" views)))))
+  (org-gtd-view-manager--store-upsert
+   "Old" (list (cons 'name "Old") (cons 'type 'next-action)))
+  (setq org-gtd-view-manager--build-state
+        (list (cons 'name "Old") (cons 'type 'next-action)))
+  (setq org-gtd-view-manager--build-original-name "Old")
+  (setq org-gtd-view-manager--build-dirty t)
+  (cl-letf (((symbol-function 'read-string) (lambda (&rest _) "New"))
+            ((symbol-function 'org-gtd-view-manager--build-restore-windows)
+             #'ignore))
+    (org-gtd-view-manager--save))
+  (let ((views (org-gtd-view-manager--store-read)))
+    (assert-equal nil (assoc "Old" views))
+    (assert-true (assoc "New" views))))
 
 (deftest view-manager-list/edit-save-same-name-no-overwrite-prompt ()
   "Saving an edited view under its OWN name must not prompt to overwrite.
 The overwrite guard finds the very view being edited; skip it when the
 name equals `--build-original-name' so a plain edit-save is silent."
-  (let ((org-gtd-directory (make-temp-file "vm-list-test" t))
-        (prompted nil))
+  (let ((prompted nil))
     (org-gtd-view-manager--store-upsert
      "A" (list (cons 'name "A") (cons 'type 'next-action)))
     (setq org-gtd-view-manager--build-state

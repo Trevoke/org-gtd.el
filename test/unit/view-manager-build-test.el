@@ -14,13 +14,13 @@
 
 ;;; Code:
 
-(require 'cl-lib)
-(require 'e-unit)
-(require 'org-gtd-view-manager)
-(require 'org-gtd-test-helper-utils "test/helpers/utils.el")
+(require 'ogt-eunit-prelude "test/helpers/prelude.el")
 
-;; Initialize e-unit short syntax
 (e-unit-initialize)
+
+(around-each (proceed context)
+  (ogt-eunit-with-mock-gtd
+    (funcall proceed context)))
 
 (deftest view-manager-build/is-a-transient-prefix ()
   "The builder is defined as a transient prefix command."
@@ -40,15 +40,14 @@
   "A blank name errors, writes nothing, and leaves the builder dirty.
 Guards against silently persisting a nameless `(name . \"\")' entry
 that would surface as a blank candidate in `org-gtd-view-run'."
-  (let ((org-gtd-directory (make-temp-file "vm-build-test" t)))
-    (setq org-gtd-view-manager--build-state
-          (list (cons 'name "Untitled") (cons 'type 'next-action)))
-    (setq org-gtd-view-manager--build-dirty t)
-    (cl-letf (((symbol-function 'read-string) (lambda (&rest _) ""))
-              ;; Keep the test hermetic: don't register a resume timer.
-              ((symbol-function 'org-gtd-view-manager--build-resume) #'ignore))
-      (assert-raises 'user-error (org-gtd-view-manager--save)))
-    (assert-equal nil (org-gtd-view-manager--store-read))
-    (assert-true org-gtd-view-manager--build-dirty)))
+  (setq org-gtd-view-manager--build-state
+        (list (cons 'name "Untitled") (cons 'type 'next-action)))
+  (setq org-gtd-view-manager--build-dirty t)
+  (cl-letf (((symbol-function 'read-string) (lambda (&rest _) ""))
+            ;; Keep the test hermetic: don't register a resume timer.
+            ((symbol-function 'org-gtd-view-manager--build-resume) #'ignore))
+    (assert-raises 'user-error (org-gtd-view-manager--save)))
+  (assert-equal nil (org-gtd-view-manager--store-read))
+  (assert-true org-gtd-view-manager--build-dirty))
 
 ;;; view-manager-build-test.el ends here
