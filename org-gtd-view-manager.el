@@ -32,6 +32,7 @@
 
 (require 'transient)
 (require 'f)
+(require 'subr-x)
 (require 'org-gtd-core)
 (require 'org-gtd-files)
 (require 'org-gtd-view-language)
@@ -56,28 +57,39 @@
 Returns nil when the store is empty.  Fail-soft: a corrupt store
 yields nil with a `message', never an error."
   (let ((path (org-gtd-view-manager--store-path)))
-    ;; Lazily create the store by writing the header DIRECTLY.  Do NOT use
-    ;; `org-gtd--ensure-file-exists' here: it runs `org-gtd-core-prepare-buffer'
-    ;; -> `org-mode-restart', which is for .org files, not a .eld store.
+    ;; Lazily create the store with the header AND an explicit empty form.  Do
+    ;; NOT use `org-gtd--ensure-file-exists' here: it runs
+    ;; `org-gtd-core-prepare-buffer' -> `org-mode-restart', which is for .org
+    ;; files, not a .eld store.  Writing a real `()' form (rather than
+    ;; header-only) means the empty state reads back through a genuine form, so
+    ;; a truncated/corrupt store can be distinguished from a fresh empty one.
     (unless (f-exists-p path)
-      (f-mkdir-full-path (f-dirname path))
-      (f-write-text org-gtd-view-manager--store-header 'utf-8 path))
+      (org-gtd-view-manager--store-write nil))
     (condition-case err
         (let ((text (f-read-text path)))
           ;; The store holds the alist as one top-level form; the reader skips
-          ;; the leading header-comment lines.  A store with only the header
-          ;; (no form yet) reads as empty.
+          ;; the leading header-comment lines.  A fresh store reads back as
+          ;; `()' -> nil.
           (if (string-blank-p text) nil
             (car (read-from-string text))))
-      ;; A header-only store (no form yet) is the normal empty state.
-      (end-of-file nil)
+      ;; `end-of-file' here means a truncated/partial write, not an empty
+      ;; store (the empty store is a complete `()' form) -- report it.
       (error (message "org-gtd: could not read views store: %s"
                       (error-message-string err))
              nil))))
 
 (defun org-gtd-view-manager--store-write (views)
-  "Persist VIEWS (a name -> spec alist) to the store, header preserved."
-  (let ((path (org-gtd-view-manager--store-path)))
+  "Persist VIEWS (a name -> spec alist) to the store, header preserved.
+An empty store is written as a genuine `()' form (never header-only) so
+that reads can tell an empty store from a truncated one."
+  (let ((path (org-gtd-view-manager--store-path))
+        ;; Never let a user's `print-length'/`print-level' truncate a spec
+        ;; with `...' and produce an unreadable store.
+        (print-length nil)
+        (print-level nil)
+        (print-circle t)
+        (coding-system-for-write 'utf-8))
+    (make-directory (f-dirname path) t)
     (with-temp-file path
       (insert org-gtd-view-manager--store-header)
       (insert (prin1-to-string views))

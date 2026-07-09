@@ -42,5 +42,18 @@
   (assert-match "Managed by org-gtd"
                 (f-read-text (org-gtd-view-manager--store-path))))
 
+(deftest view-manager-store/truncated-store-reports-and-yields-nil ()
+  "A truncated store returns nil AND emits a message (fail-soft)."
+  (f-write-text ";; header\n((\"a\" . ((type" 'utf-8
+                (org-gtd-view-manager--store-path))
+  (let ((captured nil))
+    (cl-letf (((symbol-function 'message)
+               (lambda (fmt &rest args)
+                 (when fmt (push (apply #'format fmt args) captured))
+                 nil)))
+      (assert-nil (org-gtd-view-manager--store-read)))
+    (assert-true (seq-some (lambda (m) (string-match-p "views store" m))
+                           captured))))
+
 (provide 'view-manager-store-test)
 ;;; view-manager-store-test.el ends here
