@@ -119,52 +119,56 @@ that reads can tell an empty store from a truncated one."
 ;; Each entry: (DSL-KEY :group G :key "L" :reader FN :formatter FN)
 ;; :reader reads a value interactively (returns the value to store, or nil to unset).
 ;; :formatter renders a stored value for the badge/summary (a short string).
-(defconst org-gtd-view-manager--filter-specs
-  '((type          :group type       :key "t"
-                   :reader org-gtd-view-manager--read-type
-                   :formatter org-gtd-view-manager--fmt-symbol)
-    (when          :group time       :key "w"
-                   :reader org-gtd-view-manager--read-time
-                   :formatter org-gtd-view-manager--fmt-time)
-    (deadline      :group time       :key "D"
-                   :reader org-gtd-view-manager--read-time
-                   :formatter org-gtd-view-manager--fmt-time)
-    (scheduled     :group time       :key "C"
-                   :reader org-gtd-view-manager--read-time
-                   :formatter org-gtd-view-manager--fmt-time)
-    (todo          :group structural :key "o"
-                   :reader org-gtd-view-manager--read-string
-                   :formatter org-gtd-view-manager--fmt-string)
-    (done          :group structural :key "O"
-                   :reader org-gtd-view-manager--read-time
-                   :formatter org-gtd-view-manager--fmt-time)
-    (not-done      :group structural :key "N"
-                   :reader org-gtd-view-manager--read-flag
-                   :formatter org-gtd-view-manager--fmt-flag)
-    (area-of-focus :group metadata   :key "A"
-                   :reader org-gtd-view-manager--read-area
-                   :formatter org-gtd-view-manager--fmt-string)
-    (effort        :group metadata   :key "e"
-                   :reader org-gtd-view-manager--read-effort
-                   :formatter org-gtd-view-manager--fmt-effort)
-    (who           :group metadata   :key "W"
-                   :reader org-gtd-view-manager--read-string
-                   :formatter org-gtd-view-manager--fmt-string)
-    (tags          :group metadata   :key "G"
-                   :reader org-gtd-view-manager--read-string
-                   :formatter org-gtd-view-manager--fmt-string)
-    (priority      :group metadata   :key "P"
-                   :reader org-gtd-view-manager--read-string
-                   :formatter org-gtd-view-manager--fmt-string)
-    (prefix        :group prefix     :key "x"
-                   :reader org-gtd-view-manager--read-prefix
-                   :formatter org-gtd-view-manager--fmt-prefix)
-    (prefix-width  :group prefix     :key "X"
-                   :reader org-gtd-view-manager--read-width
-                   :formatter org-gtd-view-manager--fmt-number))
-  "Curated user-facing filter keys the builder exposes, per design 2.1.
+;; Wrapped in `eval-and-compile' so the builder-generating macro (Task 9's
+;; `org-gtd-view-manager--define-builder-transient') can read this table at
+;; macro-expansion time during byte compilation, not only at load time.
+(eval-and-compile
+  (defconst org-gtd-view-manager--filter-specs
+    '((type          :group type       :key "t"
+                     :reader org-gtd-view-manager--read-type
+                     :formatter org-gtd-view-manager--fmt-symbol)
+      (when          :group time       :key "w"
+                     :reader org-gtd-view-manager--read-time
+                     :formatter org-gtd-view-manager--fmt-time)
+      (deadline      :group time       :key "D"
+                     :reader org-gtd-view-manager--read-time
+                     :formatter org-gtd-view-manager--fmt-time)
+      (scheduled     :group time       :key "C"
+                     :reader org-gtd-view-manager--read-time
+                     :formatter org-gtd-view-manager--fmt-time)
+      (todo          :group structural :key "o"
+                     :reader org-gtd-view-manager--read-string
+                     :formatter org-gtd-view-manager--fmt-string)
+      (done          :group structural :key "O"
+                     :reader org-gtd-view-manager--read-time
+                     :formatter org-gtd-view-manager--fmt-time)
+      (not-done      :group structural :key "N"
+                     :reader org-gtd-view-manager--read-flag
+                     :formatter org-gtd-view-manager--fmt-flag)
+      (area-of-focus :group metadata   :key "A"
+                     :reader org-gtd-view-manager--read-area
+                     :formatter org-gtd-view-manager--fmt-string)
+      (effort        :group metadata   :key "e"
+                     :reader org-gtd-view-manager--read-effort
+                     :formatter org-gtd-view-manager--fmt-effort)
+      (who           :group metadata   :key "W"
+                     :reader org-gtd-view-manager--read-string
+                     :formatter org-gtd-view-manager--fmt-string)
+      (tags          :group metadata   :key "G"
+                     :reader org-gtd-view-manager--read-string
+                     :formatter org-gtd-view-manager--fmt-string)
+      (priority      :group metadata   :key "P"
+                     :reader org-gtd-view-manager--read-string
+                     :formatter org-gtd-view-manager--fmt-string)
+      (prefix        :group prefix     :key "x"
+                     :reader org-gtd-view-manager--read-prefix
+                     :formatter org-gtd-view-manager--fmt-prefix)
+      (prefix-width  :group prefix     :key "X"
+                     :reader org-gtd-view-manager--read-width
+                     :formatter org-gtd-view-manager--fmt-number))
+    "Curated user-facing filter keys the builder exposes, per design 2.1.
 Each key MUST be a member of `org-gtd-view-lang--known-filter-keys'
-\(asserted at load).  Structural/reserved keys are deliberately excluded.")
+\(asserted at load).  Structural/reserved keys are deliberately excluded."))
 
 (defun org-gtd-view-manager--type-candidates ()
   "Return all selectable type values from the DSL type constants."
@@ -396,6 +400,191 @@ Flattens nested `filters'; skips and `message's any bad entry."
       (error (message "org-gtd: skipped migrating view %S: %s"
                       (and (consp entry) (alist-get 'name entry))
                       (error-message-string err))))))
+
+;;;; Builder transient
+
+;; The builder is a transient prefix whose five infix columns (Type / Time /
+;; Structural / Metadata / Prefix) are GENERATED from
+;; `org-gtd-view-manager--filter-specs' -- every key letter, reader and
+;; formatter comes from that table, so nothing here is hand-synced (design 2.1).
+
+(defvar org-gtd-view-manager--build-state nil
+  "Alist of the view spec being built (key -> value).")
+(defvar org-gtd-view-manager--build-window-config nil
+  "Window configuration to restore when the builder exits.")
+(defvar org-gtd-view-manager--build-dirty nil
+  "Non-nil when the builder has unsaved changes.")
+
+(defun org-gtd-view-manager--build-summary ()
+  "Return the summary line for the builder header."
+  (concat "View: "
+          (or (cdr (assq 'name org-gtd-view-manager--build-state)) "Untitled")
+          "  —  "
+          (org-gtd-view-manager--badge
+           (org-gtd-view-manager--compile org-gtd-view-manager--build-state))))
+
+(defun org-gtd-view-manager--infix-description (dsl-key label)
+  "Return the builder row description for DSL-KEY.
+LABEL is the human-readable prefix; the current value (from
+`org-gtd-view-manager--build-state', rendered through the key's
+formatter) follows, or `—' when the key is unset."
+  (let* ((entry (assq dsl-key org-gtd-view-manager--filter-specs))
+         (val (cdr (assq dsl-key org-gtd-view-manager--build-state)))
+         (formatter (plist-get (cdr entry) :formatter)))
+    (format "%-13s %s"
+            label
+            (if (null val) "—" (or (funcall formatter val) "on")))))
+
+(defun org-gtd-view-manager--set-value (dsl-key)
+  "Read a value for DSL-KEY and store it in the builder state.
+A nil reader result UNSETS the key (removes it).  Marks the builder
+dirty and asks the preview to refresh (a no-op until Task 10)."
+  (let* ((entry (assq dsl-key org-gtd-view-manager--filter-specs))
+         (reader (plist-get (cdr entry) :reader))
+         (value (funcall reader)))
+    (if (null value)
+        (setq org-gtd-view-manager--build-state
+              (assq-delete-all dsl-key org-gtd-view-manager--build-state))
+      (setf (alist-get dsl-key org-gtd-view-manager--build-state) value))
+    (setq org-gtd-view-manager--build-dirty t)
+    (org-gtd-view-manager--preview-schedule)))
+
+;; --- Task 10 placeholders -----------------------------------------------
+;; PLACEHOLDER (Task 10 replaces the body): the live, debounced org-agenda
+;; preview loop is Task 10's job.  For now the RET action just echoes the badge
+;; and the schedule hook is a no-op, so the transient is usable end-to-end.
+(defun org-gtd-view-manager--preview-schedule ()
+  "No-op placeholder; Task 10 debounces a live preview refresh here."
+  nil)
+
+(defun org-gtd-view-manager--preview ()
+  "PLACEHOLDER (Task 10): echo the current spec's badge.
+Task 10 replaces this body with the live org-agenda preview render."
+  (interactive)
+  (message "Preview: %s"
+           (org-gtd-view-manager--badge
+            (org-gtd-view-manager--compile org-gtd-view-manager--build-state))))
+;; ------------------------------------------------------------------------
+
+(defun org-gtd-view-manager--build-restore-windows ()
+  "Restore the window layout snapshotted when the builder was entered."
+  (when org-gtd-view-manager--build-window-config
+    (set-window-configuration org-gtd-view-manager--build-window-config)))
+
+(defun org-gtd-view-manager--build-resume ()
+  "Re-open the builder transient WITHOUT reseeding its state.
+Used by the fail-soft `stay' branches of save/abort: the exiting
+suffix has already torn the transient down, so we redisplay on the
+next command tick (the house idiom, see `run-at-time' in
+`org-gtd-graph-transient')."
+  (run-at-time 0 nil (lambda () (transient-setup 'org-gtd-view-manager--build))))
+
+(defun org-gtd-view-manager--save ()
+  "Persist the built view, guarding against silent overwrite.
+Prompts for a name (defaulting to the current one).  If a view of
+that name already exists and the user declines to overwrite, the
+save is abandoned and the builder is reopened so another name can be
+chosen (fail-soft).  On a successful save the entry window layout is
+restored."
+  (interactive)
+  (let* ((current-name (or (cdr (assq 'name org-gtd-view-manager--build-state))
+                           "Untitled"))
+         (name (read-string "Name this view: " current-name))
+         (spec (cons (cons 'name name)
+                     (assq-delete-all
+                      'name (org-gtd-view-manager--compile
+                             org-gtd-view-manager--build-state)))))
+    (if (and (org-gtd-view-manager--store-get name)
+             (not (y-or-n-p (format "A view named '%s' exists — overwrite? " name))))
+        (progn (message "Save cancelled") (org-gtd-view-manager--build-resume))
+      (org-gtd-view-manager--store-upsert name spec)
+      (setq org-gtd-view-manager--build-dirty nil)
+      (message "Saved view '%s'" name)
+      (org-gtd-view-manager--build-restore-windows))))
+
+(defun org-gtd-view-manager--abort ()
+  "Abort the builder, guarding unsaved changes.
+When there are unsaved changes the user is asked to confirm the
+discard; declining reopens the builder with its state intact.  On
+confirm (or when nothing is dirty) the entry window layout is
+restored."
+  (interactive)
+  (if (or (not org-gtd-view-manager--build-dirty)
+          (y-or-n-p "Discard unsaved view? "))
+      (org-gtd-view-manager--build-restore-windows)
+    (org-gtd-view-manager--build-resume)))
+
+(defmacro org-gtd-view-manager--define-builder-transient ()
+  "Generate the builder's per-key set-commands and the prefix from the table.
+DRY: each infix's key letter, reader and formatter are read from
+`org-gtd-view-manager--filter-specs' at macro-expansion time, so the
+five columns can never drift from the single source of truth."
+  (let* ((groups '((type       . "Type")
+                   (time       . "Time")
+                   (structural . "Structural")
+                   (metadata   . "Metadata")
+                   (prefix     . "Prefix")))
+         (set-defuns
+          (mapcar
+           (lambda (entry)
+             (let* ((dsl-key (car entry))
+                    (name (intern (format "org-gtd-view-manager--set-%s"
+                                          dsl-key))))
+               `(defun ,name ()
+                  ,(format "Read and store the `%s' builder filter (generated)."
+                           dsl-key)
+                  (interactive)
+                  (org-gtd-view-manager--set-value ',dsl-key))))
+           org-gtd-view-manager--filter-specs))
+         (columns
+          (mapcar
+           (lambda (grp)
+             (apply
+              #'vector
+              (cdr grp)
+              (delq nil
+                    (mapcar
+                     (lambda (entry)
+                       (when (eq (plist-get (cdr entry) :group) (car grp))
+                         (let* ((dsl-key (car entry))
+                                (letter (plist-get (cdr entry) :key))
+                                (name (intern
+                                       (format "org-gtd-view-manager--set-%s"
+                                               dsl-key)))
+                                (label (symbol-name dsl-key)))
+                           (list letter
+                                 `(lambda ()
+                                    (org-gtd-view-manager--infix-description
+                                     ',dsl-key ,label))
+                                 name
+                                 :transient t))))
+                     org-gtd-view-manager--filter-specs))))
+           groups)))
+    `(progn
+       ,@set-defuns
+       ;;;###autoload (autoload 'org-gtd-view-manager--build "org-gtd-view-manager" nil t)
+       (transient-define-prefix org-gtd-view-manager--build (&optional starting-spec)
+         "Build or edit a saved GTD view interactively.
+The five infix columns are generated from
+`org-gtd-view-manager--filter-specs'.  STARTING-SPEC seeds the
+builder; nil starts a fresh Untitled next-action view."
+         [:description (lambda () (org-gtd-view-manager--build-summary))]
+         ,@columns
+         ["Actions"
+          ("RET" "Preview" org-gtd-view-manager--preview :transient t)
+          ("s" "Save" org-gtd-view-manager--save)
+          ("C-c C-k" "Abort" org-gtd-view-manager--abort)]
+         (interactive)
+         (setq org-gtd-view-manager--build-window-config
+               (current-window-configuration))
+         (setq org-gtd-view-manager--build-state
+               (copy-alist (or starting-spec
+                               (list (cons 'name "Untitled")
+                                     (cons 'type 'next-action)))))
+         (setq org-gtd-view-manager--build-dirty nil)
+         (transient-setup 'org-gtd-view-manager--build)))))
+
+(org-gtd-view-manager--define-builder-transient)
 
 ;;;; Recall
 
