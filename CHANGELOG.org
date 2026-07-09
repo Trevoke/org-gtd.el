@@ -5,7 +5,9 @@
 - New =View Manager= (=M-x org-gtd-view-manager=, or =v= in the command center):
   create, live-preview, name, save, recall, edit, and delete custom GTD views
   without writing elisp.  Views persist to =views.eld= in your =org-gtd-directory=.
-  Existing =org-gtd-reflect-missed-custom-views= entries are imported automatically.
+  Most existing =org-gtd-reflect-missed-custom-views= entries are imported
+  automatically; entries using advanced view keys remain available through the
+  (now-deprecated) variable.
   New command =org-gtd-view-run= recalls a saved view by name.
 
 *** Unified type and hook model

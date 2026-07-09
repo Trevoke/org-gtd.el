@@ -2538,7 +2538,7 @@ Open it with ~M-x org-gtd-view-manager~, or press =v= in the command center. Thi
 - edit, duplicate, or delete an existing view;
 - render a saved view to see it as a live agenda.
 
-*The builder.* Creating or editing a view opens a transient builder. Each filter you toggle -- by type, tag, effort, priority, prefix, and so on -- updates a *live preview* agenda in an adjacent window as you go, so you can see exactly what the view will match before you commit to it. When the preview would otherwise be empty (for instance because your own agenda has nothing matching yet), the builder shows the view running against a small set of sample data instead, so you can still tell what the filters do. When you are happy with the result, save it under a name; abort to discard it.
+*The builder.* Creating or editing a view opens a transient builder. Each filter you toggle -- by type, tag, effort, priority, prefix, and so on -- updates a *live preview* agenda in an adjacent window as you go, so you can see exactly what the view will match before you commit to it. When your =org-agenda-files= is empty (for instance in a brand-new setup), the builder shows the view running against a small set of sample data instead, so you can still tell what the filters do. When you are happy with the result, save it under a name; abort to discard it.
 
 *Recalling a saved view.* Use ~M-x org-gtd-view-run~ to recall any saved view by name through completing-read, and org-gtd renders it as an agenda. This is handy to bind to a key or call from your own commands.
 
