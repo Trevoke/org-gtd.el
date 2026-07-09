@@ -371,7 +371,11 @@ values are already in DSL shape (readers produce them)."
     (dolist (cell state)
       (when (and (memq (car cell) allowed)
                  (not (null (cdr cell))))
-        (push cell result)))
+        ;; Cons a FRESH cell: the compiled spec is cached in
+        ;; `--preview-last', and `--set-value' mutates existing keys in
+        ;; place.  Sharing the cell would let that in-place mutation
+        ;; corrupt the cache and defeat `--preview-changed-p'.
+        (push (cons (car cell) (cdr cell)) result)))
     (nreverse result)))
 
 ;;;; Migration (one-time, fail-soft)
