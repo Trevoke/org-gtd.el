@@ -197,6 +197,23 @@ Each key MUST be a member of `org-gtd-view-lang--known-filter-keys'
   (when unknown
     (error "org-gtd-view-manager: filter-spec keys not in the DSL: %S" unknown)))
 
+;; A duplicate infix letter would silently break the builder transient (Task 9),
+;; far from its cause -- this table is the single source of truth, so guard it
+;; here.  Tally with a plain alist to stay free of cl-lib at load time.
+(let ((tally nil)
+      (dups nil))
+  (dolist (entry org-gtd-view-manager--filter-specs)
+    (let* ((key (plist-get (cdr entry) :key))
+           (cell (assoc key tally)))
+      (if cell
+          (setcdr cell (1+ (cdr cell)))
+        (push (cons key 1) tally))))
+  (dolist (cell tally)
+    (when (> (cdr cell) 1)
+      (push (car cell) dups)))
+  (when dups
+    (error "org-gtd-view-manager: duplicate filter-spec :key letters: %S" dups)))
+
 ;;;; Footer
 
 (provide 'org-gtd-view-manager)

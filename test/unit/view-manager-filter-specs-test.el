@@ -47,5 +47,11 @@
     (assert-true (memq 'tickler cands))
     (assert-true (memq 'trash cands))))
 
+(deftest view-manager-filter-specs/keys-are-unique ()
+  "No two filter-spec entries share an infix letter."
+  (let ((keys (mapcar (lambda (e) (plist-get (cdr e) :key))
+                      org-gtd-view-manager--filter-specs)))
+    (assert-equal (length keys) (length (delete-dups (copy-sequence keys))))))
+
 (provide 'view-manager-filter-specs-test)
 ;;; view-manager-filter-specs-test.el ends here
