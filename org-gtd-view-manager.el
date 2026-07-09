@@ -385,14 +385,23 @@ Return the flat spec, or signal `error' if it names an unknown key."
 
 (defun org-gtd-view-manager--migrate ()
   "Import `org-gtd-reflect-missed-custom-views' into the store, fail-soft.
-Flattens nested `filters'; skips and `message's any bad entry."
-  (dolist (entry org-gtd-reflect-missed-custom-views)
+Flattens nested `filters'; skips and `message's any bad entry.  A
+legacy entry whose name ALREADY EXISTS in the store is skipped, never
+overwritten -- so a cross-session re-run cannot clobber a view the
+user has since edited through the manager.  The legacy variable is
+read via `bound-and-true-p': it is only forward-declared here, so it
+may be void when `org-gtd-reflect' has not been loaded."
+  (dolist (entry (bound-and-true-p org-gtd-reflect-missed-custom-views))
     (condition-case err
         (let* ((flat (org-gtd-view-manager--flatten-entry entry))
                (name (alist-get 'name flat)))
-          (if name
-              (org-gtd-view-manager--store-upsert name flat)
-            (message "org-gtd: skipped migrating a view with no name")))
+          (cond
+           ((null name)
+            (message "org-gtd: skipped migrating a view with no name"))
+           ;; Non-clobbering: never overwrite an existing (possibly
+           ;; user-edited) view of the same name on a later re-run.
+           ((org-gtd-view-manager--store-get name) nil)
+           (t (org-gtd-view-manager--store-upsert name flat))))
       ;; ENTRY may be a hand-edited junk atom (e.g. a bare string), so guard
       ;; the name extraction: `alist-get' on a non-list would itself throw an
       ;; UNCAUGHT `wrong-type-argument', aborting the whole loop and defeating
@@ -400,6 +409,17 @@ Flattens nested `filters'; skips and `message's any bad entry."
       (error (message "org-gtd: skipped migrating view %S: %s"
                       (and (consp entry) (alist-get 'name entry))
                       (error-message-string err))))))
+
+;;;; Migration trigger
+
+(defvar org-gtd-view-manager--migrated nil
+  "Non-nil once legacy custom views have been imported this session.")
+
+(defun org-gtd-view-manager--migrate-once ()
+  "Run the one-time legacy import, guarded by a session flag."
+  (unless org-gtd-view-manager--migrated
+    (org-gtd-view-manager--migrate)
+    (setq org-gtd-view-manager--migrated t)))
 
 ;;;; Builder transient
 
@@ -491,13 +511,45 @@ one render per `org-gtd-view-manager--preview-delay' idle window."
         (run-with-idle-timer org-gtd-view-manager--preview-delay nil
                              #'org-gtd-view-manager--preview-now)))
 
-;; Minimal render (Task 11 extends this with the empty-agenda sample path):
+;;;; Sample-data preview
+
+(defconst org-gtd-view-manager--sample-contents
+  "\
+* NEXT Buy stamps :errand:
+:PROPERTIES:
+:ORG_GTD: Actions
+:CATEGORY: Home
+:END:
+* NEXT Draft quarterly plan
+:PROPERTIES:
+:ORG_GTD: Actions
+:CATEGORY: Work
+:END:
+* WAIT Response from Sam
+:PROPERTIES:
+:ORG_GTD: Delegated
+:DELEGATED_TO: Sam
+:END:
+"
+  "A tiny representative dataset for previews when agenda-files are empty.")
+
+(defun org-gtd-view-manager--sample-file ()
+  "Return a path to a temp org file holding the sample dataset."
+  (let ((path (f-join temporary-file-directory "org-gtd-view-sample.org")))
+    (unless (f-exists-p path) (f-write-text org-gtd-view-manager--sample-contents 'utf-8 path))
+    path))
+
 (defun org-gtd-view-manager--render-preview (spec)
-  "Render SPEC via `org-gtd-view-show'.
-PLACEHOLDER (Task 11 replaces this body): Task 11 adds the
-empty-agenda -> sample-data path.  For now it renders SPEC over the
-real `org-agenda-files' with a plain `org-gtd-view-show' call."
-  (org-gtd-view-show spec))
+  "Render SPEC via `org-gtd-view-show', using sample data if needed.
+When `org-agenda-files' is empty, a tiny built-in sample file is
+`let'-bound into `org-agenda-files' FOR THE RENDER ONLY, with a
+banner explaining the substitution.  Real agenda-files are left
+untouched."
+  (if org-agenda-files
+      (org-gtd-view-show spec)
+    (let ((org-agenda-files (list (org-gtd-view-manager--sample-file))))
+      (message "sample data · your agenda-files are empty — previewing org-gtd's built-in set")
+      (org-gtd-view-show spec))))
 
 (defun org-gtd-view-manager--build-restore-windows ()
   "Restore the window layout snapshotted when the builder was entered.

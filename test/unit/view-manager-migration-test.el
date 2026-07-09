@@ -57,6 +57,16 @@
     (assert-equal '((name . "Good") (type . next-action))
                   (org-gtd-view-manager--store-get "Good"))))
 
+(deftest view-manager-migration/existing-name-not-overwritten ()
+  "A name already in the store is NOT clobbered by a differing legacy entry."
+  (org-gtd-view-manager--store-upsert
+   "Shared" '((name . "Shared") (type . next-action) (who . "edited")))
+  (let ((org-gtd-reflect-missed-custom-views
+         '(((name . "Shared") (type . delegated)))))
+    (org-gtd-view-manager--migrate)
+    (assert-equal '((name . "Shared") (type . next-action) (who . "edited"))
+                  (org-gtd-view-manager--store-get "Shared"))))
+
 (deftest view-manager-migration/flatten-does-not-mutate-caller ()
   "Flattening does not mutate the caller's entry."
   (let* ((entry '((name . "X") (filters . ((type . delegated)))))
