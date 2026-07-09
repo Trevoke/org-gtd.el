@@ -98,5 +98,25 @@ window)."
       (org-gtd-view-manager--preview-now))
     (assert-equal 0 count)))
 
+(deftest view-manager-preview/render-binds-nondisruptive-window-setup ()
+  "The preview render runs under a non-window-tearing `org-agenda-window-setup'.
+Regression: the default `reorganize-frame' deletes/rearranges the frame's
+windows when the preview calls `org-agenda', destroying the builder's
+transient panel on every refresh.  `--render-preview' must bind
+`org-agenda-window-setup' to `current-window' so the agenda lands in the
+selected window without touching the transient's window."
+  (let ((captured 'unset)
+        (org-agenda-files nil)) ;; force the sample-data branch too
+    (cl-letf (((symbol-function 'org-gtd-view-show)
+               (lambda (&rest _) (setq captured org-agenda-window-setup)))
+              ;; Stub the sample-file writer: the sample branch only needs a
+              ;; path here, and doing real disk I/O makes the test fragile to
+              ;; a leaked mock-fs `temporary-file-directory' in the full suite.
+              ((symbol-function 'org-gtd-view-manager--sample-file)
+               (lambda (&rest _) "/tmp/org-gtd-view-sample.org")))
+      (org-gtd-view-manager--render-preview
+       '((name . "x") (type . next-action))))
+    (assert-equal 'current-window captured)))
+
 (provide 'view-manager-preview-test)
 ;;; view-manager-preview-test.el ends here

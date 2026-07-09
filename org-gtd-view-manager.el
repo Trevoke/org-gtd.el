@@ -577,12 +577,19 @@ one render per `org-gtd-view-manager--preview-delay' idle window."
 When `org-agenda-files' is empty, a tiny built-in sample file is
 `let'-bound into `org-agenda-files' FOR THE RENDER ONLY, with a
 banner explaining the substitution.  Real agenda-files are left
-untouched."
-  (if org-agenda-files
-      (org-gtd-view-show spec)
-    (let ((org-agenda-files (list (org-gtd-view-manager--sample-file))))
-      (message "sample data · your agenda-files are empty — previewing org-gtd's built-in set")
-      (org-gtd-view-show spec))))
+untouched.
+
+`org-agenda-window-setup' is bound to `current-window' for the render
+so `org-agenda' lands the preview in the selected window WITHOUT
+reorganizing the frame -- the frame's default `reorganize-frame' would
+delete the builder transient's window on every refresh, making the
+panel vanish until a later command redrew it (yaks -k65z)."
+  (let ((org-agenda-window-setup 'current-window))
+    (if org-agenda-files
+        (org-gtd-view-show spec)
+      (let ((org-agenda-files (list (org-gtd-view-manager--sample-file))))
+        (message "sample data · your agenda-files are empty — previewing org-gtd's built-in set")
+        (org-gtd-view-show spec)))))
 
 (defun org-gtd-view-manager--build-restore-windows ()
   "Restore the window layout snapshotted when the builder was entered.
