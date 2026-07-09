@@ -37,6 +37,7 @@
 (require 'org-gtd-process)
 (require 'org-gtd-reflect)
 (require 'org-gtd-review)
+(require 'org-gtd-view-manager)
 
 ;;;; Main Transient
 
@@ -46,7 +47,8 @@
   [["Engage"
     ("e" "Daily view" org-gtd-engage)
     ("@" "By context" org-gtd-engage-grouped-by-context)
-    ("n" "All next actions" org-gtd-show-all-next)]
+    ("n" "All next actions" org-gtd-show-all-next)
+    ("v" "Views…" org-gtd-view-manager)]
    ["Capture & Process"
     ("c" "Capture to inbox" org-gtd-capture)
     ("p" "Process inbox" org-gtd-process-inbox)

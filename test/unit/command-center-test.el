@@ -62,6 +62,13 @@
     (assert-equal "w" (plist-get plist :key))
     (assert-equal 'org-gtd-review (plist-get plist :command))))
 
+(deftest command-center-has-views-entry ()
+  "The Engage group binds v to the view manager."
+  (assert-true (fboundp 'org-gtd-view-manager))
+  (let ((plist (ogt--transient-suffix-plist 'org-gtd-command-center "v")))
+    (assert-equal "v" (plist-get plist :key))
+    (assert-equal 'org-gtd-view-manager (plist-get plist :command))))
+
 (deftest command-center-has-stuck-items-submenu ()
   "Command center has a stuck items sub-menu."
   (assert-true (fboundp 'org-gtd-command-center--stuck)))

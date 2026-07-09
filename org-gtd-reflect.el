@@ -306,13 +306,17 @@ Example:
   :type '(repeat (alist :key-type symbol :value-type sexp))
   :package-version '(org-gtd . "4.0"))
 
+(make-obsolete-variable 'org-gtd-reflect-missed-custom-views
+                        "migrate to the View Manager (M-x org-gtd-view-manager)" "5.0")
+
 ;;;###autoload
 (defun org-gtd-reflect-missed-with-custom ()
   "Show missed engagement reflections including user-defined custom views."
   (interactive)
   (org-gtd-view-show
    (append org-gtd-reflect-missed-engagements-view-specs
-           org-gtd-reflect-missed-custom-views)))
+           (with-suppressed-warnings ((obsolete org-gtd-reflect-missed-custom-views))
+             org-gtd-reflect-missed-custom-views))))
 
 ;;;; Backward Compatibility Aliases
 
