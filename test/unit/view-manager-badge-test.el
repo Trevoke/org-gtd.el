@@ -40,5 +40,12 @@
                 (org-gtd-view-manager--badge
                  '((name . "Anything") (type . next-action)))))
 
+(deftest view-manager-badge/order-follows-table-not-input ()
+  "Badge order follows filter-spec declaration order, not input order."
+  (assert-equal "next-action · Home · <30m"
+                (org-gtd-view-manager--badge
+                 '((effort . (< "30m")) (area-of-focus . "Home")
+                   (name . "x") (type . next-action)))))
+
 (provide 'view-manager-badge-test)
 ;;; view-manager-badge-test.el ends here

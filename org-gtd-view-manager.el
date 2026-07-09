@@ -208,17 +208,31 @@ Each key MUST be a member of `org-gtd-view-lang--known-filter-keys'
 
 ;;;; Badge / summary
 
-(defun org-gtd-view-manager--fmt-symbol (v) (format "%s" v))
-(defun org-gtd-view-manager--fmt-string (v) (format "%s" v))
-(defun org-gtd-view-manager--fmt-number (v) (format "%s" v))
-(defun org-gtd-view-manager--fmt-flag (_v) nil)         ; label carries the key
-(defun org-gtd-view-manager--fmt-time (v) (format "%s" v))
+(defun org-gtd-view-manager--fmt-symbol (v)
+  "Format symbol value V for a badge."
+  (format "%s" v))
+(defun org-gtd-view-manager--fmt-string (v)
+  "Format string value V for a badge."
+  (format "%s" v))
+(defun org-gtd-view-manager--fmt-number (v)
+  "Format number value V for a badge."
+  (format "%s" v))
+(defun org-gtd-view-manager--fmt-flag (_v)
+  "Format flag value V for a badge.
+Returns nil because the badge label carries the key name itself."
+  nil)
+(defun org-gtd-view-manager--fmt-time (v)
+  "Format time value V for a badge."
+  (format "%s" v))
 (defun org-gtd-view-manager--fmt-effort (v)
-  ;; (< "30m") -> "<30m" ; (> "1h") -> ">1h"
+  "Format effort value V for a badge.
+For example (< \"30m\") -> \"<30m\" and (> \"1h\") -> \">1h\"."
   (if (and (listp v) (= 2 (length v)))
       (format "%s%s" (car v) (cadr v))
     (format "%s" v)))
-(defun org-gtd-view-manager--fmt-prefix (v) (format "%s" v))
+(defun org-gtd-view-manager--fmt-prefix (v)
+  "Format prefix value V for a badge."
+  (format "%s" v))
 
 (defun org-gtd-view-manager--badge (spec)
   "Return a compact one-line summary of SPEC (name excluded)."
