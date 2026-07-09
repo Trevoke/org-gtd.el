@@ -438,7 +438,7 @@ formatter) follows, or `—' when the key is unset."
 (defun org-gtd-view-manager--set-value (dsl-key)
   "Read a value for DSL-KEY and store it in the builder state.
 A nil reader result UNSETS the key (removes it).  Marks the builder
-dirty and asks the preview to refresh (a no-op until Task 10)."
+dirty and asks the preview to refresh."
   (let* ((entry (assq dsl-key org-gtd-view-manager--filter-specs))
          (reader (plist-get (cdr entry) :reader))
          (value (funcall reader)))
@@ -469,9 +469,10 @@ one previewed.  Any `org-gtd-view-show' error is caught and surfaced
 as a one-line teaching message, never a stack trace (design §8)."
   (let ((spec (org-gtd-view-manager--compile org-gtd-view-manager--build-state)))
     (when (org-gtd-view-manager--preview-changed-p spec)
-      (setq org-gtd-view-manager--preview-last spec)
       (condition-case err
-          (org-gtd-view-manager--render-preview spec)
+          (progn
+            (org-gtd-view-manager--render-preview spec)
+            (setq org-gtd-view-manager--preview-last spec))
         (error (message "org-gtd view preview: %s"
                         (error-message-string err)))))))
 
@@ -625,6 +626,7 @@ builder; nil starts a fresh Untitled next-action view."
                                (list (cons 'name "Untitled")
                                      (cons 'type 'next-action)))))
          (setq org-gtd-view-manager--build-dirty nil)
+         (setq org-gtd-view-manager--preview-last nil)
          (transient-setup 'org-gtd-view-manager--build)))))
 
 (org-gtd-view-manager--define-builder-transient)
