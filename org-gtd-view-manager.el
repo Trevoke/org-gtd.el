@@ -397,6 +397,19 @@ Flattens nested `filters'; skips and `message's any bad entry."
                       (and (consp entry) (alist-get 'name entry))
                       (error-message-string err))))))
 
+;;;; Recall
+
+;;;###autoload
+(defun org-gtd-view-run ()
+  "Prompt for a saved view by name and render it via `org-gtd-view-show'."
+  (interactive)
+  (let ((views (org-gtd-view-manager--store-read)))
+    (unless views
+      (user-error "No saved views yet — build one with M-x org-gtd-view-manager"))
+    (let* ((name (completing-read "View: " (mapcar #'car views) nil t))
+           (spec (cdr (assoc name views))))
+      (org-gtd-view-show spec))))
+
 ;;;; Footer
 
 (provide 'org-gtd-view-manager)
