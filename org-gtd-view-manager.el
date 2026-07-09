@@ -460,12 +460,15 @@ CHANGED name is a rename (the old entry is removed) rather than a
 save-as that leaves an orphan behind.")
 
 (defun org-gtd-view-manager--build-summary ()
-  "Return the summary line for the builder header."
-  (concat "View: "
-          (or (cdr (assq 'name org-gtd-view-manager--build-state)) "Untitled")
-          "  —  "
-          (org-gtd-view-manager--badge
-           (org-gtd-view-manager--compile org-gtd-view-manager--build-state))))
+  "Return the summary header line for the builder.
+The leading `View:' label is rendered in `transient-heading' so it
+reads as the builder's title, matching the column headings below it."
+  (concat
+   (propertize "View: " 'face 'transient-heading)
+   (or (cdr (assq 'name org-gtd-view-manager--build-state)) "Untitled")
+   "  —  "
+   (org-gtd-view-manager--badge
+    (org-gtd-view-manager--compile org-gtd-view-manager--build-state))))
 
 (defun org-gtd-view-manager--infix-description (dsl-key label)
   "Return the builder row description for DSL-KEY.

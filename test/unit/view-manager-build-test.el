@@ -116,4 +116,16 @@ guards that the open render is not itself skipped and does update the cache."
       (org-gtd-view-manager--build '((name . "Saved") (type . delegated))))
     (assert-equal 'delegated (alist-get 'type org-gtd-view-manager--preview-last))))
 
+(deftest view-manager-build/summary-label-is-a-heading ()
+  "The summary's `View:' label carries the `transient-heading' face and the
+visible text still reads `View: <name>  —  <badge>'."
+  (setq org-gtd-view-manager--build-state
+        (list (cons 'name "Untitled") (cons 'type 'next-action)))
+  (let ((summary (org-gtd-view-manager--build-summary)))
+    (assert-equal 'transient-heading (get-text-property 0 'face summary))
+    (assert-true (string-prefix-p "View: "
+                                  (substring-no-properties summary)))
+    (assert-true (string-match-p "Untitled"
+                                 (substring-no-properties summary)))))
+
 ;;; view-manager-build-test.el ends here
