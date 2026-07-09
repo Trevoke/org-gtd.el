@@ -69,5 +69,34 @@ Both renders must happen -- the second must not be skipped by a stale
       (org-gtd-view-manager--preview-now))
     (assert-equal 2 count)))
 
+(deftest view-manager-preview/ret-forces-render-when-cache-current ()
+  "Explicit RET preview renders even when the cache equals the current spec.
+RET is the user's recovery hatch: it must never be silenced by
+`--preview-changed-p', otherwise a stale preview is unrecoverable."
+  (let ((count 0)
+        (org-gtd-view-manager--build-state
+         (list (cons 'name "x") (cons 'type 'next-action))))
+    (setq org-gtd-view-manager--preview-last
+          (org-gtd-view-manager--compile org-gtd-view-manager--build-state))
+    (cl-letf (((symbol-function 'org-gtd-view-manager--render-preview)
+               (lambda (&rest _) (cl-incf count))))
+      (org-gtd-view-manager--preview))
+    (assert-equal 1 count)))
+
+(deftest view-manager-preview/debounce-still-skips-unchanged ()
+  "The debounced (non-forced) path still skips a genuinely unchanged spec.
+Guards the DRY refactor: adding `force' to `--preview-now' must not
+break the debounce's coalescing (design: at most one render per idle
+window)."
+  (let ((count 0)
+        (org-gtd-view-manager--build-state
+         (list (cons 'name "x") (cons 'type 'next-action))))
+    (setq org-gtd-view-manager--preview-last
+          (org-gtd-view-manager--compile org-gtd-view-manager--build-state))
+    (cl-letf (((symbol-function 'org-gtd-view-manager--render-preview)
+               (lambda (&rest _) (cl-incf count))))
+      (org-gtd-view-manager--preview-now))
+    (assert-equal 0 count)))
+
 (provide 'view-manager-preview-test)
 ;;; view-manager-preview-test.el ends here

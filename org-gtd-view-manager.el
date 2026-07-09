@@ -505,13 +505,16 @@ dirty and asks the preview to refresh."
   "Return non-nil if SPEC differs from the last previewed spec."
   (not (equal spec org-gtd-view-manager--preview-last)))
 
-(defun org-gtd-view-manager--preview-now ()
+(defun org-gtd-view-manager--preview-now (&optional force)
   "Render the current build state immediately, fail-soft.
-Skips the render when the compiled spec is unchanged from the last
-one previewed.  Any `org-gtd-view-show' error is caught and surfaced
-as a one-line teaching message, never a stack trace (design §8)."
+Unless FORCE is non-nil, skips the render when the compiled spec is
+unchanged from the last one previewed (debounce coalescing).  FORCE
+bypasses that guard -- the explicit `RET' preview passes it so a stale
+view is always recoverable.  Any `org-gtd-view-show' error is caught
+and surfaced as a one-line teaching message, never a stack trace
+(design §8)."
   (let ((spec (org-gtd-view-manager--compile org-gtd-view-manager--build-state)))
-    (when (org-gtd-view-manager--preview-changed-p spec)
+    (when (or force (org-gtd-view-manager--preview-changed-p spec))
       (condition-case err
           (progn
             (org-gtd-view-manager--render-preview spec)
@@ -520,9 +523,9 @@ as a one-line teaching message, never a stack trace (design §8)."
                         (error-message-string err)))))))
 
 (defun org-gtd-view-manager--preview (&rest _)
-  "Explicit `RET' preview -- bypass the debounce and render now."
+  "Explicit `RET' preview -- bypass the debounce and force a render."
   (interactive)
-  (org-gtd-view-manager--preview-now))
+  (org-gtd-view-manager--preview-now t))
 
 (defun org-gtd-view-manager--preview-schedule ()
   "Schedule a debounced preview refresh (called from the infixes).
