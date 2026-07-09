@@ -449,25 +449,62 @@ dirty and asks the preview to refresh (a no-op until Task 10)."
     (setq org-gtd-view-manager--build-dirty t)
     (org-gtd-view-manager--preview-schedule)))
 
-;; --- Task 10 placeholders -----------------------------------------------
-;; PLACEHOLDER (Task 10 replaces the body): the live, debounced org-agenda
-;; preview loop is Task 10's job.  For now the RET action just echoes the badge
-;; and the schedule hook is a no-op, so the transient is usable end-to-end.
-(defun org-gtd-view-manager--preview-schedule ()
-  "No-op placeholder; Task 10 debounces a live preview refresh here."
-  nil)
+;;;; Live preview
 
-(defun org-gtd-view-manager--preview ()
-  "PLACEHOLDER (Task 10): echo the current spec's badge.
-Task 10 replaces this body with the live `org-agenda' preview render."
+(defvar org-gtd-view-manager--preview-last nil
+  "Last compiled spec rendered in the preview, to skip redundant renders.")
+(defvar org-gtd-view-manager--preview-timer nil
+  "Idle timer for debounced preview refresh.")
+(defconst org-gtd-view-manager--preview-delay 0.25
+  "Debounce delay (seconds) before auto-refreshing the preview.")
+
+(defun org-gtd-view-manager--preview-changed-p (spec)
+  "Return non-nil if SPEC differs from the last previewed spec."
+  (not (equal spec org-gtd-view-manager--preview-last)))
+
+(defun org-gtd-view-manager--preview-now ()
+  "Render the current build state immediately, fail-soft.
+Skips the render when the compiled spec is unchanged from the last
+one previewed.  Any `org-gtd-view-show' error is caught and surfaced
+as a one-line teaching message, never a stack trace (design §8)."
+  (let ((spec (org-gtd-view-manager--compile org-gtd-view-manager--build-state)))
+    (when (org-gtd-view-manager--preview-changed-p spec)
+      (setq org-gtd-view-manager--preview-last spec)
+      (condition-case err
+          (org-gtd-view-manager--render-preview spec)
+        (error (message "org-gtd view preview: %s"
+                        (error-message-string err)))))))
+
+(defun org-gtd-view-manager--preview (&rest _)
+  "Explicit `RET' preview -- bypass the debounce and render now."
   (interactive)
-  (message "Preview: %s"
-           (org-gtd-view-manager--badge
-            (org-gtd-view-manager--compile org-gtd-view-manager--build-state))))
-;; ------------------------------------------------------------------------
+  (org-gtd-view-manager--preview-now))
+
+(defun org-gtd-view-manager--preview-schedule ()
+  "Schedule a debounced preview refresh (called from the infixes).
+Cancels any pending timer first, so rapid edits coalesce into at most
+one render per `org-gtd-view-manager--preview-delay' idle window."
+  (when (timerp org-gtd-view-manager--preview-timer)
+    (cancel-timer org-gtd-view-manager--preview-timer))
+  (setq org-gtd-view-manager--preview-timer
+        (run-with-idle-timer org-gtd-view-manager--preview-delay nil
+                             #'org-gtd-view-manager--preview-now)))
+
+;; Minimal render (Task 11 extends this with the empty-agenda sample path):
+(defun org-gtd-view-manager--render-preview (spec)
+  "Render SPEC via `org-gtd-view-show'.
+PLACEHOLDER (Task 11 replaces this body): Task 11 adds the
+empty-agenda -> sample-data path.  For now it renders SPEC over the
+real `org-agenda-files' with a plain `org-gtd-view-show' call."
+  (org-gtd-view-show spec))
 
 (defun org-gtd-view-manager--build-restore-windows ()
-  "Restore the window layout snapshotted when the builder was entered."
+  "Restore the window layout snapshotted when the builder was entered.
+Also cancels any pending debounced preview timer so it does not fire
+into the restored layout after the builder has exited."
+  (when (timerp org-gtd-view-manager--preview-timer)
+    (cancel-timer org-gtd-view-manager--preview-timer)
+    (setq org-gtd-view-manager--preview-timer nil))
   (when org-gtd-view-manager--build-window-config
     (set-window-configuration org-gtd-view-manager--build-window-config)))
 
