@@ -536,7 +536,11 @@ one render per `org-gtd-view-manager--preview-delay' idle window."
 (defun org-gtd-view-manager--sample-file ()
   "Return a path to a temp org file holding the sample dataset."
   (let ((path (f-join temporary-file-directory "org-gtd-view-sample.org")))
-    (unless (f-exists-p path) (f-write-text org-gtd-view-manager--sample-contents 'utf-8 path))
+    ;; Write unconditionally: keeps the on-disk file in sync with
+    ;; `--sample-contents' (a stale file would otherwise silently persist
+    ;; across a future change to the sample).  Cheap: three headings, at most
+    ;; once per debounced preview.
+    (f-write-text org-gtd-view-manager--sample-contents 'utf-8 path)
     path))
 
 (defun org-gtd-view-manager--render-preview (spec)
