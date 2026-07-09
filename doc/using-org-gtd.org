@@ -2523,6 +2523,26 @@ You can define your own agenda views by defining functions with custom agenda co
 Where =x= is whatever your defined key is.
 
 *See also*: For a much easier way to create custom views, see [[#view-dsl-reference][View DSL Filter Reference]], which provides a declarative language for defining views without writing skip functions.
+
+The easiest way of all is the [[#view-manager][View Manager]], which lets you build, preview, and save views interactively without writing any elisp at all.
+*** The View Manager
+:PROPERTIES:
+:CUSTOM_ID: view-manager
+:END:
+The View Manager lets you create, preview, name, save, recall, edit, and delete your own GTD agenda views interactively, without writing a single line of elisp. Saved views persist to a =views.eld= file in your ~org-gtd-directory~, so they survive restarts and travel with the rest of your GTD data.
+
+Open it with ~M-x org-gtd-view-manager~, or press =v= in the command center. This shows the list of your saved views. From the list you can:
+
+- browse your saved views, each shown with a short summary of what it filters;
+- create a new view, which opens the builder;
+- edit, duplicate, or delete an existing view;
+- render a saved view to see it as a live agenda.
+
+*The builder.* Creating or editing a view opens a transient builder. Each filter you toggle -- by type, tag, effort, priority, prefix, and so on -- updates a *live preview* agenda in an adjacent window as you go, so you can see exactly what the view will match before you commit to it. When the preview would otherwise be empty (for instance because your own agenda has nothing matching yet), the builder shows the view running against a small set of sample data instead, so you can still tell what the filters do. When you are happy with the result, save it under a name; abort to discard it.
+
+*Recalling a saved view.* Use ~M-x org-gtd-view-run~ to recall any saved view by name through completing-read, and org-gtd renders it as an agenda. This is handy to bind to a key or call from your own commands.
+
+*Legacy custom views.* If you previously defined views through ~org-gtd-reflect-missed-custom-views~, those entries are imported into the View Manager automatically the first time it runs, so you do not have to recreate them by hand.
 *** Adding your own hooks when organizing
 :PROPERTIES:
 :CUSTOM_ID: hooks-framework

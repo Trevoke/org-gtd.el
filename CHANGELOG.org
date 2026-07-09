@@ -1,6 +1,13 @@
 * Unreleased
 
 ** Added
+*** View Manager
+- New =View Manager= (=M-x org-gtd-view-manager=, or =v= in the command center):
+  create, live-preview, name, save, recall, edit, and delete custom GTD views
+  without writing elisp.  Views persist to =views.eld= in your =org-gtd-directory=.
+  Existing =org-gtd-reflect-missed-custom-views= entries are imported automatically.
+  New command =org-gtd-view-run= recalls a saved view by name.
+
 *** Unified type and hook model
 org-gtd now ships a unified dispatch pipeline for all built-in types.
 Each type in ~org-gtd-types~ can declare wiring fields — ~:organize-fn~,
