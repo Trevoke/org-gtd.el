@@ -101,6 +101,19 @@
   (assert-equal 'calendar
                 (cdr (assq 'type (nth 0 org-gtd-view-manager--build-sections)))))
 
+(deftest view-manager-sections/move-down-swaps-and-follows ()
+  "Move-down swaps with the next section; active follows the moved one."
+  (view-manager-sections-test--seed
+   (list (list (cons 'type 'calendar))
+         (list (cons 'type 'next-action))) 0)
+  (org-gtd-view-manager--build-move-section-down)
+  (assert-equal 1 org-gtd-view-manager--build-active)
+  (assert-equal 'next-action
+                (cdr (assq 'type (nth 0 org-gtd-view-manager--build-sections))))
+  (assert-equal 'calendar
+                (cdr (assq 'type (nth 1 org-gtd-view-manager--build-sections))))
+  (assert-equal 'calendar (cdr (assq 'type org-gtd-view-manager--build-state))))
+
 (deftest view-manager-sections/move-down-at-bottom-is-noop ()
   "Move-down at the last index changes nothing."
   (view-manager-sections-test--seed
