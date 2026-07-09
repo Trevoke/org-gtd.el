@@ -103,6 +103,7 @@
 ;;   (done . past-month)        - Completed in last month
 ;;   (done . past-year)         - Completed in last year
 ;;   (not-done . t)             - Incomplete items
+;;   (not-habit . t)            - Exclude habit items
 ;;
 ;; Metadata Filters:
 ;;   (area-of-focus . "Work")   - Specific area of focus
@@ -872,6 +873,11 @@ sites must normalize before calling this function."
         ;; Add tags predicate
         (when-let ((tags-filter (alist-get 'tags gtd-view-spec)))
           (push (org-gtd-pred--tags-matches tags-filter) predicates))
+        ;; Add not-habit predicate: exclude items marked as habits.
+        (when (alist-get 'not-habit gtd-view-spec)
+          (push (org-gtd-pred--property-not-equals
+                 "ORG_GTD" (org-gtd-type-org-gtd-value 'habit))
+                predicates))
         ;; Add who predicate (requires type for property lookup)
         (when (assq 'who gtd-view-spec)
           (let ((who-filter (alist-get 'who gtd-view-spec)))

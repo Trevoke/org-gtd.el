@@ -123,6 +123,36 @@
     (let ((pred (org-gtd-pred--property-equals "ORG_GTD" "Actions")))
       (assert-nil (funcall pred)))))
 
+(deftest skip-pred/property-not-equals-returns-t-when-differs ()
+  "Property not-equals returns t (include) when the property differs."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* Test\n:PROPERTIES:\n:ORG_GTD: Projects\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let ((pred (org-gtd-pred--property-not-equals "ORG_GTD" "Actions")))
+      (assert-true (funcall pred)))))
+
+(deftest skip-pred/property-not-equals-returns-nil-when-equal ()
+  "Property not-equals returns nil (skip) when the property matches."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* Test\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let ((pred (org-gtd-pred--property-not-equals "ORG_GTD" "Actions")))
+      (assert-nil (funcall pred)))))
+
+(deftest skip-pred/property-not-equals-returns-t-when-missing ()
+  "Property not-equals returns t (include) when the property is missing."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* Test\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let ((pred (org-gtd-pred--property-not-equals "ORG_GTD" "Actions")))
+      (assert-true (funcall pred)))))
+
 (deftest skip-pred/property-empty-or-missing-true-when-missing ()
   "Property empty-or-missing returns t when property is missing."
   (with-temp-buffer

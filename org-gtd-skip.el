@@ -78,6 +78,13 @@ The predicate returns t if property matches, nil otherwise."
   (lambda ()
     (equal (org-entry-get (point) property) value)))
 
+(defun org-gtd-pred--property-not-equals (property value)
+  "Return predicate checking PROPERTY does not equal VALUE at point.
+The predicate returns t (include) when the property is absent or
+differs from VALUE, nil (skip) when it matches."
+  (lambda ()
+    (not (equal (org-entry-get (point) property) value))))
+
 (defun org-gtd-pred--property-empty-or-missing (property)
   "Return predicate checking PROPERTY is empty or missing at point.
 The predicate returns t if property is missing or empty/whitespace-only."

@@ -26,9 +26,16 @@
 (deftest view-manager-filter-specs/excludes-structural-keys ()
   "The table never surfaces reserved structural keys as infixes."
   (dolist (structural '(view-type block-type group-by native filters
-                        additional-blocks agenda-span show-habits not-habit
+                        additional-blocks agenda-span show-habits
                         group-contexts prefix-format blocks))
     (assert-nil (assq structural org-gtd-view-manager--filter-specs))))
+
+(deftest view-manager-filter-specs/not-habit-is-a-flag-infix ()
+  "not-habit is exposed as a structural flag infix (key H), like not-done."
+  (let ((entry (assq 'not-habit org-gtd-view-manager--filter-specs)))
+    (assert-true entry)
+    (assert-equal "H" (plist-get (cdr entry) :key))
+    (assert-equal 'structural (plist-get (cdr entry) :group))))
 
 (deftest view-manager-filter-specs/covers-five-groups ()
   "The five handoff groups are all represented."

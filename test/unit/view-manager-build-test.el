@@ -50,4 +50,16 @@ that would surface as a blank candidate in `org-gtd-view-run'."
   (assert-equal nil (org-gtd-view-manager--store-read))
   (assert-true org-gtd-view-manager--build-dirty))
 
+(deftest view-manager-build/flag-infix-toggles-off ()
+  "Re-selecting a flag infix unsets it.
+Regression: a flag such as `not-done' could be set but never cleared,
+so a builder session could not remove it once added."
+  (setq org-gtd-view-manager--build-state (list (cons 'name "x")))
+  (org-gtd-view-manager--set-value 'not-done)
+  (assert-equal t (cdr (assq 'not-done org-gtd-view-manager--build-state)))
+  (org-gtd-view-manager--set-value 'not-done)
+  (assert-nil (assq 'not-done org-gtd-view-manager--build-state))
+  (when (timerp org-gtd-view-manager--preview-timer)
+    (cancel-timer org-gtd-view-manager--preview-timer)))
+
 ;;; view-manager-build-test.el ends here

@@ -145,6 +145,9 @@ that reads can tell an empty store from a truncated one."
       (not-done      :group structural :key "N"
                      :reader org-gtd-view-manager--read-flag
                      :formatter org-gtd-view-manager--fmt-flag)
+      (not-habit     :group structural :key "H"
+                     :reader org-gtd-view-manager--read-flag
+                     :formatter org-gtd-view-manager--fmt-flag)
       (area-of-focus :group metadata   :key "A"
                      :reader org-gtd-view-manager--read-area
                      :formatter org-gtd-view-manager--fmt-string)
@@ -209,6 +212,11 @@ Each key MUST be a member of `org-gtd-view-lang--known-filter-keys'
 ;; section's `org-gtd-reflect-missed-custom-views' below.
 (defvar org-gtd-areas-of-focus)
 
+;; `org-gtd-view-manager--build-state' is defined with the builder transient
+;; further down, but the flag reader below toggles against it, so forward-declare
+;; it here to keep `--warnings-as-errors' clean.
+(defvar org-gtd-view-manager--build-state)
+
 (defconst org-gtd-view-manager--effort-regexp
   "\\`\\([<>]\\)\\([0-9]+[smhd]\\|[0-9]+:[0-9]+\\)\\'"
   "Matches a comparison effort like `<30m' or `>1:00'.")
@@ -261,9 +269,13 @@ on `done'), so this reader stays deliberately general."
   (let ((v (read-string "Value: ")))
     (if (string-blank-p v) nil v)))
 
-(defun org-gtd-view-manager--read-flag (&rest _)
-  "Read a flag key, which is always on when chosen."
-  t)
+(defun org-gtd-view-manager--read-flag (dsl-key &rest _)
+  "Toggle flag DSL-KEY against the current builder state.
+Returns t to SET the flag when it is currently off, or nil to UNSET
+it when currently on.  A nil return routes through `--set-value',
+which removes the key -- so a flag infix acts as an on/off toggle
+rather than a set-only action."
+  (unless (alist-get dsl-key org-gtd-view-manager--build-state) t))
 
 (defun org-gtd-view-manager--read-area (&rest _)
   "Read an area of focus, completing over `org-gtd-areas-of-focus'."
@@ -339,8 +351,8 @@ For example (< \"30m\") -> \"<30m\" and (> \"1h\") -> \">1h\"."
           (let* ((val (cdr cell))
                  (fmt (funcall (plist-get (cdr entry) :formatter) val)))
             (push (cond
-                   ;; flag keys (not-done): show the key name itself
-                   ((eq key 'not-done) "not-done")
+                   ;; flag keys (not-done, not-habit): show the key name itself
+                   ((memq key '(not-done not-habit)) (symbol-name key))
                    ;; who/tags/priority read better as key=value
                    ((memq key '(who tags priority)) (format "%s=%s" key fmt))
                    (t fmt))
@@ -466,7 +478,9 @@ A nil reader result UNSETS the key (removes it).  Marks the builder
 dirty and asks the preview to refresh."
   (let* ((entry (assq dsl-key org-gtd-view-manager--filter-specs))
          (reader (plist-get (cdr entry) :reader))
-         (value (funcall reader)))
+         ;; Pass DSL-KEY so stateful readers (flags) can toggle against the
+         ;; current spec; value readers take `&rest _' and ignore it.
+         (value (funcall reader dsl-key)))
     (if (null value)
         (setq org-gtd-view-manager--build-state
               (assq-delete-all dsl-key org-gtd-view-manager--build-state))

@@ -92,8 +92,9 @@ group-by todo-keyword prefix-format native
 
 Only a subset are **user-facing filters**; the rest are **reserved structural keys** (`blocks`,
 `view-type`, `agenda-span`, `additional-blocks`, `filters`, `block-type`, `group-contexts`,
-`group-by`, `prefix-format`, `native`, `show-habits`, `not-habit`). The builder exposes only the
-filter subset, in the handoff's five groups:
+`group-by`, `prefix-format`, `native`, `show-habits`). The builder exposes only the
+filter subset, in the handoff's five groups. (`not-habit` — an item-level boolean, parallel to
+`not-done` — is exposed as a Structural flag infix; it was implemented in the DSL at the same time.)
 
 | Group | Infix keys → DSL key | Notes |
 |---|---|---|

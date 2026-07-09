@@ -9,6 +9,13 @@
   automatically; entries using advanced view keys remain available through the
   (now-deprecated) variable.
   New command =org-gtd-view-run= recalls a saved view by name.
+  The builder exposes =not-done= and =not-habit= as on/off flag infixes
+  (press the key again to clear it).
+
+*** View DSL: =not-habit= filter
+- The view DSL now honors =(not-habit . t)= to exclude habit items from a
+  view, alongside the existing =(not-done . t)=.  Previously the key was
+  accepted but silently ignored.
 
 *** Unified type and hook model
 org-gtd now ships a unified dispatch pipeline for all built-in types.

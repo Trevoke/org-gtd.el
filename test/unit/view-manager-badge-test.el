@@ -34,6 +34,12 @@
                 (org-gtd-view-manager--badge
                  '((name . "x") (type . project) (not-done . t)))))
 
+(deftest view-manager-badge/not-habit ()
+  "The not-habit flag renders as its key name, like not-done."
+  (assert-equal "next-action · not-habit"
+                (org-gtd-view-manager--badge
+                 '((name . "x") (type . next-action) (not-habit . t)))))
+
 (deftest view-manager-badge/name-only-is-not-shown ()
   "The name is the row label, not part of the badge."
   (assert-equal "next-action"
