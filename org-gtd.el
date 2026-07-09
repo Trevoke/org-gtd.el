@@ -84,6 +84,7 @@
 (require 'org-gtd-someday-review)
 (require 'org-gtd-review)
 (require 'org-gtd-view-language)
+(require 'org-gtd-view-manager)
 (require 'org-gtd-upgrades)
 (require 'org-gtd-init)
 (require 'org-gtd-command-center)
