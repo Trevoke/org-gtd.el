@@ -110,6 +110,93 @@ that reads can tell an empty store from a truncated one."
   (org-gtd-view-manager--store-write
    (assoc-delete-all name (org-gtd-view-manager--store-read))))
 
+;;;; Filter-spec metadata (the builder's source of truth, per design 2.1)
+
+;; Placeholder readers/formatters.  These are intentionally trivial STUBS so
+;; the filter-spec table below names live symbols and the file byte-compiles
+;; cleanly under `--warnings-as-errors'.  Real bodies arrive in Task 4
+;; (formatters) and Task 7 (readers) -- do NOT build reader/formatter logic
+;; here.
+(defun org-gtd-view-manager--fmt-symbol (v) "Placeholder formatter for V." (format "%s" v))
+(defun org-gtd-view-manager--fmt-string (v) "Placeholder formatter for V." (format "%s" v))
+(defun org-gtd-view-manager--fmt-time (v) "Placeholder formatter for V." (format "%s" v))
+(defun org-gtd-view-manager--fmt-flag (v) "Placeholder formatter for V." (format "%s" v))
+(defun org-gtd-view-manager--fmt-effort (v) "Placeholder formatter for V." (format "%s" v))
+(defun org-gtd-view-manager--fmt-prefix (v) "Placeholder formatter for V." (format "%s" v))
+(defun org-gtd-view-manager--fmt-number (v) "Placeholder formatter for V." (format "%s" v))
+
+(defun org-gtd-view-manager--read-type (&rest _) "Placeholder reader." nil)
+(defun org-gtd-view-manager--read-time (&rest _) "Placeholder reader." nil)
+(defun org-gtd-view-manager--read-string (&rest _) "Placeholder reader." nil)
+(defun org-gtd-view-manager--read-flag (&rest _) "Placeholder reader." nil)
+(defun org-gtd-view-manager--read-area (&rest _) "Placeholder reader." nil)
+(defun org-gtd-view-manager--read-effort (&rest _) "Placeholder reader." nil)
+(defun org-gtd-view-manager--read-prefix (&rest _) "Placeholder reader." nil)
+(defun org-gtd-view-manager--read-width (&rest _) "Placeholder reader." nil)
+
+;; Each entry: (DSL-KEY :group G :key "L" :reader FN :formatter FN)
+;; :reader reads a value interactively (returns the value to store, or nil to unset).
+;; :formatter renders a stored value for the badge/summary (a short string).
+(defconst org-gtd-view-manager--filter-specs
+  '((type          :group type       :key "t"
+                   :reader org-gtd-view-manager--read-type
+                   :formatter org-gtd-view-manager--fmt-symbol)
+    (when          :group time       :key "w"
+                   :reader org-gtd-view-manager--read-time
+                   :formatter org-gtd-view-manager--fmt-time)
+    (deadline      :group time       :key "D"
+                   :reader org-gtd-view-manager--read-time
+                   :formatter org-gtd-view-manager--fmt-time)
+    (scheduled     :group time       :key "C"
+                   :reader org-gtd-view-manager--read-time
+                   :formatter org-gtd-view-manager--fmt-time)
+    (todo          :group structural :key "o"
+                   :reader org-gtd-view-manager--read-string
+                   :formatter org-gtd-view-manager--fmt-string)
+    (done          :group structural :key "O"
+                   :reader org-gtd-view-manager--read-time
+                   :formatter org-gtd-view-manager--fmt-time)
+    (not-done      :group structural :key "N"
+                   :reader org-gtd-view-manager--read-flag
+                   :formatter org-gtd-view-manager--fmt-flag)
+    (area-of-focus :group metadata   :key "A"
+                   :reader org-gtd-view-manager--read-area
+                   :formatter org-gtd-view-manager--fmt-string)
+    (effort        :group metadata   :key "e"
+                   :reader org-gtd-view-manager--read-effort
+                   :formatter org-gtd-view-manager--fmt-effort)
+    (who           :group metadata   :key "W"
+                   :reader org-gtd-view-manager--read-string
+                   :formatter org-gtd-view-manager--fmt-string)
+    (tags          :group metadata   :key "G"
+                   :reader org-gtd-view-manager--read-string
+                   :formatter org-gtd-view-manager--fmt-string)
+    (priority      :group metadata   :key "P"
+                   :reader org-gtd-view-manager--read-string
+                   :formatter org-gtd-view-manager--fmt-string)
+    (prefix        :group prefix     :key "x"
+                   :reader org-gtd-view-manager--read-prefix
+                   :formatter org-gtd-view-manager--fmt-prefix)
+    (prefix-width  :group prefix     :key "X"
+                   :reader org-gtd-view-manager--read-width
+                   :formatter org-gtd-view-manager--fmt-number))
+  "Curated user-facing filter keys the builder exposes, per design 2.1.
+Each key MUST be a member of `org-gtd-view-lang--known-filter-keys'
+\(asserted at load).  Structural/reserved keys are deliberately excluded.")
+
+(defun org-gtd-view-manager--type-candidates ()
+  "Return all selectable type values from the DSL type constants."
+  (append org-gtd-view-lang--simple-types
+          org-gtd-view-lang--complex-types))
+
+;; Anti-drift guard: fail loudly at load if the curated table names a key the
+;; DSL no longer knows about.
+(let ((unknown (seq-remove
+                (lambda (key) (memq key org-gtd-view-lang--known-filter-keys))
+                (mapcar #'car org-gtd-view-manager--filter-specs))))
+  (when unknown
+    (error "org-gtd-view-manager: filter-spec keys not in the DSL: %S" unknown)))
+
 ;;;; Footer
 
 (provide 'org-gtd-view-manager)
