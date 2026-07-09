@@ -49,5 +49,20 @@
     (assert-equal '((name . "Good") (type . next-action))
                   (org-gtd-view-manager--store-get "Good"))))
 
+(deftest view-manager-migration/non-list-entry-skipped-not-fatal ()
+  "A non-list junk entry is skipped; later good entries still import."
+  (let ((org-gtd-reflect-missed-custom-views
+         '("junk-string" ((name . "Good") (type . next-action)))))
+    (org-gtd-view-manager--migrate)
+    (assert-equal '((name . "Good") (type . next-action))
+                  (org-gtd-view-manager--store-get "Good"))))
+
+(deftest view-manager-migration/flatten-does-not-mutate-caller ()
+  "Flattening does not mutate the caller's entry."
+  (let* ((entry '((name . "X") (filters . ((type . delegated)))))
+         (snapshot (copy-tree entry)))
+    (org-gtd-view-manager--flatten-entry entry)
+    (assert-equal snapshot entry)))
+
 (provide 'view-manager-migration-test)
 ;;; view-manager-migration-test.el ends here

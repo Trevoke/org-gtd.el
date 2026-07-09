@@ -285,7 +285,7 @@ Return the flat spec, or signal `error' if it names an unknown key."
          (flat (append (assq-delete-all 'filters (copy-alist entry)) nested)))
     (dolist (cell flat)
       (unless (memq (car cell) allowed)
-        (error "unknown key %s" (car cell))))
+        (error "Unknown filter key %s" (car cell))))
     flat))
 
 (defun org-gtd-view-manager--migrate ()
@@ -295,10 +295,15 @@ Flattens nested `filters'; skips and `message's any bad entry."
     (condition-case err
         (let* ((flat (org-gtd-view-manager--flatten-entry entry))
                (name (alist-get 'name flat)))
-          (when name
-            (org-gtd-view-manager--store-upsert name flat)))
+          (if name
+              (org-gtd-view-manager--store-upsert name flat)
+            (message "org-gtd: skipped migrating a view with no name")))
+      ;; ENTRY may be a hand-edited junk atom (e.g. a bare string), so guard
+      ;; the name extraction: `alist-get' on a non-list would itself throw an
+      ;; UNCAUGHT `wrong-type-argument', aborting the whole loop and defeating
+      ;; the "never abort on one bad entry" contract.
       (error (message "org-gtd: skipped migrating view %S: %s"
-                      (alist-get 'name entry)
+                      (and (consp entry) (alist-get 'name entry))
                       (error-message-string err))))))
 
 ;;;; Footer
