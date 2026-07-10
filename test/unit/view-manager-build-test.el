@@ -146,4 +146,31 @@ view name plus a section marker."
     (assert-true (string-match-p "Section 1/1"
                                  (substring-no-properties summary)))))
 
+(deftest view-manager-build/section-rename-key-is-bound ()
+  "The Sections group binds `M-r' to the rename command."
+  (let ((plist (ogt--transient-suffix-plist
+                'org-gtd-view-manager--build "M-r")))
+    (assert-equal "M-r" (plist-get plist :key))))
+
+(deftest view-manager-build/section-rename-sets-title ()
+  "Rename stores the entered string as the active section's title."
+  (org-gtd-view-manager--build-load '((name . "V") (type . next-action)))
+  (cl-letf (((symbol-function 'read-string) (lambda (&rest _) "My focus"))
+            ((symbol-function 'org-gtd-view-manager--preview-schedule) #'ignore))
+    (org-gtd-view-manager--section-rename))
+  (assert-equal "My focus"
+                (cdr (assq 'title (nth 0 org-gtd-view-manager--build-sections))))
+  (assert-true org-gtd-view-manager--build-dirty))
+
+(deftest view-manager-build/section-rename-blank-clears-title ()
+  "A blank rename input removes the title (falls back to the badge)."
+  (org-gtd-view-manager--build-load
+   '((name . "V") (blocks . (((name . "Kept") (type . next-action))
+                             ((name . "Other") (type . delegated))))))
+  ;; Active is section 0, which loaded with title "Kept".
+  (cl-letf (((symbol-function 'read-string) (lambda (&rest _) "   "))
+            ((symbol-function 'org-gtd-view-manager--preview-schedule) #'ignore))
+    (org-gtd-view-manager--section-rename))
+  (assert-nil (assq 'title (nth 0 org-gtd-view-manager--build-sections))))
+
 ;;; view-manager-build-test.el ends here

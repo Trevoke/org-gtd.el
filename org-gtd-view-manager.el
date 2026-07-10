@@ -935,6 +935,33 @@ when nothing is dirty) the entry window layout is restored."
     (setq org-gtd-view-manager--build-dirty t)
     (org-gtd-view-manager--preview-schedule)))
 
+(defun org-gtd-view-manager--section-rename ()
+  "Prompt for and set the ACTIVE section's title (its block header).
+The title is used as the section's agenda block header in a
+multi-section view; a blank entry CLEARS it, falling back to the
+synthesized badge.  Marks the builder dirty and refreshes the preview.
+
+Note: in a one-section view the header is the view name (a flat spec
+has no per-section slot), so a title set on a lone section only takes
+effect once a second section exists."
+  (interactive)
+  ;; Sync first so the active slot reflects any in-flight edits, then edit
+  ;; `--build-state' (the active section's alist) and sync back: setting a
+  ;; NEW key via `alist-get' reassigns `--build-state' to a fresh list that
+  ;; is no longer `eq' to its section slot, so the write-back is required
+  ;; (the P1 fresh-cons pattern, see `;;;; Section state').
+  (org-gtd-view-manager--build-sync-active)
+  (let* ((current (alist-get 'title org-gtd-view-manager--build-state))
+         (input (read-string "Section title: " current))
+         (value (and (not (string-blank-p input)) input)))
+    (if value
+        (setf (alist-get 'title org-gtd-view-manager--build-state) value)
+      (setq org-gtd-view-manager--build-state
+            (assq-delete-all 'title org-gtd-view-manager--build-state)))
+    (org-gtd-view-manager--build-sync-active)
+    (setq org-gtd-view-manager--build-dirty t)
+    (org-gtd-view-manager--preview-schedule)))
+
 (defmacro org-gtd-view-manager--define-builder-transient ()
   "Generate the builder's per-key set-commands and the prefix from the table.
 DRY: each infix's key letter, reader and formatter are read from
@@ -1007,6 +1034,7 @@ builder; nil starts a fresh Untitled next-action view."
           ("M-a"      "Add"       org-gtd-view-manager--section-add       :transient t)
           ("M-n"      "Next"      org-gtd-view-manager--section-next      :transient t)
           ("M-p"      "Prev"      org-gtd-view-manager--section-prev      :transient t)
+          ("M-r"      "Rename"    org-gtd-view-manager--section-rename    :transient t)
           ("M-k"      "Delete"    org-gtd-view-manager--section-delete    :transient t)
           ("M-<up>"   "Move up"   org-gtd-view-manager--section-move-up   :transient t)
           ("M-<down>" "Move down" org-gtd-view-manager--section-move-down :transient t)]
