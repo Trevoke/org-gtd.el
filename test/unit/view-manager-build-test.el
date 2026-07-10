@@ -173,4 +173,25 @@ view name plus a section marker."
     (org-gtd-view-manager--section-rename))
   (assert-nil (assq 'title (nth 0 org-gtd-view-manager--build-sections))))
 
+(deftest view-manager-build/summary-lists-sections-with-active-marker ()
+  "The summary lists each section on its own line with `▸' on the active one
+   and shows the title (or badge) per section."
+  (org-gtd-view-manager--build-load
+   '((name . "Engage")
+     (blocks . (((name . "Morning") (type . calendar))
+                ((name . "Errands") (type . next-action))))))
+  ;; Active is section 0.
+  (let* ((summary (org-gtd-view-manager--build-summary))
+         (plain (substring-no-properties summary))
+         (lines (split-string plain "\n")))
+    (assert-true (string-prefix-p "View: " plain))
+    (assert-true (string-match-p "Section 1/2" plain))
+    ;; One header line + two section lines.
+    (assert-equal 3 (length lines))
+    ;; Active marker on the first section, not the second.
+    (assert-true (string-match-p "\\`  ▸" (nth 1 lines)))
+    (assert-true (string-match-p "Morning" (nth 1 lines)))
+    (assert-false (string-match-p "▸" (nth 2 lines)))
+    (assert-true (string-match-p "Errands" (nth 2 lines)))))
+
 ;;; view-manager-build-test.el ends here

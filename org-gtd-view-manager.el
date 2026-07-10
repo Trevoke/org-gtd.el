@@ -657,27 +657,34 @@ CHANGED name is a rename (the old entry is removed) rather than a
 save-as that leaves an orphan behind.")
 
 (defun org-gtd-view-manager--build-summary ()
-  "Return the view-aware summary header for the builder.
-Shows the view name as a `transient-heading' (iv4b), the active-section
-marker (`Section i/N'), and a compact badge per section with `▸' on
-the active one."
+  "Return the multi-line section panel shown atop the builder.
+Line 1 is `View: <name>' (the label a `transient-heading', iv4b)
+followed by the active-section marker `Section i/N'.  Each remaining
+line lists a section: `▸' on the active one, its 1-based index, and its
+title-or-badge (see `org-gtd-view-manager--section-label').
+
+This STRING is content-tested in the unit suite; whether transient
+RENDERS it is verified by manual QA (it is used as the Sections group's
+`:description', a group that has suffixes and therefore renders --
+suffix-less description groups are dropped by transient at init)."
   (org-gtd-view-manager--build-sync-active)
   (let* ((n (length org-gtd-view-manager--build-sections))
          (active org-gtd-view-manager--build-active)
-         (badges
-          (string-join
-           (seq-map-indexed
-            (lambda (sec i)
-              (let ((b (org-gtd-view-manager--badge-section sec)))
-                (if (= i active) (concat "▸ " b) b)))
-            org-gtd-view-manager--build-sections)
-           " | ")))
+         (lines
+          (seq-map-indexed
+           (lambda (sec i)
+             (format "  %s %d  %s"
+                     (if (= i active) "▸" " ")
+                     (1+ i)
+                     (org-gtd-view-manager--section-label sec)))
+           org-gtd-view-manager--build-sections)))
     (concat
      (propertize "View: " 'face 'transient-heading)
      org-gtd-view-manager--build-name
      "  —  "
      (format "Section %d/%d" (1+ active) n)
-     "   [ " badges " ]")))
+     "\n"
+     (string-join lines "\n"))))
 
 (defun org-gtd-view-manager--infix-description (dsl-key label)
   "Return the builder row description for DSL-KEY.
@@ -1028,9 +1035,8 @@ five columns can never drift from the single source of truth."
 The five infix columns are generated from
 `org-gtd-view-manager--filter-specs'.  STARTING-SPEC seeds the
 builder; nil starts a fresh Untitled next-action view."
-         [:description (lambda () (org-gtd-view-manager--build-summary))]
          ,@rows
-         ["Sections"
+         [:description (lambda () (org-gtd-view-manager--build-summary))
           ("M-a"      "Add"       org-gtd-view-manager--section-add       :transient t)
           ("M-n"      "Next"      org-gtd-view-manager--section-next      :transient t)
           ("M-p"      "Prev"      org-gtd-view-manager--section-prev      :transient t)
