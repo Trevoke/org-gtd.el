@@ -230,4 +230,19 @@ view name plus a section marker."
     ;; Section 0's line now surfaces the title (two sections -> title header).
     (assert-true (string-match-p "My focus" (nth 1 lines)))))
 
+(deftest view-manager-build/infix-description-tight-for-short-label ()
+  "A short label pads only to its own group's max width, not a global 13.
+`type' is the sole `type'-group key, so its value follows after ONE space."
+  (let ((org-gtd-view-manager--build-state nil))
+    (assert-equal
+     "type —"
+     (org-gtd-view-manager--infix-description 'type "type"))))
+
+(deftest view-manager-build/infix-description-aligns-longest-label ()
+  "The longest `metadata' label pads to the group max (13) with one trailing space."
+  (let ((org-gtd-view-manager--build-state nil))
+    (assert-equal
+     "area-of-focus —"
+     (org-gtd-view-manager--infix-description 'area-of-focus "area-of-focus"))))
+
 ;;; view-manager-build-test.el ends here

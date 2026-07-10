@@ -696,16 +696,29 @@ suffix-less description groups are dropped by transient at init)."
      "\n"
      (string-join lines "\n"))))
 
+(defun org-gtd-view-manager--group-label-width (group)
+  "Return the widest label (symbol-name) width among specs in GROUP.
+Labels only ever align within their own builder column, so the pad
+width is the per-group max, never the global table max."
+  (apply #'max
+         (mapcar (lambda (entry) (length (symbol-name (car entry))))
+                 (seq-filter
+                  (lambda (entry) (eq (plist-get (cdr entry) :group) group))
+                  org-gtd-view-manager--filter-specs))))
+
 (defun org-gtd-view-manager--infix-description (dsl-key label)
   "Return the builder row description for DSL-KEY.
-LABEL is the human-readable prefix; the current value (from
-`org-gtd-view-manager--build-state', rendered through the key's
-formatter) follows, or `—' when the key is unset."
+LABEL is the human-readable prefix, padded to the max label width of
+DSL-KEY's `:group' so values align down each column without a global
+gap.  The current value (from `org-gtd-view-manager--build-state',
+rendered through the key's formatter) follows, or `—' when unset."
   (let* ((entry (assq dsl-key org-gtd-view-manager--filter-specs))
+         (group (plist-get (cdr entry) :group))
+         (width (org-gtd-view-manager--group-label-width group))
          (val (cdr (assq dsl-key org-gtd-view-manager--build-state)))
          (formatter (plist-get (cdr entry) :formatter)))
-    (format "%-13s %s"
-            label
+    (concat (string-pad label width)
+            " "
             (if (null val) "—" (or (funcall formatter val) "on")))))
 
 (defun org-gtd-view-manager--set-value (dsl-key)
