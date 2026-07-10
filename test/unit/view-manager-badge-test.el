@@ -53,5 +53,21 @@
                  '((effort . (< "30m")) (area-of-focus . "Home")
                    (name . "x") (type . next-action)))))
 
+(deftest view-manager-badge/blocks-spec-summarized ()
+  "A blocks spec summarizes as `N sections: b0 · b1 · …', not an empty badge."
+  (assert-equal
+   "2 sections: calendar · next-action · Work"
+   (org-gtd-view-manager--badge
+    '((name . "Engage")
+      (blocks . (((type . calendar))
+                 ((type . next-action) (area-of-focus . "Work"))))))))
+
+(deftest view-manager-badge/flat-spec-unchanged ()
+  "A flat spec still badges via the per-section formatter."
+  (assert-equal "next-action · Home"
+                (org-gtd-view-manager--badge
+                 '((name . "x") (type . next-action)
+                   (area-of-focus . "Home")))))
+
 (provide 'view-manager-badge-test)
 ;;; view-manager-badge-test.el ends here

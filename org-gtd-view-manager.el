@@ -344,8 +344,8 @@ For example (< \"30m\") -> \"<30m\" and (> \"1h\") -> \">1h\"."
   "Format prefix value V for a badge."
   (format "%s" v))
 
-(defun org-gtd-view-manager--badge (spec)
-  "Return a compact one-line summary of SPEC (name excluded)."
+(defun org-gtd-view-manager--badge-section (spec)
+  "Return a compact one-line summary of a SINGLE section/flat SPEC (name excluded)."
   (let (parts)
     (dolist (entry org-gtd-view-manager--filter-specs)
       (let* ((key (car entry))
@@ -361,6 +361,19 @@ For example (< \"30m\") -> \"<30m\" and (> \"1h\") -> \">1h\"."
                    (t fmt))
                   parts)))))
     (string-join (nreverse parts) " · ")))
+
+(defun org-gtd-view-manager--badge (spec)
+  "Return a compact one-line summary of SPEC (name excluded).
+A multi-section `blocks' spec summarizes as `N sections: b0 · b1 · …';
+a flat/single spec lists its filter values."
+  (let ((blocks (alist-get 'blocks spec)))
+    (if blocks
+        (format "%d sections: %s"
+                (length blocks)
+                (string-join
+                 (mapcar #'org-gtd-view-manager--badge-section blocks)
+                 " · "))
+      (org-gtd-view-manager--badge-section spec))))
 
 ;;;; Compile
 
@@ -625,15 +638,27 @@ CHANGED name is a rename (the old entry is removed) rather than a
 save-as that leaves an orphan behind.")
 
 (defun org-gtd-view-manager--build-summary ()
-  "Return the summary header line for the builder.
-The leading `View:' label is rendered in `transient-heading' so it
-reads as the builder's title, matching the column headings below it."
-  (concat
-   (propertize "View: " 'face 'transient-heading)
-   (or (cdr (assq 'name org-gtd-view-manager--build-state)) "Untitled")
-   "  —  "
-   (org-gtd-view-manager--badge
-    (org-gtd-view-manager--compile org-gtd-view-manager--build-state))))
+  "Return the view-aware summary header for the builder.
+Shows the view name as a `transient-heading' (iv4b), the active-section
+marker (`Section i/N'), and a compact badge per section with `▸' on
+the active one."
+  (org-gtd-view-manager--build-sync-active)
+  (let* ((n (length org-gtd-view-manager--build-sections))
+         (active org-gtd-view-manager--build-active)
+         (badges
+          (string-join
+           (seq-map-indexed
+            (lambda (sec i)
+              (let ((b (org-gtd-view-manager--badge-section sec)))
+                (if (= i active) (concat "▸ " b) b)))
+            org-gtd-view-manager--build-sections)
+           " | ")))
+    (concat
+     (propertize "View: " 'face 'transient-heading)
+     org-gtd-view-manager--build-name
+     "  —  "
+     (format "Section %d/%d" (1+ active) n)
+     "   [ " badges " ]")))
 
 (defun org-gtd-view-manager--infix-description (dsl-key label)
   "Return the builder row description for DSL-KEY.
