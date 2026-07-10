@@ -95,4 +95,27 @@ name equals `--build-original-name' so a plain edit-save is silent."
                   (cdr (assq 'area-of-focus
                              (nth 1 (cdr (assq 'blocks spec))))))))
 
+(deftest view-manager-list/delete-to-one-section-round-trips-to-flat ()
+  "Deleting back down to one section saves a FLAT spec, not a blocks spec.
+Back-compat guard (design §8): a view built up to two sections and then
+pruned to one must persist in the legacy single-section shape -- a
+top-level `type' with no `blocks' key -- so a downgrade or an external
+reader still sees a plain flat view."
+  (org-gtd-view-manager--build-load
+   '((name . "V")
+     (blocks . (((type . calendar))
+                ((type . next-action))))))
+  (assert-equal 2 (length org-gtd-view-manager--build-sections))
+  (org-gtd-view-manager--build-delete-section)
+  (assert-equal 1 (length org-gtd-view-manager--build-sections))
+  (setq org-gtd-view-manager--build-original-name "V")
+  (setq org-gtd-view-manager--build-dirty t)
+  (cl-letf (((symbol-function 'read-string) (lambda (&rest _) "V"))
+            ((symbol-function 'org-gtd-view-manager--build-restore-windows)
+             #'ignore))
+    (org-gtd-view-manager--save))
+  (let ((spec (org-gtd-view-manager--store-get "V")))
+    (assert-nil (assq 'blocks spec))
+    (assert-equal 'next-action (cdr (assq 'type spec)))))
+
 ;;; view-manager-list-test.el ends here
