@@ -824,6 +824,11 @@ one render per `org-gtd-view-manager--preview-delay' idle window."
     (f-write-text org-gtd-view-manager--sample-contents 'utf-8 path)
     path))
 
+(defvar org-gtd-view-manager--sample-banner-shown nil
+  "Non-nil once the sample-data banner has been shown this builder session.
+Reset when the builder opens so the banner appears at most once per
+session instead of on every debounced preview render (yaks lk0a).")
+
 (defun org-gtd-view-manager--render-preview (spec)
   "Render SPEC via `org-gtd-view-show', using sample data if needed.
 When `org-agenda-files' is empty, a tiny built-in sample file is
@@ -840,7 +845,9 @@ panel vanish until a later command redrew it (yaks -k65z)."
     (if org-agenda-files
         (org-gtd-view-show spec)
       (let ((org-agenda-files (list (org-gtd-view-manager--sample-file))))
-        (message "sample data · your agenda-files are empty — previewing org-gtd's built-in set")
+        (unless org-gtd-view-manager--sample-banner-shown
+          (message "sample data · your agenda-files are empty — previewing org-gtd's built-in set")
+          (setq org-gtd-view-manager--sample-banner-shown t))
         (org-gtd-view-show spec)))))
 
 (defun org-gtd-view-manager--build-restore-windows ()
@@ -1090,6 +1097,7 @@ builder; nil starts a fresh Untitled next-action view."
          (org-gtd-view-manager--build-load starting-spec)
          (setq org-gtd-view-manager--build-dirty nil)
          (setq org-gtd-view-manager--preview-last nil)
+         (setq org-gtd-view-manager--sample-banner-shown nil)
          ;; Render the starting spec's agenda immediately so the builder shows a
          ;; live preview the moment it opens, instead of a stale agenda from a
          ;; prior action until the first RET/infix.  Forced (`--preview-last' was

@@ -37,5 +37,24 @@
       (org-gtd-view-manager--render-preview '((name . "x") (type . next-action))))
     (assert-equal (list (org-gtd--path org-gtd-default-file-name)) captured)))
 
+(deftest view-manager-sample/banner-shows-once-per-session ()
+  "With empty agenda-files, the sample banner is messaged once, not per render.
+Resetting the session flag re-arms it for the next builder-open."
+  (let ((org-agenda-files nil)
+        (org-gtd-view-manager--sample-banner-shown nil)
+        (banner-count 0))
+    (cl-letf (((symbol-function 'org-gtd-view-show) #'ignore)
+              ((symbol-function 'message)
+               (lambda (fmt &rest _)
+                 (when (and (stringp fmt) (string-prefix-p "sample data" fmt))
+                   (setq banner-count (1+ banner-count))))))
+      (org-gtd-view-manager--render-preview '((name . "x") (type . next-action)))
+      (org-gtd-view-manager--render-preview '((name . "x") (type . next-action)))
+      (assert-equal 1 banner-count)
+      ;; Re-arm as a fresh builder-open would, and confirm it shows again.
+      (setq org-gtd-view-manager--sample-banner-shown nil)
+      (org-gtd-view-manager--render-preview '((name . "x") (type . next-action)))
+      (assert-equal 2 banner-count))))
+
 (provide 'view-manager-sample-test)
 ;;; view-manager-sample-test.el ends here
