@@ -118,4 +118,9 @@ reader still sees a plain flat view."
     (assert-nil (assq 'blocks spec))
     (assert-equal 'next-action (cdr (assq 'type spec)))))
 
+(deftest view-manager-list/ret-action-labeled-open ()
+  "The RET action reads as `Open', matching the empty-state hint, not `Render'."
+  (let ((plist (ogt--transient-suffix-plist 'org-gtd-view-manager "RET")))
+    (assert-equal "Open" (plist-get plist :description))))
+
 ;;; view-manager-list-test.el ends here

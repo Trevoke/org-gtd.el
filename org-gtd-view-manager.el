@@ -1227,7 +1227,7 @@ deletion the highlight index is clamped to the shrunken store."
 (transient-define-prefix org-gtd-view-manager ()
   "Browse and manage saved GTD views."
   [:description org-gtd-view-manager--rows
-   [("RET" "Render"    org-gtd-view-manager--list-render)
+   [("RET" "Open"      org-gtd-view-manager--list-render)
     ("c"   "Create"    org-gtd-view-manager--list-create)
     ("e"   "Edit"      org-gtd-view-manager--list-edit)
     ("d"   "Duplicate" org-gtd-view-manager--list-duplicate)
