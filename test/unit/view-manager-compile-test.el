@@ -87,5 +87,11 @@
     ;; No section carries a name.
     (assert-nil (assq 'name (nth 0 blocks)))))
 
+(deftest view-manager-compile-view/refuses-zero-sections ()
+  "Compiling with no sections errors rather than emitting `((name)(blocks))'.
+The min-one-section guard makes this unreachable in practice, but
+`--save'/preview must never silently persist an empty blocks spec."
+  (assert-raises 'error (org-gtd-view-manager--compile-view "Empty" nil)))
+
 (provide 'view-manager-compile-test)
 ;;; view-manager-compile-test.el ends here

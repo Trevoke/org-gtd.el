@@ -56,8 +56,7 @@ drift from the single source of truth the builder is generated from."
   "A blank name errors, writes nothing, and leaves the builder dirty.
 Guards against silently persisting a nameless `(name . \"\")' entry
 that would surface as a blank candidate in `org-gtd-view-run'."
-  (setq org-gtd-view-manager--build-state
-        (list (cons 'name "Untitled") (cons 'type 'next-action)))
+  (org-gtd-view-manager--build-load '((name . "Untitled") (type . next-action)))
   (setq org-gtd-view-manager--build-dirty t)
   (cl-letf (((symbol-function 'read-string) (lambda (&rest _) ""))
             ;; Keep the test hermetic: don't register a resume timer.

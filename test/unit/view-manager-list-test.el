@@ -43,8 +43,7 @@ Editing seeds `--build-original-name'; a save under a changed name
 must MOVE (delete the old), not leave an orphan behind."
   (org-gtd-view-manager--store-upsert
    "Old" (list (cons 'name "Old") (cons 'type 'next-action)))
-  (setq org-gtd-view-manager--build-state
-        (list (cons 'name "Old") (cons 'type 'next-action)))
+  (org-gtd-view-manager--build-load '((name . "Old") (type . next-action)))
   (setq org-gtd-view-manager--build-original-name "Old")
   (setq org-gtd-view-manager--build-dirty t)
   (cl-letf (((symbol-function 'read-string) (lambda (&rest _) "New"))
@@ -62,8 +61,7 @@ name equals `--build-original-name' so a plain edit-save is silent."
   (let ((prompted nil))
     (org-gtd-view-manager--store-upsert
      "A" (list (cons 'name "A") (cons 'type 'next-action)))
-    (setq org-gtd-view-manager--build-state
-          (list (cons 'name "A") (cons 'type 'single-action)))
+    (org-gtd-view-manager--build-load '((name . "A") (type . single-action)))
     (setq org-gtd-view-manager--build-original-name "A")
     (setq org-gtd-view-manager--build-dirty t)
     (cl-letf (((symbol-function 'read-string) (lambda (&rest _) "A"))
@@ -77,5 +75,24 @@ name equals `--build-original-name' so a plain edit-save is silent."
       (assert-true (assoc "A" views))
       (assert-equal 'single-action
                     (alist-get 'type (cdr (assoc "A" views)))))))
+
+(deftest view-manager-list/multi-section-save-round-trips-to-blocks ()
+  "Saving a two-section view stores a blocks spec that reloads verbatim."
+  (org-gtd-view-manager--build-load '((name . "Engage") (type . calendar)))
+  (org-gtd-view-manager--build-add-section) ;; section 2 = next-action
+  (setf (alist-get 'area-of-focus org-gtd-view-manager--build-state) "Work")
+  (setq org-gtd-view-manager--build-original-name "Engage")
+  (setq org-gtd-view-manager--build-dirty t)
+  (cl-letf (((symbol-function 'read-string) (lambda (&rest _) "Engage"))
+            ((symbol-function 'org-gtd-view-manager--build-restore-windows)
+             #'ignore))
+    (org-gtd-view-manager--save))
+  (let ((spec (org-gtd-view-manager--store-get "Engage")))
+    (assert-equal 2 (length (cdr (assq 'blocks spec))))
+    (assert-equal 'calendar
+                  (cdr (assq 'type (nth 0 (cdr (assq 'blocks spec))))))
+    (assert-equal "Work"
+                  (cdr (assq 'area-of-focus
+                             (nth 1 (cdr (assq 'blocks spec))))))))
 
 ;;; view-manager-list-test.el ends here

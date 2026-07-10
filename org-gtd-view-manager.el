@@ -403,7 +403,12 @@ the view name lives at view level, never inside a section."
 ONE section yields a FLAT spec identical to today's single-section
 output (back-compat, no `blocks').  TWO OR MORE sections yield a
 `((name . NAME) (blocks . (S0 S1 …)))' spec.  Each Sn is
-`org-gtd-view-manager--compile-section' of the nth section."
+`org-gtd-view-manager--compile-section' of the nth section.
+Signals `error' when SECTIONS is empty: the min-one-section guard makes
+this unreachable, but a stray zero-section call must never silently
+emit an unrenderable `((name) (blocks))' spec."
+  (unless sections
+    (error "A view needs at least one section"))
   (let ((compiled (mapcar #'org-gtd-view-manager--compile-section sections)))
     (if (= (length compiled) 1)
         (cons (cons 'name name) (car compiled))
@@ -774,21 +779,23 @@ next command tick (the house idiom, see `run-at-time' in
 
 (defun org-gtd-view-manager--save ()
   "Persist the built view, guarding against blank names and silent overwrite.
-Prompts for a name (defaulting to the current one).  A blank name is
-rejected with a teaching `user-error' and nothing is written -- the
-builder is reopened so a name can be entered (fail-soft), never
-persisting a nameless `(name . \"\")' entry.  If a view of that name
-already exists and the user declines to overwrite, the save is
-likewise abandoned and the builder reopened.  On a successful save
-the entry window layout is restored."
+Prompts for a name (defaulting to `org-gtd-view-manager--build-name').
+The active section is synced, then the whole view is compiled via
+`org-gtd-view-manager--compile-view' -- a FLAT spec for one section,
+a `blocks' spec for many.  A blank name is rejected with a teaching
+`user-error' and nothing is written -- the builder is reopened so a
+name can be entered (fail-soft), never persisting a nameless
+`(name . \"\")' entry.  If a view of that name already exists and the
+user declines to overwrite, the save is likewise abandoned and the
+builder reopened.  A save under a CHANGED name is a rename-move (the
+old entry is deleted); saving back to the same name is silent.  On a
+successful save the entry window layout is restored."
   (interactive)
-  (let* ((current-name (or (cdr (assq 'name org-gtd-view-manager--build-state))
-                           "Untitled"))
-         (name (read-string "Name this view: " current-name))
-         (spec (cons (cons 'name name)
-                     (assq-delete-all
-                      'name (org-gtd-view-manager--compile
-                             org-gtd-view-manager--build-state)))))
+  (let* ((name (read-string "Name this view: " org-gtd-view-manager--build-name))
+         (spec (progn
+                 (org-gtd-view-manager--build-sync-active)
+                 (org-gtd-view-manager--compile-view
+                  name org-gtd-view-manager--build-sections))))
     (cond
      ((string-blank-p name)
       (org-gtd-view-manager--build-resume)
@@ -811,6 +818,7 @@ the entry window layout is restored."
                  (not (equal org-gtd-view-manager--build-original-name name)))
         (org-gtd-view-manager--store-delete
          org-gtd-view-manager--build-original-name))
+      (setq org-gtd-view-manager--build-name name)
       (setq org-gtd-view-manager--build-original-name nil)
       (setq org-gtd-view-manager--build-dirty nil)
       (message "Saved view '%s'" name)
