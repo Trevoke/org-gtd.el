@@ -52,6 +52,26 @@ drift from the single source of truth the builder is generated from."
                   'org-gtd-view-manager--build key)))
       (assert-equal key (plist-get plist :key)))))
 
+(deftest view-manager-build/section-keys-are-bound ()
+  "The Sections group binds all six section-management keys."
+  (dolist (key '("M-a" "M-n" "M-p" "M-k" "M-<up>" "M-<down>"))
+    (let ((plist (ogt--transient-suffix-plist
+                  'org-gtd-view-manager--build key)))
+      (assert-equal key (plist-get plist :key)))))
+
+(deftest view-manager-build/preview-on-open-compiles-whole-view ()
+  "Opening a builder on a blocks spec previews the composite (blocks) spec."
+  (let ((captured 'unset)
+        (org-gtd-view-manager--preview-last nil))
+    (cl-letf (((symbol-function 'transient-setup) #'ignore)
+              ((symbol-function 'org-gtd-view-manager--render-preview)
+               (lambda (spec) (setq captured spec))))
+      (org-gtd-view-manager--build
+       '((name . "Engage")
+         (blocks . (((type . calendar)) ((type . next-action)))))))
+    (assert-equal 2 (length (cdr (assq 'blocks captured))))
+    (assert-equal "Engage" (cdr (assq 'name captured)))))
+
 (deftest view-manager-build/save-rejects-blank-name ()
   "A blank name errors, writes nothing, and leaves the builder dirty.
 Guards against silently persisting a nameless `(name . \"\")' entry

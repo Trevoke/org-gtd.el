@@ -43,7 +43,7 @@ was reported as `unchanged', skipping the live-preview render."
          (list (cons 'name "x")
                (cons 'type 'next-action)
                (cons 'area-of-focus "Work"))))
-    (let ((spec (org-gtd-view-manager--compile
+    (let ((spec (org-gtd-view-manager--compile-section
                  org-gtd-view-manager--build-state)))
       ;; Mutate the live state exactly like `--set-value' does for an
       ;; existing key.  The already-compiled snapshot must NOT change.
@@ -55,13 +55,12 @@ was reported as `unchanged', skipping the live-preview render."
 Simulates the debounced path: render Work, then mutate the value in
 place to Home (as `--set-value' does) and fire `--preview-now' again.
 Both renders must happen -- the second must not be skipped by a stale
-`--preview-last' cache."
+`--preview-last' cache.  `--compile-current-view' syncs the mutated
+active section before compiling, so the change is seen."
   (let ((count 0)
-        (org-gtd-view-manager--preview-last nil)
-        (org-gtd-view-manager--build-state
-         (list (cons 'name "x")
-               (cons 'type 'next-action)
-               (cons 'area-of-focus "Work"))))
+        (org-gtd-view-manager--preview-last nil))
+    (org-gtd-view-manager--build-load
+     '((name . "x") (type . next-action) (area-of-focus . "Work")))
     (cl-letf (((symbol-function 'org-gtd-view-manager--render-preview)
                (lambda (&rest _) (cl-incf count))))
       (org-gtd-view-manager--preview-now)
@@ -73,11 +72,10 @@ Both renders must happen -- the second must not be skipped by a stale
   "Explicit RET preview renders even when the cache equals the current spec.
 RET is the user's recovery hatch: it must never be silenced by
 `--preview-changed-p', otherwise a stale preview is unrecoverable."
-  (let ((count 0)
-        (org-gtd-view-manager--build-state
-         (list (cons 'name "x") (cons 'type 'next-action))))
+  (let ((count 0))
+    (org-gtd-view-manager--build-load '((name . "x") (type . next-action)))
     (setq org-gtd-view-manager--preview-last
-          (org-gtd-view-manager--compile org-gtd-view-manager--build-state))
+          (org-gtd-view-manager--compile-current-view))
     (cl-letf (((symbol-function 'org-gtd-view-manager--render-preview)
                (lambda (&rest _) (cl-incf count))))
       (org-gtd-view-manager--preview))
@@ -88,11 +86,10 @@ RET is the user's recovery hatch: it must never be silenced by
 Guards the DRY refactor: adding `force' to `--preview-now' must not
 break the debounce's coalescing (design: at most one render per idle
 window)."
-  (let ((count 0)
-        (org-gtd-view-manager--build-state
-         (list (cons 'name "x") (cons 'type 'next-action))))
+  (let ((count 0))
+    (org-gtd-view-manager--build-load '((name . "x") (type . next-action)))
     (setq org-gtd-view-manager--preview-last
-          (org-gtd-view-manager--compile org-gtd-view-manager--build-state))
+          (org-gtd-view-manager--compile-current-view))
     (cl-letf (((symbol-function 'org-gtd-view-manager--render-preview)
                (lambda (&rest _) (cl-incf count))))
       (org-gtd-view-manager--preview-now))

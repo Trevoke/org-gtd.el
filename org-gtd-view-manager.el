@@ -377,23 +377,6 @@ a flat/single spec lists its filter values."
 
 ;;;; Compile
 
-(defun org-gtd-view-manager--compile (state)
-  "Compile builder STATE (a key -> value alist) into a flat view spec.
-Keys whose value is nil are omitted so the DSL applies its own
-defaults.  `name' and every curated filter key pass through as-is;
-values are already in DSL shape (readers produce them)."
-  (let ((allowed (cons 'name (mapcar #'car org-gtd-view-manager--filter-specs)))
-        result)
-    (dolist (cell state)
-      (when (and (memq (car cell) allowed)
-                 (not (null (cdr cell))))
-        ;; Cons a FRESH cell: the compiled spec is cached in
-        ;; `--preview-last', and `--set-value' mutates existing keys in
-        ;; place.  Sharing the cell would let that in-place mutation
-        ;; corrupt the cache and defeat `--preview-changed-p'.
-        (push (cons (car cell) (cdr cell)) result)))
-    (nreverse result)))
-
 (defun org-gtd-view-manager--compile-section (section)
   "Compile one SECTION alist (no name) into a filtered spec.
 Keys whose value is nil are omitted so the DSL applies its own
@@ -701,6 +684,16 @@ dirty and asks the preview to refresh."
   "Return non-nil if SPEC differs from the last previewed spec."
   (not (equal spec org-gtd-view-manager--preview-last)))
 
+(defun org-gtd-view-manager--compile-current-view ()
+  "Sync the active section, then compile the whole view to a stored spec.
+The composite spec is what the live preview renders, so the section
+being edited is always seen in the context of the whole multi-block
+view."
+  (org-gtd-view-manager--build-sync-active)
+  (org-gtd-view-manager--compile-view
+   org-gtd-view-manager--build-name
+   org-gtd-view-manager--build-sections))
+
 (defun org-gtd-view-manager--preview-now (&optional force)
   "Render the current build state immediately, fail-soft.
 Unless FORCE is non-nil, skips the render when the compiled spec is
@@ -709,7 +702,7 @@ bypasses that guard -- the explicit `RET' preview passes it so a stale
 view is always recoverable.  Any `org-gtd-view-show' error is caught
 and surfaced as a one-line teaching message, never a stack trace
 (design §8)."
-  (let ((spec (org-gtd-view-manager--compile org-gtd-view-manager--build-state)))
+  (let ((spec (org-gtd-view-manager--compile-current-view)))
     (when (or force (org-gtd-view-manager--preview-changed-p spec))
       (condition-case err
           (progn
@@ -860,6 +853,52 @@ when nothing is dirty) the entry window layout is restored."
       (org-gtd-view-manager--build-restore-windows)
     (org-gtd-view-manager--build-resume)))
 
+;;;; Section commands
+
+;; Interactive wrappers around the pure section ops (see `;;;; Section state').
+;; Next/prev only switch the active index -- the transient auto-redraws the
+;; summary, and the composite agenda is unchanged by a mere switch, so they do
+;; NOT reschedule a preview.  Add/delete/move change the composite view, so they
+;; mark the builder dirty and schedule a whole-view preview refresh.
+
+(defun org-gtd-view-manager--section-add ()
+  "Add a section, mark dirty, refresh preview."
+  (interactive)
+  (org-gtd-view-manager--build-add-section)
+  (setq org-gtd-view-manager--build-dirty t)
+  (org-gtd-view-manager--preview-schedule))
+
+(defun org-gtd-view-manager--section-next ()
+  "Switch to the next section."
+  (interactive)
+  (org-gtd-view-manager--build-next-section))
+
+(defun org-gtd-view-manager--section-prev ()
+  "Switch to the previous section."
+  (interactive)
+  (org-gtd-view-manager--build-prev-section))
+
+(defun org-gtd-view-manager--section-delete ()
+  "Delete the active section (refused if it is the last)."
+  (interactive)
+  (when (org-gtd-view-manager--build-delete-section)
+    (setq org-gtd-view-manager--build-dirty t)
+    (org-gtd-view-manager--preview-schedule)))
+
+(defun org-gtd-view-manager--section-move-up ()
+  "Move the active section up."
+  (interactive)
+  (when (org-gtd-view-manager--build-move-section-up)
+    (setq org-gtd-view-manager--build-dirty t)
+    (org-gtd-view-manager--preview-schedule)))
+
+(defun org-gtd-view-manager--section-move-down ()
+  "Move the active section down."
+  (interactive)
+  (when (org-gtd-view-manager--build-move-section-down)
+    (setq org-gtd-view-manager--build-dirty t)
+    (org-gtd-view-manager--preview-schedule)))
+
 (defmacro org-gtd-view-manager--define-builder-transient ()
   "Generate the builder's per-key set-commands and the prefix from the table.
 DRY: each infix's key letter, reader and formatter are read from
@@ -928,6 +967,13 @@ The five infix columns are generated from
 builder; nil starts a fresh Untitled next-action view."
          [:description (lambda () (org-gtd-view-manager--build-summary))]
          ,@rows
+         ["Sections"
+          ("M-a"      "Add"       org-gtd-view-manager--section-add       :transient t)
+          ("M-n"      "Next"      org-gtd-view-manager--section-next      :transient t)
+          ("M-p"      "Prev"      org-gtd-view-manager--section-prev      :transient t)
+          ("M-k"      "Delete"    org-gtd-view-manager--section-delete    :transient t)
+          ("M-<up>"   "Move up"   org-gtd-view-manager--section-move-up   :transient t)
+          ("M-<down>" "Move down" org-gtd-view-manager--section-move-down :transient t)]
          ["Actions"
           ("RET" "Preview" org-gtd-view-manager--preview :transient t)
           ("s" "Save" org-gtd-view-manager--save)
@@ -940,10 +986,10 @@ builder; nil starts a fresh Untitled next-action view."
          ;; nothing is ever deleted on save.
          (setq org-gtd-view-manager--build-original-name
                (and starting-spec (alist-get 'name starting-spec)))
-         (setq org-gtd-view-manager--build-state
-               (copy-alist (or starting-spec
-                               (list (cons 'name "Untitled")
-                                     (cons 'type 'next-action)))))
+         ;; Split the seeding spec into the section state model: `--build-name'
+         ;; (view level) plus `--build-sections'/`--build-active'/`--build-state'
+         ;; (the active section).  Handles flat, `blocks' and nil (fresh) specs.
+         (org-gtd-view-manager--build-load starting-spec)
          (setq org-gtd-view-manager--build-dirty nil)
          (setq org-gtd-view-manager--preview-last nil)
          ;; Render the starting spec's agenda immediately so the builder shows a
