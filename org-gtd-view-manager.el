@@ -383,6 +383,9 @@ Its `title' when non-blank, else its filter badge, else its type name,
 else the literal \"Section\".  Shared by `--compile-view' (the block
 header) and the builder's section-list panel so the two never drift."
   (let ((title (alist-get 'title section)))
+    ;; Asymmetry is intentional: a user-typed title is whitespace-normalized
+    ;; (`string-blank-p'), but a machine-built badge -- never whitespace-only --
+    ;; is only empty-checked (`string-empty-p').  Do not "unify" these.
     (if (and title (not (string-blank-p title)))
         title
       (let ((badge (org-gtd-view-manager--badge-section section)))
@@ -676,7 +679,14 @@ suffix-less description groups are dropped by transient at init)."
              (format "  %s %d  %s"
                      (if (= i active) "▸" " ")
                      (1+ i)
-                     (org-gtd-view-manager--section-label sec)))
+                     ;; A lone section compiles to a FLAT spec whose header is
+                     ;; the view name, so its title is NOT persisted -- show the
+                     ;; badge to match what actually saves.  With 2+ sections a
+                     ;; title becomes the block header, so use the title-or-badge
+                     ;; label.
+                     (if (= n 1)
+                         (org-gtd-view-manager--badge-section sec)
+                       (org-gtd-view-manager--section-label sec))))
            org-gtd-view-manager--build-sections)))
     (concat
      (propertize "View: " 'face 'transient-heading)
@@ -967,6 +977,11 @@ effect once a second section exists."
             (assq-delete-all 'title org-gtd-view-manager--build-state)))
     (org-gtd-view-manager--build-sync-active)
     (setq org-gtd-view-manager--build-dirty t)
+    ;; A lone section compiles to a FLAT spec (header = view name), so a title
+    ;; set here does not affect the preview/save until a 2nd section exists.
+    ;; The title is still kept in memory so it applies the moment one is added.
+    (when (and value (= (length org-gtd-view-manager--build-sections) 1))
+      (message "Section title applies once the view has a second section"))
     (org-gtd-view-manager--preview-schedule)))
 
 (defmacro org-gtd-view-manager--define-builder-transient ()

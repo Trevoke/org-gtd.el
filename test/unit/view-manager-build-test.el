@@ -194,4 +194,40 @@ view name plus a section marker."
     (assert-false (string-match-p "▸" (nth 2 lines)))
     (assert-true (string-match-p "Errands" (nth 2 lines)))))
 
+(deftest view-manager-build/lone-section-panel-shows-badge-not-title ()
+  "For a one-section view the panel line uses the badge, not the title, matching
+   the flat spec that actually persists (a lone section's title is dropped)."
+  (org-gtd-view-manager--build-load '((name . "V") (type . next-action)))
+  (cl-letf (((symbol-function 'read-string) (lambda (&rest _) "My focus"))
+            ((symbol-function 'org-gtd-view-manager--preview-schedule) #'ignore)
+            ((symbol-function 'message) #'ignore))
+    (org-gtd-view-manager--section-rename))
+  ;; Title IS still set in memory (takes effect once a 2nd section exists).
+  (assert-equal "My focus" (alist-get 'title org-gtd-view-manager--build-state))
+  (let* ((summary (org-gtd-view-manager--build-summary))
+         (plain (substring-no-properties summary))
+         (lines (split-string plain "\n")))
+    ;; Header line + one section line.
+    (assert-equal 2 (length lines))
+    ;; The lone section line shows the badge, NOT the (unpersisted) title.
+    (assert-true (string-match-p "next-action" (nth 1 lines)))
+    (assert-false (string-match-p "My focus" (nth 1 lines)))))
+
+(deftest view-manager-build/lone-section-title-applies-after-second-section ()
+  "The title set on a lone section is not discarded: once a second section is
+   added, the panel shows it via `--section-label'."
+  (org-gtd-view-manager--build-load '((name . "V") (type . next-action)))
+  (cl-letf (((symbol-function 'read-string) (lambda (&rest _) "My focus"))
+            ((symbol-function 'org-gtd-view-manager--preview-schedule) #'ignore)
+            ((symbol-function 'message) #'ignore))
+    (org-gtd-view-manager--section-rename))
+  ;; Adding a second section keeps section 0's title intact.
+  (org-gtd-view-manager--build-add-section)
+  (let* ((summary (org-gtd-view-manager--build-summary))
+         (plain (substring-no-properties summary))
+         (lines (split-string plain "\n")))
+    (assert-equal 3 (length lines))
+    ;; Section 0's line now surfaces the title (two sections -> title header).
+    (assert-true (string-match-p "My focus" (nth 1 lines)))))
+
 ;;; view-manager-build-test.el ends here
