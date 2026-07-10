@@ -377,6 +377,21 @@ a flat/single spec lists its filter values."
 
 ;;;; Compile
 
+(defun org-gtd-view-manager--section-label (section)
+  "Return SECTION's display/header label.
+Its `title' when non-blank, else its filter badge, else its type name,
+else the literal \"Section\".  Shared by `--compile-view' (the block
+header) and the builder's section-list panel so the two never drift."
+  (let ((title (alist-get 'title section)))
+    (if (and title (not (string-blank-p title)))
+        title
+      (let ((badge (org-gtd-view-manager--badge-section section)))
+        (if (string-empty-p badge)
+            (if-let ((type (alist-get 'type section)))
+                (symbol-name type)
+              "Section")
+          badge)))))
+
 (defun org-gtd-view-manager--compile-section (section)
   "Compile one SECTION alist (no name) into a filtered spec.
 Keys whose value is nil are omitted so the DSL applies its own
@@ -412,20 +427,14 @@ emit an unrenderable `((name) (blocks))' spec."
     ;; Multi-section: give every block a `name' so org-agenda renders it as
     ;; the block header instead of falling back to the generic
     ;; `Headlines with TAGS match: …' default (the multi-section defect).
+    ;; The header is the section's title when set, else its synthesized badge
+    ;; (see `org-gtd-view-manager--section-label').
     (list (cons 'name name)
           (cons 'blocks
                 (mapcar
                  (lambda (section)
-                   (let* ((badge (org-gtd-view-manager--badge-section section))
-                          (label (if (string-empty-p badge)
-                                     ;; Bare section (no badge-bearing filters):
-                                     ;; fall back to its type, or a literal.
-                                     (if-let ((type (alist-get 'type section)))
-                                         (symbol-name type)
-                                       "Section")
-                                   badge)))
-                     (cons (cons 'name label)
-                           (org-gtd-view-manager--compile-section section))))
+                   (cons (cons 'name (org-gtd-view-manager--section-label section))
+                         (org-gtd-view-manager--compile-section section)))
                  sections)))))
 
 ;;;; Migration (one-time, fail-soft)
@@ -607,12 +616,17 @@ Sets `--build-name', `--build-sections', `--build-active' (0) and loads
    ((assq 'blocks starting-spec)
     (setq org-gtd-view-manager--build-name
           (or (alist-get 'name starting-spec) "Untitled"))
-    ;; Strip each block's synthesized `name' header: sections carry no name
-    ;; (it is re-synthesized on compile), so the editable state stays
-    ;; canonical and a loaded name never leaks into it.
+    ;; Strip each block's synthesized `name' header but preserve it as the
+    ;; editable per-section `title' so a saved header round-trips as the
+    ;; user's title.  Sticky: a previously synthesized badge-name also
+    ;; reloads as a title, which is acceptable (see design doc).
     (setq org-gtd-view-manager--build-sections
           (mapcar (lambda (block)
-                    (assq-delete-all 'name (copy-alist block)))
+                    (let ((name (alist-get 'name block))
+                          (sec (assq-delete-all 'name (copy-alist block))))
+                      (if (and name (not (string-blank-p name)))
+                          (cons (cons 'title name) sec)
+                        sec)))
                   (alist-get 'blocks starting-spec))))
    (t
     (setq org-gtd-view-manager--build-name

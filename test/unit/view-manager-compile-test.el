@@ -139,5 +139,59 @@ The min-one-section guard makes this unreachable in practice, but
 `--save'/preview must never silently persist an empty blocks spec."
   (assert-raises 'error (org-gtd-view-manager--compile-view "Empty" nil)))
 
+(deftest view-manager-compile-view/block-name-uses-title-when-set ()
+  "A section's `title' becomes its block name in a multi-section spec."
+  (let* ((sections '(((type . next-action) (title . "Today's focus"))
+                     ((type . delegated))))
+         (spec (org-gtd-view-manager--compile-view "V" sections))
+         (blocks (cdr (assq 'blocks spec))))
+    (assert-equal "Today's focus" (cdr (assq 'name (nth 0 blocks))))
+    ;; No title on the second section -> falls back to its badge.
+    (assert-equal (org-gtd-view-manager--badge-section (nth 1 sections))
+                  (cdr (assq 'name (nth 1 blocks))))))
+
+(deftest view-manager-compile-view/blank-title-falls-back-to-badge ()
+  "A blank/whitespace title is ignored; the block name falls back to the badge."
+  (let* ((sections '(((type . next-action) (area-of-focus . "Work") (title . "  "))
+                     ((type . delegated))))
+         (spec (org-gtd-view-manager--compile-view "V" sections))
+         (blocks (cdr (assq 'blocks spec))))
+    (assert-equal (org-gtd-view-manager--badge-section (nth 0 sections))
+                  (cdr (assq 'name (nth 0 blocks))))))
+
+(deftest view-manager-compile-section/drops-title ()
+  "`title' is a manager-level key, never a DSL filter -- compile drops it."
+  (let ((sec (org-gtd-view-manager--compile-section
+              '((type . next-action) (title . "Focus")))))
+    (assert-nil (assq 'title sec))
+    (assert-equal 'next-action (cdr (assq 'type sec)))))
+
+(deftest view-manager-badge-section/ignores-title ()
+  "A section's `title' does not appear in its badge."
+  (let ((with-title (org-gtd-view-manager--badge-section
+                     '((type . next-action) (title . "Focus"))))
+        (without    (org-gtd-view-manager--badge-section
+                     '((type . next-action)))))
+    (assert-equal without with-title)))
+
+(deftest view-manager-compile-view/title-round-trips-without-doubling ()
+  "Set title -> compile (block name = title) -> load compiled -> title reloaded
+   -> compile again -> still the title, not doubled or lost."
+  (let* ((sections '(((type . next-action) (title . "Focus"))
+                     ((type . delegated))))
+         (spec1 (org-gtd-view-manager--compile-view "V" sections)))
+    (assert-equal "Focus" (cdr (assq 'name (nth 0 (cdr (assq 'blocks spec1))))))
+    (org-gtd-view-manager--build-load spec1)
+    (assert-equal "Focus" (cdr (assq 'title
+                                      (nth 0 org-gtd-view-manager--build-sections))))
+    (let* ((spec2 (org-gtd-view-manager--compile-view
+                   org-gtd-view-manager--build-name
+                   org-gtd-view-manager--build-sections))
+           (blocks (cdr (assq 'blocks spec2))))
+      (assert-equal "Focus" (cdr (assq 'name (nth 0 blocks))))
+      ;; Not doubled: exactly one name key.
+      (assert-equal 1 (length (seq-filter (lambda (c) (eq (car c) 'name))
+                                          (nth 0 blocks)))))))
+
 (provide 'view-manager-compile-test)
 ;;; view-manager-compile-test.el ends here

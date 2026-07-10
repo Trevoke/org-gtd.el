@@ -173,5 +173,23 @@
                 (cdr (assq 'area-of-focus
                            (nth 1 org-gtd-view-manager--build-sections)))))
 
+(deftest view-manager-load/blocks-map-name-to-title ()
+  "Loading a blocks spec maps each block's `name' to the section's `title'
+   while stripping the raw `name' key (sections stay canonical)."
+  (org-gtd-view-manager--build-load
+   '((name . "Engage")
+     (blocks . (((name . "Morning") (type . calendar))
+                ((name . "next-action") (type . next-action))))))
+  (assert-nil (assq 'name (nth 0 org-gtd-view-manager--build-sections)))
+  (assert-equal "Morning"
+                (cdr (assq 'title (nth 0 org-gtd-view-manager--build-sections))))
+  (assert-equal "next-action"
+                (cdr (assq 'title (nth 1 org-gtd-view-manager--build-sections)))))
+
+(deftest view-manager-load/fresh-section-has-no-title ()
+  "A fresh in-memory section carries no `title' (badge is not persisted as one)."
+  (org-gtd-view-manager--build-load nil)
+  (assert-nil (assq 'title (nth 0 org-gtd-view-manager--build-sections))))
+
 (provide 'view-manager-sections-test)
 ;;; view-manager-sections-test.el ends here
