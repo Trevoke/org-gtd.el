@@ -1050,7 +1050,6 @@ five columns can never drift from the single source of truth."
 The five infix columns are generated from
 `org-gtd-view-manager--filter-specs'.  STARTING-SPEC seeds the
 builder; nil starts a fresh Untitled next-action view."
-         ,@rows
          [:description (lambda () (org-gtd-view-manager--build-summary))
           ("M-a"      "Add"       org-gtd-view-manager--section-add       :transient t)
           ("M-n"      "Next"      org-gtd-view-manager--section-next      :transient t)
@@ -1059,6 +1058,7 @@ builder; nil starts a fresh Untitled next-action view."
           ("M-k"      "Delete"    org-gtd-view-manager--section-delete    :transient t)
           ("M-<up>"   "Move up"   org-gtd-view-manager--section-move-up   :transient t)
           ("M-<down>" "Move down" org-gtd-view-manager--section-move-down :transient t)]
+         ,@rows
          ["Actions"
           ("RET" "Preview" org-gtd-view-manager--preview :transient t)
           ("s" "Save" org-gtd-view-manager--save)
