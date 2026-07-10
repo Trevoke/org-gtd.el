@@ -405,11 +405,28 @@ this unreachable, but a stray zero-section call must never silently
 emit an unrenderable `((name) (blocks))' spec."
   (unless sections
     (error "A view needs at least one section"))
-  (let ((compiled (mapcar #'org-gtd-view-manager--compile-section sections)))
-    (if (= (length compiled) 1)
-        (cons (cons 'name name) (car compiled))
-      (list (cons 'name name)
-            (cons 'blocks compiled)))))
+  (if (= (length sections) 1)
+      ;; Flat spec: the view name is the block header; no per-section name.
+      (cons (cons 'name name)
+            (org-gtd-view-manager--compile-section (car sections)))
+    ;; Multi-section: give every block a `name' so org-agenda renders it as
+    ;; the block header instead of falling back to the generic
+    ;; `Headlines with TAGS match: …' default (the multi-section defect).
+    (list (cons 'name name)
+          (cons 'blocks
+                (mapcar
+                 (lambda (section)
+                   (let* ((badge (org-gtd-view-manager--badge-section section))
+                          (label (if (string-empty-p badge)
+                                     ;; Bare section (no badge-bearing filters):
+                                     ;; fall back to its type, or a literal.
+                                     (if-let ((type (alist-get 'type section)))
+                                         (symbol-name type)
+                                       "Section")
+                                   badge)))
+                     (cons (cons 'name label)
+                           (org-gtd-view-manager--compile-section section))))
+                 sections)))))
 
 ;;;; Migration (one-time, fail-soft)
 
@@ -590,8 +607,13 @@ Sets `--build-name', `--build-sections', `--build-active' (0) and loads
    ((assq 'blocks starting-spec)
     (setq org-gtd-view-manager--build-name
           (or (alist-get 'name starting-spec) "Untitled"))
+    ;; Strip each block's synthesized `name' header: sections carry no name
+    ;; (it is re-synthesized on compile), so the editable state stays
+    ;; canonical and a loaded name never leaks into it.
     (setq org-gtd-view-manager--build-sections
-          (mapcar #'copy-alist (alist-get 'blocks starting-spec))))
+          (mapcar (lambda (block)
+                    (assq-delete-all 'name (copy-alist block)))
+                  (alist-get 'blocks starting-spec))))
    (t
     (setq org-gtd-view-manager--build-name
           (or (alist-get 'name starting-spec) "Untitled"))

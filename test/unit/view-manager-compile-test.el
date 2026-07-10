@@ -83,9 +83,55 @@
     (assert-equal 3 (length blocks))
     (assert-equal 'calendar (cdr (assq 'type (nth 0 blocks))))
     (assert-equal "Work" (cdr (assq 'area-of-focus (nth 1 blocks))))
-    (assert-equal 'delegated (cdr (assq 'type (nth 2 blocks))))
-    ;; No section carries a name.
-    (assert-nil (assq 'name (nth 0 blocks)))))
+    (assert-equal 'delegated (cdr (assq 'type (nth 2 blocks))))))
+
+(deftest view-manager-compile-view/blocks-carry-badge-names ()
+  "Each block in a multi-section spec gets a non-empty name = its badge.
+Without a name org-agenda falls back to the generic
+`Headlines with TAGS match: …' header (the defect)."
+  (let* ((sections '(((type . next-action) (area-of-focus . "Work"))
+                     ((type . delegated))))
+         (spec (org-gtd-view-manager--compile-view "Engage" sections))
+         (blocks (cdr (assq 'blocks spec))))
+    (assert-equal (org-gtd-view-manager--badge-section (nth 0 sections))
+                  (cdr (assq 'name (nth 0 blocks))))
+    (assert-equal (org-gtd-view-manager--badge-section (nth 1 sections))
+                  (cdr (assq 'name (nth 1 blocks))))
+    (assert-false (string-empty-p (cdr (assq 'name (nth 0 blocks)))))
+    (assert-false (string-empty-p (cdr (assq 'name (nth 1 blocks)))))))
+
+(deftest view-manager-compile-view/bare-block-name-falls-back-to-type ()
+  "A section with no badge-bearing filters still gets a non-empty block name.
+An empty badge would leave the block nameless and re-trigger the
+generic org-agenda header."
+  (let* ((sections '(((type . next-action)) ((no-filters . t))))
+         (spec (org-gtd-view-manager--compile-view "X" sections))
+         (blocks (cdr (assq 'blocks spec))))
+    (assert-false (string-empty-p (cdr (assq 'name (nth 1 blocks)))))))
+
+(deftest view-manager-compile-view/blocks-round-trip-stable ()
+  "Load a 2-section blocks spec, compile, and the blocks carry synthesized
+names again (not doubled/empty); re-loading THAT is idempotent."
+  (let ((stored '((name . "Engage")
+                  (blocks . (((name . "next-action · Work")
+                              (type . next-action) (area-of-focus . "Work"))
+                             ((name . "delegated")
+                              (type . delegated)))))))
+    (org-gtd-view-manager--build-load stored)
+    (let* ((sections org-gtd-view-manager--build-sections)
+           (spec (org-gtd-view-manager--compile-view
+                  org-gtd-view-manager--build-name sections))
+           (blocks (cdr (assq 'blocks spec))))
+      ;; Sections are canonical (no name leaked in from the stored spec).
+      (assert-nil (assq 'name (nth 0 sections)))
+      (assert-nil (assq 'name (nth 1 sections)))
+      ;; Compiled blocks carry a single synthesized name each.
+      (assert-equal "next-action · Work" (cdr (assq 'name (nth 0 blocks))))
+      (assert-equal "delegated" (cdr (assq 'name (nth 1 blocks))))
+      ;; Re-load of the compiled spec yields the same canonical sections.
+      (org-gtd-view-manager--build-load spec)
+      (assert-nil (assq 'name (nth 0 org-gtd-view-manager--build-sections)))
+      (assert-nil (assq 'name (nth 1 org-gtd-view-manager--build-sections))))))
 
 (deftest view-manager-compile-view/refuses-zero-sections ()
   "Compiling with no sections errors rather than emitting `((name)(blocks))'.

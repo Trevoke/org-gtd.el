@@ -62,6 +62,17 @@
       (blocks . (((type . calendar))
                  ((type . next-action) (area-of-focus . "Work"))))))))
 
+(deftest view-manager-badge/blocks-with-names-do-not-leak ()
+  "Blocks carrying a synthesized `name' still summarize as `N sections: …';
+the name is not a filter, so it must not appear in a per-section badge."
+  (assert-equal
+   "2 sections: calendar · next-action · Work"
+   (org-gtd-view-manager--badge
+    '((name . "Engage")
+      (blocks . (((name . "calendar") (type . calendar))
+                 ((name . "next-action · Work")
+                  (type . next-action) (area-of-focus . "Work"))))))))
+
 (deftest view-manager-badge/flat-spec-unchanged ()
   "A flat spec still badges via the per-section formatter."
   (assert-equal "next-action · Home"

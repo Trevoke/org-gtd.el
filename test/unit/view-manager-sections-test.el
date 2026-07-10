@@ -157,5 +157,21 @@
                 (cdr (assq 'area-of-focus
                            (nth 1 org-gtd-view-manager--build-sections)))))
 
+(deftest view-manager-load/blocks-spec-strips-synthesized-names ()
+  "Loaded blocks carry a synthesized `name' header, but sections are canonical:
+`--build-sections' entries must have NO name (it is re-synthesized on compile)."
+  (org-gtd-view-manager--build-load
+   '((name . "Engage")
+     (blocks . (((name . "calendar") (type . calendar))
+                ((name . "next-action · Work")
+                 (type . next-action) (area-of-focus . "Work"))))))
+  (assert-nil (assq 'name (nth 0 org-gtd-view-manager--build-sections)))
+  (assert-nil (assq 'name (nth 1 org-gtd-view-manager--build-sections)))
+  (assert-equal 'calendar
+                (cdr (assq 'type (nth 0 org-gtd-view-manager--build-sections))))
+  (assert-equal "Work"
+                (cdr (assq 'area-of-focus
+                           (nth 1 org-gtd-view-manager--build-sections)))))
+
 (provide 'view-manager-sections-test)
 ;;; view-manager-sections-test.el ends here
