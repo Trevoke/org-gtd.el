@@ -2,6 +2,33 @@
 
 This document provides guidance for AI agents working on the org-gtd.el project.
 
+## Branching Model
+
+This repo uses a light git-flow. Two long-lived branches:
+
+- **`master`** — the rolling release line. MELPA's *unstable* channel tracks it,
+  and git tags (`4.6.1`, `5.0.0`, …) are the MELPA *stable* releases. **Only
+  bugfixes and docs land on `master`.** Pushing `master` triggers a MELPA
+  deploy, so treat pushing it as a release action (see "Landing the Plane").
+- **`develop`** — the integration branch for the next major version. All feature
+  work branches off `develop` and merges back into `develop`. Pushing `develop`
+  is safe: it does **not** trigger a MELPA deploy.
+
+### Where does my work go?
+
+- **New feature / larger change** → branch off `develop`, merge back into
+  `develop`. Push the feature branch and/or `develop` freely.
+- **Bugfix for the released version** → branch off `master`, merge into
+  `master`. After releasing, merge `master` → `develop` so the fix is carried
+  forward.
+
+### Releasing
+
+- **Major/minor (from `develop`):** merge `develop` → `master`, bump the version
+  (see CLAUDE.md "Creating a new release"), tag, push `master` + tag.
+- **Patch (from `master`):** land the fix on `master`, bump the patch version,
+  tag, push `master` + tag, then merge `master` → `develop`.
+
 ## Issue Tracking with yaks
 
 **IMPORTANT**: This project uses **yaks** (`yx`) for ALL issue tracking. Do NOT use markdown TODOs, task lists, or other tracking methods.
