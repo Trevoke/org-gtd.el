@@ -2531,16 +2531,20 @@ The easiest way of all is the [[#view-manager][View Manager]], which lets you bu
 :END:
 The View Manager lets you create, preview, name, save, recall, edit, and delete your own GTD agenda views interactively, without writing a single line of elisp. Saved views persist to a =views.eld= file in your ~org-gtd-directory~, so they survive restarts and travel with the rest of your GTD data.
 
-Open it with ~M-x org-gtd-view-manager~, or press =v= in the command center. This shows the list of your saved views. From the list you can:
+Open it with ~M-x org-gtd-view-manager~, or press =v= in the command center. If you have no saved views yet, this opens the builder directly so you can make your first one. Otherwise it prompts you to pick a saved view by name through completing-read -- each name is annotated with a short summary of what it filters, or, for a multi-section view, a summary of its sections -- and then opens a small action menu for the view you picked:
 
-- browse your saved views, each shown with a short summary of what it filters;
-- create a new view, which opens the builder;
-- edit, duplicate, or delete an existing view;
-- render a saved view to see it as a live agenda.
+- =o= open the view as a live agenda;
+- =e= edit it in the builder;
+- =n= create a new view (opens the builder on a blank view);
+- =c= copy it (opens the builder on a duplicate named "<name> copy");
+- =d= delete it, after confirmation;
+- =q= quit.
+
+Because you pick by name, the manager stays comfortable no matter how many views you accumulate: type a few characters to narrow the list instead of scrolling through it.
 
 *The builder.* Creating or editing a view opens a transient builder. Each filter you toggle -- by type, tag, effort, priority, prefix, and so on -- updates a *live preview* agenda in an adjacent window as you go, so you can see exactly what the view will match before you commit to it. The two boolean filters, =not-done= (incomplete items only) and =not-habit= (exclude habits), work as on/off switches: press the key once to turn the filter on, and again to turn it off. When your =org-agenda-files= is empty (for instance in a brand-new setup), the builder shows the view running against a small set of sample data instead, so you can still tell what the filters do. When you are happy with the result, save it under a name; abort to discard it.
 
-*Recalling a saved view.* Use ~M-x org-gtd-view-run~ to recall any saved view by name through completing-read, and org-gtd renders it as an agenda. This is handy to bind to a key or call from your own commands.
+*Recalling a saved view.* Use ~M-x org-gtd-view-run~ to recall any saved view by name through the same annotated completing-read, and org-gtd renders it as an agenda. This is handy to bind to a key or call from your own commands.
 
 *Legacy custom views.* If you previously defined views through ~org-gtd-reflect-missed-custom-views~, those entries are imported into the View Manager automatically the first time it runs, so you do not have to recreate them by hand.
 *** Adding your own hooks when organizing

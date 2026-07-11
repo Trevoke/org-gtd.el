@@ -8,7 +8,13 @@
   Most existing =org-gtd-reflect-missed-custom-views= entries are imported
   automatically; entries using advanced view keys remain available through the
   (now-deprecated) variable.
-  New command =org-gtd-view-run= recalls a saved view by name.
+  You pick a saved view through an annotated =completing-read= -- each name is
+  shown with a summary of its filters (or its sections, for a multi-section
+  view) -- and then act on it from a small menu: =o= open, =e= edit, =n= new,
+  =c= copy, =d= delete.  With no saved views, the manager opens the builder
+  directly.
+  New command =org-gtd-view-run= recalls a saved view by name through the same
+  annotated picker.
   The builder exposes =not-done= and =not-habit= as on/off flag infixes
   (press the key again to clear it).
 
