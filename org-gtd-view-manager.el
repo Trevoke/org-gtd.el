@@ -1255,6 +1255,36 @@ deletion the highlight index is clamped to the shrunken store."
   (org-gtd-view-manager--migrate-once)
   (transient-setup 'org-gtd-view-manager))
 
+;;;; Annotated picker
+
+(defun org-gtd-view-manager--annotate-view (name views)
+  "Return the annotation string for view NAME within VIEWS.
+The badge is dimmed with `completions-annotations' and prefixed by a
+two-space gap so it reads as secondary text after the name."
+  (let ((spec (cdr (assoc name views))))
+    (concat "  " (propertize (org-gtd-view-manager--badge spec)
+                             'face 'completions-annotations))))
+
+(defun org-gtd-view-manager--completion-table (views)
+  "Return a completion table over VIEWS' names annotated with their badges.
+On `metadata' it advertises an `annotation-function' (the badge) and the
+`org-gtd-view' category; otherwise it completes over the view names."
+  (lambda (str pred action)
+    (if (eq action 'metadata)
+        `(metadata
+          (annotation-function
+           . ,(lambda (name)
+                (org-gtd-view-manager--annotate-view name views)))
+          (category . org-gtd-view))
+      (complete-with-action action (mapcar #'car views) str pred))))
+
+(defun org-gtd-view-manager--pick-view (views &optional prompt)
+  "Read a saved-view name from VIEWS via an annotated `completing-read'.
+PROMPT defaults to \"View: \"."
+  (completing-read (or prompt "View: ")
+                   (org-gtd-view-manager--completion-table views)
+                   nil t))
+
 ;;;; Recall
 
 ;;;###autoload
