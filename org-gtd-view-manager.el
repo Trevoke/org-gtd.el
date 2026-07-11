@@ -1122,6 +1122,8 @@ builder; nil starts a fresh Untitled next-action view."
 
 (defvar org-gtd-view-manager--highlight 0
   "Index of the highlighted saved view in the list.")
+(defvar org-gtd-view-manager--selected nil
+  "Name of the view the action transient is currently scoped to.")
 (defvar org-gtd-view-manager--list-window-config nil
   "Window configuration to restore when the manager exits.")
 
@@ -1211,6 +1213,50 @@ deletion the highlight index is clamped to the shrunken store."
       (let ((len (length (org-gtd-view-manager--store-read))))
         (setq org-gtd-view-manager--highlight
               (max 0 (min org-gtd-view-manager--highlight (1- len))))))))
+
+(defun org-gtd-view-manager--act-open ()
+  "Render the selected view via `org-gtd-view-show'.
+Fail-soft: a nil/stale selection simply does nothing."
+  (interactive)
+  (let ((spec (org-gtd-view-manager--store-get org-gtd-view-manager--selected)))
+    (when spec (org-gtd-view-show spec))))
+
+(defun org-gtd-view-manager--act-edit ()
+  "Open the builder on the selected view's stored spec.
+Fail-soft: a nil/stale selection simply does nothing."
+  (interactive)
+  (let ((spec (org-gtd-view-manager--store-get org-gtd-view-manager--selected)))
+    (when spec (org-gtd-view-manager--build spec))))
+
+(defun org-gtd-view-manager--act-new ()
+  "Open the builder on a fresh spec, ignoring the current selection."
+  (interactive)
+  (org-gtd-view-manager--build))
+
+(defun org-gtd-view-manager--act-copy ()
+  "Open the builder on a copy of the selected view named \"<name> copy\".
+Fail-soft: a nil/stale selection simply does nothing.  The copy is NOT
+pre-persisted: `--build' seeds `--build-original-name' to the copy name,
+so `--save' creates it on save and aborting leaves no orphan behind."
+  (interactive)
+  (let ((spec (org-gtd-view-manager--store-get org-gtd-view-manager--selected)))
+    (when spec
+      (let* ((copy-name (concat (alist-get 'name spec) " copy"))
+             (copy-spec (cons (cons 'name copy-name)
+                              (assq-delete-all 'name (copy-alist spec)))))
+        (org-gtd-view-manager--build copy-spec)))))
+
+(defun org-gtd-view-manager--act-delete ()
+  "Delete the selected view after a `y/n' confirm.
+If views remain, re-enter the manager (pick another); otherwise message
+that none remain -- never pop the builder after deleting the last view."
+  (interactive)
+  (let ((name org-gtd-view-manager--selected))
+    (when (y-or-n-p (format "Delete view '%s'? " name))
+      (org-gtd-view-manager--store-delete name)
+      (if (org-gtd-view-manager--store-read)
+          (org-gtd-view-manager)
+        (message "No saved views remain.")))))
 
 (defun org-gtd-view-manager--list-up ()
   "Move the highlight up one row, clamped to the first view."
