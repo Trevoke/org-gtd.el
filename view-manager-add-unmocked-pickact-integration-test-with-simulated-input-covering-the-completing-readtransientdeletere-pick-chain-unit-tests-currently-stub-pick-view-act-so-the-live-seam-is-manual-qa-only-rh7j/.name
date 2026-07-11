@@ -1,0 +1,1 @@
+View Manager: add unmocked pick→act integration test (with-simulated-input) covering the completing-read→transient→delete→re-pick chain; unit tests currently stub --pick-view/--act so the live seam is manual-QA only
