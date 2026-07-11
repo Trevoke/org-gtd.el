@@ -15,6 +15,7 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'ogt-eunit-prelude "test/helpers/prelude.el")
 
 (e-unit-initialize)
@@ -23,19 +24,32 @@
   (ogt-eunit-with-mock-gtd
     (funcall proceed context)))
 
-(deftest view-manager-list/is-a-transient-prefix ()
-  "The manager is defined as a transient prefix command."
-  (assert-true (fboundp 'org-gtd-view-manager)))
+(deftest view-manager-list/entry-command-exists ()
+  "The manager entry point is a command."
+  (assert-true (commandp 'org-gtd-view-manager)))
 
-(deftest view-manager-list/has-create-key ()
-  "The manager binds `c' to the create action."
-  (let ((plist (ogt--transient-suffix-plist 'org-gtd-view-manager "c")))
-    (assert-equal "c" (plist-get plist :key))))
+(deftest view-manager-list/empty-store-opens-builder ()
+  "Invoking the manager with no saved views opens the builder directly."
+  (let (built)
+    (cl-letf (((symbol-function 'org-gtd-view-manager--migrate-once) #'ignore)
+              ((symbol-function 'org-gtd-view-manager--build)
+               (lambda (&rest _) (setq built t))))
+      (org-gtd-view-manager))
+    (assert-true built)))
 
-(deftest view-manager-list/has-delete-key ()
-  "The manager binds `D' to the delete action."
-  (let ((plist (ogt--transient-suffix-plist 'org-gtd-view-manager "D")))
-    (assert-equal "D" (plist-get plist :key))))
+(deftest view-manager-list/nonempty-picks-then-acts ()
+  "With views present, the manager picks a name then opens the act transient."
+  (org-gtd-view-manager--store-upsert
+   "E" '((name . "E") (type . next-action)))
+  (let (acted)
+    (cl-letf (((symbol-function 'org-gtd-view-manager--migrate-once) #'ignore)
+              ((symbol-function 'org-gtd-view-manager--pick-view)
+               (lambda (&rest _) "E"))
+              ((symbol-function 'org-gtd-view-manager--act)
+               (lambda (&rest _) (setq acted t))))
+      (org-gtd-view-manager))
+    (assert-equal "E" org-gtd-view-manager--selected)
+    (assert-true acted)))
 
 (deftest view-manager-list/rename-is-a-move-not-a-copy ()
   "Saving an edited view under a new name removes the old entry.
@@ -117,10 +131,5 @@ reader still sees a plain flat view."
   (let ((spec (org-gtd-view-manager--store-get "V")))
     (assert-nil (assq 'blocks spec))
     (assert-equal 'next-action (cdr (assq 'type spec)))))
-
-(deftest view-manager-list/ret-action-labeled-open ()
-  "The RET action reads as `Open', matching the empty-state hint, not `Render'."
-  (let ((plist (ogt--transient-suffix-plist 'org-gtd-view-manager "RET")))
-    (assert-equal "Open" (plist-get plist :description))))
 
 ;;; view-manager-list-test.el ends here

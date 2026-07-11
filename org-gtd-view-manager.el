@@ -1110,109 +1110,13 @@ builder; nil starts a fresh Untitled next-action view."
 
 (org-gtd-view-manager--define-builder-transient)
 
-;;;; List transient
+;;;; Manager
 
-;; The flat "Your saved views" browser.  Built-in views (Engage) stay commands,
-;; never seeded specs (Open Question §2): the empty-state `RET' opens Engage.
+;; The manager's action transient: acts on a single saved view picked via the
+;; annotated `completing-read' (see the entry command below).
 
-;; `org-gtd-engage' is an autoloaded command in `org-gtd-engage', whose heavy
-;; dependency chain we deliberately do NOT require here.  Forward-declare it so
-;; `--warnings-as-errors' stays quiet; the autoload resolves it at runtime.
-(declare-function org-gtd-engage "org-gtd-engage")
-
-(defvar org-gtd-view-manager--highlight 0
-  "Index of the highlighted saved view in the list.")
 (defvar org-gtd-view-manager--selected nil
   "Name of the view the action transient is currently scoped to.")
-(defvar org-gtd-view-manager--list-window-config nil
-  "Window configuration to restore when the manager exits.")
-
-(defun org-gtd-view-manager--rows ()
-  "Return a description string for the saved views (teaching line if empty)."
-  (let ((views (org-gtd-view-manager--store-read)))
-    (if (null views)
-        "No saved views yet.  Press c to build one, or RET to open Engage."
-      ;; Clamp the same way `--list-highlighted-name' does, so the ▸ marker and
-      ;; the action target are provably the same row even if the index is stale.
-      (let ((highlight (min (max org-gtd-view-manager--highlight 0)
-                            (1- (length views)))))
-        (string-join
-         (seq-map-indexed
-          (lambda (v i)
-            (format "%s %-24s %s"
-                    (if (= i highlight) "▸" " ")
-                    (car v)
-                    (org-gtd-view-manager--badge (cdr v))))
-          views)
-         "\n")))))
-
-(defun org-gtd-view-manager--list-highlighted-name ()
-  "Return the highlighted view's name, or nil when the store is empty.
-The highlight index is clamped to the store's bounds first, so a
-stale index (e.g. after a delete) can never index out of range."
-  (let ((views (org-gtd-view-manager--store-read)))
-    (when views
-      (let ((i (min (max org-gtd-view-manager--highlight 0)
-                    (1- (length views)))))
-        (car (nth i views))))))
-
-(defun org-gtd-view-manager--list-highlighted-spec ()
-  "Return the highlighted view's stored spec, or nil when the store is empty."
-  (let ((name (org-gtd-view-manager--list-highlighted-name)))
-    (when name (org-gtd-view-manager--store-get name))))
-
-(defun org-gtd-view-manager--list-render ()
-  "Render the highlighted view, or open Engage when the store is empty.
-An empty store's `RET' opens the daily Engage view (built-ins stay
-commands, never seeded specs).  Otherwise this is a REAL recall of the
-saved spec via `org-gtd-view-show' -- NOT the builder's sample-data
-preview (design §5): an empty agenda shows org-agenda's normal `no
-matches' line, never fake sample data or a preview banner."
-  (interactive)
-  (let ((spec (org-gtd-view-manager--list-highlighted-spec)))
-    (if (null spec)
-        (org-gtd-engage)
-      (org-gtd-view-show spec))))
-
-(defun org-gtd-view-manager--list-create ()
-  "Open the builder on a fresh spec."
-  (interactive)
-  (org-gtd-view-manager--build))
-
-(defun org-gtd-view-manager--list-edit ()
-  "Open the builder on the highlighted stored spec.
-Fail-soft: an empty store simply does nothing."
-  (interactive)
-  (let ((spec (org-gtd-view-manager--list-highlighted-spec)))
-    (when spec (org-gtd-view-manager--build spec))))
-
-(defun org-gtd-view-manager--list-duplicate ()
-  "Open the builder on a copy of the highlighted view named \"<name> copy\".
-Fail-soft: an empty store does nothing.  The copy is NOT pre-persisted:
-`--build' seeds `--build-original-name' to the copy name, so `--save'
-creates it on save (and a rename then store-deletes the copy name,
-harmless if it was never written).  Aborting therefore leaves no
-orphan copy behind."
-  (interactive)
-  (let ((spec (org-gtd-view-manager--list-highlighted-spec)))
-    (when spec
-      (let* ((copy-name (concat (alist-get 'name spec) " copy"))
-             (copy-spec (cons (cons 'name copy-name)
-                              (assq-delete-all 'name (copy-alist spec)))))
-        (org-gtd-view-manager--build copy-spec)))))
-
-(defun org-gtd-view-manager--list-delete ()
-  "Delete the highlighted view after a `y/n' confirm, then refresh.
-Fail-soft: an empty store (nothing highlighted) does nothing.  After
-deletion the highlight index is clamped to the shrunken store."
-  (interactive)
-  (let ((name (org-gtd-view-manager--list-highlighted-name)))
-    (when (and name
-               (y-or-n-p (format "Delete view '%s'? " name)))
-      (org-gtd-view-manager--store-delete name)
-      (let ((len (length (org-gtd-view-manager--store-read))))
-        (setq org-gtd-view-manager--highlight
-              (max 0 (min org-gtd-view-manager--highlight (1- len))))))))
 
 (defun org-gtd-view-manager--act-open ()
   "Render the selected view via `org-gtd-view-show'.
@@ -1278,48 +1182,25 @@ that none remain -- never pop the builder after deleting the last view."
   (interactive)
   (transient-setup 'org-gtd-view-manager--act))
 
-(defun org-gtd-view-manager--list-up ()
-  "Move the highlight up one row, clamped to the first view."
-  (interactive)
-  (setq org-gtd-view-manager--highlight
-        (max 0 (1- org-gtd-view-manager--highlight))))
+;; KNOWN v1 LIMITATION: `--migrate-once' is session-scoped, so a DELETED
+;; migrated view reappears next session -- migration re-runs per session and
+;; its non-clobber guard only protects edited/existing names, not deletions.
+;; Accepted v1 interim; a persistent migration marker is the future fix.
 
-(defun org-gtd-view-manager--list-down ()
-  "Move the highlight down one row, clamped to the last view."
+;;;###autoload
+(defun org-gtd-view-manager ()
+  "Browse and manage saved GTD views.
+With no saved views, open the builder directly (nothing to manage).
+Otherwise pick a view via an annotated `completing-read', then open the
+action transient scoped to it."
   (interactive)
-  (let ((len (length (org-gtd-view-manager--store-read))))
-    (setq org-gtd-view-manager--highlight
-          (min (max 0 (1- len)) (1+ org-gtd-view-manager--highlight)))))
-
-(defun org-gtd-view-manager--list-quit ()
-  "Quit the manager, restoring the window layout snapshotted on entry."
-  (interactive)
-  (when org-gtd-view-manager--list-window-config
-    (set-window-configuration org-gtd-view-manager--list-window-config)))
-
-;;;###autoload (autoload 'org-gtd-view-manager "org-gtd-view-manager" nil t)
-(transient-define-prefix org-gtd-view-manager ()
-  "Browse and manage saved GTD views."
-  [:description org-gtd-view-manager--rows
-   [("RET" "Open"      org-gtd-view-manager--list-render)
-    ("c"   "Create"    org-gtd-view-manager--list-create)
-    ("e"   "Edit"      org-gtd-view-manager--list-edit)
-    ("d"   "Duplicate" org-gtd-view-manager--list-duplicate)
-    ("D"   "Delete"    org-gtd-view-manager--list-delete)
-    ("<up>"   "Up"     org-gtd-view-manager--list-up   :transient t)
-    ("<down>" "Down"   org-gtd-view-manager--list-down :transient t)
-    ("q"   "Quit"      org-gtd-view-manager--list-quit)]]
-  (interactive)
-  ;; Snapshot the layout so `q' (and any render that rearranges windows) can be
-  ;; undone.  Reset the highlight to the top on each fresh open.
-  (setq org-gtd-view-manager--list-window-config (current-window-configuration)
-        org-gtd-view-manager--highlight 0)
-  ;; KNOWN v1 LIMITATION: `--migrate-once' is session-scoped, so a DELETED
-  ;; migrated view reappears next session -- migration re-runs per session and
-  ;; its non-clobber guard only protects edited/existing names, not deletions.
-  ;; Accepted v1 interim; a persistent migration marker is the future fix.
   (org-gtd-view-manager--migrate-once)
-  (transient-setup 'org-gtd-view-manager))
+  (let ((views (org-gtd-view-manager--store-read)))
+    (if (null views)
+        (org-gtd-view-manager--build)
+      (setq org-gtd-view-manager--selected
+            (org-gtd-view-manager--pick-view views))
+      (org-gtd-view-manager--act))))
 
 ;;;; Annotated picker
 
