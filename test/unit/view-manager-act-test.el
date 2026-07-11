@@ -121,5 +121,24 @@
       (org-gtd-view-manager--act-copy))
     (assert-nil called)))
 
+(deftest view-manager-act/transient-exists ()
+  "The action transient prefix is defined."
+  (assert-true (fboundp 'org-gtd-view-manager--act)))
+
+(deftest view-manager-act/transient-keys ()
+  "The action transient binds o/e/n/c/d/q."
+  (dolist (key '("o" "e" "n" "c" "d" "q"))
+    (let ((plist (ogt--transient-suffix-plist 'org-gtd-view-manager--act key)))
+      (assert-equal key (plist-get plist :key)))))
+
+(deftest view-manager-act/description-shows-selection ()
+  "The transient description names the selected view and its badge."
+  (org-gtd-view-manager--store-upsert
+   "E" '((name . "E") (type . next-action) (area-of-focus . "Home")))
+  (setq org-gtd-view-manager--selected "E")
+  (let ((desc (org-gtd-view-manager--act-description)))
+    (assert-true (string-match-p "E" desc))
+    (assert-true (string-match-p "next-action · Home" desc))))
+
 (provide 'view-manager-act-test)
 ;;; view-manager-act-test.el ends here

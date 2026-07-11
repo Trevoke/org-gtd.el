@@ -1258,6 +1258,26 @@ that none remain -- never pop the builder after deleting the last view."
           (org-gtd-view-manager)
         (message "No saved views remain.")))))
 
+(defun org-gtd-view-manager--act-description ()
+  "Return the action transient's heading: selected name + its badge."
+  (let* ((name org-gtd-view-manager--selected)
+         (spec (org-gtd-view-manager--store-get name)))
+    (format "%s\n%s"
+            (propertize (or name "") 'face 'transient-heading)
+            (org-gtd-view-manager--badge spec))))
+
+(transient-define-prefix org-gtd-view-manager--act ()
+  "Act on the selected saved view."
+  [:description org-gtd-view-manager--act-description
+   [("o" "Open"   org-gtd-view-manager--act-open)
+    ("e" "Edit"   org-gtd-view-manager--act-edit)
+    ("n" "New"    org-gtd-view-manager--act-new)
+    ("c" "Copy"   org-gtd-view-manager--act-copy)
+    ("d" "Delete" org-gtd-view-manager--act-delete)
+    ("q" "Quit"   transient-quit-one)]]
+  (interactive)
+  (transient-setup 'org-gtd-view-manager--act))
+
 (defun org-gtd-view-manager--list-up ()
   "Move the highlight up one row, clamped to the first view."
   (interactive)
