@@ -1294,7 +1294,7 @@ PROMPT defaults to \"View: \"."
   (let ((views (org-gtd-view-manager--store-read)))
     (unless views
       (user-error "No saved views yet — build one with M-x org-gtd-view-manager"))
-    (let* ((name (completing-read "View: " (mapcar #'car views) nil t))
+    (let* ((name (org-gtd-view-manager--pick-view views))
            (spec (cdr (assoc name views))))
       (org-gtd-view-show spec))))
 
