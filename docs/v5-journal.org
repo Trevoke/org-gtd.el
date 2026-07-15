@@ -52,7 +52,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 *** Reflect
 - [X] =REC-REF-04= → *BUILD-V5* (ship a stock Recovery review profile + docs; see Reflect)
 - [X] =REC-REF-05= → *BUILD-V5* (schedule per-horizon reviews like the weekly habit; see Reflect)
-- [ ] =REC-REF-06= /Not-impl/ — system-maintenance review + horizon calendar events (adjudicated #2)
+- [X] =REC-REF-06= → *BUILD-V5* (maintenance profile; horizon-events via REF-05; see Reflect)
 - [ ] =REC-REF-07= /Partial/ — all reminder locations reviewed equally
 - [ ] =REC-REF-08= /Partial/ — lists kept totally current via the Weekly Review
 - [ ] =REC-REF-09= /Partial/ — time-blocking falls out of the review
@@ -237,6 +237,43 @@ recurring habits at horizon-appropriate cadences, reusing the existing
 =org-gtd-review-schedule= mechanism. Builds directly on the profile +
 schedule infrastructure already in =org-gtd-review.el=.
 - Note the overlap with [[*REC-REF-06]] ("horizon calendar events") — design them together.
+
+*** BUILD-V5 REC-REF-06 — system-maintenance review                   :should:reflect:
+:PROPERTIES:
+:REC_ID:      REC-REF-06
+:STATUS:      Not-implemented → building maintenance profile
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: BUILD-V5 (adjudicated #2 IMPLEMENT)
+:UX_DOC:      REC-REF-06.md
+:DECIDED:     2026-07-15
+:END:
+Two halves: (1) *horizon calendar events* — already covered by [[*BUILD-V5 REC-REF-05 — review cadence scaling per horizon][REC-REF-05]]; (2) a *system-maintenance review* aimed at the system's own health
+(orphaned tasks, stuck projects, mis-categorised items). Not built as a flow,
+but the pieces exist (stuck-projects view; orphan detection in
+=org-gtd-graph-data.el= / =org-gtd-clarify.el=).
+
+*Decision*: BUILD-V5 — ship a stock **"System Maintenance"** review profile that
+walks the orphan/stuck/integrity views. Another member of the stock-profile
+family (Weekly, Recovery, Horizon, Maintenance) on the one review engine.
+
+*** BUILD-V5 (emergent) — seed-all review habits command              :emergent:reflect:
+:PROPERTIES:
+:REC_ID:      (emergent — not from corpus)
+:STATUS:      new
+:STRENGTH:    n/a
+:TYPE:        tool
+:DISPOSITION: BUILD-V5
+:DECIDED:     2026-07-15
+:END:
+Emergent from the REF-01/04/05/06 cluster: a single command (e.g.
+=org-gtd-review-schedule-all=) that installs the recommended family of
+*scheduled* review habits in one go — Weekly (=.+1w=), horizon cadences
+(areas/goals monthly, vision quarterly/annually), System Maintenance (monthly)
+— at sensible default cadences, seeding real structure into the user's files.
+Reuses =org-gtd-review-schedule='s duplicate-guard so re-running is safe.
+- *Recovery is excluded*: it's an ad-hoc trigger (run when you fall off), not a
+  scheduled habit.
 
 *** BUILD-V5 REC-REF-04 — review on three triggers incl. recovery     :should:reflect:
 :PROPERTIES:
