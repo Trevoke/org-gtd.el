@@ -50,7 +50,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 
 ** SHOULD (32)
 *** Reflect
-- [ ] =REC-REF-04= /Partial/ — review on three triggers incl. recovery ("get back on track")
+- [X] =REC-REF-04= → *BUILD-V5* (ship a stock Recovery review profile + docs; see Reflect)
 - [ ] =REC-REF-05= /Via-config/ — review cadence scaling per horizon (V-21)
 - [ ] =REC-REF-06= /Not-impl/ — system-maintenance review + horizon calendar events (adjudicated #2)
 - [ ] =REC-REF-07= /Partial/ — all reminder locations reviewed equally
@@ -217,6 +217,30 @@ context-folded engage view with the view builder (calendar block + one section
 per context). Follow-up doc task, not a code task.
 
 ** Reflect
+*** BUILD-V5 REC-REF-04 — review on three triggers incl. recovery     :should:reflect:
+:PROPERTIES:
+:REC_ID:      REC-REF-04
+:STATUS:      Partial → shipping stock recovery profile
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: BUILD-V5 (stock profile) + docs
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+The recovery *view* already exists (=org-gtd-reflect-missed-engagements=,
+=org-gtd-reflect.el:255=). The guided review runs on named *profiles* in
+=org-gtd-review-profiles= (=(PROFILE-NAME (PHASE-NAME step…)…)=; step types
+prompt/command/view/checklist), so a guided recovery is a profile, not an engine.
+
+*Decision*: BUILD-V5 — ship a stock **"Recovery"** review profile out of the box
+(a short Get-Current-style walkthrough over the missed-items / waiting-for /
+stuck-projects views) so get-back-on-track is turnkey, not user-assembled.
+- Note: a second default profile means =org-gtd-review= now prompts for a
+  profile at start (it already handles the multi-profile case).
+
+*Docs follow-up*: document the *three kinds of review* — regular (weekly),
+ad-hoc, and recovery — and which command/profile serves each.
+
 *** DONE REC-REF-01 — Weekly Review as a scheduled recurring event   :must:reflect:
 :PROPERTIES:
 :REC_ID:      REC-REF-01
