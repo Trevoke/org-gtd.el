@@ -61,7 +61,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-ENG-06= → *DEFER* (docs — explanation of the three work modes; see Engage)
 *** Projects
 - [X] =REC-PRJ-04= → *BUILD-V5* (subproject rollup; parallel/seq handled + yak filed; see Projects)
-- [ ] =REC-PRJ-06= /Not-impl/ — Natural Planning Model scaffold at project creation (V-04)
+- [X] =REC-PRJ-06= → *DEFER* (implemented enough via clarify side windows; UI-review yak; see Projects)
 - [ ] =REC-PRJ-07= /Partial/ — planning step as a next action + trigger list (V-10)
 - [ ] =REC-PRJ-08= /Partial/ — "look into" commitment-to-decide R&D projects
 - [ ] =REC-PRJ-10= /Not-impl/ — verb-starter checklist for naming projects
@@ -180,6 +180,32 @@ Two halves, decided separately:
   state machine, stuck detection, graph, agenda) and org-gtd has historically
   kept projects flat — so it needs its *own dedicated design/brainstorm* before
   implementation, not a quick add.
+
+*** DEFER REC-PRJ-06 — Natural Planning Model scaffold                  :should:projects:
+:PROPERTIES:
+:REC_ID:      REC-PRJ-06
+:STATUS:      Not-implemented → judged "implemented enough"
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: DEFER (implemented enough) + UI-review yak
+:UX_DOC:      REC-PRJ-06.md
+:DECIDED:     2026-07-15
+:END:
+The Natural Planning Model (purpose → outcome → brainstorm → organize → next
+actions) is supported *enough* by two optional clarify side windows:
+- =org-gtd-clarify-show-horizons= (=org-gtd-clarify.el:57=) — shows the horizons
+  file (purpose/vision/areas) beside the item while clarifying.
+- =org-gtd-clarify-display-helper-buffer= (=:67=) — live task-relationship view
+  for the organize/wiring phase.
+
+Key insight (user): in practice people don't *write* purpose/principles while
+clarifying a project — they should already have them as higher horizons, and
+just *reference* them. So the top NPM phases are look-up, not authoring, and
+little real new work is needed here.
+
+*Decision*: DEFER — no new scaffold. A UI pass over these side windows through
+the NPM lens might improve them; tracked as yak
+=ui-review-of-clarify-side-windows-horizons-dependency-helper-through-the-natural-planning-model-lens-prj-06-y5kl=.
 
 ** Next Actions
 ** Engage
