@@ -63,7 +63,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-PRJ-04= → *BUILD-V5* (subproject rollup; parallel/seq handled + yak filed; see Projects)
 - [X] =REC-PRJ-06= → *DEFER* (implemented enough via clarify side windows; UI-review yak; see Projects)
 - [X] =REC-PRJ-07= → *DROP* (planning checklist doesn't fit the flow; docs note + side-window yak; see Projects)
-- [ ] =REC-PRJ-08= /Partial/ — "look into" commitment-to-decide R&D projects
+- [X] =REC-PRJ-08= → *DROP* (no structural distinction needed; docs note; see Projects)
 - [ ] =REC-PRJ-10= /Not-impl/ — verb-starter checklist for naming projects
 *** Clarify
 - [ ] =REC-CLA-06= /Partial/ — extract hidden projects/actions from fuzzy items (adjudicated #7)
@@ -90,7 +90,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 *** UI
 - [ ] =REC-UI-02= /Partial/ — proactive integrity warning flags
 - [ ] =REC-UI-04= /Not-impl/ — consent-based migrate overdue calendar → next-action
-- [ ] =REC-UI-05= /Partial/ — mark-done closure prompt ("what's next?")
+- [ ] =REC-UI-05= /Partial/ — mark-done closure prompt ("what's next?") — *MUST cover: all-tasks-done ≠ complete; an under-defined project needs "add more actions?" not silent archive (PRJ-08 spillover)*
 *** Cross-cutting
 - [ ] =REC-X-10= /Via-config/ — onboarding / migration scaffolding (V-12)
 - [ ] =REC-X-14= /Via-config/ — system available anywhere / mobile story (V-18/V-20)
@@ -233,6 +233,32 @@ is a thinking *aid* (like the horizons window), not a task source.
   PRJ-06 clarification-UI / side-window review yak.
 
 *Docs follow-up*: note the planning-as-a-next-action pattern in the projects docs.
+
+*** DROP REC-PRJ-08 — "look into" / commitment-to-decide (R&D) projects :should:projects:
+:PROPERTIES:
+:REC_ID:      REC-PRJ-08
+:STATUS:      Partial → dropped (no distinction needed)
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: DROP + docs note
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+A "look into X" commitment is just a normal project whose *outcome is a decision*
+("Decide whether to X" with research/compare/decide tasks), or a Someday/Maybe
+item if not yet committed. Both are covered by existing types; a dedicated "R&D
+project" type adds a distinction with no behavioral difference — and we
+deliberately dropped =define-type=. Even the gap doc hedged "arguably fine."
+
+*Decision*: DROP. Docs note: model "look into" work as an ordinary project with
+a decision outcome, or incubate in Someday/Maybe until committed.
+
+*Surfaced a bigger concern* (parked on [[*REC-UI-05]]): today a project whose
+tasks are all DONE reads as complete/archivable, but sometimes it's merely
+*under-defined* — the outcome isn't reached, it just needs new actions. The
+closure prompt (REC-UI-05) is where "all-tasks-done ≠ complete; add more
+actions?" should be handled instead of silent completion. Flagged on UI-05's
+backlog entry.
 
 ** Next Actions
 ** Engage
