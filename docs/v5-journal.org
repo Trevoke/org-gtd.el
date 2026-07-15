@@ -58,7 +58,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-REF-09= → *BUILD-V5* (time-block the weekly-review habit; prompt time, default 2h; see Reflect)
 *** Engage
 - [X] =REC-ENG-05= → *DEFER* (docs — folded into the four-criteria how-to; see Engage)
-- [ ] =REC-ENG-06= /Partial/ — three work modes as legitimate choices (V-03, docs-only)
+- [X] =REC-ENG-06= → *DEFER* (docs — explanation of the three work modes; see Engage)
 *** Projects
 - [ ] =REC-PRJ-04= /Partial/ — subproject rollup; parallel/sequential wiring
 - [ ] =REC-PRJ-06= /Not-impl/ — Natural Planning Model scaffold at project creation (V-04)
@@ -235,6 +235,24 @@ is deliberately *not* built:
 *Decision*: no code. Write a Diataxis-style *tutorial* showing how to build a
 context-folded engage view with the view builder (calendar block + one section
 per context). Follow-up doc task, not a code task.
+
+*** DEFER REC-ENG-06 — three work modes as legitimate choices          :should:engage:
+:PROPERTIES:
+:REC_ID:      REC-ENG-06
+:STATUS:      Partial → supported; framing only
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: DEFER → docs (explanation); honors V-03
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+Allen's three-fold nature of work: doing predefined work (lists), doing work as
+it shows up (ad-hoc), and defining your work (capture + clarify/process).
+org-gtd already serves all three (engage / capture / process). The gap is pure
+conceptual framing.
+
+*Decision*: DEFER → docs. A Diataxis *explanation* naming the three modes and
+which commands serve each — a short section in the engage/overview docs.
 
 ** Reflect
 *** BUILD-V5 REC-REF-05 — review cadence scaling per horizon           :should:reflect:
