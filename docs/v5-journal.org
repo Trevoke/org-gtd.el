@@ -60,7 +60,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-ENG-05= → *DEFER* (docs — folded into the four-criteria how-to; see Engage)
 - [X] =REC-ENG-06= → *DEFER* (docs — explanation of the three work modes; see Engage)
 *** Projects
-- [ ] =REC-PRJ-04= /Partial/ — subproject rollup; parallel/sequential wiring
+- [X] =REC-PRJ-04= → *BUILD-V5* (subproject rollup; parallel/seq handled + yak filed; see Projects)
 - [ ] =REC-PRJ-06= /Not-impl/ — Natural Planning Model scaffold at project creation (V-04)
 - [ ] =REC-PRJ-07= /Partial/ — planning step as a next action + trigger list (V-10)
 - [ ] =REC-PRJ-08= /Partial/ — "look into" commitment-to-decide R&D projects
@@ -156,6 +156,31 @@ Filed decisions, grouped by GTD area. Empty areas fill in as we go.
 ** Capture
 ** Clarify
 ** Projects
+*** BUILD-V5 REC-PRJ-04 — subproject rollup (+ parallel/sequential)    :should:projects:
+:PROPERTIES:
+:REC_ID:      REC-PRJ-04
+:STATUS:      Partial → sequencing handled; building subproject rollup
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: BUILD-V5 (subproject rollup); parallel/seq = handled + yak
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+Two halves, decided separately:
+
+- *Parallel/sequential wiring* — *handled*. New projects get default sequential
+  edna deps (=org-gtd-projects--add-default-sequential-dependencies=), and
+  arbitrary DAGs are wired via blockers (=org-gtd-project-add-blocker= + the
+  graph transient; =ORG_GTD_BLOCKS=/=ORG_GTD_DEPENDS_ON=). A *better UX* for
+  this is worth doing but is tracked separately as a yak:
+  =better-ux-for-parallelsequential-task-wiring-in-projects-blockersgraph-transient-v7i5=.
+
+- *Subproject rollup* — *BUILD-V5*. Support nested projects whose completion
+  rolls up to the parent. This is a genuine architectural change (project model,
+  state machine, stuck detection, graph, agenda) and org-gtd has historically
+  kept projects flat — so it needs its *own dedicated design/brainstorm* before
+  implementation, not a quick add.
+
 ** Next Actions
 ** Engage
 *** BUILD-V5 REC-ENG-03 — four-criteria choice (context/time/energy/priority)   :must:engage:
