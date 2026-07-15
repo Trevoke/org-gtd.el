@@ -85,10 +85,10 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-KNO-04= → *TODO* (likely a PKM-tool no-op; yak …-c5ql; see Reference)
 - [X] =REC-KNO-05= → *TODO* (likely a PKM-tool no-op; yak …-c5ql; see Reference)
 *** Horizons
-- [ ] =REC-HOR-03= /Via-config/ — Goals/Objectives (30k) reviewed monthly–quarterly (adjudicated #5)
-- [ ] =REC-HOR-04= /Via-config/ — Vision (40k) reverse-engineering + resurfacing (adjudicated #5)
-- [ ] =REC-HOR-05= /Via-config/ — Purpose & Principles (50k) as a priority criterion (adjudicated #5)
-- [ ] =REC-HOR-08= /Partial/ — top-down prioritization replacing ABC coding (docs)
+- [X] =REC-HOR-03= → *DEFER* (docs; review cadence = REF-05; see Horizons)
+- [X] =REC-HOR-04= → *DEFER* (docs; definition = LLM-horizon yak; see Horizons)
+- [X] =REC-HOR-05= → *DEFER* (docs; see Horizons)
+- [X] =REC-HOR-08= → *DEFER* (docs explanation — top-down prioritization; see Horizons)
 *** UI
 - [ ] =REC-UI-02= /Partial/ — proactive integrity warning flags
 - [ ] =REC-UI-04= /Not-impl/ — consent-based migrate overdue calendar → next-action
@@ -627,6 +627,57 @@ Deferred pieces — a session =walk= step over headings, and a review stats
 block — are tracked in =docs/plans/2026-07-06-checklists-and-guided-review-design.md=
 §8; several gated Cluster-A/B backlog items depend on them.
 ** Horizons
+*Cluster*: all four DEFER → docs. Every build-shaped piece lives elsewhere —
+review cadence = [[*BUILD-V5 REC-REF-05 — review cadence scaling per horizon][REC-REF-05]]; horizon *definition* = the LLM-horizon yak
+(=llm-assisted-iterative-definition-of-ones-horizons-...-voqa=); project linkage
+= =org-gtd-areas-of-focus= + config (adjudicated #5). What's left is docs. The
+=horizons.org= file (template: Purpose/principles, Vision, Goals, Areas) is the
+content home.
+
+*** DEFER REC-HOR-03 — Goals/Objectives (30k), reviewed monthly–quarterly :should:horizons:
+:PROPERTIES:
+:REC_ID: REC-HOR-03
+:STATUS: Via-config → docs
+:STRENGTH: should
+:DISPOSITION: DEFER → docs (review = REF-05; linkage = areas-of-focus, #5)
+:DECIDED: 2026-07-15
+:END:
+Docs: keep goals in =horizons.org=; review them via a per-horizon review profile
+(REF-05); link work through areas-of-focus.
+
+*** DEFER REC-HOR-04 — Vision (40k), reverse-engineering + resurfacing  :should:horizons:
+:PROPERTIES:
+:REC_ID: REC-HOR-04
+:STATUS: Via-config → docs
+:STRENGTH: should
+:DISPOSITION: DEFER → docs (definition via LLM-horizon yak; resurfacing via review)
+:DECIDED: 2026-07-15
+:END:
+Docs: articulate vision in =horizons.org= (the LLM-horizon feature will help
+define/refine it iteratively); resurface it in the horizon review.
+
+*** DEFER REC-HOR-05 — Purpose & Principles (50k) as priority criterion :should:horizons:
+:PROPERTIES:
+:REC_ID: REC-HOR-05
+:STATUS: Via-config → docs
+:STRENGTH: should
+:DISPOSITION: DEFER → docs
+:DECIDED: 2026-07-15
+:END:
+Docs: purpose/principles live in =horizons.org= and inform decisions — the
+top-down prioritization lens (HOR-08), not a coded filter.
+
+*** DEFER REC-HOR-08 — top-down prioritization (vs ABC coding)         :should:horizons:
+:PROPERTIES:
+:REC_ID: REC-HOR-08
+:STATUS: Partial → docs explanation
+:STRENGTH: should
+:DISPOSITION: DEFER → docs (explanation)
+:DECIDED: 2026-07-15
+:END:
+Nothing buildable — top-down prioritization is a *mindset*: prioritize from your
+horizons rather than ABC letter-codes. A Diataxis *explanation* piece.
+
 ** Reference
 *Cluster note*: reference storage/browsing is a future *adapter* (denote /
 org-roam / org-brain), not a bundled org-gtd store. But rather than DEFER these
