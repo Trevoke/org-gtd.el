@@ -73,7 +73,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 *** Capture
 - [X] =REC-CAP-06= → *BUILD-V5* (ad-hoc mind-sweep command + fuller trigger lists; horizons-prompts split to yak; see Capture)
 *** Next Actions
-- [ ] =REC-NXT-05= /Not-impl/ — Read/Review queue distinct from Reference (V-06)
+- [X] =REC-NXT-05= → *DEFER* (docs — suggest a Read/Review someday/maybe category; see Next Actions)
 *** Tickler
 - [ ] =REC-TIC-02= /Partial/ — tickler recurrence + advance lead-time notice
 *** Delegate
@@ -335,6 +335,25 @@ actions?" should be handled instead of silent completion. Flagged on UI-05's
 backlog entry.
 
 ** Next Actions
+*** DEFER REC-NXT-05 — Read/Review queue distinct from Reference        :should:next:
+:PROPERTIES:
+:REC_ID:      REC-NXT-05
+:STATUS:      Not-implemented → satisfied via named someday lists (docs)
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: DEFER → docs (suggest a Read/Review someday/maybe category)
+:UX_DOC:      REC-NXT-05.md
+:DECIDED:     2026-07-15
+:END:
+org-gtd already supports named Someday/Maybe lists
+(=org-gtd-someday-list-names=, =org-gtd-someday.el:42=) with grouped review, so
+a "Read/Review" queue needs no code.
+
+*Decision*: DEFER → docs. A Diataxis how-to / example that *suggests creating a
+"Read/Review" Someday/Maybe category* (a named someday list) for committed
+reading you'll do opportunistically. No stock code — just the recommended
+pattern.
+
 ** Engage
 *** BUILD-V5 REC-ENG-03 — four-criteria choice (context/time/energy/priority)   :must:engage:
 :PROPERTIES:
