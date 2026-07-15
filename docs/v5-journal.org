@@ -54,7 +54,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-REF-05= → *BUILD-V5* (schedule per-horizon reviews like the weekly habit; see Reflect)
 - [X] =REC-REF-06= → *BUILD-V5* (maintenance profile; horizon-events via REF-05; see Reflect)
 - [X] =REC-REF-07= → *DEFER* (docs: coverage note in review + view-creation docs; see Reflect)
-- [ ] =REC-REF-08= /Partial/ — lists kept totally current via the Weekly Review
+- [X] =REC-REF-08= → *DONE* (satisfied by REF-01 + REF-02)
 - [ ] =REC-REF-09= /Partial/ — time-blocking falls out of the review
 *** Engage
 - [ ] =REC-ENG-05= /Partial/ — filter by time available via Effort (turnkey ~10-min view)
@@ -298,6 +298,19 @@ stuck-projects views) so get-back-on-track is turnkey, not user-assembled.
 
 *Docs follow-up*: document the *three kinds of review* — regular (weekly),
 ad-hoc, and recovery — and which command/profile serves each.
+
+*** DONE REC-REF-08 — lists kept totally current via the Weekly Review :should:reflect:
+:PROPERTIES:
+:REC_ID:      REC-REF-08
+:STATUS:      Implemented (was Partial only because the review didn't exist yet)
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: satisfied by REF-01 + REF-02
+:DECIDED:     2026-07-15
+:END:
+The gap's "what's missing" was literally "the review itself" — which now ships
+(guided Weekly Review REF-02 + scheduling REF-01). Keeping lists current is the
+outcome of running that review. Nothing left to build.
 
 *** DEFER REC-REF-07 — all reminder locations reviewed equally         :should:reflect:
 :PROPERTIES:
