@@ -45,7 +45,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 
 ** MUST (3)
 - [X] =REC-REF-01= → *DONE* — already implemented by =org-gtd-review-schedule=
-- [ ] =REC-ENG-02= /Partial/ — calendar-first, then context-filtered engage lists
+- [X] =REC-ENG-02= → *DEFER* (documentation — Diataxis tutorial; see Engage)
 - [ ] =REC-ENG-03= /Partial/ — four-criteria choice (context/time/energy/priority); energy = REC-X-04
 
 ** SHOULD (32)
@@ -158,6 +158,33 @@ Filed decisions, grouped by GTD area. Empty areas fill in as we go.
 ** Projects
 ** Next Actions
 ** Engage
+*** DEFER REC-ENG-02 — calendar-first, then context-filtered engage lists   :must:engage:
+:PROPERTIES:
+:REC_ID:      REC-ENG-02
+:STATUS:      Partial → satisfied (calendar-first) + Via-config (context folding)
+:STRENGTH:    must
+:TYPE:        tool
+:DISPOSITION: DEFER → documentation (Diataxis tutorial)
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+Calendar-first is already done — =org-gtd-engage-view-spec= (=org-gtd-engage.el:47=)
+leads with a =calendar-day= block, then tickler/delegated/all-next-actions.
+The only "missing" piece is folding the next-actions block by context, and that
+is deliberately *not* built:
+
+- The engage view is a *starter*. There's no telling how many contexts/tags a
+  user has, so replacing "all next actions" with "all actions grouped by
+  context" just swaps one blob for another — no real gain, and it would force a
+  context taxonomy org-gtd doesn't (and shouldn't) impose.
+- Per-context filtering already exists on demand (=org-gtd-engage-tagged=), and
+  the shipped view builder lets a user compose and save their own
+  context-folded engage view.
+
+*Decision*: no code. Write a Diataxis-style *tutorial* showing how to build a
+context-folded engage view with the view builder (calendar block + one section
+per context). Follow-up doc task, not a code task.
+
 ** Reflect
 *** DONE REC-REF-01 — Weekly Review as a scheduled recurring event   :must:reflect:
 :PROPERTIES:
