@@ -1,6 +1,6 @@
 #+TITLE: org-gtd v5 Journal — feature decisions
 #+STARTUP: overview
-#+TODO: UNDECIDED(u) REVIEWING(r) | BUILD-V5(b) DEFER(f) DROP(x) DONE(d)
+#+TODO: UNDECIDED(u) REVIEWING(r) TODO(t) | BUILD-V5(b) DEFER(f) DROP(x) DONE(d)
 
 A working decision log for org-gtd v5. Every recommended-but-not-turnkey
 feature (the 73 gaps from the feature analysis) gets one heading, and we go
@@ -20,6 +20,8 @@ through them *one at a time* to make a clean, coherent decision about each.
 - *Decision keywords* (the =#+TODO= line):
   - =UNDECIDED= — not yet reviewed.
   - =REVIEWING= — actively under discussion.
+  - =TODO= — a real, committed to-do that's *tracked* (a yak), but whose exact
+    release scope (v5 vs later) isn't fixed yet. Not shelved — on the list.
   - =BUILD-V5= — commit to building it for 5.0.0.
   - =DEFER= — real, but later (5.x or a future adapter layer); say where.
   - =DROP= — decided not to do; say why.
@@ -66,8 +68,8 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-PRJ-08= → *DROP* (no structural distinction needed; docs note; see Projects)
 - [ ] =REC-PRJ-10= /Not-impl/ — verb-starter checklist for naming projects
 *** Clarify
-- [X] =REC-CLA-06= → *DEFER* (future optional LLM semantic clarify assist; see Clarify)
-- [ ] =REC-CLA-10= /Not-impl/ — concreteness lint (prevent entries degrading back to "stuff")
+- [X] =REC-CLA-06= → *TODO* (opt-in LLM semantic clarify assist; yak …-d009; see Clarify)
+- [X] =REC-CLA-10= → *TODO* (same opt-in LLM clarify assist; yak …-d009; see Clarify)
 *** Capture
 - [ ] =REC-CAP-06= /Partial/ — guided mind-sweep / bulk-capture via trigger lists (V-10)
 *** Next Actions
@@ -155,26 +157,47 @@ Filed decisions, grouped by GTD area. Empty areas fill in as we go.
 
 ** Capture
 ** Clarify
-*** DEFER REC-CLA-06 — extract hidden projects/actions from fuzzy items :should:clarify:
+*** TODO REC-CLA-06 — extract hidden projects/actions from fuzzy items  :should:clarify:
 :PROPERTIES:
 :REC_ID:      REC-CLA-06
-:STATUS:      Partial → deferred to a future LLM-assist direction
+:STATUS:      Partial → tracked as an opt-in LLM-assist to-do
 :STRENGTH:    should
 :TYPE:        tool
-:DISPOSITION: DEFER → future optional LLM semantic clarify assist
+:DISPOSITION: TODO — opt-in LLM semantic clarify assist (yak …-d009)
 :UX_DOC:      (none)
 :DECIDED:     2026-07-15
 :END:
 "Is this fuzzy item actually several commitments?" is a *semantic* judgment, not
 a mechanical split. A one-keystroke "split off to inbox" affordance would help
-capture the extras, but recognising the hidden commitments is the hard part.
+capture the extras, but recognising the hidden commitments is the hard part —
+that's an *optional, opt-in LLM interface* doing semantic work on items during
+clarification (only if the user wants it).
 
-*Decision*: DEFER — this belongs to a future *optional, opt-in LLM interface*
-that does semantic work on items during clarification (only if the user wants
-it). That's a separate direction/brainstorm (akin to the reference/contacts
-adapter layers), not a v5 core build. Supersedes the prior #7 "implement" call
-for now. Likely shares the future LLM-assist surface with [[*REC-CLA-10]]
-(concreteness lint).
+*Decision*: TODO — this is a real, committed direction, *not* shelved. Tracked
+as yak
+=opt-in-llm-semantic-assist-for-clarify-extract-hidden-projectsactions-cla-06-concreteness-check-to-keep-items-from-degrading-to-stuff-cla-10-d009=.
+It needs its own design/brainstorm (surface, provider-agnostic, privacy,
+off-by-default); v5-vs-later scope decided there. Shares the LLM-assist surface
+with [[*TODO REC-CLA-10 — concreteness lint (keep items from degrading to "stuff")][REC-CLA-10]].
+
+*** TODO REC-CLA-10 — concreteness lint (keep items from degrading to "stuff") :should:clarify:
+:PROPERTIES:
+:REC_ID:      REC-CLA-10
+:STATUS:      Not-implemented → tracked as an opt-in LLM-assist to-do
+:STRENGTH:    should
+:TYPE:        methodology
+:DISPOSITION: TODO — same opt-in LLM clarify assist (yak …-d009)
+:UX_DOC:      REC-CLA-10.md
+:DECIDED:     2026-07-15
+:END:
+Catching items that are still vague/non-actionable ("website", "Mom") and
+nudging a rephrase into a concrete verb-first action. A *mechanical* verb-first
+lint is easy but easy to make naggy (false positives); genuine concreteness
+judgment is *semantic* — the same quality of work as [[*TODO REC-CLA-06 — extract hidden projects/actions from fuzzy items][REC-CLA-06]].
+
+*Decision*: TODO — folded into the same opt-in LLM semantic clarify-assist yak.
+Not a standalone mechanical lint (org-gtd stays non-preachy). Note the verb-first
+theme also touches PRJ-10 and UI-07.
 
 ** Projects
 *** BUILD-V5 REC-PRJ-04 — subproject rollup (+ parallel/sequential)    :should:projects:
