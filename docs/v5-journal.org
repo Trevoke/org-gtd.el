@@ -79,7 +79,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 *** Delegate
 - [X] =REC-DEL-03= → *BUILD-V5* (design-gated: snapshot/restore seam needs its own design; see Delegate)
 *** Agendas
-- [ ] =REC-AGE-01= /Partial/ — per-person / per-meeting "talk-to" lists (V-05)
+- [X] =REC-AGE-01= → *DEFER* (docs howto; users may use a PKB/org-roam; see Agendas)
 *** Reference
 - [ ] =REC-KNO-02= /Partial/ — <60s filing; A–Z index; yearly purge
 - [ ] =REC-KNO-04= /Not-impl/ — zero-friction new reference category while filing
@@ -651,6 +651,26 @@ org-edna deps, archive/restore, stuck detection, and check-in behaviour.
 Not a one-function add. (Same design-first class as [[*BUILD-V5 REC-PRJ-04 — subproject rollup (+ parallel/sequential)][REC-PRJ-04]] rollup.)
 
 ** Agendas
+*** DEFER REC-AGE-01 — per-person / per-meeting "talk-to" lists         :should:agendas:
+:PROPERTIES:
+:REC_ID:      REC-AGE-01
+:STATUS:      Partial → docs howto (no bundled feature)
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: DEFER → docs howto
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+GTD's Agendas list (things to *raise with* a person / at a meeting) is distinct
+from delegation (the =who= filter is =DELEGATED_TO=-specific). But people do this
+idiosyncratically — tags + a saved view, or a personal knowledge base
+(org-roam/denote) to maintain per-person notes.
+
+*Decision*: DEFER → docs howto covering approaches (a tag convention + a saved
+view via the view builder; or leaning on a PKB). No bundled feature — consistent
+with keeping contact/reference *resolution* to a future adapter layer. See also
+[[*REC-AGE-02]] (aggregated per-person view) when we reach it.
+
 ** Tickler
 *** BUILD-V5 REC-TIC-02 — tickler recurrence (+ lead-time to docs)     :should:tickler:
 :PROPERTIES:
