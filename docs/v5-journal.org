@@ -62,7 +62,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 *** Projects
 - [X] =REC-PRJ-04= → *BUILD-V5* (subproject rollup; parallel/seq handled + yak filed; see Projects)
 - [X] =REC-PRJ-06= → *DEFER* (implemented enough via clarify side windows; UI-review yak; see Projects)
-- [ ] =REC-PRJ-07= /Partial/ — planning step as a next action + trigger list (V-10)
+- [X] =REC-PRJ-07= → *DROP* (planning checklist doesn't fit the flow; docs note + side-window yak; see Projects)
 - [ ] =REC-PRJ-08= /Partial/ — "look into" commitment-to-decide R&D projects
 - [ ] =REC-PRJ-10= /Not-impl/ — verb-starter checklist for naming projects
 *** Clarify
@@ -206,6 +206,33 @@ little real new work is needed here.
 *Decision*: DEFER — no new scaffold. A UI pass over these side windows through
 the NPM lens might improve them; tracked as yak
 =ui-review-of-clarify-side-windows-horizons-dependency-helper-through-the-natural-planning-model-lens-prj-06-y5kl=.
+The brainstorm-triggers side-window idea from [[*DROP REC-PRJ-07 — planning step as a next action + trigger list][REC-PRJ-07]] folds into this same review.
+
+*** DROP REC-PRJ-07 — planning step as a next action + trigger list    :should:projects:
+:PROPERTIES:
+:REC_ID:      REC-PRJ-07
+:STATUS:      Partial → dropped (workflow mismatch)
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: DROP + docs note; side-window idea → PRJ-06 yak
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+Workflow analysis killed the "ship a planning checklist" idea. Project tasks are
+*typed as outline headings* in the clarify WIP buffer (=org-gtd-organize= reads
+them) and added later via =org-gtd-project-operations=. A trigger-list checklist
+is a separate prompt buffer with *no bridge* from "checked item" to "project
+task" — walk it, discard most, and you still go type the tasks. A trigger list
+is a thinking *aid* (like the horizons window), not a task source.
+
+*Decision*: DROP the checklist. PRJ-07's value is already covered:
+- adding tasks → type them in the WIP buffer (+ project-operations later);
+- "planning as a next action" → when you can't plan yet, type one task
+  "Brainstorm/plan project X" — nothing to build;
+- brainstorming aid → a "triggers" side window, if wanted, is folded into the
+  PRJ-06 clarification-UI / side-window review yak.
+
+*Docs follow-up*: note the planning-as-a-next-action pattern in the projects docs.
 
 ** Next Actions
 ** Engage
