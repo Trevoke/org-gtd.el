@@ -90,7 +90,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-HOR-05= → *DEFER* (docs; see Horizons)
 - [X] =REC-HOR-08= → *DEFER* (docs explanation — top-down prioritization; see Horizons)
 *** UI
-- [ ] =REC-UI-02= /Partial/ — proactive integrity warning flags
+- [X] =REC-UI-02= → *BUILD-V5* (command-center count annotations; dashboard-rework aspiration → UI-01; see UI / Views)
 - [ ] =REC-UI-04= /Not-impl/ — consent-based migrate overdue calendar → next-action
 - [ ] =REC-UI-05= /Partial/ — mark-done closure prompt ("what's next?") — *MUST cover: all-tasks-done ≠ complete; an under-defined project needs "add more actions?" not silent archive (PRJ-08 spillover)*
 *** Cross-cutting
@@ -811,6 +811,32 @@ Landed on =develop= (former PR #294). By-name, per-workflow checklists
 (=org-gtd-checklist.el=). Rejected corpus extras (CHECKLIST_KIND, edna RESET,
 defcustom store, etc.) are recorded in the design doc §8 — do not resurrect.
 ** UI / Views
+*** BUILD-V5 REC-UI-02 — proactive integrity flags (command-center counts) :should:ui:
+:PROPERTIES:
+:REC_ID:      REC-UI-02
+:STATUS:      Partial → building count annotations
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: BUILD-V5 (counts) + larger dashboard-rework aspiration
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+Detection exists but is reactive (command center → "Stuck items..." / "Missed
+items...", =org-gtd-command-center.el:67=). Nothing flags "you have 3 stuck
+projects" until you look.
+
+*Decision*: BUILD-V5 — annotate the command-center entries with *live counts*
+("Stuck items (3)", "Missed items (2)"), maybe a one-line integrity summary at
+the top. Non-intrusive (only when you're already in org-gtd) — no nag / no
+mode-line badge / no startup warning (org-gtd stays non-preachy).
+
+*Larger aspiration* (weigh at [[*REC-UI-01]]): rework the command center toward a
+*dashboard-style navigation pane*. Reference:
+https://github.com/aravindps/org-gtd (see
+=screenshots/themes-card_files/Navigation Pane.png=). The count annotations are
+the first step; the full dashboard rework is a bigger UX design decided together
+with UI-01 (dashboard home view).
+
 *** DONE NEW-VIEW-MANAGER — view builder & manager                 :ui:views:
 :PROPERTIES:
 :REC_ID:      NEW-VIEW-MANAGER
