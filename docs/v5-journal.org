@@ -71,7 +71,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-CLA-06= → *TODO* (opt-in LLM semantic clarify assist; yak …-d009; see Clarify)
 - [X] =REC-CLA-10= → *TODO* (same opt-in LLM clarify assist; yak …-d009; see Clarify)
 *** Capture
-- [ ] =REC-CAP-06= /Partial/ — guided mind-sweep / bulk-capture via trigger lists (V-10)
+- [X] =REC-CAP-06= → *BUILD-V5* (ad-hoc mind-sweep command + fuller trigger lists; horizons-prompts split to yak; see Capture)
 *** Next Actions
 - [ ] =REC-NXT-05= /Not-impl/ — Read/Review queue distinct from Reference (V-06)
 *** Tickler
@@ -156,6 +156,36 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 Filed decisions, grouped by GTD area. Empty areas fill in as we go.
 
 ** Capture
+*** BUILD-V5 REC-CAP-06 — guided mind-sweep / bulk-capture via trigger lists :should:capture:
+:PROPERTIES:
+:REC_ID:      REC-CAP-06
+:STATUS:      Partial → building ad-hoc entry point + fuller lists
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: BUILD-V5 (mind-sweep command); horizons-prompts split off
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+Already shipped (CHK-01): starter "Weekly Review triggers" + "Mind sweep
+prompts" templates, and a Weekly-Review "Mind sweep" step that walks a trigger
+list with press-=c=-to-capture. Missing: a *standalone* ad-hoc entry point.
+
+*Decision*: BUILD-V5 —
+- A standalone =org-gtd-mind-sweep= command that walks the mind-sweep checklist
+  with capture, runnable anytime (reuses the review's walk-and-capture flow).
+- Flesh out the seeded mind-sweep template into fuller *personal* and
+  *professional* trigger lists, structured after GTD's incompletion-triggers
+  appendix. *Copyright caveat*: write our own phrasing — do NOT copy Allen's
+  appendix verbatim into the shipped package (the source texts are gitignored
+  for exactly this reason).
+
+*Split off — NOT part of CAP-06*: a "Horizons prompts" trigger template is
+deliberately excluded. Pushing higher-altitude thinking on GTD newcomers is a
+trap. Instead → a separate future feature: *LLM-assisted, iterative* horizon
+definition (good-enough round, then refine). Tracked as yak
+=llm-assisted-iterative-definition-of-ones-horizons-...-voqa=. Revisit alongside
+REC-HOR-08 (top-down prioritization) when we reach Horizons.
+
 ** Clarify
 *** TODO REC-CLA-06 — extract hidden projects/actions from fuzzy items  :should:clarify:
 :PROPERTIES:
