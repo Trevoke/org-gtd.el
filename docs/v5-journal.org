@@ -77,7 +77,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 *** Tickler
 - [X] =REC-TIC-02= → *BUILD-V5* (recurrence via org-habit-ng; lead-time DROP→docs/DEADLINE; see Tickler)
 *** Delegate
-- [ ] =REC-DEL-03= /Not-impl/ — delegate a whole decomposed project as one Waiting-For (adjudicated #6)
+- [X] =REC-DEL-03= → *BUILD-V5* (design-gated: snapshot/restore seam needs its own design; see Delegate)
 *** Agendas
 - [ ] =REC-AGE-01= /Partial/ — per-person / per-meeting "talk-to" lists (V-05)
 *** Reference
@@ -629,6 +629,27 @@ block — are tracked in =docs/plans/2026-07-06-checklists-and-guided-review-des
 ** Horizons
 ** Reference
 ** Delegate
+*** BUILD-V5 REC-DEL-03 — delegate a whole project as one Waiting-For   :should:delegate:
+:PROPERTIES:
+:REC_ID:      REC-DEL-03
+:STATUS:      Not-implemented → BUILD (design-gated)
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: BUILD-V5 — needs its own design for the snapshot/restore seam
+:UX_DOC:      REC-DEL-03.md
+:DECIDED:     2026-07-15
+:END:
+Today delegation is per-item (=org-gtd-delegate= sets =DELEGATED_TO= + check-in,
+flips to =WAIT=). DEL-03 is handing off a *whole decomposed project* so it
+leaves the active-projects list and shows as a single "Waiting for X to deliver
+Y", subtasks collapsed.
+
+*Decision*: BUILD-V5 (honors adjudicated #6), **design-gated**. The
+projects↔delegate *snapshot/restore seam* needs its own design doc before
+implementation — it touches the project state machine, the delegate model,
+org-edna deps, archive/restore, stuck detection, and check-in behaviour.
+Not a one-function add. (Same design-first class as [[*BUILD-V5 REC-PRJ-04 — subproject rollup (+ parallel/sequential)][REC-PRJ-04]] rollup.)
+
 ** Agendas
 ** Tickler
 *** BUILD-V5 REC-TIC-02 — tickler recurrence (+ lead-time to docs)     :should:tickler:
