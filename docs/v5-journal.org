@@ -57,7 +57,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-REF-08= → *DONE* (satisfied by REF-01 + REF-02)
 - [X] =REC-REF-09= → *BUILD-V5* (time-block the weekly-review habit; prompt time, default 2h; see Reflect)
 *** Engage
-- [ ] =REC-ENG-05= /Partial/ — filter by time available via Effort (turnkey ~10-min view)
+- [X] =REC-ENG-05= → *DEFER* (docs — folded into the four-criteria how-to; see Engage)
 - [ ] =REC-ENG-06= /Partial/ — three work modes as legitimate choices (V-03, docs-only)
 *** Projects
 - [ ] =REC-PRJ-04= /Partial/ — subproject rollup; parallel/sequential wiring
@@ -185,9 +185,29 @@ Payoffs beyond the feature: rounds out the base view DSL to the full
 four-criteria set, and lets the docs map cleanly onto GTD's own
 context/time/energy/priority language (streamlining).
 
-*Docs follow-up*: a Diataxis how-to (or tutorial — classification TBD; the
-engage-by-criteria docs may be how-tos rather than tutorials) covering engaging
-by the four criteria. Ties the ENG-02 context recipe together with this.
+*Docs follow-up*: a Diataxis how-to — "How to use GTD's four criteria
+(context / time / energy / priority)" — anchored on this energy feature and
+folding in the effort/time filtering ([[*DEFER REC-ENG-05 — filter by time available via Effort][REC-ENG-05]]) and the context recipe (ENG-02).
+One home for all four criteria.
+
+*** DEFER REC-ENG-05 — filter by time available via Effort             :should:engage:
+:PROPERTIES:
+:REC_ID:      REC-ENG-05
+:STATUS:      Partial → DSL-composable; docs only
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: DEFER → docs (four-criteria how-to)
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+The "time" criterion. The DSL already filters on =effort=
+(=org-gtd-view-language.el:181=), so a "what fits in my 10 minutes" view is
+composable in the builder today. No separate turnkey command.
+
+*Decision*: DEFER → docs. Fold into the four-criteria how-to (see [[*BUILD-V5 REC-ENG-03 — four-criteria choice (context/time/energy/priority)][REC-ENG-03]]) —
+show building an effort-filtered "time available" view alongside energy,
+context, and priority. (Same optional-metadata caveat as energy: only works if
+the user sets Effort estimates.)
 
 *** DEFER REC-ENG-02 — calendar-first, then context-filtered engage lists   :must:engage:
 :PROPERTIES:
