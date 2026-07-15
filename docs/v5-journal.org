@@ -75,7 +75,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 *** Next Actions
 - [X] =REC-NXT-05= → *DEFER* (docs — suggest a Read/Review someday/maybe category; see Next Actions)
 *** Tickler
-- [ ] =REC-TIC-02= /Partial/ — tickler recurrence + advance lead-time notice
+- [X] =REC-TIC-02= → *BUILD-V5* (recurrence via org-habit-ng; lead-time DROP→docs/DEADLINE; see Tickler)
 *** Delegate
 - [ ] =REC-DEL-03= /Not-impl/ — delegate a whole decomposed project as one Waiting-For (adjudicated #6)
 *** Agendas
@@ -631,6 +631,32 @@ block — are tracked in =docs/plans/2026-07-06-checklists-and-guided-review-des
 ** Delegate
 ** Agendas
 ** Tickler
+*** BUILD-V5 REC-TIC-02 — tickler recurrence (+ lead-time to docs)     :should:tickler:
+:PROPERTIES:
+:REC_ID:      REC-TIC-02
+:STATUS:      Partial → recurrence build; lead-time dropped
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: BUILD-V5 (recurrence via org-habit-ng) + DROP lead-time to docs
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+Source check (Sonnet, GTD Book 1 + MIAW): the tickler has *no* advance-warning
+feature — lead time is achieved by filing the item under an earlier resurface
+date you choose ("remind me two weeks ahead" = file it two weeks early). And
+Allen only ever re-files recurring ticklers (birthdays, annual conference)
+*by hand*. So my "lead-time notice" framing was an over-reach.
+
+Decisions, split:
+- *Lead-time* → *DROP → docs*. No feature. Docs note: for advance notice, either
+  file the tickler for the earlier date, or use org-mode's =DEADLINE= property
+  (with its warning cookie, e.g. =DEADLINE: <2026-08-01 -14d>=) which fills this
+  purpose natively.
+- *Recurrence* → *BUILD-V5* using **org-habit-ng** (library the maintainer
+  wrote) as the recurrence engine for recurring ticklers — software rightly
+  improving on the physical system's manual re-filing. Integration point for
+  recurring reminders (annual/periodic ticklers).
+
 ** Checklists
 *** DONE REC-CHK-01 — reusable checklists                          :checklist:
 :PROPERTIES:
