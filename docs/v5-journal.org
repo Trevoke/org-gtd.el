@@ -55,7 +55,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-REF-06= → *BUILD-V5* (maintenance profile; horizon-events via REF-05; see Reflect)
 - [X] =REC-REF-07= → *DEFER* (docs: coverage note in review + view-creation docs; see Reflect)
 - [X] =REC-REF-08= → *DONE* (satisfied by REF-01 + REF-02)
-- [ ] =REC-REF-09= /Partial/ — time-blocking falls out of the review
+- [X] =REC-REF-09= → *BUILD-V5* (time-block the weekly-review habit; prompt time, default 2h; see Reflect)
 *** Engage
 - [ ] =REC-ENG-05= /Partial/ — filter by time available via Effort (turnkey ~10-min view)
 - [ ] =REC-ENG-06= /Partial/ — three work modes as legitimate choices (V-03, docs-only)
@@ -311,6 +311,32 @@ ad-hoc, and recovery — and which command/profile serves each.
 The gap's "what's missing" was literally "the review itself" — which now ships
 (guided Weekly Review REF-02 + scheduling REF-01). Keeping lists current is the
 outcome of running that review. Nothing left to build.
+
+*** BUILD-V5 REC-REF-09 — time-block the Weekly Review                 :should:reflect:
+:PROPERTIES:
+:REC_ID:      REC-REF-09
+:STATUS:      Partial → building (scoped to the review itself)
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: BUILD-V5 (source-checked)
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+Source check (GTD Book 1 vs *Making It All Work*): Allen *forbids*
+pre-scheduling routine discretionary next actions (calendar = hard landscape),
+but Book 2 *does* endorse blocking calendar time for big-window important
+actions during "weekly review mode" ("block out two hours for yourself in the
+coming week"). So time-blocking the *action list* is out — but the Weekly
+Review is itself exactly that kind of big-window action.
+
+*Decision*: BUILD-V5 — tweak the weekly-review scheduling
+(=org-gtd-review-schedule=, see [[*DONE REC-REF-01 — Weekly Review as a scheduled recurring event][REC-REF-01]]) so the created habit is a real *time
+block*, not just a reminder: prompt for a start time, **default a 2-hour
+duration** (editable later), producing a timestamped range like
+=<2026-07-20 Mon 09:00-11:00 .+1w>=. This makes the review a genuine
+hard-landscape appointment — faithful to Book 2, and it keeps the anti-pattern
+(pre-scheduling ordinary actions) off the table. Do *not* generalise
+time-blocking to the next-action list.
 
 *** DEFER REC-REF-07 — all reminder locations reviewed equally         :should:reflect:
 :PROPERTIES:
