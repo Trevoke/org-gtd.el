@@ -66,7 +66,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-PRJ-08= → *DROP* (no structural distinction needed; docs note; see Projects)
 - [ ] =REC-PRJ-10= /Not-impl/ — verb-starter checklist for naming projects
 *** Clarify
-- [ ] =REC-CLA-06= /Partial/ — extract hidden projects/actions from fuzzy items (adjudicated #7)
+- [X] =REC-CLA-06= → *DEFER* (future optional LLM semantic clarify assist; see Clarify)
 - [ ] =REC-CLA-10= /Not-impl/ — concreteness lint (prevent entries degrading back to "stuff")
 *** Capture
 - [ ] =REC-CAP-06= /Partial/ — guided mind-sweep / bulk-capture via trigger lists (V-10)
@@ -155,6 +155,27 @@ Filed decisions, grouped by GTD area. Empty areas fill in as we go.
 
 ** Capture
 ** Clarify
+*** DEFER REC-CLA-06 — extract hidden projects/actions from fuzzy items :should:clarify:
+:PROPERTIES:
+:REC_ID:      REC-CLA-06
+:STATUS:      Partial → deferred to a future LLM-assist direction
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: DEFER → future optional LLM semantic clarify assist
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+"Is this fuzzy item actually several commitments?" is a *semantic* judgment, not
+a mechanical split. A one-keystroke "split off to inbox" affordance would help
+capture the extras, but recognising the hidden commitments is the hard part.
+
+*Decision*: DEFER — this belongs to a future *optional, opt-in LLM interface*
+that does semantic work on items during clarification (only if the user wants
+it). That's a separate direction/brainstorm (akin to the reference/contacts
+adapter layers), not a v5 core build. Supersedes the prior #7 "implement" call
+for now. Likely shares the future LLM-assist surface with [[*REC-CLA-10]]
+(concreteness lint).
+
 ** Projects
 *** BUILD-V5 REC-PRJ-04 — subproject rollup (+ parallel/sequential)    :should:projects:
 :PROPERTIES:
