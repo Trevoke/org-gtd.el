@@ -53,7 +53,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-REF-04= → *BUILD-V5* (ship a stock Recovery review profile + docs; see Reflect)
 - [X] =REC-REF-05= → *BUILD-V5* (schedule per-horizon reviews like the weekly habit; see Reflect)
 - [X] =REC-REF-06= → *BUILD-V5* (maintenance profile; horizon-events via REF-05; see Reflect)
-- [ ] =REC-REF-07= /Partial/ — all reminder locations reviewed equally
+- [X] =REC-REF-07= → *DEFER* (docs: coverage note in review + view-creation docs; see Reflect)
 - [ ] =REC-REF-08= /Partial/ — lists kept totally current via the Weekly Review
 - [ ] =REC-REF-09= /Partial/ — time-blocking falls out of the review
 *** Engage
@@ -298,6 +298,27 @@ stuck-projects views) so get-back-on-track is turnkey, not user-assembled.
 
 *Docs follow-up*: document the *three kinds of review* — regular (weekly),
 ad-hoc, and recovery — and which command/profile serves each.
+
+*** DEFER REC-REF-07 — all reminder locations reviewed equally         :should:reflect:
+:PROPERTIES:
+:REC_ID:      REC-REF-07
+:STATUS:      Partial → satisfied by REF-02
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: DEFER → docs
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+Equal coverage is exactly what the guided Weekly Review profile enforces — its
+steps walk every location (missed/calendar, waiting-for, next actions, stuck
+projects, someday). The step list *is* the coverage guarantee; no separate
+feature.
+
+*Decision*: no code. Docs note — in two places:
+- review docs: your review profile *is* your coverage guarantee; customizing it
+  changes what gets swept.
+- the view-creation / View Manager docs: a sentence reminding users that the
+  views they build (and put in a review profile) determine coverage.
 
 *** DONE REC-REF-01 — Weekly Review as a scheduled recurring event   :must:reflect:
 :PROPERTIES:
