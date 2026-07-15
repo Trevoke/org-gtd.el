@@ -46,7 +46,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 ** MUST (3)
 - [X] =REC-REF-01= → *DONE* — already implemented by =org-gtd-review-schedule=
 - [X] =REC-ENG-02= → *DEFER* (documentation — Diataxis tutorial; see Engage)
-- [ ] =REC-ENG-03= /Partial/ — four-criteria choice (context/time/energy/priority); energy = REC-X-04
+- [X] =REC-ENG-03= → *BUILD-V5* (energy criterion + DSL keyword; wizard dropped; see Engage)
 
 ** SHOULD (32)
 *** Reflect
@@ -142,7 +142,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [ ] =REC-UI-17= /Partial/ — project ledger & metadata
 - [ ] =REC-UI-18= /Via-config/ — layered calendar (month/week/day)
 *** Cross-cutting
-- [ ] =REC-X-04= /Not-impl/ — optional energy-level attribute (V-07; = ENG-03 energy criterion)
+- [X] =REC-X-04= → *BUILD-V5* (resolved with ENG-03 — the energy attribute; see Cross-cutting)
 - [ ] =REC-X-09= /Partial/ — named project sub-lists, event-date sorted (V-13 — closed)
 - [ ] =REC-X-15= /Not-impl/ — ≥50-actions completeness heuristic diagnostic
 
@@ -158,6 +158,37 @@ Filed decisions, grouped by GTD area. Empty areas fill in as we go.
 ** Projects
 ** Next Actions
 ** Engage
+*** BUILD-V5 REC-ENG-03 — four-criteria choice (context/time/energy/priority)   :must:engage:
+:PROPERTIES:
+:REC_ID:      REC-ENG-03
+:STATUS:      Partial → building energy; 3/4 criteria already in DSL
+:STRENGTH:    must
+:TYPE:        methodology
+:DISPOSITION: BUILD-V5 (carries REC-X-04); guided wizard dropped
+:UX_DOC:      (none)
+:CARRIES:     REC-X-04
+:DECIDED:     2026-07-15
+:END:
+The DSL already filters/sorts on context (=tags=/=area-of-focus=/=who=), time
+(=effort=) and =priority= (=org-gtd-view-language.el:181=) — three of Allen's
+four criteria. Missing: *energy* (zero refs in source) and any guided ordering.
+
+*Decision*: BUILD-V5 the **energy criterion**, which also resolves REC-X-04:
+- Optional =ENERGY= property, *off by default* (no forced taxonomy).
+- New =energy= filter keyword in the view DSL, parallel to =effort=/=priority=
+  (predicate + keyword-list entry + view-builder infix), exposed in engage.
+- *Drop* the four-step guided wizard — cuts against org-gtd's simplicity /
+  no-forced-flow ethos; the four criteria are usable as composable filters +
+  =org-gtd-engage-tagged=.
+
+Payoffs beyond the feature: rounds out the base view DSL to the full
+four-criteria set, and lets the docs map cleanly onto GTD's own
+context/time/energy/priority language (streamlining).
+
+*Docs follow-up*: a Diataxis how-to (or tutorial — classification TBD; the
+engage-by-criteria docs may be how-tos rather than tutorials) covering engaging
+by the four criteria. Ties the ENG-02 context recipe together with this.
+
 *** DEFER REC-ENG-02 — calendar-first, then context-filtered engage lists   :must:engage:
 :PROPERTIES:
 :REC_ID:      REC-ENG-02
@@ -249,3 +280,16 @@ Landed on =develop=. Transient builder for view specs (flat + multi-section),
 persisted store, and a completing-read picker with section-badge annotations
 feeding a select-then-act action menu.
 ** Cross-cutting
+*** BUILD-V5 REC-X-04 — optional energy-level attribute              :may:cross:
+:PROPERTIES:
+:REC_ID:      REC-X-04
+:STATUS:      Not-implemented → building with ENG-03
+:STRENGTH:    may
+:TYPE:        tool
+:DISPOSITION: BUILD-V5 — resolved as part of REC-ENG-03
+:UX_DOC:      REC-X-04.md
+:DECIDED:     2026-07-15
+:END:
+Not a standalone item: the optional energy attribute *is* the energy criterion
+built for REC-ENG-03 (see Engage). Off by default; =ENERGY= property + =energy=
+DSL keyword.
