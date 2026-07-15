@@ -1,0 +1,1 @@
+Reference adapter: define the useful set of GTD->knowledge-base (PKM) actions org-gtd should build logic around (KNO-02 fast-file/index/purge); confirm KNO-04 (new category on file) + KNO-05 (browsable index) are the PKM tool's responsibility (likely no-ops for us)
