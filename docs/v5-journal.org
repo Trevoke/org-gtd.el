@@ -1,0 +1,206 @@
+#+TITLE: org-gtd v5 Journal — feature decisions
+#+STARTUP: overview
+#+TODO: UNDECIDED(u) REVIEWING(r) | BUILD-V5(b) DEFER(f) DROP(x) DONE(d)
+
+A working decision log for org-gtd v5. Every recommended-but-not-turnkey
+feature (the 73 gaps from the feature analysis) gets one heading, and we go
+through them *one at a time* to make a clean, coherent decision about each.
+
+* How this journal works
+:PROPERTIES:
+:VISIBILITY: all
+:END:
+
+- *Source of truth*: =docs/feature-analysis/gaps/recommended-not-implemented.md=
+  (122 recommended features; 49 implemented; 73 gaps). Per-feature UX designs,
+  where they exist, live in =docs/feature-analysis/ux-workflows/REC-*.md=.
+- *Process*: pick the next item from [[* Backlog — awaiting decision][Backlog]],
+  discuss it, then file a full heading under [[* Decisions][Decisions]] in its
+  GTD area with a decision keyword, and check it off the backlog.
+- *Decision keywords* (the =#+TODO= line):
+  - =UNDECIDED= — not yet reviewed.
+  - =REVIEWING= — actively under discussion.
+  - =BUILD-V5= — commit to building it for 5.0.0.
+  - =DEFER= — real, but later (5.x or a future adapter layer); say where.
+  - =DROP= — decided not to do; say why.
+  - =DONE= — already implemented.
+- *Per-heading properties*: =:REC_ID:=, =:STATUS:= (current implementation
+  status: Implemented / Partial / Via-config / Not-implemented), =:STRENGTH:=
+  (must / should / may), =:TYPE:= (tool / methodology), =:DISPOSITION:= (prior
+  =V-xx= adjudication, if any — those are already-made calls, not to
+  re-litigate), =:UX_DOC:= (whether a REC-* workflow design exists).
+- *Tags*: strength + area, for filtering (e.g. =C-c \ +must+engage=).
+- *Standing constraints* (do not propose against these): no org-ql /
+  org-super-agenda dependency; no forced org-agenda; reference and contacts
+  systems are future *adapter* layers, not bundled stores.
+
+* Backlog — awaiting decision
+:PROPERTIES:
+:VISIBILITY: children
+:END:
+
+Ordered by strength, then GTD area. Check off as each is filed under Decisions.
+Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
+=may= stragglers to reconcile against the source as we go).
+
+** MUST (3)
+- [ ] =REC-REF-01= /Partial/ — Weekly Review as a scheduled recurring event
+- [ ] =REC-ENG-02= /Partial/ — calendar-first, then context-filtered engage lists
+- [ ] =REC-ENG-03= /Partial/ — four-criteria choice (context/time/energy/priority); energy = REC-X-04
+
+** SHOULD (32)
+*** Reflect
+- [ ] =REC-REF-04= /Partial/ — review on three triggers incl. recovery ("get back on track")
+- [ ] =REC-REF-05= /Via-config/ — review cadence scaling per horizon (V-21)
+- [ ] =REC-REF-06= /Not-impl/ — system-maintenance review + horizon calendar events (adjudicated #2)
+- [ ] =REC-REF-07= /Partial/ — all reminder locations reviewed equally
+- [ ] =REC-REF-08= /Partial/ — lists kept totally current via the Weekly Review
+- [ ] =REC-REF-09= /Partial/ — time-blocking falls out of the review
+*** Engage
+- [ ] =REC-ENG-05= /Partial/ — filter by time available via Effort (turnkey ~10-min view)
+- [ ] =REC-ENG-06= /Partial/ — three work modes as legitimate choices (V-03, docs-only)
+*** Projects
+- [ ] =REC-PRJ-04= /Partial/ — subproject rollup; parallel/sequential wiring
+- [ ] =REC-PRJ-06= /Not-impl/ — Natural Planning Model scaffold at project creation (V-04)
+- [ ] =REC-PRJ-07= /Partial/ — planning step as a next action + trigger list (V-10)
+- [ ] =REC-PRJ-08= /Partial/ — "look into" commitment-to-decide R&D projects
+- [ ] =REC-PRJ-10= /Not-impl/ — verb-starter checklist for naming projects
+*** Clarify
+- [ ] =REC-CLA-06= /Partial/ — extract hidden projects/actions from fuzzy items (adjudicated #7)
+- [ ] =REC-CLA-10= /Not-impl/ — concreteness lint (prevent entries degrading back to "stuff")
+*** Capture
+- [ ] =REC-CAP-06= /Partial/ — guided mind-sweep / bulk-capture via trigger lists (V-10)
+*** Next Actions
+- [ ] =REC-NXT-05= /Not-impl/ — Read/Review queue distinct from Reference (V-06)
+*** Tickler
+- [ ] =REC-TIC-02= /Partial/ — tickler recurrence + advance lead-time notice
+*** Delegate
+- [ ] =REC-DEL-03= /Not-impl/ — delegate a whole decomposed project as one Waiting-For (adjudicated #6)
+*** Agendas
+- [ ] =REC-AGE-01= /Partial/ — per-person / per-meeting "talk-to" lists (V-05)
+*** Reference
+- [ ] =REC-KNO-02= /Partial/ — <60s filing; A–Z index; yearly purge
+- [ ] =REC-KNO-04= /Not-impl/ — zero-friction new reference category while filing
+- [ ] =REC-KNO-05= /Not-impl/ — browsable categorized reference index
+*** Horizons
+- [ ] =REC-HOR-03= /Via-config/ — Goals/Objectives (30k) reviewed monthly–quarterly (adjudicated #5)
+- [ ] =REC-HOR-04= /Via-config/ — Vision (40k) reverse-engineering + resurfacing (adjudicated #5)
+- [ ] =REC-HOR-05= /Via-config/ — Purpose & Principles (50k) as a priority criterion (adjudicated #5)
+- [ ] =REC-HOR-08= /Partial/ — top-down prioritization replacing ABC coding (docs)
+*** UI
+- [ ] =REC-UI-02= /Partial/ — proactive integrity warning flags
+- [ ] =REC-UI-04= /Not-impl/ — consent-based migrate overdue calendar → next-action
+- [ ] =REC-UI-05= /Partial/ — mark-done closure prompt ("what's next?")
+*** Cross-cutting
+- [ ] =REC-X-10= /Via-config/ — onboarding / migration scaffolding (V-12)
+- [ ] =REC-X-14= /Via-config/ — system available anywhere / mobile story (V-18/V-20)
+
+** MAY (36)
+*** Capture
+- [ ] =REC-CAP-08= /Not-impl/ — capture hooks at activity boundaries
+- [ ] =REC-CAP-09= /Not-impl/ — "what's true right now?" themed current-reality sweep
+*** Clarify
+- [ ] =REC-CLA-09= /Via-config/ — configurable do-it-now (2-min) threshold
+- [ ] =REC-CLA-11= /Partial/ — three honest exits from a broken agreement
+*** Projects
+- [ ] =REC-PRJ-09= /Via-config/ — per-project Active vs Archive compartments
+- [ ] =REC-PRJ-12= /Partial/ — project spawning a recurring Habit on completion
+*** Next Actions
+- [ ] =REC-NXT-04= /Via-config/ — optional informal "if I have time" list
+*** Delegate
+- [ ] =REC-DEL-04= /Not-impl/ — two-stage delegation state (plan-to-delegate → delegated)
+- [ ] =REC-DEL-05= /Not-impl/ — trackable-channel guidance (email > note > voice)
+*** Reference
+- [ ] =REC-KNO-03= /Not-impl/ — contacts as pure reference (V-09, non-goal — closed)
+- [ ] =REC-KNO-06= /Not-impl/ — user-definable reference forms/templates + editor escape
+*** Checklists
+- [ ] =REC-CHK-02= /Via-config/ — recurring reflection-prompt lists at intervals
+*** Agendas
+- [ ] =REC-AGE-02= /Partial/ — aggregated per-person view + printable brief
+- [ ] =REC-AGE-03= /Not-impl/ — meeting lifecycle object; outcomes to inbox
+*** Reflect
+- [ ] =REC-REF-10= /Partial/ — optional annual / year-end stock-taking (V-25)
+*** Engage
+- [ ] =REC-ENG-08= /Via-config/ — "weird time" micro-window short-action view
+*** Horizons
+- [ ] =REC-HOR-06= /Via-config/ — personal standards/values as decision reference (adjudicated #4 — closed)
+- [ ] =REC-HOR-07= /Not-impl/ — unified cross-horizon "overview of my life" view (adjudicated #3, MAY)
+*** UI
+- [ ] =REC-UI-01= /Via-config/ — dashboard home view (lists + calendar)
+- [ ] =REC-UI-03= /Partial/ — methodology-teaching coaching dialogs
+- [ ] =REC-UI-06= /Partial/ — exactly-one-date semantics per action
+- [ ] =REC-UI-07= /Not-impl/ — verb-first action entry and routing
+- [ ] =REC-UI-08= /Via-config/ — customizable list sorting
+- [ ] =REC-UI-09= /Via-config/ — global multi-key search
+- [ ] =REC-UI-10= /Partial/ — closure loops at every exit
+- [ ] =REC-UI-11= /Via-config/ — rules-based automation (satisfied by org-edna)
+- [ ] =REC-UI-12= /Via-config/ — print/export first-class
+- [ ] =REC-UI-13= /Via-config/ — retrospective calendar archive/log (satisfied)
+- [ ] =REC-UI-14= /Via-config/ — gateway to external apps while processing
+- [ ] =REC-UI-15= /Via-config/ — alarms/timers incl. optional 2-minute timer
+- [ ] =REC-UI-16= /Partial/ — composite rollup views per area/horizon
+- [ ] =REC-UI-17= /Partial/ — project ledger & metadata
+- [ ] =REC-UI-18= /Via-config/ — layered calendar (month/week/day)
+*** Cross-cutting
+- [ ] =REC-X-04= /Not-impl/ — optional energy-level attribute (V-07; = ENG-03 energy criterion)
+- [ ] =REC-X-09= /Partial/ — named project sub-lists, event-date sorted (V-13 — closed)
+- [ ] =REC-X-15= /Not-impl/ — ≥50-actions completeness heuristic diagnostic
+
+* Decisions
+:PROPERTIES:
+:VISIBILITY: children
+:END:
+
+Filed decisions, grouped by GTD area. Empty areas fill in as we go.
+
+** Capture
+** Clarify
+** Projects
+** Next Actions
+** Engage
+** Reflect
+*** DONE REC-REF-02 — guided Weekly Review                          :must:reflect:
+:PROPERTIES:
+:REC_ID:      REC-REF-02
+:STATUS:      Implemented
+:STRENGTH:    must
+:TYPE:        tool
+:DISPOSITION: adjudicated — implemented in the checklists + guided-review work
+:UX_DOC:      REC-REF-02.md
+:DECIDED:     2026-07-15
+:END:
+Landed on =develop= (former PR #294). Guided, step-through Weekly Review.
+Deferred pieces — a session =walk= step over headings, and a review stats
+block — are tracked in =docs/plans/2026-07-06-checklists-and-guided-review-design.md=
+§8; several gated Cluster-A/B backlog items depend on them.
+** Horizons
+** Reference
+** Delegate
+** Agendas
+** Tickler
+** Checklists
+*** DONE REC-CHK-01 — reusable checklists                          :checklist:
+:PROPERTIES:
+:REC_ID:      REC-CHK-01
+:STATUS:      Implemented
+:TYPE:        tool
+:DISPOSITION: V-10 → implemented
+:UX_DOC:      REC-CHK-01.md
+:DECIDED:     2026-07-15
+:END:
+Landed on =develop= (former PR #294). By-name, per-workflow checklists
+(=org-gtd-checklist.el=). Rejected corpus extras (CHECKLIST_KIND, edna RESET,
+defcustom store, etc.) are recorded in the design doc §8 — do not resurrect.
+** UI / Views
+*** DONE NEW-VIEW-MANAGER — view builder & manager                 :ui:views:
+:PROPERTIES:
+:REC_ID:      NEW-VIEW-MANAGER
+:STATUS:      Implemented
+:TYPE:        tool
+:UX_DOC:      NEW-VIEW-MANAGER.md
+:DECIDED:     2026-07-15
+:END:
+Landed on =develop=. Transient builder for view specs (flat + multi-section),
+persisted store, and a completing-read picker with section-badge annotations
+feeding a select-then-act action menu.
+** Cross-cutting
