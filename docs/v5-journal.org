@@ -81,9 +81,9 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 *** Agendas
 - [X] =REC-AGE-01= → *DEFER* (docs howto; users may use a PKB/org-roam; see Agendas)
 *** Reference
-- [ ] =REC-KNO-02= /Partial/ — <60s filing; A–Z index; yearly purge
-- [ ] =REC-KNO-04= /Not-impl/ — zero-friction new reference category while filing
-- [ ] =REC-KNO-05= /Not-impl/ — browsable categorized reference index
+- [X] =REC-KNO-02= → *TODO* (GTD→PKM action surface; yak …-c5ql; see Reference)
+- [X] =REC-KNO-04= → *TODO* (likely a PKM-tool no-op; yak …-c5ql; see Reference)
+- [X] =REC-KNO-05= → *TODO* (likely a PKM-tool no-op; yak …-c5ql; see Reference)
 *** Horizons
 - [ ] =REC-HOR-03= /Via-config/ — Goals/Objectives (30k) reviewed monthly–quarterly (adjudicated #5)
 - [ ] =REC-HOR-04= /Via-config/ — Vision (40k) reverse-engineering + resurfacing (adjudicated #5)
@@ -628,6 +628,54 @@ block — are tracked in =docs/plans/2026-07-06-checklists-and-guided-review-des
 §8; several gated Cluster-A/B backlog items depend on them.
 ** Horizons
 ** Reference
+*Cluster note*: reference storage/browsing is a future *adapter* (denote /
+org-roam / org-brain), not a bundled org-gtd store. But rather than DEFER these
+vaguely, they're live TODOs to define the *action surface*: what GTD→PKM actions
+org-gtd should own vs. what belongs to the PKM tool. All three tracked as yak
+=reference-adapter-define-...-c5ql=.
+
+*** TODO REC-KNO-02 — <60s filing; A–Z index; yearly purge              :should:reference:
+:PROPERTIES:
+:REC_ID:      REC-KNO-02
+:STATUS:      Partial → TODO (define GTD→PKM action surface)
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: TODO — reference-adapter action surface (yak …-c5ql)
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+The *actionable* one: is there a useful set of "actions we take from GTD toward a
+knowledge base" (fast-file a reference, hand off to the PKM, trigger a purge)
+that org-gtd should build specific logic around? Figure that out; build the
+GTD-side verbs, leave storage/index to the PKM.
+
+*** TODO REC-KNO-04 — zero-friction new reference category while filing :should:reference:
+:PROPERTIES:
+:REC_ID:      REC-KNO-04
+:STATUS:      Not-implemented → TODO (likely PKM-tool no-op)
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: TODO — probably no-op for us (yak …-c5ql)
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+Creating a new reference *category* on the fly is very likely the PKM tool's
+responsibility (denote/org-roam already do this), so probably a *no-op* for
+org-gtd. Confirm during the action-surface investigation.
+
+*** TODO REC-KNO-05 — browsable categorized reference index            :should:reference:
+:PROPERTIES:
+:REC_ID:      REC-KNO-05
+:STATUS:      Not-implemented → TODO (likely PKM-tool no-op)
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: TODO — probably no-op for us (yak …-c5ql)
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+A browsable/categorized index is core PKM-tool territory — likely a *no-op* for
+org-gtd. Confirm during the action-surface investigation.
+
 ** Delegate
 *** BUILD-V5 REC-DEL-03 — delegate a whole project as one Waiting-For   :should:delegate:
 :PROPERTIES:
