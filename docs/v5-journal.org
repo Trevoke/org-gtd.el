@@ -44,7 +44,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 =may= stragglers to reconcile against the source as we go).
 
 ** MUST (3)
-- [ ] =REC-REF-01= /Partial/ — Weekly Review as a scheduled recurring event
+- [X] =REC-REF-01= → *DONE* — already implemented by =org-gtd-review-schedule=
 - [ ] =REC-ENG-02= /Partial/ — calendar-first, then context-filtered engage lists
 - [ ] =REC-ENG-03= /Partial/ — four-criteria choice (context/time/energy/priority); energy = REC-X-04
 
@@ -159,6 +159,24 @@ Filed decisions, grouped by GTD area. Empty areas fill in as we go.
 ** Next Actions
 ** Engage
 ** Reflect
+*** DONE REC-REF-01 — Weekly Review as a scheduled recurring event   :must:reflect:
+:PROPERTIES:
+:REC_ID:      REC-REF-01
+:STATUS:      Implemented
+:STRENGTH:    must
+:TYPE:        tool
+:DISPOSITION: gap doc said Partial; superseded by shipped command
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+Already done: =org-gtd-review-schedule= (=org-gtd-review.el:623=, autoloaded,
+interactive) creates a *recurring habit* for a review profile — prompts for
+profile / first date / org repeater (=.+1w= default), guards against duplicate
+reminders (=org-gtd-review--reminder-exists-p=), inserts a body line, and the
+habit surfaces in the engage view. Completion/streak tracking comes from
+org-habit (repeater + LOGBOOK). The guided review's =--finish= advertises it as
+a one-time tip. The gap analysis predates this command. No further work for v5.
+
 *** DONE REC-REF-02 — guided Weekly Review                          :must:reflect:
 :PROPERTIES:
 :REC_ID:      REC-REF-02
