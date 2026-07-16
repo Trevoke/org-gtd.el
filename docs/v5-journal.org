@@ -111,7 +111,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-NXT-04= → *DROP* (folded as example into NXT-05 someday-categories docs; see Next Actions)
 *** Delegate
 - [X] =REC-DEL-04= → *DROP* (feature unneeded; research yak on delegation-UX impact …-1u47; see Delegate)
-- [ ] =REC-DEL-05= /Not-impl/ — trackable-channel guidance (email > note > voice)
+- [X] =REC-DEL-05= → *DROP* (entirely; see Delegate)
 *** Reference
 - [ ] =REC-KNO-03= /Not-impl/ — contacts as pure reference (V-09, non-goal — closed)
 - [ ] =REC-KNO-06= /Not-impl/ — user-definable reference forms/templates + editor escape
@@ -870,6 +870,18 @@ A browsable/categorized index is core PKM-tool territory — likely a *no-op* fo
 org-gtd. Confirm during the action-surface investigation.
 
 ** Delegate
+*** DROP REC-DEL-05 — trackable-channel guidance (email > note > voice)  :may:delegate:
+:PROPERTIES:
+:REC_ID:      REC-DEL-05
+:STATUS:      Not-implemented → dropped
+:STRENGTH:    may
+:TYPE:        methodology
+:DISPOSITION: DROP
+:DECIDED:     2026-07-15
+:END:
+"Delegate via a trackable channel" is pure advice; org-gtd stays non-preachy and
+won't inject channel guidance. *Decision*: DROP entirely (not even a docs note).
+
 *** DROP REC-DEL-04 — two-stage delegation state                        :may:delegate:
 :PROPERTIES:
 :REC_ID:      REC-DEL-04
