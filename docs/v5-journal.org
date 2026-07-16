@@ -106,7 +106,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-CLA-11= → *DROP* (exits already available for every item via organize; see Clarify)
 *** Projects
 - [X] =REC-PRJ-09= → *DROP* (digital = already separated by state/query; see Projects)
-- [ ] =REC-PRJ-12= /Partial/ — project spawning a recurring Habit on completion
+- [X] =REC-PRJ-12= → *DEFER* (fold habit-spawn into UI-05; DAG-templates gap → yak …-vj3y; see Projects)
 *** Next Actions
 - [ ] =REC-NXT-04= /Via-config/ — optional informal "if I have time" list
 *** Delegate
@@ -323,6 +323,29 @@ Not a standalone mechanical lint (org-gtd stays non-preachy). Note the verb-firs
 theme also touches PRJ-10 and UI-07.
 
 ** Projects
+*** DEFER REC-PRJ-12 — project spawning a recurring Habit on completion :may:projects:
+:PROPERTIES:
+:REC_ID:      REC-PRJ-12
+:STATUS:      Partial → fold habit-spawn into UI-05
+:STRENGTH:    may
+:TYPE:        tool
+:DISPOSITION: DEFER → fold into UI-05; surfaced a DAG-templates gap (yak)
+:DECIDED:     2026-07-15
+:END:
+Habits are first-class; the missing piece is an automated project→habit flow.
+
+*Decision*: DEFER → fold the *habit-spawn* case into the [[*BUILD-V5 REC-UI-05 — mark-done closure prompt ("what's next?")][UI-05 closure prompt]]
+as a "make this recurring (spawn a habit)" branch, built on org-habit-ng
+(TIC-02). No standalone feature.
+
+*Surfaced gap* (separate, tracked): the "spawn a *templated project*" case runs
+into =org-gtd-clarify-project-templates= (=org-gtd-clarify.el:48=), which only
+produces *sequential* projects — it can't encode/instantiate *DAG* projects
+(parallel + blockers). Real definition + implementation work: a template format
+capturing dependencies + blocker wiring on insert. Tracked as yak
+=project-templates-should-handle-dag-projects-...-vj3y=; relates to
+[[*BUILD-V5 REC-PRJ-04 — subproject rollup (+ parallel/sequential)][REC-PRJ-04]].
+
 *** DROP REC-PRJ-09 — per-project Active vs Archive compartments        :may:projects:
 :PROPERTIES:
 :REC_ID:      REC-PRJ-09
