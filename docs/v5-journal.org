@@ -178,6 +178,29 @@ step integration).
 review's walk-over-headings (projects / missed items), and the =may= items
 REC-X-15 (completeness walk) and REC-CAP-09 (themed sweep) if built.
 
+* Adapters & integrations
+:PROPERTIES:
+:VISIBILITY: children
+:END:
+
+Cross-cutting *integration* directions — org-gtd stays a lean GTD core and talks
+to specialist tools through thin adapters rather than bundling their stores.
+None of these is a corpus REC item; they're the *deferral targets* many journal
+decisions point at. Gathered here so the whole adapter surface is reviewable as
+one coherent group. Each is tracked as a yak; design/scope decided per adapter.
+
+| Direction | Principle | Fed by | Yak |
+|-----------+-----------+--------+-----|
+| *Reference / PKM adapter* (denote / org-roam / org-brain) | define the GTD→PKM *action surface*; leave storage/index/browse to the PKM | KNO-02/04/05/06 | =…-c5ql= |
+| *Contacts adapter* (bbdb / ebdb / org-contacts) | contact *resolution/completion*; org-gtd keeps =DELEGATED_TO= + per-person lists, not a contact store | AGE-01, AGE-02 | =…-xot4= |
+| *LLM clarify-assist* (opt-in) | two modes — batch "review items for quality" + live "help clarify this item"; semantic work, off by default | CLA-06, CLA-10, PRJ-10, UI-07 | =…-d009= |
+| *LLM horizon-definition* (opt-in) | help articulate horizons iteratively (good-enough → refine); don't intimidate newcomers | split from CAP-06 | =…-voqa= |
+| *org-habit-ng* (recurrence engine) | recurrence for ticklers/habits via the maintainer's library | TIC-02, REF-05/06 seed habits, PRJ-12 | (library) |
+
+*Standing constraints*: reference and contacts are adapter *layers*, not bundled
+stores; LLM features are opt-in and off by default; org-ql / org-super-agenda
+remain rejected as dependencies; no forced org-agenda.
+
 * Decisions
 :PROPERTIES:
 :VISIBILITY: children
