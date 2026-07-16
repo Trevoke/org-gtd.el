@@ -118,8 +118,8 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 *** Checklists
 - [X] =REC-CHK-02= → *DEFER* (docs recipe: checklist + recurring habit + sweep; see Checklists)
 *** Agendas
-- [ ] =REC-AGE-02= /Partial/ — aggregated per-person view + printable brief
-- [ ] =REC-AGE-03= /Not-impl/ — meeting lifecycle object; outcomes to inbox
+- [X] =REC-AGE-02= → *DEFER* (docs/contacts-adapter, with AGE-01; see Agendas)
+- [X] =REC-AGE-03= → *DROP* (a process, not a tool gap; docs mention — existing capture handles it; see Agendas)
 *** Reflect
 - [ ] =REC-REF-10= /Partial/ — optional annual / year-end stock-taking (V-25)
 *** Engage
@@ -947,6 +947,34 @@ org-edna deps, archive/restore, stuck detection, and check-in behaviour.
 Not a one-function add. (Same design-first class as [[*BUILD-V5 REC-PRJ-04 — subproject rollup (+ parallel/sequential)][REC-PRJ-04]] rollup.)
 
 ** Agendas
+*** DEFER REC-AGE-02 — aggregated per-person view + printable brief     :may:agendas:
+:PROPERTIES:
+:REC_ID: REC-AGE-02
+:STATUS: Partial → docs / contacts-adapter
+:STRENGTH: may
+:DISPOSITION: DEFER (with AGE-01)
+:DECIDED: 2026-07-15
+:END:
+The aggregation layer on AGE-01 (delegated-to, owed-by-me, talk-to, per-person
+brief) pulls toward contact-centric features that belong to the future contacts
+*resolution adapter*. *Decision*: DEFER — docs with AGE-01; anything richer is
+adapter territory.
+
+*** DROP REC-AGE-03 — meeting lifecycle object; outcomes to inbox       :may:agendas:
+:PROPERTIES:
+:REC_ID: REC-AGE-03
+:STATUS: Not-implemented → dropped (process, not a tool)
+:STRENGTH: may
+:DISPOSITION: DROP + docs mention
+:DECIDED: 2026-07-15
+:END:
+A first-class meeting *object* would force a new =meeting= type / resurrect
+=define-type= (dropped for leanness). But the real point is that harvesting
+meeting outcomes is a *process the user runs* — and the tools already exist: the
+capture window handles multiple items at a time. *Decision*: DROP the object;
+mention in docs that after a meeting you capture outcomes with normal capture
+(multi-item). No new type.
+
 *** DEFER REC-AGE-01 — per-person / per-meeting "talk-to" lists         :should:agendas:
 :PROPERTIES:
 :REC_ID:      REC-AGE-01
