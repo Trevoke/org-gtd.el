@@ -128,7 +128,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-HOR-06= → *DEFER* (docs, with HOR-05; see Horizons)
 - [X] =REC-HOR-07= → *DROP* (horizons.org already is the overview; see Horizons)
 *** UI
-- [ ] =REC-UI-01= /Via-config/ — dashboard home view (lists + calendar)
+- [X] =REC-UI-01= → *TODO* (maybe a better default engage view; yak …-bkgy; see UI / Views)
 - [ ] =REC-UI-03= /Partial/ — methodology-teaching coaching dialogs
 - [ ] =REC-UI-06= /Partial/ — exactly-one-date semantics per action
 - [ ] =REC-UI-07= /Not-impl/ — verb-first action entry and routing
@@ -1098,6 +1098,22 @@ Landed on =develop= (former PR #294). By-name, per-workflow checklists
 (=org-gtd-checklist.el=). Rejected corpus extras (CHECKLIST_KIND, edna RESET,
 defcustom store, etc.) are recorded in the design doc §8 — do not resurrect.
 ** UI / Views
+*** TODO REC-UI-01 — dashboard home view → maybe a better default engage view :may:ui:
+:PROPERTIES:
+:REC_ID:      REC-UI-01
+:STATUS:      Via-config → TODO (explore better default engage)
+:STRENGTH:    may
+:TYPE:        tool
+:DISPOSITION: TODO — reframed as improving the default engage view
+:DECIDED:     2026-07-15
+:END:
+A "dashboard home" is composable today (multi-block views), and engage is already
+the closest thing to a home. Kept *separate* from the command-center rework
+(that's [[*BUILD-V5 REC-UI-02 — proactive integrity flags (command-center counts)][UI-02]]). Reframed: rather than a separate dashboard, explore making the
+*shipped default engage view* more of an at-a-glance home (lists + calendar) —
+without over-configuring for unknown user contexts (per the ENG-02 lesson).
+*Decision*: TODO — yak =explore-a-better-default-engage-view-...-bkgy=.
+
 *** BUILD-V5 REC-UI-02 — proactive integrity flags (command-center counts) :should:ui:
 :PROPERTIES:
 :REC_ID:      REC-UI-02
@@ -1117,12 +1133,12 @@ projects" until you look.
 the top. Non-intrusive (only when you're already in org-gtd) — no nag / no
 mode-line badge / no startup warning (org-gtd stays non-preachy).
 
-*Larger aspiration* (weigh at [[*REC-UI-01]]): rework the command center toward a
-*dashboard-style navigation pane*. Reference:
-https://github.com/aravindps/org-gtd (see
+*Larger aspiration — the command-center rework* (kept separate from UI-01):
+rework =org-gtd-command-center= into a *dashboard-style navigation pane*.
+Reference: https://github.com/aravindps/org-gtd (see
 =screenshots/themes-card_files/Navigation Pane.png=). The count annotations are
-the first step; the full dashboard rework is a bigger UX design decided together
-with UI-01 (dashboard home view).
+the concrete first step; the full dashboard rework is a bigger UX design tracked
+as yak =command-center-rework-...-ma8z=.
 
 *** BUILD-V5 REC-UI-04 — consent-based migrate overdue calendar → next-action :should:ui:
 :PROPERTIES:
