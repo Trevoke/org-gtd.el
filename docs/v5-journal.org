@@ -105,7 +105,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-CLA-09= → *DROP* (docs note — 2-min is a guideline, no enforced cutoff; see Clarify)
 - [X] =REC-CLA-11= → *DROP* (exits already available for every item via organize; see Clarify)
 *** Projects
-- [ ] =REC-PRJ-09= /Via-config/ — per-project Active vs Archive compartments
+- [X] =REC-PRJ-09= → *DROP* (digital = already separated by state/query; see Projects)
 - [ ] =REC-PRJ-12= /Partial/ — project spawning a recurring Habit on completion
 *** Next Actions
 - [ ] =REC-NXT-04= /Via-config/ — optional informal "if I have time" list
@@ -323,6 +323,19 @@ Not a standalone mechanical lint (org-gtd stays non-preachy). Note the verb-firs
 theme also touches PRJ-10 and UI-07.
 
 ** Projects
+*** DROP REC-PRJ-09 — per-project Active vs Archive compartments        :may:projects:
+:PROPERTIES:
+:REC_ID:      REC-PRJ-09
+:STATUS:      Via-config → dropped
+:STRENGTH:    may
+:TYPE:        tool
+:DISPOSITION: DROP
+:DECIDED:     2026-07-15
+:END:
+The physical "active vs archive folder" compartment is moot digitally —
+everything is already separated by state and query (active items under the
+project, done/canceled archived via =org-gtd-archive=). *Decision*: DROP.
+
 *** BUILD-V5 REC-PRJ-04 — subproject rollup (+ parallel/sequential)    :should:projects:
 :PROPERTIES:
 :REC_ID:      REC-PRJ-04
