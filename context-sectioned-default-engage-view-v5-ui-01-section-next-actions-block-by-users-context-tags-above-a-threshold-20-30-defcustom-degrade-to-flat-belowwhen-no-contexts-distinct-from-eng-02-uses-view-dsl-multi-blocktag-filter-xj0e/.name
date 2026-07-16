@@ -1,0 +1,1 @@
+Context-sectioned default engage view (v5, UI-01): section next-actions block by user's context tags above a threshold (~20-30, defcustom); degrade to flat below/when no contexts. Distinct from ENG-02. Uses view DSL multi-block+tag filter
