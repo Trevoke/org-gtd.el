@@ -92,7 +92,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 *** UI
 - [X] =REC-UI-02= → *BUILD-V5* (command-center count annotations; dashboard-rework aspiration → UI-01; see UI / Views)
 - [X] =REC-UI-04= → *BUILD-V5* (walk missed calendar → migrate; rides the generalized walk engine; see UI / Views)
-- [ ] =REC-UI-05= /Partial/ — mark-done closure prompt ("what's next?") — *MUST cover: all-tasks-done ≠ complete; an under-defined project needs "add more actions?" not silent archive (PRJ-08 spillover)*
+- [X] =REC-UI-05= → *BUILD-V5* (chain-end closure prompt; covers under-defined project / PRJ-08 spillover; see UI / Views)
 *** Cross-cutting
 - [ ] =REC-X-10= /Via-config/ — onboarding / migration scaffolding (V-12)
 - [ ] =REC-X-14= /Via-config/ — system available anywhere / mobile story (V-18/V-20)
@@ -884,6 +884,28 @@ migrate it into a next action — consent-only, no auto-action, no forced agenda
 (see [[*BUILD-V5 (foundational) — generalize the item-walk engine][Foundations]]): walk the missed calendar items one at a time with a
 "retype to next-action" action (reuses reactivate/retype infra in
 =org-gtd-reactivate.el=). Gated on the walk-engine generalization.
+
+*** BUILD-V5 REC-UI-05 — mark-done closure prompt ("what's next?")     :should:ui:
+:PROPERTIES:
+:REC_ID:      REC-UI-05
+:STATUS:      Partial → building chain-end closure prompt
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: BUILD-V5 (also fixes the under-defined-project gap, PRJ-08 spillover)
+:UX_DOC:      (none)
+:DECIDED:     2026-07-15
+:END:
+Today =org-gtd-projects--edna-update-project-after-task-done= (=org-gtd-projects.el:1417=)
+advances successors on task-done, but when the chain runs out the project *sits
+silent* until a stuck-view catches it. That silent moment is the PRJ-08 concern:
+all-tasks-done reads as complete, but the project may be merely *under-defined*.
+
+*Decision*: BUILD-V5 — a *chain-end closure prompt*: when the last action
+completes with nothing queued, ask *is this project complete?* (archive/close)
+or *does it need more actions?* (under-defined → add next action(s) / send to
+stuck). Hooks the existing task-done edna action. Delivers UI-05 *and* the
+under-defined-project fix. Design note: only at genuine chain-end; respect a
+"don't ask" path (non-naggy).
 
 
 
