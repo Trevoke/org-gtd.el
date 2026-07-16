@@ -136,7 +136,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-UI-09= → *DROP* (docs note — DSL filters + org-native search cover it; see UI / Views)
 - [X] =REC-UI-10= → *DROP* (covered by delegate flow + UI-05; email/meeting out of scope V-16; see UI / Views)
 - [X] =REC-UI-11= → *DROP* (infrastructure satisfied by org-edna; no user-facing rules engine; see UI / Views)
-- [ ] =REC-UI-12= /Via-config/ — print/export first-class
+- [X] =REC-UI-12= → *DROP* (docs howto surfacing org export + graph write + org-agenda-write; see UI / Views)
 - [ ] =REC-UI-13= /Via-config/ — retrospective calendar archive/log (satisfied)
 - [ ] =REC-UI-14= /Via-config/ — gateway to external apps while processing
 - [ ] =REC-UI-15= /Via-config/ — alarms/timers incl. optional 2-minute timer
@@ -1159,6 +1159,19 @@ Reference: https://github.com/aravindps/org-gtd (see
 =screenshots/themes-card_files/Navigation Pane.png=). The count annotations are
 the concrete first step; the full dashboard rework is a bigger UX design tracked
 as yak =command-center-rework-...-ma8z=.
+
+*** DROP REC-UI-12 — print/export first-class                           :may:ui:
+:PROPERTIES:
+:REC_ID: REC-UI-12
+:STATUS: Via-config → dropped (docs)
+:STRENGTH: may
+:DISPOSITION: DROP → docs howto
+:DECIDED: 2026-07-15
+:END:
+Well-covered: org export power on the plain-org files, the graph suite
+(SVG/DOT/ASCII write), and =org-agenda-write= (txt/html/ps/pdf). Person briefs →
+AGE-02 (deferred). *Decision*: DROP; write a howto surfacing these
+already-existing print/export tools.
 
 *** DROP REC-UI-11 — rules-based automation                             :may:ui:
 :PROPERTIES:
