@@ -164,7 +164,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-HOR-06= → *DEFER* (docs, with HOR-05; see Horizons)
 - [X] =REC-HOR-07= → *DROP* (horizons.org already is the overview; see Horizons)
 *** UI
-- [X] =REC-UI-01= → *TODO* (maybe a better default engage view; yak …-bkgy; see UI / Views)
+- [X] =REC-UI-01= → *BUILD-V5* (context-sectioned default engage view; yak …-bkgy; see UI / Views)
 - [X] =REC-UI-03= → *DROP* (existing teaching + docs; coach would be naggy / LLM territory; see UI / Views)
 - [X] =REC-UI-06= → *DROP* (SCHEDULED/DEADLINE are distinct valid org properties — no "soup"; see UI / Views)
 - [X] =REC-UI-07= → *DROP* (verb-first docs + LLM-assist [batch quality-review + live clarify help]; see UI / Views)
@@ -1262,21 +1262,52 @@ Landed on =develop= (former PR #294). By-name, per-workflow checklists
 (=org-gtd-checklist.el=). Rejected corpus extras (CHECKLIST_KIND, edna RESET,
 defcustom store, etc.) are recorded in the design doc §8 — do not resurrect.
 ** UI / Views
-*** TODO REC-UI-01 — dashboard home view → maybe a better default engage view :may:ui:
+*** BUILD-V5 REC-UI-01 — context-sectioned default engage view          :may:ui:
 :PROPERTIES:
 :REC_ID:      REC-UI-01
-:STATUS:      Via-config → TODO (explore better default engage)
+:STATUS:      Via-config → BUILD-V5 (context-sectioned next actions)
 :STRENGTH:    may
 :TYPE:        tool
-:DISPOSITION: TODO — reframed as improving the default engage view
-:DECIDED:     2026-07-15
+:DISPOSITION: BUILD-V5 — section the engage next-actions block by context
+:UX_DOC:      (none)
+:DECIDED:     2026-07-16
 :END:
-A "dashboard home" is composable today (multi-block views), and engage is already
-the closest thing to a home. Kept *separate* from the command-center rework
-(that's [[*BUILD-V5 REC-UI-02 — proactive integrity flags (command-center counts)][UI-02]]). Reframed: rather than a separate dashboard, explore making the
-*shipped default engage view* more of an at-a-glance home (lists + calendar) —
-without over-configuring for unknown user contexts (per the ENG-02 lesson).
-*Decision*: TODO — yak =explore-a-better-default-engage-view-...-bkgy=.
+Kept *separate* from the command-center rework ([[*BUILD-V5 REC-UI-02 — proactive integrity flags (command-center counts)][UI-02]]) on purpose. A
+Sonnet subagent read Allen on how next actions should be *grouped* for engagement
+and on what a system "overview" looks like (GTD ch.2 + Engage ch.; MIAW "Limiting
+Factors", "What to Review When", the horizons synthesis example). Findings:
+
+- The flat "wall of all next actions" is *exactly* the failure mode Allen names
+  (MIAW: overwhelming, hunting for calls "strewn among" errands) — but *conditional
+  on size*: ≤20–30 items a flat list is fine; at the typical 50–150 he says
+  *subdivide by context*.
+- *Context* is the unambiguous *primary* grouping axis (tied to physical
+  possibility — you can't act outside your context; and assigning a context forces
+  a genuine next-physical-action at organize-time). Area-of-focus / person / energy
+  are explicitly *secondary, optional* ("creative context sorting"); priority is
+  deliberately the *last* filter and never a stored sort order.
+- Crucially this is *not* the ENG-02 anti-pattern. Allen doesn't swap the flat
+  list for *one* filtered context — he wants the *full inventory partitioned into
+  visible context-headed sections* ("see your eight calls in one quick glance"
+  while all sections remain visible). Everything stays reachable; it's just chunked.
+- *System overview (Part 2)*: Allen does *not* prescribe a single merged
+  "see-everything" engage surface. The one cross-horizon overview he describes is a
+  *Reflect-phase synthesis document* (periodic, strategic), deliberately kept at a
+  different cadence from daily engagement. So a horizons-overview belongs to
+  *review*, not engage — already covered by the BUILD-V5 horizon-cadence review
+  profiles (REF-05). No new item there.
+
+*Decision* (2026-07-16): BUILD-V5. In the default engage view, replace the single
+flat "All actions ready to be executed" block with a *context-sectioned* rendering:
+group next actions under context-tag headers when the count crosses a threshold
+(~20–30, a defcustom), keyed off *the user's own* context tags (Allen rejects any
+canonical context set), and *degrade gracefully* to the current flat list below the
+threshold or when the user has no context tags. Distinct from ENG-02 (which stays
+"don't force a single context; filter on demand"). The view DSL already supports
+multi-block views + tag filtering, so this is generating context-headed blocks
+dynamically. Exact threshold default, section ordering, and whether an area-of-focus
+secondary axis is offered → settle in a short design/brainstorm. Tracked as yak
+=context-sectioned-default-engage-view-...-xj0e=.
 
 *** BUILD-V5 REC-UI-02 — proactive integrity flags (command-center counts) :should:ui:
 :PROPERTIES:
