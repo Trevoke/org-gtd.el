@@ -138,7 +138,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-UI-11= → *DROP* (infrastructure satisfied by org-edna; no user-facing rules engine; see UI / Views)
 - [X] =REC-UI-12= → *DROP* (docs howto surfacing org export + graph write + org-agenda-write; see UI / Views)
 - [X] =REC-UI-13= → *DROP* (satisfied — datetree + CLOSED + agenda log mode; see UI / Views)
-- [ ] =REC-UI-14= /Via-config/ — gateway to external apps while processing
+- [X] =REC-UI-14= → *DROP* (Emacs/org links are the gateway; nothing GTD-specific; see UI / Views)
 - [ ] =REC-UI-15= /Via-config/ — alarms/timers incl. optional 2-minute timer
 - [ ] =REC-UI-16= /Partial/ — composite rollup views per area/horizon
 - [ ] =REC-UI-17= /Partial/ — project ledger & metadata
@@ -1159,6 +1159,19 @@ Reference: https://github.com/aravindps/org-gtd (see
 =screenshots/themes-card_files/Navigation Pane.png=). The count annotations are
 the concrete first step; the full dashboard rework is a bigger UX design tracked
 as yak =command-center-rework-...-ma8z=.
+
+*** DROP REC-UI-14 — gateway to external apps while processing          :may:ui:
+:PROPERTIES:
+:REC_ID: REC-UI-14
+:STATUS: Via-config → dropped (satisfied)
+:STRENGTH: may
+:DISPOSITION: DROP
+:DECIDED: 2026-07-15
+:END:
+Emacs is the gateway — org links open http/mailto/file/shell/attachments;
+every external tool is a keystroke away. Nothing GTD-specific. *Decision*: DROP.
+(Adapters to *specific* tools are tracked as their own directions — see the
+Adapters & integrations overview.)
 
 *** DROP REC-UI-13 — retrospective calendar archive/log                 :may:ui:
 :PROPERTIES:
