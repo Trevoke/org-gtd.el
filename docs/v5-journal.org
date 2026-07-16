@@ -981,8 +981,10 @@ recurring reminder to purge," which existing habit/tickler infra already covers;
 Allen never has the GTD tool own the purge *action*.
 
 Consequence: KNO-02/04/05/06 all *DROP* as build items (docs notes below). The
-reference *adapter* survives as a real post-v5 direction but *narrowed* to one
-job — make the existing route-to-reference handoff pluggable to a PKM backend
+*one* v5 build item here is emergent, not from the corpus — a user-reported UX
+fix to the *existing* handoff verb ("store as knowledge" is too abrupt); see
+NEW-REFERENCE-HANDOFF-UX below (BUILD-V5). The reference *adapter* survives as a
+real post-v5 direction but *narrowed* to one job — make the existing route-to-reference handoff pluggable to a PKM backend
 (denote / org-roam / org-brain / plain org), preserving the <60s rule and the
 no-project-taxonomy constraint. No PKM-side browse/index/category/template/purge
 commands. Tracked (narrowed) as yak =reference-adapter-define-...-c5ql=; aligns
@@ -998,6 +1000,46 @@ with [[reference-system-adapters]].
 :END:
 Contacts-as-reference-store was adjudicated a non-goal (V-09) and closed —
 contacts stay a future *resolution adapter*, not a bundled store. *Decision*: DROP.
+
+*** BUILD-V5 NEW-REFERENCE-HANDOFF-UX — make "store as knowledge" less abrupt :should:reference:
+:PROPERTIES:
+:REC_ID:      NEW-REFERENCE-HANDOFF-UX
+:STATUS:      Emergent (user report) → BUILD-V5
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: BUILD-V5 — improve the existing route-to-reference verb's UX
+:UX_DOC:      (none)
+:DECIDED:     2026-07-16
+:END:
+*Source*: user field reports — people are surprised/confused that choosing
+"Knowledge to be stored" (=k=) makes the item *disappear*. Current behaviour
+(=org-gtd-types.el= =reference= type): =:disposition done-and-archive=,
+=:state :done=, =:properties nil= — the item is silently marked DONE and archived
+out of the active system, with no prompt, message, or feedback. The mental-model
+gap: users read "store as knowledge" as "keep it somewhere in org-gtd," but it
+actually *exits* GTD into (external) reference.
+
+This is the *one* piece of real v5 code Thread B surfaces, and it's exactly where
+the source research says org-gtd's surface belongs — improving the *existing*
+handoff verb, not adding storage commands.
+
+*Design tension (must respect)*: Allen's <60-second filing rule (see cluster
+note) is the most load-bearing constraint on this verb — mandatory friction at
+file-time turns filers into "stackers." So a blocking confirm-on-every-file cuts
+against the methodology and must not be the *default*.
+
+*Recommended shape* (cheap, no mandatory friction):
+1. *Communicate the exit* for free — make the transient entry and/or a
+   post-archive echo message state plainly that this archives the item *out of*
+   the active GTD system (and suggest filing it in your PKM). Fixes "surprised it
+   went away" at zero friction.
+2. *Optional guard* — an opt-in defcustom (default off) that adds a light "did
+   you file it?" confirmation for users who want the guardrail, without taxing the
+   <60s default path.
+
+*Decision* (2026-07-16): BUILD-V5. Exact surface (label vs. echo vs. help-line vs.
+confirm defcustom) to be settled in a short brainstorm/design; keep the default
+path friction-free. Tracked as a yak.
 
 *** DROP REC-KNO-06 — user-definable reference forms/templates + editor escape :may:reference:
 :PROPERTIES:
