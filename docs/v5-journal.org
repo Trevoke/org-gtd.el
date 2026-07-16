@@ -6,6 +6,42 @@ A working decision log for org-gtd v5. Every recommended-but-not-turnkey
 feature (the 73 gaps from the feature analysis) gets one heading, and we go
 through them *one at a time* to make a clean, coherent decision about each.
 
+* Rollup — all items decided (2026-07-16)
+:PROPERTIES:
+:VISIBILITY: all
+:END:
+
+Tally: *16 BUILD-V5* · *8 TODO* (tracked directions) · *18 DEFER→docs* ·
+*28 DROP* · *DONE* (CHK-01, REF-02, NEW-VIEW-MANAGER, REF-01, REF-08).
+
+*What v5 builds (BUILD-V5), grouped:*
+- *Review-profile family* — stock Recovery (REF-04), horizon-cadence (REF-05),
+  System-Maintenance (REF-06), Annual (REF-10) profiles; time-block the Weekly
+  Review (REF-09); + the emergent *seed-all-review-habits* command.
+- *View DSL completeness* — energy criterion (ENG-03, carrying X-04) and a
+  first-class =sort= key (UI-08).
+- *Capture* — ad-hoc =org-gtd-mind-sweep= (CAP-06, template-agnostic; folds in
+  CAP-09), fuller trigger lists.
+- *Recurrence* — recurring ticklers via org-habit-ng (TIC-02).
+- *Projects/Delegate* (design-gated) — subproject rollup (PRJ-04) and
+  delegate-a-whole-project (DEL-03), each needs its own design.
+- *Command center / projects* — count annotations (UI-02), consent migrate of
+  overdue calendar (UI-04), chain-end closure prompt (UI-05).
+
+*Foundational (build first):* generalize the item-walk engine (from
+=org-gtd-someday-review=) — unlocks UI-04 + guided-review heading walks. See
+[[*Foundations]].
+
+*Tracked directions (TODO):* opt-in LLM clarify-assist (CLA-06/10, PRJ-10, UI-07;
+two modes) · reference/PKM action surface (KNO-02/04/05/06) · unified onboarding
+UX (X-10) · better default engage view (UI-01) · command-center dashboard rework
+(UI-02). Integrations gathered in [[*Adapters & integrations]].
+
+*Everything else* is DEFER→docs (how-tos/tutorials/explanations) or DROP
+(already covered by org-native features, the shipped DSL/builder, or rejected as
+un-GTD / against the lean philosophy). Yaks track the actionable TODO/research
+items.
+
 * How this journal works
 :PROPERTIES:
 :VISIBILITY: all
