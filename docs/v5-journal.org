@@ -103,7 +103,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-CAP-09= → *DEFER* (folded into CAP-06: template-agnostic mind-sweep + "current reality" template; see Capture)
 *** Clarify
 - [X] =REC-CLA-09= → *DROP* (docs note — 2-min is a guideline, no enforced cutoff; see Clarify)
-- [ ] =REC-CLA-11= /Partial/ — three honest exits from a broken agreement
+- [X] =REC-CLA-11= → *DROP* (exits already available for every item via organize; see Clarify)
 *** Projects
 - [ ] =REC-PRJ-09= /Via-config/ — per-project Active vs Archive compartments
 - [ ] =REC-PRJ-12= /Partial/ — project spawning a recurring Habit on completion
@@ -265,6 +265,20 @@ REC-HOR-08 (top-down prioritization) when we reach Horizons.
 =org-gtd-quick-action= enforces no cutoff — the "2 minutes" is only guidance
 wording; nothing to configure. *Decision*: DROP. Docs note: the 2-minute rule
 is a rule of thumb (Allen says 2–5 min); apply your own judgment.
+
+*** DROP REC-CLA-11 — three honest exits from a broken agreement        :may:clarify:
+:PROPERTIES:
+:REC_ID:      REC-CLA-11
+:STATUS:      Partial → dropped (already available)
+:STRENGTH:    may
+:TYPE:        methodology
+:DISPOSITION: DROP
+:DECIDED:     2026-07-15
+:END:
+The "honest exits" (re-clarify/renegotiate, do, drop, defer) are the standard
+=org-gtd-organize= choices already available on *every* item in the system.
+Nothing to add. (Caveat: no "renegotiation" where there was no negotiation — but
+the point stands.) *Decision*: DROP.
 
 *** TODO REC-CLA-06 — extract hidden projects/actions from fuzzy items  :should:clarify:
 :PROPERTIES:
