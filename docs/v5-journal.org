@@ -130,7 +130,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 *** UI
 - [X] =REC-UI-01= → *TODO* (maybe a better default engage view; yak …-bkgy; see UI / Views)
 - [X] =REC-UI-03= → *DROP* (existing teaching + docs; coach would be naggy / LLM territory; see UI / Views)
-- [ ] =REC-UI-06= /Partial/ — exactly-one-date semantics per action
+- [X] =REC-UI-06= → *DROP* (SCHEDULED/DEADLINE are distinct valid org properties — no "soup"; see UI / Views)
 - [ ] =REC-UI-07= /Not-impl/ — verb-first action entry and routing
 - [ ] =REC-UI-08= /Via-config/ — customizable list sorting
 - [ ] =REC-UI-09= /Via-config/ — global multi-key search
@@ -1139,6 +1139,20 @@ Reference: https://github.com/aravindps/org-gtd (see
 =screenshots/themes-card_files/Navigation Pane.png=). The count annotations are
 the concrete first step; the full dashboard rework is a bigger UX design tracked
 as yak =command-center-rework-...-ma8z=.
+
+*** DROP REC-UI-06 — exactly-one-date semantics per action              :may:ui:
+:PROPERTIES:
+:REC_ID: REC-UI-06
+:STATUS: Partial → dropped (premise rejected)
+:STRENGTH: may
+:DISPOSITION: DROP entirely
+:DECIDED: 2026-07-15
+:END:
+Premise rejected: =SCHEDULED= ("by when do you start working on this") and
+=DEADLINE= ("by when must this be done") are *distinct, valid* org properties —
+not "date soup." No anti-soup lint, no separate "start-by" slot (SCHEDULED already
+is that). org-gtd's single =ORG_GTD_TIMESTAMP= plus org's native SCHEDULED/DEADLINE
+already express everything. *Decision*: DROP entirely.
 
 *** DROP REC-UI-03 — methodology-teaching coaching dialogs              :may:ui:
 :PROPERTIES:
