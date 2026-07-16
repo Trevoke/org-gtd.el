@@ -137,7 +137,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-UI-10= → *DROP* (covered by delegate flow + UI-05; email/meeting out of scope V-16; see UI / Views)
 - [X] =REC-UI-11= → *DROP* (infrastructure satisfied by org-edna; no user-facing rules engine; see UI / Views)
 - [X] =REC-UI-12= → *DROP* (docs howto surfacing org export + graph write + org-agenda-write; see UI / Views)
-- [ ] =REC-UI-13= /Via-config/ — retrospective calendar archive/log (satisfied)
+- [X] =REC-UI-13= → *DROP* (satisfied — datetree + CLOSED + agenda log mode; see UI / Views)
 - [ ] =REC-UI-14= /Via-config/ — gateway to external apps while processing
 - [ ] =REC-UI-15= /Via-config/ — alarms/timers incl. optional 2-minute timer
 - [ ] =REC-UI-16= /Partial/ — composite rollup views per area/horizon
@@ -1159,6 +1159,17 @@ Reference: https://github.com/aravindps/org-gtd (see
 =screenshots/themes-card_files/Navigation Pane.png=). The count annotations are
 the concrete first step; the full dashboard rework is a bigger UX design tracked
 as yak =command-center-rework-...-ma8z=.
+
+*** DROP REC-UI-13 — retrospective calendar archive/log                 :may:ui:
+:PROPERTIES:
+:REC_ID: REC-UI-13
+:STATUS: Via-config → dropped (satisfied)
+:STRENGTH: may
+:DISPOSITION: DROP
+:DECIDED: 2026-07-15
+:END:
+Satisfied: yearly datetree archive + =CLOSED= timestamps + agenda log mode
+("what did I finish"). *Decision*: DROP (one-line docs pointer to log mode at most).
 
 *** DROP REC-UI-12 — print/export first-class                           :may:ui:
 :PROPERTIES:
