@@ -113,8 +113,8 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-DEL-04= → *DROP* (feature unneeded; research yak on delegation-UX impact …-1u47; see Delegate)
 - [X] =REC-DEL-05= → *DROP* (entirely; see Delegate)
 *** Reference
-- [ ] =REC-KNO-03= /Not-impl/ — contacts as pure reference (V-09, non-goal — closed)
-- [ ] =REC-KNO-06= /Not-impl/ — user-definable reference forms/templates + editor escape
+- [X] =REC-KNO-03= → *DROP* (closed non-goal V-09; see Reference)
+- [X] =REC-KNO-06= → *TODO* (fold into reference-adapter yak …-c5ql; likely PKM; see Reference)
 *** Checklists
 - [ ] =REC-CHK-02= /Via-config/ — recurring reflection-prompt lists at intervals
 *** Agendas
@@ -826,6 +826,30 @@ org-roam / org-brain), not a bundled org-gtd store. But rather than DEFER these
 vaguely, they're live TODOs to define the *action surface*: what GTD→PKM actions
 org-gtd should own vs. what belongs to the PKM tool. All three tracked as yak
 =reference-adapter-define-...-c5ql=.
+
+*** DROP REC-KNO-03 — contacts as pure reference                        :may:reference:
+:PROPERTIES:
+:REC_ID: REC-KNO-03
+:STATUS: Not-implemented → dropped (closed non-goal)
+:STRENGTH: may
+:DISPOSITION: DROP (V-09, closed non-goal)
+:DECIDED: 2026-07-15
+:END:
+Contacts-as-reference-store was adjudicated a non-goal (V-09) and closed —
+contacts stay a future *resolution adapter*, not a bundled store. *Decision*: DROP.
+
+*** TODO REC-KNO-06 — user-definable reference forms/templates + editor escape :may:reference:
+:PROPERTIES:
+:REC_ID: REC-KNO-06
+:STATUS: Not-implemented → TODO (likely PKM territory)
+:STRENGTH: may
+:DISPOSITION: TODO — fold into reference-adapter yak …-c5ql
+:DECIDED: 2026-07-15
+:END:
+Reference-entry templates + external-editor hatch are core PKM-tool territory.
+*Decision*: TODO — folded into the reference-adapter action-surface investigation
+(yak …-c5ql): decide whether reference templates are org-gtd's job or the PKM's
+(likely the latter).
 
 *** TODO REC-KNO-02 — <60s filing; A–Z index; yearly purge              :should:reference:
 :PROPERTIES:
