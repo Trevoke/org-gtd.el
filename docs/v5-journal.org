@@ -146,7 +146,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 *** Cross-cutting
 - [X] =REC-X-04= → *BUILD-V5* (resolved with ENG-03 — the energy attribute; see Cross-cutting)
 - [ ] =REC-X-09= /Partial/ — named project sub-lists, event-date sorted (V-13 — closed)
-- [ ] =REC-X-15= /Not-impl/ — ≥50-actions completeness heuristic diagnostic
+- [X] =REC-X-15= → *DROP* (declined; informational-only heuristic not worth it; see Cross-cutting)
 
 * Foundations
 :PROPERTIES:
@@ -1470,6 +1470,19 @@ meta-project) into one welcoming onboarding.
 *Decision*: TODO — a real UX investment area, tracked as yak
 =unified-friendlier-new-user-experience-...-x-10-vm2c=. Migration-from-other-tools
 stays out of scope (too varied). Scope/timing decided in its own design.
+
+*** DROP REC-X-15 — ≥50-actions completeness heuristic diagnostic       :may:cross:
+:PROPERTIES:
+:REC_ID: REC-X-15
+:STATUS: Not-implemented → dropped
+:STRENGTH: may
+:DISPOSITION: DROP
+:DECIDED: 2026-07-15
+:END:
+An informational "next actions: N / ≥50" readout against Allen's rough
+completeness heuristic. Declined — the ≥50 threshold is arbitrary and the readout
+adds little; not worth building even folded into the command-center counts.
+*Decision*: DROP.
 
 *** BUILD-V5 REC-X-04 — optional energy-level attribute              :may:cross:
 :PROPERTIES:
