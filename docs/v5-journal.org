@@ -145,7 +145,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-UI-18= → *DROP* (docs note — org-agenda spans + DSL calendar block; cosmetic gap; see UI / Views)
 *** Cross-cutting
 - [X] =REC-X-04= → *BUILD-V5* (resolved with ENG-03 — the energy attribute; see Cross-cutting)
-- [ ] =REC-X-09= /Partial/ — named project sub-lists, event-date sorted (V-13 — closed)
+- [X] =REC-X-09= → *DROP* (docs — group by tag or area-of-focus + sort key; V-13 closed; see Cross-cutting)
 - [X] =REC-X-15= → *DROP* (declined; informational-only heuristic not worth it; see Cross-cutting)
 
 * Foundations
@@ -1470,6 +1470,19 @@ meta-project) into one welcoming onboarding.
 *Decision*: TODO — a real UX investment area, tracked as yak
 =unified-friendlier-new-user-experience-...-x-10-vm2c=. Migration-from-other-tools
 stays out of scope (too varied). Scope/timing decided in its own design.
+
+*** DROP REC-X-09 — named project sub-lists, event-date sorted          :may:cross:
+:PROPERTIES:
+:REC_ID: REC-X-09
+:STATUS: Partial → dropped (docs example)
+:STRENGTH: may
+:DISPOSITION: DROP → docs (V-13 closed)
+:DECIDED: 2026-07-15
+:END:
+Thematic project sub-lists ("Conference prep"), optionally event-date sorted.
+Fully composable: group by *tag* or *area-of-focus* (DSL), order via the UI-08
+=sort= key + an optional event-date property. Adjudicated V-13 (docs example).
+*Decision*: DROP → docs how-to showing both tag and area-of-focus grouping + sort.
 
 *** DROP REC-X-15 — ≥50-actions completeness heuristic diagnostic       :may:cross:
 :PROPERTIES:
