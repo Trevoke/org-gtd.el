@@ -142,7 +142,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-UI-15= → *DROP* (docs note — point to org-timer / org-pomodoro / MELPA options; see UI / Views)
 - [X] =REC-UI-16= → *DROP* (per-area rollup exists; per-horizon ties to dropped HOR-07; builder-composable; see UI / Views)
 - [X] =REC-UI-17= → *DROP* (sorting→UI-08, ledger→builder, stakeholders→AGE lists; creation-advice side window → PRJ-06 yak; see UI / Views)
-- [ ] =REC-UI-18= /Via-config/ — layered calendar (month/week/day)
+- [X] =REC-UI-18= → *DROP* (docs note — org-agenda spans + DSL calendar block; cosmetic gap; see UI / Views)
 *** Cross-cutting
 - [X] =REC-X-04= → *BUILD-V5* (resolved with ENG-03 — the energy attribute; see Cross-cutting)
 - [ ] =REC-X-09= /Partial/ — named project sub-lists, event-date sorted (V-13 — closed)
@@ -1203,6 +1203,18 @@ via-config org property. *Decision*: DROP.
 gather" is a nice project-clarification *side-window* affordance — folded into
 the PRJ-06 clarify-UI / side-window review yak
 =ui-review-of-clarify-side-windows-...-prj-06-y5kl=.
+
+*** DROP REC-UI-18 — layered calendar (month/week/day)                  :may:ui:
+:PROPERTIES:
+:REC_ID: REC-UI-18
+:STATUS: Via-config → dropped (docs)
+:STRENGTH: may
+:DISPOSITION: DROP → docs note
+:DECIDED: 2026-07-15
+:END:
+org-agenda already does day/week/month spans + time grid; the DSL has a
+=calendar= block. Only missing bit is a cosmetic week location-strip. *Decision*:
+DROP; docs note on switching agenda spans.
 
 *** DROP REC-UI-16 — composite rollup views per area/horizon            :may:ui:
 :PROPERTIES:
