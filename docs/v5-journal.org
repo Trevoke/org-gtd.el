@@ -139,7 +139,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-UI-12= → *DROP* (docs howto surfacing org export + graph write + org-agenda-write; see UI / Views)
 - [X] =REC-UI-13= → *DROP* (satisfied — datetree + CLOSED + agenda log mode; see UI / Views)
 - [X] =REC-UI-14= → *DROP* (Emacs/org links are the gateway; nothing GTD-specific; see UI / Views)
-- [ ] =REC-UI-15= /Via-config/ — alarms/timers incl. optional 2-minute timer
+- [X] =REC-UI-15= → *DROP* (docs note — point to org-timer / org-pomodoro / MELPA options; see UI / Views)
 - [ ] =REC-UI-16= /Partial/ — composite rollup views per area/horizon
 - [ ] =REC-UI-17= /Partial/ — project ledger & metadata
 - [ ] =REC-UI-18= /Via-config/ — layered calendar (month/week/day)
@@ -1182,6 +1182,18 @@ Reference: https://github.com/aravindps/org-gtd (see
 =screenshots/themes-card_files/Navigation Pane.png=). The count annotations are
 the concrete first step; the full dashboard rework is a bigger UX design tracked
 as yak =command-center-rework-...-ma8z=.
+
+*** DROP REC-UI-15 — alarms/timers incl. optional 2-minute timer        :may:ui:
+:PROPERTIES:
+:REC_ID: REC-UI-15
+:STATUS: Via-config → dropped (docs)
+:STRENGTH: may
+:DISPOSITION: DROP → docs note
+:DECIDED: 2026-07-15
+:END:
+A wired 2-minute timer is a gimmick (the 2-min rule is a rule of thumb — cf.
+CLA-09). Timers already exist. *Decision*: DROP; docs note pointing at =org-timer=,
+=org-pomodoro=, and other MELPA options for anyone who wants timing.
 
 *** DROP REC-UI-14 — gateway to external apps while processing          :may:ui:
 :PROPERTIES:
