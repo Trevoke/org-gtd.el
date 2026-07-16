@@ -116,7 +116,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-KNO-03= → *DROP* (closed non-goal V-09; see Reference)
 - [X] =REC-KNO-06= → *TODO* (fold into reference-adapter yak …-c5ql; likely PKM; see Reference)
 *** Checklists
-- [ ] =REC-CHK-02= /Via-config/ — recurring reflection-prompt lists at intervals
+- [X] =REC-CHK-02= → *DEFER* (docs recipe: checklist + recurring habit + sweep; see Checklists)
 *** Agendas
 - [ ] =REC-AGE-02= /Partial/ — aggregated per-person view + printable brief
 - [ ] =REC-AGE-03= /Not-impl/ — meeting lifecycle object; outcomes to inbox
@@ -995,6 +995,18 @@ Decisions, split:
   recurring reminders (annual/periodic ticklers).
 
 ** Checklists
+*** DEFER REC-CHK-02 — recurring reflection-prompt lists at intervals   :may:checklist:
+:PROPERTIES:
+:REC_ID: REC-CHK-02
+:STATUS: Via-config → docs recipe
+:STRENGTH: may
+:DISPOSITION: DEFER → docs (composed)
+:DECIDED: 2026-07-15
+:END:
+Fully composable: a checklist template (CHK-01) + a recurring habit (TIC-02 /
+org-habit-ng) reminding you to run the template-agnostic sweep (CAP-06).
+*Decision*: DEFER → docs — a recipe composing those three; no separate feature.
+
 *** DONE REC-CHK-01 — reusable checklists                          :checklist:
 :PROPERTIES:
 :REC_ID:      REC-CHK-01
