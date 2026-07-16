@@ -131,7 +131,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-UI-01= → *TODO* (maybe a better default engage view; yak …-bkgy; see UI / Views)
 - [X] =REC-UI-03= → *DROP* (existing teaching + docs; coach would be naggy / LLM territory; see UI / Views)
 - [X] =REC-UI-06= → *DROP* (SCHEDULED/DEADLINE are distinct valid org properties — no "soup"; see UI / Views)
-- [ ] =REC-UI-07= /Not-impl/ — verb-first action entry and routing
+- [X] =REC-UI-07= → *DROP* (verb-first docs + LLM-assist [batch quality-review + live clarify help]; see UI / Views)
 - [ ] =REC-UI-08= /Via-config/ — customizable list sorting
 - [ ] =REC-UI-09= /Via-config/ — global multi-key search
 - [ ] =REC-UI-10= /Partial/ — closure loops at every exit
@@ -1159,6 +1159,26 @@ Reference: https://github.com/aravindps/org-gtd (see
 =screenshots/themes-card_files/Navigation Pane.png=). The count annotations are
 the concrete first step; the full dashboard rework is a bigger UX design tracked
 as yak =command-center-rework-...-ma8z=.
+
+*** DROP REC-UI-07 — verb-first action entry and routing                :may:ui:
+:PROPERTIES:
+:REC_ID: REC-UI-07
+:STATUS: Not-implemented → dropped (fold into verb-first docs + LLM-assist)
+:STRENGTH: may
+:DISPOSITION: DROP → verb-first docs + LLM-assist
+:DECIDED: 2026-07-15
+:END:
+Third leg of the verb-first theme (PRJ-10, CLA-10). A forced verb *menu* is naggy;
+verb→context *routing* is underspecified (no reliable verb→context map; contexts
+are user-defined). *Decision*: DROP the menu/routing. Fold into: (a) docs — write
+next actions verb-first; (b) the opt-in LLM clarify-assist.
+
+*LLM-assist direction now has two modes* (maintainer): a batch **"review your
+items with the LLM for quality"** command (verb-first, concreteness, hidden
+projects — across existing items), *and* an optional **live "help me clarify
+this item"** assist during clarification. Both live under the LLM clarify-assist
+yak =...-d009=; the verb-first theme (CLA-10 / PRJ-10 / UI-07) feeds the quality
+dimension.
 
 *** DROP REC-UI-06 — exactly-one-date semantics per action              :may:ui:
 :PROPERTIES:
