@@ -66,7 +66,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-PRJ-06= → *DEFER* (implemented enough via clarify side windows; UI-review yak; see Projects)
 - [X] =REC-PRJ-07= → *DROP* (planning checklist doesn't fit the flow; docs note + side-window yak; see Projects)
 - [X] =REC-PRJ-08= → *DROP* (no structural distinction needed; docs note; see Projects)
-- [ ] =REC-PRJ-10= /Not-impl/ — verb-starter checklist for naming projects
+- [X] =REC-PRJ-10= → *DROP* (checklist; docs on outcome-naming; semantic help → LLM-assist yak …-d009; see Projects)
 *** Clarify
 - [X] =REC-CLA-06= → *TODO* (opt-in LLM semantic clarify assist; yak …-d009; see Clarify)
 - [X] =REC-CLA-10= → *TODO* (same opt-in LLM clarify assist; yak …-d009; see Clarify)
@@ -383,6 +383,26 @@ Two halves, decided separately:
   state machine, stuck detection, graph, agenda) and org-gtd has historically
   kept projects flat — so it needs its *own dedicated design/brainstorm* before
   implementation, not a quick add.
+
+*** DROP REC-PRJ-10 — verb-starter checklist for naming projects        :should:projects:
+:PROPERTIES:
+:REC_ID:      REC-PRJ-10
+:STATUS:      Not-implemented → dropped (checklist)
+:STRENGTH:    should
+:TYPE:        tool
+:DISPOSITION: DROP checklist + docs (outcome-naming) + LLM-assist (semantic)
+:UX_DOC:      REC-PRJ-10.md
+:DECIDED:     2026-07-15
+:END:
+Same two lessons as PRJ-07 and CLA-10: (1) a checklist doesn't fit the naming
+workflow (you type the project name/tasks as outline headings; a verb checklist
+is a disconnected prompt buffer); (2) "is this a strong, concrete, outcome-forward
+name?" is *semantic* — same judgment as [[*TODO REC-CLA-10 — concreteness lint (keep items from degrading to "stuff")][CLA-10]]. Projects are *outcomes*, so
+"verb-first" here = outcome-oriented naming.
+
+*Decision*: DROP the checklist. (a) Docs/teaching: name projects as outcomes
+(short guideline + examples). (b) Any semantic naming help folds into the
+opt-in LLM clarify-assist yak =...-d009= (it can suggest a stronger outcome name).
 
 *** DEFER REC-PRJ-06 — Natural Planning Model scaffold                  :should:projects:
 :PROPERTIES:
