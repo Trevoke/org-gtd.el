@@ -121,7 +121,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-AGE-02= → *DEFER* (docs/contacts-adapter, with AGE-01; see Agendas)
 - [X] =REC-AGE-03= → *DROP* (a process, not a tool gap; docs mention — existing capture handles it; see Agendas)
 *** Reflect
-- [ ] =REC-REF-10= /Partial/ — optional annual / year-end stock-taking (V-25)
+- [X] =REC-REF-10= → *BUILD-V5* (stock Annual Review profile, family member; see Reflect)
 *** Engage
 - [ ] =REC-ENG-08= /Via-config/ — "weird time" micro-window short-action view
 *** Horizons
@@ -594,6 +594,21 @@ conceptual framing.
 which commands serve each — a short section in the engage/overview docs.
 
 ** Reflect
+*** BUILD-V5 REC-REF-10 — optional annual / year-end stock-taking       :may:reflect:
+:PROPERTIES:
+:REC_ID: REC-REF-10
+:STATUS: Partial → stock Annual Review profile
+:STRENGTH: may
+:TYPE: tool
+:DISPOSITION: BUILD-V5 (family member; V-25 implement optional)
+:DECIDED: 2026-07-15
+:END:
+Another member of the stock review-profile family (Weekly/Recovery/Horizon/
+Maintenance): a stock *Annual Review* profile — steps walking the year's
+completed work + horizons with reflection prompts to seed next year's goals.
+Schedulable annually via =org-gtd-review-schedule= (=.+1y=). Profile *content*,
+riding the existing engine + seed-habits command.
+
 *** BUILD-V5 REC-REF-05 — review cadence scaling per horizon           :should:reflect:
 :PROPERTIES:
 :REC_ID:      REC-REF-05
