@@ -1,0 +1,1 @@
+Reference adapter (post-v5): make route-to-reference handoff pluggable to a PKM backend (denote/org-roam/org-brain/plain-org). No browse/index/category/template/purge commands (source research: all storage/PKM territory). Hard constraints: <60s file rule, do not impose GTD project/area taxonomy on reference
