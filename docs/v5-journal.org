@@ -100,7 +100,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 ** MAY (36)
 *** Capture
 - [X] =REC-CAP-08= → *DEFER* (docs — clock-out capture recipe; see Capture)
-- [ ] =REC-CAP-09= /Not-impl/ — "what's true right now?" themed current-reality sweep
+- [X] =REC-CAP-09= → *DEFER* (folded into CAP-06: template-agnostic mind-sweep + "current reality" template; see Capture)
 *** Clarify
 - [ ] =REC-CLA-09= /Via-config/ — configurable do-it-now (2-min) threshold
 - [ ] =REC-CLA-11= /Partial/ — three honest exits from a broken agreement
@@ -186,6 +186,26 @@ REC-X-15 (completeness walk) and REC-CAP-09 (themed sweep) if built.
 Filed decisions, grouped by GTD area. Empty areas fill in as we go.
 
 ** Capture
+*** DEFER REC-CAP-09 — "what's true right now?" themed current-reality sweep (folded into CAP-06) :may:capture:
+:PROPERTIES:
+:REC_ID:      REC-CAP-09
+:STATUS:      Not-implemented → folded into CAP-06
+:STRENGTH:    may
+:TYPE:        methodology
+:DISPOSITION: DEFER → folded into CAP-06 (template-agnostic sweep + stock template)
+:UX_DOC:      REC-CAP-09.md
+:DECIDED:     2026-07-15
+:END:
+Corpus-checked: this is *pure capture* (not reconciliation against the system) —
+a themed trigger list of present-tense prompts ("what projects are active right
+now?") that dumps to the inbox. Mechanically identical to the mind-sweep; only
+the wording differs.
+
+*Decision*: DEFER → folded into [[*BUILD-V5 REC-CAP-06 — guided mind-sweep / bulk-capture via trigger lists][REC-CAP-06]]: make =org-gtd-mind-sweep=
+template-agnostic and seed a stock "What's true right now?" present-tense
+template. No separate feature. (The corpus's stats-block/completeness console
+assumes deferred features; not needed for the core sweep.)
+
 *** DEFER REC-CAP-08 — capture hooks at activity boundaries             :may:capture:
 :PROPERTIES:
 :REC_ID:      REC-CAP-08
@@ -217,6 +237,8 @@ list with press-=c=-to-capture. Missing: a *standalone* ad-hoc entry point.
 *Decision*: BUILD-V5 —
 - A standalone =org-gtd-mind-sweep= command that walks the mind-sweep checklist
   with capture, runnable anytime (reuses the review's walk-and-capture flow).
+  Make it *template-agnostic* — it can walk *any* trigger list — so [[*DEFER REC-CAP-09 — "what's true right now?" themed current-reality sweep (folded into CAP-06)][REC-CAP-09]]
+  folds in as just "point the sweep at another template."
 - Flesh out the seeded mind-sweep template into fuller *personal* and
   *professional* trigger lists, structured after GTD's incompletion-triggers
   appendix. *Copyright caveat*: write our own phrasing — do NOT copy Allen's
