@@ -1,0 +1,1 @@
+Project templates should encode/instantiate DAG projects (parallel + blocker structure), not just sequential: define a template format that captures dependencies and wire them on insert (org-gtd-clarify-project-templates). Relates to PRJ-04 DAG support + PRJ-12 templated/recurring projects
