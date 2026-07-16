@@ -108,7 +108,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-PRJ-09= → *DROP* (digital = already separated by state/query; see Projects)
 - [X] =REC-PRJ-12= → *DEFER* (fold habit-spawn into UI-05; DAG-templates gap → yak …-vj3y; see Projects)
 *** Next Actions
-- [ ] =REC-NXT-04= /Via-config/ — optional informal "if I have time" list
+- [X] =REC-NXT-04= → *DROP* (folded as example into NXT-05 someday-categories docs; see Next Actions)
 *** Delegate
 - [ ] =REC-DEL-04= /Not-impl/ — two-stage delegation state (plan-to-delegate → delegated)
 - [ ] =REC-DEL-05= /Not-impl/ — trackable-channel guidance (email > note > voice)
@@ -464,6 +464,19 @@ actions?" should be handled instead of silent completion. Flagged on UI-05's
 backlog entry.
 
 ** Next Actions
+*** DROP REC-NXT-04 — optional informal "if I have time" list           :may:next:
+:PROPERTIES:
+:REC_ID:      REC-NXT-04
+:STATUS:      Via-config → dropped (nothing structural)
+:STRENGTH:    may
+:TYPE:        tool
+:DISPOSITION: DROP → example in the NXT-05 docs
+:DECIDED:     2026-07-15
+:END:
+Gap doc says "Missing: nothing structural" — an "if I have time" list is just a
+named someday category or a tag+view. *Decision*: DROP; include it as a second
+example ("If I have time") in the [[*DEFER REC-NXT-05 — Read/Review queue distinct from Reference][NXT-05]] named-someday-categories how-to.
+
 *** DEFER REC-NXT-05 — Read/Review queue distinct from Reference        :should:next:
 :PROPERTIES:
 :REC_ID:      REC-NXT-05
