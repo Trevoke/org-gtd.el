@@ -102,7 +102,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-CAP-08= → *DEFER* (docs — clock-out capture recipe; see Capture)
 - [X] =REC-CAP-09= → *DEFER* (folded into CAP-06: template-agnostic mind-sweep + "current reality" template; see Capture)
 *** Clarify
-- [ ] =REC-CLA-09= /Via-config/ — configurable do-it-now (2-min) threshold
+- [X] =REC-CLA-09= → *DROP* (docs note — 2-min is a guideline, no enforced cutoff; see Clarify)
 - [ ] =REC-CLA-11= /Partial/ — three honest exits from a broken agreement
 *** Projects
 - [ ] =REC-PRJ-09= /Via-config/ — per-project Active vs Archive compartments
@@ -253,6 +253,19 @@ definition (good-enough round, then refine). Tracked as yak
 REC-HOR-08 (top-down prioritization) when we reach Horizons.
 
 ** Clarify
+*** DROP REC-CLA-09 — configurable do-it-now (2-min) threshold          :may:clarify:
+:PROPERTIES:
+:REC_ID:      REC-CLA-09
+:STATUS:      Via-config → dropped (non-feature)
+:STRENGTH:    may
+:TYPE:        tool
+:DISPOSITION: DROP → docs note
+:DECIDED:     2026-07-15
+:END:
+=org-gtd-quick-action= enforces no cutoff — the "2 minutes" is only guidance
+wording; nothing to configure. *Decision*: DROP. Docs note: the 2-minute rule
+is a rule of thumb (Allen says 2–5 min); apply your own judgment.
+
 *** TODO REC-CLA-06 — extract hidden projects/actions from fuzzy items  :should:clarify:
 :PROPERTIES:
 :REC_ID:      REC-CLA-06
