@@ -133,7 +133,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-UI-06= → *DROP* (SCHEDULED/DEADLINE are distinct valid org properties — no "soup"; see UI / Views)
 - [X] =REC-UI-07= → *DROP* (verb-first docs + LLM-assist [batch quality-review + live clarify help]; see UI / Views)
 - [X] =REC-UI-08= → *BUILD-V5* (small — first-class =sort= key in the view DSL; see UI / Views)
-- [ ] =REC-UI-09= /Via-config/ — global multi-key search
+- [X] =REC-UI-09= → *DROP* (docs note — DSL filters + org-native search cover it; see UI / Views)
 - [ ] =REC-UI-10= /Partial/ — closure loops at every exit
 - [ ] =REC-UI-11= /Via-config/ — rules-based automation (satisfied by org-edna)
 - [ ] =REC-UI-12= /Via-config/ — print/export first-class
@@ -1159,6 +1159,18 @@ Reference: https://github.com/aravindps/org-gtd (see
 =screenshots/themes-card_files/Navigation Pane.png=). The count annotations are
 the concrete first step; the full dashboard rework is a bigger UX design tracked
 as yak =command-center-rework-...-ma8z=.
+
+*** DROP REC-UI-09 — global multi-key search                            :may:ui:
+:PROPERTIES:
+:REC_ID: REC-UI-09
+:STATUS: Via-config → dropped (acceptable gap)
+:STRENGTH: may
+:DISPOSITION: DROP → docs note
+:DECIDED: 2026-07-15
+:END:
+Gap doc calls it "acceptable" — DSL filters (who/tags/dates/area/priority/effort)
++ org-native search cover it. A unified command would re-wrap org search (near
+org-ql territory we avoid). *Decision*: DROP; docs note pointing at the options.
 
 *** BUILD-V5 REC-UI-08 — customizable list sorting (DSL sort key)        :may:ui:
 :PROPERTIES:
