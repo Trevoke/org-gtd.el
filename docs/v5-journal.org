@@ -110,7 +110,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 *** Next Actions
 - [X] =REC-NXT-04= → *DROP* (folded as example into NXT-05 someday-categories docs; see Next Actions)
 *** Delegate
-- [ ] =REC-DEL-04= /Not-impl/ — two-stage delegation state (plan-to-delegate → delegated)
+- [X] =REC-DEL-04= → *DROP* (feature unneeded; research yak on delegation-UX impact …-1u47; see Delegate)
 - [ ] =REC-DEL-05= /Not-impl/ — trackable-channel guidance (email > note > voice)
 *** Reference
 - [ ] =REC-KNO-03= /Not-impl/ — contacts as pure reference (V-09, non-goal — closed)
@@ -870,6 +870,25 @@ A browsable/categorized index is core PKM-tool territory — likely a *no-op* fo
 org-gtd. Confirm during the action-surface investigation.
 
 ** Delegate
+*** DROP REC-DEL-04 — two-stage delegation state                        :may:delegate:
+:PROPERTIES:
+:REC_ID:      REC-DEL-04
+:STATUS:      Not-implemented → dropped (feature); research yak filed
+:STRENGTH:    may
+:TYPE:        tool
+:DISPOSITION: DROP the feature + research yak on delegation-UX impact
+:DECIDED:     2026-07-15
+:END:
+The two stages already map onto existing types: plan-to-delegate = a next action
+("ask Bob to take over X"); delegated = re-clarify as delegated once handed off.
+A first-class two-stage state isn't necessary.
+
+*Decision*: DROP the feature. But a real UX question was raised — does the
+*one-step* delegation UX quietly encourage delegating *in the system* without
+actually talking to the delegatee? Tracked as a research yak
+=research-does-org-gtds-one-step-delegation-ux-...-del-04-1u47=. If that research
+shows a problem, a conversation-nudge or two-stage design gets reconsidered then.
+
 *** BUILD-V5 REC-DEL-03 — delegate a whole project as one Waiting-For   :should:delegate:
 :PROPERTIES:
 :REC_ID:      REC-DEL-03
