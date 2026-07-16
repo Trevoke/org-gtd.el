@@ -1,0 +1,1 @@
+Reference hand-off UX (v5): make 'store as knowledge' less abrupt. Users surprised item vanishes (done-and-archive, no feedback). Communicate the GTD-exit (transient label/echo + suggest filing in PKM); optional confirm defcustom (default off). Keep <60s file rule: no mandatory friction
