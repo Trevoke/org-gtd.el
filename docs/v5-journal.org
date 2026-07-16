@@ -123,7 +123,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 *** Reflect
 - [X] =REC-REF-10= → *BUILD-V5* (stock Annual Review profile, family member; see Reflect)
 *** Engage
-- [ ] =REC-ENG-08= /Via-config/ — "weird time" micro-window short-action view
+- [X] =REC-ENG-08= → *DROP* (example in the ENG-05 four-criteria how-to; see Engage)
 *** Horizons
 - [ ] =REC-HOR-06= /Via-config/ — personal standards/values as decision reference (adjudicated #4 — closed)
 - [ ] =REC-HOR-07= /Not-impl/ — unified cross-horizon "overview of my life" view (adjudicated #3, MAY)
@@ -497,6 +497,18 @@ reading you'll do opportunistically. No stock code — just the recommended
 pattern.
 
 ** Engage
+*** DROP REC-ENG-08 — "weird time" micro-window short-action view       :may:engage:
+:PROPERTIES:
+:REC_ID: REC-ENG-08
+:STATUS: Via-config → dropped (dup of ENG-05)
+:STRENGTH: may
+:DISPOSITION: DROP → example in the four-criteria how-to
+:DECIDED: 2026-07-15
+:END:
+Same as [[*DEFER REC-ENG-05 — filter by time available via Effort][ENG-05]] — an effort-filtered short-actions view, composable today
+(=effort<0:10=). *Decision*: DROP; include as a "spare-minutes" example in the
+four-criteria how-to.
+
 *** BUILD-V5 REC-ENG-03 — four-criteria choice (context/time/energy/priority)   :must:engage:
 :PROPERTIES:
 :REC_ID:      REC-ENG-03
