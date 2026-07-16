@@ -141,7 +141,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-UI-14= → *DROP* (Emacs/org links are the gateway; nothing GTD-specific; see UI / Views)
 - [X] =REC-UI-15= → *DROP* (docs note — point to org-timer / org-pomodoro / MELPA options; see UI / Views)
 - [X] =REC-UI-16= → *DROP* (per-area rollup exists; per-horizon ties to dropped HOR-07; builder-composable; see UI / Views)
-- [ ] =REC-UI-17= /Partial/ — project ledger & metadata
+- [X] =REC-UI-17= → *DROP* (sorting→UI-08, ledger→builder, stakeholders→AGE lists; creation-advice side window → PRJ-06 yak; see UI / Views)
 - [ ] =REC-UI-18= /Via-config/ — layered calendar (month/week/day)
 *** Cross-cutting
 - [X] =REC-X-04= → *BUILD-V5* (resolved with ENG-03 — the energy attribute; see Cross-cutting)
@@ -1182,6 +1182,27 @@ Reference: https://github.com/aravindps/org-gtd (see
 =screenshots/themes-card_files/Navigation Pane.png=). The count annotations are
 the concrete first step; the full dashboard rework is a bigger UX design tracked
 as yak =command-center-rework-...-ma8z=.
+
+*** DROP REC-UI-17 — project ledger & metadata                          :may:ui:
+:PROPERTIES:
+:REC_ID: REC-UI-17
+:STATUS: Partial → dropped (pieces routed elsewhere)
+:STRENGTH: may
+:DISPOSITION: DROP
+:DECIDED: 2026-07-15
+:END:
+Source-checked (Sonnet): "stakeholder fields" as project metadata has one weak
+source (1994 UI sketch, DA94-24); GTD actually uses people-in-projects via
+*person-centric Agenda / talk-to lists* (AGE-01/02), not project fields — a
+project field would fragment the single source of truth. Pieces route cleanly:
+due-first sorting → [[*BUILD-V5 REC-UI-08 — customizable list sorting (DSL sort key)][UI-08]] =sort= key; ledger view → builder-composable; stakeholder
+*actionable* use → AGE-01/02 (deferred); a static "beneficiaries" note →
+via-config org property. *Decision*: DROP.
+
+*Side note*: "advice on how to create a project / what reference material to
+gather" is a nice project-clarification *side-window* affordance — folded into
+the PRJ-06 clarify-UI / side-window review yak
+=ui-review-of-clarify-side-windows-...-prj-06-y5kl=.
 
 *** DROP REC-UI-16 — composite rollup views per area/horizon            :may:ui:
 :PROPERTIES:
