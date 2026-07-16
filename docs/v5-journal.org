@@ -132,7 +132,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-UI-03= → *DROP* (existing teaching + docs; coach would be naggy / LLM territory; see UI / Views)
 - [X] =REC-UI-06= → *DROP* (SCHEDULED/DEADLINE are distinct valid org properties — no "soup"; see UI / Views)
 - [X] =REC-UI-07= → *DROP* (verb-first docs + LLM-assist [batch quality-review + live clarify help]; see UI / Views)
-- [ ] =REC-UI-08= /Via-config/ — customizable list sorting
+- [X] =REC-UI-08= → *BUILD-V5* (small — first-class =sort= key in the view DSL; see UI / Views)
 - [ ] =REC-UI-09= /Via-config/ — global multi-key search
 - [ ] =REC-UI-10= /Partial/ — closure loops at every exit
 - [ ] =REC-UI-11= /Via-config/ — rules-based automation (satisfied by org-edna)
@@ -1159,6 +1159,21 @@ Reference: https://github.com/aravindps/org-gtd (see
 =screenshots/themes-card_files/Navigation Pane.png=). The count annotations are
 the concrete first step; the full dashboard rework is a bigger UX design tracked
 as yak =command-center-rework-...-ma8z=.
+
+*** BUILD-V5 REC-UI-08 — customizable list sorting (DSL sort key)        :may:ui:
+:PROPERTIES:
+:REC_ID: REC-UI-08
+:STATUS: Via-config → building first-class sort key
+:STRENGTH: may
+:TYPE: tool
+:DISPOSITION: BUILD-V5 (small)
+:DECIDED: 2026-07-15
+:END:
+Sorting works today only via the DSL native-escape hatch
+(=((native (org-agenda-sorting-strategy ...))))=). *Decision*: BUILD-V5 — add a
+first-class =sort= key to the view DSL (e.g. =(sort . (priority-down effort-up))=
+→ =org-agenda-sorting-strategy=), exposed in the view builder. Same DSL-completeness
+spirit as the =energy= keyword; low risk.
 
 *** DROP REC-UI-07 — verb-first action entry and routing                :may:ui:
 :PROPERTIES:
