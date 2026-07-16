@@ -99,7 +99,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 
 ** MAY (36)
 *** Capture
-- [ ] =REC-CAP-08= /Not-impl/ — capture hooks at activity boundaries
+- [X] =REC-CAP-08= → *DEFER* (docs — clock-out capture recipe; see Capture)
 - [ ] =REC-CAP-09= /Not-impl/ — "what's true right now?" themed current-reality sweep
 *** Clarify
 - [ ] =REC-CLA-09= /Via-config/ — configurable do-it-now (2-min) threshold
@@ -186,6 +186,20 @@ REC-X-15 (completeness walk) and REC-CAP-09 (themed sweep) if built.
 Filed decisions, grouped by GTD area. Empty areas fill in as we go.
 
 ** Capture
+*** DEFER REC-CAP-08 — capture hooks at activity boundaries             :may:capture:
+:PROPERTIES:
+:REC_ID:      REC-CAP-08
+:STATUS:      Not-implemented → docs recipe
+:STRENGTH:    may
+:TYPE:        tool
+:DISPOSITION: DEFER → docs (clock-out capture recipe)
+:DECIDED:     2026-07-15
+:END:
+An "anything to capture?" prompt at activity boundaries (after a call/meeting,
+at clock-out). A few lines of user config, and baking it in risks nagginess.
+*Decision*: DEFER → docs — a recipe showing =(add-hook 'org-clock-out-hook ...)=
+to offer capture-to-inbox when you clock out.
+
 *** BUILD-V5 REC-CAP-06 — guided mind-sweep / bulk-capture via trigger lists :should:capture:
 :PROPERTIES:
 :REC_ID:      REC-CAP-06
