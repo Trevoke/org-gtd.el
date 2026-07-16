@@ -117,9 +117,9 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 *** Agendas
 - [X] =REC-AGE-01= → *DEFER* (docs howto; users may use a PKB/org-roam; see Agendas)
 *** Reference
-- [X] =REC-KNO-02= → *TODO* (GTD→PKM action surface; yak …-c5ql; see Reference)
-- [X] =REC-KNO-04= → *TODO* (likely a PKM-tool no-op; yak …-c5ql; see Reference)
-- [X] =REC-KNO-05= → *TODO* (likely a PKM-tool no-op; yak …-c5ql; see Reference)
+- [X] =REC-KNO-02= → *DROP* → docs note + <60s design constraint (adapter yak …-c5ql; see Reference)
+- [X] =REC-KNO-04= → *DROP* → docs note (PKM-tool concern; see Reference)
+- [X] =REC-KNO-05= → *DROP* → docs note (PKM-tool concern; see Reference)
 *** Horizons
 - [X] =REC-HOR-03= → *DEFER* (docs; review cadence = REF-05; see Horizons)
 - [X] =REC-HOR-04= → *DEFER* (docs; definition = LLM-horizon yak; see Horizons)
@@ -150,7 +150,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-DEL-05= → *DROP* (entirely; see Delegate)
 *** Reference
 - [X] =REC-KNO-03= → *DROP* (closed non-goal V-09; see Reference)
-- [X] =REC-KNO-06= → *TODO* (fold into reference-adapter yak …-c5ql; likely PKM; see Reference)
+- [X] =REC-KNO-06= → *DROP* → docs note (templates are PKM territory; see Reference)
 *** Checklists
 - [X] =REC-CHK-02= → *DEFER* (docs recipe: checklist + recurring habit + sweep; see Checklists)
 *** Agendas
@@ -954,11 +954,39 @@ Nothing buildable — top-down prioritization is a *mindset*: prioritize from yo
 horizons rather than ABC letter-codes. A Diataxis *explanation* piece.
 
 ** Reference
-*Cluster note*: reference storage/browsing is a future *adapter* (denote /
-org-roam / org-brain), not a bundled org-gtd store. But rather than DEFER these
-vaguely, they're live TODOs to define the *action surface*: what GTD→PKM actions
-org-gtd should own vs. what belongs to the PKM tool. All three tracked as yak
-=reference-adapter-define-...-c5ql=.
+*Cluster note* (action surface resolved 2026-07-16, source-material research):
+A Sonnet subagent read Allen's treatment of general-reference filing across
+*GTD* (Ch. 2 taxonomy, Ch. 6 clarify-time "file it", Ch. 7 "Success Factors for
+Filing") and *Making It All Work* (Support/Reference sections + the six-item
+filing checklist). *Finding: zero new reference commands are warranted.* Allen
+draws exactly the boundary org-gtd already assumes — GTD owns the *one-time,
+low-friction handoff* of a non-actionable-but-valuable item out of the workflow
+(org-gtd's existing "knowledge to be stored" verb); everything downstream —
+retrieval, browsing, on-the-fly categories, an A–Z index, templates, purging —
+is repeatedly framed as a property of "your reference *application*," separate
+infrastructure the user sets up once and then just uses, never a step the GTD
+list tool performs. Notably GTD's glossary formally defines *action support* and
+*project support* but has *no entry for "reference"* — it's the residual,
+least-specified, least-workflow category.
+
+Two takeaways are *design constraints, not commands*: (1) the *<60-second filing
+rule* is a hard non-functional requirement on the existing handoff verb — Allen's
+most load-bearing, repeated claim is that any friction above a few seconds turns
+filers into "stackers" and clogs the inbox; the adapter-backed flow must default
+to near-zero required decisions at file-time. (2) An adapter must *not* impose
+GTD's project/area taxonomy onto reference storage (Allen: project/area-grouped
+filing "magnifies geometrically the number of places something isn't"). The only
+item with one foot in the workflow — a *purge trigger* — reduces to "schedule a
+recurring reminder to purge," which existing habit/tickler infra already covers;
+Allen never has the GTD tool own the purge *action*.
+
+Consequence: KNO-02/04/05/06 all *DROP* as build items (docs notes below). The
+reference *adapter* survives as a real post-v5 direction but *narrowed* to one
+job — make the existing route-to-reference handoff pluggable to a PKM backend
+(denote / org-roam / org-brain / plain org), preserving the <60s rule and the
+no-project-taxonomy constraint. No PKM-side browse/index/category/template/purge
+commands. Tracked (narrowed) as yak =reference-adapter-define-...-c5ql=; aligns
+with [[reference-system-adapters]].
 
 *** DROP REC-KNO-03 — contacts as pure reference                        :may:reference:
 :PROPERTIES:
@@ -971,60 +999,71 @@ org-gtd should own vs. what belongs to the PKM tool. All three tracked as yak
 Contacts-as-reference-store was adjudicated a non-goal (V-09) and closed —
 contacts stay a future *resolution adapter*, not a bundled store. *Decision*: DROP.
 
-*** TODO REC-KNO-06 — user-definable reference forms/templates + editor escape :may:reference:
+*** DROP REC-KNO-06 — user-definable reference forms/templates + editor escape :may:reference:
 :PROPERTIES:
 :REC_ID: REC-KNO-06
-:STATUS: Not-implemented → TODO (likely PKM territory)
+:STATUS: Not-implemented → dropped (storage/PKM territory)
 :STRENGTH: may
-:DISPOSITION: TODO — fold into reference-adapter yak …-c5ql
-:DECIDED: 2026-07-15
+:DISPOSITION: DROP → docs note (PKM-tool concern)
+:DECIDED: 2026-07-16
 :END:
 Reference-entry templates + external-editor hatch are core PKM-tool territory.
-*Decision*: TODO — folded into the reference-adapter action-surface investigation
-(yak …-c5ql): decide whether reference templates are org-gtd's job or the PKM's
-(likely the latter).
+Allen never discusses templates for reference entries at all (the templates he
+*does* want — trigger lists, review checklists — are workflow prompts, tracked
+separately). *Decision* (2026-07-16): DROP. Not org-gtd's job; a docs note points
+users at their PKM tool's own templating (denote/org-roam capture templates).
 
-*** TODO REC-KNO-02 — <60s filing; A–Z index; yearly purge              :should:reference:
+*** DROP REC-KNO-02 — <60s filing; A–Z index; yearly purge              :should:reference:
 :PROPERTIES:
 :REC_ID:      REC-KNO-02
-:STATUS:      Partial → TODO (define GTD→PKM action surface)
+:STATUS:      Partial → dropped as build item (constraints, not commands)
 :STRENGTH:    should
 :TYPE:        tool
-:DISPOSITION: TODO — reference-adapter action surface (yak …-c5ql)
+:DISPOSITION: DROP → docs note + design constraint (adapter yak …-c5ql)
 :UX_DOC:      (none)
-:DECIDED:     2026-07-15
+:DECIDED:     2026-07-16
 :END:
-The *actionable* one: is there a useful set of "actions we take from GTD toward a
-knowledge base" (fast-file a reference, hand off to the PKM, trigger a purge)
-that org-gtd should build specific logic around? Figure that out; build the
-GTD-side verbs, leave storage/index to the PKM.
+This looked like "the actionable one," but the source research (see cluster note)
+decomposed it into three parts, none of which is a new command: the *fast-file*
+verb already exists (org-gtd's route-to-reference); the *A–Z index* is
+storage/PKM territory (Allen's own example is navigating his reference
+*application*, not the GTD tool); the *yearly purge* reduces to scheduling a
+recurring reminder, which existing habit/tickler infra covers — Allen never has
+the GTD tool own the purge *action*. *Decision* (2026-07-16): DROP as a build
+item. The <60-second rule becomes a *design constraint* on the existing handoff
+verb (recorded in the cluster note + carried by the adapter yak); a docs note
+covers pointing filing at a PKM tool and scheduling a purge habit.
 
-*** TODO REC-KNO-04 — zero-friction new reference category while filing :should:reference:
+*** DROP REC-KNO-04 — zero-friction new reference category while filing :should:reference:
 :PROPERTIES:
 :REC_ID:      REC-KNO-04
-:STATUS:      Not-implemented → TODO (likely PKM-tool no-op)
+:STATUS:      Not-implemented → dropped (PKM-tool concern)
 :STRENGTH:    should
 :TYPE:        tool
-:DISPOSITION: TODO — probably no-op for us (yak …-c5ql)
+:DISPOSITION: DROP → docs note (PKM-tool concern)
 :UX_DOC:      (none)
-:DECIDED:     2026-07-15
+:DECIDED:     2026-07-16
 :END:
-Creating a new reference *category* on the fly is very likely the PKM tool's
-responsibility (denote/org-roam already do this), so probably a *no-op* for
-org-gtd. Confirm during the action-surface investigation.
+Confirmed a no-op for org-gtd. Allen wants instant folder/category creation as a
+property of the *storage tool* (so the <60s rule holds), not as a GTD command;
+denote/org-roam already make this trivial. *Decision* (2026-07-16): DROP. If an
+adapter is built, instant-category is satisfied as a side effect of the filing
+handoff, not a standalone command. Docs note only.
 
-*** TODO REC-KNO-05 — browsable categorized reference index            :should:reference:
+*** DROP REC-KNO-05 — browsable categorized reference index            :should:reference:
 :PROPERTIES:
 :REC_ID:      REC-KNO-05
-:STATUS:      Not-implemented → TODO (likely PKM-tool no-op)
+:STATUS:      Not-implemented → dropped (PKM-tool concern)
 :STRENGTH:    should
 :TYPE:        tool
-:DISPOSITION: TODO — probably no-op for us (yak …-c5ql)
+:DISPOSITION: DROP → docs note (PKM-tool concern)
 :UX_DOC:      (none)
-:DECIDED:     2026-07-15
+:DECIDED:     2026-07-16
 :END:
-A browsable/categorized index is core PKM-tool territory — likely a *no-op* for
-org-gtd. Confirm during the action-surface investigation.
+Confirmed PKM-tool territory. Allen explicitly describes browsing the index as a
+property of "your current general-reference *application*" (his example: app →
+Locales → London → Restaurants) — never a GTD-tool step. *Decision* (2026-07-16):
+DROP. Docs note points at the PKM tool's own browsing/index.
 
 ** Delegate
 *** DROP REC-DEL-05 — trackable-channel guidance (email > note > voice)  :may:delegate:
