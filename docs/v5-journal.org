@@ -125,8 +125,8 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 *** Engage
 - [X] =REC-ENG-08= → *DROP* (example in the ENG-05 four-criteria how-to; see Engage)
 *** Horizons
-- [ ] =REC-HOR-06= /Via-config/ — personal standards/values as decision reference (adjudicated #4 — closed)
-- [ ] =REC-HOR-07= /Not-impl/ — unified cross-horizon "overview of my life" view (adjudicated #3, MAY)
+- [X] =REC-HOR-06= → *DEFER* (docs, with HOR-05; see Horizons)
+- [X] =REC-HOR-07= → *DROP* (horizons.org already is the overview; see Horizons)
 *** UI
 - [ ] =REC-UI-01= /Via-config/ — dashboard home view (lists + calendar)
 - [ ] =REC-UI-03= /Partial/ — methodology-teaching coaching dialogs
@@ -802,6 +802,29 @@ review cadence = [[*BUILD-V5 REC-REF-05 — review cadence scaling per horizon][
 = =org-gtd-areas-of-focus= + config (adjudicated #5). What's left is docs. The
 =horizons.org= file (template: Purpose/principles, Vision, Goals, Areas) is the
 content home.
+
+*** DEFER REC-HOR-06 — personal standards/values as decision reference  :may:horizons:
+:PROPERTIES:
+:REC_ID: REC-HOR-06
+:STATUS: Via-config → docs (closed #4)
+:STRENGTH: may
+:DISPOSITION: DEFER → docs (with HOR-05)
+:DECIDED: 2026-07-15
+:END:
+Standards/values live in =horizons.org= (H5); consulting them is a practice.
+Adjudicated #4 docs-only, closed. *Decision*: DEFER → docs, with HOR-05.
+
+*** DROP REC-HOR-07 — unified cross-horizon "overview of my life" view  :may:horizons:
+:PROPERTIES:
+:REC_ID: REC-HOR-07
+:STATUS: Not-implemented → dropped
+:STRENGTH: may
+:DISPOSITION: DROP (adjudicated #3 drop-as-mandate)
+:DECIDED: 2026-07-15
+:END:
+=horizons.org= already *is* a single outline of Purpose/Vision/Goals/Areas — open
+it and there's your life overview. A DSL-composed version needs a new
+=horizon-text= block-type for marginal gain. *Decision*: DROP.
 
 *** DEFER REC-HOR-03 — Goals/Objectives (30k), reviewed monthly–quarterly :should:horizons:
 :PROPERTIES:
