@@ -135,7 +135,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-UI-08= → *BUILD-V5* (small — first-class =sort= key in the view DSL; see UI / Views)
 - [X] =REC-UI-09= → *DROP* (docs note — DSL filters + org-native search cover it; see UI / Views)
 - [X] =REC-UI-10= → *DROP* (covered by delegate flow + UI-05; email/meeting out of scope V-16; see UI / Views)
-- [ ] =REC-UI-11= /Via-config/ — rules-based automation (satisfied by org-edna)
+- [X] =REC-UI-11= → *DROP* (infrastructure satisfied by org-edna; no user-facing rules engine; see UI / Views)
 - [ ] =REC-UI-12= /Via-config/ — print/export first-class
 - [ ] =REC-UI-13= /Via-config/ — retrospective calendar archive/log (satisfied)
 - [ ] =REC-UI-14= /Via-config/ — gateway to external apps while processing
@@ -1159,6 +1159,20 @@ Reference: https://github.com/aravindps/org-gtd (see
 =screenshots/themes-card_files/Navigation Pane.png=). The count annotations are
 the concrete first step; the full dashboard rework is a bigger UX design tracked
 as yak =command-center-rework-...-ma8z=.
+
+*** DROP REC-UI-11 — rules-based automation                             :may:ui:
+:PROPERTIES:
+:REC_ID: REC-UI-11
+:STATUS: Via-config → dropped (infrastructure only)
+:STRENGTH: may
+:DISPOSITION: DROP
+:DECIDED: 2026-07-15
+:END:
+This is *infrastructure*, not a user feature. org-edna (TRIGGER/BLOCKER) + hooks
+are org-gtd's automation backbone (project sequencing, dependency block/unblock,
+update-after-task-done) — the plumbing a good digital tool needs, and it's
+satisfied. A *user-facing* rules-authoring engine is intentionally out of scope
+(power-user niche + configurable-everything bloat we avoid). *Decision*: DROP.
 
 *** DROP REC-UI-10 — closure loops at every exit                        :may:ui:
 :PROPERTIES:
