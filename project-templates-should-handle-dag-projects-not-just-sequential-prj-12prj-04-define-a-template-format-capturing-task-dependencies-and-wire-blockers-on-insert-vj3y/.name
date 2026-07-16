@@ -1,0 +1,1 @@
+Project templates should handle DAG projects, not just sequential (PRJ-12/PRJ-04): define a template format capturing task dependencies and wire blockers on insert
