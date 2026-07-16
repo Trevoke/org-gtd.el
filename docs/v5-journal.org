@@ -140,7 +140,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-UI-13= → *DROP* (satisfied — datetree + CLOSED + agenda log mode; see UI / Views)
 - [X] =REC-UI-14= → *DROP* (Emacs/org links are the gateway; nothing GTD-specific; see UI / Views)
 - [X] =REC-UI-15= → *DROP* (docs note — point to org-timer / org-pomodoro / MELPA options; see UI / Views)
-- [ ] =REC-UI-16= /Partial/ — composite rollup views per area/horizon
+- [X] =REC-UI-16= → *DROP* (per-area rollup exists; per-horizon ties to dropped HOR-07; builder-composable; see UI / Views)
 - [ ] =REC-UI-17= /Partial/ — project ledger & metadata
 - [ ] =REC-UI-18= /Via-config/ — layered calendar (month/week/day)
 *** Cross-cutting
@@ -1182,6 +1182,19 @@ Reference: https://github.com/aravindps/org-gtd (see
 =screenshots/themes-card_files/Navigation Pane.png=). The count annotations are
 the concrete first step; the full dashboard rework is a bigger UX design tracked
 as yak =command-center-rework-...-ma8z=.
+
+*** DROP REC-UI-16 — composite rollup views per area/horizon            :may:ui:
+:PROPERTIES:
+:REC_ID: REC-UI-16
+:STATUS: Partial → dropped
+:STRENGTH: may
+:DISPOSITION: DROP
+:DECIDED: 2026-07-15
+:END:
+Per-area multi-block review view already exists; the per-horizon "sets" half ties
+to the dropped HOR-07 (horizons.org is the overview). Anything bespoke is a
+view-builder recipe (multi-block/section views). *Decision*: DROP (docs may show
+a composite rollup recipe).
 
 *** DROP REC-UI-15 — alarms/timers incl. optional 2-minute timer        :may:ui:
 :PROPERTIES:
