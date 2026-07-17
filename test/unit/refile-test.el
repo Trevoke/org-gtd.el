@@ -23,11 +23,9 @@
 (e-unit-initialize)
 
 (defmacro refile-test--with-type (plist &rest body)
-  "Run BODY with a temporary `test-type' registered with PLIST.
-Also binds `org-gtd-refile-to-any-target' to nil by default."
+  "Run BODY with a temporary `test-type' registered with PLIST."
   (declare (indent 1))
-  `(let ((org-gtd-refile-to-any-target nil)
-         (org-gtd-refile-prompt-for-types nil)
+  `(let ((org-gtd-refile-prompt-for-types nil)
          (org-gtd-refile-prompt-default nil)
          (org-gtd-types (cons (cons 'test-type ,plist)
                               org-gtd-types))
@@ -70,13 +68,6 @@ registered type, so the migration should have marked it."
   (assert-true (org-gtd-type-prompt-to-refile 'calendar))
   (assert-true (org-gtd-type-prompt-to-refile-set-p 'delegated))
   (assert-true (org-gtd-type-prompt-to-refile 'delegated)))
-
-(deftest refile-should-prompt-p-any-target-deprecated-returns-nil ()
-  "`org-gtd-refile-to-any-target' non-nil short-circuits to nil."
-  (refile-test--with-type '(:org-gtd "TestType" :prompt-to-refile t)
-    (let ((org-gtd-refile-to-any-target t)
-          (org-gtd-refile--deprecated-warning-shown t))
-      (assert-nil (org-gtd-refile--should-prompt-p 'test-type)))))
 
 (deftest refile-type-prompt-to-refile-set-p ()
   "`org-gtd-type-prompt-to-refile-set-p' distinguishes absent vs explicit nil."
