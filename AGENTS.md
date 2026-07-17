@@ -4,30 +4,39 @@ This document provides guidance for AI agents working on the org-gtd.el project.
 
 ## Branching Model
 
-This repo uses a light git-flow. Two long-lived branches:
+This repo uses a light git-flow with **three** long-lived branches. The
+guiding rule: **v5 work never lands on `develop`.**
 
-- **`master`** — the rolling release line. MELPA's *unstable* channel tracks it,
-  and git tags (`4.6.1`, `5.0.0`, …) are the MELPA *stable* releases. **Only
-  bugfixes and docs land on `master`.** Pushing `master` triggers a MELPA
-  deploy, so treat pushing it as a release action (see "Landing the Plane").
-- **`develop`** — the integration branch for the next major version. All feature
-  work branches off `develop` and merges back into `develop`. Pushing `develop`
-  is safe: it does **not** trigger a MELPA deploy.
+- **`master`** — the current **4.x stable release** line. MELPA's *unstable*
+  channel tracks it, and git tags (`4.6.1`, `5.0.0`, …) are the MELPA *stable*
+  releases. **Pushing `master` triggers a MELPA deploy — treat it as a release
+  action** (see "Landing the Plane"). Only bugfixes and docs land here.
+- **`develop`** — the **4.x main line**. Based on `master`; it is where work
+  happens more safely, and it feeds `master` before a tag. Carries 4.x bugfixes
+  and genuinely-additive 4.x features *if we need them*. **No v5 work.** Pushing
+  `develop` is safe (no deploy).
+- **`org-gtd-5`** — the **v5 development trunk**. *All* v5 work lives here:
+  breaking changes **and** new v5 features (View Manager, guided review,
+  checklists, init, the unified type/`create-item` API, the v5 journal). Feature
+  branches for v5 work branch **off `org-gtd-5`** and merge **back into
+  `org-gtd-5`**. When 5.0 is ready, `org-gtd-5` merges into `develop` (→
+  `master`) for release. Pushing `org-gtd-5` is safe (no deploy).
 
 ### Where does my work go?
 
-- **New feature / larger change** → branch off `develop`, merge back into
-  `develop`. Push the feature branch and/or `develop` freely.
-- **Bugfix for the released version** → branch off `master`, merge into
-  `master`. After releasing, merge `master` → `develop` so the fix is carried
-  forward.
+- **4.x bugfix** → branch off `develop`, merge back into `develop` (it flows to
+  `master` at release).
+- **v5 feature or breaking change** → branch off `org-gtd-5`, merge back into
+  `org-gtd-5`.
+- About to put a new feature on `develop`? Stop and ask: is this 4.x or 5.0?
+  **When in doubt, it's 5.0 → `org-gtd-5`.**
 
 ### Releasing
 
-- **Major/minor (from `develop`):** merge `develop` → `master`, bump the version
-  (see CLAUDE.md "Creating a new release"), tag, push `master` + tag.
-- **Patch (from `master`):** land the fix on `master`, bump the patch version,
-  tag, push `master` + tag, then merge `master` → `develop`.
+- **4.x patch/minor:** land on `develop`, merge `develop` → `master`, bump the
+  version (see CLAUDE.md "Creating a new release"), tag, push `master` + tag.
+- **5.0 (major):** merge `org-gtd-5` → `develop` → `master`, bump to `5.0.0`,
+  tag, push `master` + tag.
 
 ## Issue Tracking with yaks
 

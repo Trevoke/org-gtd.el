@@ -4,6 +4,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Note**: This project uses [yaks](https://github.com/mattwynne/yaks) (`yx`) for issue tracking. Use `yx` commands instead of markdown TODOs. See AGENTS.md for workflow details.
 
+## Branching Model (v5 era)
+
+Three long-lived branches. **The rule: v5 work never lands on `develop`.**
+
+- **`master`** — 4.x stable release line. MELPA *unstable* tracks it; tags are
+  MELPA *stable*. **Pushing `master` deploys to MELPA — a release action, ask
+  first.** Only bugfixes + docs.
+- **`develop`** — the 4.x main line (based on `master`, feeds it before a tag).
+  Safer place to work; carries 4.x bugfixes and additive 4.x features only. **No
+  v5 work.** Safe to push.
+- **`org-gtd-5`** — the v5 development trunk. **All** v5 work (breaking changes
+  and new v5 features) lives here. v5 feature branches branch off `org-gtd-5` and
+  merge back into it; it merges into `develop` when 5.0 ships. Safe to push.
+
+New feature? Ask "4.x or 5.0?" — **when in doubt it's 5.0 → `org-gtd-5`.** Full
+details in AGENTS.md "Branching Model".
+
 ## Development Commands
 
 ### Setup Requirements
