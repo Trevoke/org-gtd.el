@@ -130,7 +130,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-UI-04= → *BUILD-V5* (walk missed calendar → migrate; rides the generalized walk engine; see UI / Views)
 - [X] =REC-UI-05= → *BUILD-V5* (chain-end closure prompt; covers under-defined project / PRJ-08 spillover; see UI / Views)
 *** Cross-cutting
-- [X] =REC-X-10= → *TODO* (unified, friendlier new-user UX; yak …-vm2c; see Cross-cutting)
+- [X] =REC-X-10= → *BUILD-V5* (unified onboarding; chains setup + seeds all review habits; yak …-vm2c; see Cross-cutting)
 - [X] =REC-X-14= → *DEFER* (docs howto — file sync (Nextcloud), mobile apps, inbox setup; see Cross-cutting)
 
 ** MAY (36)
@@ -1620,25 +1620,42 @@ the =org-gtd-directory= (e.g. Nextcloud), capture on mobile via an org app
 (Orgzly/beorg) into one or two inboxes, process later in Emacs. Recommend
 concrete tools; org-gtd builds no mobile client.
 
-*** TODO REC-X-10 — unified, friendlier new-user experience            :should:cross:
+*** BUILD-V5 REC-X-10 — unified, friendlier onboarding                  :should:cross:
 :PROPERTIES:
 :REC_ID:      REC-X-10
-:STATUS:      Via-config → TODO (UX investment)
+:STATUS:      Via-config → BUILD-V5 (unification pass)
 :STRENGTH:    should
 :TYPE:        tool
-:DISPOSITION: TODO — unified onboarding UX (yak …-vm2c)
+:DISPOSITION: BUILD-V5 — one guided onboarding chaining the existing pieces
 :UX_DOC:      (none)
-:DECIDED:     2026-07-15
+:DECIDED:     2026-07-16
 :END:
-Onboarding infra exists — =org-gtd-init-system= (first-time concierge) +
-=org-gtd-setup-keywords-wizard=. But they're separate pieces. The maintainer
-wants a focused push on a *unified, friendlier* new-user experience: cohere the
-concierge + keywords wizard + a getting-started flow (and maybe a seeded setup
-meta-project) into one welcoming onboarding.
+Onboarding infra exists but is *fragmented* — =org-gtd-init-system= (concierge:
+seeds files/checklists, offers the Weekly Review habit, =org-gtd-init.el:38=) and
+=org-gtd-setup-keywords-wizard= (=org-gtd-core.el:348=) are separate entry points,
+and =org-agenda-files= wiring is manual. A new user must find and run several
+disjoint pieces.
 
-*Decision*: TODO — a real UX investment area, tracked as yak
-=unified-friendlier-new-user-experience-...-x-10-vm2c=. Migration-from-other-tools
-stays out of scope (too varied). Scope/timing decided in its own design.
+*Decision* (2026-07-16, maintainer): BUILD-V5 — a *unification pass*, not a
+from-scratch tutorial system. One guided entry point that chains the existing
+pieces in order: create GTD files → keywords wizard → wire =org-agenda-files= →
+*offer the full review-habit cadence* → "capture your first item". Each step stays
+idempotent/skippable (the concierge already reports-and-skips when satisfied).
+
+*Key scope addition (maintainer)*: onboarding must *integrate every "schedule a
+review" habit* this journal commits to — not just the Weekly Review. It offers the
+whole cadence via the *seed-all-review-habits* command: Weekly (time-blocked,
+REF-09), horizon-cadence monthly/quarterly (REF-05), System-Maintenance (REF-06),
+Annual/year-end (REF-10), with Recovery (REF-04) available ad-hoc. So onboarding
+is the natural
+front-door for the whole review-profile family — new users are offered the full
+rhythm of reviews up front (each opt-in), not left to discover them piecemeal.
+This couples X-10 to the review-profile BUILD-V5 cluster; sequence X-10 *after*
+seed-all-review-habits lands so it can call it directly.
+
+Migration-from-other-tools stays *out* of scope (too varied). Interactive
+in-Emacs tutorial + seeded setup meta-project considered and *deferred* (that was
+the heavier "full guided tutorial" option; not v5). Tracked as yak =…-vm2c=.
 
 *** DROP REC-X-09 — named project sub-lists, event-date sorted          :may:cross:
 :PROPERTIES:
