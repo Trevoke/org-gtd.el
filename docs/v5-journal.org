@@ -11,18 +11,27 @@ through them *one at a time* to make a clean, coherent decision about each.
 :VISIBILITY: all
 :END:
 
-Tally: *16 BUILD-V5* · *8 TODO* (tracked directions) · *18 DEFER→docs* ·
-*28 DROP* · *DONE* (CHK-01, REF-02, NEW-VIEW-MANAGER, REF-01, REF-08).
+Tally: *18 BUILD-V5* · *0 TODO* · *20 DEFER* (18 →docs + 2 →post-v5 LLM
+flagship) · *33 DROP* · *DONE* (CHK-01, REF-02, NEW-VIEW-MANAGER, REF-01,
+REF-08). The 8 former TODO-state items were resolved into real decisions on
+2026-07-16 (see "Former TODO directions" below).
 
 *What v5 builds (BUILD-V5), grouped:*
 - *Review-profile family* — stock Recovery (REF-04), horizon-cadence (REF-05),
   System-Maintenance (REF-06), Annual (REF-10) profiles; time-block the Weekly
   Review (REF-09); + the emergent *seed-all-review-habits* command.
+- *Onboarding* — unified onboarding (X-10): one guided flow chaining files →
+  keywords → agenda-files → *seed-all-review-habits* → first capture. It's the
+  front door for the whole review-profile family (sequence it *after*
+  seed-all-review-habits).
 - *View DSL completeness* — energy criterion (ENG-03, carrying X-04) and a
   first-class =sort= key (UI-08).
 - *Capture* — ad-hoc =org-gtd-mind-sweep= (CAP-06, template-agnostic; folds in
   CAP-09), fuller trigger lists.
 - *Recurrence* — recurring ticklers via org-habit-ng (TIC-02).
+- *Reference* — less-abrupt "store as knowledge" hand-off
+  (NEW-REFERENCE-HANDOFF-UX): communicate the GTD-exit at zero friction + optional
+  confirm defcustom, respecting Allen's <60s file rule.
 - *Projects/Delegate* (design-gated) — subproject rollup (PRJ-04) and
   delegate-a-whole-project (DEL-03), each needs its own design.
 - *Command center / projects* — count annotations (UI-02), consent migrate of
@@ -32,15 +41,25 @@ Tally: *16 BUILD-V5* · *8 TODO* (tracked directions) · *18 DEFER→docs* ·
 =org-gtd-someday-review=) — unlocks UI-04 + guided-review heading walks. See
 [[*Foundations]].
 
-*Tracked directions (TODO):* opt-in LLM clarify-assist (CLA-06/10, PRJ-10, UI-07;
-two modes) · reference/PKM action surface (KNO-02/04/05/06) · unified onboarding
-UX (X-10) · better default engage view (UI-01) · command-center dashboard rework
-(UI-02). Integrations gathered in [[*Adapters & integrations]].
+*Former TODO directions (resolved 2026-07-16, one at a time, code/source-checked):*
+- *LLM clarify-assist* (CLA-06/10) → *DEFER past v5* — the post-v5 flagship, not
+  shelved; biggest new dependency/design surface, deferring keeps v5's org-native
+  story coherent. Yak =…-d009= open.
+- *Reference/PKM commands* (KNO-02/04/05/06) → *DROP* — a source-material study
+  (both Allen books) found zero new reference commands are warranted; GTD owns only
+  the one-time hand-off, everything else is storage/PKM territory. The *one* v5
+  build here is the emergent hand-off-UX fix above. Adapter narrowed to a post-v5
+  pluggable-backend yak =…-wc00=.
+- *Better default engage view* (UI-01) → *DROP* — org-gtd has *no context
+  primitive* to section by (v4 deliberately generalized contexts to "any tag"), so
+  "section by context" has nothing decisive to build on. Docs note suggests the
+  =@=-prefix convention + self-organizing via =engage-tagged= / the view builder.
+- *Unified onboarding* (X-10) → *BUILD-V5* (see above).
 
 *Everything else* is DEFER→docs (how-tos/tutorials/explanations) or DROP
 (already covered by org-native features, the shipped DSL/builder, or rejected as
-un-GTD / against the lean philosophy). Yaks track the actionable TODO/research
-items.
+un-GTD / against the lean philosophy). Yaks track the actionable build/research
+items; integrations gathered in [[*Adapters & integrations]].
 
 * How this journal works
 :PROPERTIES:
