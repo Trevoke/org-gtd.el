@@ -164,7 +164,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-HOR-06= → *DEFER* (docs, with HOR-05; see Horizons)
 - [X] =REC-HOR-07= → *DROP* (horizons.org already is the overview; see Horizons)
 *** UI
-- [X] =REC-UI-01= → *BUILD-V5* (context-sectioned default engage view; yak …-bkgy; see UI / Views)
+- [X] =REC-UI-01= → *DROP* → docs note (no context primitive; suggest @-prefix convention; see UI / Views)
 - [X] =REC-UI-03= → *DROP* (existing teaching + docs; coach would be naggy / LLM territory; see UI / Views)
 - [X] =REC-UI-06= → *DROP* (SCHEDULED/DEADLINE are distinct valid org properties — no "soup"; see UI / Views)
 - [X] =REC-UI-07= → *DROP* (verb-first docs + LLM-assist [batch quality-review + live clarify help]; see UI / Views)
@@ -1262,13 +1262,13 @@ Landed on =develop= (former PR #294). By-name, per-workflow checklists
 (=org-gtd-checklist.el=). Rejected corpus extras (CHECKLIST_KIND, edna RESET,
 defcustom store, etc.) are recorded in the design doc §8 — do not resurrect.
 ** UI / Views
-*** BUILD-V5 REC-UI-01 — context-sectioned default engage view          :may:ui:
+*** DROP REC-UI-01 — context-sectioned default engage view            :may:ui:
 :PROPERTIES:
 :REC_ID:      REC-UI-01
-:STATUS:      Via-config → BUILD-V5 (context-sectioned next actions)
+:STATUS:      Via-config → DROP → docs note (no context primitive to build on)
 :STRENGTH:    may
 :TYPE:        tool
-:DISPOSITION: BUILD-V5 — section the engage next-actions block by context
+:DISPOSITION: DROP → docs note (suggest @-prefix convention + existing filtering)
 :UX_DOC:      (none)
 :DECIDED:     2026-07-16
 :END:
@@ -1297,17 +1297,34 @@ Factors", "What to Review When", the horizons synthesis example). Findings:
   *review*, not engage — already covered by the BUILD-V5 horizon-cadence review
   profiles (REF-05). No new item there.
 
-*Decision* (2026-07-16): BUILD-V5. In the default engage view, replace the single
-flat "All actions ready to be executed" block with a *context-sectioned* rendering:
-group next actions under context-tag headers when the count crosses a threshold
-(~20–30, a defcustom), keyed off *the user's own* context tags (Allen rejects any
-canonical context set), and *degrade gracefully* to the current flat list below the
-threshold or when the user has no context tags. Distinct from ENG-02 (which stays
-"don't force a single context; filter on demand"). The view DSL already supports
-multi-block views + tag filtering, so this is generating context-headed blocks
-dynamically. Exact threshold default, section ordering, and whether an area-of-focus
-secondary axis is offered → settle in a short design/brainstorm. Tracked as yak
-=context-sectioned-default-engage-view-...-xj0e=.
+*Blocker found (the decisive fact)*: org-gtd has *no first-class notion of a
+"context"* to section by. Two unrelated "context" things exist and neither is the
+GTD kind: =org-gtd-context.el= is an internal struct for *multi-context project
+operations* (graph-view/agenda/org-buffer resolution — a name collision), and the
+GTD sense was *deliberately un-bound in v4* — =org-gtd-engage-grouped-by-context=
+is deprecated, its successor =org-gtd-engage-tagged= prompts for "any tag, not just
+@-prefixed context tags" (=org-gtd-engage.el:111=). The =@=-prefix-means-context
+convention was consciously *removed*; contexts became just-another-tag. The view
+DSL keys off =tags= (freeform; =@work= is only a doc *example*, not enforced),
+=area-of-focus= (the one bound dimension — org =CATEGORY= property), =who=
+(=DELEGATED_TO=), =priority=, =effort= — but *no "context" primitive*.
+
+So "section by context" has nothing decisive to section by. Building it would
+require *first* re-defining what a context is in org-gtd (a new =context-tags=
+defcustom, or resurrecting the =@= convention v4 dropped, or substituting
+area-of-focus which Allen ranks only *secondary*) — i.e. reopening a deliberate
+v4 design decision for a =may=-strength item.
+
+*Decision* (2026-07-16, maintainer): DROP — do not build. The value doesn't
+justify reopening the "what is a context" question, and the tools to self-organize
+already exist (=org-gtd-engage-tagged= filters by any tag on demand; the view
+builder composes multi-block tag-filtered views). Instead, a *docs note* suggests
+the =@=-prefix convention for context tags (=@calls=, =@computer=, …) as an
+optional user practice, and shows filtering/sectioning your own view with the
+builder. The Allen research above is retained as the rationale for *why* the
+default stays flat: context-sorting matters past ~50–150 actions, but org-gtd
+leaves the axis to the user rather than hard-coding a context model. Yak =…xj0e=
+closed. (Reverses the same-day BUILD-V5 call once the missing primitive surfaced.)
 
 *** BUILD-V5 REC-UI-02 — proactive integrity flags (command-center counts) :should:ui:
 :PROPERTIES:
