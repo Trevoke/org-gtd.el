@@ -1,1 +1,1 @@
-Unified, friendlier new-user experience: cohere init concierge (org-gtd-init-system) + keywords wizard + a getting-started flow (and maybe a seed setup meta-project) into one welcoming onboarding UX (X-10)
+Unified onboarding (v5, X-10): one guided flow chaining files->keywords->agenda-files->seed-all-review-habits->first capture. Tutorial+meta-project deferred; no migration
