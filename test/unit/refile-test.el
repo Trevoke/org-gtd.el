@@ -60,14 +60,16 @@ The legacy variable is migrated at load time and then ignored."
           (org-gtd-refile-prompt-default nil))
       (assert-nil (org-gtd-refile--should-prompt-p 'test-type)))))
 
-(deftest refile-load-time-migration-populates-registry ()
-  "Load-time migration set :prompt-to-refile t on legacy default types.
-`calendar' is in the default `org-gtd-refile-prompt-for-types' and is a
-registered type, so the migration should have marked it."
+(deftest refile-turnkey-default-no-builtin-prompts ()
+  "By default no built-in type prompts for a refile target (turnkey).
+`org-gtd-refile-prompt-for-types' defaults to nil, so the load-time
+migration marks nothing; built-in types declare `:prompt-to-refile' as
+nil explicitly (self-documenting), so nothing prompts."
   (assert-true (org-gtd-type-prompt-to-refile-set-p 'calendar))
-  (assert-true (org-gtd-type-prompt-to-refile 'calendar))
-  (assert-true (org-gtd-type-prompt-to-refile-set-p 'delegated))
-  (assert-true (org-gtd-type-prompt-to-refile 'delegated)))
+  (assert-nil (org-gtd-type-prompt-to-refile 'calendar))
+  (assert-nil (org-gtd-type-prompt-to-refile 'delegated))
+  (assert-nil (org-gtd-refile--should-prompt-p 'calendar))
+  (assert-nil (org-gtd-refile--should-prompt-p 'delegated)))
 
 (deftest refile-type-prompt-to-refile-set-p ()
   "`org-gtd-type-prompt-to-refile-set-p' distinguishes absent vs explicit nil."

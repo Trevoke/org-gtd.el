@@ -78,20 +78,22 @@
   "calendar type declares disposition, transient-key, and prompt-to-refile."
   (assert-same 'list (org-gtd-type-disposition 'calendar))
   (assert-equal "c" (org-gtd-type-transient-key 'calendar))
-  (assert-same t (org-gtd-type-prompt-to-refile 'calendar)))
+  ;; Declared explicitly as nil (turnkey default); still set-p for self-documentation.
+  (assert-true (org-gtd-type-prompt-to-refile-set-p 'calendar))
+  (assert-same nil (org-gtd-type-prompt-to-refile 'calendar)))
 
 (deftest types-delegated-declares-wiring-fields ()
   "delegated type declares disposition, transient-key, prompt-to-refile, organize-fn."
   (assert-same 'list (org-gtd-type-disposition 'delegated))
   (assert-equal "d" (org-gtd-type-transient-key 'delegated))
-  (assert-same t (org-gtd-type-prompt-to-refile 'delegated))
+  (assert-same nil (org-gtd-type-prompt-to-refile 'delegated))
   (assert-equal 'org-gtd-delegate--organize (org-gtd-type-organize-fn 'delegated)))
 
 (deftest types-next-action-declares-wiring-fields ()
   "next-action type declares disposition, transient-key, prompt-to-refile."
   (assert-same 'list (org-gtd-type-disposition 'next-action))
   (assert-equal "s" (org-gtd-type-transient-key 'next-action))
-  (assert-same t (org-gtd-type-prompt-to-refile 'next-action)))
+  (assert-same nil (org-gtd-type-prompt-to-refile 'next-action)))
 
 ;;; org-gtd-type-get
 

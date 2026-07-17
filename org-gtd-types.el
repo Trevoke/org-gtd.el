@@ -34,7 +34,7 @@
      :state :next
      :disposition list
      :transient-key "s"
-     :prompt-to-refile t
+     :prompt-to-refile nil
      :properties nil)
 
     (delegated
@@ -43,7 +43,7 @@
      :state :wait
      :disposition list
      :transient-key "d"
-     :prompt-to-refile t
+     :prompt-to-refile nil
      :organize-fn org-gtd-delegate--organize
      :properties
      ((:who  :org-property "DELEGATED_TO"      :type text      :required t
@@ -56,7 +56,7 @@
      :state nil
      :disposition list
      :transient-key "c"
-     :prompt-to-refile t
+     :prompt-to-refile nil
      :properties
      ((:when :org-property "ORG_GTD_TIMESTAMP" :type timestamp :required t
              :prompt "When is this happening?")))
@@ -65,7 +65,7 @@
      :org-gtd "Tickler"
      :disposition list
      :transient-key "i"
-     :prompt-to-refile t
+     :prompt-to-refile nil
      :organize-fn org-gtd-tickler--organize
      :organize-project-fn org-gtd-tickler--organize-project
      :state nil
@@ -77,7 +77,7 @@
      :org-gtd "Someday"
      :disposition list
      :transient-key "y"
-     :prompt-to-refile t
+     :prompt-to-refile nil
      :organize-fn org-gtd-someday--organize
      :organize-project-fn org-gtd-someday--organize-project
      :state nil
@@ -93,7 +93,7 @@
      :refile-target "Habits"
      :disposition list
      :transient-key "h"
-     :prompt-to-refile t
+     :prompt-to-refile nil
      :state nil
      :properties
      ((:when :org-property "SCHEDULED" :type repeating-timestamp :required t

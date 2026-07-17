@@ -36,9 +36,11 @@
 
 ;;;; Customization
 
-(defcustom org-gtd-refile-prompt-for-types
-  '(single-action project-heading project-task calendar someday delegated tickler habit)
+(defcustom org-gtd-refile-prompt-for-types nil
   "Obsolete since 4.1.0.  List of GTD types that should prompt for refile.
+
+Defaults to nil: all items auto-refile to the first available target
+without prompting (turnkey experience).
 
 The contents of this list are migrated once, at load time, into per-type
 `:prompt-to-refile t' entries in the `org-gtd-types' registry.  Further

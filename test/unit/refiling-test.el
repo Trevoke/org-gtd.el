@@ -173,14 +173,18 @@
 
 ;;; Should-Prompt Helper Tests
 
-(deftest refile/should-prompt-honors-registry ()
-  "Consults the type registry `:prompt-to-refile'.
-The load-time migration populates this for built-in types in the default
-`org-gtd-refile-prompt-for-types' list (e.g. `calendar', `delegated').
-`trash' is not in the migration default, so it should not prompt."
+(deftest refile/should-prompt-precedence ()
+  "Explicit `:prompt-to-refile' wins; otherwise fall back to the default.
+Built-in types declare `:prompt-to-refile' nil (turnkey), so an explicit
+nil holds even when the default is t.  `trash' declares nothing, so it
+follows `org-gtd-refile-prompt-default'."
+  (let ((org-gtd-refile-prompt-default t))
+    ;; calendar declares nil explicitly -> stays nil despite the t default
+    (assert-nil (org-gtd-refile--should-prompt-p 'calendar))
+    ;; trash declares nothing -> follows the default
+    (assert-true (org-gtd-refile--should-prompt-p 'trash)))
   (let ((org-gtd-refile-prompt-default nil))
-    (assert-true (org-gtd-refile--should-prompt-p 'calendar))
-    (assert-true (org-gtd-refile--should-prompt-p 'delegated))
+    (assert-nil (org-gtd-refile--should-prompt-p 'calendar))
     (assert-nil (org-gtd-refile--should-prompt-p 'trash))))
 
 ;;; Edge Case Tests - User Configuration Issues
