@@ -98,7 +98,7 @@ planning keyword in `org-mode'."
                   org-gtd-prop-refile org-gtd-habit)))
     (org-gtd-refile--add-target org-gtd-habit-template)
 
-    (let ((org-gtd-refile-prompt-for-types nil))  ; auto-refile during upgrade
+    (let ((org-gtd-refile-prompt-default nil))  ; auto-refile during upgrade
       (org-map-entries #'org-gtd-upgrades--organize-habits-v3
                        "+LEVEL=2&+ORG_GTD=\"Actions\""
                        'agenda)

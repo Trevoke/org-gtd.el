@@ -240,7 +240,11 @@ The following items deprecated in 4.0 have been removed:
 - ~org-gtd-review-missed-*-view-specs~ → ~org-gtd-reflect-*-view-specs~
 
 **** Variables removed entirely:
-- ~org-gtd-refile-to-any-target~ - Use ~org-gtd-refile-prompt-for-types~ instead
+- ~org-gtd-refile-to-any-target~ - Refile is turnkey by default; opt into
+  prompting per type with ~org-gtd-customize-type~ (set ~:prompt-to-refile~) or
+  globally with ~org-gtd-refile-prompt-default~
+- ~org-gtd-refile-prompt-for-types~ - Same replacement: set ~:prompt-to-refile~
+  per type via ~org-gtd-customize-type~, or ~org-gtd-refile-prompt-default~
 - ~org-gtd-todo-keyword~ - Use ~org-gtd-keyword-mapping~ instead
 - ~org-gtd-next-keyword~ - Use ~org-gtd-keyword-mapping~ instead
 - ~org-gtd-wait-keyword~ - Use ~org-gtd-keyword-mapping~ instead
@@ -270,8 +274,8 @@ type, or set a global fallback:
 (setq org-gtd-refile-prompt-default t)
 #+end_src
 
-The legacy ~org-gtd-refile-prompt-for-types~ list still works (its values
-are migrated into per-type settings at load time) but is obsolete.
+The legacy ~org-gtd-refile-prompt-for-types~ list has been removed; set
+~:prompt-to-refile~ per type via ~org-gtd-customize-type~ instead.
 
 * 4.5.0 - 2026-01-22
 

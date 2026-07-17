@@ -36,39 +36,6 @@
 
 ;;;; Customization
 
-(defcustom org-gtd-refile-prompt-for-types nil
-  "Obsolete since 4.1.0.  List of GTD types that should prompt for refile.
-
-Defaults to nil: all items auto-refile to the first available target
-without prompting (turnkey experience).
-
-The contents of this list are migrated once, at load time, into per-type
-`:prompt-to-refile t' entries in the `org-gtd-types' registry.  Further
-mutations of this variable are not honored -- setting it after load will
-have no effect on refile behavior.
-
-To configure prompting behavior now, use `org-gtd-customize-type' to set
-`:prompt-to-refile' on individual types, or set `org-gtd-refile-prompt-default'
-as a global fallback for types that do not declare the property explicitly."
-  :group 'org-gtd-organize
-  :package-version '(org-gtd . "4.0.0")
-  :type '(repeat symbol))
-
-(make-obsolete-variable 'org-gtd-refile-prompt-for-types
-                        "use per-type :prompt-to-refile or `org-gtd-refile-prompt-default'"
-                        "4.1.0")
-
-;; Load-time migration: copy the legacy list into per-type
-;; `:prompt-to-refile t' entries in the type registry.  Unknown types
-;; (e.g. `single-action', `project-heading', `project-task') are
-;; silently skipped -- Phase 5 will move these declarations into the
-;; per-type module files, which may not have been loaded yet when this
-;; form runs.  This migration is one-shot at load time; mutating
-;; `org-gtd-refile-prompt-for-types' afterward has no effect.
-(dolist (type (with-no-warnings org-gtd-refile-prompt-for-types))
-  (when (assq type org-gtd-types)
-    (org-gtd-customize-type type :prompt-to-refile t)))
-
 (defcustom org-gtd-refile-prompt-default nil
   "Fallback value for whether refile should prompt for a target.
 
@@ -144,7 +111,7 @@ Precedence:
 TYPE is one of the org-gtd action types (e.g., `org-gtd-projects').
 REFILE-TARGET-ELEMENT is a string template for creating a new target if needed.
 
-When prompting (type in `org-gtd-refile-prompt-for-types'), shows merged
+When prompting (per the type's `:prompt-to-refile'), shows merged
 targets from user's `org-refile-targets' and GTD files.
 
 When auto-refiling (type not in prompt list), only uses GTD targets in

@@ -147,8 +147,7 @@
   (with-current-buffer (org-gtd--default-file)
     (basic-save-buffer))
 
-  ;; `project-heading' is not in the `org-gtd-types' registry, so the
-  ;; load-time migration of `org-gtd-refile-prompt-for-types' skips it and
+  ;; `project-heading' is not in the `org-gtd-types' registry, so
   ;; `should-prompt-p' has no per-type answer.  Bind the default to t so
   ;; the prompting path -- which this test exercises -- is taken.
   (let ((org-gtd-refile-prompt-default t)

@@ -25,8 +25,7 @@
 (defmacro refile-test--with-type (plist &rest body)
   "Run BODY with a temporary `test-type' registered with PLIST."
   (declare (indent 1))
-  `(let ((org-gtd-refile-prompt-for-types nil)
-         (org-gtd-refile-prompt-default nil)
+  `(let ((org-gtd-refile-prompt-default nil)
          (org-gtd-types (cons (cons 'test-type ,plist)
                               org-gtd-types))
          (org-gtd-user-types nil))
@@ -52,19 +51,11 @@
     (let ((org-gtd-refile-prompt-default nil))
       (assert-nil (org-gtd-refile--should-prompt-p 'test-type)))))
 
-(deftest refile-should-prompt-p-legacy-var-no-longer-consulted ()
-  "Mutating `org-gtd-refile-prompt-for-types' after load has no effect.
-The legacy variable is migrated at load time and then ignored."
-  (refile-test--with-type '(:org-gtd "TestType")
-    (let ((org-gtd-refile-prompt-for-types '(test-type))
-          (org-gtd-refile-prompt-default nil))
-      (assert-nil (org-gtd-refile--should-prompt-p 'test-type)))))
-
 (deftest refile-turnkey-default-no-builtin-prompts ()
   "By default no built-in type prompts for a refile target (turnkey).
-`org-gtd-refile-prompt-for-types' defaults to nil, so the load-time
-migration marks nothing; built-in types declare `:prompt-to-refile' as
-nil explicitly (self-documenting), so nothing prompts."
+Built-in types declare `:prompt-to-refile' as nil explicitly
+(self-documenting), and `org-gtd-refile-prompt-default' is nil, so
+nothing prompts."
   (assert-true (org-gtd-type-prompt-to-refile-set-p 'calendar))
   (assert-nil (org-gtd-type-prompt-to-refile 'calendar))
   (assert-nil (org-gtd-type-prompt-to-refile 'delegated))

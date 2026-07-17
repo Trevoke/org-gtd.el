@@ -135,9 +135,6 @@ Sets up org-gtd to use the virtual filesystem."
   ;; v4: Users must configure org-agenda-files to include GTD directory
   (setq org-agenda-files (list org-gtd-directory))
 
-  ;; Auto-refile mode - tests don't need to prompt for targets
-  (setq org-gtd-refile-prompt-for-types nil)
-
   ;; Enable org-edna for dependency management
   (org-edna-mode 1)
 
