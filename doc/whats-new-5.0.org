@@ -1,0 +1,87 @@
+* What's new in 5.0
+:PROPERTIES:
+:CUSTOM_ID: new-in-5.0
+:END:
+
+Version 5.0 is a major release.  It removes the deprecation shims carried
+since 4.0, unifies the item-type system, and adds several engagement and
+review features.  Your GTD *data* continues to work unchanged --- the changes
+you need to make are to your Emacs *configuration* and to any custom code that
+calls org-gtd functions directly.  See [[#migrating-to-5.0][What you need to do]]
+below.
+
+** Highlights
+- *View Manager* --- create, live-preview, name, save, and recall custom GTD
+  views interactively (~M-x org-gtd-view-manager~, or ~v~ in the command
+  center); no elisp required.
+- *Guided Weekly Review* --- a profile-driven, step-by-step review session
+  (~M-x org-gtd-review~), schedulable as a recurring habit.
+- *Reusable checklists* --- a ~checklist-templates.org~ file of named checklist
+  templates, seeded on first touch with Weekly Review starter lists.
+- *Unified type and hook model* --- every built-in type flows through one
+  dispatch pipeline, and ~org-gtd-create-item~ is a single programmatic entry
+  point for creating an item of any registered type.
+- *Turnkey refiling* --- by default all items auto-refile to the first available
+  target; opt into prompting per type (see below).
+
+** What you need to do
+:PROPERTIES:
+:CUSTOM_ID: migrating-to-5.0
+:END:
+
+Your GTD files need no changes.  Update your *configuration* and any custom
+code as follows.  This section is the canonical checklist of required config
+changes for 5.0 --- it is updated as further breaking changes land on the
+=org-gtd-5= branch.
+
+*** Keyword configuration (if still on pre-4.0 style)
+The individual keyword variables were deprecated in 4.0 and are now removed.
+If your config still sets any of ~org-gtd-todo-keyword~, ~org-gtd-next-keyword~,
+~org-gtd-wait-keyword~, or ~org-gtd-canceled-keyword~, replace them with a
+single ~org-gtd-keyword-mapping~ (see [[#all-the-levers][Configuration options]]).
+
+*** Refiling is turnkey by default
+Both ~org-gtd-refile-to-any-target~ and ~org-gtd-refile-prompt-for-types~ are
+removed.  By default, organizing auto-refiles each item to the first available
+target without prompting.
+
+To restore prompting, declare it per type or set a global fallback:
+
+#+begin_src elisp
+;; Prompt for a refile target only for specific types
+(org-gtd-customize-type 'project-heading :prompt-to-refile t)
+(org-gtd-customize-type 'project-task :prompt-to-refile t)
+
+;; ...or prompt for every type
+(setq org-gtd-refile-prompt-default t)
+#+end_src
+
+*** Custom code using ~with-org-gtd-context~
+The ~with-org-gtd-context~ macro is removed.  org-gtd no longer reconfigures
+org-mode per operation --- configure ~org-agenda-files~ directly and drop the
+wrapper from any custom code.
+
+*** Renamed commands and variables
+If you bound keys to, or called, any of these (all deprecated in 4.0), update
+the names.  Note the new ~org-gtd-review~ *is the guided-review command* --- it
+is unrelated to the removed ~org-gtd-review-*~ reflect aliases.
+
+| Old (removed)                        | New                                             |
+|--------------------------------------+-------------------------------------------------|
+| ~org-gtd-oops~, ~org-gtd-oops-*~     | ~org-gtd-reflect-missed-*~                       |
+| ~org-gtd-review-*~ (reflect aliases) | ~org-gtd-reflect-*~                              |
+| ~org-gtd-incubate~                   | ~org-gtd-tickler~                               |
+| ~org-gtd-incubate-create~            | ~org-gtd-tickler-create~                        |
+| ~org-gtd-engage-grouped-by-context~  | ~org-gtd-engage-tagged~                         |
+| ~org-gtd-clarify-map~                | ~org-gtd-clarify-mode-map~                      |
+| ~org-gtd-engage-prefix-width~        | ~org-gtd-prefix-width~                          |
+| ~org-gtd-oops-view-specs~            | ~org-gtd-reflect-missed-engagements-view-specs~ |
+| ~org-gtd-oops-custom-views~          | ~org-gtd-reflect-missed-custom-views~           |
+| ~org-gtd-review-missed-*-view-specs~ | ~org-gtd-reflect-*-view-specs~                  |
+
+See the [[file:../CHANGELOG.org][CHANGELOG]] for the complete, authoritative list.
+
+** Previous versions
+For changes in earlier versions, see:
+- [[file:whats-new-4.0.org][What's new in 4.0]]
+- [[file:whats-new-3.0.org][What's new in 3.0]]

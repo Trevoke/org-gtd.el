@@ -94,6 +94,8 @@ This package provides a system that allows you to capture incoming things into a
                 Waiting For        Next Actions                      Calendar
 #+end_example
 
+#+INCLUDE: "whats-new-5.0.org"
+
 #+INCLUDE: "whats-new-4.0.org"
 
 #+INCLUDE: "setting-up-org-gtd.org"
