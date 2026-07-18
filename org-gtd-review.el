@@ -35,6 +35,7 @@
 (require 'org-gtd-create)
 (require 'org-gtd-types)
 (require 'org-gtd-capture)
+(require 'org-gtd-walk)
 
 ;;;; External Function Declarations
 
@@ -416,6 +417,29 @@ teaching: it only appears while no review reminder exists yet."
                      (unless (org-gtd-review--reminder-exists-p)
                        "  Tip: M-x org-gtd-review-schedule puts this on your calendar."))
              done skipped)))
+
+;;;; Hosted Walk Engine Fold
+
+(defun org-gtd-review--hosted-render (_handle _surface)
+  "Hosted-walk :render stub.
+Fleshed out to sync the model and redraw the console once the render
+hook lands; for now it only needs to be `fboundp' so
+`org-gtd-walk-spec-valid-p' accepts a spec referencing it."
+  nil)
+
+(defun org-gtd-review--checklist-walk-spec (step)
+  "Return an engine walk spec for the checklist STEP.
+Handles are the template's checkbox strings; the walk is hosted in
+the console (`:resumable' nil — the review owns persistence)."
+  (let ((name (plist-get step :checklist)))
+    (list :name (intern (format "review-checklist-%s" name))
+          :find (lambda () (org-gtd-checklist-template--items name))
+          :render #'org-gtd-review--hosted-render
+          :actions nil
+          :on-finish #'org-gtd-review--complete-step
+          :resumable nil
+          :resolve nil
+          :scope (list "review-hosted" name))))
 
 ;;;; Commands
 
