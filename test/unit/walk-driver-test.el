@@ -171,6 +171,13 @@
       (with-current-buffer surface (org-gtd-walk-advance))
       (assert-same 1 (plist-get (org-gtd-walk--load-checkpoint path) :cursor)))))
 
+(deftest walk-non-resumable-writes-no-checkpoint-file ()
+  "A non-resumable walk never touches disk, even across an advance."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start (walk-driver-test--stub-spec) surface)
+    (with-current-buffer surface (org-gtd-walk-advance))
+    (assert-nil (directory-files org-gtd-directory nil "\\.eld\\'"))))
+
 ;;; quit vs finish
 
 (deftest walk-quit-keeps-checkpoint-and-runs-no-on-finish ()
@@ -218,6 +225,22 @@ not leave the scope locked."
     (assert-raises 'error
       (org-gtd-walk-start (walk-driver-test--stub-spec) surface))
     (assert-nil (org-gtd-walk--scope-locked-p "stub-scope"))))
+
+(deftest walk-resumable-start-resumes-from-valid-checkpoint ()
+  "start with a valid pre-existing checkpoint resumes at its cursor and
+never calls :find."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk--save-checkpoint
+     (org-gtd-walk--checkpoint-path 'stub "stub-scope")
+     (list :entries '("a" "b" "c") :cursor 1 :meta nil))
+    (org-gtd-walk-start
+     (walk-driver-test--stub-spec
+      :resumable t
+      :find (lambda () (error "find should not be called on resume")))
+     surface)
+    (assert-equal '("b") walk-driver-test--render-log)
+    (with-current-buffer surface
+      (assert-same 1 (plist-get (plist-get org-gtd-walk--active :model) :cursor)))))
 
 ;;; scope lock
 
