@@ -311,6 +311,30 @@ This ensures evil users get emacs state by default for better UX."
     (assert-same 'someday-review (plist-get spec :name))
     (assert-true (org-gtd-walk--callable-p (plist-get spec :render)))))
 
+(deftest someday-review/defer-and-clarify-update-counters ()
+  "defer increments :reviewed and clarify increments :clarified on the surface."
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "One")
+    (org-gtd-someday-create "Two")
+    (org-gtd-someday-create "Three"))
+  (org-gtd-reflect-someday-review)
+  (let ((surface (car (org-gtd-wip--get-buffers))))
+    (with-current-buffer surface (org-gtd-someday-review-defer))
+    (with-current-buffer surface (org-gtd-someday-review-clarify))
+    (with-current-buffer surface
+      (assert-same 1 (plist-get org-gtd-someday-review--counters :reviewed))
+      (assert-same 1 (plist-get org-gtd-someday-review--counters :clarified)))
+    (org-gtd-someday-review-quit)))
+
+(deftest someday-review/entry-command-honors-list-argument ()
+  "The entry command with an explicit list arg starts a review of that list."
+  (let ((org-gtd-someday-lists '("Work")))
+    (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+      (with-simulated-input "Work RET" (org-gtd-someday-create "Work item")))
+    (org-gtd-reflect-someday-review "Work")
+    (assert-true (> (length (org-gtd-wip--get-buffers)) 0))
+    (org-gtd-someday-review-quit)))
+
 (provide 'someday-review-test)
 
 ;;; someday-review-test.el ends here

@@ -27,6 +27,7 @@
 ;;;; Requirements
 
 (require 'org)
+(require 'org-id)
 (require 'org-gtd-core)
 (require 'org-gtd-wip)
 (require 'org-gtd-reactivate)
@@ -179,8 +180,8 @@ survive the whole walk."
 (defun org-gtd-someday-review--on-finish ()
   "End-of-walk: report the summary and clean up the surface buffer.
 Runs in the surface buffer after the engine has cleared its session."
-  (let ((reviewed (plist-get org-gtd-someday-review--counters :reviewed))
-        (clarified (plist-get org-gtd-someday-review--counters :clarified)))
+  (let ((reviewed (or (plist-get org-gtd-someday-review--counters :reviewed) 0))
+        (clarified (or (plist-get org-gtd-someday-review--counters :clarified) 0)))
     (org-gtd-wip--cleanup-temp-file org-gtd-someday-review--surface-key)
     (message "Review complete. %d items reviewed, %d clarified."
              reviewed clarified)))
@@ -281,8 +282,8 @@ Adds \\='Unassigned\\=' option for items without a list."
 (defun org-gtd-someday-review-quit ()
   "Abandon the review: report the summary, clean up, tear down the walk."
   (interactive)
-  (let ((reviewed (plist-get org-gtd-someday-review--counters :reviewed))
-        (clarified (plist-get org-gtd-someday-review--counters :clarified)))
+  (let ((reviewed (or (plist-get org-gtd-someday-review--counters :reviewed) 0))
+        (clarified (or (plist-get org-gtd-someday-review--counters :clarified) 0)))
     (org-gtd-walk-quit)
     (org-gtd-wip--cleanup-temp-file org-gtd-someday-review--surface-key)
     (message "Review complete. %d items reviewed, %d clarified." reviewed clarified)))
