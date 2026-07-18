@@ -83,6 +83,8 @@
 (require 'org-gtd-reflect)
 (require 'org-gtd-someday-review)
 (require 'org-gtd-review)
+(require 'org-gtd-walk-model)
+(require 'org-gtd-walk)
 (require 'org-gtd-view-language)
 (require 'org-gtd-view-manager)
 (require 'org-gtd-upgrades)
