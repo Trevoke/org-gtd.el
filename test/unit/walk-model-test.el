@@ -145,6 +145,37 @@
   (assert-raises 'error
     (org-gtd-walk-model-enqueue (org-gtd-walk-model-create '("a")) "z" 'sideways)))
 
+;;; valid-p
+
+(deftest walk-model-valid-p-accepts-a-fresh-model ()
+  (assert-true (org-gtd-walk-model-valid-p
+                (org-gtd-walk-model-create '("a" "b")))))
+
+(deftest walk-model-valid-p-accepts-done-cursor-at-length ()
+  "cursor == (length entries) is the valid done position."
+  (assert-true (org-gtd-walk-model-valid-p (list :entries '("a") :cursor 1))))
+
+(deftest walk-model-valid-p-accepts-symbol-and-number-handles ()
+  (assert-true (org-gtd-walk-model-valid-p
+                (list :entries '(foo 42 "bar") :cursor 0))))
+
+(deftest walk-model-valid-p-rejects-negative-cursor ()
+  (assert-nil (org-gtd-walk-model-valid-p (list :entries '("a") :cursor -1))))
+
+(deftest walk-model-valid-p-rejects-cursor-past-end ()
+  (assert-nil (org-gtd-walk-model-valid-p (list :entries '("a") :cursor 2))))
+
+(deftest walk-model-valid-p-rejects-non-integer-cursor ()
+  (assert-nil (org-gtd-walk-model-valid-p (list :entries '("a") :cursor "0"))))
+
+(deftest walk-model-valid-p-rejects-non-list-entries ()
+  (assert-nil (org-gtd-walk-model-valid-p (list :entries "a" :cursor 0))))
+
+(deftest walk-model-valid-p-rejects-non-serializable-handle ()
+  "Live markers and other non-serializable handles are rejected."
+  (assert-nil (org-gtd-walk-model-valid-p
+               (list :entries (list (make-marker)) :cursor 0))))
+
 (provide 'walk-model-test)
 
 ;;; walk-model-test.el ends here

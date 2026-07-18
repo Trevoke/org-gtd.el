@@ -97,6 +97,28 @@ never displaced (see design §4)."
           :cursor (plist-get model :cursor)
           :meta (plist-get model :meta))))
 
+;;;; Validation
+
+(defun org-gtd-walk-model--handle-serializable-p (handle)
+  "Return non-nil when HANDLE is a `prin1'/`read'-safe walk handle.
+Handles are strings, symbols, or numbers (org-ids in practice); live
+markers and buffers are rejected so they can never be persisted."
+  (or (stringp handle) (symbolp handle) (numberp handle)))
+
+(defun org-gtd-walk-model-valid-p (model)
+  "Return non-nil when MODEL is internally coherent and serializable.
+Checks entries is a list of serializable handles and cursor is an
+integer in [0, (length entries)].  Used to reject corrupt checkpoints
+(see design §8)."
+  (and (listp model)
+       (let ((entries (plist-get model :entries))
+             (cursor (plist-get model :cursor)))
+         (and (listp entries)
+              (integerp cursor)
+              (>= cursor 0)
+              (<= cursor (length entries))
+              (seq-every-p #'org-gtd-walk-model--handle-serializable-p entries)))))
+
 ;;;; Footer
 
 (provide 'org-gtd-walk-model)
