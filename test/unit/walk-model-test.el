@@ -132,6 +132,19 @@
          (m1 (org-gtd-walk-model-enqueue m0 "z" 'top)))
     (assert-equal '("a" "z") (plist-get m1 :entries))))
 
+(deftest walk-model-enqueue-top-at-start-inserts-next-not-current ()
+  "From a fresh walk, top inserts after the current item; current is unchanged."
+  (let* ((m0 (org-gtd-walk-model-create '("a" "b")))
+         (m1 (org-gtd-walk-model-enqueue m0 "z" 'top)))
+    (assert-equal '("a" "z" "b") (plist-get m1 :entries))
+    (assert-same 0 (plist-get m1 :cursor))
+    (assert-equal "a" (org-gtd-walk-model-current m1))))
+
+(deftest walk-model-enqueue-unknown-position-errors ()
+  "enqueue signals an error for an unrecognized position."
+  (assert-raises 'error
+    (org-gtd-walk-model-enqueue (org-gtd-walk-model-create '("a")) "z" 'sideways)))
+
 (provide 'walk-model-test)
 
 ;;; walk-model-test.el ends here
