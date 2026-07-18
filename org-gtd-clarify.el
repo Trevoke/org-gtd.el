@@ -33,6 +33,8 @@
 (require 'org-gtd-id)
 (require 'org-gtd-wip)
 (require 'org-gtd-horizons)
+(require 'org-gtd-walk-model)
+(require 'org-gtd-walk)
 
 ;; Defined in org-gtd-capture (loaded at the org-gtd.el level); declared
 ;; here to avoid a require cycle while silencing the compiler.
@@ -312,7 +314,7 @@ configuration and cleans up."
 
 (defun org-gtd-clarify-duplicate ()
   "Duplicate current item with a new title.
-Prompts for a new title, then adds the duplicate to the queue."
+Prompts for a new title, then enqueues the duplicate."
   (interactive)
   (unless (derived-mode-p 'org-gtd-clarify-mode)
     (user-error "Not in a clarify buffer"))
@@ -329,13 +331,12 @@ Prompts for a new title, then adds the duplicate to the queue."
               (org-mode)
               (org-edit-headline new-title)
               (buffer-string))))
-      (org-gtd-clarify--queue-add new-title updated-content)
-      (org-gtd-clarify--queue-display)
+      (org-gtd-clarify--enqueue-duplicate new-title updated-content)
       (message "Duplicated: %s" new-title))))
 
 (defun org-gtd-clarify-duplicate-exact ()
   "Duplicate current item exactly as-is.
-Adds an exact copy to the queue without prompting for changes."
+Enqueues an exact copy without prompting for changes."
   (interactive)
   (unless (derived-mode-p 'org-gtd-clarify-mode)
     (user-error "Not in a clarify buffer"))
@@ -344,8 +345,7 @@ Adds an exact copy to the queue without prompting for changes."
       (user-error "Nothing to duplicate"))
     (let ((title (plist-get content-plist :title))
           (content (plist-get content-plist :content)))
-      (org-gtd-clarify--queue-add title content)
-      (org-gtd-clarify--queue-display)
+      (org-gtd-clarify--enqueue-duplicate title content)
       (message "Duplicated: %s" title))))
 
 ;;;; Functions
@@ -566,6 +566,38 @@ TASK-INFO is a list of (heading id depends-on blocks) for each task."
     (if task-data
         (nth 0 task-data)
       task-id)))
+
+;;;; Duplicate Enqueue (D4a + D4c)
+
+(defun org-gtd-clarify--enqueue-duplicate (title content)
+  "Enqueue a duplicate with TITLE and CONTENT for later clarification.
+
+On the walk-driven path (`org-gtd-walk--active' non-nil in the current
+buffer -- i.e. duplicating while processing the inbox), stores
+\(:title :content) in the active walk model's `:meta' under a fresh
+synthetic token and inserts that token at
+`org-gtd-clarify-duplicate-queue-position' (D4a + D4c): a direct model
+mutation, no render.  The subsequent organize's advance (see
+`org-gtd-organize--call') renders it in turn via the inbox walk's
+generic `:render' (`org-gtd-inbox-walk--render', which dispatches on
+the meta shape) -- so this function does not need to know how to
+render a duplicate itself.
+
+On the one-off path (no active walk -- duplicating during a one-off
+`org-gtd-clarify-item'), falls back to the legacy buffer-local queue
+and its side-window display, exactly as before the walk engine."
+  (if org-gtd-walk--active
+      (let* ((token (format "inbox-dup-%s" (org-id-uuid)))
+             (model (plist-get org-gtd-walk--active :model))
+             (seeded (list :entries (plist-get model :entries)
+                          :cursor (plist-get model :cursor)
+                          :meta (cons (cons token (list :title title :content content))
+                                     (plist-get model :meta)))))
+        (setf (plist-get org-gtd-walk--active :model)
+              (org-gtd-walk-model-enqueue
+               seeded token org-gtd-clarify-duplicate-queue-position)))
+    (org-gtd-clarify--queue-add title content)
+    (org-gtd-clarify--queue-display)))
 
 ;;;; Duplicate Queue Functions
 
