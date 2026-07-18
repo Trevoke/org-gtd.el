@@ -63,6 +63,35 @@ Tokens are never serialized (resume is deferred, D5b) -- any unique
 string works; it exists only to key the walk model's `:meta' table."
   (format "inbox-%s" (org-id-uuid)))
 
+;;;;; Meta accessors (D2 + D4a)
+
+(defun org-gtd-inbox-walk--meta-put-marker (model token marker)
+  "Return a copy of MODEL with TOKEN mapped to MARKER in its `:meta'.
+MARKER is the live marker of an original inbox heading."
+  (list :entries (plist-get model :entries)
+        :cursor (plist-get model :cursor)
+        :meta (cons (cons token marker) (plist-get model :meta))))
+
+(defun org-gtd-inbox-walk--meta-put-dup (model token title content)
+  "Return a copy of MODEL with TOKEN mapped to a duplicate entry.
+The stored `:meta' value is (:title TITLE :content CONTENT), D4a's
+representation for a duplicate handle."
+  (list :entries (plist-get model :entries)
+        :cursor (plist-get model :cursor)
+        :meta (cons (cons token (list :title title :content content))
+                    (plist-get model :meta))))
+
+(defun org-gtd-inbox-walk--meta-get (model token)
+  "Return the `:meta' value stored under TOKEN in MODEL, or nil."
+  (cdr (assoc token (plist-get model :meta))))
+
+(defun org-gtd-inbox-walk--meta-dup-p (value)
+  "Return non-nil when VALUE is a duplicate (:title :content) plist.
+VALUE is whatever `org-gtd-inbox-walk--meta-get' returned: a live
+marker for an original inbox heading, or a duplicate plist.  nil (an
+unknown/missing token) is not a duplicate."
+  (and value (not (markerp value))))
+
 ;;;;; Multi-source scan (D6a, D2)
 
 (defun org-gtd-inbox-walk--file-list ()
@@ -98,9 +127,16 @@ session.  Does NOT assign any org-id -- ids stay lazily assigned at
   "Return a fresh walk model built from `org-gtd-inbox-walk--scan'.
 Combines the scanned tokens (the model's entries) with the scanned
 token->marker meta into a single model, ready to drive an inbox walk.
-\(A later task wires this into `org-gtd-walk-start'.)"
-  (let ((scanned (org-gtd-inbox-walk--scan)))
-    (org-gtd-walk-model-create (car scanned) (cdr scanned))))
+Writes meta through `org-gtd-inbox-walk--meta-put-marker', the same
+accessor a later task's enqueue path uses for duplicates.  (A later
+task wires this into `org-gtd-walk-start'.)"
+  (let* ((scanned (org-gtd-inbox-walk--scan))
+         (tokens (car scanned))
+         (raw-meta (cdr scanned))
+         (model (org-gtd-walk-model-create tokens)))
+    (dolist (pair raw-meta)
+      (setq model (org-gtd-inbox-walk--meta-put-marker model (car pair) (cdr pair))))
+    model))
 
 ;;;; Footer
 

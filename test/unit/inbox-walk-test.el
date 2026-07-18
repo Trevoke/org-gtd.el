@@ -127,6 +127,59 @@ positions would be broken by in-session edits."
       (assert-true (markerp marker))
       (assert-match "Solo item" (org-with-point-at marker (org-get-heading t t t t))))))
 
+;;; Meta Accessor Tests (Task 2)
+
+(deftest inbox-walk/token-returns-fresh-unique-strings ()
+  "Token minting returns distinct strings each call."
+  (let ((token-1 (org-gtd-inbox-walk--token))
+        (token-2 (org-gtd-inbox-walk--token)))
+    (assert-true (stringp token-1))
+    (assert-true (stringp token-2))
+    (assert-nil (equal token-1 token-2))))
+
+(deftest inbox-walk/meta-put-marker-then-get-returns-marker ()
+  "meta-put-marker stores a marker under a token; meta-get retrieves it."
+  (ogt--with-temp-org-buffer
+   "* Some heading"
+   (let* ((marker (point-marker))
+          (token (org-gtd-inbox-walk--token))
+          (model (org-gtd-walk-model-create nil)))
+     (setq model (org-gtd-inbox-walk--meta-put-marker model token marker))
+     (assert-same marker (org-gtd-inbox-walk--meta-get model token)))))
+
+(deftest inbox-walk/meta-put-dup-then-get-returns-plist ()
+  "meta-put-dup stores a (:title :content) plist under a token."
+  (let* ((token (org-gtd-inbox-walk--token))
+         (model (org-gtd-walk-model-create nil)))
+    (setq model (org-gtd-inbox-walk--meta-put-dup model token "A title" "* A title\ncontent"))
+    (let ((value (org-gtd-inbox-walk--meta-get model token)))
+      (assert-equal "A title" (plist-get value :title))
+      (assert-equal "* A title\ncontent" (plist-get value :content)))))
+
+(deftest inbox-walk/meta-dup-p-distinguishes-marker-from-duplicate ()
+  "meta-dup-p is nil for a marker value, non-nil for a duplicate plist."
+  (ogt--with-temp-org-buffer
+   "* Some heading"
+   (let ((marker (point-marker))
+         (dup-value (list :title "T" :content "C")))
+     (assert-nil (org-gtd-inbox-walk--meta-dup-p marker))
+     (assert-true (org-gtd-inbox-walk--meta-dup-p dup-value)))))
+
+(deftest inbox-walk/model-with-mixed-meta-stays-valid ()
+  "A model carrying both marker and duplicate meta entries stays valid.
+Validity only inspects entries + cursor; meta shape never affects it,
+and this meta -- live markers -- is intentionally never serialized
+(resume is deferred, D5b)."
+  (ogt--with-temp-org-buffer
+   "* Some heading"
+   (let* ((marker (point-marker))
+          (marker-token (org-gtd-inbox-walk--token))
+          (dup-token (org-gtd-inbox-walk--token))
+          (model (org-gtd-walk-model-create (list marker-token dup-token))))
+     (setq model (org-gtd-inbox-walk--meta-put-marker model marker-token marker))
+     (setq model (org-gtd-inbox-walk--meta-put-dup model dup-token "T" "* T\n"))
+     (assert-true (org-gtd-walk-model-valid-p model)))))
+
 (provide 'inbox-walk-test)
 
 ;;; inbox-walk-test.el ends here
