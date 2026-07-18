@@ -194,6 +194,28 @@ and clears the live walk, instead of leaking the synthetic scope
       (assert-nil org-gtd-walk--locked-scopes)
       (assert-nil org-gtd-walk--active))))
 
+;;; Walk Step Validation Tests (Task B1)
+
+(deftest review-walk/walk-step-missing-walk-errors-cleanly ()
+  "A walk step without :walk is rejected at session start."
+  (let ((org-gtd-review-profiles
+         '(("Bad" ("P" (:title "Walk what?" :type walk))))))
+    (let ((err (condition-case e (progn (org-gtd-review "Bad") nil)
+                 (user-error e))))
+      (assert-true err)
+      (assert-match ":walk" (cadr err)))
+    (assert-nil org-gtd-review--state)))
+
+(deftest review-walk/walk-step-unknown-walk-errors-cleanly ()
+  "A walk step naming an unregistered walk is rejected at session start."
+  (let ((org-gtd-review-profiles
+         '(("Bad" ("P" (:title "Ghost" :type walk :walk no-such-walk))))))
+    (let ((err (condition-case e (progn (org-gtd-review "Bad") nil)
+                 (user-error e))))
+      (assert-true err)
+      (assert-match "no-such-walk" (cadr err)))
+    (assert-nil org-gtd-review--state)))
+
 (provide 'review-walk-test)
 
 ;;; review-walk-test.el ends here

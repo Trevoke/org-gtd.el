@@ -180,7 +180,17 @@ step looks like so the error teaches the fix."
                    (not (plist-get step :checklist)))
           (user-error
            "Review profile '%s', phase '%s': checklist step \"%s\" is missing :checklist — name a template from your checklist templates file, like :checklist \"Weekly Review triggers\""
-           name (car phase) (plist-get step :title)))))))
+           name (car phase) (plist-get step :title)))
+        (when (eq (plist-get step :type) 'walk)
+          (let ((wname (plist-get step :walk)))
+            (unless wname
+              (user-error
+               "Review profile '%s', phase '%s': walk step \"%s\" is missing :walk — name a registered walk, like :walk stuck-projects"
+               name (car phase) (plist-get step :title)))
+            (unless (org-gtd-walk-get wname)
+              (user-error
+               "Review profile '%s', phase '%s': walk step \"%s\" names :walk %s, which is not registered in org-gtd-walks"
+               name (car phase) (plist-get step :title) wname))))))))
 
 ;;;; Checkpoint and Resume Persistence
 
