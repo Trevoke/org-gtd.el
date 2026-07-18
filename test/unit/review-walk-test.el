@@ -64,6 +64,30 @@ the hosted path is exercised through its own entry point."
       (assert-true (plist-get org-gtd-review--state :walk-model))
       (assert-match "(1/" (buffer-string)))))
 
+;;; Checklist Advancement Through the Engine Tests (Task A3)
+
+(defvar review-walk-test--walk-profile
+  '(("Walk"
+     ("P"
+      (:title "Sweep" :type checklist :checklist "Mind sweep prompts")
+      (:title "After" :type prompt)))))
+
+(deftest review-walk/checklist-hosted-walk-advances-and-exits ()
+  "n loads the hosted walk, advances item by item, then leaves the step.
+Asserts :walk-model (not the bespoke :walk-items/:walk-pos) is what
+carries state, so this actually discriminates the engine path from
+the old one — the rendered text looks identical either way."
+  (let ((org-gtd-review-profiles review-walk-test--walk-profile))
+    (org-gtd-review "Walk")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)                       ; load, item 1
+      (assert-match "(1/8)" (buffer-string))
+      (assert-true (plist-get org-gtd-review--state :walk-model))
+      (assert-nil (plist-get org-gtd-review--state :walk-items))
+      (assert-true org-gtd-walk--active)
+      (dotimes (_ 8) (org-gtd-review-next))       ; through 8 and out
+      (assert-match "After" (buffer-string)))))
+
 (provide 'review-walk-test)
 
 ;;; review-walk-test.el ends here

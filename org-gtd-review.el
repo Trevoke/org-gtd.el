@@ -452,6 +452,28 @@ checkpoint (`:walk-model') in step with the engine's live session."
    (list :buffer (get-buffer-create org-gtd-review--buffer-name)
          :region 'console)))
 
+(defun org-gtd-review--walk-step-next (step)
+  "Do the walk STEP: start the hosted walk on first n, else advance it.
+A first n loads the checklist's items and shows item 1; every
+subsequent n advances the hosted walk one item, until it runs off the
+end and the step completes.  Preserves the pre-engine \"nothing in
+this checklist\" message for an empty/missing template — the engine's
+own empty-find behavior (self-satisfy via :on-finish) would otherwise
+skip the step silently."
+  (if (plist-get org-gtd-review--state :acted)
+      (with-current-buffer org-gtd-review--buffer-name
+        (org-gtd-walk-advance))
+    (let ((items (org-gtd-checklist-template--items (plist-get step :checklist))))
+      (if (null items)
+          (progn
+            (message "Nothing in checklist '%s' — moving on.  (Edit %s to add items.)"
+                     (plist-get step :checklist)
+                     (org-gtd-checklist-template--file-path))
+            (org-gtd-review--complete-step))
+        (plist-put org-gtd-review--state :acted t)
+        (org-gtd-review--start-hosted-walk
+         (org-gtd-review--checklist-walk-spec step))))))
+
 (defun org-gtd-review--checklist-walk-spec (step)
   "Return an engine walk spec for the checklist STEP.
 Handles are the template's checkbox strings; the walk is hosted in
@@ -517,7 +539,7 @@ lands on the item the user was looking at."
          (save-selected-window
            (call-interactively (plist-get step :view)))
          (plist-put org-gtd-review--state :acted t)))
-      ('checklist (org-gtd-review--walk-next step))
+      ('checklist (org-gtd-review--walk-step-next step))
       (_
        (message "Step type '%s' is unknown — check org-gtd-review-profiles; skipping this step" type)
        (org-gtd-review--complete-step t)))))
