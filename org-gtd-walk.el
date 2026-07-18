@@ -132,6 +132,91 @@ Keyed by NAME and SCOPE so distinct resumable sessions never collide
   "Delete the checkpoint file at PATH if it exists."
   (when (file-exists-p path) (delete-file path)))
 
+;;;; Session driver
+
+(defvar-local org-gtd-walk--active nil
+  "Buffer-local active-walk bundle on the surface buffer.
+Plist: :model :spec :surface :checkpoint-path :skipped.  Nil when no
+walk is active in this buffer.")
+
+(defun org-gtd-walk--surface-buffer (surface)
+  "Return the buffer of SURFACE.
+SURFACE is a buffer, or a plist carrying :buffer (region support is
+carried in SURFACE and passed to :render untouched)."
+  (if (bufferp surface) surface (plist-get surface :buffer)))
+
+(defun org-gtd-walk--render-current ()
+  "Call the spec's :render with the current handle and surface."
+  (let* ((spec (plist-get org-gtd-walk--active :spec))
+         (model (plist-get org-gtd-walk--active :model)))
+    (funcall (plist-get spec :render)
+             (org-gtd-walk-model-current model)
+             (plist-get org-gtd-walk--active :surface))))
+
+(defun org-gtd-walk--checkpoint ()
+  "Persist the current model if the walk is resumable."
+  (let ((path (plist-get org-gtd-walk--active :checkpoint-path)))
+    (when path
+      (org-gtd-walk--save-checkpoint path (plist-get org-gtd-walk--active :model)))))
+
+(defun org-gtd-walk--settle ()
+  "Skip stale handles, then render+checkpoint, or finish if exhausted.
+Runs in the surface buffer.  With a :resolve fn, auto-advances past
+handles that no longer resolve, counting skips (design §9)."
+  (let ((resolve (plist-get (plist-get org-gtd-walk--active :spec) :resolve)))
+    (when resolve
+      (while (and (not (org-gtd-walk-model-done-p
+                        (plist-get org-gtd-walk--active :model)))
+                  (not (funcall resolve
+                                (org-gtd-walk-model-current
+                                 (plist-get org-gtd-walk--active :model)))))
+        (setf (plist-get org-gtd-walk--active :model)
+              (org-gtd-walk-model-advance (plist-get org-gtd-walk--active :model)))
+        (setf (plist-get org-gtd-walk--active :skipped)
+              (1+ (plist-get org-gtd-walk--active :skipped))))))
+  (if (org-gtd-walk-model-done-p (plist-get org-gtd-walk--active :model))
+      (org-gtd-walk-finish)
+    (org-gtd-walk--render-current)
+    (org-gtd-walk--checkpoint)))
+
+(defun org-gtd-walk-start (spec surface)
+  "Start a walk described by SPEC, rendering into SURFACE.
+Refuses if SPEC's scope is already locked.  Loads a checkpoint when
+:resumable and one is valid, else runs :find fresh.  An empty find
+finishes immediately without activating (design §6, §9)."
+  (let ((scope (plist-get spec :scope)))
+    (when (org-gtd-walk--scope-locked-p scope)
+      (error "A walk is already active over scope %s" scope))
+    (let* ((name (plist-get spec :name))
+           (path (and (plist-get spec :resumable)
+                      (org-gtd-walk--checkpoint-path name scope)))
+           (model (or (and path (org-gtd-walk--load-checkpoint path))
+                      (org-gtd-walk-model-create (funcall (plist-get spec :find)))))
+           (buffer (org-gtd-walk--surface-buffer surface)))
+      (if (org-gtd-walk-model-done-p model)
+          (progn
+            (when path (org-gtd-walk--delete-checkpoint path))
+            (when (plist-get spec :on-finish)
+              (funcall (plist-get spec :on-finish)))
+            nil)
+        (org-gtd-walk--lock-scope scope)
+        (with-current-buffer buffer
+          (setq org-gtd-walk--active
+                (list :model model :spec spec :surface surface
+                      :checkpoint-path path :skipped 0))
+          (org-gtd-walk--settle))))))
+
+(defun org-gtd-walk-finish ()
+  "Finish the active walk: delete checkpoint, unlock, run :on-finish.
+Runs in the surface buffer (design §9)."
+  (let* ((spec (plist-get org-gtd-walk--active :spec))
+         (path (plist-get org-gtd-walk--active :checkpoint-path)))
+    (when path (org-gtd-walk--delete-checkpoint path))
+    (org-gtd-walk--unlock-scope (plist-get spec :scope))
+    (setq org-gtd-walk--active nil)
+    (when (plist-get spec :on-finish)
+      (funcall (plist-get spec :on-finish)))))
+
 ;;;; Footer
 
 (provide 'org-gtd-walk)
