@@ -158,6 +158,19 @@
     (assert-same 1 walk-driver-test--finish-count)
     (with-current-buffer surface (assert-nil org-gtd-walk--active))))
 
+;;; checkpointing
+
+(deftest walk-resumable-checkpoints-after-start-and-advance ()
+  "A resumable walk writes its model to disk, updated on each transition."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start
+     (walk-driver-test--stub-spec :resumable t) surface)
+    (let ((path (org-gtd-walk--checkpoint-path 'stub "stub-scope")))
+      (assert-true (file-exists-p path))
+      (assert-same 0 (plist-get (org-gtd-walk--load-checkpoint path) :cursor))
+      (with-current-buffer surface (org-gtd-walk-advance))
+      (assert-same 1 (plist-get (org-gtd-walk--load-checkpoint path) :cursor)))))
+
 (provide 'walk-driver-test)
 
 ;;; walk-driver-test.el ends here
