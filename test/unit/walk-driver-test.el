@@ -68,6 +68,19 @@
       (assert-equal "a" (org-gtd-walk-model-current
                          (plist-get org-gtd-walk--active :model))))))
 
+;;; advance
+
+(deftest walk-advance-renders-next-item ()
+  "advance moves the cursor and re-renders the new current handle."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start (walk-driver-test--stub-spec) surface)
+    (with-current-buffer surface (org-gtd-walk-advance))
+    ;; newest render first: "b" after "a"
+    (assert-equal '("b" "a") walk-driver-test--render-log)
+    (with-current-buffer surface
+      (assert-equal "b" (org-gtd-walk-model-current
+                         (plist-get org-gtd-walk--active :model))))))
+
 (provide 'walk-driver-test)
 
 ;;; walk-driver-test.el ends here

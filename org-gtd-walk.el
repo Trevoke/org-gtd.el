@@ -206,6 +206,13 @@ finishes immediately without activating (design §6, §9)."
                       :checkpoint-path path :skipped 0))
           (org-gtd-walk--settle))))))
 
+(defun org-gtd-walk-advance ()
+  "Advance the active walk to the next item and re-render (design §6).
+Finishes when the walk runs off the end.  Runs in the surface buffer."
+  (setf (plist-get org-gtd-walk--active :model)
+        (org-gtd-walk-model-advance (plist-get org-gtd-walk--active :model)))
+  (org-gtd-walk--settle))
+
 (defun org-gtd-walk-finish ()
   "Finish the active walk: delete checkpoint, unlock, run :on-finish.
 Runs in the surface buffer (design §9)."
