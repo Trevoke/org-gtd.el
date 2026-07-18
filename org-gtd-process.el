@@ -77,12 +77,21 @@ walk model.  See
 docs/plans/2026-07-17-walk-engine-phase-4-plan.md."
   (interactive)
   (let* ((files (org-gtd-inbox-walk--file-list))
-         (model (org-gtd-inbox-walk--build-model)))
+         (model (org-gtd-inbox-walk--build-model))
+         (window-config (current-window-configuration)))
     (if (org-gtd-walk-model-done-p model)
         (message "All inboxes are empty. No items to process.")
       (org-gtd-walk-start (org-gtd-inbox-walk--spec files)
                           (org-gtd-inbox-walk--surface)
-                          model))))
+                          model)
+      ;; Stash the pre-processing window configuration on the surface so
+      ;; `org-gtd-clarify-stop' (quit path) can restore it, matching the
+      ;; pre-engine inbox flow.  `org-gtd-walk-start' leaves the surface
+      ;; current on success (see `org-gtd-walk-start'), and :render never
+      ;; touches `org-gtd-clarify--window-config', so this survives every
+      ;; later advance.
+      (when org-gtd-walk--active
+        (setq-local org-gtd-clarify--window-config window-config)))))
 
 ;;;; Functions
 

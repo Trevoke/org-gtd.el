@@ -285,29 +285,73 @@ WINDOW-CONFIG is the window config to set after clarification finishes."
 
 (defun org-gtd-clarify-stop ()
   "Stop clarifying the current item and restore previous state.
-If there are pending duplicates in the queue, discards only the current
-item and moves to the next queued item. Otherwise restores the window
-configuration and cleans up."
+On the walk-driven inbox path, delegates to
+`org-gtd-clarify--stop-walk'; on the one-off clarify path, to
+`org-gtd-clarify--stop-one-off'.  In both cases: if the next thing to
+handle is a queued duplicate, discard only the current item and move to
+it; otherwise tear down and restore the window configuration."
   (interactive)
+  (if org-gtd-walk--active
+      (org-gtd-clarify--stop-walk)
+    (org-gtd-clarify--stop-one-off)))
+
+(defun org-gtd-clarify--stop-walk ()
+  "Stop clarifying on the walk-driven inbox path (Task 7).
+If the entry immediately after the current one is a queued duplicate,
+`org-gtd-walk-advance' (skip the current item, render the duplicate) --
+reproducing the old \"discard current, process next queued duplicate.\"
+Otherwise abandon the whole walk: `org-gtd-walk-quit' (which releases
+the scope lock), tear down the surface and side windows, restore the
+window configuration, and report -- reproducing the old \"stop with no
+pending duplicates aborts the session.\"
+
+Quits BEFORE killing the surface so the surface's kill-buffer query
+sees no active walk and no pending duplicates, silently allowing
+teardown -- matching the old stop, which cleared the duplicate queue
+before cleanup so the save/discard prompt never fired."
+  (let* ((model (plist-get org-gtd-walk--active :model))
+         (entries (plist-get model :entries))
+         (cursor (plist-get model :cursor))
+         (next-token (nth (1+ cursor) entries))
+         (next-value (and next-token
+                          (cdr (assoc next-token (plist-get model :meta)))))
+         ;; A duplicate's meta value is a (:title :content) plist; an
+         ;; inbox item's is a live marker (D2/D4a).
+         (next-is-duplicate (and next-value (not (markerp next-value)))))
+    (if next-is-duplicate
+        ;; The refresh of the side window is handled by :render, which
+        ;; `org-gtd-walk-advance' runs.
+        (org-gtd-walk-advance)
+      (let ((window-config org-gtd-clarify--window-config)
+            (task-id org-gtd-clarify--clarify-id))
+        (org-gtd-walk-quit)
+        (org-gtd-clarify--queue-cleanup)
+        (org-gtd-clarify--cleanup-horizons-view)
+        (when task-id
+          (org-gtd-wip--cleanup-temp-file task-id))
+        (when window-config
+          (set-window-configuration window-config))
+        (message "Stopped clarifying")))))
+
+(defun org-gtd-clarify--stop-one-off ()
+  "Stop clarifying on the one-off (non-walk) clarify path.
+Preserves the pre-walk-engine behavior: if the buffer-local duplicate
+queue has items, discard the current item and process the next queued
+duplicate; otherwise clean up and restore the window configuration."
   (let ((queue (copy-sequence org-gtd-clarify--duplicate-queue))
         (window-config org-gtd-clarify--window-config)
-        (task-id org-gtd-clarify--clarify-id)
-        (continuation org-gtd-clarify--continuation)
-        (inbox-p org-gtd-clarify--inbox-p))
+        (task-id org-gtd-clarify--clarify-id))
     ;; Clear queue on current buffer so kill hooks don't prompt
     (setq org-gtd-clarify--duplicate-queue nil)
     (if queue
         ;; Queue has items — discard current, process next
         (org-gtd-clarify--process-next-queued-item
-         queue window-config continuation task-id)
+         queue window-config nil task-id)
       ;; No queue — full cleanup
       (org-gtd-clarify--queue-cleanup)
       (org-gtd-clarify--cleanup-horizons-view)
       (when task-id
         (org-gtd-wip--cleanup-temp-file task-id))
-      (when inbox-p
-        (setq org-gtd-process--session-active nil
-              org-gtd-process--pending-inboxes nil))
       (when window-config
         (set-window-configuration window-config))
       (message "Stopped clarifying"))))
@@ -656,10 +700,14 @@ Creates or updates the queue buffer with current queue contents."
 ;;;;; Queue Processing
 
 (defun org-gtd-clarify--process-next-queued-item (queue window-config continuation old-task-id)
-  "Process the next item from the duplicate QUEUE.
+  "Process the next item from the one-off duplicate QUEUE.
 WINDOW-CONFIG is restored after all items are processed.
 CONTINUATION is called after the queue is empty.
-OLD-TASK-ID is the clarify-id of the buffer being reused."
+OLD-TASK-ID is the clarify-id of the buffer being reused.
+
+This drives the pre-walk-engine one-off clarify duplicate path only;
+the walk-driven inbox path advances through the walk model instead (see
+`org-gtd-organize--call' and `org-gtd-clarify--stop-walk')."
   (let ((item (pop queue)))
     (if item
         (let* ((content (plist-get item :content))
