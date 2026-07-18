@@ -93,9 +93,13 @@ Pure operations (take a model, return a model; no side effects):
 
 - `walk-current` → handle at cursor
 - `walk-advance` → cursor + 1
-- `walk-enqueue(handle, top|bottom|after-cursor)` → insert (the **dynamic queue**
-  inbox's duplicate-queue needs; `where` maps to today's
-  `org-gtd-clarify-duplicate-queue-position`)
+- `walk-enqueue(handle, top|bottom)` → insert into the **remaining** queue (after
+  the cursor): `top` = front of the remaining queue (handled next, current item
+  unchanged), `bottom` = end (handled last). Both insert *after* the current item
+  because the **dynamic queue** inbox's duplicate-queue enqueues while the current
+  item is still being processed — inserting *at* the cursor would make the
+  duplicate current mid-process. `where` maps directly onto today's
+  `org-gtd-clarify-duplicate-queue-position` (`top`/`bottom`, default `bottom`).
 - `walk-remaining`, `walk-done-p`
 
 "Skip but revisit later," if ever needed, is not a new concept: `advance` +
