@@ -57,6 +57,17 @@ ENTRIES is copied; the cursor starts at 0."
   (max 0 (- (length (plist-get model :entries))
             (plist-get model :cursor))))
 
+;;;; Transitions (pure — take a model, return a new model)
+
+(defun org-gtd-walk-model-advance (model)
+  "Return a copy of MODEL with the cursor advanced by one.
+The cursor never moves past the entry count (the done position)."
+  (let ((len (length (plist-get model :entries)))
+        (cursor (plist-get model :cursor)))
+    (list :entries (plist-get model :entries)
+          :cursor (min len (1+ cursor))
+          :meta (plist-get model :meta))))
+
 ;;;; Footer
 
 (provide 'org-gtd-walk-model)

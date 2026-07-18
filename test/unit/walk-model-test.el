@@ -74,6 +74,34 @@
   (assert-same 0 (org-gtd-walk-model-remaining
                   (list :entries '("a") :cursor 1))))
 
+;;; advance
+
+(deftest walk-model-advance-moves-cursor-forward ()
+  "advance returns a model whose cursor is one greater."
+  (let* ((m0 (org-gtd-walk-model-create '("a" "b" "c")))
+         (m1 (org-gtd-walk-model-advance m0)))
+    (assert-same 1 (plist-get m1 :cursor))
+    (assert-equal "b" (org-gtd-walk-model-current m1))))
+
+(deftest walk-model-advance-does-not-mutate-input ()
+  "advance is pure: the original model is unchanged."
+  (let ((m0 (org-gtd-walk-model-create '("a" "b"))))
+    (org-gtd-walk-model-advance m0)
+    (assert-same 0 (plist-get m0 :cursor))))
+
+(deftest walk-model-advance-past-last-item-is-done ()
+  "advancing off the last item makes the walk done, not out of bounds."
+  (let* ((m (list :entries '("a") :cursor 0))
+         (m1 (org-gtd-walk-model-advance m)))
+    (assert-true (org-gtd-walk-model-done-p m1))
+    (assert-same 1 (plist-get m1 :cursor))))
+
+(deftest walk-model-advance-when-done-stays-done ()
+  "advance never pushes the cursor beyond (length entries)."
+  (let* ((m (list :entries '("a") :cursor 1))
+         (m1 (org-gtd-walk-model-advance m)))
+    (assert-same 1 (plist-get m1 :cursor))))
+
 (provide 'walk-model-test)
 
 ;;; walk-model-test.el ends here
