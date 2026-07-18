@@ -220,6 +220,13 @@ Kills GTD-related buffers and clears org-mode internal state."
   (setq last-command nil
         this-command nil)
 
+  ;; Release any walk-engine scope lock left by a prior test.  The lock lives in
+  ;; the process-global `org-gtd-walk--locked-scopes'; a test that starts a walk
+  ;; and errors/fails before quit/finish would otherwise leak it and cascade
+  ;; "A walk is already active over scope ..." errors into every later test.
+  (when (boundp 'org-gtd-walk--locked-scopes)
+    (setq org-gtd-walk--locked-scopes nil))
+
   ;; Create a fresh empty hash table for org-id-locations
   ;; CRITICAL: Setting to nil causes org-id to reload from disk on next use,
   ;; which brings back /tmp paths from buttercup tests. An empty hash table
