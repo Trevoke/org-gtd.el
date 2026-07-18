@@ -47,17 +47,6 @@ Each entry should be an absolute file path to an org file."
   :package-version '(org-gtd . "4.0.0")
   :type '(repeat file))
 
-;;;; Variables
-
-(defvar org-gtd-process--pending-inboxes nil
-  "List of additional inbox files remaining to process in current session.
-This is initialized from `org-gtd-additional-inbox-files' when processing
-starts and consumed as each inbox is emptied.")
-
-(defvar org-gtd-process--session-active nil
-  "Non-nil when inbox processing session is active.
-Used to track whether we're in the middle of processing across recursive calls.")
-
 ;;;; Commands
 
 ;;;###autoload
@@ -92,25 +81,6 @@ docs/plans/2026-07-17-walk-engine-phase-4-plan.md."
       ;; later advance.
       (when org-gtd-walk--active
         (setq-local org-gtd-clarify--window-config window-config)))))
-
-;;;; Functions
-
-;;;;; Private
-;;
-;; `org-gtd-process--stop' and the session-tracking variables above are
-;; pre-walk-engine internals no longer driven by `org-gtd-process-inbox'
-;; (the walk's :on-finish/quit paths cover their duties).  They are
-;; removed at the Phase 4 cutover along with the tests that assert them.
-
-(defun org-gtd-process--stop ()
-  "Stop processing the inbox (pre-walk-engine; retained until cutover)."
-  (org-gtd-clarify--cleanup-horizons-view)
-  (whitespace-cleanup)
-  ;; Clear session state
-  (setq org-gtd-process--session-active nil
-        org-gtd-process--pending-inboxes nil)
-  ;; Save GTD buffers after inbox processing completes
-  (org-gtd-save-buffers))
 
 ;;;; Footer
 

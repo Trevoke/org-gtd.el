@@ -661,8 +661,8 @@ active in the current buffer."
 
 (defun org-gtd-clarify--pending-duplicates ()
   "Return the pending duplicate plists for the current clarify context.
-Walk-driven inbox clarify reads them from the active walk model
-(`org-gtd-clarify--walk-pending-duplicates', D6a); one-off clarify
+Walk-driven inbox clarify reads them from the active walk model via
+`org-gtd-clarify--walk-pending-duplicates' (D6a); one-off clarify
 reads the legacy buffer-local `org-gtd-clarify--duplicate-queue'.  Both
 shapes are (:title :content) plists, so all downstream display/save/
 kill-safety code is store-agnostic."
@@ -829,7 +829,7 @@ Returns \\='discard, \\='save, or \\='cancel."
 ;;;;; Kill-Emacs Safety
 
 (defun org-gtd-clarify--buffer-has-pending-duplicates-p ()
-  "Return non-nil when the current buffer holds pending duplicates.
+  "Return non-nil when the current buffer has pending duplicates.
 Covers both the walk-driven surface (active walk with remaining
 duplicate entries) and a one-off clarify buffer with a legacy queue."
   (or (and org-gtd-walk--active
@@ -911,6 +911,16 @@ Added to `kill-buffer-query-functions' buffer-locally."
   "Clean up side windows when clarify buffer is killed.
 Only cleans up global side windows if no other clarify buffers exist.
 Added to `kill-buffer-hook' buffer-locally."
+  ;; If this buffer is a live inbox-walk surface being killed directly
+  ;; (e.g. C-x k -- not via the walk's finish/quit, which already cleared
+  ;; the session before killing), release the walk's scope lock.  That
+  ;; lock lives in the process-global `org-gtd-walk--locked-scopes', so
+  ;; it would otherwise outlive the buffer and make the next
+  ;; `org-gtd-process-inbox' error with "A walk is already active over
+  ;; scope ...".  `org-gtd-walk-quit' unlocks and clears the (about to
+  ;; die) buffer-local session.
+  (when (bound-and-true-p org-gtd-walk--active)
+    (org-gtd-walk-quit))
   (unless (org-gtd-clarify--other-clarify-buffers-exist-p)
     ;; Clean up all side windows
     (org-gtd-clarify--kill-side-window org-gtd-clarify--queue-buffer-name)

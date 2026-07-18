@@ -126,8 +126,12 @@
       (assert-nil (file-contains? inbox1-file "Item from inbox 1"))
       (assert-nil (file-contains? inbox2-file "Item from inbox 2")))))
 
-(deftest additional-inboxes/clears-session-state-on-cancel ()
-  "Clears session state when user cancels with C-c C-k."
+(deftest additional-inboxes/tears-down-walk-on-cancel ()
+  "Cancelling with C-c C-k tears down the inbox walk and releases the lock.
+The walk-model successor to the pre-engine session-state teardown: on
+the current item (an inbox item, not a queued duplicate) `org-gtd-clarify-stop'
+quits the walk -- clearing `org-gtd-walk--active' and unlocking the
+inbox scope -- and a fresh `org-gtd-process-inbox' re-finds every item."
   ;; Setup: Create items in main inbox and additional inbox
   (capture-inbox-item "Main item")
 
@@ -137,27 +141,28 @@
       (insert "* Additional item\n")
       (basic-save-buffer))
 
-    (let ((org-gtd-additional-inbox-files (list additional-inbox-file)))
-      ;; Start processing
+    (let* ((org-gtd-additional-inbox-files (list additional-inbox-file))
+           (scope (org-gtd-inbox-walk--file-list)))
+      ;; Start processing: a walk is active over the inbox scope.
       (org-gtd-process-inbox)
+      (with-wip-buffer (assert-true org-gtd-walk--active))
+      (assert-true (org-gtd-walk--scope-locked-p scope))
 
-      ;; Session should be active
-      (assert-true org-gtd-process--session-active)
+      ;; Cancel clarification: quit the walk, release the scope lock.
+      (with-wip-buffer (org-gtd-clarify-stop))
+      (assert-nil (ogt-get-wip-buffer))
+      (assert-nil (org-gtd-walk--scope-locked-p scope))
 
-      ;; Cancel clarification
-      (org-gtd-clarify-stop)
-
-      ;; Session state should be cleared
-      (assert-nil org-gtd-process--session-active)
-      (assert-nil org-gtd-process--pending-inboxes)
-
-      ;; Starting again should re-initialize properly
+      ;; Starting again re-finds every item (main + additional) and
+      ;; re-locks the scope.
       (org-gtd-process-inbox)
-      (assert-true org-gtd-process--session-active)
-      (assert-equal (list additional-inbox-file) org-gtd-process--pending-inboxes)
+      (assert-true (org-gtd-walk--scope-locked-p scope))
+      (with-wip-buffer
+        (assert-equal 2 (length (plist-get (plist-get org-gtd-walk--active :model)
+                                           :entries))))
 
-      ;; Clean up by canceling again
-      (org-gtd-clarify-stop))))
+      ;; Clean up by canceling again.
+      (with-wip-buffer (org-gtd-clarify-stop)))))
 
 (provide 'additional-inboxes-test)
 

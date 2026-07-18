@@ -298,14 +298,17 @@
 ;;; Duplicate Command Tests
 
 (deftest clarify/duplicate-exact-adds-to-queue ()
-  "Exact duplicate adds current content to queue."
+  "Exact duplicate enqueues current content into the walk model (D4a)."
   (capture-inbox-item "Original item")
   (org-gtd-process-inbox)
   (with-wip-buffer
     (org-gtd-clarify-duplicate-exact)
-    (assert-equal 1 (length org-gtd-clarify--duplicate-queue))
+    ;; Duplicates now live in the walk model's :meta, read back through
+    ;; the same store-agnostic accessor the side window/kill-safety use.
+    (assert-equal 1 (length (org-gtd-clarify--pending-duplicates-all-buffers)))
     (assert-equal "Original item"
-                  (plist-get (car org-gtd-clarify--duplicate-queue) :title)))
+                  (plist-get (car (org-gtd-clarify--pending-duplicates-all-buffers))
+                             :title)))
   ;; Cleanup
   (org-gtd-clarify--queue-cleanup))
 
@@ -327,9 +330,10 @@
     ;; C-a moves to beginning of line, C-k kills to end of line, then type new title
     (with-simulated-input "C-a C-k New SPC title RET"
       (org-gtd-clarify-duplicate))
-    (assert-equal 1 (length org-gtd-clarify--duplicate-queue))
+    (assert-equal 1 (length (org-gtd-clarify--pending-duplicates-all-buffers)))
     (assert-equal "New title"
-                  (plist-get (car org-gtd-clarify--duplicate-queue) :title)))
+                  (plist-get (car (org-gtd-clarify--pending-duplicates-all-buffers))
+                             :title)))
   ;; Cleanup
   (org-gtd-clarify--queue-cleanup))
 
@@ -340,7 +344,7 @@
   (with-wip-buffer
     (with-simulated-input "C-a C-k New SPC title RET"
       (org-gtd-clarify-duplicate))
-    (let* ((queued (car org-gtd-clarify--duplicate-queue))
+    (let* ((queued (car (org-gtd-clarify--pending-duplicates-all-buffers)))
            (content (plist-get queued :content)))
       ;; The org heading inside content should be "New title", not "Original item"
       (assert-match "^\\* New title" content)
@@ -357,15 +361,14 @@
 ;;; Queue Processing Tests
 
 (deftest clarify/organize-processes-queue-before-continuation ()
-  "After organizing, processes queued duplicates before calling continuation."
+  "After organizing, processes queued duplicates before finishing the walk."
   (capture-inbox-item "Original item")
   (org-gtd-process-inbox)
   ;; Add a duplicate while clarifying
   (with-wip-buffer
     (org-gtd-clarify-duplicate-exact))
-  ;; Verify we have one duplicate in queue
-  (with-wip-buffer
-    (assert-equal 1 (length org-gtd-clarify--duplicate-queue)))
+  ;; Verify we have one duplicate pending in the walk model
+  (assert-equal 1 (length (org-gtd-clarify--pending-duplicates-all-buffers)))
   ;; Organize the original as single action
   (with-wip-buffer
     (organize-as-single-action))
@@ -520,6 +523,27 @@
       (with-current-buffer first-buf
         (assert-true (org-gtd-clarify--other-clarify-buffers-exist-p))))))
 
+;;; Walk Scope-Lock Teardown Tests
+
+(deftest clarify/kill-buffer-releases-walk-scope-lock ()
+  "Killing the inbox-walk surface directly releases the walk scope lock.
+The scope lock lives in the process-global `org-gtd-walk--locked-scopes',
+so a direct C-x k (not the finish/quit path) must still release it or
+the next `org-gtd-process-inbox' would error."
+  (capture-inbox-item "Item to kill")
+  (org-gtd-process-inbox)
+  (let ((scope (org-gtd-inbox-walk--file-list))
+        (surface (ogt-get-wip-buffer)))
+    (assert-true (org-gtd-walk--scope-locked-p scope))
+    (with-current-buffer surface
+      (set-buffer-modified-p nil))
+    (kill-buffer surface)
+    (assert-nil (org-gtd-walk--scope-locked-p scope))
+    ;; A fresh session can start again over the same scope.
+    (org-gtd-process-inbox)
+    (assert-true (org-gtd-walk--scope-locked-p scope))
+    (with-wip-buffer (org-gtd-clarify-stop))))
+
 ;;; Kill Buffer Query Tests
 
 (deftest clarify/kill-buffer-query-allows-when-queue-empty ()
@@ -639,9 +663,8 @@
     (org-gtd-clarify-duplicate-exact)
     (org-gtd-clarify-duplicate-exact))
 
-  ;; Verify queue has 2 items
-  (with-wip-buffer
-    (assert-equal 2 (length org-gtd-clarify--duplicate-queue)))
+  ;; Verify the walk model has 2 pending duplicates
+  (assert-equal 2 (length (org-gtd-clarify--pending-duplicates-all-buffers)))
 
   ;; Organize original as calendar item
   (with-wip-buffer
