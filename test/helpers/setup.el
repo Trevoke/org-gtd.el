@@ -203,6 +203,23 @@ Kills GTD-related buffers and clears org-mode internal state."
         org-id-extra-files nil
         file-name-history nil)
 
+  ;; Reset Emacs's command-loop bookkeeping. `with-simulated-input' drives
+  ;; real key events through the command loop, so `last-command'/
+  ;; `this-command' end up holding whatever command last ran in a PRIOR
+  ;; test (e.g. `kill-region', left behind by an unprotected
+  ;; `org-cut-subtree' call). `copy-region-as-kill' (used by
+  ;; `org-copy-subtree', which `org-archive-subtree' calls while only
+  ;; binding `this-command' -- see org-archive.el's own "protect
+  ;; `this-command'" comment) decides whether to kill-append based on
+  ;; `last-command'. A stale `kill-region' value there makes an unrelated
+  ;; later test's archive-subtree call silently merge onto a leftover
+  ;; kill-ring entry, producing duplicated/split headings in the archive
+  ;; buffer. Deterministically reproducible with seed 1784332390307760
+  ;; (quick-action-moves-to-archive fails when it inherits
+  ;; last-command='kill-region from an earlier test's org-cut-subtree).
+  (setq last-command nil
+        this-command nil)
+
   ;; Create a fresh empty hash table for org-id-locations
   ;; CRITICAL: Setting to nil causes org-id to reload from disk on next use,
   ;; which brings back /tmp paths from buttercup tests. An empty hash table
