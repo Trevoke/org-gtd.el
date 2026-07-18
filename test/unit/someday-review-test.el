@@ -90,6 +90,14 @@
     (let ((find (org-gtd-someday-review--make-find "Work")))
       (assert-equal 1 (length (funcall find))))))
 
+(deftest someday-review/resolve-rejects-missing-id ()
+  "The :resolve predicate is nil for an unknown id, non-nil for a real one."
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "Real item"))
+  (let ((id (car (org-gtd-someday-review--find-items nil))))
+    (assert-true (org-gtd-someday-review--resolve id))
+    (assert-nil (org-gtd-someday-review--resolve "no-such-id-xyz"))))
+
 ;;; Review Session State Tests
 
 (deftest someday-review/initializes-session-state ()

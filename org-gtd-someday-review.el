@@ -113,6 +113,10 @@ LIST-FILTER can be:
   "Return a nullary :find closure yielding someday ids for LIST-FILTER."
   (lambda () (org-gtd-someday-review--find-items list-filter)))
 
+(defun org-gtd-someday-review--resolve (id)
+  "Return non-nil when ID still resolves to a live heading marker."
+  (org-id-find id 'marker))
+
 (defun org-gtd-someday-review--item-matches-filter-p (item-list list-filter)
   "Return t if ITEM-LIST matches LIST-FILTER.
 ITEM-LIST is the value of ORG_GTD_SOMEDAY_LIST property (or nil).
