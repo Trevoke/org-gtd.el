@@ -26,6 +26,17 @@
 (defvar walk-driver-test--finish-count 0
   "How many times the stub :on-finish ran.")
 
+(defvar walk-driver-test--real-tmp temporary-file-directory
+  "Real temp dir captured at load, before mock-fs rebinds
+`temporary-file-directory' globally (test/helpers/setup.el).")
+
+(around-each (proceed context)
+  ;; Isolate from the mock-fs global leak of `temporary-file-directory'
+  ;; so the harness `make-temp-file' always uses a real directory,
+  ;; regardless of which test ran before this one in the full suite.
+  (let ((temporary-file-directory walk-driver-test--real-tmp))
+    (funcall proceed context)))
+
 (defun walk-driver-test--stub-spec (&rest overrides)
   "A minimal valid spec; OVERRIDES are applied as plist puts."
   (let ((spec (list :name 'stub

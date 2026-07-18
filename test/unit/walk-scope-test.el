@@ -19,6 +19,17 @@
 
 (e-unit-initialize)
 
+(defvar walk-scope-test--real-tmp temporary-file-directory
+  "Real temp dir captured at load, before mock-fs rebinds
+`temporary-file-directory' globally (test/helpers/setup.el).")
+
+(around-each (proceed context)
+  ;; Isolate from the mock-fs global leak of `temporary-file-directory'
+  ;; so `make-temp-file' always creates a real (non-mock) directory,
+  ;; regardless of which test ran before this one in the full suite.
+  (let ((temporary-file-directory walk-scope-test--real-tmp))
+    (funcall proceed context)))
+
 ;;; scope-key
 
 (deftest scope-key-of-string-is-the-string ()
