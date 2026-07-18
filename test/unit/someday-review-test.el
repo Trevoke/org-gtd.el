@@ -116,63 +116,34 @@
       (assert-match "(1/1)" header-line-format))
     (org-gtd-wip--cleanup-temp-file "someday-review")))
 
-;;; Review Session State Tests
-
-(deftest someday-review/initializes-session-state ()
-  "Initializes review session state with item queue."
-  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
-    (org-gtd-someday-create "Item one")
-    (org-gtd-someday-create "Item two"))
-  (org-gtd-someday-review--start-session nil)
-  (assert-true org-gtd-someday-review--session-active)
-  (assert-equal 2 (length (plist-get org-gtd-someday-review--state :queue)))
-  (assert-equal 0 (plist-get org-gtd-someday-review--state :position))
-  ;; Cleanup
-  (org-gtd-someday-review--end-session))
-
-(deftest someday-review/tracks-statistics ()
-  "Tracks review statistics (reviewed count, clarified count)."
-  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
-    (org-gtd-someday-create "Item one"))
-  (org-gtd-someday-review--start-session nil)
-  (assert-equal 0 (plist-get org-gtd-someday-review--state :reviewed))
-  (assert-equal 0 (plist-get org-gtd-someday-review--state :clarified))
-  ;; Cleanup
-  (org-gtd-someday-review--end-session))
-
 ;;; Review Buffer Tests
 
 (deftest someday-review/creates-wip-buffer-with-review-mode ()
-  "Creates WIP buffer with review mode active."
+  "The walk shows the current item in a read-only review-mode WIP buffer."
   (with-suppressed-warnings ((obsolete org-gtd-someday-create))
     (org-gtd-someday-create "Review me"))
-  (org-gtd-someday-review--start-session nil)
-  (org-gtd-someday-review--display-current-item)
-  ;; Should use WIP buffer infrastructure
+  (org-gtd-reflect-someday-review)
   (let ((bufs (org-gtd-wip--get-buffers)))
     (assert-true (> (length bufs) 0))
     (with-current-buffer (car bufs)
       (assert-true (eq major-mode 'org-gtd-someday-review-mode))
       (assert-true buffer-read-only)
       (assert-match "Review me" (buffer-string))))
-  ;; Cleanup
-  (org-gtd-someday-review--cleanup-current-buffer)
-  (org-gtd-someday-review--end-session))
+  (with-current-buffer (car (org-gtd-wip--get-buffers))
+    (org-gtd-someday-review-quit)))
 
 (deftest someday-review/shows-keybindings-in-header-line ()
   "Shows available keybindings in header-line."
   (with-suppressed-warnings ((obsolete org-gtd-someday-create))
     (org-gtd-someday-create "Review me"))
-  (org-gtd-someday-review--start-session nil)
-  (org-gtd-someday-review--display-current-item)
+  (org-gtd-reflect-someday-review)
   (let ((bufs (org-gtd-wip--get-buffers)))
     (with-current-buffer (car bufs)
       (assert-match "\\[d\\]" header-line-format)
       (assert-match "\\[c\\]" header-line-format)
       (assert-match "\\[q\\]" header-line-format)))
-  ;; Cleanup
-  (org-gtd-someday-review--cleanup-current-buffer)
-  (org-gtd-someday-review--end-session))
+  (with-current-buffer (car (org-gtd-wip--get-buffers))
+    (org-gtd-someday-review-quit)))
 
 ;;; Review Mode Keybinding Tests
 
@@ -203,10 +174,10 @@
   "Defer command adds reviewed entry to item's LOGBOOK."
   (with-suppressed-warnings ((obsolete org-gtd-someday-create))
     (org-gtd-someday-create "Defer me"))
-  (org-gtd-someday-review--start-session nil)
-  (let ((item-id (car (plist-get org-gtd-someday-review--state :queue))))
-    (org-gtd-someday-review--display-current-item)
-    (org-gtd-someday-review-defer)
+  (let ((item-id (car (org-gtd-someday-review--find-items nil))))
+    (org-gtd-reflect-someday-review)
+    (with-current-buffer (car (org-gtd-wip--get-buffers))
+      (org-gtd-someday-review-defer))
     ;; Check the source item has LOGBOOK entry - get fresh marker after defer
     (let ((marker (org-id-find item-id 'marker)))
       (when marker
@@ -215,62 +186,30 @@
           (org-back-to-heading t)
           (let ((subtree-end (save-excursion (org-end-of-subtree t))))
             (assert-match ":LOGBOOK:" (buffer-substring (point) subtree-end)))))))
-  ;; Cleanup - session already ended by defer on last item
+  ;; Cleanup - the walk already ended by defer on the (only) last item
   )
-
-(deftest someday-review/defer-advances-to-next-item ()
-  "Defer command advances to the next item."
-  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
-    (org-gtd-someday-create "First item")
-    (org-gtd-someday-create "Second item"))
-  (org-gtd-someday-review--start-session nil)
-  (org-gtd-someday-review--display-current-item)
-  (org-gtd-someday-review-defer)
-  (assert-equal 1 (plist-get org-gtd-someday-review--state :position))
-  (assert-equal 1 (plist-get org-gtd-someday-review--state :reviewed))
-  ;; Cleanup
-  (org-gtd-someday-review--cleanup-current-buffer)
-  (org-gtd-someday-review--end-session))
 
 (deftest someday-review/defer-ends-session-when-done ()
   "Defer ends session when last item is deferred."
   (with-suppressed-warnings ((obsolete org-gtd-someday-create))
     (org-gtd-someday-create "Only item"))
-  (org-gtd-someday-review--start-session nil)
-  (org-gtd-someday-review--display-current-item)
-  (org-gtd-someday-review-defer)
-  (assert-nil org-gtd-someday-review--session-active))
+  (org-gtd-reflect-someday-review)
+  (with-current-buffer (car (org-gtd-wip--get-buffers))
+    (org-gtd-someday-review-defer))
+  (assert-equal 0 (length (org-gtd-wip--get-buffers))))
 
 ;;; Clarify Command Tests
 
 (deftest someday-review/clarify-increments-clarified-count ()
-  "Clarify command increments the clarified count."
+  "Clarify command reactivates the item and ends the walk on the last item."
   (with-suppressed-warnings ((obsolete org-gtd-someday-create))
     (org-gtd-someday-create "Clarify me"))
-  (org-gtd-someday-review--start-session nil)
-  (org-gtd-someday-review--display-current-item)
+  (org-gtd-reflect-someday-review)
   ;; Mock reactivate to avoid side effects
   (cl-letf (((symbol-function 'org-gtd-reactivate) (lambda ())))
-    (org-gtd-someday-review-clarify))
-  ;; Session ends because only one item - check we can access clarified count
-  ;; by checking the message that was displayed
-  (assert-equal 1 1))  ; Basic sanity - function runs without error
-
-(deftest someday-review/clarify-advances-to-next-item ()
-  "Clarify command advances to the next item."
-  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
-    (org-gtd-someday-create "First item")
-    (org-gtd-someday-create "Second item"))
-  (org-gtd-someday-review--start-session nil)
-  (org-gtd-someday-review--display-current-item)
-  ;; Mock reactivate
-  (cl-letf (((symbol-function 'org-gtd-reactivate) (lambda ())))
-    (org-gtd-someday-review-clarify))
-  (assert-equal 1 (plist-get org-gtd-someday-review--state :position))
-  (assert-equal 1 (plist-get org-gtd-someday-review--state :clarified))
-  ;; Cleanup
-  (org-gtd-someday-review--cleanup-current-buffer)
-  (org-gtd-someday-review--end-session))
+    (with-current-buffer (car (org-gtd-wip--get-buffers))
+      (org-gtd-someday-review-clarify)))
+  (assert-equal 0 (length (org-gtd-wip--get-buffers))))
 
 ;;; Quit Command Tests
 
@@ -278,20 +217,20 @@
   "Quit command ends the review session."
   (with-suppressed-warnings ((obsolete org-gtd-someday-create))
     (org-gtd-someday-create "Item"))
-  (org-gtd-someday-review--start-session nil)
-  (org-gtd-someday-review--display-current-item)
-  (org-gtd-someday-review-quit)
-  (assert-nil org-gtd-someday-review--session-active))
+  (org-gtd-reflect-someday-review)
+  (with-current-buffer (car (org-gtd-wip--get-buffers))
+    (org-gtd-someday-review-quit))
+  (assert-equal 0 (length (org-gtd-wip--get-buffers))))
 
 (deftest someday-review/quit-cleans-up-wip-buffer ()
   "Quit command cleans up the WIP buffer."
   (with-suppressed-warnings ((obsolete org-gtd-someday-create))
     (org-gtd-someday-create "Item"))
-  (org-gtd-someday-review--start-session nil)
-  (org-gtd-someday-review--display-current-item)
+  (org-gtd-reflect-someday-review)
   (let ((wip-bufs-before (length (org-gtd-wip--get-buffers))))
     (assert-true (> wip-bufs-before 0))
-    (org-gtd-someday-review-quit)
+    (with-current-buffer (car (org-gtd-wip--get-buffers))
+      (org-gtd-someday-review-quit))
     ;; WIP buffer should be cleaned up
     (assert-equal 0 (length (org-gtd-wip--get-buffers)))))
 
@@ -302,28 +241,46 @@
   (with-suppressed-warnings ((obsolete org-gtd-someday-create))
     (org-gtd-someday-create "Item"))
   (org-gtd-reflect-someday-review)
-  (assert-true org-gtd-someday-review--session-active)
   ;; Should create a WIP buffer
   (assert-true (> (length (org-gtd-wip--get-buffers)) 0))
   ;; Cleanup
-  (org-gtd-someday-review-quit))
+  (with-current-buffer (car (org-gtd-wip--get-buffers))
+    (org-gtd-someday-review-quit)))
 
 (deftest someday-review/entry-point-shows-message-when-no-items ()
   "Shows message when no items to review."
   ;; No items created - just start session
   (org-gtd-reflect-someday-review)
-  (assert-nil org-gtd-someday-review--session-active))
+  (assert-equal 0 (length (org-gtd-wip--get-buffers))))
 
-(deftest someday-review/entry-point-accepts-list-argument ()
-  "Entry point accepts optional list argument to skip prompt."
-  (let ((org-gtd-someday-lists '("Work" "Personal")))
-    (with-suppressed-warnings ((obsolete org-gtd-someday-create))
-      (with-simulated-input "Work RET"
-        (org-gtd-someday-create "Work item")))
-    (org-gtd-reflect-someday-review "Work")
-    (assert-equal "Work" (plist-get org-gtd-someday-review--state :list-name)))
-  ;; Cleanup
-  (org-gtd-someday-review-quit))
+;;; Walk Adapter Tests
+
+(deftest someday-review/find-returns-only-someday-ids ()
+  "The adapter :find yields ids for someday items and nothing else."
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "One")
+    (org-gtd-someday-create "Two"))
+  (assert-equal 2 (length (funcall (org-gtd-someday-review--make-find nil)))))
+
+(deftest someday-review/defer-logs-review-then-advances ()
+  "defer writes a Reviewed logbook line on the source item and moves on."
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "First")
+    (org-gtd-someday-create "Second"))
+  (org-gtd-reflect-someday-review)
+  (let* ((surface (car (org-gtd-wip--get-buffers)))
+         (id (with-current-buffer surface
+               (org-gtd-walk-model-current (plist-get org-gtd-walk--active :model)))))
+    (with-current-buffer surface (org-gtd-someday-review-defer))
+    ;; still walking (a second item remains) and the first item got its log line
+    (assert-true (> (length (org-gtd-wip--get-buffers)) 0))
+    (let ((marker (org-id-find id 'marker)))
+      (with-current-buffer (marker-buffer marker)
+        (goto-char marker) (org-back-to-heading t)
+        (let ((end (save-excursion (org-end-of-subtree t))))
+          (assert-match ":LOGBOOK:" (buffer-substring (point) end)))))
+    (with-current-buffer (car (org-gtd-wip--get-buffers))
+      (org-gtd-someday-review-quit))))
 
 ;;; Evil-mode Integration Tests
 
