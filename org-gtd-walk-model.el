@@ -1,6 +1,6 @@
 ;;; org-gtd-walk-model.el --- Pure headless walk model -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023, 2025 Aldric Giacomoni
+;; Copyright © 2026 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
@@ -107,7 +107,7 @@ markers and buffers are rejected so they can never be persisted."
 
 (defun org-gtd-walk-model-valid-p (model)
   "Return non-nil when MODEL is internally coherent and serializable.
-Checks entries is a list of serializable handles and cursor is an
+Checks that entries is a list of serializable handles and cursor is an
 integer in [0, (length entries)].  Used to reject corrupt checkpoints
 (see design §8)."
   (and (listp model)
@@ -131,7 +131,7 @@ integer in [0, (length entries)].  Used to reject corrupt checkpoints
 Returns nil when STRING is unreadable or the decoded model fails
 `org-gtd-walk-model-valid-p' — the caller falls back to a fresh walk."
   (let ((model (ignore-errors (car (read-from-string string)))))
-    (when (and model (org-gtd-walk-model-valid-p model))
+    (when (org-gtd-walk-model-valid-p model)
       model)))
 
 ;;;; Footer

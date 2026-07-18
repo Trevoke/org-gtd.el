@@ -1,6 +1,6 @@
 ;;; org-gtd-walk.el --- Generic item-walk session driver -*- lexical-binding: t; coding: utf-8 -*-
 ;;
-;; Copyright © 2019-2023, 2025 Aldric Giacomoni
+;; Copyright © 2026 Aldric Giacomoni
 
 ;; Author: Aldric Giacomoni <trevoke@gmail.com>
 ;; This file is not part of GNU Emacs.
