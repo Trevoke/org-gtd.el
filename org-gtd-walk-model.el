@@ -119,6 +119,21 @@ integer in [0, (length entries)].  Used to reject corrupt checkpoints
               (<= cursor (length entries))
               (seq-every-p #'org-gtd-walk-model--handle-serializable-p entries)))))
 
+;;;; Serialization
+
+(defun org-gtd-walk-model-serialize (model)
+  "Return MODEL as a `read'-able string via `prin1'."
+  (let ((print-length nil) (print-level nil))
+    (prin1-to-string model)))
+
+(defun org-gtd-walk-model-deserialize (string)
+  "Return the model encoded in STRING, or nil.
+Returns nil when STRING is unreadable or the decoded model fails
+`org-gtd-walk-model-valid-p' — the caller falls back to a fresh walk."
+  (let ((model (ignore-errors (car (read-from-string string)))))
+    (when (and model (org-gtd-walk-model-valid-p model))
+      model)))
+
 ;;;; Footer
 
 (provide 'org-gtd-walk-model)

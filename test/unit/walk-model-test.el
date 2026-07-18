@@ -176,6 +176,24 @@
   (assert-nil (org-gtd-walk-model-valid-p
                (list :entries (list (make-marker)) :cursor 0))))
 
+;;; serialize / deserialize
+
+(deftest walk-model-serialize-round-trips ()
+  "deserialize of a serialized model reproduces it."
+  (let* ((m (list :entries '("a" "b" "c") :cursor 1 :meta '(:tag foo)))
+         (s (org-gtd-walk-model-serialize m)))
+    (assert-true (stringp s))
+    (assert-equal m (org-gtd-walk-model-deserialize s))))
+
+(deftest walk-model-deserialize-garbage-returns-nil ()
+  "unreadable text yields nil, not an error."
+  (assert-nil (org-gtd-walk-model-deserialize "(:entries oops")))
+
+(deftest walk-model-deserialize-readable-but-invalid-returns-nil ()
+  "a readable but incoherent model (cursor out of range) yields nil."
+  (assert-nil (org-gtd-walk-model-deserialize
+               (prin1-to-string (list :entries '("a") :cursor 9)))))
+
 (provide 'walk-model-test)
 
 ;;; walk-model-test.el ends here
