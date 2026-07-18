@@ -117,6 +117,21 @@
     (org-gtd-walk-model-enqueue m0 "z" 'bottom)
     (assert-equal '("a" "b") (plist-get m0 :entries))))
 
+(deftest walk-model-enqueue-top-inserts-next-after-current ()
+  "enqueue top puts the handle immediately after the current item, unchanged."
+  (let* ((m0 (list :entries '("a" "b" "c") :cursor 1))
+         (m1 (org-gtd-walk-model-enqueue m0 "z" 'top)))
+    (assert-equal '("a" "b" "z" "c") (plist-get m1 :entries))
+    ;; cursor still points at the current item "b"
+    (assert-same 1 (plist-get m1 :cursor))
+    (assert-equal "b" (org-gtd-walk-model-current m1))))
+
+(deftest walk-model-enqueue-top-when-done-appends ()
+  "top clamps to the end when the walk is already done."
+  (let* ((m0 (list :entries '("a") :cursor 1))
+         (m1 (org-gtd-walk-model-enqueue m0 "z" 'top)))
+    (assert-equal '("a" "z") (plist-get m1 :entries))))
+
 (provide 'walk-model-test)
 
 ;;; walk-model-test.el ends here
