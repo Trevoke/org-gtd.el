@@ -37,6 +37,7 @@
 (require 'org-gtd-types)
 (require 'org-gtd-hooks)
 (require 'org-gtd-refile)
+(require 'org-gtd-walk)
 
 (declare-function org-gtd-archive-item-at-point "org-gtd-archive")
 (declare-function org-gtd-project--get-marker-at-point "org-gtd-projects")
@@ -126,9 +127,13 @@ This handles the internal bits of `org-gtd'."
            (save-excursion (funcall func))
            nil))) ;; Return nil when no error was thrown
     (unless error-caught
-      ;; Only run cleanup if no error was thrown
-      ;; Capture buffer-local variables before buffer is killed
-      (let ((continuation org-gtd-clarify--continuation)
+      ;; Only run cleanup if no error was thrown.  Capture buffer-local
+      ;; state before it can change under us: a walk-driven advance
+      ;; below re-renders this very buffer (D3a's single reused
+      ;; surface), which would otherwise clobber these before we read
+      ;; them.
+      (let ((walk-active org-gtd-walk--active)
+            (continuation org-gtd-clarify--continuation)
             (task-id org-gtd-clarify--clarify-id)
             (window-config org-gtd-clarify--window-config)
             (skip-refile org-gtd-clarify--skip-refile)
@@ -147,21 +152,35 @@ This handles the internal bits of `org-gtd'."
                   (with-temp-message ""
                     (org-gtd--without-kill-merge
                       (org-cut-subtree))))))))
-        ;; Check if we have queued duplicates to process
-        (if duplicate-queue
-            ;; Reuse current buffer for next queued item
-            (org-gtd-clarify--process-next-queued-item
-             duplicate-queue window-config continuation task-id)
-          ;; No queue - clean up and proceed with normal flow
+        (cond
+         ;; Walk-driven (D1, the crux seam): the walk owns advancing to
+         ;; the next entry and re-rendering it -- see
+         ;; `org-gtd-walk-advance'.  This branch (and the advance it
+         ;; performs) only runs inside the `unless error-caught' guard
+         ;; above, so a thrown `org-gtd-error' never advances the walk
+         ;; -- it stays on the current item (design's error-path
+         ;; parity).  Never kill the surface buffer here: advance
+         ;; re-renders into it; only finish/quit tears it down.
+         (walk-active
+          (org-gtd-walk-advance))
+         ;; Locally queued duplicates (one-off clarify predating the
+         ;; walk engine): reuse the current buffer for the next queued
+         ;; item before ever calling continuation.
+         (duplicate-queue
+          (org-gtd-clarify--process-next-queued-item
+           duplicate-queue window-config continuation task-id))
+         ;; No walk, no queue - clean up and proceed with normal flow
+         (t
           (when task-id
             (org-gtd-wip--cleanup-temp-file task-id))
           (when window-config
             (set-window-configuration window-config))
-          (when continuation (funcall continuation)))
+          (when continuation (funcall continuation))))
         ;; Save GTD buffers after organizing
         (org-gtd-save-buffers)
-        ;; Clean up horizons view for one-off clarification
-        (unless continuation
+        ;; Clean up horizons view for one-off clarification.  The
+        ;; walk-driven path defers this to the walk's :on-finish.
+        (unless (or continuation walk-active)
           (org-gtd-clarify--cleanup-horizons-view))))))
 
 ;;;;; Pipeline primitives
