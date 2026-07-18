@@ -119,19 +119,24 @@ The main inbox first, then `org-gtd-additional-inbox-files' in listed
 order (D6a file ordering)."
   (cons (org-gtd-inbox-path) org-gtd-additional-inbox-files))
 
-(defun org-gtd-inbox-walk--scan ()
+(defun org-gtd-inbox-walk--scan (&optional files)
   "Scan the multi-source inbox and return (TOKENS . META).
 TOKENS is the list of synthetic string tokens in scan order: every
 heading in the main inbox, then every heading in each file of
 `org-gtd-additional-inbox-files' in listed order.  META is an alist of
 \(TOKEN . MARKER) -- the live marker of each token's source heading.
 
+FILES defaults to `org-gtd-inbox-walk--file-list'; a caller that has
+already computed the list (e.g. `org-gtd-process-inbox', which needs it
+for the walk `:scope' too) passes it in to avoid recomputing it -- and
+avoid re-running `org-gtd-inbox-path''s ensure-file side effect.
+
 Missing or empty files are skipped.  Keeps the source files' buffers
 open (`find-file-noselect') so the markers returned stay live for the
 session.  Does NOT assign any org-id -- ids stay lazily assigned at
 `:render' (D2), so a skipped/never-reached item is never stamped."
   (let (tokens meta)
-    (dolist (file (org-gtd-inbox-walk--file-list))
+    (dolist (file (or files (org-gtd-inbox-walk--file-list)))
       (when (and file (file-exists-p file))
         (with-current-buffer (find-file-noselect file)
           (org-with-wide-buffer
@@ -142,14 +147,14 @@ session.  Does NOT assign any org-id -- ids stay lazily assigned at
                (push (cons token (point-marker)) meta)))))))
     (cons (nreverse tokens) (nreverse meta))))
 
-(defun org-gtd-inbox-walk--build-model ()
+(defun org-gtd-inbox-walk--build-model (&optional files)
   "Return a fresh walk model built from `org-gtd-inbox-walk--scan'.
 Combines the scanned tokens (the model's entries) with the scanned
 token->marker meta into a single model, ready to drive an inbox walk.
 Writes meta through `org-gtd-inbox-walk--meta-put-marker', the same
-accessor a later task's enqueue path uses for duplicates.  (A later
-task wires this into `org-gtd-walk-start'.)"
-  (let* ((scanned (org-gtd-inbox-walk--scan))
+accessor the duplicate enqueue path uses.  FILES is forwarded to the
+scan (see `org-gtd-inbox-walk--scan')."
+  (let* ((scanned (org-gtd-inbox-walk--scan files))
          (tokens (car scanned))
          (raw-meta (cdr scanned))
          (model (org-gtd-walk-model-create tokens)))

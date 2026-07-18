@@ -66,7 +66,7 @@ walk model.  See
 docs/plans/2026-07-17-walk-engine-phase-4-plan.md."
   (interactive)
   (let* ((files (org-gtd-inbox-walk--file-list))
-         (model (org-gtd-inbox-walk--build-model))
+         (model (org-gtd-inbox-walk--build-model files))
          (window-config (current-window-configuration)))
     (if (org-gtd-walk-model-done-p model)
         (message "All inboxes are empty. No items to process.")

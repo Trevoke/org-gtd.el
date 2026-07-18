@@ -286,41 +286,44 @@ it; otherwise tear down and restore the window configuration."
 
 (defun org-gtd-clarify--stop-walk ()
   "Stop clarifying on the walk-driven inbox path (Task 7).
-If the entry immediately after the current one is a queued duplicate,
-`org-gtd-walk-advance' (skip the current item, render the duplicate) --
+If any duplicate is still pending, `org-gtd-walk-advance' (skip the
+current item, render the next -- a duplicate, since duplicates are
+enqueued immediately after their parent, so the pending one is next) --
 reproducing the old \"discard current, process next queued duplicate.\"
 Otherwise abandon the whole walk: `org-gtd-walk-quit' (which releases
 the scope lock), tear down the surface and side windows, restore the
 window configuration, and report -- reproducing the old \"stop with no
 pending duplicates aborts the session.\"
 
+Never silently drops a pending duplicate (issue #1): the skip-vs-quit
+decision is based on whether ANY duplicate remains pending, and the
+quit branch defensively routes any that somehow remain back to the
+inbox (the same save `org-gtd-clarify--queue-save-to-inbox' the
+kill-buffer path uses) before teardown.
+
 Quits BEFORE killing the surface so the surface's kill-buffer query
 sees no active walk and no pending duplicates, silently allowing
 teardown -- matching the old stop, which cleared the duplicate queue
 before cleanup so the save/discard prompt never fired."
-  (let* ((model (plist-get org-gtd-walk--active :model))
-         (entries (plist-get model :entries))
-         (cursor (plist-get model :cursor))
-         (next-token (nth (1+ cursor) entries))
-         (next-value (and next-token
-                          (cdr (assoc next-token (plist-get model :meta)))))
-         ;; A duplicate's meta value is a (:title :content) plist; an
-         ;; inbox item's is a live marker (D2/D4a).
-         (next-is-duplicate (and next-value (not (markerp next-value)))))
-    (if next-is-duplicate
-        ;; The refresh of the side window is handled by :render, which
-        ;; `org-gtd-walk-advance' runs.
-        (org-gtd-walk-advance)
-      (let ((window-config org-gtd-clarify--window-config)
-            (task-id org-gtd-clarify--clarify-id))
-        (org-gtd-walk-quit)
-        (org-gtd-clarify--queue-cleanup)
-        (org-gtd-clarify--cleanup-horizons-view)
-        (when task-id
-          (org-gtd-wip--cleanup-temp-file task-id))
-        (when window-config
-          (set-window-configuration window-config))
-        (message "Stopped clarifying")))))
+  (if (org-gtd-clarify--walk-pending-duplicates)
+      ;; The refresh of the side window is handled by :render, which
+      ;; `org-gtd-walk-advance' runs.
+      (org-gtd-walk-advance)
+    (let ((window-config org-gtd-clarify--window-config)
+          (task-id org-gtd-clarify--clarify-id))
+      ;; Belt-and-suspenders: with immediate-after-parent ordering there
+      ;; is no pending duplicate on this branch, but if one ever were
+      ;; stranded it must not vanish -- save it back to the inbox.
+      (when (org-gtd-clarify--walk-pending-duplicates)
+        (org-gtd-clarify--queue-save-to-inbox))
+      (org-gtd-walk-quit)
+      (org-gtd-clarify--queue-cleanup)
+      (org-gtd-clarify--cleanup-horizons-view)
+      (when task-id
+        (org-gtd-wip--cleanup-temp-file task-id))
+      (when window-config
+        (set-window-configuration window-config))
+      (message "Stopped clarifying"))))
 
 (defun org-gtd-clarify--stop-one-off ()
   "Stop clarifying on the one-off (non-walk) clarify path.
@@ -614,27 +617,44 @@ active (D6a)."
   (if org-gtd-walk--active
       (let* ((token (format "inbox-dup-%s" (org-id-uuid)))
              (model (plist-get org-gtd-walk--active :model))
-             (seeded (list :entries (plist-get model :entries)
-                          :cursor (plist-get model :cursor)
-                          :meta (cons (cons token (list :title title :content content))
-                                     (plist-get model :meta)))))
+             (entries (plist-get model :entries))
+             (cursor (plist-get model :cursor))
+             (meta (cons (cons token (list :title title :content content))
+                         (plist-get model :meta)))
+             (idx (org-gtd-clarify--duplicate-insert-index entries cursor meta)))
+        ;; Insert the new duplicate immediately after the current item
+        ;; and after any already-pending duplicates of it, so multiple
+        ;; duplicates keep creation order (FIFO) and are all handled
+        ;; before the next inbox item -- reproducing the pre-engine
+        ;; "process duplicates right after their parent" behavior.
+        ;; `org-gtd-clarify-duplicate-queue-position' does NOT affect
+        ;; this order (it only positions the side window).
         (setf (plist-get org-gtd-walk--active :model)
-              (org-gtd-walk-model-enqueue
-               seeded token (org-gtd-clarify--duplicate-enqueue-position)))
+              (list :entries (append (seq-take entries idx)
+                                     (list token)
+                                     (seq-drop entries idx))
+                    :cursor cursor
+                    :meta meta))
         (org-gtd-clarify--queue-display))
     (org-gtd-clarify--queue-add title content)
     (org-gtd-clarify--queue-display)))
 
-(defun org-gtd-clarify--duplicate-enqueue-position ()
-  "Return the `org-gtd-walk-model-enqueue' position for a new duplicate.
-`org-gtd-clarify-duplicate-queue-position' historically names the side
-window's SIDE (top/right/left/bottom); only `top' and `bottom' are
-meaningful as walk-model enqueue positions (`org-gtd-walk-model-enqueue'
-rejects the rest).  Map `top' to `top' (handled next) and every other
-value -- the default `bottom' and the legacy `left'/`right' window
-sides -- to `bottom' (handled after the remaining items), so a user
-with a left/right side window never trips the enqueue validator."
-  (if (eq org-gtd-clarify-duplicate-queue-position 'top) 'top 'bottom))
+(defun org-gtd-clarify--duplicate-insert-index (entries cursor meta)
+  "Return the index at which to insert a new duplicate token.
+Immediately after the item at CURSOR and after any run of consecutive
+already-pending duplicate tokens that follow it (per META), so
+duplicates of one item are handled first-in-first-out and all before
+the next inbox item.  ENTRIES is the model's entry list.
+
+A token is a duplicate when its META value is a (:title :content)
+plist; an inbox item's value is a live marker (D2/D4a)."
+  (let ((len (length entries))
+        (idx (1+ cursor)))
+    (while (and (< idx len)
+                (let ((value (cdr (assoc (nth idx entries) meta))))
+                  (and value (not (markerp value)))))
+      (setq idx (1+ idx)))
+    (min idx len)))
 
 ;;;;; Pending-duplicate accessors (D6a)
 
@@ -687,12 +707,6 @@ Reads whichever store is active (walk model or legacy queue) via
   (setq org-gtd-clarify--duplicate-queue
         (append org-gtd-clarify--duplicate-queue
                 (list (list :title title :content content)))))
-
-(defun org-gtd-clarify--queue-pop ()
-  "Remove and return first item from duplicate queue.
-Returns nil if queue is empty."
-  (when org-gtd-clarify--duplicate-queue
-    (pop org-gtd-clarify--duplicate-queue)))
 
 ;;;;; Queue Display
 

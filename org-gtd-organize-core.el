@@ -160,8 +160,19 @@ This handles the internal bits of `org-gtd'."
          ;; -- it stays on the current item (design's error-path
          ;; parity).  Never kill the surface buffer here: advance
          ;; re-renders into it; only finish/quit tears it down.
+         ;;
+         ;; `org-gtd-walk-advance' does not self-clean the way
+         ;; `org-gtd-walk-start' does, so an UNEXPECTED error from
+         ;; `:render' mid-advance (not an `org-gtd-error', which was
+         ;; already caught above) would leave the walk active and its
+         ;; scope locked.  Release the lock, then re-signal -- mirroring
+         ;; `org-gtd-review--advance-hosted-walk' (issue #3).
          (walk-active
-          (org-gtd-walk-advance))
+          (condition-case err
+              (org-gtd-walk-advance)
+            (error
+             (when org-gtd-walk--active (org-gtd-walk-quit))
+             (signal (car err) (cdr err)))))
          ;; Locally queued duplicates (one-off clarify predating the
          ;; walk engine): reuse the current buffer for the next queued
          ;; item.

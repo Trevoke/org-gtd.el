@@ -21,6 +21,7 @@
 
 (require 'ogt-eunit-prelude "test/helpers/prelude.el")
 (require 'with-simulated-input)
+(require 'cl-lib)
 
 (e-unit-initialize)
 
@@ -142,23 +143,6 @@
     (org-gtd-clarify--queue-add "Second" "* Second")
     (assert-equal 2 (length org-gtd-clarify--duplicate-queue))
     (assert-equal "First" (plist-get (car org-gtd-clarify--duplicate-queue) :title))))
-
-(deftest clarify/queue-pop-returns-and-removes-first-item ()
-  "Pops first item from queue (FIFO)."
-  (with-temp-buffer
-    (setq org-gtd-clarify--duplicate-queue
-          '((:title "First" :content "* First")
-            (:title "Second" :content "* Second")))
-    (let ((item (org-gtd-clarify--queue-pop)))
-      (assert-equal "First" (plist-get item :title))
-      (assert-equal 1 (length org-gtd-clarify--duplicate-queue))
-      (assert-equal "Second" (plist-get (car org-gtd-clarify--duplicate-queue) :title)))))
-
-(deftest clarify/queue-pop-returns-nil-when-empty ()
-  "Returns nil when popping from empty queue."
-  (with-temp-buffer
-    (setq org-gtd-clarify--duplicate-queue nil)
-    (assert-nil (org-gtd-clarify--queue-pop))))
 
 ;;; Queue Display Tests
 
@@ -480,6 +464,96 @@
     (organize-as-single-action))
   ;; Now done
   (assert-nil (ogt-get-wip-buffer)))
+
+;;; Duplicate Ordering Tests (issue #2: FIFO, immediately after parent)
+
+(deftest clarify/duplicate-processed-immediately-after-parent ()
+  "A duplicate is handled right after its parent, before the next inbox item.
+Pre-engine parity: duplicates process immediately after their parent
+item, never after subsequent inbox items."
+  (capture-inbox-item "Alpha")
+  (capture-inbox-item "Beta")
+  (org-gtd-process-inbox)                 ; clarifying Alpha; model [Alpha Beta]
+  ;; Duplicate Alpha with a distinct title.
+  (with-wip-buffer
+    (with-simulated-input "C-a C-k Alpha SPC dup RET"
+      (org-gtd-clarify-duplicate)))
+  ;; Organize Alpha -> advances to the duplicate, NOT to Beta.
+  (with-wip-buffer (organize-as-single-action))
+  (with-wip-buffer
+    (assert-match "Alpha dup" (buffer-string))
+    (refute-match "Beta" (buffer-string)))
+  ;; Organize the duplicate -> now Beta.
+  (with-wip-buffer (organize-as-single-action))
+  (with-wip-buffer
+    (assert-match "Beta" (buffer-string)))
+  ;; Organize Beta -> done.
+  (with-wip-buffer (organize-as-single-action))
+  (assert-nil (ogt-get-wip-buffer)))
+
+(deftest clarify/multiple-duplicates-processed-fifo ()
+  "Two duplicates of one item are handled in creation order (FIFO)."
+  (capture-inbox-item "Base")
+  (org-gtd-process-inbox)
+  (with-wip-buffer
+    (with-simulated-input "C-a C-k First SPC dup RET"
+      (org-gtd-clarify-duplicate))
+    (with-simulated-input "C-a C-k Second SPC dup RET"
+      (org-gtd-clarify-duplicate)))
+  ;; Two duplicates pending, in creation order.
+  (let ((pending (org-gtd-clarify--pending-duplicates-all-buffers)))
+    (assert-equal 2 (length pending))
+    (assert-equal "First dup" (plist-get (nth 0 pending) :title))
+    (assert-equal "Second dup" (plist-get (nth 1 pending) :title)))
+  ;; Organize Base -> first duplicate is handled first (FIFO).
+  (with-wip-buffer (organize-as-single-action))
+  (with-wip-buffer (assert-match "First dup" (buffer-string)))
+  (with-wip-buffer (organize-as-single-action))
+  (with-wip-buffer (assert-match "Second dup" (buffer-string)))
+  (with-wip-buffer (organize-as-single-action))
+  (assert-nil (ogt-get-wip-buffer)))
+
+;;; Stop Data-Safety Tests (issue #1: never drop a pending duplicate)
+
+(deftest clarify/stop-does-not-lose-pending-duplicate ()
+  "C-c C-k never silently drops a pending duplicate: it is processed next."
+  (capture-inbox-item "Parent")
+  (org-gtd-process-inbox)
+  (with-wip-buffer
+    (with-simulated-input "C-a C-k Child SPC dup RET"
+      (org-gtd-clarify-duplicate)))
+  ;; Stop while clarifying Parent, with the Child duplicate pending.
+  (with-wip-buffer (org-gtd-clarify-stop))
+  ;; The duplicate is not lost -- it is now being clarified.
+  (assert-true (ogt-get-wip-buffer))
+  (with-wip-buffer (assert-match "Child dup" (buffer-string)))
+  ;; Clean up.
+  (with-wip-buffer (org-gtd-clarify-stop)))
+
+;;; Advance-Error Scope-Lock Tests (issue #3)
+
+(deftest clarify/advance-error-releases-scope-lock ()
+  "An unexpected error during the post-organize advance releases the lock.
+`org-gtd-organize--call' quits the walk (unlocking the scope) and
+re-signals, so a throwing :render mid-advance cannot leave the inbox
+scope locked forever."
+  (capture-inbox-item "One")
+  (capture-inbox-item "Two")
+  (org-gtd-process-inbox)                 ; renders One with the real :render
+  (let ((scope (org-gtd-inbox-walk--file-list)))
+    (assert-true (org-gtd-walk--scope-locked-p scope))
+    ;; Make the NEXT render (of Two, during the post-organize advance)
+    ;; throw an unexpected error.
+    (cl-letf (((symbol-function 'org-gtd-inbox-walk--render)
+               (lambda (&rest _) (error "boom in render"))))
+      (assert-raises 'error
+        (with-wip-buffer (organize-as-single-action))))
+    ;; Despite the error, the scope lock is released and no walk is active.
+    (assert-nil (org-gtd-walk--scope-locked-p scope))
+    ;; A fresh session can start again over the same scope.
+    (org-gtd-process-inbox)
+    (assert-true (org-gtd-walk--scope-locked-p scope))
+    (with-wip-buffer (org-gtd-clarify-stop))))
 
 ;;; Kill-Emacs Query Tests
 
