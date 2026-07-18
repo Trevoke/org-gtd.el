@@ -56,6 +56,49 @@
     (org-gtd-walk--lock-scope '("a.org" "b.org"))
     (assert-true (org-gtd-walk--scope-locked-p '("b.org" "a.org")))))
 
+;;; checkpoint file I/O
+
+(deftest checkpoint-path-keys-on-name-and-scope ()
+  "Different name or scope yields a different checkpoint path; same inputs match."
+  (let ((org-gtd-directory "/tmp/gtd/"))
+    (assert-not-equal (org-gtd-walk--checkpoint-path 'a "s")
+                      (org-gtd-walk--checkpoint-path 'b "s"))
+    (assert-not-equal (org-gtd-walk--checkpoint-path 'a "s")
+                      (org-gtd-walk--checkpoint-path 'a "t"))
+    (assert-equal (org-gtd-walk--checkpoint-path 'a "s")
+                  (org-gtd-walk--checkpoint-path 'a "s"))))
+
+(deftest checkpoint-save-load-delete-round-trip ()
+  "A saved model reloads equal; delete removes the file."
+  (let* ((org-gtd-directory (make-temp-file "walk-ckpt" t))
+         (path (org-gtd-walk--checkpoint-path 'demo "scope"))
+         (model (list :entries '("a" "b") :cursor 1 :meta nil)))
+    (unwind-protect
+        (progn
+          (org-gtd-walk--save-checkpoint path model)
+          (assert-true (file-exists-p path))
+          (assert-equal model (org-gtd-walk--load-checkpoint path))
+          (org-gtd-walk--delete-checkpoint path)
+          (assert-nil (file-exists-p path)))
+      (delete-directory org-gtd-directory t))))
+
+(deftest checkpoint-load-missing-file-returns-nil ()
+  (let ((org-gtd-directory (make-temp-file "walk-ckpt" t)))
+    (unwind-protect
+        (assert-nil (org-gtd-walk--load-checkpoint
+                     (org-gtd-walk--checkpoint-path 'demo "scope")))
+      (delete-directory org-gtd-directory t))))
+
+(deftest checkpoint-load-corrupt-file-returns-nil ()
+  "A garbage checkpoint file loads as nil (fresh-start fallback)."
+  (let* ((org-gtd-directory (make-temp-file "walk-ckpt" t))
+         (path (org-gtd-walk--checkpoint-path 'demo "scope")))
+    (unwind-protect
+        (progn
+          (with-temp-file path (insert "(:entries oops"))
+          (assert-nil (org-gtd-walk--load-checkpoint path)))
+      (delete-directory org-gtd-directory t))))
+
 (provide 'walk-scope-test)
 
 ;;; walk-scope-test.el ends here

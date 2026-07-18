@@ -105,6 +105,33 @@ The concurrency lock: no two walks may run over the same scope at once
   (setq org-gtd-walk--locked-scopes
         (delete (org-gtd-walk--scope-key scope) org-gtd-walk--locked-scopes)))
 
+;;;; Checkpoint persistence
+
+(defun org-gtd-walk--checkpoint-path (name scope)
+  "Return the checkpoint file path for walk NAME over SCOPE.
+Keyed by NAME and SCOPE so distinct resumable sessions never collide
+\(design §5)."
+  (expand-file-name
+   (format "walk-%s-%s.eld" name (md5 (org-gtd-walk--scope-key scope)))
+   org-gtd-directory))
+
+(defun org-gtd-walk--save-checkpoint (path model)
+  "Write MODEL to PATH as a serialized walk model."
+  (with-temp-file path
+    (insert (org-gtd-walk-model-serialize model))))
+
+(defun org-gtd-walk--load-checkpoint (path)
+  "Return the model stored at PATH, or nil if absent/unreadable/corrupt."
+  (when (file-exists-p path)
+    (org-gtd-walk-model-deserialize
+     (with-temp-buffer
+       (insert-file-contents path)
+       (buffer-string)))))
+
+(defun org-gtd-walk--delete-checkpoint (path)
+  "Delete the checkpoint file at PATH if it exists."
+  (when (file-exists-p path) (delete-file path)))
+
 ;;;; Footer
 
 (provide 'org-gtd-walk)
