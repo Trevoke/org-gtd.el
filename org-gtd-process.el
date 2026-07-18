@@ -32,6 +32,8 @@
 (require 'org-gtd-projects)
 (require 'org-gtd-refile)
 (require 'org-gtd-clarify)
+(require 'org-gtd-walk)
+(require 'org-gtd-inbox-walk)
 
 ;;;; Customization
 
@@ -65,13 +67,32 @@ Walks through each inbox item sequentially, opening the clarification
 interface for decision-making and organization.
 
 After the main inbox is empty, continues processing items from
-`org-gtd-additional-inbox-files' in order."
+`org-gtd-additional-inbox-files' in order.
+
+Drives the generic walk engine (`org-gtd-walk-start') over the inbox
+walk spec (see org-gtd-inbox-walk.el): the multi-source scan
+\(`org-gtd-inbox-walk--build-model') collapses the old
+pending-inboxes/next-inbox iteration and the duplicate queue into one
+walk model.  See
+docs/plans/2026-07-17-walk-engine-phase-4-plan.md."
   (interactive)
-  ;; Initialize session state on first call
-  (unless org-gtd-process--session-active
-    (setq org-gtd-process--session-active t
-          org-gtd-process--pending-inboxes (copy-sequence org-gtd-additional-inbox-files)))
-  (org-gtd-process--next-inbox (org-gtd-inbox-path)))
+  (let* ((files (org-gtd-inbox-walk--file-list))
+         (model (org-gtd-inbox-walk--build-model)))
+    (if (org-gtd-walk-model-done-p model)
+        (message "All inboxes are empty. No items to process.")
+      (org-gtd-walk-start (org-gtd-inbox-walk--spec files)
+                          (org-gtd-inbox-walk--surface)
+                          model))))
+
+;;;; Functions
+
+;;;;; Private
+;;
+;; The functions below drove inbox processing before the walk engine
+;; (`org-gtd-process-inbox', above, no longer calls them).  Left in
+;; place for now -- removed in a follow-up cutover task once
+;; `org-gtd-clarify-stop' and the kill-safety/duplicate-display paths
+;; are also wired onto the walk (see the Phase 4 plan's Tasks 7-10).
 
 (defun org-gtd-process--next-inbox (inbox-file)
   "Process items from INBOX-FILE, then continue to pending inboxes."
@@ -99,10 +120,6 @@ After the main inbox is empty, continues processing items from
     ;; No more inboxes to process
     (message "All inboxes are empty. No items to process.")
     (org-gtd-process--stop)))
-
-;;;; Functions
-
-;;;;; Private
 
 (defun org-gtd-process--stop ()
   "Stop processing the inbox."

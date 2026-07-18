@@ -104,6 +104,36 @@
     (with-current-buffer surface (assert-nil org-gtd-walk--active))
     (assert-nil (org-gtd-walk--scope-locked-p "stub-scope"))))
 
+;;; start with a pre-built model (find->model seam, Phase 4 Task 5)
+
+(deftest walk-start-with-initial-model-skips-find-and-seeds-meta ()
+  "start with INITIAL-MODEL uses it verbatim: :find is never called, and
+:meta seeded on the model survives into the active session."
+  (walk-driver-test--with-harness surface
+    (let ((model (org-gtd-walk-model-create '("x" "y") '(("x" . "x-meta")))))
+      (org-gtd-walk-start
+       (walk-driver-test--stub-spec
+        :find (lambda () (error "find should not be called with an initial model")))
+       surface model)
+      (assert-equal '("x") walk-driver-test--render-log)
+      (with-current-buffer surface
+        (assert-equal "x-meta"
+                      (cdr (assoc "x" (plist-get (plist-get org-gtd-walk--active :model) :meta))))))))
+
+(deftest walk-start-with-empty-initial-model-finishes-without-activating ()
+  "An INITIAL-MODEL that is already done finishes immediately, like an
+empty :find, without ever calling :find."
+  (walk-driver-test--with-harness surface
+    (let ((model (org-gtd-walk-model-create nil)))
+      (let ((result (org-gtd-walk-start
+                     (walk-driver-test--stub-spec
+                      :find (lambda () (error "find should not be called with an initial model")))
+                     surface model)))
+        (assert-nil result)
+        (assert-same 1 walk-driver-test--finish-count)
+        (with-current-buffer surface (assert-nil org-gtd-walk--active))
+        (assert-nil (org-gtd-walk--scope-locked-p "stub-scope"))))))
+
 ;;; empty find
 
 (deftest walk-empty-find-finishes-without-activating ()

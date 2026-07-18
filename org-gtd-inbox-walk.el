@@ -21,12 +21,18 @@
 ;;; Commentary:
 ;;
 ;; The inbox walk consumer adapter (see
-;; docs/plans/2026-07-17-walk-engine-phase-4-plan.md Tasks 1-3).
+;; docs/plans/2026-07-17-walk-engine-phase-4-plan.md).
 ;;
-;; This module is additive: it implements `:find'/`:render' for a future
-;; `inbox' walk spec without wiring into `org-gtd-walk-start' or the live
-;; `org-gtd-process-inbox' entry point.  That wiring is a later task; the
-;; old inbox/process/clarify code stays fully intact and untouched.
+;; `org-gtd-process-inbox' (org-gtd-process.el) drives this module's spec
+;; through the walk engine.  The find->model seam: `org-gtd-walk-start'
+;; normally builds its model from a nullary `:find', which cannot seed
+;; `:meta'.  Since the inbox needs token->marker `:meta' from the moment
+;; the walk starts (D2), `org-gtd-process-inbox' builds the full model via
+;; `org-gtd-inbox-walk--build-model' and passes it to `org-gtd-walk-start'
+;; as its optional INITIAL-MODEL argument, bypassing `:find' entirely for
+;; the live entry point.  `:find' itself (`org-gtd-inbox-walk--find') is
+;; still provided, returning just the token list, so the spec stays
+;; well-formed for `org-gtd-walk-spec-valid-p' / the registry.
 ;;
 ;; Handle representation (D2, ruled): every inbox walk handle is a
 ;; synthetic string token, never persisted (resume is deferred --
@@ -34,7 +40,8 @@
 ;; pairs where VALUE is either:
 ;;   - a live marker, for an original inbox heading (`:find' time), or
 ;;   - a (:title TITLE :content CONTENT) plist, for a duplicate (D4a,
-;;     created at enqueue time -- a later task).
+;;     created at enqueue time by `org-gtd-clarify--enqueue-duplicate' in
+;;     org-gtd-clarify.el).
 ;; `:render' resolves a token through this meta table and dispatches on
 ;; which shape it finds.
 ;;
@@ -189,14 +196,31 @@ Copies the source subtree in, strips org-gtd state properties (reusing
 `org-gtd-clarify--initialize-buffer-contents'), sets the source marker,
 and lazily assigns the clarify id NOW on the source heading -- exactly
 as `org-gtd-clarify-item' does at `org-gtd-clarify.el:254' -- so a
-skipped/never-reached item is never stamped."
+skipped/never-reached item is never stamped.
+
+Deliberately does NOT bind `org-id-track-globally' around the copy
+\(unlike someday-review's read-only render): SURFACE here is the live
+staging buffer the item is about to be organized from, not a disposable
+review copy, and `org-gtd-id-get-create' already registered the id
+against a placeholder (\"Org GTD WIP buffer\") location.  Letting
+`org-paste-subtree''s default tracking re-register the id against
+SURFACE's real backing temp file (as the pre-engine
+`org-gtd-clarify-item' always did) keeps `org-id-find' resolving to a
+file that actually exists until the item is refiled; suppressing it
+here left the id pointing at the placeholder, which forced later
+`org-id-find' calls (e.g. `org-gtd-project-update-cookies' during a
+SECOND project's clarify) into a full `org-id-update-id-locations'
+rescan -- and since org-gtd buffers are usually unsaved
+mid-session (`org-gtd-save-after-organize' is nil by default), that
+rescan silently dropped not-yet-saved id registrations made moments
+earlier (a real regression caught via `project-fix-keywords-test.el',
+multi-project readiness computed via `org-id-find')."
   (let* ((old-id (with-current-buffer surface
                    (or org-gtd-clarify--clarify-id
                        org-gtd-inbox-walk--surface-key)))
          (new-id (org-gtd-id-get-create marker)))
     (with-current-buffer surface
-      (let ((inhibit-read-only t)
-            (org-id-track-globally nil))
+      (let ((inhibit-read-only t))
         (erase-buffer)
         (org-gtd--without-kill-merge
           (org-gtd-clarify--initialize-buffer-contents marker surface))
@@ -232,6 +256,57 @@ invoked in the surface buffer -- see `org-gtd-walk--render-current')."
         (org-gtd-clarify-setup-windows surface))
        (t
         (org-gtd-walk-advance))))))
+
+;;;;; Spec (Task 5)
+
+(defun org-gtd-inbox-walk--find ()
+  "Return the inbox walk's token list (the model's would-be :entries).
+Provided so the spec is well-formed for `org-gtd-walk-spec-valid-p'
+and the registry.  The live entry point (`org-gtd-process-inbox' in
+org-gtd-process.el) does not call this: it builds the full token+marker
+model itself via `org-gtd-inbox-walk--build-model' and passes it to
+`org-gtd-walk-start' as INITIAL-MODEL, since `:find' alone cannot seed
+`:meta' (see the find->model seam note at the top of this file)."
+  (car (org-gtd-inbox-walk--scan)))
+
+(defun org-gtd-inbox-walk--on-finish ()
+  "End-of-walk cleanup for an inbox walk (design §9).
+Folds in the old `org-gtd-process--stop' behavior: closes the horizons
+view, tidies whitespace, cleans up the surface's WIP temp file (D3a --
+the single reused surface's last-used clarify-id, not the fixed
+placeholder key it started under), and saves GTD buffers.  Runs in the
+surface buffer (`org-gtd-walk-finish')."
+  (org-gtd-clarify--cleanup-horizons-view)
+  (whitespace-cleanup)
+  (when (bound-and-true-p org-gtd-clarify--clarify-id)
+    (org-gtd-wip--cleanup-temp-file org-gtd-clarify--clarify-id))
+  (org-gtd-save-buffers))
+
+(defun org-gtd-inbox-walk--spec (&optional files)
+  "Return the inbox walk spec, scoped over FILES.
+Built fresh per call (mirroring `org-gtd-someday-review--spec') so
+`:scope' can always reflect the current `org-gtd-additional-inbox-files'
+rather than whatever it was when this module first loaded.
+
+FILES defaults to just the main inbox's path, computed WITHOUT the
+`org-gtd-inbox-path' side effect of creating the file if it is
+missing (`org-gtd--path' is pure) -- this default is only used for the
+spec registered at load time (`org-gtd-walk-get'/`org-gtd-walks'
+introspection, e.g. `org-gtd-review.el' validating a hosted walk
+step), which must not create files merely by being `require'd.  The
+live entry point (`org-gtd-process-inbox' in org-gtd-process.el)
+always passes the true current multi-source list
+\(`org-gtd-inbox-walk--file-list', which DOES ensure the main inbox
+file exists -- matching legacy `org-gtd-process-inbox' behavior)."
+  (list :name 'inbox
+        :find #'org-gtd-inbox-walk--find
+        :render #'org-gtd-inbox-walk--render
+        :actions org-gtd-clarify-mode-map
+        :on-finish #'org-gtd-inbox-walk--on-finish
+        :resumable nil
+        :scope (or files (list (org-gtd--path org-gtd-inbox)))))
+
+(org-gtd-walk-register 'inbox (org-gtd-inbox-walk--spec))
 
 ;;;; Footer
 

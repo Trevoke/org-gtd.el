@@ -185,18 +185,27 @@ handles that no longer resolve, counting skips (design §9)."
     (org-gtd-walk--render-current)
     (org-gtd-walk--checkpoint)))
 
-(defun org-gtd-walk-start (spec surface)
+(defun org-gtd-walk-start (spec surface &optional initial-model)
   "Start a walk described by SPEC, rendering into SURFACE.
 Refuses if SPEC's scope is already locked.  Loads a checkpoint when
 :resumable and one is valid, else runs :find fresh.  An empty find
-finishes immediately without activating (design §6, §9)."
+finishes immediately without activating (design §6, §9).
+
+INITIAL-MODEL, when non-nil, is used verbatim instead of loading a
+checkpoint or calling :find.  This is the find->model seam: :find is a
+nullary fn that can only return entries, so a consumer whose model
+needs seeded `:meta' (e.g. the inbox walk's token->marker table, which
+:find alone cannot construct) builds the full model itself and passes
+it here.  The consumer is responsible for keeping the model consistent
+with what a bare :find over the same scope would have produced."
   (let ((scope (plist-get spec :scope)))
     (when (org-gtd-walk--scope-locked-p scope)
       (error "A walk is already active over scope %s" scope))
     (let* ((name (plist-get spec :name))
            (path (and (plist-get spec :resumable)
                       (org-gtd-walk--checkpoint-path name scope)))
-           (model (or (and path (org-gtd-walk--load-checkpoint path))
+           (model (or initial-model
+                      (and path (org-gtd-walk--load-checkpoint path))
                       (org-gtd-walk-model-create (funcall (plist-get spec :find)))))
            (buffer (org-gtd-walk--surface-buffer surface)))
       (if (org-gtd-walk-model-done-p model)
@@ -217,7 +226,21 @@ finishes immediately without activating (design §6, §9)."
              (with-current-buffer buffer
                (setq org-gtd-walk--active nil)))
            (org-gtd-walk--unlock-scope scope)
-           (signal (car err) (cdr err))))))))
+           (signal (car err) (cdr err))))
+        ;; `with-current-buffer' above unconditionally restores whatever
+        ;; buffer was current before `org-gtd-walk-start' was called, even
+        ;; though :render may have `pop-to-buffer'd BUFFER into a window.
+        ;; That is invisible to a real interactive user (the command loop
+        ;; re-syncs `current-buffer' from the selected window before the
+        ;; next keypress), but a caller that chains further Lisp calls
+        ;; right after `org-gtd-walk-start' returns (as every consumer
+        ;; entry point here does) needs BUFFER to actually be current, not
+        ;; just displayed -- mirroring the pre-engine clarify entry points,
+        ;; which used a bare `set-buffer' for exactly this reason.  A no-op
+        ;; when the walk finished immediately (buffer never became live)
+        ;; or when :on-finish/:render killed BUFFER along the way.
+        (when (buffer-live-p buffer)
+          (set-buffer buffer))))))
 
 (defun org-gtd-walk-advance ()
   "Advance the active walk to the next item and re-render (design §6).
