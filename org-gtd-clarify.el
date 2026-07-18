@@ -311,6 +311,11 @@ before cleanup so the save/discard prompt never fired."
       (org-gtd-walk-advance)
     (let ((window-config org-gtd-clarify--window-config)
           (task-id org-gtd-clarify--clarify-id))
+      ;; Save-on-quit safety net: if the current item was edited, write
+      ;; those edits back over its source inbox heading so re-running
+      ;; `org-gtd-process-inbox' resumes it in edited form (issue: quit
+      ;; used to silently discard in-progress edits).
+      (org-gtd-clarify--save-current-item-to-inbox)
       ;; Belt-and-suspenders: with immediate-after-parent ordering there
       ;; is no pending duplicate on this branch, but if one ever were
       ;; stranded it must not vanish -- save it back to the inbox.
@@ -840,6 +845,64 @@ Returns \\='discard, \\='save, or \\='cancel."
       (?s 'save)
       (?c 'cancel))))
 
+;;;;; Save-on-quit safety net
+
+(defun org-gtd-clarify--overwrite-source-with-wip ()
+  "Replace the source heading with the current WIP buffer's subtree.
+Copies the subtree from the current (WIP) buffer and pastes it over the
+heading at `org-gtd-clarify--source-heading-marker', re-leveling to the
+source heading's outline level (the WIP subtree is always pasted at
+level 1, so raw insertion would flatten it -- issue #291) and saving the
+source file.  A dead/missing source marker is a no-op.
+
+Shared by the organize \"update in place\" action
+\(`org-gtd-organize--update-in-place') and the inbox save-on-quit safety
+net (`org-gtd-clarify--save-current-item-to-inbox')."
+  (let ((new-content (save-excursion
+                       (goto-char (point-min))
+                       (when (org-before-first-heading-p)
+                         (org-next-visible-heading 1))
+                       (org-gtd--without-kill-merge
+                         (org-copy-subtree))
+                       (current-kill 0)))
+        (source-marker org-gtd-clarify--source-heading-marker))
+    (when (and source-marker
+               (markerp source-marker)
+               (marker-buffer source-marker))
+      (with-current-buffer (marker-buffer source-marker)
+        (goto-char source-marker)
+        (org-back-to-heading t)
+        (let ((level (org-outline-level)))
+          (org-gtd--without-kill-merge
+            (org-cut-subtree))
+          (org-paste-subtree level new-content))
+        (save-buffer)))))
+
+(defun org-gtd-clarify--save-current-item-to-inbox ()
+  "Write in-progress edits to the current item back to its source heading.
+The save-on-quit safety net: when a walk-driven inbox clarify is
+abandoned mid-item, an *edited* WIP surface (`buffer-modified-p') whose
+source heading still exists is written back over that heading (via
+`org-gtd-clarify--overwrite-source-with-wip'), so re-running
+`org-gtd-process-inbox' picks the item up in its edited form rather than
+discarding what was typed.  A merely glanced item (unmodified surface,
+per the flag reset in `org-gtd-inbox-walk--render-marker') is left
+untouched -- no needless rewrite.
+
+Idempotent: clears the modified flag after saving so a following
+kill-buffer teardown does not save a second time.
+
+Caveat: the signal is `buffer-modified-p', so a user who manually saves
+the temp-file-backed surface (`C-x C-s') before quitting clears the flag
+and their edits are then discarded -- inherent to a modified-flag gate,
+and an unusual action on a WIP buffer."
+  (when (and (buffer-modified-p)
+             org-gtd-clarify--source-heading-marker
+             (markerp org-gtd-clarify--source-heading-marker)
+             (marker-buffer org-gtd-clarify--source-heading-marker))
+    (org-gtd-clarify--overwrite-source-with-wip)
+    (set-buffer-modified-p nil)))
+
 ;;;;; Kill-Emacs Safety
 
 (defun org-gtd-clarify--buffer-has-pending-duplicates-p ()
@@ -934,6 +997,12 @@ Added to `kill-buffer-hook' buffer-locally."
   ;; scope ...".  `org-gtd-walk-quit' unlocks and clears the (about to
   ;; die) buffer-local session.
   (when (bound-and-true-p org-gtd-walk--active)
+    ;; Killing a live inbox-walk surface (e.g. C-x k) is also an
+    ;; abandonment: apply the same save-on-quit safety net as the `q'
+    ;; quit path before releasing the session.  The gate
+    ;; (`buffer-modified-p' + a live source marker) makes this a no-op for
+    ;; unedited items and for walk surfaces with no source heading.
+    (org-gtd-clarify--save-current-item-to-inbox)
     (org-gtd-walk-quit))
   (unless (org-gtd-clarify--other-clarify-buffers-exist-p)
     ;; Clean up all side windows

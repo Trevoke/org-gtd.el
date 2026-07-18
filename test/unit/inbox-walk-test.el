@@ -264,6 +264,104 @@ via org-gtd-walk-advance instead of erroring (D2 durability guard)."
         (setq clarify-id org-gtd-clarify--clarify-id))
       (org-gtd-wip--cleanup-temp-file clarify-id))))
 
+;;; Save-on-quit safety net (in-progress edits)
+
+(deftest inbox-walk/render-leaves-surface-unmodified ()
+  "After rendering an inbox item, the surface reports unmodified so a
+later quit can distinguish an edited item (save its edits back) from an
+untouched one (discard, no churn)."
+  (capture-inbox-item "Glance and quit")
+  (let* ((model (org-gtd-inbox-walk--build-model))
+         (token (car (plist-get model :entries)))
+         (surface (org-gtd-inbox-walk--surface))
+         clarify-id)
+    (with-current-buffer surface
+      (setq-local org-gtd-walk--active (list :model model)))
+    (org-gtd-inbox-walk--render token surface)
+    (with-current-buffer surface
+      (assert-nil (buffer-modified-p))
+      (setq clarify-id org-gtd-clarify--clarify-id))
+    (org-gtd-wip--cleanup-temp-file clarify-id)))
+
+(deftest inbox-walk/quit-after-edit-saves-changes-back-to-inbox ()
+  "Quitting inbox processing while mid-clarify on an edited item writes
+the in-progress edits back over the source inbox heading, so re-running
+picks the item up in its edited form (the save-on-quit safety net)."
+  (capture-inbox-item "Buy milk")
+  (let* ((model (org-gtd-inbox-walk--build-model))
+         (surface (org-gtd-inbox-walk--surface)))
+    (org-gtd-walk-start (org-gtd-inbox-walk--spec) surface model)
+    (with-current-buffer surface
+      ;; Simulate the user editing the item before deciding on it.
+      (goto-char (point-min))
+      (search-forward "Buy milk")
+      (replace-match "Buy oat milk")
+      (assert-true (buffer-modified-p))
+      (org-gtd-clarify--stop-walk))
+    (with-current-buffer (find-file-noselect (org-gtd-inbox-path))
+      (assert-match "Buy oat milk" (buffer-string)))))
+
+(deftest inbox-walk/quit-without-edit-leaves-inbox-heading-intact ()
+  "Quitting without touching the item leaves the source inbox heading
+exactly as captured (the gate: no needless rewrite of a glanced item)."
+  (capture-inbox-item "Untouched item")
+  (let* ((model (org-gtd-inbox-walk--build-model))
+         (surface (org-gtd-inbox-walk--surface)))
+    (org-gtd-walk-start (org-gtd-inbox-walk--spec) surface model)
+    (with-current-buffer surface
+      (org-gtd-clarify--stop-walk))
+    (with-current-buffer (find-file-noselect (org-gtd-inbox-path))
+      (goto-char (point-min))
+      (assert-equal 1 (length (org-map-entries #'point-marker "LEVEL=1")))
+      (assert-match "Untouched item" (buffer-string)))))
+
+(deftest inbox-walk/kill-buffer-after-edit-saves-changes-back-to-inbox ()
+  "Killing the surface buffer directly (C-x k) is also an abandonment:
+in-progress edits are written back over the source inbox heading and the
+walk's scope lock is released."
+  (capture-inbox-item "Kill me")
+  (let* ((model (org-gtd-inbox-walk--build-model))
+         (surface (org-gtd-inbox-walk--surface))
+         (spec (org-gtd-inbox-walk--spec)))
+    (org-gtd-walk-start spec surface model)
+    (with-current-buffer surface
+      (goto-char (point-min))
+      (search-forward "Kill me")
+      (replace-match "Kill me EDITED"))
+    ;; Directly killing the surface fires the buffer-local kill-buffer
+    ;; hooks (query then cleanup), the non-`q' abandonment route.
+    (kill-buffer surface)
+    (assert-false (org-gtd-walk--scope-locked-p (plist-get spec :scope)))
+    (with-current-buffer (find-file-noselect (org-gtd-inbox-path))
+      (assert-match "Kill me EDITED" (buffer-string)))))
+
+(deftest inbox-walk/skip-to-duplicate-does-not-save-current-edits ()
+  "Stopping while a duplicate is pending SKIPS the current item to the
+duplicate (an explicit discard of the current item), so edits to the
+current item are NOT written back to the inbox."
+  (capture-inbox-item "Parent item")
+  (let* ((base (org-gtd-inbox-walk--build-model))
+         (dup-token (org-gtd-inbox-walk--token))
+         (with-dup (org-gtd-inbox-walk--meta-put-dup
+                    base dup-token "Dup" "* Dup\n"))
+         (model (org-gtd-walk-model-enqueue with-dup dup-token 'top))
+         (surface (org-gtd-inbox-walk--surface)))
+    (org-gtd-walk-start (org-gtd-inbox-walk--spec) surface model)
+    (with-current-buffer surface
+      (goto-char (point-min))
+      (search-forward "Parent item")
+      (replace-match "Parent item EDITED")
+      ;; A duplicate is pending after the cursor, so stop takes the
+      ;; skip-to-duplicate branch, not the quit-and-save branch.
+      (assert-true (org-gtd-clarify--walk-pending-duplicates))
+      (org-gtd-clarify--stop-walk)
+      ;; Tear down the now-active-on-the-duplicate walk.
+      (let ((org-gtd-clarify--source-heading-marker nil))
+        (org-gtd-walk-quit)))
+    (with-current-buffer (find-file-noselect (org-gtd-inbox-path))
+      (refute-match "EDITED" (buffer-string))
+      (assert-match "Parent item" (buffer-string)))))
+
 (provide 'inbox-walk-test)
 
 ;;; inbox-walk-test.el ends here

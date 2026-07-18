@@ -90,30 +90,12 @@ Once you have your ground items managed, you might like to set the variable
 
 (defun org-gtd-organize--update-in-place ()
   "Replace original heading with configured content from WIP buffer.
-Uses `org-gtd-clarify--source-heading-marker' to find the original location."
-  (let ((new-content (save-excursion
-                       (goto-char (point-min))
-                       (when (org-before-first-heading-p)
-                         (org-next-visible-heading 1))
-                       (org-gtd--without-kill-merge
-                         (org-copy-subtree))
-                       (current-kill 0)))
-        ;; Capture marker value while still in WIP buffer
-        (source-marker org-gtd-clarify--source-heading-marker))
-    (when (and source-marker
-               (markerp source-marker)
-               (marker-buffer source-marker))
-      (with-current-buffer (marker-buffer source-marker)
-        (goto-char source-marker)
-        (org-back-to-heading t)
-        ;; Capture the original outline level: the WIP subtree is always
-        ;; pasted at level 1, so re-level it to match the source heading
-        ;; instead of inserting raw level-1 text (issue #291).
-        (let ((level (org-outline-level)))
-          (org-gtd--without-kill-merge
-            (org-cut-subtree))
-          (org-paste-subtree level new-content))
-        (save-buffer)))))
+Uses `org-gtd-clarify--source-heading-marker' to find the original
+location.  Thin wrapper over the shared write-back primitive
+`org-gtd-clarify--overwrite-source-with-wip' (also used by the inbox
+save-on-quit safety net), which keeps the re-leveling logic in one
+place (issue #291)."
+  (org-gtd-clarify--overwrite-source-with-wip))
 
 (defun org-gtd-organize--call (func)
   "Wrap FUNC, which does the real work, to keep Emacs clean.

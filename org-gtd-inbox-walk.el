@@ -235,7 +235,12 @@ multi-project readiness computed via `org-id-find')."
           (org-gtd-clarify-mode))
         (setq-local org-gtd-clarify--clarify-id new-id
                     org-gtd-clarify--source-heading-marker marker
-                    org-gtd-clarify--skip-refile nil)))))
+                    org-gtd-clarify--skip-refile nil)
+        ;; Freshly rendered, untouched: mark unmodified so a later quit
+        ;; can tell an *edited* item (save its edits back to the inbox --
+        ;; the save-on-quit safety net) from a merely glanced one (discard,
+        ;; no rewrite).  See `org-gtd-clarify--save-current-item-to-inbox'.
+        (set-buffer-modified-p nil)))))
 
 (defun org-gtd-inbox-walk--render (token surface)
   "Render inbox TOKEN into SURFACE, the walk `:render' contract.
