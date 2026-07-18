@@ -98,7 +98,8 @@ Each entry is (PROFILE-NAME . PHASES); each phase is
 (defvar org-gtd-review--state nil
   "State plist of the active review session.
 Keys: :profile (name string), :phase (index), :step (index),
-:acted (step-local flag), :walk-items, :walk-pos, :done, :skipped.")
+:acted (step-local flag), :walk-model (hosted walk-engine model, or
+nil), :done, :skipped.")
 
 (defvar org-gtd-review--window-config nil
   "Window configuration to restore when the session ends.")
@@ -212,25 +213,20 @@ checkpoints race, and the last write wins."
 (defun org-gtd-review--state-valid-p (state)
   "Non-nil when STATE still fits `org-gtd-review-profiles'.
 Also rejects internally incoherent states — negative indices,
-non-integer tallies, a walk position outside the walk items — so a
-corrupted checkpoint falls back to a fresh session instead of
-crashing mid-render."
+non-integer tallies, an incoherent walk model — so a corrupted
+checkpoint falls back to a fresh session instead of crashing
+mid-render."
   (when-let* ((profile (assoc (plist-get state :profile)
                               org-gtd-review-profiles))
               (phases (cdr profile))
               (p (plist-get state :phase))
               (s (plist-get state :step)))
-    (let ((walk-items (plist-get state :walk-items))
-          (walk-pos (plist-get state :walk-pos)))
+    (let ((model (plist-get state :walk-model)))
       (and (integerp p) (>= p 0) (< p (length phases))
            (integerp s) (>= s 0) (< s (length (cdr (nth p phases))))
            (integerp (plist-get state :done))
            (integerp (plist-get state :skipped))
-           (listp walk-items)
-           (integerp walk-pos)
-           (or (null walk-items)
-               (and (>= walk-pos 0)
-                    (< walk-pos (length walk-items))))))))
+           (or (null model) (org-gtd-walk-model-valid-p model))))))
 
 ;;;; Keymap and Mode
 
@@ -318,18 +314,12 @@ Come back, then press n again to continue.")))
           (insert (format "\n  %s\n" instr)))
         (when-let ((guide (org-gtd-review--step-guidance step)))
           (insert (format "\n  %s\n" guide)))
-        (if (and (memq (plist-get step :type) '(checklist walk))
-                 org-gtd-walk--active)
-            (let* ((model (plist-get org-gtd-walk--active :model))
-                   (items (plist-get model :entries))
-                   (pos (plist-get model :cursor)))
-              (when (< pos (length items))
-                (insert (format "\n    → %s   (%d/%d)\n"
-                                (nth pos items) (1+ pos) (length items)))))
-          (when (and (eq (plist-get step :type) 'checklist)
-                     (plist-get state :walk-items))
-            (let ((items (plist-get state :walk-items))
-                  (pos (plist-get state :walk-pos)))
+        (when (and (memq (plist-get step :type) '(checklist walk))
+                   org-gtd-walk--active)
+          (let* ((model (plist-get org-gtd-walk--active :model))
+                 (items (plist-get model :entries))
+                 (pos (plist-get model :cursor)))
+            (when (< pos (length items))
               (insert (format "\n    → %s   (%d/%d)\n"
                               (nth pos items) (1+ pos) (length items))))))
         (goto-char (point-min)))
@@ -351,8 +341,6 @@ crash or killed buffer resumes where the user left off."
         (counter (if skipped :skipped :done)))
     (plist-put state counter (1+ (plist-get state counter)))
     (plist-put state :acted nil)
-    (plist-put state :walk-items nil)
-    (plist-put state :walk-pos 0)
     (plist-put state :walk-model nil)
     (let ((steps (cdr (org-gtd-review--current-phase)))
           (next-step (1+ (plist-get state :step))))
@@ -540,31 +528,6 @@ the console (`:resumable' nil — the review owns persistence)."
 
 ;;;; Commands
 
-(defun org-gtd-review--walk-next (step)
-  "Advance the checklist walk for STEP, loading it on first call.
-Every walk-position change is checkpointed to disk, so resuming
-lands on the item the user was looking at."
-  (let ((state org-gtd-review--state))
-    (if (not (plist-get state :acted))
-        (let ((items (org-gtd-checklist-template--items (plist-get step :checklist))))
-          (if (null items)
-              (progn
-                (message "Nothing in checklist '%s' — moving on.  (Edit %s to add items.)"
-                         (plist-get step :checklist)
-                         (org-gtd-checklist-template--file-path))
-                (org-gtd-review--complete-step))
-            (plist-put state :acted t)
-            (plist-put state :walk-items items)
-            (plist-put state :walk-pos 0)
-            (org-gtd-review--save-state)
-            (org-gtd-review--render)))
-      (let ((next (1+ (plist-get state :walk-pos))))
-        (if (< next (length (plist-get state :walk-items)))
-            (progn (plist-put state :walk-pos next)
-                   (org-gtd-review--save-state)
-                   (org-gtd-review--render))
-          (org-gtd-review--complete-step))))))
-
 (defun org-gtd-review-next ()
   "Do the current step, or advance past it."
   (interactive)
@@ -701,7 +664,7 @@ start, as in the invalid-state branch of `org-gtd-review'."
     (org-gtd-review--check-profile (assoc name org-gtd-review-profiles))
     (org-gtd-review--begin-session
      (list :profile name :phase 0 :step 0 :acted nil
-           :walk-items nil :walk-pos 0 :done 0 :skipped 0))))
+           :walk-model nil :done 0 :skipped 0))))
 
 (defun org-gtd-review--begin-session (state)
   "Install STATE as the live session, render, and checkpoint it.

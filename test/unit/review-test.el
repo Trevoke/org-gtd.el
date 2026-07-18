@@ -380,7 +380,7 @@
       (assert-match "After" (buffer-string)))
     (assert-equal 1 (plist-get org-gtd-review--state :skipped))
     (assert-equal 0 (plist-get org-gtd-review--state :done))
-    (assert-nil (plist-get org-gtd-review--state :walk-items))
+    (assert-nil (plist-get org-gtd-review--state :walk-model))
     (assert-nil (plist-get org-gtd-review--state :acted))))
 
 (deftest review/capture-mid-walk-keeps-position ()
@@ -398,7 +398,8 @@
         (org-gtd-review-capture)
         (assert-equal 1 captures)
         ;; The walk did not move: still on item 2, same step.
-        (assert-equal 1 (plist-get org-gtd-review--state :walk-pos))
+        (assert-equal 1 (plist-get (plist-get org-gtd-review--state :walk-model)
+                                    :cursor))
         (assert-match "(2/8)" (buffer-string))))))
 
 (deftest review/checklist-step-missing-template-auto-advances ()
@@ -626,7 +627,8 @@ the profile structure, not hardcoded."
   (let ((org-gtd-review-profiles review-test--tiny-profile))
     (with-temp-file (org-gtd-review--state-file)
       (prin1 '(:profile "Tiny" :phase 0 :step 0 :acted t
-               :walk-items ("a" "b") :walk-pos 9 :done 0 :skipped 0)
+               :walk-model (:entries ("a" "b") :cursor 9 :meta nil)
+               :done 0 :skipped 0)
              (current-buffer)))
     (org-gtd-review)                     ; no resume prompt: state invalid
     (with-current-buffer org-gtd-review--buffer-name
@@ -634,13 +636,13 @@ the profile structure, not hardcoded."
     ;; The mangled save was replaced by the fresh session's checkpoint.
     (assert-true (org-gtd-review--state-valid-p
                   (org-gtd-review--load-state)))
-    (assert-equal 0 (plist-get (org-gtd-review--load-state) :walk-pos))))
+    (assert-nil (plist-get (org-gtd-review--load-state) :walk-model))))
 
 (deftest review/state-valid-p-rejects-corrupt-fields ()
-  "Negative indices, non-integer tallies, and bad walk shapes are invalid."
+  "Negative indices, non-integer tallies, and bad walk models are invalid."
   (let ((org-gtd-review-profiles review-test--tiny-profile)
         (base '(:profile "Tiny" :phase 0 :step 0 :acted nil
-                :walk-items nil :walk-pos 0 :done 0 :skipped 0)))
+                :walk-model nil :done 0 :skipped 0)))
     (cl-flet ((mangle (key val)
                 (plist-put (copy-sequence base) key val)))
       (assert-true (org-gtd-review--state-valid-p base))
@@ -649,11 +651,11 @@ the profile structure, not hardcoded."
       (assert-nil (org-gtd-review--state-valid-p (mangle :done "three")))
       (assert-nil (org-gtd-review--state-valid-p (mangle :skipped nil)))
       (assert-nil (org-gtd-review--state-valid-p
-                   (mangle :walk-items "not-a-list")))
+                   (mangle :walk-model "not-a-model")))
       (assert-nil (org-gtd-review--state-valid-p
-                   (plist-put (mangle :walk-items '("a")) :walk-pos -1)))
-      ;; :walk-pos must be an integer even when :walk-items is empty.
-      (assert-nil (org-gtd-review--state-valid-p (mangle :walk-pos "x"))))))
+                   (mangle :walk-model '(:entries ("a") :cursor 9 :meta nil))))
+      (assert-true (org-gtd-review--state-valid-p
+                    (mangle :walk-model '(:entries ("a" "b") :cursor 1 :meta nil)))))))
 
 (deftest review/explicit-profile-arg-skips-resume-offer ()
   "An explicit different PROFILE-NAME starts fresh with no resume offer."
