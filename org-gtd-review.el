@@ -318,12 +318,20 @@ Come back, then press n again to continue.")))
           (insert (format "\n  %s\n" instr)))
         (when-let ((guide (org-gtd-review--step-guidance step)))
           (insert (format "\n  %s\n" guide)))
-        (when (and (eq (plist-get step :type) 'checklist)
-                   (plist-get state :walk-items))
-          (let ((items (plist-get state :walk-items))
-                (pos (plist-get state :walk-pos)))
-            (insert (format "\n    → %s   (%d/%d)\n"
-                            (nth pos items) (1+ pos) (length items)))))
+        (if (and (memq (plist-get step :type) '(checklist walk))
+                 org-gtd-walk--active)
+            (let* ((model (plist-get org-gtd-walk--active :model))
+                   (items (plist-get model :entries))
+                   (pos (plist-get model :cursor)))
+              (when (< pos (length items))
+                (insert (format "\n    → %s   (%d/%d)\n"
+                                (nth pos items) (1+ pos) (length items)))))
+          (when (and (eq (plist-get step :type) 'checklist)
+                     (plist-get state :walk-items))
+            (let ((items (plist-get state :walk-items))
+                  (pos (plist-get state :walk-pos)))
+              (insert (format "\n    → %s   (%d/%d)\n"
+                              (nth pos items) (1+ pos) (length items))))))
         (goto-char (point-min)))
       (setq header-line-format (org-gtd-review--header-line))
       (pop-to-buffer (current-buffer)))))
@@ -420,12 +428,29 @@ teaching: it only appears while no review reminder exists yet."
 
 ;;;; Hosted Walk Engine Fold
 
+(defun org-gtd-review--sync-walk-model ()
+  "Mirror the active hosted walk's model into the session and checkpoint.
+`org-gtd-walk--active' is buffer-local on the console buffer, so this
+must run with that buffer current."
+  (when org-gtd-walk--active
+    (plist-put org-gtd-review--state :walk-model
+               (plist-get org-gtd-walk--active :model))
+    (org-gtd-review--save-state)))
+
 (defun org-gtd-review--hosted-render (_handle _surface)
-  "Hosted-walk :render stub.
-Fleshed out to sync the model and redraw the console once the render
-hook lands; for now it only needs to be `fboundp' so
-`org-gtd-walk-spec-valid-p' accepts a spec referencing it."
-  nil)
+  "Hosted-walk :render: sync the model, checkpoint, redraw the console.
+Runs in the console buffer after every engine transition (start,
+advance, enqueue) — the single hook that keeps the review's own
+checkpoint (`:walk-model') in step with the engine's live session."
+  (org-gtd-review--sync-walk-model)
+  (org-gtd-review--render))
+
+(defun org-gtd-review--start-hosted-walk (spec)
+  "Start SPEC hosted in the console buffer's step region."
+  (org-gtd-walk-start
+   spec
+   (list :buffer (get-buffer-create org-gtd-review--buffer-name)
+         :region 'console)))
 
 (defun org-gtd-review--checklist-walk-spec (step)
   "Return an engine walk spec for the checklist STEP.

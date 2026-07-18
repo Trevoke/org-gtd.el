@@ -42,6 +42,28 @@
                   (funcall (plist-get spec :find)))
     (assert-nil (plist-get spec :resumable))))
 
+;;; Hosted Render + Model Sync Tests (Task A2)
+
+(defvar review-walk-test--tiny-checklist-profile
+  '(("T"
+     ("P"
+      (:title "Sweep" :type checklist :checklist "Mind sweep prompts")
+      (:title "After" :type prompt)))))
+
+(deftest review-walk/hosted-render-mirrors-model-and-renders ()
+  "Starting a hosted walk renders the current item and mirrors the model.
+Drives `org-gtd-review--start-hosted-walk' directly: at this point in
+the fold (Task A2), `org-gtd-review-next' still routes checklist
+steps through the bespoke `--walk-next' mechanism (rewired in A3), so
+the hosted path is exercised through its own entry point."
+  (let ((org-gtd-review-profiles review-walk-test--tiny-checklist-profile))
+    (org-gtd-review "T")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review--start-hosted-walk
+       (org-gtd-review--checklist-walk-spec (org-gtd-review--current-step)))
+      (assert-true (plist-get org-gtd-review--state :walk-model))
+      (assert-match "(1/" (buffer-string)))))
+
 (provide 'review-walk-test)
 
 ;;; review-walk-test.el ends here
