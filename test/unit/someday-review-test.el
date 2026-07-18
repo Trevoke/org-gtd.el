@@ -304,6 +304,13 @@ This ensures evil users get emacs state by default for better UX."
   (assert-true (lookup-key org-gtd-someday-review-mode-map (kbd "c")))
   (assert-true (lookup-key org-gtd-someday-review-mode-map (kbd "q"))))
 
+(deftest someday-review/registers-a-walk-consumer ()
+  "Loading someday-review registers a `someday-review' walk in `org-gtd-walks'."
+  (let ((spec (org-gtd-walk-get 'someday-review)))
+    (assert-true spec)
+    (assert-same 'someday-review (plist-get spec :name))
+    (assert-true (org-gtd-walk--callable-p (plist-get spec :render)))))
+
 (provide 'someday-review-test)
 
 ;;; someday-review-test.el ends here

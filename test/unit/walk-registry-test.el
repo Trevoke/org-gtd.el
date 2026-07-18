@@ -17,10 +17,6 @@
 
 (e-unit-initialize)
 
-(deftest walks-registry-starts-empty ()
-  "Phase 0 ships no registered consumers."
-  (assert-nil org-gtd-walks))
-
 (deftest walk-register-then-get-round-trips ()
   "register stores a spec that get returns."
   (let ((org-gtd-walks nil)
