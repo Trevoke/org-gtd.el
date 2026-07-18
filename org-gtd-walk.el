@@ -48,6 +48,30 @@ register (none in Phase 0).")
   "Return the walk spec registered under NAME, or nil."
   (alist-get name org-gtd-walks))
 
+;;;; Spec validation
+
+(defun org-gtd-walk--callable-p (x)
+  "Return non-nil when X can be `funcall'ed (a function or symbol with one)."
+  (or (functionp x)
+      (and (symbolp x) x (fboundp x))))
+
+(defun org-gtd-walk-spec-valid-p (spec)
+  "Return non-nil when SPEC is a well-formed consumer spec.
+Requires a symbol :name, callable :find and :render, and a non-nil
+:scope.  :actions, :on-finish and :resolve are optional but, when
+present and non-nil, :on-finish and :resolve must be callable."
+  (and (listp spec)
+       (symbolp (plist-get spec :name))
+       (plist-get spec :name)
+       (org-gtd-walk--callable-p (plist-get spec :find))
+       (org-gtd-walk--callable-p (plist-get spec :render))
+       (plist-get spec :scope)
+       (let ((on-finish (plist-get spec :on-finish))
+             (resolve (plist-get spec :resolve)))
+         (and (or (null on-finish) (org-gtd-walk--callable-p on-finish))
+              (or (null resolve) (org-gtd-walk--callable-p resolve))))
+       t))
+
 ;;;; Footer
 
 (provide 'org-gtd-walk)

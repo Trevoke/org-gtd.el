@@ -40,6 +40,48 @@
     (assert-same 2 (plist-get (org-gtd-walk-get 'demo) :v))
     (assert-same 1 (length org-gtd-walks))))
 
+;;; spec validation
+
+(defun walk-registry-test--good-spec ()
+  "A minimally valid spec."
+  (list :name 'demo
+        :find #'ignore
+        :render #'ignore
+        :actions nil
+        :on-finish nil
+        :resumable nil
+        :resolve nil
+        :scope "scope-x"))
+
+(deftest walk-spec-valid-p-accepts-a-good-spec ()
+  (assert-true (org-gtd-walk-spec-valid-p (walk-registry-test--good-spec))))
+
+(deftest walk-spec-valid-p-requires-a-symbol-name ()
+  (assert-nil (org-gtd-walk-spec-valid-p
+               (plist-put (walk-registry-test--good-spec) :name "demo"))))
+
+(deftest walk-spec-valid-p-requires-callable-find ()
+  (assert-nil (org-gtd-walk-spec-valid-p
+               (plist-put (walk-registry-test--good-spec) :find 42))))
+
+(deftest walk-spec-valid-p-requires-callable-render ()
+  (assert-nil (org-gtd-walk-spec-valid-p
+               (plist-put (walk-registry-test--good-spec) :render "nope"))))
+
+(deftest walk-spec-valid-p-requires-scope ()
+  (assert-nil (org-gtd-walk-spec-valid-p
+               (plist-put (walk-registry-test--good-spec) :scope nil))))
+
+(deftest walk-spec-valid-p-allows-nil-optional-fields ()
+  "actions/on-finish/resolve may be nil; a lambda resolve is fine too."
+  (let ((spec (plist-put (walk-registry-test--good-spec)
+                         :resolve (lambda (_h) t))))
+    (assert-true (org-gtd-walk-spec-valid-p spec))))
+
+(deftest walk-spec-valid-p-rejects-non-callable-resolve ()
+  (assert-nil (org-gtd-walk-spec-valid-p
+               (plist-put (walk-registry-test--good-spec) :resolve 7))))
+
 (provide 'walk-registry-test)
 
 ;;; walk-registry-test.el ends here
