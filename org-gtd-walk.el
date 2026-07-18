@@ -72,6 +72,19 @@ present and non-nil, :on-finish and :resolve must be callable."
               (or (null resolve) (org-gtd-walk--callable-p resolve))))
        t))
 
+;;;; Scope and locking
+
+(defun org-gtd-walk--scope-key (scope)
+  "Return a stable string key identifying SCOPE.
+SCOPE is a string (file path or org-id) or a list of strings (a
+file-set).  A list keys order-independently so the same set of files
+always locks the same container."
+  (if (listp scope)
+      (mapconcat #'identity
+                 (sort (copy-sequence scope) #'string<)
+                 "|")
+    (format "%s" scope)))
+
 ;;;; Footer
 
 (provide 'org-gtd-walk)
