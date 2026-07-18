@@ -31,6 +31,7 @@
 (require 'org-gtd-wip)
 (require 'org-gtd-reactivate)
 (require 'org-gtd-someday)
+(require 'org-gtd-walk)
 
 ;;;; External Function Declarations
 
@@ -116,6 +117,37 @@ LIST-FILTER can be:
 (defun org-gtd-someday-review--resolve (id)
   "Return non-nil when ID still resolves to a live heading marker."
   (org-id-find id 'marker))
+
+(defun org-gtd-someday-review--render (id surface)
+  "Render the someday item ID into SURFACE (the walk :render contract).
+Resolves ID to a marker, refills SURFACE with the subtree, and sets the
+review mode, read-only state, header-line, and display."
+  (let ((marker (org-id-find id 'marker)))
+    (when marker
+      (with-current-buffer surface
+        ;; Capture the buffer-local active-walk bundle before any possible
+        ;; major-mode (re-)activation below: `org-gtd-someday-review-mode' is
+        ;; derived from `org-mode', and (re-)running a major mode function
+        ;; calls `kill-all-local-variables', which would silently wipe the
+        ;; caller-set `org-gtd-walk--active' out from under us.  Restore it
+        ;; explicitly after the mode is settled.
+        (let ((active org-gtd-walk--active))
+          (let ((inhibit-read-only t))
+            (erase-buffer)
+            (org-gtd--without-kill-merge
+              (org-with-point-at marker (org-copy-subtree)))
+            (org-paste-subtree)
+            (goto-char (point-min)))
+          (unless (eq major-mode 'org-gtd-someday-review-mode)
+            (org-gtd-someday-review-mode))
+          (setq-local org-gtd-walk--active active)
+          (setq buffer-read-only t)
+          (let* ((model (plist-get active :model))
+                 (pos (1+ (plist-get model :cursor)))
+                 (total (length (plist-get model :entries))))
+            (setq header-line-format
+                  (format "[d] Defer  [c] Clarify  [q] Quit  (%d/%d)" pos total))))
+        (pop-to-buffer surface)))))
 
 (defun org-gtd-someday-review--item-matches-filter-p (item-list list-filter)
   "Return t if ITEM-LIST matches LIST-FILTER.

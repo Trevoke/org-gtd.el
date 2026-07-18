@@ -10,6 +10,7 @@
 
 (require 'ogt-eunit-prelude "test/helpers/prelude.el")
 (require 'org-gtd-someday-review)
+(require 'org-gtd-walk)
 
 (e-unit-initialize)
 
@@ -97,6 +98,23 @@
   (let ((id (car (org-gtd-someday-review--find-items nil))))
     (assert-true (org-gtd-someday-review--resolve id))
     (assert-nil (org-gtd-someday-review--resolve "no-such-id-xyz"))))
+
+(deftest someday-review/render-fills-surface-with-current-item ()
+  "Render draws the item, activates review mode read-only, and shows progress."
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "Render me"))
+  (let* ((id (car (org-gtd-someday-review--find-items nil)))
+         (surface (org-gtd-wip--get-buffer "someday-review")))
+    (with-current-buffer surface
+      (setq-local org-gtd-walk--active
+                  (list :model (org-gtd-walk-model-create (list id))))
+      (org-gtd-someday-review--render id surface)
+      (assert-true (eq major-mode 'org-gtd-someday-review-mode))
+      (assert-true buffer-read-only)
+      (assert-match "Render me" (buffer-string))
+      (assert-match "\\[d\\]" header-line-format)
+      (assert-match "(1/1)" header-line-format))
+    (org-gtd-wip--cleanup-temp-file "someday-review")))
 
 ;;; Review Session State Tests
 
