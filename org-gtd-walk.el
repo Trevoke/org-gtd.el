@@ -29,6 +29,7 @@
 ;;
 ;;; Code:
 
+(require 'cl-lib)
 (require 'org-gtd-walk-model)
 (require 'org-gtd-core)
 
@@ -84,6 +85,25 @@ always locks the same container."
                  (sort (copy-sequence scope) #'string<)
                  "|")
     (format "%s" scope)))
+
+(defvar org-gtd-walk--locked-scopes nil
+  "List of scope keys currently locked by an active walk.
+The concurrency lock: no two walks may run over the same scope at once
+\(design §5).  Global, not buffer-local, because the lock spans buffers.")
+
+(defun org-gtd-walk--scope-locked-p (scope)
+  "Return non-nil when SCOPE is currently locked."
+  (and (member (org-gtd-walk--scope-key scope) org-gtd-walk--locked-scopes) t))
+
+(defun org-gtd-walk--lock-scope (scope)
+  "Mark SCOPE as locked."
+  (cl-pushnew (org-gtd-walk--scope-key scope) org-gtd-walk--locked-scopes
+              :test #'equal))
+
+(defun org-gtd-walk--unlock-scope (scope)
+  "Release the lock on SCOPE."
+  (setq org-gtd-walk--locked-scopes
+        (delete (org-gtd-walk--scope-key scope) org-gtd-walk--locked-scopes)))
 
 ;;;; Footer
 
