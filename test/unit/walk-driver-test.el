@@ -135,6 +135,29 @@
     ;; current "a" re-rendered on top of the initial "a"
     (assert-equal '("a" "a") walk-driver-test--render-log)))
 
+;;; stale-handle skipping
+
+(deftest walk-resolve-skips-stale-handles-on-advance ()
+  "A :resolve that rejects \"b\" auto-advances past it to \"c\" and counts the skip."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start
+     (walk-driver-test--stub-spec :resolve (lambda (h) (not (equal h "b"))))
+     surface) ; renders "a"
+    (with-current-buffer surface (org-gtd-walk-advance)) ; would land "b", skips to "c"
+    (assert-equal '("c" "a") walk-driver-test--render-log)
+    (with-current-buffer surface
+      (assert-same 1 (plist-get org-gtd-walk--active :skipped)))))
+
+(deftest walk-resolve-all-stale-finishes ()
+  "If every remaining handle is stale, settling finishes the walk."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start
+     (walk-driver-test--stub-spec :resolve (lambda (h) (equal h "a")))
+     surface) ; "a" resolves, renders "a"
+    (with-current-buffer surface (org-gtd-walk-advance)) ; "b","c" stale -> finish
+    (assert-same 1 walk-driver-test--finish-count)
+    (with-current-buffer surface (assert-nil org-gtd-walk--active))))
+
 (provide 'walk-driver-test)
 
 ;;; walk-driver-test.el ends here
