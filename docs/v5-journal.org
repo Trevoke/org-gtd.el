@@ -213,23 +213,44 @@ first; they unlock clusters.
 
 ** BUILD-V5 (foundational) — generalize the item-walk engine            :foundational:
 :PROPERTIES:
-:STATUS:      partially built (someday-review is a coupled instance)
-:DISPOSITION: BUILD-V5 (design-gated)
+:STATUS:      BUILT (org-gtd-5) — engine + 4 consumers migrated
+:DISPOSITION: BUILD-V5 (done)
 :DECIDED:     2026-07-15
+:COMPLETED:   2026-07-18
 :END:
-The item-by-item *walk* engine already exists — =org-gtd-someday-review= has the
-whole thing: a session with =:queue= of org-ids + =:position=, =--advance= to the
-next item, a review major-mode with =d=/=c=/=q= keys, and LOGBOOK stamping. It's
-just *coupled to someday/maybe*: =--find-items= hardcodes =ORG_GTD == someday=
-and the actions are defer/clarify.
+*DONE (2026-07-18, on =org-gtd-5=).* The generalized item-walk engine is built
+and all four in-repo consumers run on it. See
+=docs/plans/2026-07-17-walk-engine-design.md= and the phase-0/1/2/4 plans.
 
-*Decision*: BUILD-V5 — *generalize* it into a reusable item-walk: parameterize
-(a) which items it finds and (b) which actions apply per walk. This is the
-design-§8 "=walk= step type" — but a refactor-and-reuse, not net-new. Needs a
-short design for the generalization seam (find-fn + action-set + optional review
-step integration).
+Shipped:
+- =org-gtd-walk-model.el= — pure, headless model: entries (opaque serializable
+  handles) + cursor + meta; enqueue =top=/=bottom= (both after cursor); serialize/
+  deserialize with validation. No per-entry status (cursor separates handled/
+  pending — status is *upstream* filtering that feeds =:entries=).
+- =org-gtd-walk.el= — registry (=org-gtd-walks= alist of specs =(:name :find
+  :render :actions :on-finish :resumable :resolve :scope)=), per-*scope*
+  concurrency lock (scope = the org container: file-set or subtree org-id),
+  opt-in checkpoint (md5 of scope-key), and the session driver
+  (=org-gtd-walk-start/-advance/-enqueue/-quit/-finish=). =org-gtd-walk--active=
+  is =permanent-local= so a mode switch's =kill-all-local-variables= can't wipe it.
+- Consumers migrated: (1) =someday-review= (Phase 1); (2) the review checklist
+  walk + a generic =walk= review step type (Phase 2 — the design-§8 seam, now
+  real); (3) inbox processing (Phase 4 — the north-star: multi-source find, the
+  async organize→advance seam, duplicate-queue as dynamic enqueue with
+  FIFO-immediate ordering). Three stacked ad-hoc inbox queues collapsed into one.
 
-*Unlocks* (consumers): [[*BUILD-V5 REC-UI-04 — consent-based migrate overdue calendar → next-action][REC-UI-04]] (walk missed calendar → migrate), the guided
+Verified: compile clean (=--warnings-as-errors=); full suite 1593 pass, 0 errors.
+
+*Still design-gated (not built — need a collaborative UX pass, not a straight
+build):*
+- [[*BUILD-V5 REC-UI-04 — consent-based migrate overdue calendar → next-action][REC-UI-04]] — first *net-new* actionable walk (walk missed calendar → migrate).
+- A real *heading-walk-in-console* review step (e.g. stuck-projects) — someday's
+  own render is region-incompatible, so an in-review heading walk needs its own UX.
+- Inbox *resume* — engine supports =:resumable=; inbox ships =:resumable nil=
+  pending the "what happens to a half-clarified item's unsaved WIP edits on
+  resume" question.
+
+*Unlocks* (consumers): REC-UI-04 (walk missed calendar → migrate), the guided
 review's walk-over-headings (projects / missed items), and the =may= items
 REC-X-15 (completeness walk) and REC-CAP-09 (themed sweep) if built.
 
@@ -1570,7 +1591,7 @@ explanations), and adaptive coaching, if ever, rides the opt-in LLM direction.
 *** BUILD-V5 REC-UI-04 — consent-based migrate overdue calendar → next-action :should:ui:
 :PROPERTIES:
 :REC_ID:      REC-UI-04
-:STATUS:      Not-implemented → BUILD on the generalized walk engine
+:STATUS:      Not-implemented — walk-engine dependency now READY (unblocked 2026-07-18)
 :STRENGTH:    should
 :TYPE:        tool
 :DISPOSITION: BUILD-V5 (rides the generalized item-walk foundation)
@@ -1583,7 +1604,8 @@ migrate it into a next action — consent-only, no auto-action, no forced agenda
 *Decision*: BUILD-V5 as the first real consumer of the generalized item-walk
 (see [[*BUILD-V5 (foundational) — generalize the item-walk engine][Foundations]]): walk the missed calendar items one at a time with a
 "retype to next-action" action (reuses reactivate/retype infra in
-=org-gtd-reactivate.el=). Gated on the walk-engine generalization.
+=org-gtd-reactivate.el=). The walk-engine generalization it was gated on is now
+built — this is the *next* piece to design/build (first net-new actionable walk).
 
 *** BUILD-V5 REC-UI-05 — mark-done closure prompt ("what's next?")     :should:ui:
 :PROPERTIES:
