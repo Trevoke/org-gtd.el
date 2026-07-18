@@ -102,6 +102,21 @@
          (m1 (org-gtd-walk-model-advance m)))
     (assert-same 1 (plist-get m1 :cursor))))
 
+;;; enqueue
+
+(deftest walk-model-enqueue-bottom-appends-to-end ()
+  "enqueue bottom puts the new handle last; cursor is unchanged."
+  (let* ((m0 (org-gtd-walk-model-create '("a" "b")))
+         (m1 (org-gtd-walk-model-enqueue m0 "z" 'bottom)))
+    (assert-equal '("a" "b" "z") (plist-get m1 :entries))
+    (assert-same 0 (plist-get m1 :cursor))))
+
+(deftest walk-model-enqueue-does-not-mutate-input ()
+  "enqueue is pure."
+  (let ((m0 (org-gtd-walk-model-create '("a" "b"))))
+    (org-gtd-walk-model-enqueue m0 "z" 'bottom)
+    (assert-equal '("a" "b") (plist-get m0 :entries))))
+
 (provide 'walk-model-test)
 
 ;;; walk-model-test.el ends here

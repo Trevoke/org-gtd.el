@@ -68,6 +68,35 @@ The cursor never moves past the entry count (the done position)."
           :cursor (min len (1+ cursor))
           :meta (plist-get model :meta))))
 
+(defun org-gtd-walk-model--insert-index (model where)
+  "Return the insertion index in MODEL's entries for WHERE.
+Both positions insert into the remaining queue, after the cursor, so a
+handle enqueued while the current item is still being processed never
+displaces it: `top' (index cursor+1, handled next) or `bottom' (index
+end, handled last).  Signals an error for any other value.  The index
+is clamped to [0, (length entries)]."
+  (let* ((cursor (plist-get model :cursor))
+         (len (length (plist-get model :entries)))
+         (raw (cond
+               ((eq where 'top) (1+ cursor))
+               ((eq where 'bottom) len)
+               (t (error "Unknown enqueue position: %s" where)))))
+    (max 0 (min len raw))))
+
+(defun org-gtd-walk-model-enqueue (model handle where)
+  "Return a copy of MODEL with HANDLE inserted at WHERE.
+WHERE is `top' (handled next, after the current item) or `bottom'
+\(handled last).  Both insert after the cursor so the current item is
+never displaced (see design §4)."
+  (let* ((entries (plist-get model :entries))
+         (idx (org-gtd-walk-model--insert-index model where))
+         (new-entries (append (seq-take entries idx)
+                              (list handle)
+                              (seq-drop entries idx))))
+    (list :entries new-entries
+          :cursor (plist-get model :cursor)
+          :meta (plist-get model :meta))))
+
 ;;;; Footer
 
 (provide 'org-gtd-walk-model)
