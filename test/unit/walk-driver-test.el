@@ -208,6 +208,17 @@
         (assert-equal '("a" "b" "c")
                       (plist-get (plist-get org-gtd-walk--active :model) :entries))))))
 
+;;; start activation failure
+
+(deftest walk-start-with-dead-surface-buffer-releases-lock ()
+  "If activation fails (dead surface buffer), start signals an error and does
+not leave the scope locked."
+  (walk-driver-test--with-harness surface
+    (kill-buffer surface)
+    (assert-raises 'error
+      (org-gtd-walk-start (walk-driver-test--stub-spec) surface))
+    (assert-nil (org-gtd-walk--scope-locked-p "stub-scope"))))
+
 ;;; scope lock
 
 (deftest walk-second-walk-over-same-scope-is-refused ()

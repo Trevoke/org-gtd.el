@@ -200,11 +200,18 @@ finishes immediately without activating (design §6, §9)."
               (funcall (plist-get spec :on-finish)))
             nil)
         (org-gtd-walk--lock-scope scope)
-        (with-current-buffer buffer
-          (setq org-gtd-walk--active
-                (list :model model :spec spec :surface surface
-                      :checkpoint-path path :skipped 0))
-          (org-gtd-walk--settle))))))
+        (condition-case err
+            (with-current-buffer buffer
+              (setq org-gtd-walk--active
+                    (list :model model :spec spec :surface surface
+                          :checkpoint-path path :skipped 0))
+              (org-gtd-walk--settle))
+          (error
+           (when (buffer-live-p buffer)
+             (with-current-buffer buffer
+               (setq org-gtd-walk--active nil)))
+           (org-gtd-walk--unlock-scope scope)
+           (signal (car err) (cdr err))))))))
 
 (defun org-gtd-walk-advance ()
   "Advance the active walk to the next item and re-render (design §6).
