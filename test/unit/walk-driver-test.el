@@ -81,6 +81,18 @@
       (assert-equal "b" (org-gtd-walk-model-current
                          (plist-get org-gtd-walk--active :model))))))
 
+(deftest walk-advance-off-end-finishes-and-clears-session ()
+  "Running past the last item finishes: on-finish runs, session cleared, scope unlocked."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start (walk-driver-test--stub-spec) surface) ; on "a"
+    (with-current-buffer surface
+      (org-gtd-walk-advance)   ; "b"
+      (org-gtd-walk-advance)   ; "c"
+      (org-gtd-walk-advance))  ; off end -> finish
+    (assert-same 1 walk-driver-test--finish-count)
+    (with-current-buffer surface (assert-nil org-gtd-walk--active))
+    (assert-nil (org-gtd-walk--scope-locked-p "stub-scope"))))
+
 (provide 'walk-driver-test)
 
 ;;; walk-driver-test.el ends here
