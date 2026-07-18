@@ -208,6 +208,36 @@
         (assert-equal '("a" "b" "c")
                       (plist-get (plist-get org-gtd-walk--active :model) :entries))))))
 
+;;; scope lock
+
+(deftest walk-second-walk-over-same-scope-is-refused ()
+  "Starting a second walk over a locked scope errors; the first stays active."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start (walk-driver-test--stub-spec) surface)
+    (let ((other (generate-new-buffer " *walk-test-2*")))
+      (unwind-protect
+          (progn
+            (assert-raises 'error
+              (org-gtd-walk-start
+               (walk-driver-test--stub-spec :name 'stub2) other))
+            ;; first walk untouched
+            (with-current-buffer surface (assert-true org-gtd-walk--active))
+            (assert-true (org-gtd-walk--scope-locked-p "stub-scope")))
+        (kill-buffer other)))))
+
+(deftest walk-different-scopes-coexist ()
+  "Two walks over different scopes run side by side."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start (walk-driver-test--stub-spec) surface)
+    (let ((other (generate-new-buffer " *walk-test-2*")))
+      (unwind-protect
+          (progn
+            (org-gtd-walk-start
+             (walk-driver-test--stub-spec :name 'stub2 :scope "other-scope")
+             other)
+            (with-current-buffer other (assert-true org-gtd-walk--active)))
+        (kill-buffer other)))))
+
 (provide 'walk-driver-test)
 
 ;;; walk-driver-test.el ends here
