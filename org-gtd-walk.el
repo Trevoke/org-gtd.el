@@ -213,6 +213,16 @@ Finishes when the walk runs off the end.  Runs in the surface buffer."
         (org-gtd-walk-model-advance (plist-get org-gtd-walk--active :model)))
   (org-gtd-walk--settle))
 
+(defun org-gtd-walk-enqueue (handle where)
+  "Insert HANDLE into the active walk at WHERE and re-render (design §6).
+WHERE is `top' (handled next) or `bottom' (handled last); both insert
+after the current item.  Runs in the surface buffer."
+  (setf (plist-get org-gtd-walk--active :model)
+        (org-gtd-walk-model-enqueue
+         (plist-get org-gtd-walk--active :model) handle where))
+  (org-gtd-walk--render-current)
+  (org-gtd-walk--checkpoint))
+
 (defun org-gtd-walk-finish ()
   "Finish the active walk: delete checkpoint, unlock, run :on-finish.
 Runs in the surface buffer (design §9)."

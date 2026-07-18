@@ -107,6 +107,34 @@
       (with-current-buffer surface (assert-nil org-gtd-walk--active))
       (assert-nil (org-gtd-walk--scope-locked-p "stub-scope")))))
 
+;;; enqueue
+
+(deftest walk-enqueue-bottom-extends-without-moving-cursor ()
+  "enqueue bottom adds a pending item and re-renders the (unchanged) current."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start (walk-driver-test--stub-spec) surface) ; on "a"
+    (with-current-buffer surface (org-gtd-walk-enqueue "z" 'bottom))
+    (with-current-buffer surface
+      (assert-equal '("a" "b" "c" "z")
+                    (plist-get (plist-get org-gtd-walk--active :model) :entries))
+      (assert-equal "a" (org-gtd-walk-model-current
+                         (plist-get org-gtd-walk--active :model))))
+    ;; re-rendered current "a" again on top of the initial "a"
+    (assert-equal '("a" "a") walk-driver-test--render-log)))
+
+(deftest walk-enqueue-top-inserts-next-and-rerenders-current ()
+  "enqueue top puts the handle right after the current item, which stays current."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start (walk-driver-test--stub-spec) surface) ; on "a"
+    (with-current-buffer surface (org-gtd-walk-enqueue "z" 'top))
+    (with-current-buffer surface
+      (assert-equal '("a" "z" "b" "c")
+                    (plist-get (plist-get org-gtd-walk--active :model) :entries))
+      (assert-equal "a" (org-gtd-walk-model-current
+                         (plist-get org-gtd-walk--active :model))))
+    ;; current "a" re-rendered on top of the initial "a"
+    (assert-equal '("a" "a") walk-driver-test--render-log)))
+
 (provide 'walk-driver-test)
 
 ;;; walk-driver-test.el ends here
