@@ -139,6 +139,12 @@ Keyed by NAME and SCOPE so distinct resumable sessions never collide
 Plist: :model :spec :surface :checkpoint-path :skipped.  Nil when no
 walk is active in this buffer.")
 
+;; Survive `kill-all-local-variables': a consumer's `:render' may (re-)activate
+;; a major mode in the surface buffer, which would otherwise wipe the session
+;; the driver just set.  The walk owns this buffer; its session outlives mode
+;; changes within it (finish/quit clear it explicitly).
+(put 'org-gtd-walk--active 'permanent-local t)
+
 (defun org-gtd-walk--surface-buffer (surface)
   "Return the buffer of SURFACE.
 SURFACE is a buffer, or a plist carrying :buffer (region support is

@@ -308,6 +308,20 @@ never calls :find."
       (assert-equal "b" (org-gtd-walk-model-current
                          (plist-get org-gtd-walk--active :model))))))
 
+;;; permanent-local session
+
+(deftest walk-active-survives-major-mode-change ()
+  "The session survives a major-mode switch in the surface buffer.
+A consumer's `:render' may (re-)activate a major mode, running
+`kill-all-local-variables'; `org-gtd-walk--active' is permanent-local so
+the driver's session is not wiped out from under it."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start (walk-driver-test--stub-spec) surface)
+    (with-current-buffer surface
+      (assert-true org-gtd-walk--active)
+      (fundamental-mode)                ; runs kill-all-local-variables
+      (assert-true org-gtd-walk--active))))
+
 (provide 'walk-driver-test)
 
 ;;; walk-driver-test.el ends here
