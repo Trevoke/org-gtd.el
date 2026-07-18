@@ -45,13 +45,25 @@
 (require 'org)
 (require 'org-id)
 (require 'org-gtd-core)
+(require 'org-gtd-id)
+(require 'org-gtd-wip)
+(require 'org-gtd-clarify)
 (require 'org-gtd-walk-model)
+(require 'org-gtd-walk)
 (require 'org-gtd-capture)
 
 ;; `org-gtd-additional-inbox-files' is defined in org-gtd-process.el.
 ;; Declared (not required) to avoid a require cycle: a later task rewrites
 ;; org-gtd-process.el to require this module.
 (defvar org-gtd-additional-inbox-files)
+
+;;;; Variables
+
+(defconst org-gtd-inbox-walk--surface-key "inbox-walk"
+  "Fixed initial WIP key for the single reused inbox clarify surface.
+The surface is rekeyed to each item's real clarify-id as it is
+rendered (D3a); this is only the key used before any item has been
+rendered into it.")
 
 ;;;; Functions
 
@@ -137,6 +149,89 @@ task wires this into `org-gtd-walk-start'.)"
     (dolist (pair raw-meta)
       (setq model (org-gtd-inbox-walk--meta-put-marker model (car pair) (cdr pair))))
     model))
+
+;;;;; Surface (D3a: single reused editable clarify surface)
+
+(defun org-gtd-inbox-walk--surface ()
+  "Return the single reused WIP surface buffer for an inbox walk (D3a).
+The buffer starts keyed under a fixed placeholder id; `:render' rekeys
+it to each item's real clarify-id as it is drawn."
+  (org-gtd-wip--get-buffer org-gtd-inbox-walk--surface-key))
+
+;;;;; Render (D2, D3a, D4a)
+
+(defun org-gtd-inbox-walk--render-duplicate (surface value)
+  "Render duplicate VALUE into SURFACE (D4a).
+VALUE is a (:title TITLE :content CONTENT) plist.  Inserts the content
+fresh, strips any stale ID left over from the original item it was
+duplicated from, and assigns a brand-new id -- mirrors
+`org-gtd-clarify--process-next-queued-item''s duplicate-reuse handling."
+  (let ((old-id (with-current-buffer surface
+                  (or org-gtd-clarify--clarify-id
+                      org-gtd-inbox-walk--surface-key))))
+    (with-current-buffer surface
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert (plist-get value :content))
+        (goto-char (point-min))
+        (org-entry-delete nil "ID")
+        (let ((new-id (org-gtd-id-get-create)))
+          (org-gtd-wip--rekey old-id new-id)
+          (unless (derived-mode-p 'org-gtd-clarify-mode)
+            (org-gtd-clarify-mode))
+          (setq-local org-gtd-clarify--clarify-id new-id
+                      org-gtd-clarify--source-heading-marker nil
+                      org-gtd-clarify--skip-refile nil))))))
+
+(defun org-gtd-inbox-walk--render-marker (surface marker)
+  "Render the inbox item at MARKER into SURFACE (D2, D3a).
+Copies the source subtree in, strips org-gtd state properties (reusing
+`org-gtd-clarify--initialize-buffer-contents'), sets the source marker,
+and lazily assigns the clarify id NOW on the source heading -- exactly
+as `org-gtd-clarify-item' does at `org-gtd-clarify.el:254' -- so a
+skipped/never-reached item is never stamped."
+  (let* ((old-id (with-current-buffer surface
+                   (or org-gtd-clarify--clarify-id
+                       org-gtd-inbox-walk--surface-key)))
+         (new-id (org-gtd-id-get-create marker)))
+    (with-current-buffer surface
+      (let ((inhibit-read-only t)
+            (org-id-track-globally nil))
+        (erase-buffer)
+        (org-gtd--without-kill-merge
+          (org-gtd-clarify--initialize-buffer-contents marker surface))
+        (goto-char (point-min))
+        (org-gtd-wip--rekey old-id new-id)
+        (unless (derived-mode-p 'org-gtd-clarify-mode)
+          (org-gtd-clarify-mode))
+        (setq-local org-gtd-clarify--clarify-id new-id
+                    org-gtd-clarify--source-heading-marker marker
+                    org-gtd-clarify--skip-refile nil)))))
+
+(defun org-gtd-inbox-walk--render (token surface)
+  "Render inbox TOKEN into SURFACE, the walk `:render' contract.
+Resolves TOKEN through the active walk model's `:meta': a duplicate
+plist inserts fresh content and assigns a new id (D4a); a live marker
+copies the source subtree in and lazily assigns the clarify id now
+\(D2).  A stale marker -- source buffer killed or heading already gone,
+the D2 durability caveat -- auto-skips via `org-gtd-walk-advance'
+instead of erroring, same as a missing/unknown token.
+
+`org-gtd-walk--active' is buffer-local, so this always runs with
+SURFACE current (matches the engine's invariant that :render is
+invoked in the surface buffer -- see `org-gtd-walk--render-current')."
+  (with-current-buffer surface
+    (let* ((model (plist-get org-gtd-walk--active :model))
+           (value (org-gtd-inbox-walk--meta-get model token)))
+      (cond
+       ((org-gtd-inbox-walk--meta-dup-p value)
+        (org-gtd-inbox-walk--render-duplicate surface value)
+        (org-gtd-clarify-setup-windows surface))
+       ((and (markerp value) (marker-buffer value) (marker-position value))
+        (org-gtd-inbox-walk--render-marker surface value)
+        (org-gtd-clarify-setup-windows surface))
+       (t
+        (org-gtd-walk-advance))))))
 
 ;;;; Footer
 

@@ -180,6 +180,90 @@ and this meta -- live markers -- is intentionally never serialized
      (setq model (org-gtd-inbox-walk--meta-put-dup model dup-token "T" "* T\n"))
      (assert-true (org-gtd-walk-model-valid-p model)))))
 
+;;; Render Tests (Task 3)
+
+(deftest inbox-walk/render-marker-token-fills-surface-with-source-item ()
+  "Render on a marker token draws the item, activates clarify mode,
+sets the source marker + clarify id, and strips state properties."
+  (capture-inbox-item "Render me")
+  (let* ((model (org-gtd-inbox-walk--build-model))
+         (token (car (plist-get model :entries)))
+         (surface (org-gtd-inbox-walk--surface))
+         clarify-id)
+    (with-current-buffer surface
+      (setq-local org-gtd-walk--active (list :model model)))
+    (org-gtd-inbox-walk--render token surface)
+    (with-current-buffer surface
+      (assert-true (derived-mode-p 'org-gtd-clarify-mode))
+      (assert-match "Render me" (buffer-string))
+      (assert-true (markerp org-gtd-clarify--source-heading-marker))
+      (assert-match "Render me"
+                    (org-with-point-at org-gtd-clarify--source-heading-marker
+                      (org-get-heading t t t t)))
+      (assert-true org-gtd-clarify--clarify-id)
+      (goto-char (point-min))
+      (assert-nil (org-entry-get (point) org-gtd-timestamp))
+      (assert-nil (org-entry-get (point) org-gtd-prop-project))
+      (setq clarify-id org-gtd-clarify--clarify-id))
+    (org-gtd-wip--cleanup-temp-file clarify-id)))
+
+(deftest inbox-walk/render-duplicate-token-inserts-content-with-fresh-id ()
+  "Render on a duplicate token inserts its content fresh, assigns a
+new readable id (not the stale one carried in :content), and sets no
+source marker (D4a)."
+  (let* ((model (org-gtd-walk-model-create nil))
+         (token (org-gtd-inbox-walk--token))
+         (content "* Buy groceries\n:PROPERTIES:\n:ID: stale-leftover-id\n:END:\n")
+         (surface (org-gtd-inbox-walk--surface))
+         clarify-id)
+    (setq model (org-gtd-inbox-walk--meta-put-dup model token "Buy groceries" content))
+    (with-current-buffer surface
+      (setq-local org-gtd-walk--active (list :model model)))
+    (org-gtd-inbox-walk--render token surface)
+    (with-current-buffer surface
+      (assert-true (derived-mode-p 'org-gtd-clarify-mode))
+      (assert-match "Buy groceries" (buffer-string))
+      (assert-nil org-gtd-clarify--source-heading-marker)
+      (assert-true org-gtd-clarify--clarify-id)
+      (goto-char (point-min))
+      (let ((id (org-entry-get (point) "ID")))
+        (assert-true id)
+        (assert-match "buy-groceries" (downcase id))
+        (refute-match "stale-leftover-id" id))
+      (setq clarify-id org-gtd-clarify--clarify-id))
+    (org-gtd-wip--cleanup-temp-file clarify-id)))
+
+(deftest inbox-walk/render-auto-skips-dead-marker-to-next-entry ()
+  "A dead marker (source buffer killed) auto-skips to the next entry
+via org-gtd-walk-advance instead of erroring (D2 durability guard)."
+  (capture-inbox-item "First item")
+  (let* ((additional-file (f-join org-gtd-directory "second-inbox.org")))
+    (with-current-buffer (find-file-noselect additional-file)
+      (insert "* Second item\n")
+      (basic-save-buffer))
+    (let* ((org-gtd-additional-inbox-files (list additional-file))
+           (model (org-gtd-inbox-walk--build-model))
+           (tokens (plist-get model :entries))
+           (token-1 (nth 0 tokens))
+           (marker-1 (org-gtd-inbox-walk--meta-get model token-1))
+           (surface (org-gtd-inbox-walk--surface))
+           (spec (list :name 'inbox :render #'org-gtd-inbox-walk--render
+                       :scope "inbox-walk-test-scope"))
+           clarify-id)
+      (assert-equal 2 (length tokens))
+      ;; Kill the first item's source buffer so its marker dies.
+      (kill-buffer (marker-buffer marker-1))
+      (with-current-buffer surface
+        (setq-local org-gtd-walk--active
+                    (list :model model :spec spec :surface surface :skipped 0)))
+      (org-gtd-inbox-walk--render token-1 surface)
+      (with-current-buffer surface
+        (assert-match "Second item" (buffer-string))
+        (refute-match "First item" (buffer-string))
+        (assert-equal 1 (plist-get (plist-get org-gtd-walk--active :model) :cursor))
+        (setq clarify-id org-gtd-clarify--clarify-id))
+      (org-gtd-wip--cleanup-temp-file clarify-id))))
+
 (provide 'inbox-walk-test)
 
 ;;; inbox-walk-test.el ends here
