@@ -81,6 +81,15 @@
   (let ((unassigned (org-gtd-someday-review--find-items 'unassigned)))
     (assert-equal 1 (length unassigned))))
 
+(deftest someday-review/find-builder-returns-filtered-ids ()
+  "The :find builder yields exactly the ids matching its filter."
+  (let ((org-gtd-someday-lists '("Work" "Personal")))
+    (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+      (with-simulated-input "Work RET" (org-gtd-someday-create "Work idea"))
+      (with-simulated-input "Personal RET" (org-gtd-someday-create "Personal idea")))
+    (let ((find (org-gtd-someday-review--make-find "Work")))
+      (assert-equal 1 (length (funcall find))))))
+
 ;;; Review Session State Tests
 
 (deftest someday-review/initializes-session-state ()
