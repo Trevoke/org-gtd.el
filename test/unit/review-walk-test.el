@@ -147,6 +147,53 @@ and must unlock itself (Decision 4)."
       (org-gtd-review-skip))
     (assert-nil org-gtd-walk--locked-scopes)))
 
+;;; Corrupt-Checkpoint and Advance-Error Robustness Tests
+
+(deftest review-walk/old-acted-checkpoint-without-model-starts-fresh ()
+  "An acted pre-engine checkpoint (no :walk-model) on a walk step is
+rejected as invalid, so the session starts fresh; driving the step
+with n then loads item 1 instead of advancing off a nil model
+(Finding 1)."
+  (let ((org-gtd-review-profiles review-walk-test--walk-profile))
+    ;; Old-shape save: :acted t on the checklist step, carrying the
+    ;; pre-engine :walk-items/:walk-pos and no :walk-model at all.
+    (with-temp-file (org-gtd-review--state-file)
+      (prin1 '(:profile "Walk" :phase 0 :step 0 :acted t
+               :walk-items ("a" "b") :walk-pos 3 :done 0 :skipped 0)
+             (current-buffer)))
+    ;; --state-valid-p must reject it (acted walk step, no valid model).
+    (assert-nil (org-gtd-review--state-valid-p (org-gtd-review--load-state)))
+    ;; No resume offer (invalid) -> fresh session.
+    (org-gtd-review)
+    (with-current-buffer org-gtd-review--buffer-name
+      ;; A fresh checklist step is not yet acted; n loads item 1 and
+      ;; must not crash advancing off a nil model.
+      (assert-nil (plist-get org-gtd-review--state :acted))
+      (org-gtd-review-next)
+      (assert-match "(1/8)" (buffer-string)))))
+
+(deftest review-walk/advance-error-releases-scope-lock ()
+  "An error thrown during a mid-walk advance releases the scope lock
+and clears the live walk, instead of leaking the synthetic scope
+\(Finding 2)."
+  (let ((org-gtd-review-profiles review-walk-test--walk-profile))
+    (org-gtd-review "Walk")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)                 ; load, item 1 (scope now locked)
+      (assert-true org-gtd-walk--locked-scopes)
+      ;; Force the next advance's render to throw.
+      (let ((err (condition-case e
+                     (progn
+                       (cl-letf (((symbol-function 'org-gtd-review--hosted-render)
+                                  (lambda (&rest _) (error "Boom"))))
+                         (org-gtd-review-next))
+                       nil)
+                   (error e))))
+        (assert-true err))
+      ;; The lock is released and the live walk cleared despite the throw.
+      (assert-nil org-gtd-walk--locked-scopes)
+      (assert-nil org-gtd-walk--active))))
+
 (provide 'review-walk-test)
 
 ;;; review-walk-test.el ends here

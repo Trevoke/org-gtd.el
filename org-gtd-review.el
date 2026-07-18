@@ -215,7 +215,15 @@ checkpoints race, and the last write wins."
 Also rejects internally incoherent states — negative indices,
 non-integer tallies, an incoherent walk model — so a corrupted
 checkpoint falls back to a fresh session instead of crashing
-mid-render."
+mid-render.
+
+Rejects an \"acted, but no valid model\" state on a walk step: an
+old or foreign checkpoint carrying the pre-engine `:walk-items' /
+`:walk-pos' shape (or nothing) with `:acted' set would resume onto a
+walk step whose live session (`org-gtd-walk--active') is nil, and the
+next advance would run off a nil model.  Judging it invalid falls
+back to a fresh session, honoring the design's corrupt -> fresh
+contract."
   (when-let* ((profile (assoc (plist-get state :profile)
                               org-gtd-review-profiles))
               (phases (cdr profile))
@@ -226,7 +234,14 @@ mid-render."
            (integerp s) (>= s 0) (< s (length (cdr (nth p phases))))
            (integerp (plist-get state :done))
            (integerp (plist-get state :skipped))
-           (or (null model) (org-gtd-walk-model-valid-p model))))))
+           (or (null model) (org-gtd-walk-model-valid-p model))
+           ;; An acted walk step must carry a valid model to rehydrate
+           ;; from; otherwise resuming lands mid-walk with no live
+           ;; session.
+           (let ((step (nth s (cdr (nth p phases)))))
+             (or (not (memq (plist-get step :type) '(checklist walk)))
+                 (not (plist-get state :acted))
+                 (org-gtd-walk-model-valid-p model)))))))
 
 ;;;; Keymap and Mode
 
@@ -450,6 +465,19 @@ checkpoint (`:walk-model') in step with the engine's live session."
    (list :buffer (get-buffer-create org-gtd-review--buffer-name)
          :region 'console)))
 
+(defun org-gtd-review--advance-hosted-walk ()
+  "Advance the live hosted walk, releasing the scope lock on error.
+`org-gtd-walk-advance' does not self-clean the way `org-gtd-walk-start'
+does, so a throw from `:render' / `--save-state' mid-advance would
+leave the walk active and its synthetic scope locked.  Mirror
+`walk-start': release then re-signal (Finding 2)."
+  (with-current-buffer org-gtd-review--buffer-name
+    (condition-case err
+        (org-gtd-walk-advance)
+      (error
+       (org-gtd-review--quit-hosted-walk-if-active)
+       (signal (car err) (cdr err))))))
+
 (defun org-gtd-review--walk-step-next (step)
   "Do the walk STEP: start the hosted walk on first n, else advance it.
 A first n loads the checklist's items and shows item 1; every
@@ -457,10 +485,17 @@ subsequent n advances the hosted walk one item, until it runs off the
 end and the step completes.  Preserves the pre-engine \"nothing in
 this checklist\" message for an empty/missing template — the engine's
 own empty-find behavior (self-satisfy via :on-finish) would otherwise
-skip the step silently."
-  (if (plist-get org-gtd-review--state :acted)
-      (with-current-buffer org-gtd-review--buffer-name
-        (org-gtd-walk-advance))
+skip the step silently.
+
+The advance branch guards against an `:acted' state with no live walk
+\(a resumed old/foreign checkpoint that lacked a rehydratable model):
+rather than advancing off a nil model, it falls through to a fresh
+start of the hosted walk (Finding 1, belt-and-suspenders with the
+`--state-valid-p' rejection)."
+  (if (and (plist-get org-gtd-review--state :acted)
+           (buffer-local-value 'org-gtd-walk--active
+                               (get-buffer-create org-gtd-review--buffer-name)))
+      (org-gtd-review--advance-hosted-walk)
     (let ((items (org-gtd-checklist-template--items (plist-get step :checklist))))
       (if (null items)
           (progn
