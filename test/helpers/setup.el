@@ -323,6 +323,15 @@ between tests."
  ;; while the real filesystem is still active.)
  (setq org-id-locations-file
        (make-temp-file "ogt-eunit-org-id-locations"))
+ ;; Bind C-c c -> org-gtd-organize in the clarify keymap ONCE, before any
+ ;; test runs.  `ogt-eunit--configure-emacs' also sets this per-test, but
+ ;; only inside `ogt-eunit-with-mock-gtd'; test files that do not wrap
+ ;; their tests in it (e.g. true-end-to-end-test.el, which asserts this
+ ;; binding) would otherwise see it unbound whenever the test shuffle
+ ;; happens to run them before any mock-gtd test -- an order-dependent
+ ;; flake.  Setting it at suite level makes the binding deterministic
+ ;; regardless of file/test order.
+ (define-key org-gtd-clarify-mode-map (kbd "C-c c") #'org-gtd-organize)
  (setq inhibit-message t)
  ;; Suppress noisy org-mode state change messages during tests
  ;; e.g., "TODO state changed to NEXT", "TODO state was already TODO"
