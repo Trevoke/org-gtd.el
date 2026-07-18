@@ -629,7 +629,11 @@ render a duplicate itself.
 
 On the one-off path (no active walk -- duplicating during a one-off
 `org-gtd-clarify-item'), falls back to the legacy buffer-local queue
-and its side-window display, exactly as before the walk engine."
+and its side-window display, exactly as before the walk engine.
+
+Both paths refresh the `*Org GTD Duplicate Queue*' side window via
+`org-gtd-clarify--queue-display', which now reads whichever store is
+active (D6a)."
   (if org-gtd-walk--active
       (let* ((token (format "inbox-dup-%s" (org-id-uuid)))
              (model (plist-get org-gtd-walk--active :model))
@@ -639,17 +643,65 @@ and its side-window display, exactly as before the walk engine."
                                      (plist-get model :meta)))))
         (setf (plist-get org-gtd-walk--active :model)
               (org-gtd-walk-model-enqueue
-               seeded token org-gtd-clarify-duplicate-queue-position)))
+               seeded token (org-gtd-clarify--duplicate-enqueue-position)))
+        (org-gtd-clarify--queue-display))
     (org-gtd-clarify--queue-add title content)
     (org-gtd-clarify--queue-display)))
+
+(defun org-gtd-clarify--duplicate-enqueue-position ()
+  "Return the `org-gtd-walk-model-enqueue' position for a new duplicate.
+`org-gtd-clarify-duplicate-queue-position' historically names the side
+window's SIDE (top/right/left/bottom); only `top' and `bottom' are
+meaningful as walk-model enqueue positions (`org-gtd-walk-model-enqueue'
+rejects the rest).  Map `top' to `top' (handled next) and every other
+value -- the default `bottom' and the legacy `left'/`right' window
+sides -- to `bottom' (handled after the remaining items), so a user
+with a left/right side window never trips the enqueue validator."
+  (if (eq org-gtd-clarify-duplicate-queue-position 'top) 'top 'bottom))
+
+;;;;; Pending-duplicate accessors (D6a)
+
+(defun org-gtd-clarify--walk-pending-duplicates ()
+  "Return the remaining duplicate plists from the active walk model.
+Each is a (:title :content) plist, in queue order, for the duplicate
+tokens strictly after the model's cursor (the current item, whatever it
+is, is being clarified now and is not \"pending\").  nil when no walk is
+active in the current buffer."
+  (when org-gtd-walk--active
+    (let* ((model (plist-get org-gtd-walk--active :model))
+           (entries (plist-get model :entries))
+           (cursor (plist-get model :cursor))
+           (meta (plist-get model :meta))
+           (remaining (nthcdr (1+ cursor) entries))
+           dups)
+      (dolist (token remaining)
+        (let ((value (cdr (assoc token meta))))
+          ;; A duplicate's meta value is a (:title :content) plist; an
+          ;; inbox item's is a live marker (D2/D4a).
+          (when (and value (not (markerp value)))
+            (push value dups))))
+      (nreverse dups))))
+
+(defun org-gtd-clarify--pending-duplicates ()
+  "Return the pending duplicate plists for the current clarify context.
+Walk-driven inbox clarify reads them from the active walk model
+(`org-gtd-clarify--walk-pending-duplicates', D6a); one-off clarify
+reads the legacy buffer-local `org-gtd-clarify--duplicate-queue'.  Both
+shapes are (:title :content) plists, so all downstream display/save/
+kill-safety code is store-agnostic."
+  (if org-gtd-walk--active
+      (org-gtd-clarify--walk-pending-duplicates)
+    org-gtd-clarify--duplicate-queue))
 
 ;;;; Duplicate Queue Functions
 
 ;;;;; Queue Predicates
 
 (defun org-gtd-clarify--queue-empty-p ()
-  "Return t if the duplicate queue is empty."
-  (null org-gtd-clarify--duplicate-queue))
+  "Return t when there are no pending duplicates in the current context.
+Reads whichever store is active (walk model or legacy queue) via
+`org-gtd-clarify--pending-duplicates'."
+  (null (org-gtd-clarify--pending-duplicates)))
 
 ;;;;; Queue Operations
 
@@ -671,23 +723,30 @@ Returns nil if queue is empty."
   "Buffer name for the duplicate queue window.")
 
 (defun org-gtd-clarify--queue-display ()
-  "Display the duplicate queue in a side window.
-Creates or updates the queue buffer with current queue contents."
-  (let ((buffer (get-buffer-create org-gtd-clarify--queue-buffer-name))
-        (queue org-gtd-clarify--duplicate-queue))
-    (with-current-buffer buffer
-      (let ((inhibit-read-only t))
-        (erase-buffer)
-        (insert (format "Pending (%d):\n" (length queue)))
-        (let ((idx 1))
-          (dolist (item queue)
-            (insert (format "  %d. %s\n" idx (plist-get item :title)))
-            (setq idx (1+ idx))))
-        (goto-char (point-min)))
-      (setq buffer-read-only t))
-    (display-buffer buffer
-                    `(display-buffer-in-side-window
-                      . ((side . ,org-gtd-clarify-duplicate-queue-position))))))
+  "Refresh the pending-duplicates side window (D6a).
+Reads the pending duplicates for the current context (walk model or
+legacy queue) via `org-gtd-clarify--pending-duplicates'.  When none
+remain, tears the side window down (`org-gtd-clarify--queue-cleanup')
+rather than showing an empty pane -- so on a plain inbox item with no
+duplicates the window simply is not shown, matching the pre-engine
+\"window appears only when duplicates are pending\" behavior."
+  (let ((queue (org-gtd-clarify--pending-duplicates)))
+    (if (null queue)
+        (org-gtd-clarify--queue-cleanup)
+      (let ((buffer (get-buffer-create org-gtd-clarify--queue-buffer-name)))
+        (with-current-buffer buffer
+          (let ((inhibit-read-only t))
+            (erase-buffer)
+            (insert (format "Pending (%d):\n" (length queue)))
+            (let ((idx 1))
+              (dolist (item queue)
+                (insert (format "  %d. %s\n" idx (plist-get item :title)))
+                (setq idx (1+ idx))))
+            (goto-char (point-min)))
+          (setq buffer-read-only t))
+        (display-buffer buffer
+                        `(display-buffer-in-side-window
+                          . ((side . ,org-gtd-clarify-duplicate-queue-position))))))))
 
 (defun org-gtd-clarify--queue-cleanup ()
   "Close the queue window and kill the queue buffer."
@@ -768,9 +827,11 @@ Returns plist with :title and :content keys, or nil if buffer is empty."
 ;;;;; Queue Persistence
 
 (defun org-gtd-clarify--queue-save-to-inbox ()
-  "Save all queued duplicates to the inbox."
+  "Save the current context's pending duplicates to the inbox.
+Reads them via `org-gtd-clarify--pending-duplicates' (walk model or
+legacy queue, D6a)."
   (let ((inbox-file (org-gtd-inbox-path))
-        (queue org-gtd-clarify--duplicate-queue))
+        (queue (org-gtd-clarify--pending-duplicates)))
     (with-current-buffer (find-file-noselect inbox-file)
       (goto-char (point-max))
       (dolist (item queue)
@@ -780,9 +841,9 @@ Returns plist with :title and :content keys, or nil if buffer is empty."
 (defun org-gtd-clarify--prompt-queue-action ()
   "Prompt user for action on pending duplicates.
 Returns \\='discard, \\='save, or \\='cancel."
-  (let* ((count (length org-gtd-clarify--duplicate-queue))
-         (titles (mapcar (lambda (item) (plist-get item :title))
-                         org-gtd-clarify--duplicate-queue))
+  (let* ((dups (org-gtd-clarify--pending-duplicates))
+         (count (length dups))
+         (titles (mapcar (lambda (item) (plist-get item :title)) dups))
          (prompt (format "%d pending duplicate%s:\n  - %s\n[d]iscard all  [s]ave to inbox  [c]ancel: "
                          count
                          (if (= count 1) "" "s")
@@ -794,23 +855,32 @@ Returns \\='discard, \\='save, or \\='cancel."
 
 ;;;;; Kill-Emacs Safety
 
+(defun org-gtd-clarify--buffer-has-pending-duplicates-p ()
+  "Return non-nil when the current buffer holds pending duplicates.
+Covers both the walk-driven surface (active walk with remaining
+duplicate entries) and a one-off clarify buffer with a legacy queue."
+  (or (and org-gtd-walk--active
+           (org-gtd-clarify--walk-pending-duplicates))
+      (and (derived-mode-p 'org-gtd-clarify-mode)
+           (bound-and-true-p org-gtd-clarify--duplicate-queue))))
+
 (defun org-gtd-clarify--pending-duplicates-all-buffers ()
-  "Return list of all pending duplicates across all clarify buffers."
+  "Return all pending duplicates across every clarify context (D6a).
+Collects the active walk model's remaining duplicates (inbox clarify)
+and any legacy buffer-local queues (one-off clarify)."
   (let (all-duplicates)
     (dolist (buf (buffer-list))
       (with-current-buffer buf
-        (when (and (derived-mode-p 'org-gtd-clarify-mode)
-                   (bound-and-true-p org-gtd-clarify--duplicate-queue))
+        (when (org-gtd-clarify--buffer-has-pending-duplicates-p)
           (setq all-duplicates
-                (append all-duplicates org-gtd-clarify--duplicate-queue)))))
+                (append all-duplicates (org-gtd-clarify--pending-duplicates))))))
     all-duplicates))
 
 (defun org-gtd-clarify--save-all-pending-duplicates ()
-  "Save pending duplicates from all clarify buffers to inbox."
+  "Save pending duplicates from every clarify context to the inbox (D6a)."
   (dolist (buf (buffer-list))
     (with-current-buffer buf
-      (when (and (derived-mode-p 'org-gtd-clarify-mode)
-                 (bound-and-true-p org-gtd-clarify--duplicate-queue))
+      (when (org-gtd-clarify--buffer-has-pending-duplicates-p)
         (org-gtd-clarify--queue-save-to-inbox)))))
 
 (defun org-gtd-clarify--kill-emacs-query ()

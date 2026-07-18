@@ -179,11 +179,23 @@ Kills GTD-related buffers and clears org-mode internal state."
           (when (buffer-file-name buffer)
             (with-current-buffer buffer
               (set-buffer-modified-p nil)))
-          ;; Clear duplicate queue before killing to prevent hook prompts
+          ;; Neutralize both pending-duplicate stores before killing, so
+          ;; the clarify kill-buffer query never prompts (read-char-choice
+          ;; would block/err in batch and abort this cleanup loop, leaking
+          ;; every remaining buffer into the next test):
+          ;;  - the legacy buffer-local queue (one-off clarify), and
+          ;;  - the active walk session on the inbox surface (its model
+          ;;    holds the pending duplicates now, D6a).  Clearing
+          ;;    `org-gtd-walk--active' also drops the surface's reference
+          ;;    to the walk; the process-global scope lock is reset
+          ;;    separately in `ogt-eunit--clear-org-state'.
           (with-current-buffer buffer
             (when (and (boundp 'org-gtd-clarify--duplicate-queue)
                        (local-variable-p 'org-gtd-clarify--duplicate-queue))
-              (setq org-gtd-clarify--duplicate-queue nil)))
+              (setq org-gtd-clarify--duplicate-queue nil))
+            (when (and (boundp 'org-gtd-walk--active)
+                       org-gtd-walk--active)
+              (setq org-gtd-walk--active nil)))
           (kill-buffer buffer)))))
 
   ;; Clear org-mode internal state

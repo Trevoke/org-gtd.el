@@ -250,10 +250,15 @@ invoked in the surface buffer -- see `org-gtd-walk--render-current')."
       (cond
        ((org-gtd-inbox-walk--meta-dup-p value)
         (org-gtd-inbox-walk--render-duplicate surface value)
-        (org-gtd-clarify-setup-windows surface))
+        (org-gtd-clarify-setup-windows surface)
+        ;; Keep the pending-duplicates side window in sync after every
+        ;; advance: shows the remaining duplicates, or hides itself when
+        ;; none remain (D6a, model-backed).
+        (org-gtd-clarify--queue-display))
        ((and (markerp value) (marker-buffer value) (marker-position value))
         (org-gtd-inbox-walk--render-marker surface value)
-        (org-gtd-clarify-setup-windows surface))
+        (org-gtd-clarify-setup-windows surface)
+        (org-gtd-clarify--queue-display))
        (t
         (org-gtd-walk-advance))))))
 
