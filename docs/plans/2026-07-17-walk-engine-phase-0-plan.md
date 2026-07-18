@@ -44,7 +44,9 @@ dependencies beyond built-in `seq`/`subr-x` and existing org-gtd modules.
 - **Module file boilerplate** (header + footer): copy the exact shape from
   `org-gtd-someday-review.el` lines 1–34 and 290–294. Every new `.el` needs:
   - first line `;;; NAME.el --- SHORT DESC -*- lexical-binding: t; coding: utf-8 -*-`
-  - the copyright / license block (copy verbatim, update the `--- DESC`)
+  - the license block (copy verbatim), but the **copyright line must read
+    `;; Copyright © 2026 Aldric Giacomoni`** — these are new 2026 files (match
+    `org-gtd-checklist.el`/`org-gtd-init.el`), not the copied year
   - `;;; Commentary:` + `;;; Code:` sections
   - a `;;;; Footer` with `(provide 'NAME)` and `;;; NAME.el ends here`
 - **Registry pattern** mirrors `org-gtd-types` / `org-gtd-customize-type` in
