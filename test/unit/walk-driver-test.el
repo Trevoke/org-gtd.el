@@ -194,6 +194,20 @@
         (org-gtd-walk-advance) (org-gtd-walk-advance) (org-gtd-walk-advance))
       (assert-nil (file-exists-p path)))))
 
+;;; corrupt checkpoint
+
+(deftest walk-corrupt-checkpoint-starts-fresh ()
+  "A garbage checkpoint on a resumable walk is discarded; find runs fresh."
+  (walk-driver-test--with-harness surface
+    (let ((path (org-gtd-walk--checkpoint-path 'stub "stub-scope")))
+      (with-temp-file path (insert "(:entries oops :cursor"))
+      (org-gtd-walk-start (walk-driver-test--stub-spec :resumable t) surface)
+      (assert-equal '("a") walk-driver-test--render-log)
+      (with-current-buffer surface
+        (assert-same 0 (plist-get (plist-get org-gtd-walk--active :model) :cursor))
+        (assert-equal '("a" "b" "c")
+                      (plist-get (plist-get org-gtd-walk--active :model) :entries))))))
+
 (provide 'walk-driver-test)
 
 ;;; walk-driver-test.el ends here
