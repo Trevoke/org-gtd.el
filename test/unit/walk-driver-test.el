@@ -93,6 +93,20 @@
     (with-current-buffer surface (assert-nil org-gtd-walk--active))
     (assert-nil (org-gtd-walk--scope-locked-p "stub-scope"))))
 
+;;; empty find
+
+(deftest walk-empty-find-finishes-without-activating ()
+  "An empty find runs on-finish, renders nothing, activates nothing, locks nothing."
+  (walk-driver-test--with-harness surface
+    (let ((result (org-gtd-walk-start
+                   (walk-driver-test--stub-spec :find (lambda () '()))
+                   surface)))
+      (assert-nil result)
+      (assert-nil walk-driver-test--render-log)
+      (assert-same 1 walk-driver-test--finish-count)
+      (with-current-buffer surface (assert-nil org-gtd-walk--active))
+      (assert-nil (org-gtd-walk--scope-locked-p "stub-scope")))))
+
 (provide 'walk-driver-test)
 
 ;;; walk-driver-test.el ends here
