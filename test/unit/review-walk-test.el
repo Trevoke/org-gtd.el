@@ -227,6 +227,28 @@ and clears the live walk, instead of leaking the synthetic scope
       (org-gtd-review-next)                 ; off end -> complete-step
       (assert-match "After" (buffer-string)))))
 
+(deftest review-walk/walk-step-resumes-across-restart ()
+  "Killing the console mid-walk-step resumes at the checkpointed item,
+and releases then re-acquires the registered walk's scope lock (Task
+B3 — the A4 rehydrate/teardown machinery generalizes to `walk' steps
+via `org-gtd-review--spec-for-step'/`--hosted-spec-for-step')."
+  (review-walk-test--register)
+  (let ((org-gtd-review-profiles
+         '(("W" ("P" (:title "Walk it" :type walk :walk review-test-walk)
+                     (:title "After" :type prompt))))))
+    (org-gtd-review "W")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)   ; alpha
+      (org-gtd-review-next))  ; beta
+    (kill-buffer org-gtd-review--buffer-name)
+    (assert-nil org-gtd-walk--locked-scopes)
+    (cl-letf (((symbol-function 'y-or-n-p) (lambda (_p) t)))
+      (org-gtd-review))
+    (with-current-buffer org-gtd-review--buffer-name
+      (assert-match "beta" (buffer-string))
+      (assert-match "(2/3)" (buffer-string)))
+    (assert-true org-gtd-walk--locked-scopes)))
+
 ;;; Walk Step Validation Tests (Task B1)
 
 (deftest review-walk/walk-step-missing-walk-errors-cleanly ()
