@@ -234,6 +234,14 @@ Runs in the surface buffer (design §9)."
     (when (plist-get spec :on-finish)
       (funcall (plist-get spec :on-finish)))))
 
+(defun org-gtd-walk-quit ()
+  "Abandon the active walk (design §9).
+Tears down and unlocks but keeps the checkpoint (if resumable) and runs
+no :on-finish.  Runs in the surface buffer."
+  (org-gtd-walk--unlock-scope
+   (plist-get (plist-get org-gtd-walk--active :spec) :scope))
+  (setq org-gtd-walk--active nil))
+
 ;;;; Footer
 
 (provide 'org-gtd-walk)

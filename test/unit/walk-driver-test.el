@@ -171,6 +171,29 @@
       (with-current-buffer surface (org-gtd-walk-advance))
       (assert-same 1 (plist-get (org-gtd-walk--load-checkpoint path) :cursor)))))
 
+;;; quit vs finish
+
+(deftest walk-quit-keeps-checkpoint-and-runs-no-on-finish ()
+  "quit tears down but preserves a resumable checkpoint and skips on-finish."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start (walk-driver-test--stub-spec :resumable t) surface)
+    (let ((path (org-gtd-walk--checkpoint-path 'stub "stub-scope")))
+      (with-current-buffer surface (org-gtd-walk-quit))
+      (assert-true (file-exists-p path))
+      (assert-same 0 walk-driver-test--finish-count)
+      (with-current-buffer surface (assert-nil org-gtd-walk--active))
+      (assert-nil (org-gtd-walk--scope-locked-p "stub-scope")))))
+
+(deftest walk-finish-deletes-checkpoint ()
+  "Finishing a resumable walk removes its checkpoint file."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start (walk-driver-test--stub-spec :resumable t) surface)
+    (let ((path (org-gtd-walk--checkpoint-path 'stub "stub-scope")))
+      (assert-true (file-exists-p path))
+      (with-current-buffer surface
+        (org-gtd-walk-advance) (org-gtd-walk-advance) (org-gtd-walk-advance))
+      (assert-nil (file-exists-p path)))))
+
 (provide 'walk-driver-test)
 
 ;;; walk-driver-test.el ends here
