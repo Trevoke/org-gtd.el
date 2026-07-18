@@ -238,6 +238,31 @@
             (with-current-buffer other (assert-true org-gtd-walk--active)))
         (kill-buffer other)))))
 
+;;; action error handling
+
+(deftest walk-action-error-before-transition-does-not-advance ()
+  "An action that throws before its transition leaves cursor and session intact."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start (walk-driver-test--stub-spec) surface) ; on "a"
+    (with-current-buffer surface
+      (org-gtd-walk-call-action
+       (lambda () (error "boom before transition")))
+      ;; still on "a", session alive
+      (assert-equal "a" (org-gtd-walk-model-current
+                         (plist-get org-gtd-walk--active :model)))
+      (assert-true org-gtd-walk--active))
+    ;; only the initial render happened
+    (assert-equal '("a") walk-driver-test--render-log)))
+
+(deftest walk-call-action-runs-transition-on-success ()
+  "call-action runs the action; an action that advances does advance."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start (walk-driver-test--stub-spec) surface)
+    (with-current-buffer surface
+      (org-gtd-walk-call-action (lambda () (org-gtd-walk-advance)))
+      (assert-equal "b" (org-gtd-walk-model-current
+                         (plist-get org-gtd-walk--active :model))))))
+
 (provide 'walk-driver-test)
 
 ;;; walk-driver-test.el ends here

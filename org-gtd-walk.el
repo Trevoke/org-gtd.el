@@ -242,6 +242,16 @@ no :on-finish.  Runs in the surface buffer."
    (plist-get (plist-get org-gtd-walk--active :spec) :scope))
   (setq org-gtd-walk--active nil))
 
+(defun org-gtd-walk-call-action (fn)
+  "Invoke action FN, surfacing any error without disturbing walk state.
+Because an action does its org side-effect and only then calls a
+transition, an error thrown before the transition leaves the walk on
+the current item (design §9)."
+  (condition-case err
+      (funcall fn)
+    (error (message "org-gtd walk action error: %s"
+                    (error-message-string err)))))
+
 ;;;; Footer
 
 (provide 'org-gtd-walk)
