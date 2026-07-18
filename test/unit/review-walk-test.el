@@ -194,6 +194,39 @@ and clears the live walk, instead of leaking the synthetic scope
       (assert-nil org-gtd-walk--locked-scopes)
       (assert-nil org-gtd-walk--active))))
 
+;;; Generic Walk Step Tests (Task B2)
+
+(defvar review-walk-test--handles '("alpha" "beta" "gamma"))
+
+(defun review-walk-test--register ()
+  (org-gtd-walk-register
+   'review-test-walk
+   (list :name 'review-test-walk
+         :find (lambda () review-walk-test--handles)
+         :render #'org-gtd-review--hosted-render
+         :actions nil
+         :on-finish #'org-gtd-review--complete-step
+         :resumable nil
+         :resolve nil
+         :scope (list "review-test-walk"))))
+
+(deftest review-walk/walk-step-drives-registered-walk-and-advances ()
+  "A :type walk step walks the registered handles, then advances the session."
+  (review-walk-test--register)
+  (let ((org-gtd-review-profiles
+         '(("W" ("P" (:title "Walk it" :type walk :walk review-test-walk)
+                     (:title "After" :type prompt))))))
+    (org-gtd-review "W")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)                 ; start, alpha
+      (assert-match "alpha" (buffer-string))
+      (assert-match "(1/3)" (buffer-string))
+      (org-gtd-review-next)                 ; beta
+      (assert-match "(2/3)" (buffer-string))
+      (org-gtd-review-next)                 ; gamma
+      (org-gtd-review-next)                 ; off end -> complete-step
+      (assert-match "After" (buffer-string)))))
+
 ;;; Walk Step Validation Tests (Task B1)
 
 (deftest review-walk/walk-step-missing-walk-errors-cleanly ()

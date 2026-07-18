@@ -488,14 +488,35 @@ leave the walk active and its synthetic scope locked.  Mirror
        (org-gtd-review--quit-hosted-walk-if-active)
        (signal (car err) (cdr err))))))
 
+(defun org-gtd-review--hosted-spec-for-step (step)
+  "Return STEP's hosted-composition spec, overridden for the console.
+`org-gtd-review--spec-for-step' returns a walk's own spec — for a
+registered `walk' step that is whatever the consumer registered
+\(e.g. someday-review's spec pops its own buffer and reports its own
+summary on finish).  Hosting it in the console requires overriding
+:render, :on-finish, and :resumable so the walk renders into the
+console and advances the review session, rather than running
+standalone (Task B2's composition contract).  A no-op for the
+checklist spec, which already sets these three keys itself."
+  (let ((spec (copy-sequence (org-gtd-review--spec-for-step step))))
+    (setq spec (plist-put spec :render #'org-gtd-review--hosted-render))
+    (setq spec (plist-put spec :on-finish #'org-gtd-review--complete-step))
+    (setq spec (plist-put spec :resumable nil))
+    spec))
+
 (defun org-gtd-review--walk-step-next (step)
   "Do the walk STEP: start the hosted walk on first n, else advance it.
-A first n loads the checklist's items and shows item 1; every
-subsequent n advances the hosted walk one item, until it runs off the
-end and the step completes.  Preserves the pre-engine \"nothing in
-this checklist\" message for an empty/missing template — the engine's
-own empty-find behavior (self-satisfy via :on-finish) would otherwise
-skip the step silently.
+A first n loads the walk's items and shows item 1; every subsequent n
+advances the hosted walk one item, until it runs off the end and the
+step completes.  Shared by `checklist' and `walk' step types — both
+resolve to a spec via `org-gtd-review--spec-for-step' and run through
+the same hosted composition (`org-gtd-review--hosted-spec-for-step').
+
+Preserves the pre-engine \"nothing in this checklist\" message for an
+empty/missing checklist template — the engine's own empty-find
+behavior (self-satisfy via :on-finish) would otherwise skip the step
+silently.  A `walk' step with an empty find simply self-satisfies with
+no message, matching the engine's default.
 
 The advance branch guards against an `:acted' state with no live walk
 \(a resumed old/foreign checkpoint that lacked a rehydratable model):
@@ -506,23 +527,31 @@ start of the hosted walk (Finding 1, belt-and-suspenders with the
            (buffer-local-value 'org-gtd-walk--active
                                (get-buffer-create org-gtd-review--buffer-name)))
       (org-gtd-review--advance-hosted-walk)
-    (let ((items (org-gtd-checklist-template--items (plist-get step :checklist))))
-      (if (null items)
-          (progn
-            (message "Nothing in checklist '%s' — moving on.  (Edit %s to add items.)"
-                     (plist-get step :checklist)
-                     (org-gtd-checklist-template--file-path))
-            (org-gtd-review--complete-step))
-        (plist-put org-gtd-review--state :acted t)
-        (org-gtd-review--start-hosted-walk
-         (org-gtd-review--checklist-walk-spec step))))))
+    (if (eq (plist-get step :type) 'checklist)
+        (let ((items (org-gtd-checklist-template--items (plist-get step :checklist))))
+          (if (null items)
+              (progn
+                (message "Nothing in checklist '%s' — moving on.  (Edit %s to add items.)"
+                         (plist-get step :checklist)
+                         (org-gtd-checklist-template--file-path))
+                (org-gtd-review--complete-step))
+            (plist-put org-gtd-review--state :acted t)
+            (org-gtd-review--start-hosted-walk
+             (org-gtd-review--hosted-spec-for-step step))))
+      (plist-put org-gtd-review--state :acted t)
+      (org-gtd-review--start-hosted-walk
+       (org-gtd-review--hosted-spec-for-step step)))))
 
 (defun org-gtd-review--spec-for-step (step)
-  "Return the hosted walk spec for STEP.
-Currently handles `checklist' steps; a `walk' step's registered spec
-is a Deliverable-B extension."
+  "Return the walk spec for STEP.
+A `checklist' step's spec is built fresh from its template; a `walk'
+step's spec is looked up in the `org-gtd-walks' registry by :walk.
+Callers that host the walk in the console must override :render,
+:on-finish, and :resumable — see
+`org-gtd-review--hosted-spec-for-step'."
   (pcase (plist-get step :type)
-    ('checklist (org-gtd-review--checklist-walk-spec step))))
+    ('checklist (org-gtd-review--checklist-walk-spec step))
+    ('walk (org-gtd-walk-get (plist-get step :walk)))))
 
 (defun org-gtd-review--rehydrate-hosted-walk ()
   "Rebuild the hosted walk session for a resumed in-progress walk step.
@@ -536,7 +565,7 @@ alone — it starts fresh on the first n, as normal."
     (when (and (memq (plist-get step :type) '(checklist walk))
                (plist-get org-gtd-review--state :acted)
                (plist-get org-gtd-review--state :walk-model))
-      (let ((spec (org-gtd-review--spec-for-step step)))
+      (let ((spec (org-gtd-review--hosted-spec-for-step step)))
         (with-current-buffer (get-buffer-create org-gtd-review--buffer-name)
           (setq org-gtd-walk--active
                 (list :model (plist-get org-gtd-review--state :walk-model)
@@ -597,7 +626,7 @@ the console (`:resumable' nil — the review owns persistence)."
          (save-selected-window
            (call-interactively (plist-get step :view)))
          (plist-put org-gtd-review--state :acted t)))
-      ('checklist (org-gtd-review--walk-step-next step))
+      ((or 'checklist 'walk) (org-gtd-review--walk-step-next step))
       (_
        (message "Step type '%s' is unknown — check org-gtd-review-profiles; skipping this step" type)
        (org-gtd-review--complete-step t)))))
