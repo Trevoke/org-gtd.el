@@ -150,9 +150,6 @@ Not needed. Deletes the item.
 (defvar-local org-gtd-clarify--clarify-id nil
   "Reference to the org id of the heading currently in the WIP buffer.")
 
-(defvar-local org-gtd-clarify--inbox-p nil
-  "Used to separate a one-off clarify from the inbox clarification.")
-
 (defvar-local org-gtd-clarify--source-heading-marker nil
   "Store marker to item that is being clarified.")
 
@@ -163,19 +160,11 @@ Not needed. Deletes the item.
   "When non-nil, update item in place instead of refiling.
 Set via C-u prefix to clarify commands or transient toggle.")
 
-(defvar-local org-gtd-clarify--continuation nil
-  "Function to call after organizing completes.
-Set by `org-gtd-clarify-inbox-item' to continue inbox processing.
-Called by `org-gtd-organize--call' when non-nil.")
-
 (defvar-local org-gtd-clarify--duplicate-queue nil
-  "List of pending duplicate items to clarify after current item.
-Each element is a plist with :title and :content keys.")
-
-;;;;; External variables (defined in org-gtd-process.el)
-
-(defvar org-gtd-process--session-active)
-(defvar org-gtd-process--pending-inboxes)
+  "List of pending one-off-clarify duplicate items to clarify next.
+Each element is a plist with :title and :content keys.  Backs the
+one-off (non-walk) clarify duplicate flow only; the walk-driven inbox
+path keeps its pending duplicates in the walk model's `:meta' (D4a).")
 
 ;;;;; Keymaps
 
@@ -346,7 +335,7 @@ duplicate; otherwise clean up and restore the window configuration."
     (if queue
         ;; Queue has items — discard current, process next
         (org-gtd-clarify--process-next-queued-item
-         queue window-config nil task-id)
+         queue window-config task-id)
       ;; No queue — full cleanup
       (org-gtd-clarify--queue-cleanup)
       (org-gtd-clarify--cleanup-horizons-view)
@@ -395,18 +384,6 @@ Enqueues an exact copy without prompting for changes."
 ;;;; Functions
 
 ;;;;; Public
-
-(defun org-gtd-clarify-inbox-item (marker window-config &optional continuation)
-  "Process item at point through org-gtd.
-This function is called through the inbox clarification process.
-
-MARKER must be a marker pointing to an org heading.
-WINDOW-CONFIG is the window config to set after clarification finishes.
-CONTINUATION is a function to call after organizing completes (e.g., to
-process the next inbox item)."
-  (org-gtd-clarify-item marker window-config)
-  (setq-local org-gtd-clarify--inbox-p t)
-  (setq-local org-gtd-clarify--continuation continuation))
 
 (defun org-gtd-clarify-project-insert-template ()
   "Insert user-provided template under item at point."
@@ -758,10 +735,9 @@ duplicates the window simply is not shown, matching the pre-engine
 
 ;;;;; Queue Processing
 
-(defun org-gtd-clarify--process-next-queued-item (queue window-config continuation old-task-id)
+(defun org-gtd-clarify--process-next-queued-item (queue window-config old-task-id)
   "Process the next item from the one-off duplicate QUEUE.
 WINDOW-CONFIG is restored after all items are processed.
-CONTINUATION is called after the queue is empty.
 OLD-TASK-ID is the clarify-id of the buffer being reused.
 
 This drives the pre-walk-engine one-off clarify duplicate path only;
@@ -790,7 +766,6 @@ the walk-driven inbox path advances through the walk model instead (see
               ;; Update buffer-local state
               (setq-local org-gtd-clarify--window-config window-config
                           org-gtd-clarify--clarify-id new-id
-                          org-gtd-clarify--continuation continuation
                           org-gtd-clarify--source-heading-marker nil
                           org-gtd-clarify--skip-refile nil
                           org-gtd-clarify--duplicate-queue queue))
@@ -798,15 +773,13 @@ the walk-driven inbox path advances through the walk model instead (see
             (if (org-gtd-clarify--queue-empty-p)
                 (org-gtd-clarify--queue-cleanup)
               (org-gtd-clarify--queue-display))))
-      ;; No more items - cleanup and continue
+      ;; No more items - cleanup
       (when old-task-id
         (org-gtd-wip--cleanup-temp-file old-task-id))
       (org-gtd-clarify--queue-cleanup)
       (message "All duplicates processed")
       (when window-config
-        (set-window-configuration window-config))
-      (when continuation
-        (funcall continuation)))))
+        (set-window-configuration window-config)))))
 
 ;;;;; Content Extraction
 

@@ -70,7 +70,7 @@ normalized to `next-action' at lookup time.")
 
 (transient-define-prefix org-gtd-organize ()
   "Choose how to categorize the current item."
-  [:if (lambda () (not org-gtd-clarify--inbox-p))
+  [:if (lambda () (not org-gtd-walk--active))
    "Options"
    ("-n" org-gtd-organize--skip-refile-infix)]
   ["Actionable"

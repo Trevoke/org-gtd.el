@@ -97,41 +97,13 @@ docs/plans/2026-07-17-walk-engine-phase-4-plan.md."
 
 ;;;;; Private
 ;;
-;; The functions below drove inbox processing before the walk engine
-;; (`org-gtd-process-inbox', above, no longer calls them).  Left in
-;; place for now -- removed in a follow-up cutover task once
-;; `org-gtd-clarify-stop' and the kill-safety/duplicate-display paths
-;; are also wired onto the walk (see the Phase 4 plan's Tasks 7-10).
-
-(defun org-gtd-process--next-inbox (inbox-file)
-  "Process items from INBOX-FILE, then continue to pending inboxes."
-  (let ((buffer (find-file-noselect inbox-file)))
-    (set-buffer buffer)
-    (goto-char (point-min))
-    (when (org-before-first-heading-p)
-      (org-next-visible-heading 1)
-      (org-N-empty-lines-before-current 1))
-    (if (org-at-heading-p)
-        (org-gtd-clarify-inbox-item (point-marker)
-                                    (current-window-configuration)
-                                    #'org-gtd-process-inbox)
-      ;; Current inbox is empty, try next pending inbox
-      (org-gtd-process--try-next-inbox))))
-
-(defun org-gtd-process--try-next-inbox ()
-  "Try to process the next pending inbox, or stop if none remain."
-  (if org-gtd-process--pending-inboxes
-      (let ((next-inbox (pop org-gtd-process--pending-inboxes)))
-        (if (file-exists-p next-inbox)
-            (org-gtd-process--next-inbox next-inbox)
-          ;; File doesn't exist, try next
-          (org-gtd-process--try-next-inbox)))
-    ;; No more inboxes to process
-    (message "All inboxes are empty. No items to process.")
-    (org-gtd-process--stop)))
+;; `org-gtd-process--stop' and the session-tracking variables above are
+;; pre-walk-engine internals no longer driven by `org-gtd-process-inbox'
+;; (the walk's :on-finish/quit paths cover their duties).  They are
+;; removed at the Phase 4 cutover along with the tests that assert them.
 
 (defun org-gtd-process--stop ()
-  "Stop processing the inbox."
+  "Stop processing the inbox (pre-walk-engine; retained until cutover)."
   (org-gtd-clarify--cleanup-horizons-view)
   (whitespace-cleanup)
   ;; Clear session state

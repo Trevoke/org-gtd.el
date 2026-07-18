@@ -133,7 +133,6 @@ This handles the internal bits of `org-gtd'."
       ;; surface), which would otherwise clobber these before we read
       ;; them.
       (let ((walk-active org-gtd-walk--active)
-            (continuation org-gtd-clarify--continuation)
             (task-id org-gtd-clarify--clarify-id)
             (window-config org-gtd-clarify--window-config)
             (skip-refile org-gtd-clarify--skip-refile)
@@ -165,22 +164,21 @@ This handles the internal bits of `org-gtd'."
           (org-gtd-walk-advance))
          ;; Locally queued duplicates (one-off clarify predating the
          ;; walk engine): reuse the current buffer for the next queued
-         ;; item before ever calling continuation.
+         ;; item.
          (duplicate-queue
           (org-gtd-clarify--process-next-queued-item
-           duplicate-queue window-config continuation task-id))
+           duplicate-queue window-config task-id))
          ;; No walk, no queue - clean up and proceed with normal flow
          (t
           (when task-id
             (org-gtd-wip--cleanup-temp-file task-id))
           (when window-config
-            (set-window-configuration window-config))
-          (when continuation (funcall continuation))))
+            (set-window-configuration window-config))))
         ;; Save GTD buffers after organizing
         (org-gtd-save-buffers)
         ;; Clean up horizons view for one-off clarification.  The
         ;; walk-driven path defers this to the walk's :on-finish.
-        (unless (or continuation walk-active)
+        (unless walk-active
           (org-gtd-clarify--cleanup-horizons-view))))))
 
 ;;;;; Pipeline primitives
