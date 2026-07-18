@@ -342,12 +342,18 @@ Come back, then press n again to continue.")))
   "Advance past the current step, tallying SKIPPED or done.
 Checkpoints the new position to disk at every step boundary, so a
 crash or killed buffer resumes where the user left off."
+  ;; A normal off-the-end finish already unlocked via `org-gtd-walk-finish'
+  ;; before calling this as :on-finish, so `org-gtd-walk--active' is already
+  ;; nil there and this is a no-op.  Skipping mid-walk (s) bypasses finish
+  ;; entirely, so this guard is what unlocks that path (Decision 4).
+  (org-gtd-review--quit-hosted-walk-if-active)
   (let ((state org-gtd-review--state)
         (counter (if skipped :skipped :done)))
     (plist-put state counter (1+ (plist-get state counter)))
     (plist-put state :acted nil)
     (plist-put state :walk-items nil)
     (plist-put state :walk-pos 0)
+    (plist-put state :walk-model nil)
     (let ((steps (cdr (org-gtd-review--current-phase)))
           (next-step (1+ (plist-get state :step))))
       (if (< next-step (length steps))
@@ -368,7 +374,11 @@ crash or killed buffer resumes where the user left off."
             (org-gtd-review--finish)))))))
 
 (defun org-gtd-review--reset-session ()
-  "Clear the session state and restore the saved window configuration."
+  "Clear the session state and restore the saved window configuration.
+Releases a live hosted walk first (Decision 4) — this is the shared
+teardown path for both a direct kill-buffer and `--teardown' (pause,
+quit, finish)."
+  (org-gtd-review--quit-hosted-walk-if-active)
   (setq org-gtd-review--state nil)
   (when org-gtd-review--window-config
     (set-window-configuration org-gtd-review--window-config)
@@ -473,6 +483,46 @@ skip the step silently."
         (plist-put org-gtd-review--state :acted t)
         (org-gtd-review--start-hosted-walk
          (org-gtd-review--checklist-walk-spec step))))))
+
+(defun org-gtd-review--spec-for-step (step)
+  "Return the hosted walk spec for STEP.
+Currently handles `checklist' steps; a `walk' step's registered spec
+is a Deliverable-B extension."
+  (pcase (plist-get step :type)
+    ('checklist (org-gtd-review--checklist-walk-spec step))))
+
+(defun org-gtd-review--rehydrate-hosted-walk ()
+  "Rebuild the hosted walk session for a resumed in-progress walk step.
+`org-gtd-walk--active' is buffer-local on the console buffer and does
+not survive a killed or paused session (the buffer is gone); a
+resumed session whose current step is mid-walk must rebuild it from
+the checkpointed `:walk-model' before `--render' draws the current
+item (Decision 6).  A step that has not yet been acted on is left
+alone — it starts fresh on the first n, as normal."
+  (let ((step (org-gtd-review--current-step)))
+    (when (and (memq (plist-get step :type) '(checklist walk))
+               (plist-get org-gtd-review--state :acted)
+               (plist-get org-gtd-review--state :walk-model))
+      (let ((spec (org-gtd-review--spec-for-step step)))
+        (with-current-buffer (get-buffer-create org-gtd-review--buffer-name)
+          (setq org-gtd-walk--active
+                (list :model (plist-get org-gtd-review--state :walk-model)
+                      :spec spec
+                      :surface (list :buffer (current-buffer) :region 'console)
+                      :checkpoint-path nil :skipped 0))
+          (org-gtd-walk--lock-scope (plist-get spec :scope)))))))
+
+(defun org-gtd-review--quit-hosted-walk-if-active ()
+  "Release a live hosted walk on the console buffer, if any.
+Unlocks the scope and clears `org-gtd-walk--active' without running
+any :on-finish — the review checkpoint (`:walk-model'), not the
+engine's own checkpoint (there is none; hosted walks run
+`:resumable' nil), remains the resume source.  Called from every
+review teardown path so a killed, paused, or skipped-mid-walk session
+never leaks the scope lock (Decision 4)."
+  (let ((buf (get-buffer org-gtd-review--buffer-name)))
+    (when (and buf (buffer-local-value 'org-gtd-walk--active buf))
+      (with-current-buffer buf (org-gtd-walk-quit)))))
 
 (defun org-gtd-review--checklist-walk-spec (step)
   "Return an engine walk spec for the checklist STEP.
@@ -663,7 +713,9 @@ the single save slot as soon as it successfully boots."
   (setq org-gtd-review--window-config (current-window-configuration))
   (setq org-gtd-review--state state)
   (condition-case err
-      (org-gtd-review--render)
+      (progn
+        (org-gtd-review--rehydrate-hosted-walk)
+        (org-gtd-review--render))
     (error
      (org-gtd-review--teardown)
      (signal (car err) (cdr err))))

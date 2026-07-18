@@ -88,6 +88,65 @@ the old one — the rendered text looks identical either way."
       (dotimes (_ 8) (org-gtd-review-next))       ; through 8 and out
       (assert-match "After" (buffer-string)))))
 
+;;; Resume + Teardown Tests (Task A4)
+
+(deftest review-walk/kill-mid-hosted-walk-resumes-at-item ()
+  "Killing the console mid-walk resumes at the checkpointed item."
+  (let ((org-gtd-review-profiles review-walk-test--walk-profile))
+    (org-gtd-review "Walk")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)   ; item 1
+      (org-gtd-review-next))  ; item 2
+    (kill-buffer org-gtd-review--buffer-name)
+    (cl-letf (((symbol-function 'y-or-n-p) (lambda (_p) t)))
+      (org-gtd-review))
+    (with-current-buffer org-gtd-review--buffer-name
+      (assert-match "(2/8)" (buffer-string)))))
+
+(deftest review-walk/kill-mid-hosted-walk-releases-scope-lock ()
+  "Killing the console mid-walk unlocks the hosted walk's scope.
+Teardown path: kill-buffer."
+  (let ((org-gtd-review-profiles review-walk-test--walk-profile))
+    (org-gtd-review "Walk")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next))
+    (kill-buffer org-gtd-review--buffer-name)
+    (assert-nil org-gtd-walk--locked-scopes)))
+
+(deftest review-walk/pause-mid-hosted-walk-releases-scope-lock ()
+  "Pausing the console mid-walk unlocks the hosted walk's scope.
+Teardown path: reset-session (via pause, distinct from a direct
+kill-buffer and from quit)."
+  (let ((org-gtd-review-profiles review-walk-test--walk-profile))
+    (org-gtd-review "Walk")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (org-gtd-review-pause))
+    (assert-nil org-gtd-walk--locked-scopes)))
+
+(deftest review-walk/quit-mid-hosted-walk-releases-scope-lock ()
+  "Abandoning the session (q, then n) mid-walk unlocks the scope.
+Teardown path: quit."
+  (let ((org-gtd-review-profiles review-walk-test--walk-profile))
+    (org-gtd-review "Walk")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (cl-letf (((symbol-function 'y-or-n-p) (lambda (_p) nil)))
+        (org-gtd-review-quit)))
+    (assert-nil org-gtd-walk--locked-scopes)))
+
+(deftest review-walk/skip-mid-hosted-walk-releases-scope-lock ()
+  "Skipping (s) mid-walk unlocks the scope.
+Teardown path: complete-step.  The normal off-the-end finish already
+unlocks through `org-gtd-walk-finish'; skip mid-walk bypasses that
+and must unlock itself (Decision 4)."
+  (let ((org-gtd-review-profiles review-walk-test--walk-profile))
+    (org-gtd-review "Walk")
+    (with-current-buffer org-gtd-review--buffer-name
+      (org-gtd-review-next)
+      (org-gtd-review-skip))
+    (assert-nil org-gtd-walk--locked-scopes)))
+
 (provide 'review-walk-test)
 
 ;;; review-walk-test.el ends here
