@@ -172,6 +172,26 @@ This property also controls the prefix displayed in agenda views.")
 (defvar org-gtd-archive-location)
 (declare-function org-gtd-prompt-for-active-date "org-gtd-configure" (prompt))
 
+;;;; Macros
+
+(defmacro org-gtd--without-kill-merge (&rest body)
+  "Run BODY with Emacs's command-loop kill bookkeeping neutralized.
+
+Emacs decides whether a copy/cut should *append* to the current kill-ring
+entry by inspecting `last-command' (see `copy-region-as-kill'), and kill
+commands advertise themselves to the next command by setting
+`this-command'.  Both are process-global; under `with-simulated-input' or
+scripted / keyboard-macro use they can carry a stale `kill-region' value
+into an unrelated later operation.  When `org-copy-subtree',
+`org-cut-subtree', or `org-archive-subtree' then run, they can silently
+kill-append onto a leftover entry and corrupt the subtree they move.
+
+Bind both to nil around any subtree copy/cut/archive so the operation
+starts from a clean command loop and leaves no dirty state behind.  Use
+this wrapper for every such operation in org-gtd."
+  (declare (indent 0) (debug t))
+  `(let ((last-command nil) (this-command nil)) ,@body))
+
 ;;;; Customization
 
 (defgroup org-gtd nil

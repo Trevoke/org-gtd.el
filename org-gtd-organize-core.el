@@ -94,7 +94,8 @@ Uses `org-gtd-clarify--source-heading-marker' to find the original location."
                        (goto-char (point-min))
                        (when (org-before-first-heading-p)
                          (org-next-visible-heading 1))
-                       (org-copy-subtree)
+                       (org-gtd--without-kill-merge
+                         (org-copy-subtree))
                        (current-kill 0)))
         ;; Capture marker value while still in WIP buffer
         (source-marker org-gtd-clarify--source-heading-marker))
@@ -108,7 +109,8 @@ Uses `org-gtd-clarify--source-heading-marker' to find the original location."
         ;; pasted at level 1, so re-level it to match the source heading
         ;; instead of inserting raw level-1 text (issue #291).
         (let ((level (org-outline-level)))
-          (org-cut-subtree)
+          (org-gtd--without-kill-merge
+            (org-cut-subtree))
           (org-paste-subtree level new-content))
         (save-buffer)))))
 
@@ -143,7 +145,8 @@ This handles the internal bits of `org-gtd'."
                 (with-current-buffer buffer
                   (goto-char position)
                   (with-temp-message ""
-                    (org-cut-subtree)))))))
+                    (org-gtd--without-kill-merge
+                      (org-cut-subtree))))))))
         ;; Check if we have queued duplicates to process
         (if duplicate-queue
             ;; Reuse current buffer for next queued item

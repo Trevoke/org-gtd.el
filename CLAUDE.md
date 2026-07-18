@@ -193,3 +193,4 @@ Key testing dependencies: `with-simulated-input`, `dash`
 ## Memory Annotations
 
 - When using the emacs mcp server, always redefine or eval-buffer, don't use file loads, because of emacs' caching mechanism
+- Emacs's command loop leaves `last-command`/`this-command` set process-globally. `org-copy-subtree`/`org-cut-subtree`/`org-archive-subtree` decide whether to *kill-append* from `last-command`, so a stale `kill-region` value (left by a prior cut, by `with-simulated-input` in tests, or by a keyboard macro in real use) can silently merge and corrupt the subtree being moved. Wrap every subtree copy/cut/archive in `org-gtd--without-kill-merge` (org-gtd-core.el), which binds both to nil. Tests also reset them in `ogt-eunit--clear-org-state`.

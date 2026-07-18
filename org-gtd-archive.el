@@ -117,7 +117,8 @@ otherwise calls `org-gtd-archive-location'."
 Moves the subtree to the archive file and removes it from current buffer."
   (interactive)
   (let ((org-archive-location (org-gtd--effective-archive-location)))
-    (org-archive-subtree)))
+    (org-gtd--without-kill-merge
+      (org-archive-subtree))))
 
 ;;;; Functions
 
@@ -177,7 +178,8 @@ the task.  POM can be a marker or an integer position."
       (when should-archive
         (let ((org-archive-location (org-gtd--effective-archive-location)))
           (org-with-point-at pom
-            (org-archive-subtree-default)))))))
+            (org-gtd--without-kill-merge
+              (org-archive-subtree-default))))))))
 
 (defun org-gtd--all-project-tasks-done-p ()
   "Return t if all tasks connected to current project are done.
@@ -251,7 +253,8 @@ handled separately via graph traversal)."
           ;; Refile shared tasks to Actions category at top level
           (dolist (task-marker (nreverse tasks-to-refile))
             (org-with-point-at task-marker
-              (org-cut-subtree)
+              (org-gtd--without-kill-merge
+                (org-cut-subtree))
               ;; Find Actions heading and paste there
               (with-current-buffer (org-gtd--default-file)
                 (goto-char (point-min))
@@ -267,7 +270,8 @@ handled separately via graph traversal)."
 
     ;; Step 3: Archive the project heading (now without shared tasks)
     (org-with-point-at project-marker
-      (org-archive-subtree-default))))
+      (org-gtd--without-kill-merge
+        (org-archive-subtree-default)))))
 
 (defun org-gtd--archive-complete-projects ()
   "Archive all projects for which all actions/tasks are marked as done.
@@ -305,7 +309,8 @@ archives the task when no project IDs remain."
         (setq org-map-continue-from (org-element-property
                                      :begin
                                      (org-element-at-point)))
-        (org-archive-subtree-default))))
+        (org-gtd--without-kill-merge
+          (org-archive-subtree-default)))))
 
 ;;;; Footer
 
