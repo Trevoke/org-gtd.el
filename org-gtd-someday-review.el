@@ -41,17 +41,11 @@
 
 ;;;; Variables
 
-(defvar org-gtd-someday-review--session-active nil
-  "Non-nil when a someday review session is active.")
+(defconst org-gtd-someday-review--surface-key "someday-review"
+  "Fixed WIP key for the single someday-review surface buffer.")
 
-(defvar org-gtd-someday-review--state nil
-  "State for active someday review session.
-Plist with :queue (list of org-ids), :position (current index),
-:list-name (which list being reviewed), :reviewed (count),
-:clarified (count).")
-
-(defvar-local org-gtd-someday-review--current-item-id nil
-  "ID of the item currently being reviewed in this buffer.")
+(defvar-local org-gtd-someday-review--counters nil
+  "Buffer-local plist (:reviewed N :clarified N) for the active surface.")
 
 ;;;; Keymaps
 
@@ -65,29 +59,6 @@ Plist with :queue (list of org-ids), :position (current index),
   "Keymap for `org-gtd-someday-review-mode'.")
 
 ;;;; Functions
-
-;;;;; Session Management
-
-(defun org-gtd-someday-review--start-session (list-filter)
-  "Start a review session for items matching LIST-FILTER."
-  (let ((items (org-gtd-someday-review--find-items list-filter)))
-    (setq org-gtd-someday-review--session-active t
-          org-gtd-someday-review--state
-          (list :queue items
-                :position 0
-                :list-name list-filter
-                :reviewed 0
-                :clarified 0))))
-
-(defun org-gtd-someday-review--end-session ()
-  "End the current review session."
-  (let ((reviewed (plist-get org-gtd-someday-review--state :reviewed))
-        (clarified (plist-get org-gtd-someday-review--state :clarified)))
-    (setq org-gtd-someday-review--session-active nil
-          org-gtd-someday-review--state nil)
-    ;; Make sure we're not in a read-only buffer when displaying message
-    (with-temp-buffer
-      (message "Review complete. %d items reviewed, %d clarified." reviewed clarified))))
 
 ;;;;; Private
 
@@ -125,28 +96,36 @@ review mode, read-only state, header-line, and display."
   (let ((marker (org-id-find id 'marker)))
     (when marker
       (with-current-buffer surface
-        ;; Capture the buffer-local active-walk bundle before any possible
-        ;; major-mode (re-)activation below: `org-gtd-someday-review-mode' is
-        ;; derived from `org-mode', and (re-)running a major mode function
-        ;; calls `kill-all-local-variables', which would silently wipe the
-        ;; caller-set `org-gtd-walk--active' out from under us.  Restore it
-        ;; explicitly after the mode is settled.
-        (let ((active org-gtd-walk--active))
-          (let ((inhibit-read-only t))
-            (erase-buffer)
-            (org-gtd--without-kill-merge
-              (org-with-point-at marker (org-copy-subtree)))
-            (org-paste-subtree)
-            (goto-char (point-min)))
-          (unless (eq major-mode 'org-gtd-someday-review-mode)
-            (org-gtd-someday-review-mode))
-          (setq-local org-gtd-walk--active active)
-          (setq buffer-read-only t)
-          (let* ((model (plist-get active :model))
-                 (pos (1+ (plist-get model :cursor)))
-                 (total (length (plist-get model :entries))))
-            (setq header-line-format
-                  (format "[d] Defer  [c] Clarify  [q] Quit  (%d/%d)" pos total))))
+        ;; `org-gtd-walk--active' is permanent-local (org-gtd-walk.el), so it
+        ;; survives the major-mode (re-)activation below even if it fires.
+        ;; In practice the mode is already active by the time :render runs
+        ;; (see `org-gtd-someday-review--surface'), so the guard below is a
+        ;; no-op on the walk-driven path; it stays for direct callers.
+        (let ((inhibit-read-only t)
+              ;; `org-paste-subtree' unconditionally calls
+              ;; `org-id-paste-tracker' on the pasted text (see org.el),
+              ;; which re-registers every pasted :ID: property to *this*
+              ;; buffer's file in `org-id-locations'.  SURFACE is a
+              ;; disposable read-only review copy, not the item's real
+              ;; location; letting that registration through would corrupt
+              ;; the global id -> file map so a later `org-id-find' (from
+              ;; `defer'/`clarify', run with SURFACE current) resolves back
+              ;; into this copy instead of the real source heading.
+              ;; Suppress tracking for the duration of the copy/paste.
+              (org-id-track-globally nil))
+          (erase-buffer)
+          (org-gtd--without-kill-merge
+            (org-with-point-at marker (org-copy-subtree)))
+          (org-paste-subtree)
+          (goto-char (point-min)))
+        (unless (eq major-mode 'org-gtd-someday-review-mode)
+          (org-gtd-someday-review-mode))
+        (setq buffer-read-only t)
+        (let* ((model (plist-get org-gtd-walk--active :model))
+               (pos (1+ (plist-get model :cursor)))
+               (total (length (plist-get model :entries))))
+          (setq header-line-format
+                (format "[d] Defer  [c] Clarify  [q] Quit  (%d/%d)" pos total)))
         (pop-to-buffer surface)))))
 
 (defun org-gtd-someday-review--item-matches-filter-p (item-list list-filter)
@@ -175,22 +154,49 @@ LIST-FILTER is nil (match all), a string (match exact), or `unassigned'."
       (insert (format "- Reviewed %s\n"
                       (format-time-string "[%F %a %R]"))))))
 
-(defun org-gtd-someday-review--advance ()
-  "Advance to the next item or end session if done."
-  (let* ((queue (plist-get org-gtd-someday-review--state :queue))
-         (pos (plist-get org-gtd-someday-review--state :position))
-         (next-pos (1+ pos)))
-    (if (< next-pos (length queue))
-        (progn
-          (plist-put org-gtd-someday-review--state :position next-pos)
-          (org-gtd-someday-review--display-current-item))
-      ;; No more items
-      (org-gtd-someday-review--cleanup-and-end))))
+;;;;; Walk Surface
 
-(defun org-gtd-someday-review--cleanup-and-end ()
-  "Clean up review buffer and end session."
-  (org-gtd-someday-review--cleanup-current-buffer)
-  (org-gtd-someday-review--end-session))
+(defun org-gtd-someday-review--surface ()
+  "Return the fresh single WIP surface buffer for a someday-review walk.
+Activates `org-gtd-someday-review-mode' before setting the buffer-local
+counters: (re-)running a major mode calls `kill-all-local-variables',
+which would silently wipe them.  Doing this here means the mode is
+already active by the time `org-gtd-walk-start' calls :render, so
+:render's own mode-activation guard never fires and the counters
+survive the whole walk."
+  (let ((buf (org-gtd-wip--get-buffer org-gtd-someday-review--surface-key)))
+    (with-current-buffer buf
+      (org-gtd-someday-review-mode)
+      (setq-local org-gtd-someday-review--counters (list :reviewed 0 :clarified 0)))
+    buf))
+
+(defun org-gtd-someday-review--bump (key)
+  "Increment counter KEY (:reviewed or :clarified) on the surface buffer."
+  (setq org-gtd-someday-review--counters
+        (plist-put org-gtd-someday-review--counters key
+                   (1+ (plist-get org-gtd-someday-review--counters key)))))
+
+(defun org-gtd-someday-review--on-finish ()
+  "End-of-walk: report the summary and clean up the surface buffer.
+Runs in the surface buffer after the engine has cleared its session."
+  (let ((reviewed (plist-get org-gtd-someday-review--counters :reviewed))
+        (clarified (plist-get org-gtd-someday-review--counters :clarified)))
+    (org-gtd-wip--cleanup-temp-file org-gtd-someday-review--surface-key)
+    (message "Review complete. %d items reviewed, %d clarified."
+             reviewed clarified)))
+
+(defun org-gtd-someday-review--spec ()
+  "Return the someday-review walk spec template (default :find = all items)."
+  (list :name 'someday-review
+        :find (org-gtd-someday-review--make-find nil)
+        :render #'org-gtd-someday-review--render
+        :actions org-gtd-someday-review-mode-map
+        :on-finish #'org-gtd-someday-review--on-finish
+        :resumable nil
+        :resolve #'org-gtd-someday-review--resolve
+        :scope (org-agenda-files)))
+
+(org-gtd-walk-register 'someday-review (org-gtd-someday-review--spec))
 
 ;;;; Modes
 
@@ -232,100 +238,54 @@ Adds \\='Unassigned\\=' option for items without a list."
            (completing-read "Review which list? "
                             (append org-gtd-someday-lists '("Unassigned"))
                             nil t))))
-  (let ((list-filter (cond
-                      ((equal list "Unassigned") 'unassigned)
-                      ((and list (not (string-empty-p list))) list)
-                      (t nil))))
-    (org-gtd-someday-review--start-session list-filter)
-    (if (zerop (length (plist-get org-gtd-someday-review--state :queue)))
-        (progn
-          (org-gtd-someday-review--end-session)
-          (message "No someday items to review."))
-      (org-gtd-someday-review--display-current-item))))
+  (let* ((list-filter (cond
+                       ((equal list "Unassigned") 'unassigned)
+                       ((and list (not (string-empty-p list))) list)
+                       (t nil)))
+         (items (org-gtd-someday-review--find-items list-filter)))
+    (if (null items)
+        (message "No someday items to review.")
+      (let ((spec (org-gtd-someday-review--spec)))
+        (setq spec (plist-put spec :find (lambda () items)))
+        (setq spec (plist-put spec :scope (org-agenda-files)))
+        (org-gtd-walk-start spec (org-gtd-someday-review--surface))))))
 
 ;;;; Commands
 
 (defun org-gtd-someday-review-defer ()
-  "Defer the current item and advance to next."
+  "Defer the current item (log a review) and advance."
   (interactive)
-  (let* ((queue (plist-get org-gtd-someday-review--state :queue))
-         (pos (plist-get org-gtd-someday-review--state :position))
-         (item-id (nth pos queue))
-         (marker (org-id-find item-id 'marker)))
-    ;; Add LOGBOOK entry to source item
-    (when marker
-      (let ((inhibit-read-only t))
-        (org-with-point-at marker
-          (org-gtd-someday-review--add-reviewed-entry)
-          (save-buffer))))
-    ;; Update statistics
-    (plist-put org-gtd-someday-review--state :reviewed
-               (1+ (plist-get org-gtd-someday-review--state :reviewed)))
-    ;; Advance to next
-    (org-gtd-someday-review--advance)))
+  (org-gtd-walk-call-action
+   (lambda ()
+     (let* ((id (org-gtd-walk-model-current (plist-get org-gtd-walk--active :model)))
+            (marker (org-id-find id 'marker)))
+       (when marker
+         (org-with-point-at marker
+           (org-gtd-someday-review--add-reviewed-entry)
+           (save-buffer)))
+       (org-gtd-someday-review--bump :reviewed)
+       (org-gtd-walk-advance)))))
 
 (defun org-gtd-someday-review-clarify ()
-  "Clarify (reactivate) the current item and advance to next."
+  "Reactivate the current item and advance."
   (interactive)
-  (let* ((queue (plist-get org-gtd-someday-review--state :queue))
-         (pos (plist-get org-gtd-someday-review--state :position))
-         (item-id (nth pos queue))
-         (marker (org-id-find item-id 'marker)))
-    ;; Reactivate the item
-    (when marker
-      (org-with-point-at marker
-        (org-gtd-reactivate)))
-    ;; Update statistics
-    (plist-put org-gtd-someday-review--state :clarified
-               (1+ (plist-get org-gtd-someday-review--state :clarified)))
-    ;; Advance to next
-    (org-gtd-someday-review--advance)))
+  (org-gtd-walk-call-action
+   (lambda ()
+     (let* ((id (org-gtd-walk-model-current (plist-get org-gtd-walk--active :model)))
+            (marker (org-id-find id 'marker)))
+       (when marker
+         (org-with-point-at marker (org-gtd-reactivate)))
+       (org-gtd-someday-review--bump :clarified)
+       (org-gtd-walk-advance)))))
 
 (defun org-gtd-someday-review-quit ()
-  "Quit the review session."
+  "Abandon the review: report the summary, clean up, tear down the walk."
   (interactive)
-  (org-gtd-someday-review--cleanup-and-end))
-
-;;;;; Buffer Display
-
-(defun org-gtd-someday-review--display-current-item ()
-  "Display the current item in a WIP review buffer."
-  (let* ((queue (plist-get org-gtd-someday-review--state :queue))
-         (pos (plist-get org-gtd-someday-review--state :position))
-         (item-id (nth pos queue))
-         (marker (org-id-find item-id 'marker)))
-    (when marker
-      ;; Clean up previous review buffer if exists
-      (org-gtd-someday-review--cleanup-current-buffer)
-      ;; Get WIP buffer for this item
-      (let ((buf (org-gtd-wip--get-buffer item-id)))
-        (org-gtd-someday-review--initialize-buffer marker buf)
-        (with-current-buffer buf
-          (org-gtd-someday-review-mode)
-          (setq org-gtd-someday-review--current-item-id item-id)
-          (plist-put org-gtd-someday-review--state :current-buffer-id item-id)
-          (setq buffer-read-only t)
-          (setq header-line-format
-                (format "[d] Defer  [c] Clarify  [q] Quit  (%d/%d)"
-                        (1+ pos) (length queue))))
-        (pop-to-buffer buf)))))
-
-(defun org-gtd-someday-review--initialize-buffer (marker buffer)
-  "Initialize BUFFER with content from item at MARKER."
-  (when (= (buffer-size buffer) 0)
-    (let ((last-command nil))
-      (org-with-point-at marker
-        (org-copy-subtree))
-      (with-current-buffer buffer
-        (let ((inhibit-read-only t))
-          (org-paste-subtree)
-          (goto-char (point-min)))))))
-
-(defun org-gtd-someday-review--cleanup-current-buffer ()
-  "Clean up the current review WIP buffer."
-  (when-let ((item-id (plist-get org-gtd-someday-review--state :current-buffer-id)))
-    (org-gtd-wip--cleanup-temp-file item-id)
-    (plist-put org-gtd-someday-review--state :current-buffer-id nil)))
+  (let ((reviewed (plist-get org-gtd-someday-review--counters :reviewed))
+        (clarified (plist-get org-gtd-someday-review--counters :clarified)))
+    (org-gtd-walk-quit)
+    (org-gtd-wip--cleanup-temp-file org-gtd-someday-review--surface-key)
+    (message "Review complete. %d items reviewed, %d clarified." reviewed clarified)))
 
 ;;;; Footer
 
