@@ -41,6 +41,22 @@ ENTRIES is copied; the cursor starts at 0."
         :cursor 0
         :meta meta))
 
+;;;; Queries
+
+(defun org-gtd-walk-model-current (model)
+  "Return the handle at MODEL's cursor, or nil when the walk is done."
+  (nth (plist-get model :cursor) (plist-get model :entries)))
+
+(defun org-gtd-walk-model-done-p (model)
+  "Return non-nil when MODEL's cursor has run off the end of its entries."
+  (>= (plist-get model :cursor)
+      (length (plist-get model :entries))))
+
+(defun org-gtd-walk-model-remaining (model)
+  "Return the count of entries at or after MODEL's cursor."
+  (max 0 (- (length (plist-get model :entries))
+            (plist-get model :cursor))))
+
 ;;;; Footer
 
 (provide 'org-gtd-walk-model)
