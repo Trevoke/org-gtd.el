@@ -264,6 +264,22 @@ hard landscape is clean."
 
 ;;;; Commands
 
+(defun org-gtd-reflect-missed-calendar-review-done ()
+  "Mark the current item done and archive it (it happened), then advance."
+  (interactive)
+  (org-gtd-walk-call-action
+   (lambda ()
+     (let* ((id (org-gtd-walk-model-current
+                 (plist-get org-gtd-walk--active :model)))
+            (marker (org-id-find id 'marker)))
+       (when marker
+         (org-with-point-at marker
+           (org-todo (org-gtd-keywords--done))
+           (org-gtd-archive-item-at-point)))
+       (org-gtd-reflect-missed-calendar-review--bump :reviewed)
+       (org-gtd-reflect-missed-calendar-review--bump :done)
+       (org-gtd-walk-advance)))))
+
 (defun org-gtd-reflect-missed-calendar-review-quit ()
   "Abandon the review: report the tally, clean up, tear down the walk."
   (interactive)

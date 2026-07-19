@@ -162,6 +162,20 @@ lapse, and advertises the disposition keys."
     (org-gtd-reflect-missed-calendar-review-quit))
   (assert-equal 0 (length (org-gtd-wip--get-buffers))))
 
+;;; Disposition: done
+
+(deftest mcr/done-archives-and-advances ()
+  "`d' marks the item done, archives it, and ends the walk on the last item."
+  (let ((id (mcr-test--make-calendar "It happened" "<2020-01-01>")))
+    (org-gtd-reflect-missed-calendar-review)
+    (with-current-buffer (car (org-gtd-wip--get-buffers))
+      (org-gtd-reflect-missed-calendar-review-done))
+    ;; Only item -> walk finished -> surface cleaned up.
+    (assert-equal 0 (length (org-gtd-wip--get-buffers)))
+    ;; The item is no longer detected as overdue (it was archived away).
+    (assert-equal 0 (length (org-gtd-reflect-missed-calendar-review--find-items)))
+    (ignore id)))
+
 (provide 'missed-calendar-review-test)
 
 ;;; missed-calendar-review-test.el ends here
