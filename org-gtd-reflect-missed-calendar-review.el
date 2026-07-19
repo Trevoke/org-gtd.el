@@ -284,6 +284,25 @@ hard landscape is clean."
        (org-gtd-reflect-missed-calendar-review--bump :done)
        (org-gtd-walk-advance)))))
 
+(defun org-gtd-reflect-missed-calendar-review-migrate ()
+  "Migrate the current item to a Next Action (it still needs doing), then advance.
+Runs the headless organize pipeline with the classic decoration hooks
+bound off -- the item is already clarified, so it must not be re-prompted
+for tags/effort/etc.  The pipeline auto-drops the Calendar-only
+ORG_GTD_TIMESTAMP because next-action declares no properties."
+  (interactive)
+  (org-gtd-walk-call-action
+   (lambda ()
+     (let* ((id (org-gtd-walk-model-current
+                 (plist-get org-gtd-walk--active :model)))
+            (marker (org-id-find id 'marker)))
+       (when marker
+         (let ((org-gtd-organize-hooks nil))
+           (org-gtd-process-heading marker 'next-action)))
+       (org-gtd-reflect-missed-calendar-review--bump :reviewed)
+       (org-gtd-reflect-missed-calendar-review--bump :migrated)
+       (org-gtd-walk-advance)))))
+
 (defun org-gtd-reflect-missed-calendar-review-quit ()
   "Abandon the review: report the tally, clean up, tear down the walk."
   (interactive)

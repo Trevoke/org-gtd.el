@@ -176,6 +176,32 @@ lapse, and advertises the disposition keys."
     (assert-equal 0 (length (org-gtd-reflect-missed-calendar-review--find-items)))
     (ignore id)))
 
+;;; Disposition: migrate
+
+(deftest mcr/migrate-retypes-to-next-action ()
+  "`m' migrates the item to a next action: ORG_GTD=Actions, NEXT state,
+ORG_GTD_TIMESTAMP dropped."
+  (let ((id (mcr-test--make-calendar "Still need to do this" "<2020-01-01>")))
+    (org-gtd-reflect-missed-calendar-review)
+    (with-current-buffer (car (org-gtd-wip--get-buffers))
+      (org-gtd-reflect-missed-calendar-review-migrate))
+    (let ((marker (org-id-find id 'marker)))
+      (assert-true marker)
+      (org-with-point-at marker
+        (assert-equal "Actions" (org-entry-get (point) "ORG_GTD"))
+        (assert-equal (org-gtd-keywords--next) (org-get-todo-state))
+        (assert-nil (org-entry-get (point) "ORG_GTD_TIMESTAMP"))))))
+
+(deftest mcr/migrate-suppresses-organize-hooks ()
+  "Migrate binds `org-gtd-organize-hooks' off, so decoration hooks never fire."
+  (mcr-test--make-calendar "No re-prompt" "<2020-01-01>")
+  (org-gtd-reflect-missed-calendar-review)
+  (let* ((fired nil)
+         (org-gtd-organize-hooks (list (lambda () (setq fired t)))))
+    (with-current-buffer (car (org-gtd-wip--get-buffers))
+      (org-gtd-reflect-missed-calendar-review-migrate))
+    (assert-nil fired)))
+
 (provide 'missed-calendar-review-test)
 
 ;;; missed-calendar-review-test.el ends here
