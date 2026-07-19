@@ -213,8 +213,8 @@ Runs in the surface buffer after the engine has cleared its session."
     (message "Missed-calendar review complete. %s" summary)))
 
 (defun org-gtd-reflect-missed-calendar-review--spec ()
-  "Return the missed-calendar-review walk spec template (default :find = all
-overdue calendar items)."
+  "Return the missed-calendar-review walk spec template.
+The default :find covers all overdue calendar items."
   (list :name 'missed-calendar-review
         :find #'org-gtd-reflect-missed-calendar-review--find-items
         :render #'org-gtd-reflect-missed-calendar-review--render
