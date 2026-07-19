@@ -242,6 +242,50 @@ ORG_GTD_TIMESTAMP dropped."
   (assert-equal 0 (length (org-gtd-wip--get-buffers)))
   (assert-equal 0 (length (org-gtd-reflect-missed-calendar-review--find-items))))
 
+;;; Disposition: skip
+
+(deftest mcr/skip-advances-without-changing-item ()
+  "`s' advances without mutating the item; the item is still overdue."
+  (let ((id (mcr-test--make-calendar "Decide later" "<2020-01-01>")))
+    (org-gtd-reflect-missed-calendar-review)
+    (with-current-buffer (car (org-gtd-wip--get-buffers))
+      (org-gtd-reflect-missed-calendar-review-skip))
+    ;; Only item -> walk finished -> surface cleaned up, but item unchanged.
+    (assert-equal 0 (length (org-gtd-wip--get-buffers)))
+    (let ((marker (org-id-find id 'marker)))
+      (org-with-point-at marker
+        (assert-equal "Calendar" (org-entry-get (point) "ORG_GTD"))
+        (assert-equal "<2020-01-01>"
+                      (org-entry-get (point) "ORG_GTD_TIMESTAMP"))))
+    ;; Still detected on a fresh run (skip is "not now", not "never").
+    (assert-equal 1 (length (org-gtd-reflect-missed-calendar-review--find-items)))))
+
+(deftest mcr/skip-counts-a-skip ()
+  "`s' increments the skipped counter (checked mid-walk, two items)."
+  (mcr-test--make-calendar "First" "<2020-01-01>")
+  (mcr-test--make-calendar "Second" "<2020-01-02>")
+  (org-gtd-reflect-missed-calendar-review)
+  (let ((surface (car (org-gtd-wip--get-buffers))))
+    (with-current-buffer surface
+      (org-gtd-reflect-missed-calendar-review-skip)
+      (assert-same 1 (plist-get org-gtd-reflect-missed-calendar-review--counters :skipped))
+      (org-gtd-reflect-missed-calendar-review-quit))))
+
+;;; Disposition: clarify
+
+(deftest mcr/clarify-invokes-clarify-item-and-advances ()
+  "`c' calls `org-gtd-clarify-item' on the item and advances the walk."
+  (let ((clarified nil))
+    (mcr-test--make-calendar "Rethink me" "<2020-01-01>")
+    (org-gtd-reflect-missed-calendar-review)
+    (cl-letf (((symbol-function 'org-gtd-clarify-item)
+               (lambda (&rest _) (setq clarified t))))
+      (with-current-buffer (car (org-gtd-wip--get-buffers))
+        (org-gtd-reflect-missed-calendar-review-clarify)))
+    (assert-true clarified)
+    ;; Only item -> walk advanced off the end -> surface cleaned up.
+    (assert-equal 0 (length (org-gtd-wip--get-buffers)))))
+
 (provide 'missed-calendar-review-test)
 
 ;;; missed-calendar-review-test.el ends here

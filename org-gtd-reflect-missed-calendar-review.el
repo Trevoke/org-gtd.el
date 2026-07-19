@@ -353,6 +353,30 @@ written verbatim as a valid org timestamp."
        (org-gtd-reflect-missed-calendar-review--bump :rescheduled)
        (org-gtd-walk-advance)))))
 
+(defun org-gtd-reflect-missed-calendar-review-skip ()
+  "Skip the current item (decide later -- not a change) and advance."
+  (interactive)
+  (org-gtd-walk-call-action
+   (lambda ()
+     (org-gtd-reflect-missed-calendar-review--bump :reviewed)
+     (org-gtd-reflect-missed-calendar-review--bump :skipped)
+     (org-gtd-walk-advance))))
+
+(defun org-gtd-reflect-missed-calendar-review-clarify ()
+  "Clarify the current item fully (the heavy escape hatch), then advance.
+Advances the walk first so that on the last item the walk finishes and
+releases its scope lock before the interactive clarify flow opens."
+  (interactive)
+  (org-gtd-walk-call-action
+   (lambda ()
+     (let* ((id (org-gtd-walk-model-current
+                 (plist-get org-gtd-walk--active :model)))
+            (marker (org-id-find id 'marker)))
+       (org-gtd-reflect-missed-calendar-review--bump :reviewed)
+       (org-gtd-walk-advance)
+       (when marker
+         (org-gtd-clarify-item marker))))))
+
 (defun org-gtd-reflect-missed-calendar-review-quit ()
   "Abandon the review: report the tally, clean up, tear down the walk."
   (interactive)
