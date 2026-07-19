@@ -78,6 +78,54 @@ Returns the id."
     (assert-true (org-gtd-reflect-missed-calendar-review--resolve id))
     (assert-nil (org-gtd-reflect-missed-calendar-review--resolve "no-such-id-xyz"))))
 
+;;; Mode + keymap
+
+(deftest mcr/mode-is-derived-from-org-mode ()
+  "Review mode is derived from org-mode."
+  (with-temp-buffer
+    (org-gtd-reflect-missed-calendar-review-mode)
+    (assert-true (derived-mode-p 'org-mode))))
+
+(deftest mcr/mode-has-disposition-keybindings ()
+  "The mode keymap binds every disposition key to its command."
+  (let ((map org-gtd-reflect-missed-calendar-review-mode-map))
+    (assert-equal 'org-gtd-reflect-missed-calendar-review-done
+                  (lookup-key map (kbd "d")))
+    (assert-equal 'org-gtd-reflect-missed-calendar-review-migrate
+                  (lookup-key map (kbd "m")))
+    (assert-equal 'org-gtd-reflect-missed-calendar-review-reschedule
+                  (lookup-key map (kbd "r")))
+    (assert-equal 'org-gtd-reflect-missed-calendar-review-trash
+                  (lookup-key map (kbd "t")))
+    (assert-equal 'org-gtd-reflect-missed-calendar-review-clarify
+                  (lookup-key map (kbd "c")))
+    (assert-equal 'org-gtd-reflect-missed-calendar-review-skip
+                  (lookup-key map (kbd "s")))
+    (assert-equal 'org-gtd-reflect-missed-calendar-review-quit
+                  (lookup-key map (kbd "q")))))
+
+;;; Render
+
+(deftest mcr/render-fills-surface-read-only ()
+  "Render draws the item, activates review mode read-only, humanizes the
+lapse, and advertises the disposition keys."
+  (let* ((id (mcr-test--make-calendar "Overdue thing" "<2020-01-01>"))
+         (surface (org-gtd-wip--get-buffer
+                   org-gtd-reflect-missed-calendar-review--surface-key)))
+    (with-current-buffer surface
+      (setq-local org-gtd-walk--active
+                  (list :model (org-gtd-walk-model-create (list id))))
+      (org-gtd-reflect-missed-calendar-review--render id surface)
+      (assert-true (eq major-mode 'org-gtd-reflect-missed-calendar-review-mode))
+      (assert-true buffer-read-only)
+      (assert-match "Overdue thing" (buffer-string))
+      (assert-match "days ago" (buffer-string))
+      (assert-match "\\[d\\] Done" header-line-format)
+      (assert-match "\\[r\\] Reschedule" header-line-format)
+      (assert-match "(1/1)" header-line-format))
+    (org-gtd-wip--cleanup-temp-file
+     org-gtd-reflect-missed-calendar-review--surface-key)))
+
 (provide 'missed-calendar-review-test)
 
 ;;; missed-calendar-review-test.el ends here
