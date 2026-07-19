@@ -286,6 +286,29 @@ ORG_GTD_TIMESTAMP dropped."
     ;; Only item -> walk advanced off the end -> surface cleaned up.
     (assert-equal 0 (length (org-gtd-wip--get-buffers)))))
 
+;;; Counters + finish
+
+(deftest mcr/counters-tally-across-dispositions ()
+  "Mixed dispositions across several items tally correctly on the surface."
+  (mcr-test--make-calendar "One"   "<2020-01-01>")
+  (mcr-test--make-calendar "Two"   "<2020-01-02>")
+  (mcr-test--make-calendar "Three" "<2020-01-03>")
+  (org-gtd-reflect-missed-calendar-review)
+  (let ((surface (car (org-gtd-wip--get-buffers))))
+    ;; item 1 -> skip, item 2 -> migrate, item 3 -> done (finishes the walk)
+    (with-current-buffer surface
+      (org-gtd-reflect-missed-calendar-review-skip))
+    (with-current-buffer surface
+      (org-gtd-reflect-missed-calendar-review-migrate))
+    ;; Read counters BEFORE the last disposition finishes+cleans up the surface.
+    (with-current-buffer surface
+      (assert-same 2 (plist-get org-gtd-reflect-missed-calendar-review--counters :reviewed))
+      (assert-same 1 (plist-get org-gtd-reflect-missed-calendar-review--counters :skipped))
+      (assert-same 1 (plist-get org-gtd-reflect-missed-calendar-review--counters :migrated))
+      (org-gtd-reflect-missed-calendar-review-done))
+    ;; Last disposition ran :on-finish, which cleaned up the surface buffer.
+    (assert-equal 0 (length (org-gtd-wip--get-buffers)))))
+
 (provide 'missed-calendar-review-test)
 
 ;;; missed-calendar-review-test.el ends here
