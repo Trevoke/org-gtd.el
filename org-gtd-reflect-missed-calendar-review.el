@@ -274,7 +274,11 @@ hard landscape is clean."
             (marker (org-id-find id 'marker)))
        (when marker
          (org-with-point-at marker
-           (org-todo (org-gtd-keywords--done))
+           ;; Suppress the state-change note prompt: this is a programmatic
+           ;; "it already happened" mark, and an unfinished note buffer would
+           ;; leave the following archive yanking the subtree out from under it.
+           (let ((org-inhibit-logging 'note))
+             (org-todo (org-gtd-keywords--done)))
            (org-gtd-archive-item-at-point)))
        (org-gtd-reflect-missed-calendar-review--bump :reviewed)
        (org-gtd-reflect-missed-calendar-review--bump :done)
