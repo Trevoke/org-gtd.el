@@ -303,6 +303,23 @@ ORG_GTD_TIMESTAMP because next-action declares no properties."
        (org-gtd-reflect-missed-calendar-review--bump :migrated)
        (org-gtd-walk-advance)))))
 
+(defun org-gtd-reflect-missed-calendar-review-trash ()
+  "Trash the current item (irrelevant now: cancel + archive), then advance.
+Reuses the `trash' type's cancel-and-archive disposition through the
+headless pipeline, with decoration hooks bound off."
+  (interactive)
+  (org-gtd-walk-call-action
+   (lambda ()
+     (let* ((id (org-gtd-walk-model-current
+                 (plist-get org-gtd-walk--active :model)))
+            (marker (org-id-find id 'marker)))
+       (when marker
+         (let ((org-gtd-organize-hooks nil))
+           (org-gtd-process-heading marker 'trash)))
+       (org-gtd-reflect-missed-calendar-review--bump :reviewed)
+       (org-gtd-reflect-missed-calendar-review--bump :trashed)
+       (org-gtd-walk-advance)))))
+
 (defun org-gtd-reflect-missed-calendar-review--read-future-date ()
   "Prompt for a date via `org-read-date', re-prompting until it is today or later.
 Returns the chosen date as a \"YYYY-MM-DD\" string.  A past reschedule

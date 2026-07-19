@@ -231,6 +231,17 @@ ORG_GTD_TIMESTAMP dropped."
         (assert-equal "<2999-01-01>"
                       (org-entry-get (point) "ORG_GTD_TIMESTAMP"))))))
 
+;;; Disposition: trash
+
+(deftest mcr/trash-cancels-and-archives ()
+  "`t' cancels + archives the item (irrelevant now) and ends the walk."
+  (mcr-test--make-calendar "No longer relevant" "<2020-01-01>")
+  (org-gtd-reflect-missed-calendar-review)
+  (with-current-buffer (car (org-gtd-wip--get-buffers))
+    (org-gtd-reflect-missed-calendar-review-trash))
+  (assert-equal 0 (length (org-gtd-wip--get-buffers)))
+  (assert-equal 0 (length (org-gtd-reflect-missed-calendar-review--find-items))))
+
 (provide 'missed-calendar-review-test)
 
 ;;; missed-calendar-review-test.el ends here
