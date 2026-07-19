@@ -126,6 +126,42 @@ lapse, and advertises the disposition keys."
     (org-gtd-wip--cleanup-temp-file
      org-gtd-reflect-missed-calendar-review--surface-key)))
 
+;;; Spec registration + entry + empty state
+
+(deftest mcr/registers-a-walk-consumer ()
+  "Loading the module registers a `missed-calendar-review' walk."
+  (let ((spec (org-gtd-walk-get 'missed-calendar-review)))
+    (assert-true spec)
+    (assert-same 'missed-calendar-review (plist-get spec :name))
+    (assert-true (org-gtd-walk--callable-p (plist-get spec :render)))
+    (assert-true (org-gtd-walk--callable-p (plist-get spec :find)))))
+
+(deftest mcr/entry-opens-console-when-items-exist ()
+  "The entry command opens a read-only review surface for the item."
+  (mcr-test--make-calendar "Review me" "<2020-01-01>")
+  (org-gtd-reflect-missed-calendar-review)
+  (let ((bufs (org-gtd-wip--get-buffers)))
+    (assert-true (> (length bufs) 0))
+    (with-current-buffer (car bufs)
+      (assert-true (eq major-mode 'org-gtd-reflect-missed-calendar-review-mode))
+      (assert-true buffer-read-only)
+      (assert-match "Review me" (buffer-string))
+      (org-gtd-reflect-missed-calendar-review-quit))))
+
+(deftest mcr/entry-empty-state-opens-no-console ()
+  "With no overdue calendar items, the console never opens."
+  (org-gtd-reflect-missed-calendar-review)
+  (assert-equal 0 (length (org-gtd-wip--get-buffers))))
+
+(deftest mcr/quit-cleans-up-surface ()
+  "Quit tears down the walk and cleans up the surface buffer."
+  (mcr-test--make-calendar "Item" "<2020-01-01>")
+  (org-gtd-reflect-missed-calendar-review)
+  (assert-true (> (length (org-gtd-wip--get-buffers)) 0))
+  (with-current-buffer (car (org-gtd-wip--get-buffers))
+    (org-gtd-reflect-missed-calendar-review-quit))
+  (assert-equal 0 (length (org-gtd-wip--get-buffers))))
+
 (provide 'missed-calendar-review-test)
 
 ;;; missed-calendar-review-test.el ends here

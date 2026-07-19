@@ -54,6 +54,10 @@
 (defconst org-gtd-reflect-missed-calendar-review--surface-key "missed-calendar-review"
   "Fixed WIP key for the single missed-calendar-review surface buffer.")
 
+(defvar-local org-gtd-reflect-missed-calendar-review--counters nil
+  "Buffer-local plist of tallies for the active surface:
+\(:reviewed N :done N :migrated N :rescheduled N :trashed N :skipped N).")
+
 ;;;; Keymaps
 
 (defvar org-gtd-reflect-missed-calendar-review-mode-map
@@ -163,6 +167,66 @@ displays the buffer."
                           pos total)))
           (pop-to-buffer surface))))))
 
+;;;; Walk Surface
+
+(defun org-gtd-reflect-missed-calendar-review--surface ()
+  "Return the fresh WIP surface buffer for a missed-calendar-review walk.
+Activates `org-gtd-reflect-missed-calendar-review-mode' before setting the
+buffer-local counters: (re-)running a major mode calls
+`kill-all-local-variables', which would silently wipe them.  Doing this
+here means the mode is already active by the time `org-gtd-walk-start'
+calls :render, so :render's own mode-activation guard never fires and the
+counters survive the whole walk (mirrors `org-gtd-someday-review--surface')."
+  (let ((buf (org-gtd-wip--get-buffer
+              org-gtd-reflect-missed-calendar-review--surface-key)))
+    (with-current-buffer buf
+      (org-gtd-reflect-missed-calendar-review-mode)
+      (setq-local org-gtd-reflect-missed-calendar-review--counters
+                  (list :reviewed 0 :done 0 :migrated 0
+                        :rescheduled 0 :trashed 0 :skipped 0)))
+    buf))
+
+(defun org-gtd-reflect-missed-calendar-review--bump (key)
+  "Increment counter KEY on the surface buffer's counters plist."
+  (setq org-gtd-reflect-missed-calendar-review--counters
+        (plist-put org-gtd-reflect-missed-calendar-review--counters key
+                   (1+ (plist-get
+                        org-gtd-reflect-missed-calendar-review--counters key)))))
+
+(defun org-gtd-reflect-missed-calendar-review--summary ()
+  "Return the human-readable tally string for the active surface."
+  (let ((c org-gtd-reflect-missed-calendar-review--counters))
+    (format "reviewed %d - done %d - migrated %d - rescheduled %d - trashed %d - skipped %d"
+            (or (plist-get c :reviewed) 0)
+            (or (plist-get c :done) 0)
+            (or (plist-get c :migrated) 0)
+            (or (plist-get c :rescheduled) 0)
+            (or (plist-get c :trashed) 0)
+            (or (plist-get c :skipped) 0))))
+
+(defun org-gtd-reflect-missed-calendar-review--on-finish ()
+  "End-of-walk: report the tally and clean up the surface buffer.
+Runs in the surface buffer after the engine has cleared its session."
+  (let ((summary (org-gtd-reflect-missed-calendar-review--summary)))
+    (org-gtd-wip--cleanup-temp-file
+     org-gtd-reflect-missed-calendar-review--surface-key)
+    (message "Missed-calendar review complete. %s" summary)))
+
+(defun org-gtd-reflect-missed-calendar-review--spec ()
+  "Return the missed-calendar-review walk spec template (default :find = all
+overdue calendar items)."
+  (list :name 'missed-calendar-review
+        :find #'org-gtd-reflect-missed-calendar-review--find-items
+        :render #'org-gtd-reflect-missed-calendar-review--render
+        :actions org-gtd-reflect-missed-calendar-review-mode-map
+        :on-finish #'org-gtd-reflect-missed-calendar-review--on-finish
+        :resumable nil
+        :resolve #'org-gtd-reflect-missed-calendar-review--resolve
+        :scope (org-agenda-files)))
+
+(org-gtd-walk-register 'missed-calendar-review
+                       (org-gtd-reflect-missed-calendar-review--spec))
+
 ;;;; Modes
 
 ;;;###autoload
@@ -179,6 +243,35 @@ function) and offers disposition keys.
 (with-eval-after-load 'evil
   (evil-set-initial-state 'org-gtd-reflect-missed-calendar-review-mode 'emacs)
   (add-hook 'org-gtd-reflect-missed-calendar-review-mode-hook #'evil-emacs-state))
+
+;;;; Entry Point
+
+;;;###autoload
+(defun org-gtd-reflect-missed-calendar-review ()
+  "Review overdue calendar items one at a time.
+The actionable counterpart of the read-only `org-gtd-reflect-missed-calendar'
+view: walks each open Calendar item whose date has passed and lets you
+decide -- with consent -- what it becomes now.  Opens nothing when your
+hard landscape is clean."
+  (interactive)
+  (let ((items (org-gtd-reflect-missed-calendar-review--find-items)))
+    (if (null items)
+        (message "No overdue calendar items -- your hard landscape is clean.")
+      (let ((spec (org-gtd-reflect-missed-calendar-review--spec)))
+        (setq spec (plist-put spec :find (lambda () items)))
+        (setq spec (plist-put spec :scope (org-agenda-files)))
+        (org-gtd-walk-start spec (org-gtd-reflect-missed-calendar-review--surface))))))
+
+;;;; Commands
+
+(defun org-gtd-reflect-missed-calendar-review-quit ()
+  "Abandon the review: report the tally, clean up, tear down the walk."
+  (interactive)
+  (let ((summary (org-gtd-reflect-missed-calendar-review--summary)))
+    (org-gtd-walk-quit)
+    (org-gtd-wip--cleanup-temp-file
+     org-gtd-reflect-missed-calendar-review--surface-key)
+    (message "Missed-calendar review complete. %s" summary)))
 
 ;;;; Footer
 
