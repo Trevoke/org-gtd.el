@@ -9,6 +9,7 @@
 ;;; Code:
 
 (require 'ogt-eunit-prelude "test/helpers/prelude.el")
+(require 'cl-lib)
 (require 'org-gtd-reflect-missed-calendar-review)
 (require 'org-gtd-walk)
 
@@ -201,6 +202,34 @@ ORG_GTD_TIMESTAMP dropped."
     (with-current-buffer (car (org-gtd-wip--get-buffers))
       (org-gtd-reflect-missed-calendar-review-migrate))
     (assert-nil fired)))
+
+;;; Disposition: reschedule
+
+(deftest mcr/read-future-date-rejects-past ()
+  "The date reader re-prompts until the chosen date is today-or-later."
+  (let ((answers (list "2000-01-01" "2999-01-01")))
+    (cl-letf (((symbol-function 'org-read-date)
+               (lambda (&rest _) (pop answers)))
+              ((symbol-function 'sit-for) (lambda (&rest _) t)))
+      (assert-equal "2999-01-01"
+                    (org-gtd-reflect-missed-calendar-review--read-future-date))
+      ;; both answers consumed => it looped past the in-the-past first answer.
+      (assert-nil answers))))
+
+(deftest mcr/reschedule-sets-new-future-timestamp ()
+  "`r' keeps the item a Calendar item and writes the new (bracketed) timestamp."
+  (let ((id (mcr-test--make-calendar "Needs new date" "<2020-01-01>")))
+    (org-gtd-reflect-missed-calendar-review)
+    (cl-letf (((symbol-function 'org-read-date)
+               (lambda (&rest _) "2999-01-01")))
+      (with-current-buffer (car (org-gtd-wip--get-buffers))
+        (org-gtd-reflect-missed-calendar-review-reschedule)))
+    (let ((marker (org-id-find id 'marker)))
+      (assert-true marker)
+      (org-with-point-at marker
+        (assert-equal "Calendar" (org-entry-get (point) "ORG_GTD"))
+        (assert-equal "<2999-01-01>"
+                      (org-entry-get (point) "ORG_GTD_TIMESTAMP"))))))
 
 (provide 'missed-calendar-review-test)
 

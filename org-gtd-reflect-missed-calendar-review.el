@@ -303,6 +303,39 @@ ORG_GTD_TIMESTAMP because next-action declares no properties."
        (org-gtd-reflect-missed-calendar-review--bump :migrated)
        (org-gtd-walk-advance)))))
 
+(defun org-gtd-reflect-missed-calendar-review--read-future-date ()
+  "Prompt for a date via `org-read-date', re-prompting until it is today or later.
+Returns the chosen date as a \"YYYY-MM-DD\" string.  A past reschedule
+is rejected, not silently accepted."
+  (let ((today (org-today))
+        date)
+    (while (progn
+             (setq date (org-read-date))
+             (< (time-to-days (org-time-string-to-time date)) today))
+      (message "That date is also in the past -- pick today or later.")
+      (sit-for 1))
+    date))
+
+(defun org-gtd-reflect-missed-calendar-review-reschedule ()
+  "Reschedule the current item to a new (today-or-later) date, then advance.
+Stays a Calendar item; reuses the headless organize pipeline with the
+decoration hooks bound off.  The :when config value is bracketed so it is
+written verbatim as a valid org timestamp."
+  (interactive)
+  (org-gtd-walk-call-action
+   (lambda ()
+     (let* ((id (org-gtd-walk-model-current
+                 (plist-get org-gtd-walk--active :model)))
+            (marker (org-id-find id 'marker))
+            (date (org-gtd-reflect-missed-calendar-review--read-future-date)))
+       (when marker
+         (let ((org-gtd-organize-hooks nil))
+           (org-gtd-process-heading marker 'calendar
+                                    (list (cons :when (format "<%s>" date))))))
+       (org-gtd-reflect-missed-calendar-review--bump :reviewed)
+       (org-gtd-reflect-missed-calendar-review--bump :rescheduled)
+       (org-gtd-walk-advance)))))
+
 (defun org-gtd-reflect-missed-calendar-review-quit ()
   "Abandon the review: report the tally, clean up, tear down the walk."
   (interactive)
