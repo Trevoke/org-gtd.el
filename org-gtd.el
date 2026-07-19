@@ -82,6 +82,7 @@
 (require 'org-gtd-mode)
 (require 'org-gtd-reflect)
 (require 'org-gtd-someday-review)
+(require 'org-gtd-reflect-missed-calendar-review)
 (require 'org-gtd-review)
 (require 'org-gtd-walk-model)
 (require 'org-gtd-walk)
