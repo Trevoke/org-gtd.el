@@ -59,11 +59,12 @@
 (defun org-gtd-reflect-missed-calendar-review--find-items ()
   "Return the org-ids of every overdue Calendar item across `org-agenda-files'.
 
-Composes the SAME `org-gtd-skip.el' predicates the read-only
-`org-gtd-reflect-missed-calendar' view uses: ORG_GTD = Calendar, not
-done, ORG_GTD_TIMESTAMP strictly before today, and not an org-gtd habit.
-The predicate factories are captured once in the outer `let' and
-`funcall'ed per heading."
+Composes `org-gtd-skip.el' predicates matching the design's definition of
+overdue calendar: ORG_GTD = Calendar, not done, ORG_GTD_TIMESTAMP strictly
+before today, and not an org-gtd habit.  The not-habit clause is redundant
+given the Calendar/Habit type invariant (an entry cannot be both) but is
+kept for parity with that stated definition.  The predicate factories are
+captured once in the outer `let' and `funcall'ed per heading."
   (let ((calendar-p (org-gtd-pred--property-equals
                      "ORG_GTD" (org-gtd-type-org-gtd-value 'calendar)))
         (not-done-p (org-gtd-pred--not-done))
