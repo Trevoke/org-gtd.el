@@ -133,6 +133,11 @@ displays the buffer."
             (aof (org-with-point-at marker
                    (org-entry-get (point) org-gtd-prop-area-of-focus))))
         (with-current-buffer surface
+          ;; Bind `org-id-track-globally' to nil so `org-paste-subtree' does
+          ;; not re-register the pasted :ID: (via `org-id-paste-tracker') into
+          ;; this disposable surface's temp file, which would corrupt the
+          ;; global `org-id-locations' map.  This binding is load-bearing, not
+          ;; dead code -- see `org-gtd-someday-review--render'.
           (let ((inhibit-read-only t)
                 (org-id-track-globally nil))
             (erase-buffer)
