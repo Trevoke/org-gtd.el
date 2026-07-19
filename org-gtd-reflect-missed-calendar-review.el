@@ -205,12 +205,16 @@ counters survive the whole walk (mirrors `org-gtd-someday-review--surface')."
             (or (plist-get c :skipped) 0))))
 
 (defun org-gtd-reflect-missed-calendar-review--on-finish ()
-  "End-of-walk: report the tally and clean up the surface buffer.
-Runs in the surface buffer after the engine has cleared its session."
+  "End-of-walk: report the tally, clean up the surface buffer, and save.
+Runs in the surface buffer after the engine has cleared its session.
+Mutating dispositions (done/migrate/reschedule/trash) modify org-gtd
+buffers directly; `org-gtd-save-buffers' persists them, honoring
+`org-gtd-save-after-organize' (mirrors `org-gtd-inbox-walk--on-finish')."
   (let ((summary (org-gtd-reflect-missed-calendar-review--summary)))
     (org-gtd-wip--cleanup-temp-file
      org-gtd-reflect-missed-calendar-review--surface-key)
-    (message "Missed-calendar review complete. %s" summary)))
+    (message "Missed-calendar review complete. %s" summary)
+    (org-gtd-save-buffers)))
 
 (defun org-gtd-reflect-missed-calendar-review--spec ()
   "Return the missed-calendar-review walk spec template.
@@ -378,13 +382,16 @@ releases its scope lock before the interactive clarify flow opens."
          (org-gtd-clarify-item marker))))))
 
 (defun org-gtd-reflect-missed-calendar-review-quit ()
-  "Abandon the review: report the tally, clean up, tear down the walk."
+  "Abandon the review: report the tally, clean up, tear down the walk, and save.
+Whatever mutating dispositions ran before quitting must still be persisted;
+see `org-gtd-reflect-missed-calendar-review--on-finish'."
   (interactive)
   (let ((summary (org-gtd-reflect-missed-calendar-review--summary)))
     (org-gtd-walk-quit)
     (org-gtd-wip--cleanup-temp-file
      org-gtd-reflect-missed-calendar-review--surface-key)
-    (message "Missed-calendar review complete. %s" summary)))
+    (message "Missed-calendar review complete. %s" summary)
+    (org-gtd-save-buffers)))
 
 ;;;; Footer
 

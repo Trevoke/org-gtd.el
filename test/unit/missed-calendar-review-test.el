@@ -175,6 +175,9 @@ lapse, and advertises the disposition keys."
     (assert-equal 0 (length (org-gtd-wip--get-buffers)))
     ;; The item is no longer detected as overdue (it was archived away).
     (assert-equal 0 (length (org-gtd-reflect-missed-calendar-review--find-items)))
+    ;; It was archived with the DONE keyword, not just removed from view.
+    (assert-match (format "\\* %s It happened" (org-gtd-keywords--done))
+                  (ogt--archive-string))
     (ignore id)))
 
 ;;; Disposition: migrate
@@ -201,6 +204,16 @@ ORG_GTD_TIMESTAMP dropped."
          (org-gtd-organize-hooks (list (lambda () (setq fired t)))))
     (with-current-buffer (car (org-gtd-wip--get-buffers))
       (org-gtd-reflect-missed-calendar-review-migrate))
+    (assert-nil fired)))
+
+(deftest mcr/trash-suppresses-organize-hooks ()
+  "Trash binds `org-gtd-organize-hooks' off, so decoration hooks never fire."
+  (mcr-test--make-calendar "No re-prompt on trash" "<2020-01-01>")
+  (org-gtd-reflect-missed-calendar-review)
+  (let* ((fired nil)
+         (org-gtd-organize-hooks (list (lambda () (setq fired t)))))
+    (with-current-buffer (car (org-gtd-wip--get-buffers))
+      (org-gtd-reflect-missed-calendar-review-trash))
     (assert-nil fired)))
 
 ;;; Disposition: reschedule
@@ -231,6 +244,18 @@ ORG_GTD_TIMESTAMP dropped."
         (assert-equal "<2999-01-01>"
                       (org-entry-get (point) "ORG_GTD_TIMESTAMP"))))))
 
+(deftest mcr/reschedule-suppresses-organize-hooks ()
+  "Reschedule binds `org-gtd-organize-hooks' off, so decoration hooks never fire."
+  (mcr-test--make-calendar "No re-prompt on reschedule" "<2020-01-01>")
+  (org-gtd-reflect-missed-calendar-review)
+  (let* ((fired nil)
+         (org-gtd-organize-hooks (list (lambda () (setq fired t)))))
+    (cl-letf (((symbol-function 'org-read-date)
+               (lambda (&rest _) "2999-01-01")))
+      (with-current-buffer (car (org-gtd-wip--get-buffers))
+        (org-gtd-reflect-missed-calendar-review-reschedule)))
+    (assert-nil fired)))
+
 ;;; Disposition: trash
 
 (deftest mcr/trash-cancels-and-archives ()
@@ -240,7 +265,11 @@ ORG_GTD_TIMESTAMP dropped."
   (with-current-buffer (car (org-gtd-wip--get-buffers))
     (org-gtd-reflect-missed-calendar-review-trash))
   (assert-equal 0 (length (org-gtd-wip--get-buffers)))
-  (assert-equal 0 (length (org-gtd-reflect-missed-calendar-review--find-items))))
+  (assert-equal 0 (length (org-gtd-reflect-missed-calendar-review--find-items)))
+  ;; It was archived with the CANCELED keyword, not the DONE keyword --
+  ;; distinguishes trash from done (a copy-paste keyword swap would fail this).
+  (assert-match (format "\\* %s No longer relevant" (org-gtd-keywords--canceled))
+                (ogt--archive-string)))
 
 ;;; Disposition: skip
 
@@ -308,6 +337,35 @@ ORG_GTD_TIMESTAMP dropped."
       (org-gtd-reflect-missed-calendar-review-done))
     ;; Last disposition ran :on-finish, which cleaned up the surface buffer.
     (assert-equal 0 (length (org-gtd-wip--get-buffers)))))
+
+;;; Persistence: on-finish / quit save buffers when opted in
+
+(deftest mcr/on-finish-saves-when-opted-in ()
+  "`--on-finish' saves org-gtd buffers via `org-gtd-save-buffers' when the
+user opted in via `org-gtd-save-after-organize'.  Migrating the only item
+finishes the walk (runs :on-finish) and modifies the default GTD file
+(refile-in-place); afterward that buffer must not be left modified."
+  (let ((org-gtd-save-after-organize t))
+    (mcr-test--make-calendar "Save me" "<2020-01-01>")
+    (org-gtd-reflect-missed-calendar-review)
+    (with-current-buffer (car (org-gtd-wip--get-buffers))
+      (org-gtd-reflect-missed-calendar-review-migrate))
+    (with-current-buffer (org-gtd--default-file)
+      (assert-nil (buffer-modified-p)))))
+
+(deftest mcr/quit-saves-when-opted-in ()
+  "`-quit' also saves org-gtd buffers via `org-gtd-save-buffers' when opted in.
+Migrates one item (mutating the default GTD file) while the walk is still
+active (a second item remains), then quits; the buffer must be saved."
+  (let ((org-gtd-save-after-organize t))
+    (mcr-test--make-calendar "First" "<2020-01-01>")
+    (mcr-test--make-calendar "Second" "<2020-01-02>")
+    (org-gtd-reflect-missed-calendar-review)
+    (with-current-buffer (car (org-gtd-wip--get-buffers))
+      (org-gtd-reflect-missed-calendar-review-migrate)
+      (org-gtd-reflect-missed-calendar-review-quit))
+    (with-current-buffer (org-gtd--default-file)
+      (assert-nil (buffer-modified-p)))))
 
 (provide 'missed-calendar-review-test)
 
