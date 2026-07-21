@@ -30,6 +30,21 @@ Returns the id."
       (save-buffer)
       id)))
 
+(defun mcr-test--make-calendar-in-file (file title timestamp)
+  "Insert a Calendar item TITLE with ORG_GTD_TIMESTAMP TIMESTAMP into FILE.
+Like `mcr-test--make-calendar' but targets an arbitrary FILE instead of
+`org-gtd--default-file' -- used to build a multi-file topology where the
+item's SOURCE file differs from the organize destination (next-action
+always refiles to `org-gtd--default-file'; see org-gtd-refile.el).
+Returns the id."
+  (with-current-buffer (find-file-noselect file)
+    (goto-char (point-max))
+    (let ((id (org-id-uuid)))
+      (insert (format "* %s\n:PROPERTIES:\n:ID: %s\n:ORG_GTD: Calendar\n:ORG_GTD_TIMESTAMP: %s\n:END:\n"
+                      title id timestamp))
+      (save-buffer)
+      id)))
+
 ;;; Detection
 
 (deftest mcr/find-includes-overdue-calendar ()
@@ -376,6 +391,25 @@ cursor is unchanged."
       (assert-equal 0 (plist-get (plist-get org-gtd-walk--active :model) :cursor))
       (org-gtd-reflect-missed-calendar-review-quit))))
 
+(deftest mcr/duplicate-keys-are-guarded-in-clarify-in-place ()
+  "`C-c d'/`C-c D' are rebound in the in-place clarify's cancel-override map
+to a command that messages instead of silently enqueuing an unrenderable
+duplicate the walk would drop."
+  (mcr-test--make-calendar "No duplicates here" "<2020-01-01>")
+  (org-gtd-reflect-missed-calendar-review)
+  (let ((surface (car (org-gtd-wip--get-buffers))))
+    (with-current-buffer surface
+      (org-gtd-reflect-missed-calendar-review-clarify)
+      (assert-equal 'org-gtd-reflect-missed-calendar-review--duplicate-unavailable
+                    (lookup-key (current-local-map) (kbd "C-c d")))
+      (assert-equal 'org-gtd-reflect-missed-calendar-review--duplicate-unavailable
+                    (lookup-key (current-local-map) (kbd "C-c D")))
+      ;; Invoking it does not error and does not enqueue a duplicate.
+      (call-interactively (lookup-key (current-local-map) (kbd "C-c d")))
+      (assert-nil (bound-and-true-p org-gtd-clarify--duplicate-queue))
+      (org-gtd-reflect-missed-calendar-review--cancel-clarify)
+      (org-gtd-reflect-missed-calendar-review-quit))))
+
 (deftest mcr/clarify-then-organize-finish-leaves-no-wip-surface ()
   "After `c' + organize on the only overdue item, the walk finishes and no
 WIP surface buffer is left behind.  This is the tricky case: the walk
@@ -391,6 +425,71 @@ surface currently carries."
       (org-gtd-reflect-missed-calendar-review-clarify)
       (org-gtd-next-action))
     (assert-equal 0 (length (org-gtd-wip--get-buffers)))))
+
+(deftest mcr/clarify-organize-preserves-id-resolution-across-files ()
+  "Regression: in-place clarify + organize must not corrupt the JUST-organized
+item's global `org-id-locations' entry when the walk advances to render the
+NEXT item.
+
+Multi-file setup: `org-agenda-files' is bound to `org-gtd-directory' (see
+`ogt-eunit--configure-emacs'), and org-mode expands a directory entry to
+every `*.org' file inside it -- including `org-gtd-calendar.org', already
+present (empty) in the mock-fs spec (`ogt-eunit--mock-fs-spec').  Both
+overdue items below are written into THAT file, in file order, so
+`--find-items' (a linear scan per file) deterministically finds \"First\"
+before \"Second\" regardless of which order `org-agenda-files' lists the
+files in -- no dependency on cross-file scan order, only on in-file
+heading order.
+
+\"First\" is the one clarified + organized as a next-action.  Next-action
+always refiles to `org-gtd--default-file' (org-gtd-tasks.org; see
+org-gtd-refile.el) -- a DIFFERENT file from `org-gtd-calendar.org', where
+it started.  This is deliberately NOT a single-item walk: with only one
+overdue item, `org-gtd-walk-advance' finds the model done and calls
+`org-gtd-walk-finish' directly without ever calling `--render' (see
+`org-gtd-walk--settle'), so the buggy fixup would never even run and the
+bug would not reproduce.  \"Second\" stays overdue so the advance has a
+next item to render, forcing `--render' to run with ID = \"Second\"'s id
+while the surface's buffer-locals (`org-gtd-clarify--clarify-id',
+`org-gtd-clarify--source-heading-marker') still hold \"First\"'s values
+from the just-finished clarify.
+
+Pre-fix, `--render''s unconditional `org-id-add-location' call re-points
+\"First\"'s id back at `org-gtd-calendar.org' -- its now-emptied source
+file (the subtree was cut by `org-gtd-organize--call' once the refile to
+org-gtd-tasks.org completed) -- clobbering the correct location
+`org-refile' just wrote.  `org-id-find' on \"First\"'s id then returns
+nil.  Post-fix (gated on `(equal id org-gtd-clarify--clarify-id)', false
+here since ID is \"Second\"'s, not \"First\"'s), the fixup does not run
+for \"First\" and its org-gtd-tasks.org location survives untouched."
+  (let* ((calendar-file (org-gtd--path "org-gtd-calendar"))
+         (first-id (mcr-test--make-calendar-in-file
+                    calendar-file "First" "<2020-01-01>"))
+         (second-id (mcr-test--make-calendar-in-file
+                     calendar-file "Second" "<2020-01-02>")))
+    (org-gtd-reflect-missed-calendar-review)
+    (let ((surface (car (org-gtd-wip--get-buffers)))
+          (org-gtd-organize-hooks nil))
+      (with-current-buffer surface
+        (org-gtd-reflect-missed-calendar-review-clarify)
+        (assert-true (derived-mode-p 'org-gtd-clarify-mode))
+        (assert-match "First" (buffer-string))
+        (org-gtd-next-action))
+      ;; The walk advanced onto "Second": the surface is back to the
+      ;; console, on the remaining item.
+      (with-current-buffer surface
+        (assert-true (eq major-mode 'org-gtd-reflect-missed-calendar-review-mode))
+        (assert-match "Second" (buffer-string))
+        (org-gtd-reflect-missed-calendar-review-quit)))
+    ;; The regression: "First"'s id must still resolve, at its correct
+    ;; post-organize location, not be clobbered back onto the (emptied)
+    ;; calendar file.
+    (let ((marker (org-id-find first-id 'marker)))
+      (assert-true marker)
+      (org-with-point-at marker
+        (assert-equal "Actions" (org-entry-get (point) "ORG_GTD"))
+        (assert-equal (org-gtd-keywords--next) (org-get-todo-state))))
+    (ignore second-id)))
 
 ;;; Landmine guard: mutating dispositions after out-of-band changes
 
