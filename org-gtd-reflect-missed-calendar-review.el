@@ -75,35 +75,54 @@
 
 ;;;; Detection
 
+(defun org-gtd-reflect-missed-calendar-review--overdue-calendar-p (marker-or-point)
+  "Return non-nil when MARKER-OR-POINT is still an overdue Calendar item.
+
+The single definition of \"overdue calendar\" shared by `--find-items'
+\(scanning) and `--current-overdue-marker' (the mutating-disposition
+guard), so the two can never drift apart.  Composes `org-gtd-skip.el'
+predicates matching the design's definition of overdue calendar: ORG_GTD
+= Calendar, not done, ORG_GTD_TIMESTAMP strictly before today, and not an
+org-gtd habit.  The not-habit clause is redundant given the
+Calendar/Habit type invariant (an entry cannot be both) but is kept for
+parity with that stated definition."
+  (org-with-point-at marker-or-point
+    (and (funcall (org-gtd-pred--property-equals
+                   "ORG_GTD" (org-gtd-type-org-gtd-value 'calendar)))
+         (funcall (org-gtd-pred--not-done))
+         (funcall (org-gtd-pred--property-ts<
+                   (org-gtd-type-property 'calendar :when) "today"))
+         (funcall (org-gtd-pred--property-not-equals
+                   "ORG_GTD" (org-gtd-type-org-gtd-value 'habit))))))
+
 (defun org-gtd-reflect-missed-calendar-review--find-items ()
   "Return the org-ids of every overdue Calendar item across `org-agenda-files'.
-
-Composes `org-gtd-skip.el' predicates matching the design's definition of
-overdue calendar: ORG_GTD = Calendar, not done, ORG_GTD_TIMESTAMP strictly
-before today, and not an org-gtd habit.  The not-habit clause is redundant
-given the Calendar/Habit type invariant (an entry cannot be both) but is
-kept for parity with that stated definition.  The predicate factories are
-captured once in the outer `let' and `funcall'ed per heading."
-  (let ((calendar-p (org-gtd-pred--property-equals
-                     "ORG_GTD" (org-gtd-type-org-gtd-value 'calendar)))
-        (not-done-p (org-gtd-pred--not-done))
-        (overdue-p (org-gtd-pred--property-ts<
-                    (org-gtd-type-property 'calendar :when) "today"))
-        (not-habit-p (org-gtd-pred--property-not-equals
-                      "ORG_GTD" (org-gtd-type-org-gtd-value 'habit)))
-        (items '()))
+Applies `--overdue-calendar-p' at every heading."
+  (let (items)
     (dolist (file (org-agenda-files))
       (when (file-exists-p file)
         (with-current-buffer (find-file-noselect file)
           (org-with-wide-buffer
            (goto-char (point-min))
            (while (re-search-forward "^\\*+ " nil t)
-             (when (and (funcall calendar-p)
-                        (funcall not-done-p)
-                        (funcall overdue-p)
-                        (funcall not-habit-p))
+             (when (org-gtd-reflect-missed-calendar-review--overdue-calendar-p
+                    (point))
                (push (org-id-get-create) items)))))))
     (nreverse items)))
+
+(defun org-gtd-reflect-missed-calendar-review--current-overdue-marker ()
+  "Return the current walk item's marker iff it is STILL an overdue Calendar item.
+Returns nil when the item no longer qualifies (e.g. it was clarified into
+another type, rescheduled, or completed out of band) or cannot be resolved.
+Used by the mutating dispositions to refuse to act on an item the user has
+already handled another way (e.g. via `c' clarify)."
+  (let* ((id (org-gtd-walk-model-current
+              (plist-get org-gtd-walk--active :model)))
+         (marker (and id (org-id-find id 'marker))))
+    (when (and marker
+               (org-gtd-reflect-missed-calendar-review--overdue-calendar-p
+                marker))
+      marker)))
 
 (defun org-gtd-reflect-missed-calendar-review--resolve (id)
   "Return non-nil when ID still resolves to a live heading marker."
@@ -269,23 +288,27 @@ hard landscape is clean."
 ;;;; Commands
 
 (defun org-gtd-reflect-missed-calendar-review-done ()
-  "Mark the current item done and archive it (it happened), then advance."
+  "Mark the current item done and archive it (it happened), then advance.
+Refuses to mutate when the current item is no longer an overdue Calendar
+item (e.g. it was clarified away via `c' into some other type): the walk
+still advances -- the review step still counts toward `:reviewed' since
+the user is moving on, but not toward `:done', since nothing was
+actually marked done."
   (interactive)
   (org-gtd-walk-call-action
    (lambda ()
-     (let* ((id (org-gtd-walk-model-current
-                 (plist-get org-gtd-walk--active :model)))
-            (marker (org-id-find id 'marker)))
-       (when marker
+     (let ((marker (org-gtd-reflect-missed-calendar-review--current-overdue-marker)))
+       (if (null marker)
+           (message "No longer an overdue calendar item -- advancing.")
          (org-with-point-at marker
            ;; Suppress the state-change note prompt: this is a programmatic
            ;; "it already happened" mark, and an unfinished note buffer would
            ;; leave the following archive yanking the subtree out from under it.
            (let ((org-inhibit-logging 'note))
              (org-todo (org-gtd-keywords--done)))
-           (org-gtd-archive-item-at-point)))
+           (org-gtd-archive-item-at-point))
+         (org-gtd-reflect-missed-calendar-review--bump :done))
        (org-gtd-reflect-missed-calendar-review--bump :reviewed)
-       (org-gtd-reflect-missed-calendar-review--bump :done)
        (org-gtd-walk-advance)))))
 
 (defun org-gtd-reflect-missed-calendar-review-migrate ()
@@ -293,35 +316,37 @@ hard landscape is clean."
 Runs the headless organize pipeline with the classic decoration hooks
 bound off -- the item is already clarified, so it must not be re-prompted
 for tags/effort/etc.  The pipeline auto-drops the Calendar-only
-ORG_GTD_TIMESTAMP because next-action declares no properties."
+ORG_GTD_TIMESTAMP because next-action declares no properties.  Refuses
+to mutate when the current item is no longer an overdue Calendar item
+\(see `-done' for the guard's counter semantics)."
   (interactive)
   (org-gtd-walk-call-action
    (lambda ()
-     (let* ((id (org-gtd-walk-model-current
-                 (plist-get org-gtd-walk--active :model)))
-            (marker (org-id-find id 'marker)))
-       (when marker
+     (let ((marker (org-gtd-reflect-missed-calendar-review--current-overdue-marker)))
+       (if (null marker)
+           (message "No longer an overdue calendar item -- advancing.")
          (let ((org-gtd-organize-hooks nil))
-           (org-gtd-process-heading marker 'next-action)))
+           (org-gtd-process-heading marker 'next-action))
+         (org-gtd-reflect-missed-calendar-review--bump :migrated))
        (org-gtd-reflect-missed-calendar-review--bump :reviewed)
-       (org-gtd-reflect-missed-calendar-review--bump :migrated)
        (org-gtd-walk-advance)))))
 
 (defun org-gtd-reflect-missed-calendar-review-trash ()
   "Trash the current item (irrelevant now: cancel + archive), then advance.
 Reuses the `trash' type's cancel-and-archive disposition through the
-headless pipeline, with decoration hooks bound off."
+headless pipeline, with decoration hooks bound off.  Refuses to mutate
+when the current item is no longer an overdue Calendar item (see `-done'
+for the guard's counter semantics)."
   (interactive)
   (org-gtd-walk-call-action
    (lambda ()
-     (let* ((id (org-gtd-walk-model-current
-                 (plist-get org-gtd-walk--active :model)))
-            (marker (org-id-find id 'marker)))
-       (when marker
+     (let ((marker (org-gtd-reflect-missed-calendar-review--current-overdue-marker)))
+       (if (null marker)
+           (message "No longer an overdue calendar item -- advancing.")
          (let ((org-gtd-organize-hooks nil))
-           (org-gtd-process-heading marker 'trash)))
+           (org-gtd-process-heading marker 'trash))
+         (org-gtd-reflect-missed-calendar-review--bump :trashed))
        (org-gtd-reflect-missed-calendar-review--bump :reviewed)
-       (org-gtd-reflect-missed-calendar-review--bump :trashed)
        (org-gtd-walk-advance)))))
 
 (defun org-gtd-reflect-missed-calendar-review--read-future-date ()
@@ -341,20 +366,22 @@ is rejected, not silently accepted."
   "Reschedule the current item to a new (today-or-later) date, then advance.
 Stays a Calendar item; reuses the headless organize pipeline with the
 decoration hooks bound off.  The :when config value is bracketed so it is
-written verbatim as a valid org timestamp."
+written verbatim as a valid org timestamp.  Refuses to mutate when the
+current item is no longer an overdue Calendar item (see `-done' for the
+guard's counter semantics); the guard runs BEFORE prompting for a date so
+a doomed disposition never wastes the user's input."
   (interactive)
   (org-gtd-walk-call-action
    (lambda ()
-     (let* ((id (org-gtd-walk-model-current
-                 (plist-get org-gtd-walk--active :model)))
-            (marker (org-id-find id 'marker))
-            (date (org-gtd-reflect-missed-calendar-review--read-future-date)))
-       (when marker
-         (let ((org-gtd-organize-hooks nil))
+     (let ((marker (org-gtd-reflect-missed-calendar-review--current-overdue-marker)))
+       (if (null marker)
+           (message "No longer an overdue calendar item -- advancing.")
+         (let ((date (org-gtd-reflect-missed-calendar-review--read-future-date))
+               (org-gtd-organize-hooks nil))
            (org-gtd-process-heading marker 'calendar
-                                    (list (cons :when (format "<%s>" date))))))
+                                    (list (cons :when (format "<%s>" date)))))
+         (org-gtd-reflect-missed-calendar-review--bump :rescheduled))
        (org-gtd-reflect-missed-calendar-review--bump :reviewed)
-       (org-gtd-reflect-missed-calendar-review--bump :rescheduled)
        (org-gtd-walk-advance)))))
 
 (defun org-gtd-reflect-missed-calendar-review-skip ()
@@ -367,19 +394,27 @@ written verbatim as a valid org timestamp."
      (org-gtd-walk-advance))))
 
 (defun org-gtd-reflect-missed-calendar-review-clarify ()
-  "Clarify the current item fully (the heavy escape hatch), then advance.
-Advances the walk first so that on the last item the walk finishes and
-releases its scope lock before the interactive clarify flow opens."
+  "Clarify the current item fully (the heavy escape hatch).
+Unlike the other dispositions, this does NOT advance the walk or bump
+`:reviewed': `org-gtd-clarify-item' is an async, interactive hand-off --
+it opens a separate clarify buffer the user works in later, and the
+item's disposition is not resolved when this command returns.  Treating
+that hand-off as a completed review step would be premature, so the
+walk stays parked on the current item (the review surface stays open,
+cursor unchanged) until the user comes back and presses another
+disposition key, typically `s' (skip) once the item has been dealt with
+via clarify.  (Contrast `org-gtd-someday-review-clarify', which advances
+after its own clarify -- `org-gtd-reactivate' -- because that one is
+synchronous.)  Not wrapped in `org-gtd-walk-call-action': that helper
+exists for actions that transition/advance and tears the walk down on
+error; clarify does neither, so a plain `interactive' command is
+correct here."
   (interactive)
-  (org-gtd-walk-call-action
-   (lambda ()
-     (let* ((id (org-gtd-walk-model-current
-                 (plist-get org-gtd-walk--active :model)))
-            (marker (org-id-find id 'marker)))
-       (org-gtd-reflect-missed-calendar-review--bump :reviewed)
-       (org-gtd-walk-advance)
-       (when marker
-         (org-gtd-clarify-item marker))))))
+  (let* ((id (org-gtd-walk-model-current
+              (plist-get org-gtd-walk--active :model)))
+         (marker (org-id-find id 'marker)))
+    (when marker
+      (org-gtd-clarify-item marker))))
 
 (defun org-gtd-reflect-missed-calendar-review-quit ()
   "Abandon the review: report the tally, clean up, tear down the walk, and save.

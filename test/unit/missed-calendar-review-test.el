@@ -302,8 +302,8 @@ ORG_GTD_TIMESTAMP dropped."
 
 ;;; Disposition: clarify
 
-(deftest mcr/clarify-invokes-clarify-item-and-advances ()
-  "`c' calls `org-gtd-clarify-item' on the item and advances the walk."
+(deftest mcr/clarify-invokes-clarify-item-without-advancing ()
+  "`c' opens clarify on the current item but leaves the walk parked (no advance)."
   (let ((clarified nil))
     (mcr-test--make-calendar "Rethink me" "<2020-01-01>")
     (org-gtd-reflect-missed-calendar-review)
@@ -312,7 +312,35 @@ ORG_GTD_TIMESTAMP dropped."
       (with-current-buffer (car (org-gtd-wip--get-buffers))
         (org-gtd-reflect-missed-calendar-review-clarify)))
     (assert-true clarified)
-    ;; Only item -> walk advanced off the end -> surface cleaned up.
+    ;; Walk is STILL parked on the item: the walk session is still active
+    ;; and the cursor has not moved, proving `c' did not advance.
+    (with-current-buffer (car (org-gtd-wip--get-buffers))
+      (assert-true org-gtd-walk--active)
+      (assert-equal 0 (plist-get (plist-get org-gtd-walk--active :model) :cursor)))))
+
+;;; Landmine guard: mutating dispositions after out-of-band changes
+
+(deftest mcr/mutating-disposition-skips-item-clarified-away ()
+  "A mutating key refuses to act on the current item once it is no longer an
+overdue Calendar item (e.g. retyped away), advancing instead of corrupting it."
+  (let ((id (mcr-test--make-calendar "Was calendar" "<2020-01-01>")))
+    (org-gtd-reflect-missed-calendar-review)
+    ;; Simulate the item being handled out of band: retype it away from Calendar.
+    (let ((m (org-id-find id 'marker)))
+      (org-with-point-at m (org-entry-put (point) "ORG_GTD" "Actions")))
+    (with-current-buffer (car (org-gtd-wip--get-buffers))
+      (org-gtd-reflect-missed-calendar-review-done))
+    ;; `done' did NOT touch it: still in the default GTD file (not archived
+    ;; away) with no TODO state added (org-gtd-archive-item-at-point leaves
+    ;; ORG_GTD alone, so that property alone can't prove the guard fired --
+    ;; location + TODO state are the properties that actually distinguish
+    ;; "mutated" from "left alone").  The single-item walk still advanced.
+    (let ((m (org-id-find id 'marker)))
+      (assert-true m)
+      (assert-equal (org-gtd--default-file) (marker-buffer m))
+      (org-with-point-at m
+        (assert-equal "Actions" (org-entry-get (point) "ORG_GTD"))
+        (assert-nil (org-get-todo-state))))
     (assert-equal 0 (length (org-gtd-wip--get-buffers)))))
 
 ;;; Counters + finish
