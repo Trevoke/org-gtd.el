@@ -75,38 +75,51 @@
 
 ;;;; Detection
 
-(defun org-gtd-reflect-missed-calendar-review--overdue-calendar-p (marker-or-point)
-  "Return non-nil when MARKER-OR-POINT is still an overdue Calendar item.
+(defun org-gtd-reflect-missed-calendar-review--make-overdue-calendar-p ()
+  "Return a closure answering whether a heading is still an overdue Calendar item.
+The returned predicate takes one MARKER-OR-POINT argument and returns
+non-nil at an overdue Calendar heading.
 
-The single definition of \"overdue calendar\" shared by `--find-items'
-\(scanning) and `--current-overdue-marker' (the mutating-disposition
-guard), so the two can never drift apart.  Composes `org-gtd-skip.el'
-predicates matching the design's definition of overdue calendar: ORG_GTD
-= Calendar, not done, ORG_GTD_TIMESTAMP strictly before today, and not an
-org-gtd habit.  The not-habit clause is redundant given the
-Calendar/Habit type invariant (an entry cannot be both) but is kept for
-parity with that stated definition."
-  (org-with-point-at marker-or-point
-    (and (funcall (org-gtd-pred--property-equals
-                   "ORG_GTD" (org-gtd-type-org-gtd-value 'calendar)))
-         (funcall (org-gtd-pred--not-done))
-         (funcall (org-gtd-pred--property-ts<
-                   (org-gtd-type-property 'calendar :when) "today"))
-         (funcall (org-gtd-pred--property-not-equals
-                   "ORG_GTD" (org-gtd-type-org-gtd-value 'habit))))))
+This is the single definition of \"overdue calendar\" shared by
+`--find-items' (scanning) and `--current-overdue-marker' (the
+mutating-disposition guard), so the two can never drift apart.  It
+composes `org-gtd-skip.el' predicates matching the design's definition of
+overdue calendar: ORG_GTD = Calendar, not done, ORG_GTD_TIMESTAMP
+strictly before today, and not an org-gtd habit.  The not-habit clause is
+redundant given the Calendar/Habit type invariant (an entry cannot be
+both) but is kept for parity with that stated definition.
+
+The four predicate factory closures are captured ONCE here (the codebase
+factory-closure convention); the returned closure only `funcall's them
+per heading, so callers build the predicate once and reuse it across a
+whole scan rather than rebuilding it per heading."
+  (let ((calendar-p (org-gtd-pred--property-equals
+                     "ORG_GTD" (org-gtd-type-org-gtd-value 'calendar)))
+        (not-done-p (org-gtd-pred--not-done))
+        (overdue-p (org-gtd-pred--property-ts<
+                    (org-gtd-type-property 'calendar :when) "today"))
+        (not-habit-p (org-gtd-pred--property-not-equals
+                      "ORG_GTD" (org-gtd-type-org-gtd-value 'habit))))
+    (lambda (marker-or-point)
+      (org-with-point-at marker-or-point
+        (and (funcall calendar-p)
+             (funcall not-done-p)
+             (funcall overdue-p)
+             (funcall not-habit-p))))))
 
 (defun org-gtd-reflect-missed-calendar-review--find-items ()
   "Return the org-ids of every overdue Calendar item across `org-agenda-files'.
-Applies `--overdue-calendar-p' at every heading."
-  (let (items)
+Builds the overdue-calendar predicate once (see
+`--make-overdue-calendar-p') and applies it at every heading."
+  (let ((overdue-p (org-gtd-reflect-missed-calendar-review--make-overdue-calendar-p))
+        items)
     (dolist (file (org-agenda-files))
       (when (file-exists-p file)
         (with-current-buffer (find-file-noselect file)
           (org-with-wide-buffer
            (goto-char (point-min))
            (while (re-search-forward "^\\*+ " nil t)
-             (when (org-gtd-reflect-missed-calendar-review--overdue-calendar-p
-                    (point))
+             (when (funcall overdue-p (point))
                (push (org-id-get-create) items)))))))
     (nreverse items)))
 
@@ -118,10 +131,9 @@ Used by the mutating dispositions to refuse to act on an item the user has
 already handled another way (e.g. via `c' clarify)."
   (let* ((id (org-gtd-walk-model-current
               (plist-get org-gtd-walk--active :model)))
-         (marker (and id (org-id-find id 'marker))))
-    (when (and marker
-               (org-gtd-reflect-missed-calendar-review--overdue-calendar-p
-                marker))
+         (marker (and id (org-id-find id 'marker)))
+         (overdue-p (org-gtd-reflect-missed-calendar-review--make-overdue-calendar-p)))
+    (when (and marker (funcall overdue-p marker))
       marker)))
 
 (defun org-gtd-reflect-missed-calendar-review--resolve (id)
@@ -413,8 +425,9 @@ correct here."
   (let* ((id (org-gtd-walk-model-current
               (plist-get org-gtd-walk--active :model)))
          (marker (org-id-find id 'marker)))
-    (when marker
-      (org-gtd-clarify-item marker))))
+    (if marker
+        (org-gtd-clarify-item marker)
+      (message "This item is no longer available."))))
 
 (defun org-gtd-reflect-missed-calendar-review-quit ()
   "Abandon the review: report the tally, clean up, tear down the walk, and save.
