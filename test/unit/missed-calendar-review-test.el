@@ -302,21 +302,95 @@ ORG_GTD_TIMESTAMP dropped."
 
 ;;; Disposition: clarify
 
-(deftest mcr/clarify-invokes-clarify-item-without-advancing ()
-  "`c' opens clarify on the current item but leaves the walk parked (no advance)."
-  (let ((clarified nil))
-    (mcr-test--make-calendar "Rethink me" "<2020-01-01>")
-    (org-gtd-reflect-missed-calendar-review)
-    (cl-letf (((symbol-function 'org-gtd-clarify-item)
-               (lambda (&rest _) (setq clarified t))))
-      (with-current-buffer (car (org-gtd-wip--get-buffers))
-        (org-gtd-reflect-missed-calendar-review-clarify)))
-    (assert-true clarified)
-    ;; Walk is STILL parked on the item: the walk session is still active
-    ;; and the cursor has not moved, proving `c' did not advance.
-    (with-current-buffer (car (org-gtd-wip--get-buffers))
+(deftest mcr/clarify-transforms-surface-in-place-without-advancing ()
+  "`c' turns the review surface itself into an editable clarify buffer for
+the current item -- it does not advance the walk (advancing happens later,
+when the user finishes organizing)."
+  (mcr-test--make-calendar "Rethink me" "<2020-01-01>")
+  (org-gtd-reflect-missed-calendar-review)
+  (let ((surface (car (org-gtd-wip--get-buffers))))
+    (with-current-buffer surface
+      (org-gtd-reflect-missed-calendar-review-clarify)
+      (assert-true (derived-mode-p 'org-gtd-clarify-mode))
+      (assert-nil buffer-read-only)
+      (assert-match "Rethink me" (buffer-string))
+      ;; Walk is STILL parked on the item: the walk session is still active
+      ;; and the cursor has not moved, proving `c' did not advance.
       (assert-true org-gtd-walk--active)
-      (assert-equal 0 (plist-get (plist-get org-gtd-walk--active :model) :cursor)))))
+      (assert-equal 0 (plist-get (plist-get org-gtd-walk--active :model) :cursor))
+      ;; Cancel back to the console, then quit cleanly (no leaked temp file).
+      (org-gtd-reflect-missed-calendar-review--cancel-clarify)
+      (org-gtd-reflect-missed-calendar-review-quit))))
+
+(deftest mcr/clarify-then-organize-advances-and-retypes-item ()
+  "Finishing organize on an in-place-clarified item advances the review to
+the next item, through the REAL organize -> walk-advance seam (not a
+direct call to `org-gtd-walk-advance').
+
+Drives `org-gtd-next-action', which is `org-gtd--dispatch' for the
+`next-action' type: because the surface's `org-gtd-clarify--clarify-id'
+is set (by `--clarify-in-place'), dispatch routes through
+`org-gtd-organize--call', whose `walk-active' branch is the exact code
+path `org-gtd-organize--call' uses for the inbox walk's auto-advance.
+`org-gtd-organize-hooks' is bound to nil to suppress the default
+tag-prompt hook, which would otherwise block on interactive input."
+  (mcr-test--make-calendar "First" "<2020-01-01>")
+  (mcr-test--make-calendar "Second" "<2020-01-02>")
+  (org-gtd-reflect-missed-calendar-review)
+  (let ((surface (car (org-gtd-wip--get-buffers)))
+        (org-gtd-organize-hooks nil))
+    (with-current-buffer surface
+      (org-gtd-reflect-missed-calendar-review-clarify)
+      (assert-true (derived-mode-p 'org-gtd-clarify-mode))
+      (org-gtd-next-action))
+    ;; The walk advanced: the surface is back to the console, on item 2.
+    (with-current-buffer surface
+      (assert-true (eq major-mode 'org-gtd-reflect-missed-calendar-review-mode))
+      (assert-true buffer-read-only)
+      (assert-match "Second" (buffer-string))
+      (refute-match "First" (buffer-string)))
+    ;; Item 1 is now a next action, no longer an overdue calendar item.
+    (assert-equal 1 (length (org-gtd-reflect-missed-calendar-review--find-items)))
+    (with-current-buffer surface
+      (org-gtd-reflect-missed-calendar-review-quit))))
+
+(deftest mcr/cancel-clarify-returns-to-console-for-same-item ()
+  "Canceling (`C-c C-k') an in-place clarify redraws the console for the
+SAME item, without advancing or quitting: the walk stays active, the
+cursor is unchanged."
+  (mcr-test--make-calendar "Item" "<2020-01-01>")
+  (org-gtd-reflect-missed-calendar-review)
+  (let ((surface (car (org-gtd-wip--get-buffers))))
+    (with-current-buffer surface
+      (org-gtd-reflect-missed-calendar-review-clarify)
+      ;; The buffer-local override shadows the default `org-gtd-clarify-stop'
+      ;; (which would abandon the whole review) with our per-item cancel.
+      (assert-equal 'org-gtd-reflect-missed-calendar-review--cancel-clarify
+                    (lookup-key (current-local-map) (kbd "C-c C-k")))
+      (call-interactively (lookup-key (current-local-map) (kbd "C-c C-k"))))
+    (with-current-buffer surface
+      (assert-true (eq major-mode 'org-gtd-reflect-missed-calendar-review-mode))
+      (assert-true buffer-read-only)
+      (assert-match "Item" (buffer-string))
+      (assert-true org-gtd-walk--active)
+      (assert-equal 0 (plist-get (plist-get org-gtd-walk--active :model) :cursor))
+      (org-gtd-reflect-missed-calendar-review-quit))))
+
+(deftest mcr/clarify-then-organize-finish-leaves-no-wip-surface ()
+  "After `c' + organize on the only overdue item, the walk finishes and no
+WIP surface buffer is left behind.  This is the tricky case: the walk
+finishes directly from the advance (no next item to render), so
+`--render' never runs to rekey the surface back to the fixed surface
+key -- `--on-finish' itself must clean up under whichever key the
+surface currently carries."
+  (mcr-test--make-calendar "Only item" "<2020-01-01>")
+  (org-gtd-reflect-missed-calendar-review)
+  (let ((surface (car (org-gtd-wip--get-buffers)))
+        (org-gtd-organize-hooks nil))
+    (with-current-buffer surface
+      (org-gtd-reflect-missed-calendar-review-clarify)
+      (org-gtd-next-action))
+    (assert-equal 0 (length (org-gtd-wip--get-buffers)))))
 
 ;;; Landmine guard: mutating dispositions after out-of-band changes
 

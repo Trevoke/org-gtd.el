@@ -34,6 +34,7 @@
 (require 'org)
 (require 'org-id)
 (require 'org-gtd-core)
+(require 'org-gtd-id)
 (require 'org-gtd-wip)
 (require 'org-gtd-skip)
 (require 'org-gtd-types)
@@ -160,7 +161,42 @@ TS-STRING cannot be parsed."
 Resolves ID to a marker, refills SURFACE read-only with the teaching
 framing, the humanized lapse, an optional area-of-focus line, and the
 subtree body, then sets review mode, the header-line action bar, and
-displays the buffer."
+displays the buffer.
+
+Before drawing -- indeed before even resolving ID to a marker -- undoes
+any in-place clarify staging left on SURFACE by `--clarify-in-place'
+\(the `c' disposition): when `org-gtd-clarify--clarify-id' is set, the
+surface is still keyed under that item's own clarify id and may still
+have a horizons reference window open.  `--clarify-in-place' deliberately
+leaves `org-id-track-globally' on during its copy (see that function's
+docstring), so `org-paste-subtree' there re-registers the item's real
+org-id against SURFACE in the global `org-id-locations' table -- so if
+this render is about to resolve that SAME id again (the cancel path:
+ID is unchanged, the source was never cut), `org-id-find' below would
+otherwise resolve into SURFACE, which this function is about to erase,
+rather than back to the untouched source heading.  Fixing the id's
+registered location back to the source file (`org-id-add-location',
+using the still-live `org-gtd-clarify--source-heading-marker') MUST
+happen before that `org-id-find', hence this runs first.  Then rekey
+the WIP registry back to `--surface-key' (matching
+`org-gtd-wip--rekey''s use in `--clarify-in-place') and tear the
+horizons view down.  All of this is a no-op for items that were never
+clarified (clarify-id nil) -- e.g. the normal skip/done/migrate/etc.
+path, which never rekeys the surface or touches org-id-locations at
+all.  This runs on every settle/advance, so it fires both right after
+an organize completes (advancing to the next item -- a different id,
+so the id-location fixup is moot there, but harmless) and via
+`--cancel-clarify' (redrawing the current item -- the case that needs
+it)."
+  (with-current-buffer surface
+    (when (bound-and-true-p org-gtd-clarify--clarify-id)
+      (when (markerp org-gtd-clarify--source-heading-marker)
+        (org-id-add-location
+         org-gtd-clarify--clarify-id
+         (buffer-file-name (marker-buffer org-gtd-clarify--source-heading-marker))))
+      (org-gtd-wip--rekey org-gtd-clarify--clarify-id
+                          org-gtd-reflect-missed-calendar-review--surface-key)
+      (org-gtd-clarify--cleanup-horizons-view)))
   (let ((marker (org-id-find id 'marker)))
     (when marker
       (let ((ts (org-with-point-at marker
@@ -240,10 +276,26 @@ counters survive the whole walk (mirrors `org-gtd-someday-review--surface')."
 Runs in the surface buffer after the engine has cleared its session.
 Mutating dispositions (done/migrate/reschedule/trash) modify org-gtd
 buffers directly; `org-gtd-save-buffers' persists them, honoring
-`org-gtd-save-after-organize' (mirrors `org-gtd-inbox-walk--on-finish')."
+`org-gtd-save-after-organize' (mirrors `org-gtd-inbox-walk--on-finish').
+
+Cleans up whichever WIP key the surface is CURRENTLY registered under.
+Ordinarily that is the fixed `--surface-key' (the console never rekeys,
+and `--render' rekeys any in-place clarify staging back to it before
+drawing the next item or the same item on cancel).  But when the walk
+finishes immediately after an in-place clarify + organize on the LAST
+item, there is no next item to trigger that rekey-back -- the surface
+is still keyed under that item's own clarify id, and any horizons
+window the clarify staging opened is still up.  Reading
+`org-gtd-clarify--clarify-id' (falling back to `--surface-key' when
+unset -- the ordinary case) and tearing down the horizons view
+unconditionally (a no-op when none is showing) covers both cases
+without needing to know which one happened, mirroring
+`org-gtd-inbox-walk--on-finish'."
   (let ((summary (org-gtd-reflect-missed-calendar-review--summary)))
+    (org-gtd-clarify--cleanup-horizons-view)
     (org-gtd-wip--cleanup-temp-file
-     org-gtd-reflect-missed-calendar-review--surface-key)
+     (or (bound-and-true-p org-gtd-clarify--clarify-id)
+         org-gtd-reflect-missed-calendar-review--surface-key))
     (message "Missed-calendar review complete. %s" summary)
     (org-gtd-save-buffers)))
 
@@ -405,28 +457,128 @@ a doomed disposition never wastes the user's input."
      (org-gtd-reflect-missed-calendar-review--bump :skipped)
      (org-gtd-walk-advance))))
 
-(defun org-gtd-reflect-missed-calendar-review-clarify ()
-  "Clarify the current item fully (the heavy escape hatch).
-Unlike the other dispositions, this does NOT advance the walk or bump
-`:reviewed': `org-gtd-clarify-item' is an async, interactive hand-off --
-it opens a separate clarify buffer the user works in later, and the
-item's disposition is not resolved when this command returns.  Treating
-that hand-off as a completed review step would be premature, so the
-walk stays parked on the current item (the review surface stays open,
-cursor unchanged) until the user comes back and presses another
-disposition key, typically `s' (skip) once the item has been dealt with
-via clarify.  (Contrast `org-gtd-someday-review-clarify', which advances
-after its own clarify -- `org-gtd-reactivate' -- because that one is
-synchronous.)  Not wrapped in `org-gtd-walk-call-action': that helper
-exists for actions that transition/advance and tears the walk down on
-error; clarify does neither, so a plain `interactive' command is
-correct here."
+(defun org-gtd-reflect-missed-calendar-review--install-cancel-override ()
+  "Install a buffer-local `C-c C-k' override that cancels only THIS clarify.
+The default `org-gtd-clarify-stop' (bound in the shared
+`org-gtd-clarify-mode-map') dispatches, when a walk is active, to
+`org-gtd-clarify--stop-walk', which abandons the WHOLE walk -- correct
+for the inbox walk it was written for, wrong here: canceling one item's
+in-place clarify must not end the whole missed-calendar review.
+
+Installs a fresh sparse keymap parented on the shared
+`org-gtd-clarify-mode-map' as the CURRENT buffer's local map, with only
+`C-c C-k' rebound to `--cancel-clarify'.  Never mutates the shared map
+itself, so other clarify buffers (including inbox-walk ones) are
+unaffected."
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map org-gtd-clarify-mode-map)
+    (define-key map (kbd "C-c C-k")
+                #'org-gtd-reflect-missed-calendar-review--cancel-clarify)
+    (use-local-map map)))
+
+(defun org-gtd-reflect-missed-calendar-review--clarify-in-place (marker window-config)
+  "Transform the current surface into an editable clarify buffer for MARKER.
+Mirrors `org-gtd-inbox-walk--render-marker': copies the subtree at
+MARKER into the surface (the CURRENT buffer), rekeys the WIP registry
+from the surface's current key to the item's own (lazily-assigned)
+clarify id, switches to `org-gtd-clarify-mode', and installs the
+buffer-local `C-c C-k' cancel override (see
+`--install-cancel-override') so canceling returns to the console
+instead of abandoning the whole review.
+
+`org-gtd-walk--active' is buffer-local and permanent-local, so it
+survives the mode switch: when the user finishes organizing here,
+`org-gtd-organize--call''s walk-active branch calls
+`org-gtd-walk-advance' for us -- the review auto-advances, exactly as
+the inbox walk does.
+
+WINDOW-CONFIG is the window configuration captured by the caller
+BEFORE `c' made any window changes; it is stored as the clarify
+buffer-local `org-gtd-clarify--window-config'.
+
+Deliberately does NOT bind `org-id-track-globally' around the copy --
+see the long comment on `org-gtd-inbox-walk--render-marker' for why:
+this surface is the live staging buffer the item is about to be
+organized from, not a disposable review copy.  (See `--render' for the
+other half of that tradeoff: it must fix the id's registered location
+back to the source before re-resolving it on the cancel path.)"
+  (let* ((surface (current-buffer))
+         (old-id (or (bound-and-true-p org-gtd-clarify--clarify-id)
+                     org-gtd-reflect-missed-calendar-review--surface-key))
+         (new-id (org-gtd-id-get-create marker)))
+    (let ((inhibit-read-only t))
+      ;; The surface arrives here read-only (the console just displayed
+      ;; it): the clarify buffer must be editable.  `inhibit-read-only'
+      ;; above only covers the erase/copy/paste below; this `setq'
+      ;; persists past this `let', which is what we want.
+      (setq buffer-read-only nil)
+      (erase-buffer)
+      (org-gtd--without-kill-merge
+        (org-gtd-clarify--initialize-buffer-contents marker surface))
+      (goto-char (point-min))
+      (org-gtd-wip--rekey old-id new-id)
+      (unless (derived-mode-p 'org-gtd-clarify-mode)
+        (org-gtd-clarify-mode))
+      (setq-local org-gtd-clarify--clarify-id new-id
+                  org-gtd-clarify--source-heading-marker marker
+                  org-gtd-clarify--skip-refile nil
+                  org-gtd-clarify--window-config window-config)
+      ;; Freshly rendered, untouched: mirrors `org-gtd-inbox-walk--render-marker'
+      ;; so a later save-on-quit safety net can tell an edited item from a
+      ;; merely glanced one.
+      (set-buffer-modified-p nil)
+      (org-gtd-reflect-missed-calendar-review--install-cancel-override)
+      (org-gtd-clarify-setup-windows surface))))
+
+(defun org-gtd-reflect-missed-calendar-review--cancel-clarify ()
+  "Cancel the in-place clarify on the current item; return to the console.
+Bound to `C-c C-k' by the buffer-local override installed in
+`--clarify-in-place' (see `--install-cancel-override'), shadowing the
+default `org-gtd-clarify-stop', which would abandon the whole review.
+
+Does not advance and does not quit: it simply redraws the console for
+the CURRENT item.  All the undo work -- rekeying the surface back to
+`--surface-key' and tearing down the horizons view -- lives in
+`--render' itself (it runs at the top of every render), so this just
+delegates to it."
   (interactive)
-  (let* ((id (org-gtd-walk-model-current
+  (let ((id (org-gtd-walk-model-current
+             (plist-get org-gtd-walk--active :model))))
+    (org-gtd-reflect-missed-calendar-review--render id (current-buffer))))
+
+(defun org-gtd-reflect-missed-calendar-review-clarify ()
+  "Clarify the current item in place; the review auto-advances on organize.
+Transforms the review surface itself into an editable clarify buffer
+for the current item (see `--clarify-in-place'), instead of opening a
+separate one-off clarify buffer via `org-gtd-clarify-item'.  Because
+`org-gtd-walk--active' is permanent-local and survives the switch to
+`org-gtd-clarify-mode', when the user finishes organizing here
+`org-gtd-organize--call''s walk-active branch calls
+`org-gtd-walk-advance' for us -- the review moves on to the next
+overdue item automatically; no separate `s' (skip) needed.
+
+Does not itself advance the walk or bump `:reviewed': clarifying is not
+a resolution by itself, only a hand-off into the organize flow -- the
+resolution (and the advance) happens when the user finishes organizing.
+Clarify therefore bumps no counter on entry; see the design's \"Counters\"
+section for the accepted v1 limitation (no dedicated \"clarified\"
+tally).
+
+Canceling out of the clarify (`C-c C-k') returns to the console for
+this same item rather than abandoning the whole review -- see
+`--cancel-clarify'.
+
+Not wrapped in `org-gtd-walk-call-action': that helper exists for
+actions that transition/advance and tears the walk down on error; this
+command does neither itself (the transition happens later, on
+organize), so a plain `interactive' command is correct here."
+  (interactive)
+  (let* ((window-config (current-window-configuration))
+         (id (org-gtd-walk-model-current
               (plist-get org-gtd-walk--active :model)))
-         (marker (org-id-find id 'marker)))
+         (marker (and id (org-id-find id 'marker))))
     (if marker
-        (org-gtd-clarify-item marker)
+        (org-gtd-reflect-missed-calendar-review--clarify-in-place marker window-config)
       (message "This item is no longer available."))))
 
 (defun org-gtd-reflect-missed-calendar-review-quit ()
