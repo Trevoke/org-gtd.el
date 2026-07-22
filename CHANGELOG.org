@@ -113,6 +113,11 @@ notice closing notes or timestamps appearing on items that previously
 went straight to archive without a state change.  No action is required
 unless your hook listeners are intolerant of this firing position.
 
+*** Someday/maybe review is now resumable
+Quitting a someday/maybe review mid-way and returning later resumes that
+list where you left off.  Each list keeps an independent resume point, so
+reviewing one selection no longer disturbs your place in another.
+
 ** Deprecated
 - ~org-gtd-delegate-agenda-item~ — use ~org-gtd-delegate~ directly; the
   DWIM dispatch reads ~org-get-at-bol~ so it works from agenda buffers.
