@@ -38,10 +38,14 @@ stale, because the resume key is constructed at each standalone start.
 
 - **Split into two keys**, not one overloaded value.
 - **Resume identity = walk + selection**, not walk + file scope.
-- **Resumable set:** `inbox` (already resumable) and `someday-review` (newly resumable).
-  **`missed-calendar-review` stays `:resumable nil`** — a deliberate reversal *avoided*: its
-  design (2026-07-19 §2) chose disposability so skipped items resurface on every run ("a
-  veto is 'not now,' not 'never'"). Resume would defeat that, so it keeps no checkpoint.
+- **Resumable set:** `someday-review` is the **sole** newly-resumable consumer. **No walk
+  is resumable today** — the engine's checkpoint machinery exists but every registered spec
+  is `:resumable nil` (verified: `org-gtd-inbox-walk.el:321` is `:resumable nil`; the
+  phase-4 inbox resume was left off). `inbox` stays `:resumable nil` — **out of scope for
+  this change** — but the fallback keying (§3.2) makes it resume-ready for free if enabled
+  later. **`missed-calendar-review` stays `:resumable nil`** by its 2026-07-19 §2
+  disposability decision (skipped items resurface every run — "a veto is 'not now,' not
+  'never'"); resume would defeat that.
 - **Resumability is set at the standalone start-site, not baked into the registry
   template** — this is what keeps the hosted (review-step) path from double-persisting
   (§4).
@@ -75,8 +79,13 @@ Per consumer:
 | walk | `:resumable` | `:resume-key` | checkpoint file |
 |------|-------------|---------------|-----------------|
 | `someday-review` | **t** (new) | the list filter — `"work"`, `"Unassigned"`, `"all"` | `walk-someday-review-<md5(list)>.eld` |
-| `inbox` | t (unchanged) | constant (one inbox review) — rename only, no behavior change | `walk-inbox-<md5(const)>.eld` |
+| `inbox` | nil (unchanged, out of scope) | — (none set; would fall back to name if enabled) | none today |
 | `missed-calendar-review` | **nil** (unchanged) | — (moot; no checkpoint path built) | none |
+
+**Fallback keying:** `walk-start` computes the checkpoint key as
+`(or (plist-get spec :resume-key) (plist-get spec :name))`. A resumable walk that sets no
+`:resume-key` therefore keys on its **name alone** (a stable per-walk constant). This is why
+`inbox` needs no `:resume-key` if it is ever made resumable — one inbox review, one key.
 
 Reviewing list A and list B now get **independent** checkpoints — the collision is gone by
 construction.
@@ -124,8 +133,11 @@ next run re-scans fresh).
   deleted it). Minor disk cruft; **not** worth a sweeper in v1 — note and move on.
 - **Concurrency unchanged** — scope-lock stays coarse (file set); a standalone and a hosted
   someday-review over the same files still refuse to overlap.
-- **Serialization** — someday-review handles are org-id strings (clean round-trip); inbox's
-  already-working resume is untouched by the rename.
+- **Corrupt checkpoint already safe** — `org-gtd-walk-model-deserialize` wraps `read` in
+  `ignore-errors` and gates on `org-gtd-walk-model-valid-p`, returning nil on garbage;
+  `walk-start` then falls back to a fresh `:find`. No new defensive code needed — a
+  characterization test suffices.
+- **Serialization** — someday-review handles are org-id strings (clean round-trip).
 
 ## 6. Testing (adapter-tier — the someday-review / inbox harness)
 
