@@ -335,6 +335,65 @@ This ensures evil users get emacs state by default for better UX."
     (assert-true (> (length (org-gtd-wip--get-buffers)) 0))
     (org-gtd-someday-review-quit)))
 
+;;; Resume Tests
+
+(deftest someday-review/resume-key-encodes-selection ()
+  "The resume-key maps each list-filter form to a stable, distinct string."
+  (assert-equal "all" (org-gtd-someday-review--resume-key nil))
+  (assert-equal "unassigned" (org-gtd-someday-review--resume-key 'unassigned))
+  (assert-equal "list:Work" (org-gtd-someday-review--resume-key "Work")))
+
+(deftest someday-review/registered-template-is-not-resumable ()
+  "The registry template stays :resumable nil so a hosted walk delegates persistence."
+  (assert-nil (plist-get (org-gtd-walk-get 'someday-review) :resumable)))
+
+(deftest someday-review/quitting-mid-review-then-restart-resumes-at-cursor ()
+  "Quit keeps a checkpoint keyed by the selection; restarting the same list resumes."
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "One")
+    (org-gtd-someday-create "Two")
+    (org-gtd-someday-create "Three"))
+  (org-gtd-reflect-someday-review)                       ; fresh: cursor 0
+  (let ((surface (org-gtd-wip--get-buffer "someday-review")))
+    (with-current-buffer surface (org-gtd-walk-advance)) ; cursor 0 -> 1
+    (with-current-buffer surface (org-gtd-someday-review-quit)))
+  (assert-true (file-exists-p
+                (org-gtd-walk--checkpoint-path 'someday-review "all")))
+  (org-gtd-reflect-someday-review)                       ; restart: resumes
+  (let ((surface (org-gtd-wip--get-buffer "someday-review")))
+    (with-current-buffer surface
+      (assert-same 1 (plist-get (plist-get org-gtd-walk--active :model) :cursor)))))
+
+(deftest someday-review/lists-resume-independently ()
+  "A checkpoint for one list does not affect another list's fresh start."
+  (let ((org-gtd-someday-lists '("Work" "Personal")))
+    (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+      (with-simulated-input "Work RET" (org-gtd-someday-create "W1"))
+      (with-simulated-input "Work RET" (org-gtd-someday-create "W2"))
+      (with-simulated-input "Personal RET" (org-gtd-someday-create "P1")))
+    (org-gtd-reflect-someday-review "Work")
+    (let ((surface (org-gtd-wip--get-buffer "someday-review")))
+      (with-current-buffer surface (org-gtd-walk-advance))
+      (with-current-buffer surface (org-gtd-someday-review-quit)))
+    (assert-true (file-exists-p
+                  (org-gtd-walk--checkpoint-path 'someday-review "list:Work")))
+    (org-gtd-reflect-someday-review "Personal")
+    (let ((surface (org-gtd-wip--get-buffer "someday-review")))
+      (with-current-buffer surface
+        (assert-same 0 (plist-get (plist-get org-gtd-walk--active :model) :cursor))))
+    (assert-true (file-exists-p
+                  (org-gtd-walk--checkpoint-path 'someday-review "list:Work")))))
+
+(deftest someday-review/finishing-a-pass-deletes-the-checkpoint ()
+  "Completing the walk removes the checkpoint so the next run re-scans fresh."
+  (with-suppressed-warnings ((obsolete org-gtd-someday-create))
+    (org-gtd-someday-create "Only"))
+  (org-gtd-reflect-someday-review)
+  (let ((surface (org-gtd-wip--get-buffer "someday-review")))
+    (with-current-buffer surface (org-gtd-walk-advance))) ; off end -> finish
+  (assert-nil (file-exists-p
+               (org-gtd-walk--checkpoint-path 'someday-review "all"))))
+
 (provide 'someday-review-test)
 
 ;;; someday-review-test.el ends here

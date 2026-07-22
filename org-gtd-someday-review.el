@@ -186,6 +186,16 @@ Runs in the surface buffer after the engine has cleared its session."
     (message "Review complete. %d items reviewed, %d clarified."
              reviewed clarified)))
 
+(defun org-gtd-someday-review--resume-key (list-filter)
+  "Return a stable checkpoint resume-key string for LIST-FILTER.
+LIST-FILTER is nil (all lists), the symbol `unassigned', or a list-name
+string.  Encoding the selection keeps each list's resume checkpoint
+independent (design docs/plans/2026-07-22-walk-resume-identity-design.md
+§3.2)."
+  (cond ((null list-filter) "all")
+        ((eq list-filter 'unassigned) "unassigned")
+        (t (format "list:%s" list-filter))))
+
 (defun org-gtd-someday-review--spec ()
   "Return the someday-review walk spec template (default :find = all items)."
   (list :name 'someday-review
@@ -246,9 +256,17 @@ Adds \\='Unassigned\\=' option for items without a list."
          (items (org-gtd-someday-review--find-items list-filter)))
     (if (null items)
         (message "No someday items to review.")
+      ;; Resume trusts the checkpoint over this fresh scan: if every
+      ;; checkpointed item was handled elsewhere between sessions, the resumed
+      ;; walk skips them all and finishes "0 reviewed", so items added since the
+      ;; quit only surface on the next invocation (once the checkpoint clears).
+      ;; Accepted v1 trade-off; see design §5/§7.
       (let ((spec (org-gtd-someday-review--spec)))
         (setq spec (plist-put spec :find (lambda () items)))
         (setq spec (plist-put spec :scope (org-agenda-files)))
+        (setq spec (plist-put spec :resumable t))
+        (setq spec (plist-put spec :resume-key
+                              (org-gtd-someday-review--resume-key list-filter)))
         (org-gtd-walk-start spec (org-gtd-someday-review--surface))))))
 
 ;;;; Commands
