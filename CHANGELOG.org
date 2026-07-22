@@ -83,6 +83,18 @@ so pausing, killing the buffer, or crashing loses nothing.
 ~org-gtd-init-system~ is an idempotent first-run setup command that
 creates the GTD files and offers to schedule the review.
 
+*** Actionable overdue-calendar review
+New ~org-gtd-reflect-missed-calendar-review~ is the actionable counterpart
+to the read-only ~org-gtd-reflect-missed-calendar~ view: it walks each open
+Calendar item whose date has passed, one at a time, and lets you decide --
+with consent -- what it becomes now: done, migrate to a next action,
+reschedule, trash, clarify, or skip. Opens nothing when your hard landscape
+is clean. The ~clarify~ disposition clarifies the item in place -- the
+review surface itself becomes the editable clarify buffer -- and the
+review automatically advances to the next overdue item once you finish
+organizing it; canceling the clarify (~C-c C-k~) returns to the item
+instead of ending the review.
+
 *** Command center: =w= and =l=
 The Reflect column gains =w= (guided Weekly Review) and =l= (visit the
 checklist templates file).
