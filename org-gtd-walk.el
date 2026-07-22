@@ -38,8 +38,10 @@
 (defvar org-gtd-walks nil
   "Alist of registered walks: (NAME . SPEC).
 SPEC is a plist (:name :find :render :actions :on-finish :resumable
-:resolve :scope).  Mirrors `org-gtd-types'.  Empty until consumers
-register (none in Phase 0).")
+:resolve :scope :resume-key).  Mirrors `org-gtd-types'.
+`:resume-key' (optional) — selection identity for the resume
+checkpoint; defaults to `:name'.  Empty until consumers register (none
+in Phase 0).")
 
 (defun org-gtd-walk-register (name spec)
   "Register SPEC under NAME in `org-gtd-walks', replacing any existing entry."
@@ -107,12 +109,18 @@ The concurrency lock: no two walks may run over the same scope at once
 
 ;;;; Checkpoint persistence
 
-(defun org-gtd-walk--checkpoint-path (name scope)
-  "Return the checkpoint file path for walk NAME over SCOPE.
-Keyed by NAME and SCOPE so distinct resumable sessions never collide
-\(design §5)."
+(defun org-gtd-walk--checkpoint-path (name resume-key)
+  "Return the checkpoint file path for walk NAME under RESUME-KEY.
+RESUME-KEY identifies the *selection* being walked (e.g. a someday
+list), so two selections of the same walk get independent checkpoints
+even when they share a `:scope'.  `org-gtd-walk-start' passes NAME
+itself as RESUME-KEY when the spec sets no `:resume-key' (one
+checkpoint per walk).  RESUME-KEY must be an atom (string or symbol),
+not a list: `(format \"%s\" ...)' does not canonicalize list order, so a
+list would key order-dependently and silently fail to resume.  See
+design docs/plans/2026-07-22-walk-resume-identity-design.md §3.2."
   (expand-file-name
-   (format "walk-%s-%s.eld" name (md5 (org-gtd-walk--scope-key scope)))
+   (format "walk-%s-%s.eld" name (md5 (format "%s" resume-key)))
    org-gtd-directory))
 
 (defun org-gtd-walk--save-checkpoint (path model)
@@ -203,7 +211,8 @@ with what a bare :find over the same scope would have produced."
       (error "A walk is already active over scope %s" scope))
     (let* ((name (plist-get spec :name))
            (path (and (plist-get spec :resumable)
-                      (org-gtd-walk--checkpoint-path name scope)))
+                      (org-gtd-walk--checkpoint-path
+                       name (or (plist-get spec :resume-key) name))))
            (model (or initial-model
                       (and path (org-gtd-walk--load-checkpoint path))
                       (org-gtd-walk-model-create (funcall (plist-get spec :find)))))

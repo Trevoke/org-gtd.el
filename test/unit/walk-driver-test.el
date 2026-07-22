@@ -49,6 +49,7 @@
                                        (1+ walk-driver-test--finish-count)))
                     :resumable nil
                     :resolve nil
+                    :resume-key "stub-scope"
                     :scope "stub-scope")))
     (while overrides
       (setq spec (plist-put spec (pop overrides) (pop overrides))))
@@ -241,6 +242,47 @@ empty :find, without ever calling :find."
       (with-current-buffer surface
         (org-gtd-walk-advance) (org-gtd-walk-advance) (org-gtd-walk-advance))
       (assert-nil (file-exists-p path)))))
+
+(deftest walk-checkpoint-keys-on-resume-key-not-scope ()
+  "Two specs sharing a :scope but differing in :resume-key checkpoint to different files."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start
+     (walk-driver-test--stub-spec :resumable t :resume-key "list-a") surface)
+    (with-current-buffer surface (org-gtd-walk-quit))
+    (let ((surface-b (generate-new-buffer " *walk-test-b*")))
+      (unwind-protect
+          (progn
+            (org-gtd-walk-start
+             (walk-driver-test--stub-spec :resumable t :resume-key "list-b") surface-b)
+            (assert-true (file-exists-p (org-gtd-walk--checkpoint-path 'stub "list-a")))
+            (assert-true (file-exists-p (org-gtd-walk--checkpoint-path 'stub "list-b")))
+            (assert-not-equal (org-gtd-walk--checkpoint-path 'stub "list-a")
+                              (org-gtd-walk--checkpoint-path 'stub "list-b")))
+        (when (buffer-live-p surface-b) (kill-buffer surface-b))))))
+
+(deftest walk-resume-key-absent-falls-back-to-name ()
+  "A resumable spec with no :resume-key keys its checkpoint on the walk :name."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start
+     (walk-driver-test--stub-spec :resumable t :resume-key nil) surface)
+    (assert-true (file-exists-p (org-gtd-walk--checkpoint-path 'stub 'stub)))))
+
+(deftest walk-scope-lock-ignores-resume-key ()
+  "The lock keys on :scope only: a second walk with a different :resume-key but the
+same :scope is still refused."
+  (walk-driver-test--with-harness surface
+    (org-gtd-walk-start
+     (walk-driver-test--stub-spec :resumable t :resume-key "list-a") surface)
+    (assert-true (org-gtd-walk--scope-locked-p "stub-scope"))
+    (let ((refused nil)
+          (surface-b (generate-new-buffer " *walk-test-b*")))
+      (unwind-protect
+          (condition-case _err
+              (org-gtd-walk-start
+               (walk-driver-test--stub-spec :resumable t :resume-key "list-b") surface-b)
+            (error (setq refused t)))
+        (when (buffer-live-p surface-b) (kill-buffer surface-b)))
+      (assert-true refused))))
 
 ;;; corrupt checkpoint
 

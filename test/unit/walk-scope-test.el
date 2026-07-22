@@ -69,8 +69,8 @@
 
 ;;; checkpoint file I/O
 
-(deftest checkpoint-path-keys-on-name-and-scope ()
-  "Different name or scope yields a different checkpoint path; same inputs match."
+(deftest checkpoint-path-keys-on-name-and-resume-key ()
+  "Different name or resume-key yields a different checkpoint path; same inputs match."
   (let ((org-gtd-directory "/tmp/gtd/"))
     (assert-not-equal (org-gtd-walk--checkpoint-path 'a "s")
                       (org-gtd-walk--checkpoint-path 'b "s"))
