@@ -1072,6 +1072,126 @@
       ;; No clock = 0 time, should skip
       (assert-true (numberp result)))))
 
+;;; Property Filter Skip Predicate Tests
+
+(deftest view-lang/skip-property-includes-match ()
+  "Skip function includes items with matching property value."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* NEXT Task\n:PROPERTIES:\n:ORG_GTD: Actions\n:ENERGY: high\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action)
+                        (property . (("ENERGY" . "high")))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      (assert-nil result))))
+
+(deftest view-lang/skip-property-skips-non-match ()
+  "Skip function skips items with non-matching property value."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* NEXT Task\n:PROPERTIES:\n:ORG_GTD: Actions\n:ENERGY: low\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action)
+                        (property . (("ENERGY" . "high")))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      (assert-true (numberp result)))))
+
+(deftest view-lang/skip-property-skips-missing ()
+  "Skip function skips items where the property is not set."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* NEXT Task\n:PROPERTIES:\n:ORG_GTD: Actions\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action)
+                        (property . (("ENERGY" . "high")))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      (assert-true (numberp result)))))
+
+(deftest view-lang/skip-property-multiple-all-match ()
+  "Skip function includes items where all property pairs match."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* NEXT Task\n:PROPERTIES:\n:ORG_GTD: Actions\n:ENERGY: high\n:CONTEXT: office\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action)
+                        (property . (("ENERGY" . "high")
+                                     ("CONTEXT" . "office")))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      (assert-nil result))))
+
+(deftest view-lang/skip-property-multiple-partial-skips ()
+  "Skip function skips items where only some property pairs match."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* NEXT Task\n:PROPERTIES:\n:ORG_GTD: Actions\n:ENERGY: high\n:CONTEXT: home\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action)
+                        (property . (("ENERGY" . "high")
+                                     ("CONTEXT" . "office")))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec))
+           (result (funcall skip-fn)))
+      (assert-true (numberp result)))))
+
+(deftest view-lang/skip-property-invalid-non-list-errors ()
+  "Property filter with non-list value signals error."
+  (assert-raises 'user-error
+    (org-gtd-view-lang--build-skip-function
+     '((type . next-action) (property . "bad")))))
+
+(deftest view-lang/skip-property-invalid-entry-errors ()
+  "Property filter with non-cons entry signals error."
+  (assert-raises 'user-error
+    (org-gtd-view-lang--build-skip-function
+     '((type . next-action) (property . ("not-a-pair"))))))
+
+(deftest view-lang/skip-property-invalid-name-errors ()
+  "Property filter with non-string property name signals error."
+  (assert-raises 'user-error
+    (org-gtd-view-lang--build-skip-function
+     '((type . next-action) (property . ((123 . "val")))))))
+
+(deftest view-lang/skip-property-invalid-value-errors ()
+  "Property filter with non-string property value signals error."
+  (assert-raises 'user-error
+    (org-gtd-view-lang--build-skip-function
+     '((type . next-action) (property . (("ENERGY" . 123)))))))
+
+(deftest view-lang/skip-property-combines-with-other-filter ()
+  "Property filter composes (AND) with a non-property filter.
+Both the priority filter and the property filter must match for an
+item to be included; failing either one skips the item."
+  ;; Both priority=A and ENERGY=high match -> included.
+  (with-temp-buffer
+    (org-mode)
+    (insert "* NEXT [#A] Task\n:PROPERTIES:\n:ORG_GTD: Actions\n:ENERGY: high\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action)
+                        (priority . A)
+                        (property . (("ENERGY" . "high")))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec)))
+      (assert-nil (funcall skip-fn))))
+  ;; Property matches but priority does NOT -> skipped.
+  (with-temp-buffer
+    (org-mode)
+    (insert "* NEXT [#B] Task\n:PROPERTIES:\n:ORG_GTD: Actions\n:ENERGY: high\n:END:\n")
+    (goto-char (point-min))
+    (org-next-visible-heading 1)
+    (let* ((view-spec '((type . next-action)
+                        (priority . A)
+                        (property . (("ENERGY" . "high")))))
+           (skip-fn (org-gtd-view-lang--build-skip-function view-spec)))
+      (assert-true (numberp (funcall skip-fn))))))
+
 ;;; Unknown Filter Key Error Handling Tests
 
 (deftest view-lang/skip-function-errors-on-unknown-filter ()

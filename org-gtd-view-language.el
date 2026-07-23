@@ -110,6 +110,10 @@
 ;;   (who . "Alice")            - Delegated to specific person
 ;;   (who . nil)                - Missing delegation recipient
 ;;
+;; Property Filters:
+;;   (property . (("PROP" . "VALUE")))          - Single property match
+;;   (property . (("P1" . "V1") ("P2" . "V2"))) - Multiple (AND logic)
+;;
 ;; Clock Time Filters:
 ;;   (last-clocked-out . (> "2d"))  - Not worked on in 2+ days
 ;;   (last-clocked-out . (< "1w"))  - Worked on within past week
@@ -779,6 +783,17 @@ sites must normalize before calling this function."
                        org-gtd-view-lang--known-filter-keys)))
     (when unknown-keys
       (user-error "Unknown filter key(s): %s" unknown-keys)))
+  ;; Validate property filter shape
+  (when-let ((property-filter (alist-get 'property gtd-view-spec)))
+    (unless (listp property-filter)
+      (user-error "Property filter must be a list of (PROP . VALUE) pairs"))
+    (dolist (pair property-filter)
+      (unless (consp pair)
+        (user-error "Each property filter entry must be a cons cell (PROP . VALUE), got: %s" pair))
+      (unless (stringp (car pair))
+        (user-error "Property name must be a string, got: %s" (car pair)))
+      (unless (stringp (cdr pair))
+        (user-error "Property value must be a string, got: %s" (cdr pair)))))
   (let* ((type-filter (alist-get 'type gtd-view-spec))
          (when-filter (alist-get 'when gtd-view-spec))
          (area-filter (alist-get 'area-of-focus gtd-view-spec)))
@@ -888,6 +903,11 @@ sites must normalize before calling this function."
                     (push (org-gtd-pred--property-empty-or-missing who-prop) predicates)
                   ;; Otherwise filter by specific value
                   (push (org-gtd-pred--property-equals who-prop who-filter) predicates))))))
+        ;; Add property predicates (arbitrary property matching)
+        (when-let ((property-filter (alist-get 'property gtd-view-spec)))
+          (dolist (prop-pair property-filter)
+            (push (org-gtd-pred--property-equals (car prop-pair) (cdr prop-pair))
+                  predicates)))
         ;; Add deadline predicate
         (when-let ((deadline-filter (alist-get 'deadline gtd-view-spec)))
           (cond

@@ -23,6 +23,14 @@
   view, alongside the existing =(not-done . t)=.  Previously the key was
   accepted but silently ignored.
 
+*** View DSL: =property= filter
+- The view DSL now honors =(property . (("PROP" . "VALUE")))= to include only
+  items whose org property =PROP= equals =VALUE=.  Multiple pairs are combined
+  with AND logic (e.g. =(property . (("ENERGY" . "high") ("CONTEXT" . "office")))=),
+  and the filter composes with every other view filter.  Malformed specs signal
+  a =user-error= at build time.  Previously the key was accepted but silently
+  ignored.
+
 *** Unified type and hook model
 org-gtd now ships a unified dispatch pipeline for all built-in types.
 Each type in ~org-gtd-types~ can declare wiring fields — ~:organize-fn~,
