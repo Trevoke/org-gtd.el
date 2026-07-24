@@ -146,7 +146,7 @@ Count: 3 must + 32 should + 36 may transcribed (gap scoreboard = 73; ~2
 - [X] =REC-HOR-08= → *DEFER* (docs explanation — top-down prioritization; see Horizons)
 *** UI
 - [X] =REC-UI-02= → *BUILD-V5* (command-center count annotations; dashboard-rework aspiration → UI-01; see UI / Views)
-- [X] =REC-UI-04= → *BUILD-V5* (walk missed calendar → migrate; rides the generalized walk engine; see UI / Views)
+- [X] =REC-UI-04= → *DONE* (walk missed calendar → migrate; shipped on =org-gtd-5= 2026-07-23; see UI / Views)
 - [X] =REC-UI-05= → *BUILD-V5* (chain-end closure prompt; covers under-defined project / PRJ-08 spillover; see UI / Views)
 *** Cross-cutting
 - [X] =REC-X-10= → *BUILD-V5* (unified onboarding; chains setup + seeds all review habits; yak …-vm2c; see Cross-cutting)
@@ -213,7 +213,7 @@ first; they unlock clusters.
 
 ** BUILD-V5 (foundational) — generalize the item-walk engine            :foundational:
 :PROPERTIES:
-:STATUS:      BUILT (org-gtd-5) — engine + 4 consumers migrated
+:STATUS:      BUILT (org-gtd-5) — engine + 4 migrated consumers + missed-calendar walk; resume shipped
 :DISPOSITION: BUILD-V5 (done)
 :DECIDED:     2026-07-15
 :COMPLETED:   2026-07-18
@@ -228,9 +228,10 @@ Shipped:
   deserialize with validation. No per-entry status (cursor separates handled/
   pending — status is *upstream* filtering that feeds =:entries=).
 - =org-gtd-walk.el= — registry (=org-gtd-walks= alist of specs =(:name :find
-  :render :actions :on-finish :resumable :resolve :scope)=), per-*scope*
+  :render :actions :on-finish :resumable :resolve :scope :resume-key)=), per-*scope*
   concurrency lock (scope = the org container: file-set or subtree org-id),
-  opt-in checkpoint (md5 of scope-key), and the session driver
+  opt-in checkpoint (md5 of =:resume-key=, split from =:scope= 2026-07-22 so a
+  walk resumes by *selection*, not file-set), and the session driver
   (=org-gtd-walk-start/-advance/-enqueue/-quit/-finish=). =org-gtd-walk--active=
   is =permanent-local= so a mode switch's =kill-all-local-variables= can't wipe it.
 - Consumers migrated: (1) =someday-review= (Phase 1); (2) the review checklist
@@ -241,9 +242,22 @@ Shipped:
 
 Verified: compile clean (=--warnings-as-errors=); full suite 1593 pass, 0 errors.
 
+*Update (2026-07-23, =org-gtd-5=) — resume-identity + first net-new walk shipped:*
+- *Checkpoint identity split from the lock.* =:scope= now governs only the
+  concurrency lock; a new optional =:resume-key= names the checkpoint
+  (=walk-<name>-<md5(resume-key)>.eld=, falling back to the walk name), so a walk
+  resumes by its *selection*, not its file-set. See
+  =docs/plans/2026-07-22-walk-resume-identity-design.md=.
+- *someday-review is now resumable* — keys on its list selection, so each list
+  resumes independently; quit mid-review restarts at the cursor, finishing a
+  pass clears the checkpoint. Only the standalone entry point opts in
+  (=:resumable t=); the registered template stays =:resumable nil= so the hosted
+  review-step path never double-persists.
+- *REC-UI-04 shipped* — the missed-calendar migrate walk is built (first net-new
+  actionable walk), with clarify-in-place auto-advance. See [[*DONE REC-UI-04 — consent-based migrate overdue calendar → next-action][REC-UI-04]].
+
 *Still design-gated (not built — need a collaborative UX pass, not a straight
 build):*
-- [[*BUILD-V5 REC-UI-04 — consent-based migrate overdue calendar → next-action][REC-UI-04]] — first *net-new* actionable walk (walk missed calendar → migrate).
 - A real *heading-walk-in-console* review step (e.g. stuck-projects) — someday's
   own render is region-incompatible, so an in-review heading walk needs its own UX.
 - Inbox *resume* — engine supports =:resumable=; inbox ships =:resumable nil=
@@ -658,6 +672,16 @@ four criteria. Missing: *energy* (zero refs in source) and any guided ordering.
 Payoffs beyond the feature: rounds out the base view DSL to the full
 four-criteria set, and lets the docs map cleanly onto GTD's own
 context/time/energy/priority language (streamlining).
+
+*Update (2026-07-23, =org-gtd-5=): generic =property= filter shipped.* The view
+DSL now has a =(property . (("PROP" . "VALUE") …))= filter (=org-gtd-view-language.el=,
+AND-combined, validated at build time), so filtering by an =ENERGY= property
+already works generically today — =(property . (("ENERGY" . "high")))=. That
+delivers the energy *filtering* path without a dedicated keyword; the remaining
+ENG-03 question is now only whether to still add a first-class =energy= keyword +
+engage exposure (ergonomics/discoverability) on top of the generic mechanism.
+Keyword stays BUILD-V5 pending that call. (The interactive view builder must also
+surface =property=; tracked on the "GTD View Builder" yak.)
 
 *Docs follow-up*: a Diataxis how-to — "How to use GTD's four criteria
 (context / time / energy / priority)" — anchored on this energy feature and
@@ -1588,15 +1612,16 @@ stance); methodology teaching belongs in docs (getting-started tutorial +
 explanations), and adaptive coaching, if ever, rides the opt-in LLM direction.
 *Decision*: DROP.
 
-*** BUILD-V5 REC-UI-04 — consent-based migrate overdue calendar → next-action :should:ui:
+*** DONE REC-UI-04 — consent-based migrate overdue calendar → next-action :should:ui:
 :PROPERTIES:
 :REC_ID:      REC-UI-04
-:STATUS:      Not-implemented — walk-engine dependency now READY (unblocked 2026-07-18)
+:STATUS:      Implemented (org-gtd-5, shipped 2026-07-19–23)
 :STRENGTH:    should
 :TYPE:        tool
 :DISPOSITION: BUILD-V5 (rides the generalized item-walk foundation)
 :UX_DOC:      REC-UI-04.md
 :DECIDED:     2026-07-15
+:COMPLETED:   2026-07-23
 :END:
 When a calendar appointment's date passes uncompleted, *offer* (with veto) to
 migrate it into a next action — consent-only, no auto-action, no forced agenda.
@@ -1606,6 +1631,15 @@ migrate it into a next action — consent-only, no auto-action, no forced agenda
 "retype to next-action" action (reuses reactivate/retype infra in
 =org-gtd-reactivate.el=). The walk-engine generalization it was gated on is now
 built — this is the *next* piece to design/build (first net-new actionable walk).
+
+*Shipped (org-gtd-5, 2026-07-19–23).* =org-gtd-reflect-missed-calendar-review=
+walks overdue calendar items one at a time in a console, each with veto-able
+dispositions: mark-done, reschedule (past-date re-prompt guard), migrate to
+next-action (hooks suppressed), trash, skip, and *clarify in place* → organize →
+auto-advance (mirrors the inbox loop). Rides the walk engine; skipped items are
+non-resumable by design (a veto is "not now," not "never"). See
+=docs/plans/2026-07-19-overdue-calendar-review-design.md= and
+=docs/plans/2026-07-21-clarify-in-place-auto-advance-design.md=.
 
 *** BUILD-V5 REC-UI-05 — mark-done closure prompt ("what's next?")     :should:ui:
 :PROPERTIES:
