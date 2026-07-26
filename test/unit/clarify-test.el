@@ -295,6 +295,26 @@
   (assert-equal 'org-gtd-clarify-duplicate-exact
                 (lookup-key org-gtd-clarify-mode-map (kbd "C-c D"))))
 
+(deftest clarify/header-resolves-active-emulation-map-binding ()
+  "Clarify header displays bindings from active emulation maps."
+  (let* ((org-gtd-clarify-mode-map
+          (copy-keymap org-gtd-clarify-mode-map))
+         (modal-map (make-sparse-keymap))
+         (emulation-mode-map-alists
+          `(((org-gtd-test--modal-state . ,modal-map)))))
+    (define-key org-gtd-clarify-mode-map (kbd "C-c c") nil)
+    (define-key modal-map (kbd "C-c x") #'org-gtd-organize)
+    (with-temp-buffer
+      (org-gtd-clarify-mode)
+      ;; Activate the modal map after mode setup to ensure that the header
+      ;; resolves bindings when it is rendered, not only during setup.
+      (setq-local org-gtd-test--modal-state t)
+      (assert-equal #'org-gtd-organize (key-binding (kbd "C-c x")))
+      (assert-equal :eval (car-safe header-line-format))
+      (let ((header (eval (cadr header-line-format) t)))
+        (assert-match "C-c x" header)
+        (refute-match "M-x org-gtd-organize" header)))))
+
 ;;; Duplicate Command Tests
 
 (deftest clarify/duplicate-exact-adds-to-queue ()
