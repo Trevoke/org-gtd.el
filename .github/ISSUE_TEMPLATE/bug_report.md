@@ -7,12 +7,12 @@ assignees: ''
 
 ---
 
-** Tell us about your system **
+**Tell us about your system**
 - **Operating System** : [e.g. Linux]
 - **Emacs Version** : [e.g. 30.1 - variable `emacs-version`]
 - **Org-gtd Version**: [e.g. 4.3.0 - variable `org-gtd-version`]
 
-** Tell us about your config**
+**Tell us about your config**
 - `org-gtd-directory` : [e.g. `~/gtd`]
 - `org-agenda-files`  : [e.g. `'("~/gtd")`]
 - `org-refile-targets` : (only if your problem is with refiling)
