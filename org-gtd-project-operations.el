@@ -74,11 +74,7 @@ Offers completion on existing tasks or allows creating new ones."
           (setq task-id existing-id)
         ;; Create new task using proper GTD configuration
         (org-with-point-at project-marker
-          (org-end-of-subtree t t)
-          (unless (bolp) (insert "\n"))
-          (insert "** " title "\n")
-          (forward-line -1)
-          (org-back-to-heading t)
+          (org-gtd-projects-insert-child-task title)
           (setq task-id (org-id-get-create))
           ;; Use existing type configuration
           (org-gtd-configure-as-type 'next-action)
@@ -124,11 +120,7 @@ Creates or selects task that blocks the task at point."
           (setq task-id existing-id)
         ;; Create new blocker using proper GTD configuration
         (org-with-point-at project-marker
-          (org-end-of-subtree t t)
-          (unless (bolp) (insert "\n"))
-          (insert "** " title "\n")
-          (forward-line -1)
-          (org-back-to-heading t)
+          (org-gtd-projects-insert-child-task title)
           (setq task-id (org-id-get-create))
           ;; Use existing type configuration
           (org-gtd-configure-as-type 'next-action)
@@ -179,11 +171,7 @@ Creates or selects task to add as root (no dependencies)."
           (setq task-id existing-id)
         ;; Create new root task using proper GTD configuration
         (org-with-point-at project-marker
-          (org-end-of-subtree t t)
-          (unless (bolp) (insert "\n"))
-          (insert "** " title "\n")
-          (forward-line -1)
-          (org-back-to-heading t)
+          (org-gtd-projects-insert-child-task title)
           (setq task-id (org-id-get-create))
           ;; Use existing type configuration
           (org-gtd-configure-as-type 'next-action)

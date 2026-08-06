@@ -48,7 +48,6 @@
 ;; variables, ensuring `let' bindings work correctly with lexical-binding: t.
 (defvar org-gtd-graph-view--project-marker)
 (defvar org-gtd-graph-view--graph)
-
 ;; Defined in org-gtd-someday.el - forward declared to avoid circular dependency.
 (defvar org-gtd-someday-lists)
 
@@ -85,11 +84,29 @@
 ;; Functions from org-gtd-tickler.el (loaded lazily - cycle with org-gtd-projects)
 (declare-function org-gtd-tickler "org-gtd-tickler")
 
+;;;; Structural Helpers
+
+(defun org-gtd-projects-insert-child-task (title)
+  "Insert TITLE as a new task heading at the end of the current subtree.
+Point must be on a project heading; it is left on the newly created
+heading.
+
+The new heading is created one level deeper than the project, so tasks
+nest correctly no matter how deeply the project itself is nested.  Real
+org-gtd files keep projects at level 2 under a `* Projects' heading, so
+assuming a fixed depth here would make the new task a sibling of the
+project -- turning it into a new project rather than one of its tasks."
+  (let ((level (or (org-current-level) 1)))
+    (org-end-of-subtree t t)
+    (unless (bolp) (insert "\n"))
+    (insert (make-string (1+ level) ?*) " " title "\n")
+    (forward-line -1)
+    (org-back-to-heading t)))
+
 ;;;; Constants
 
 (defconst org-gtd-add-to-project-func #'org-gtd-project-extend--apply
   "Function called when organizing item at point as a new task in a project.")
-
 (defconst org-gtd-project-func #'org-gtd-project-new--apply
   "Function called when organizing item at point as a project.")
 
