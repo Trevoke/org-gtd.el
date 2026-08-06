@@ -206,9 +206,10 @@
         (org-next-visible-heading 1)
         (org-gtd-clarify-item))
       (with-current-buffer (car (org-gtd-wip--get-buffers))
-        (assert-match "C-c c" header-line-format)
-        (assert-match "C-c C-k" header-line-format)
-        (assert-match "cancel" header-line-format)))))
+        (let ((header (eval (cadr header-line-format) t)))
+          (assert-match "C-c c" header)
+          (assert-match "C-c C-k" header)
+          (assert-match "cancel" header))))))
 
 (provide 'horizons-test)
 
