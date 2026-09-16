@@ -152,6 +152,34 @@
   (when (get-buffer "*Org Agenda*")
     (kill-buffer "*Org Agenda*")))
 
+(deftest state/delegated-task-returning-to-next-restores-next-action ()
+  "Returning a delegated task to NEXT removes delegation classification."
+  (with-temp-buffer
+    (org-mode)
+    (insert "* WAIT Delegated round-trip task\n")
+    (org-back-to-heading t)
+    (org-entry-put (point) "ORG_GTD" "Delegated")
+    (org-entry-put (point) "DELEGATED_TO" "Alex")
+    (org-entry-put (point) "ORG_GTD_TIMESTAMP" "<2025-06-15>")
+    (org-entry-put (point) "ORG_GTD_PROJECT" "Regression project")
+    (org-entry-put (point) "ORG_GTD_PROJECT_IDS" "regression-project-id")
+    (org-entry-put
+     (point) "TRIGGER"
+     "self org-gtd-update-project-after-task-done!")
+
+    (let ((org-state (org-gtd-keywords--next)))
+      (org-gtd-next-action--maybe-convert-to-delegated))
+
+    (assert-equal "Actions" (org-entry-get (point) "ORG_GTD"))
+    (assert-nil (org-entry-get (point) "DELEGATED_TO"))
+    (assert-nil (org-entry-get (point) "ORG_GTD_TIMESTAMP"))
+    (assert-equal "Regression project"
+                  (org-entry-get (point) "ORG_GTD_PROJECT"))
+    (assert-equal "regression-project-id"
+                  (org-entry-get (point) "ORG_GTD_PROJECT_IDS"))
+    (assert-equal "self org-gtd-update-project-after-task-done!"
+                  (org-entry-get (point) "TRIGGER"))))
+
 (deftest state/cancels-task ()
   "Cancels task via --cancel action."
   (with-current-buffer (org-gtd--default-file)

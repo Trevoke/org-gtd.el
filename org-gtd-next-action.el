@@ -69,20 +69,24 @@ Obsolete: use `org-gtd-create-item' instead."
 ;;;;; Private
 
 (defun org-gtd-next-action--maybe-convert-to-delegated ()
-  "Prompt to convert next action to delegated item when changed to WAIT.
+  "Keep next action and delegated metadata aligned with TODO state.
 
 This function is intended for `org-after-todo-state-change-hook'.
-It checks if:
-1. The item is a next action (ORG_GTD=Actions)
-2. The new state is WAIT
-
-If conditions are met, prompts the user to convert to a delegated item.
-If they confirm, prompts for who to delegate to and when to check in."
-  (when (and (equal org-state (org-gtd-keywords--wait))
-             (equal (org-entry-get (point) "ORG_GTD")
-                    (org-gtd-type-org-gtd-value 'next-action)))
+When a next action changes to WAIT, it offers to convert the item to a
+proper delegated item.  When a delegated item changes to NEXT, it restores
+the next-action classification and removes delegation-only properties."
+  (cond
+   ((and (equal org-state (org-gtd-keywords--wait))
+         (equal (org-entry-get (point) "ORG_GTD")
+                (org-gtd-type-org-gtd-value 'next-action)))
     (when (y-or-n-p "Convert to delegated item? ")
-      (org-gtd-next-action--convert-to-delegated))))
+      (org-gtd-next-action--convert-to-delegated)))
+   ((and (equal org-state (org-gtd-keywords--next))
+         (equal (org-entry-get (point) "ORG_GTD")
+                (org-gtd-type-org-gtd-value 'delegated)))
+    (org-gtd--clear-foreign-properties 'next-action)
+    (org-entry-put (point) "ORG_GTD"
+                   (org-gtd-type-org-gtd-value 'next-action)))))
 
 (defun org-gtd-next-action--convert-to-delegated ()
   "Convert current next action to a delegated item.
