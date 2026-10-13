@@ -927,6 +927,39 @@ This section lists all interactive commands available in org-gtd, organized by w
 - ~S~ opens stuck items menu: projects, calendar, delegated, habits, tickler, single actions
 - ~M~ opens missed items menu: all missed, calendar, delegated, projects
 
+*Review counts*:
+
+Review labels show the number of matching entries when greater than zero.
+Empty views keep their original label without a count. All shortcuts still
+work, including commands that open empty views.
+Counts appear for someday/maybe, upcoming delegated items, completed projects,
+and the stuck and missed sub-menus. Area-of-focus and completed-item reviews
+have no count because their results depend on user input.
+
+Counts use the review's native Org matcher and skip function. Project counts
+refer to project headings, not their tasks. Multi-block totals count each
+matching entry in each block. For example, a project with both an overdue
+deadline and an overdue scheduled date appears twice in the missed-projects
+total. Counts describe matches before display-only agenda filters or limits.
+They follow the view's TODO, timestamp, inheritance, archive and comment rules.
+
+The menu opens immediately and shows ~(…)~ while counts are pending. Timer
+steps build a private ID index and count the current agenda sources, including
+unsaved edits. Labels update in place as counts finish. Related main and
+sub-menus share the index and completed counts. Close and reopen all review
+menus to refresh counts after edits, configuration changes or a date change.
+Closing the menus cancels outstanding work.
+
+Counts do not create an agenda window or save files. Project checks also read
+Org's ID sources into a private index. Each distinct view is counted once per
+menu session, with no scans during redisplay. Work yields between files and
+views, not within a file: indexing or scanning one large or remote file can
+still pause input. Buffers opened for counting are released after each timer
+step. For large or remote collections, set
+~org-gtd-review-show-counts~ to ~nil~ to omit counts and these scans.
+If counting fails, the menu shows ~(?)~ and reports a warning. Review commands
+remain available.
+
 **** ~org-gtd-capture~
 
 *Binding*: Typically ~C-c d c~ (user-configurable)

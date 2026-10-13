@@ -110,13 +110,35 @@ day for the agenda.  It is mostly of value for testing purposes."
   (interactive)
   (org-gtd-view-show org-gtd-reflect-missed-items-view-specs))
 
+(defconst org-gtd-reflect-stuck-items-view-specs
+  '(((name . "Stuck Projects") (type . stuck-project))
+    ((name . "Stuck Calendar Items") (type . stuck-calendar))
+    ((name . "Stuck Delegated Items") (type . stuck-delegated))
+    ((name . "Stuck Habit Items") (type . stuck-habit))
+    ((name . "Stuck Tickler Items") (type . stuck-tickler))
+    ((name . "Stuck Single Actions") (type . stuck-next-action)))
+  "View specifications shared by stuck-item reviews and menu counts.")
+
+(defun org-gtd-reflect--stuck-view-spec (type)
+  "Return the stuck review specification for TYPE."
+  (or (seq-find (lambda (spec) (eq (alist-get 'type spec) type))
+                org-gtd-reflect-stuck-items-view-specs)
+      (error "Unknown stuck review type: %S" type)))
+
+(defconst org-gtd-reflect-someday-maybe-view-spec
+  '((name . "Someday/Maybe Items") (type . someday))
+  "View specification for someday/maybe reviews.")
+
+(defconst org-gtd-reflect-completed-projects-view-spec
+  '((name . "Completed Projects") (type . completed-project))
+  "View specification for completed-project reviews.")
+
 (defun org-gtd-reflect-stuck-calendar-items ()
   "Agenda view with all invalid Calendar actions.
 Shows calendar items that are missing a valid timestamp."
   (interactive)
   (org-gtd-view-show
-   '((name . "Stuck Calendar Items")
-     (type . stuck-calendar))))
+   (org-gtd-reflect--stuck-view-spec 'stuck-calendar)))
 
 (defun org-gtd-reflect-stuck-delegated-items ()
   "Agenda view with all invalid delegated actions.
@@ -125,24 +147,21 @@ Shows delegated items that are missing either:
 - The person delegated to (who)"
   (interactive)
   (org-gtd-view-show
-   '((name . "Stuck Delegated Items")
-     (type . stuck-delegated))))
+   (org-gtd-reflect--stuck-view-spec 'stuck-delegated)))
 
 (defun org-gtd-reflect-stuck-habit-items ()
   "Agenda view with all invalid habit actions.
 Shows habit items that are missing a valid timestamp."
   (interactive)
   (org-gtd-view-show
-   '((name . "Stuck Habit Items")
-     (type . stuck-habit))))
+   (org-gtd-reflect--stuck-view-spec 'stuck-habit)))
 
 (defun org-gtd-reflect-stuck-tickler-items ()
   "Agenda view with all invalid tickler actions.
 Shows tickler items that are missing a valid timestamp."
   (interactive)
   (org-gtd-view-show
-   '((name . "Stuck Tickler Items")
-     (type . stuck-tickler))))
+   (org-gtd-reflect--stuck-view-spec 'stuck-tickler)))
 
 ;;;###autoload
 (defun org-gtd-reflect-someday-maybe ()
@@ -152,9 +171,7 @@ These are items you might want to do eventually, but with no specific
 timeframe. Use this view during your weekly or monthly reviews to
 decide if any items should be activated."
   (interactive)
-  (org-gtd-view-show
-   '((name . "Someday/Maybe Items")
-     (type . someday))))
+  (org-gtd-view-show org-gtd-reflect-someday-maybe-view-spec))
 
 ;;;###autoload
 (defun org-gtd-reflect-stuck-projects ()
@@ -164,8 +181,7 @@ Stuck projects have TODO tasks (work remaining) but no NEXT or WAIT tasks,
 indicating they need attention to identify the next actionable step."
   (interactive)
   (org-gtd-view-show
-   '((name . "Stuck Projects")
-     (type . stuck-project))))
+   (org-gtd-reflect--stuck-view-spec 'stuck-project)))
 
 (defun org-gtd-reflect-stuck-next-action-items ()
   "Agenda view with single actions that need attention.
@@ -173,8 +189,7 @@ Shows single actions (ORG_GTD=Actions) that are undone but not in NEXT state.
 Single actions should always be in NEXT state since they are ready to work on."
   (interactive)
   (org-gtd-view-show
-   '((name . "Stuck Single Actions")
-     (type . stuck-next-action))))
+   (org-gtd-reflect--stuck-view-spec 'stuck-next-action)))
 
 ;;;###autoload
 (define-obsolete-function-alias 'org-gtd-reflect-stuck-single-action-items
@@ -203,9 +218,7 @@ completed in that many days."
 Projects are considered completed when all their tasks are done.
 This view helps identify projects ready for archiving."
   (interactive)
-  (org-gtd-view-show
-   '((name . "Completed Projects")
-     (type . completed-project))))
+  (org-gtd-view-show org-gtd-reflect-completed-projects-view-spec))
 
 ;;;; Functions
 

@@ -26,32 +26,11 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write",
+        "matcher": "Write|Edit|MultiEdit|apply_patch|create|edit",
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate_elisp_syntax.py\"",
-            "if": "Write(**/*.el)"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate_elisp_syntax.py\"",
-            "if": "Edit(**/*.el)"
-          }
-        ]
-      },
-      {
-        "matcher": "MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate_elisp_syntax.py\"",
-            "if": "MultiEdit(**/*.el)"
+            "command": "python3 .claude/hooks/validate_elisp_syntax.py"
           }
         ]
       }
